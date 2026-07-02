@@ -240,6 +240,15 @@ class Handler(BaseHTTPRequestHandler):
                 payload = self._read_json_body()
                 state = self.server.controller.load_speaker_group(str(payload.get("name", "")))
                 self._send_json({"ok": True, "speaker_state": state})
+            elif path == "/api/speakers/export":
+                payload = self._read_json_body()
+                group = self.server.controller.export_speaker_group_file(str(payload.get("name", "")))
+                self._send_json({"ok": True, "group": group, "speaker_state": self.server.controller.speaker_state()})
+            elif path == "/api/speakers/import":
+                payload = self._read_json_body()
+                group = payload.get("group")
+                state = self.server.controller.import_speaker_group_file(group if isinstance(group, dict) else {})
+                self._send_json({"ok": True, "speaker_state": state})
             elif path == "/api/speakers/reference":
                 payload = self._read_json_body()
                 state = self.server.controller.add_reference_speaker(
@@ -888,6 +897,42 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=0.5,
         help="Minimum known-speaker probability before the live row label switches from Unknown to a speaker.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="When enabled, score the last live audio window against known speakers for fallback speaker highlighting.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-interval-seconds",
+        type=float,
+        default=0.5,
+        help="Seconds between fallback live-speaker probes.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-window-seconds",
+        type=float,
+        default=2.0,
+        help="Recent audio window scored by the fallback live-speaker probe.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-hold-seconds",
+        type=float,
+        default=2.0,
+        help="Seconds the browser keeps a fallback live-speaker highlight after a matching probe.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-min-advance-seconds",
+        type=float,
+        default=0.5,
+        help="Minimum playback advance before rescoring the fallback live-speaker probe window.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-min-speech-seconds",
+        type=float,
+        default=0.15,
+        help="Minimum RMS-gated speech inside the probe window before embedding it.",
     )
     parser.add_argument(
         "--realtime-preview-engine-options-json",

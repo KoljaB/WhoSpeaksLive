@@ -71,8 +71,16 @@ class WindowHtmlSafetyTests(unittest.TestCase):
     def test_revised_sentence_refreshes_speaker_counts(self) -> None:
         self.assertIn("let renderedSpeakerSentenceCounts = {};", HTML)
         self.assertIn("let renderedSpeakerSpeakingSeconds = {};", HTML)
+        self.assertIn('let currentLiveSpeakerId = "";', HTML)
+        self.assertIn('let transcriptLiveSpeakerId = "";', HTML)
+        self.assertIn('let fallbackLiveSpeakerId = "";', HTML)
         self.assertIn("let hasRenderedFinalSentenceRows = false;", HTML)
         self.assertIn("row.dataset.speaker = item.assigned_speaker || \"UNKNOWN\";", HTML)
+        self.assertIn('row.style.setProperty("--live-row-color", color || "#8F9BA8");', HTML)
+        self.assertIn("function updateCurrentLiveSpeakerFromRealtimeRows()", HTML)
+        self.assertIn('transcriptLiveSpeakerId = activeRow && activeRow.dataset.speaker !== "UNKNOWN" ? activeRow.dataset.speaker : "";', HTML)
+        self.assertIn("function reconcileLiveSpeakerHighlight()", HTML)
+        self.assertIn("updateCurrentLiveSpeakerFromRealtimeRows();", HTML)
         self.assertIn("speakingSeconds[speakerId] = (speakingSeconds[speakerId] || 0) + Math.max(0, end - start);", HTML)
         self.assertIn("renderedSpeakerSpeakingSeconds = speakingSeconds;", HTML)
         self.assertIn("refreshSpeakerPanelSentenceCounts();", HTML)
@@ -179,11 +187,12 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn(".source-strip { min-height:58px;", HTML)
         self.assertIn(".playback-panel { min-height:132px;", HTML)
         self.assertIn("grid-template-columns:minmax(150px, 240px)", HTML)
-        self.assertIn(".timeline-bar { position:relative; height:6px; margin-left:8px;", HTML)
+        self.assertIn(".timeline-bar { position:relative; height:6px; margin-left:8px; margin-right:10px;", HTML)
         self.assertIn(".source-grid { width:100%;", HTML)
         self.assertIn("border:0; border-radius:0; background:transparent;", HTML)
         self.assertIn(".source-row { display:contents; }", HTML)
-        self.assertIn(".dropdown-control { position:relative; min-height:34px; display:flex; align-items:center; border:1px solid var(--line); border-radius:7px; background:#0F161F; color:#3DC77C;", HTML)
+        self.assertIn("--text:#F1F5F8;", HTML)
+        self.assertIn(".dropdown-control { position:relative; min-height:34px; display:flex; align-items:center; border:1px solid var(--line); border-radius:7px; background:#0F161F; color:var(--text);", HTML)
         self.assertIn(".dropdown-control::after { content:\"\"; position:absolute; right:15px; top:50%; width:8px; height:8px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor;", HTML)
         self.assertIn(".select-control select { width:100%; min-width:0; min-height:32px; border:0; border-radius:7px; padding:0 36px 0 12px; background:transparent; color:inherit; font:inherit; appearance:none;", HTML)
         self.assertIn('class="source-mode-button dropdown-control"', HTML)
@@ -274,12 +283,29 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn('data-speaker-tab="settings"', HTML)
         self.assertIn('id="speakerPanelTitle" class="speaker-panel-title">Detected speakers (0)</h2>', HTML)
         self.assertIn('id="addReferenceSpeaker"', HTML)
+        self.assertNotIn('id="speakerGroupCurrent"', HTML)
+        self.assertNotIn("Current:", HTML)
+        self.assertIn('class="speaker-file-actions"', HTML)
+        self.assertIn(".speaker-file-actions button { min-height:28px; width:auto; padding:0 10px; font-size:12px; }", HTML)
+        self.assertIn('id="loadSpeakerGroup" type="button">Load file</button>', HTML)
+        self.assertIn('id="saveSpeakerGroup" type="button">Save file</button>', HTML)
+        self.assertIn('id="speakerGroupFile" type="file"', HTML)
+        self.assertNotIn('id="speakerGroupName"', HTML)
+        self.assertNotIn('id="speakerGroupSelect"', HTML)
         self.assertIn('id="manualSpeakerComposer" class="manual-speaker-composer" hidden', HTML)
         self.assertIn('id="manualSpeakerName"', HTML)
         self.assertIn('id="manualSpeakerReferenceDock"', HTML)
         self.assertIn(".speaker-tab.active { color:#E8EEF5; box-shadow:inset 0 -2px 0 #17B7FE;", HTML)
+        self.assertIn('class="sensitivity-title">New speaker</span>', HTML)
+        self.assertIn('class="sensitivity-row"', HTML)
+        self.assertIn(".sensitivity-title { color:var(--text); font-size:13px; line-height:1.25; }", HTML)
+        self.assertIn(".sensitivity-row { display:flex; align-items:center; gap:15px;", HTML)
+        self.assertIn(".sensitivity input { flex:0 1 50%; max-width:50%; min-width:120px;", HTML)
         self.assertIn(".manual-speaker-composer { display:grid; gap:8px;", HTML)
         self.assertIn(".speaker-item { --speaker-color:transparent;", HTML)
+        self.assertIn(".speaker-item.live-speaker { background:color-mix(in srgb, var(--speaker-color) 10%, #0F161F); }", HTML)
+        self.assertIn(".speaker-title-row { min-width:0; display:flex; align-items:center; gap:7px; }", HTML)
+        self.assertIn(".speaker-live-indicator { flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; color:var(--speaker-color);", HTML)
         self.assertIn(".speaker-item-summary { width:100%; min-height:60px; display:grid; grid-template-columns:minmax(0,1fr) auto;", HTML)
         self.assertIn("box-shadow:inset 4px 0 0 var(--speaker-color);", HTML)
         self.assertNotIn("speaker-avatar", HTML)
@@ -290,6 +316,16 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn(".speaker-filter-toggle { min-height:20px; width:39px;", HTML)
         self.assertIn(".speaker-filter-toggle.mute.active", HTML)
         self.assertIn(".transcript-icon-button { min-height:24px; width:28px;", HTML)
+        self.assertIn(".row.realtime { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 10%, #0B1015); }", HTML)
+        self.assertIn("function createSpeakerLiveIndicator()", HTML)
+        self.assertIn('indicator.appendChild(document.createTextNode("Live"));', HTML)
+        self.assertIn('titleRow.appendChild(createSpeakerLiveIndicator());', HTML)
+        self.assertIn('indicator.remove();', HTML)
+        self.assertIn("function applyFallbackLiveSpeaker(item)", HTML)
+        self.assertIn('es.addEventListener("live_speaker", e => applyFallbackLiveSpeaker(JSON.parse(e.data)));', HTML)
+        self.assertIn('fallbackLiveSpeakerUntilMs = performance.now() + Math.max(0, Number(item.hold_seconds || 2.0)) * 1000;', HTML)
+        self.assertIn("currentLiveSpeakerId = transcriptLiveSpeakerId || activeFallbackLiveSpeakerId();", HTML)
+        self.assertIn('row.classList.toggle("live-speaker", Boolean(currentLiveSpeakerId) && speaker.id === currentLiveSpeakerId);', HTML)
         self.assertNotIn("speaker-editing-badge", HTML)
         self.assertIn(".speaker-row-name-input", HTML)
         self.assertIn("Reference voice added", HTML)
@@ -308,6 +344,13 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("return manualSpeakerName.value.trim();", HTML)
         self.assertIn("function closeManualSpeakerComposerAfterReference()", HTML)
         self.assertIn('addReferenceSpeakerButton.addEventListener("click"', HTML)
+        self.assertNotIn("window.prompt", HTML)
+        self.assertIn('const name = speakerLibraryState.group_name || "speakers";', HTML)
+        self.assertIn('const result = await post("/api/speakers/export", {name});', HTML)
+        self.assertIn("downloadJsonFile(speakerGroupFileName(group.name || name), group);", HTML)
+        self.assertIn("speakerGroupFile.click();", HTML)
+        self.assertIn("const group = JSON.parse(await file.text());", HTML)
+        self.assertIn('const result = await post("/api/speakers/import", {group});', HTML)
         self.assertIn("function speakerPanelName(speaker)", HTML)
         self.assertIn("function createSpeakerFilterToggle(speaker, mode)", HTML)
         self.assertIn('filterControls.appendChild(createSpeakerFilterToggle(speaker, "solo"));', HTML)
@@ -341,6 +384,85 @@ class WindowHtmlSafetyTests(unittest.TestCase):
 
 
 class WindowStreamingAudioTests(unittest.TestCase):
+    def test_portable_speaker_group_centroid_preserves_float32_payload(self) -> None:
+        centroid = np.array([0.125, -0.5, 0.33333334, 1.0], dtype=np.float32)
+        payload = WindowDiarizer._centroid_payload(centroid)
+
+        self.assertEqual(payload["centroid_encoding"], "float32-base64-le")
+        restored = np.asarray(WindowDiarizer._centroid_from_payload(payload), dtype=np.float32)
+        np.testing.assert_array_equal(restored, centroid)
+
+    def test_portable_speaker_group_export_import_round_trips_profiles(self) -> None:
+        class FakeBus:
+            def emit(self, *_args: object, **_kwargs: object) -> None:
+                return None
+
+        class FakeMemory:
+            def __init__(self, profiles: list[dict[str, object]] | None = None) -> None:
+                self.profiles = profiles or []
+
+            def export_profiles(self) -> list[dict[str, object]]:
+                return [dict(profile) for profile in self.profiles]
+
+            def replace_profiles(self, profiles: list[dict[str, object]]) -> None:
+                self.profiles = []
+                for index, item in enumerate(profiles, 1):
+                    self.profiles.append({
+                        "label": f"S{index}",
+                        "index": index,
+                        "centroid": np.asarray(item["centroid"], dtype=np.float32),
+                        "sentence_count": int(item.get("sentence_count") or 1),
+                        "speech_seconds": float(item.get("speech_seconds") or 0.0),
+                        "created_at": time.time(),
+                        "last_seen_at": time.time(),
+                        "locked": bool(item.get("locked")),
+                    })
+
+        centroid = np.array([0.125, -0.5, 0.33333334, 1.0], dtype=np.float32)
+        with tempfile.TemporaryDirectory() as tmp:
+            source = WindowDiarizer.__new__(WindowDiarizer)
+            source.args = argparse.Namespace(embedding_provider="mock", embedding_device="cpu")
+            source.speaker_library_dir = Path(tmp)
+            source.memory = FakeMemory([{
+                "label": "S1",
+                "index": 1,
+                "centroid": centroid,
+                "sentence_count": 3,
+                "speech_seconds": 7.5,
+                "created_at": 10.0,
+                "last_seen_at": 12.0,
+                "locked": True,
+            }])
+            source._speaker_lock = threading.Lock()
+            source._unknown_lock = threading.Lock()
+            source._speaker_metadata = {"S1": {"name": "Alice", "source": "reference", "locked": True, "reference_audio": ""}}
+            source._speaker_group_name = ""
+            source._seed_profiles = []
+            source.bus = FakeBus()
+
+            group = source.export_speaker_group_file("Local group")
+
+            target = WindowDiarizer.__new__(WindowDiarizer)
+            target.args = argparse.Namespace(embedding_provider="mock", embedding_device="cpu")
+            target.speaker_library_dir = Path(tmp)
+            target.memory = FakeMemory()
+            target._new_memory = lambda: FakeMemory()
+            target._speaker_lock = threading.Lock()
+            target._unknown_lock = threading.Lock()
+            target._unknown_sentences = []
+            target._speaker_metadata = {}
+            target._speaker_group_name = ""
+            target._seed_profiles = []
+            target.bus = FakeBus()
+
+            state = target.import_speaker_group_file(group)
+
+        self.assertEqual(group["format"], "whospeaks-speaker-group")
+        self.assertEqual(group["speakers"][0]["centroid_encoding"], "float32-base64-le")
+        self.assertEqual(state["group_name"], "Local_group")
+        self.assertEqual(state["speakers"][0]["display_name"], "Alice")
+        np.testing.assert_array_equal(target.memory.profiles[0]["centroid"], centroid)
+
     def test_browser_stream_audio_uses_chunks_and_slices_across_boundaries(self) -> None:
         diarizer = WindowDiarizer.__new__(WindowDiarizer)
         diarizer._audio_lock = threading.Lock()
@@ -400,6 +522,20 @@ class WindowStreamingAudioTests(unittest.TestCase):
         diarizer.set_playback_time(60.0)
 
         self.assertEqual(diarizer.playback_time(), 60.0)
+
+    def test_live_speaker_probe_uses_cheap_rms_speech_gate(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            vad_frame_seconds=0.1,
+            vad_speech_rms_threshold=0.003,
+            live_speaker_probe_min_speech_seconds=0.2,
+        )
+
+        self.assertFalse(diarizer._audio_has_rms_speech(np.zeros(200, dtype=np.float32), 100))
+        audio = np.zeros(200, dtype=np.float32)
+        audio[50:90] = 0.01
+
+        self.assertTrue(diarizer._audio_has_rms_speech(audio, 100))
 
 
 class EmbeddingSubprocessClientTests(unittest.TestCase):

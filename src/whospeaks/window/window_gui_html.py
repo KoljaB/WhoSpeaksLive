@@ -16,7 +16,7 @@ HTML = r"""<!doctype html>
       --panel-2:#0F161F;
       --field:#0B1015;
       --line:#1B2B38;
-      --text:#F4F7FA;
+      --text:#F1F5F8;
       --muted:#9EAAB6;
       --accent:#3DC77C;
       --accent-strong:#3DC77C;
@@ -30,21 +30,21 @@ HTML = r"""<!doctype html>
     .brand { min-width:0; display:flex; align-items:center; gap:8px; }
     .brand-icon { flex:0 0 auto; width:22px; height:22px; display:grid; place-items:center; color:#17B7FE; }
     .brand-icon svg, .speaker-summary svg { width:20px; height:20px; display:block; }
-    .title { color:#FFFFFF; font-size:17px; font-weight:400; letter-spacing:0; white-space:nowrap; }
+    .title { color:var(--text); font-size:17px; font-weight:400; letter-spacing:0; white-space:nowrap; }
     .topbar-divider { flex:0 0 auto; width:1px; height:24px; background:var(--line); }
     .status-pill { flex:0 0 auto; min-height:23px; display:flex; align-items:center; gap:6px; padding:0 9px; border-radius:999px; background:rgba(61,199,124,.08); color:#3DC77C; font-size:13px; font-weight:400; white-space:nowrap; }
     .status-dot { width:9px; height:9px; border-radius:50%; background:#3DC77C; box-shadow:0 0 14px rgba(61,199,124,.45); }
     .runtime-state { max-width:30vw; color:#3DC77C; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .speaker-summary { flex:0 0 auto; min-height:23px; display:flex; align-items:center; gap:4px; color:#FFFFFF; font-size:13px; white-space:nowrap; }
+    .speaker-summary { flex:0 0 auto; min-height:23px; display:flex; align-items:center; gap:4px; color:var(--text); font-size:13px; white-space:nowrap; }
     .speaker-summary svg { color:#BA79EF; }
-    #speakerCount { display:inline-flex; align-items:baseline; gap:7px; color:#FFFFFF; }
+    #speakerCount { display:inline-flex; align-items:baseline; gap:7px; color:var(--text); }
     .speaker-count-number { position:relative; top:2px; font-size:16px; font-weight:600; line-height:1; color:#FF9F1C; }
     .speaker-count-label { font-size:13px; font-weight:400; }
     .transport { flex:0 0 auto; display:flex; gap:8px; align-items:center; }
     button { min-height:32px; border:1px solid var(--line); border-radius:7px; padding:0 12px; font-size:13px; font-weight:400; cursor:pointer; background:#0F161F; color:var(--text); }
     #start { border-color:#3DC77C; background:#0F161F; color:#3DC77C; }
     #start:disabled, #stop:disabled { display:none; }
-    #stop { display:inline-flex; align-items:center; gap:8px; border-color:#DF3C36; background:#981D20; color:#FFFFFF; box-shadow:inset 0 1px 0 rgba(255,255,255,.18); }
+    #stop { display:inline-flex; align-items:center; gap:8px; border-color:#DF3C36; background:#981D20; color:var(--text); box-shadow:inset 0 1px 0 rgba(255,255,255,.18); }
     .stop-icon { width:10px; height:10px; border-radius:2px; background:#FFFFFF; display:inline-block; }
     button:disabled { opacity:.45; cursor:not-allowed; }
     .layout { min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(330px,380px); }
@@ -56,27 +56,29 @@ HTML = r"""<!doctype html>
     summary { cursor:pointer; list-style-position:outside; }
     .source-grid { width:100%; display:grid; grid-template-columns:minmax(150px,220px) minmax(0,1fr) auto; align-items:center; gap:6px; padding:0; border:0; border-radius:0; background:transparent; }
     .source-row { display:contents; }
-    .dropdown-control { position:relative; min-height:34px; display:flex; align-items:center; border:1px solid var(--line); border-radius:7px; background:#0F161F; color:#3DC77C; font-size:13px; font-weight:400; }
+    .dropdown-control { position:relative; min-height:34px; display:flex; align-items:center; border:1px solid var(--line); border-radius:7px; background:#0F161F; color:var(--text); font-size:13px; font-weight:400; }
     .dropdown-control::after { content:""; position:absolute; right:15px; top:50%; width:8px; height:8px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:translateY(-65%) rotate(45deg); opacity:.9; pointer-events:none; }
     .select-control { width:100%; min-width:0; }
     .select-control select { width:100%; min-width:0; min-height:32px; border:0; border-radius:7px; padding:0 36px 0 12px; background:transparent; color:inherit; font:inherit; appearance:none; outline:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .mode, .speaker-panel select { width:100%; min-height:30px; border:1px solid var(--line); border-radius:6px; padding:0 30px 0 8px; font-size:13px; background-color:#0F161F; color:#3DC77C; appearance:none; }
+    .mode, .speaker-panel select { width:100%; min-height:30px; border:1px solid var(--line); border-radius:6px; padding:0 30px 0 8px; font-size:13px; background-color:#0F161F; color:var(--text); appearance:none; }
     .source, .speaker-panel input { width:100%; min-height:30px; border:1px solid var(--line); border-radius:6px; padding:0 8px; font-size:13px; background:#0B1015; color:var(--text); }
     .mode:disabled, .preset:disabled, .source:disabled { opacity:.6; }
-    .sensitivity { min-height:34px; display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:5px 8px; color:var(--muted); font-size:12px; padding:5px 0; border-bottom:1px solid var(--line); }
-    .sensitivity input { width:100%; accent-color:var(--accent); }
-    .sensitivity strong { color:var(--text); font-size:12px; text-align:right; }
+    .sensitivity { min-height:48px; display:grid; gap:6px; color:var(--muted); font-size:12px; padding:5px 0 8px; border-bottom:1px solid var(--line); }
+    .sensitivity-title { color:var(--text); font-size:13px; line-height:1.25; }
+    .sensitivity-row { display:flex; align-items:center; gap:15px; min-width:0; }
+    .sensitivity input { flex:0 1 50%; max-width:50%; min-width:120px; accent-color:var(--accent); }
+    .sensitivity strong { align-self:center; color:var(--text); font-size:12px; text-align:left; white-space:nowrap; }
     .media-card { margin:8px; padding:0; display:grid; gap:8px; background:#0B1015; border:0; border-radius:0; }
     .source-strip, .playback-panel, .capture-panel { background:#0F161F; border:1px solid var(--line); border-radius:8px; box-shadow:inset 0 1px 0 rgba(255,255,255,.035); }
     .source-strip { min-height:58px; display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; align-items:center; gap:12px; padding:8px 10px; position:relative; }
-    .source-icon { width:36px; height:30px; display:none; align-items:center; justify-content:center; border-radius:7px; color:#fff; }
+    .source-icon { width:36px; height:30px; display:none; align-items:center; justify-content:center; border-radius:7px; color:var(--text); }
     .source-icon svg { width:21px; height:21px; display:block; }
     .source-icon-youtube { display:flex; background:#E5252A; box-shadow:inset 0 1px 0 rgba(255,255,255,.22); }
     .media-card.mode-microphone .source-icon-youtube, .media-card.mode-system .source-icon-youtube { display:none; }
     .media-card.mode-microphone .source-icon-microphone, .media-card.mode-system .source-icon-system { display:flex; background:#0F161F; border:1px solid var(--line); color:#17B7FE; }
     .source-copy { min-width:0; display:flex; align-items:baseline; gap:16px; }
     .source-kind { flex:0 0 auto; color:#D7DEE8; font-size:15px; font-weight:400; white-space:nowrap; }
-    .source-title { min-width:0; color:#FFFFFF; font-size:15px; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .source-title { min-width:0; color:var(--text); font-size:15px; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .media-time { color:#B7C1CD; font-size:15px; font-variant-numeric:tabular-nums; white-space:nowrap; }
     .source-mode-select { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
     .source-mode-menu { position:relative; justify-self:end; }
@@ -85,7 +87,7 @@ HTML = r"""<!doctype html>
     .source-mode-options { position:absolute; top:calc(100% + 6px); right:0; z-index:40; width:200px; display:grid; gap:4px; padding:6px; border:1px solid var(--line); border-radius:7px; background:#0F161F; box-shadow:0 18px 46px rgba(0,0,0,.42); }
     .source-mode-options[hidden] { display:none; }
     .source-mode-option { min-height:32px; display:flex; align-items:center; justify-content:flex-start; border-color:var(--line); background:#0B1015; color:#D7DEE8; text-align:left; }
-    .source-mode-option.active { border-color:#17B7FE; color:#FFFFFF; background:#0F161F; }
+    .source-mode-option.active { border-color:#17B7FE; color:var(--text); background:#0F161F; }
     .playback-panel { min-height:132px; display:grid; grid-template-columns:minmax(150px, 240px) minmax(0,1fr); align-items:stretch; gap:14px; padding:8px; }
     .video-frame { width:100%; aspect-ratio:16/9; overflow:hidden; border:1px solid var(--line); border-radius:7px; background:#0B1015; box-shadow:0 14px 32px rgba(0,0,0,.28); }
     video { width:100%; height:100%; display:block; object-fit:cover; background:#0B1015; }
@@ -102,7 +104,7 @@ HTML = r"""<!doctype html>
     .youtube-source-controls { align-self:start; }
     .media-card.mode-microphone .youtube-source-controls, .media-card.mode-system .youtube-source-controls { display:none; }
     .timeline-row { width:100%; min-width:0; align-self:center; display:grid; grid-template-columns:auto minmax(120px,1fr) auto; align-items:center; gap:10px; color:#B7C1CD; font-size:14px; font-variant-numeric:tabular-nums; }
-    .timeline-bar { position:relative; height:6px; margin-left:8px; border-radius:999px; background:#93A1AF; box-shadow:inset 0 1px 2px rgba(0,0,0,.28); }
+    .timeline-bar { position:relative; height:6px; margin-left:8px; margin-right:10px; border-radius:999px; background:#93A1AF; box-shadow:inset 0 1px 2px rgba(0,0,0,.28); }
     .timeline-fill { position:absolute; inset:0 auto 0 0; width:0%; border-radius:inherit; background:#17B7FE; box-shadow:0 0 16px rgba(23,183,254,.35); }
     .timeline-thumb { position:absolute; top:50%; left:0%; width:18px; height:18px; border-radius:50%; background:#FFFFFF; transform:translate(-50%, -50%); box-shadow:0 2px 10px rgba(0,0,0,.32); }
     .media-expand { width:40px; height:40px; align-self:end; justify-self:start; display:grid; place-items:center; padding:0; border-color:var(--line); background:#0F161F; color:#D7DEE8; }
@@ -114,7 +116,7 @@ HTML = r"""<!doctype html>
     .capture-icon svg { width:24px; height:24px; display:none; }
     .media-card.mode-microphone .capture-icon-mic, .media-card.mode-system .capture-icon-system { display:block; }
     .capture-body { min-width:0; display:grid; gap:12px; }
-    .capture-title { margin:0; color:#FFFFFF; font-size:16px; line-height:1.2; }
+    .capture-title { margin:0; color:var(--text); font-size:16px; line-height:1.2; }
     .capture-description { margin:0; color:#9EAAB6; font-size:12px; }
     .level-row, .mic-gain-control { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:8px; color:#B7C1CD; font-size:12px; font-weight:400; }
     .level-meter { height:8px; overflow:hidden; border-radius:999px; background:#0B1015; border:1px solid var(--line); }
@@ -136,11 +138,16 @@ HTML = r"""<!doctype html>
     .speaker-empty { padding:12px; color:var(--muted); font-size:11px; }
     .speaker-item { --speaker-color:transparent; min-width:0; display:grid; border-bottom:1px solid var(--line); background:#0F161F; }
     .speaker-item:last-child { border-bottom:0; }
+    .speaker-item.live-speaker { background:color-mix(in srgb, var(--speaker-color) 10%, #0F161F); }
     .speaker-item.editing { position:relative; z-index:1; border:1px solid var(--speaker-color); border-radius:7px; box-shadow:0 0 0 1px color-mix(in srgb, var(--speaker-color) 28%, transparent); }
     .speaker-item-summary { width:100%; min-height:60px; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:8px; padding:9px 10px 9px 12px; border:0; border-radius:0; background:transparent; color:#C6D0DC; text-align:left; box-shadow:inset 4px 0 0 var(--speaker-color); cursor:pointer; }
     .speaker-summary-body { min-width:0; display:grid; gap:2px; }
+    .speaker-title-row { min-width:0; display:flex; align-items:center; gap:7px; }
     .speaker-row-title { min-width:0; color:#E8EEF5; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .speaker-item:not(.editing) .speaker-row-title { color:var(--speaker-color); }
+    .speaker-title-row .speaker-row-name-input { flex:1 1 auto; }
+    .speaker-live-indicator { flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; color:var(--speaker-color); font-size:12px; line-height:1; }
+    .speaker-live-indicator svg { width:13px; height:13px; display:block; }
     .speaker-row-name-input { min-width:0; width:100%; height:24px; margin:-2px -5px; border:1px solid transparent; border-radius:5px; padding:0 4px; background:transparent; color:#E8EEF5; font:inherit; font-size:13px; font-weight:600; outline:none; }
     .speaker-row-name-input:focus { border-color:#20303E; background:#0B1015; }
     .manual-speaker-name { margin:0; width:100%; }
@@ -152,7 +159,7 @@ HTML = r"""<!doctype html>
     .speaker-item-tail { align-self:stretch; display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; gap:7px; color:#AEB9C5; }
     .speaker-filter-controls, .speaker-transcript-actions { display:flex; align-items:center; gap:4px; }
     .speaker-filter-toggle { min-height:20px; width:39px; border:1px solid #20303E; border-radius:999px; padding:0 4px; display:inline-flex; align-items:center; justify-content:center; gap:3px; background:#0B1015; color:#8392A2; }
-    .speaker-filter-toggle.active { border-color:#1789F2; color:#FFFFFF; background:rgba(23,137,242,.16); }
+    .speaker-filter-toggle.active { border-color:#1789F2; color:var(--text); background:rgba(23,137,242,.16); }
     .speaker-filter-toggle.mute.active { border-color:#DF3C36; background:rgba(152,29,32,.28); }
     .speaker-filter-toggle svg { width:12px; height:12px; flex:0 0 auto; }
     .speaker-filter-switch { position:relative; flex:0 0 17px; height:10px; border-radius:999px; background:#22313E; }
@@ -162,7 +169,7 @@ HTML = r"""<!doctype html>
     .speaker-filter-toggle.active .speaker-filter-switch::after { transform:translateX(7px); background:#FFFFFF; }
     .speaker-filter-toggle:focus-visible { outline:1px solid #17B7FE; outline-offset:2px; }
     .transcript-icon-button { min-height:24px; width:28px; border:1px solid #20303E; border-radius:6px; padding:0; display:inline-grid; place-items:center; background:#0B1015; color:#AEB9C5; }
-    .transcript-icon-button:hover { border-color:#2C4052; color:#FFFFFF; }
+    .transcript-icon-button:hover { border-color:#2C4052; color:var(--text); }
     .transcript-icon-button svg { width:13px; height:13px; display:block; }
     .speaker-chevron { width:8px; height:8px; border-right:2px solid currentColor; border-bottom:2px solid currentColor; transform:rotate(-45deg); opacity:.72; }
     .speaker-item.editing .speaker-chevron { transform:rotate(45deg) translateY(-2px); }
@@ -175,13 +182,15 @@ HTML = r"""<!doctype html>
     .speaker-reference-title { color:#C6D0DC; font-size:12px; }
     .speaker-reference-button input { display:none; }
     .speaker-reference-button svg, .speaker-panel #recordReference svg { width:14px; height:14px; flex:0 0 auto; }
-    .speaker-panel #recordReference.recording { border-color:#DF3C36; color:#FFFFFF; background:#981D20; }
+    .speaker-panel #recordReference.recording { border-color:#DF3C36; color:var(--text); background:#981D20; }
     .speaker-record-seconds { color:#9EAAB6; font-size:11px; }
     .speaker-settings-panel { display:grid; gap:8px; }
     .speaker-tools { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; }
-    .speaker-tools strong { grid-column:1 / -1; color:#FFFFFF; font-size:13px; }
+    .speaker-tools strong { grid-column:1 / -1; color:var(--text); font-size:13px; }
+    .speaker-file-actions { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+    .speaker-file-actions button { min-height:28px; width:auto; padding:0 10px; font-size:12px; }
     .speaker-tools .select-control { width:100%; }
-    .speaker-tools input { min-height:30px; border:1px solid var(--line); border-radius:6px; padding:0 8px; background:#0B1015; color:#FFFFFF; font-size:13px; }
+    .speaker-tools input { min-height:30px; border:1px solid var(--line); border-radius:6px; padding:0 8px; background:#0B1015; color:var(--text); font-size:13px; }
     .speaker-panel button { font-weight:400; }
     .status { max-height:180px; overflow:auto; color:var(--muted); font-size:12px; line-height:1.3; padding-top:2px; }
     .transcript-panel { min-height:0; margin:0 8px 8px; display:grid; grid-template-rows:auto minmax(0,1fr); position:relative; }
@@ -209,7 +218,7 @@ HTML = r"""<!doctype html>
     .top-left { min-width:0; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
     .badge { font-weight:400; border-radius:999px; padding:2px 8px; border:1px solid currentColor; background:#0B1015; }
     .badge.unknown { color:#c3ccd6; border-color:#7d8997; background:#0B1015; }
-    .badge.new { color:#fff; border-color:#ef4444; background:#b91c1c; text-transform:uppercase; letter-spacing:0; }
+    .badge.new { color:var(--text); border-color:#ef4444; background:#b91c1c; text-transform:uppercase; letter-spacing:0; }
     .badge.state { color:#d7dee8; border-color:var(--line); background:#0B1015; font-weight:400; }
     .transcript-panel.hide-tags .badge.new, .transcript-panel.hide-tags .badge.state { display:none; }
     .transcript-panel.hide-time .sentence-duration, .transcript-panel.hide-time .sentence-range { display:none; }
@@ -217,6 +226,7 @@ HTML = r"""<!doctype html>
     .transcript-panel.hide-probabilities .prob { display:none; }
     .speaker-name, .speaker-row-title { font-weight:600; }
     .text { font-size:15px; line-height:1.34; }
+    .row.realtime { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 10%, #0B1015); }
     .row.realtime .text { color:#d7dee8; }
     .prob { flex:0 0 min(180px, 24vw); display:flex; width:min(180px, 24vw); height:6px; overflow:hidden; border:1px solid var(--line); border-radius:4px; background:#0B1015; margin-top:4px; }
     .prob span { display:block; height:100%; min-width:0; }
@@ -240,7 +250,8 @@ HTML = r"""<!doctype html>
       .mode, .preset, .source, .speaker-panel input, .speaker-panel select, button { min-height:38px; font-size:14px; }
       .speaker-filter-toggle { min-height:20px; width:39px; font-size:12px; }
       .transcript-icon-button { min-height:24px; width:28px; font-size:13px; }
-      .sensitivity { grid-template-columns:1fr; }
+      .sensitivity-row { display:grid; grid-template-columns:1fr; gap:6px; }
+      .sensitivity input { max-width:none; min-width:0; }
       .sensitivity strong { text-align:left; }
       .media-card { margin:8px; gap:8px; }
       .source-strip { grid-template-columns:auto minmax(0,1fr); gap:8px; padding:8px; }
@@ -285,6 +296,7 @@ HTML = r"""<!doctype html>
       .control-card, .media-card, .transcript-panel { border-radius:6px; }
       .speaker-editor { padding:0 9px 10px; }
       .speaker-reference-actions, .speaker-tools { display:grid; grid-template-columns:1fr; }
+      .speaker-file-actions { display:flex; }
     }
   </style>
 </head>
@@ -522,16 +534,19 @@ HTML = r"""<!doctype html>
         </div>
         <div class="speaker-tab-panel speaker-settings-panel" data-speaker-panel="settings" hidden>
           <label class="sensitivity" title="Controls how easily the diarizer creates a new speaker profile.">
-            <span>New speaker</span>
-            <strong id="newSpeakerSensitivityLabel"></strong>
-            <input id="newSpeakerSensitivity" type="range" min="1" max="5" step="1">
+            <span class="sensitivity-title">New speaker</span>
+            <span class="sensitivity-row">
+              <input id="newSpeakerSensitivity" type="range" min="1" max="5" step="1">
+              <strong id="newSpeakerSensitivityLabel"></strong>
+            </span>
           </label>
           <div class="speaker-tools">
-            <strong>Groups</strong>
-            <span class="select-control dropdown-control"><select id="speakerGroupSelect" aria-label="Speaker group"></select></span>
-            <button id="loadSpeakerGroup">Load</button>
-            <input id="speakerGroupName" type="text" placeholder="Group name" autocomplete="off">
-            <button id="saveSpeakerGroup">Save</button>
+            <strong>Speaker groups</strong>
+            <span class="speaker-file-actions">
+              <button id="loadSpeakerGroup" type="button">Load file</button>
+              <button id="saveSpeakerGroup" type="button">Save file</button>
+            </span>
+            <input id="speakerGroupFile" type="file" accept=".whospeaks-speakers.json,.json,application/json" hidden>
           </div>
         </div>
       </section>
@@ -589,10 +604,9 @@ const showTranscriptProbabilities = document.getElementById("showTranscriptProba
 const inputMode = document.getElementById("inputMode");
 const newSpeakerSensitivity = document.getElementById("newSpeakerSensitivity");
 const newSpeakerSensitivityLabel = document.getElementById("newSpeakerSensitivityLabel");
-const speakerGroupSelect = document.getElementById("speakerGroupSelect");
 const loadSpeakerGroupButton = document.getElementById("loadSpeakerGroup");
-const speakerGroupName = document.getElementById("speakerGroupName");
 const saveSpeakerGroupButton = document.getElementById("saveSpeakerGroup");
+const speakerGroupFile = document.getElementById("speakerGroupFile");
 const speakerCount = document.getElementById("speakerCount");
 const speakerCountNumber = document.getElementById("speakerCountNumber");
 const speakerCountLabel = document.getElementById("speakerCountLabel");
@@ -650,6 +664,11 @@ let soloSpeakerIds = new Set();
 let mutedSpeakerIds = new Set();
 let followLiveEnabled = true;
 let transcriptSearchText = "";
+let currentLiveSpeakerId = "";
+let transcriptLiveSpeakerId = "";
+let fallbackLiveSpeakerId = "";
+let fallbackLiveSpeakerUntilMs = 0;
+let fallbackLiveSpeakerExpiryTimer = null;
 let referenceRecordStream = null;
 let referenceRecordContext = null;
 let referenceRecordSource = null;
@@ -1191,6 +1210,7 @@ function resetTranscriptDisplay() {
   sentences.textContent = "";
   statusBox.textContent = "";
   currentRealtimeGeneration = 0;
+  clearLiveSpeakerState();
   renderedSpeakerSentenceCounts = {};
   renderedSpeakerSpeakingSeconds = {};
   hasRenderedFinalSentenceRows = false;
@@ -1380,6 +1400,69 @@ function refreshSpeakerPanelSentenceCounts() {
     }
   });
 }
+function refreshLiveSpeakerHighlight() {
+  Array.from(speakerList.querySelectorAll(".speaker-item")).forEach(row => {
+    const active = Boolean(currentLiveSpeakerId) && row.dataset.speakerId === currentLiveSpeakerId;
+    row.classList.toggle("live-speaker", active);
+    const indicator = row.querySelector(".speaker-live-indicator");
+    if (active && !indicator) {
+      const titleRow = row.querySelector(".speaker-title-row");
+      if (titleRow) titleRow.appendChild(createSpeakerLiveIndicator());
+    } else if (!active && indicator) {
+      indicator.remove();
+    }
+  });
+}
+function clearFallbackLiveSpeaker() {
+  fallbackLiveSpeakerId = "";
+  fallbackLiveSpeakerUntilMs = 0;
+  if (fallbackLiveSpeakerExpiryTimer) {
+    clearTimeout(fallbackLiveSpeakerExpiryTimer);
+    fallbackLiveSpeakerExpiryTimer = null;
+  }
+}
+function clearLiveSpeakerState() {
+  currentLiveSpeakerId = "";
+  transcriptLiveSpeakerId = "";
+  clearFallbackLiveSpeaker();
+  refreshLiveSpeakerHighlight();
+}
+function activeFallbackLiveSpeakerId(nowMs = performance.now()) {
+  if (!fallbackLiveSpeakerId) return "";
+  if (fallbackLiveSpeakerUntilMs > nowMs) return fallbackLiveSpeakerId;
+  clearFallbackLiveSpeaker();
+  return "";
+}
+function reconcileLiveSpeakerHighlight() {
+  currentLiveSpeakerId = transcriptLiveSpeakerId || activeFallbackLiveSpeakerId();
+  refreshLiveSpeakerHighlight();
+}
+function scheduleFallbackLiveSpeakerExpiry() {
+  if (fallbackLiveSpeakerExpiryTimer) {
+    clearTimeout(fallbackLiveSpeakerExpiryTimer);
+    fallbackLiveSpeakerExpiryTimer = null;
+  }
+  const remainingMs = fallbackLiveSpeakerUntilMs - performance.now();
+  if (!fallbackLiveSpeakerId || remainingMs <= 0) {
+    reconcileLiveSpeakerHighlight();
+    return;
+  }
+  fallbackLiveSpeakerExpiryTimer = setTimeout(reconcileLiveSpeakerHighlight, remainingMs + 25);
+}
+function applyFallbackLiveSpeaker(item) {
+  const speakerId = item && (item.assigned_speaker || item.speaker_id);
+  if (!speakerId || speakerId === "UNKNOWN") return;
+  fallbackLiveSpeakerId = speakerId;
+  fallbackLiveSpeakerUntilMs = performance.now() + Math.max(0, Number(item.hold_seconds || 2.0)) * 1000;
+  scheduleFallbackLiveSpeakerExpiry();
+  reconcileLiveSpeakerHighlight();
+}
+function updateCurrentLiveSpeakerFromRealtimeRows() {
+  const realtimeRows = Array.from(sentences.querySelectorAll(".row[data-realtime='true']"));
+  const activeRow = realtimeRows[realtimeRows.length - 1] || null;
+  transcriptLiveSpeakerId = activeRow && activeRow.dataset.speaker !== "UNKNOWN" ? activeRow.dataset.speaker : "";
+  reconcileLiveSpeakerHighlight();
+}
 function speakerSpeakingTimeText(seconds) {
   const totalSeconds = Math.max(0, Number(seconds || 0));
   if (totalSeconds < 60) return `${totalSeconds.toFixed(1)}s`;
@@ -1485,6 +1568,23 @@ function createTranscriptActionButton(kind, speaker) {
   button.addEventListener("keydown", event => event.stopPropagation());
   return button;
 }
+function createSpeakerLiveIndicator() {
+  const indicator = document.createElement("span");
+  indicator.className = "speaker-live-indicator";
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.setAttribute("viewBox", "0 0 16 16");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "1.8");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("aria-hidden", "true");
+  [["2", "10", "2", "14"], ["5", "7", "5", "14"], ["8", "4", "8", "14"], ["11", "8", "11", "14"], ["14", "11", "14", "14"]].forEach(([x1, y1, x2, y2]) => {
+    appendSvgElement(svg, "path", {d: `M${x1} ${y1}v${Number(y2) - Number(y1)}`});
+  });
+  indicator.appendChild(svg);
+  indicator.appendChild(document.createTextNode("Live"));
+  return indicator;
+}
 function isSpeakerRowControl(target) {
   return target instanceof Element && target.closest(".speaker-row-name-input, .speaker-filter-toggle, .speaker-transcript-action");
 }
@@ -1568,25 +1668,28 @@ async function commitSpeakerNameInput(speaker, input) {
     log(`Rename failed: ${error.message}`);
   }
 }
+function speakerGroupFileName(name) {
+  const safe = String(name || "speakers")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._ -]+/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/^[._ -]+|[._ -]+$/g, "")
+    .slice(0, 80) || "speakers";
+  return `${safe}.whospeaks-speakers.json`;
+}
+function downloadJsonFile(filename, payload) {
+  const text = JSON.stringify(payload, null, 2);
+  const url = URL.createObjectURL(new Blob([text], {type: "application/json;charset=utf-8"}));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
 function renderSpeakerPanel() {
-  const selected = speakerGroupSelect.value || speakerLibraryState.group_name || "";
-  speakerGroupSelect.textContent = "";
-  const placeholder = document.createElement("option");
-  placeholder.value = "";
-  placeholder.textContent = "No saved group";
-  speakerGroupSelect.appendChild(placeholder);
-  speakerLibraryState.groups.forEach(group => {
-    const option = document.createElement("option");
-    option.value = group;
-    option.textContent = group;
-    speakerGroupSelect.appendChild(option);
-  });
-  const fallback = speakerLibraryState.groups.includes(speakerLibraryState.group_name) ? speakerLibraryState.group_name : "";
-  speakerGroupSelect.value = speakerLibraryState.groups.includes(selected) ? selected : fallback;
-  if (document.activeElement !== speakerGroupName && speakerLibraryState.group_name && !speakerGroupName.value.trim()) {
-    speakerGroupName.value = speakerLibraryState.group_name;
-  }
-
   speakerPanelTitle.textContent = `Detected speakers (${speakerLibraryState.speakers.length})`;
   syncManualSpeakerComposer();
   speakerList.textContent = "";
@@ -1609,6 +1712,7 @@ function renderSpeakerPanel() {
     const hasReference = Boolean(speaker.reference_audio || speaker.locked || speaker.source === "reference");
     const row = document.createElement("div");
     row.className = `speaker-item${isEditing ? " editing" : ""}`;
+    row.classList.toggle("live-speaker", Boolean(currentLiveSpeakerId) && speaker.id === currentLiveSpeakerId);
     row.dataset.speakerId = speaker.id || "";
     const color = speakerColor(speaker.id);
     row.style.setProperty("--speaker-color", color || "transparent");
@@ -1658,10 +1762,16 @@ function renderSpeakerPanel() {
         setEditingSpeaker(speaker.id || "", {focusName: true});
       });
     }
+    const titleRow = document.createElement("span");
+    titleRow.className = "speaker-title-row";
+    titleRow.appendChild(title);
+    if (currentLiveSpeakerId && speaker.id === currentLiveSpeakerId) {
+      titleRow.appendChild(createSpeakerLiveIndicator());
+    }
     const sentenceCount = document.createElement("span");
     sentenceCount.className = "speaker-sentence-count";
     sentenceCount.textContent = speakerSentenceText(speakerPanelSentenceCount(speaker), speakerPanelSpeakingSeconds(speaker));
-    body.appendChild(title);
+    body.appendChild(titleRow);
     body.appendChild(sentenceCount);
     if (hasReference) {
       const referenceStatus = document.createElement("span");
@@ -2028,6 +2138,7 @@ function findSentenceRow(index) {
 function clearRealtimeRows(generation) {
   currentRealtimeGeneration = Math.max(currentRealtimeGeneration, Number(generation || 0));
   Array.from(sentences.querySelectorAll(".row[data-realtime='true']")).forEach(row => row.remove());
+  updateCurrentLiveSpeakerFromRealtimeRows();
   refreshSpeakerPanelSentenceCounts();
   refreshTranscriptVisibility();
 }
@@ -2063,6 +2174,11 @@ function renderSentence(item) {
   row.dataset.end = String(endSeconds);
   row.dataset.text = item.text || "";
   row.dataset.searchText = item.text || "";
+  if (item.realtime) {
+    row.style.setProperty("--live-row-color", color || "#8F9BA8");
+  } else {
+    row.style.removeProperty("--live-row-color");
+  }
 
   const top = document.createElement("div");
   top.className = "top";
@@ -2133,6 +2249,7 @@ function renderSentence(item) {
   if (item.error) {
     prob.title = item.error;
   }
+  updateCurrentLiveSpeakerFromRealtimeRows();
   refreshSpeakerPanelSentenceCounts();
   refreshTranscriptVisibility();
   if (isNewRow || item.realtime) {
@@ -2150,6 +2267,7 @@ function connect() {
   es.addEventListener("speakers", e => updateSpeakerState(JSON.parse(e.data)));
   es.addEventListener("sentence", e => renderSentence(JSON.parse(e.data)));
   es.addEventListener("realtime", e => renderSentence(JSON.parse(e.data)));
+  es.addEventListener("live_speaker", e => applyFallbackLiveSpeaker(JSON.parse(e.data)));
   es.addEventListener("realtime_clear", e => clearRealtimeRows(JSON.parse(e.data).generation));
   es.addEventListener("done", e => { stopPlaybackClock(); stopBrowserAudioCapture(); setState("Stopped"); start.disabled = false; stop.disabled = true; setSourceControlsDisabled(false); log(JSON.parse(e.data).message); });
 }
@@ -2300,38 +2418,38 @@ manualSpeakerName.addEventListener("keydown", event => {
   }
 });
 saveSpeakerGroupButton.addEventListener("click", async () => {
-  const name = speakerGroupName.value.trim();
-  if (!name) {
-    log("Enter a speaker group name first.");
-    return;
-  }
+  const name = speakerLibraryState.group_name || "speakers";
   saveSpeakerGroupButton.disabled = true;
   try {
-    const result = await post("/api/speakers/save", {name});
+    const result = await post("/api/speakers/export", {name});
+    const group = result.group || {};
+    downloadJsonFile(speakerGroupFileName(group.name || name), group);
     updateSpeakerState(result.speaker_state);
-    log(`Saved speaker group ${result.speaker_state.group_name}.`);
+    log(`Saved speaker group ${group.name || name} to a local file.`);
   } catch (error) {
     log(`Save speakers failed: ${error.message}`);
   } finally {
     saveSpeakerGroupButton.disabled = false;
   }
 });
-loadSpeakerGroupButton.addEventListener("click", async () => {
-  const name = speakerGroupSelect.value || speakerGroupName.value.trim();
-  if (!name) {
-    log("Choose a saved speaker group first.");
-    return;
-  }
+loadSpeakerGroupButton.addEventListener("click", () => {
+  speakerGroupFile.value = "";
+  speakerGroupFile.click();
+});
+speakerGroupFile.addEventListener("change", async () => {
+  const file = speakerGroupFile.files && speakerGroupFile.files[0];
+  if (!file) return;
   loadSpeakerGroupButton.disabled = true;
   try {
-    const result = await post("/api/speakers/load", {name});
+    const group = JSON.parse(await file.text());
+    const result = await post("/api/speakers/import", {group});
     updateSpeakerState(result.speaker_state);
-    speakerGroupName.value = result.speaker_state.group_name || name;
     log(`Loaded speaker group ${result.speaker_state.group_name}.`);
   } catch (error) {
     log(`Load speakers failed: ${error.message}`);
   } finally {
     loadSpeakerGroupButton.disabled = false;
+    speakerGroupFile.value = "";
   }
 });
 referenceSpeakerFile.addEventListener("change", () => {

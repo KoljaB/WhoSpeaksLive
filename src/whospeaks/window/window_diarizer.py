@@ -6,6 +6,7 @@ import argparse
 import base64
 from datetime import datetime
 import json
+import mimetypes
 import queue
 import re
 import shutil
@@ -95,6 +96,7 @@ class WindowDiarizer:
         self._embedding_jobs: "queue.Queue[EmbeddingSentenceJob | None] | None" = None
         self._embedding_thread: threading.Thread | None = None
         self._preview_thread: threading.Thread | None = None
+        self._live_probe_thread: threading.Thread | None = None
         self._preview_transcriber: RealtimePreviewTranscriber | None = None
         self._preview_lock = threading.Lock()
         self._preview_left = 0.0
@@ -145,6 +147,8 @@ class WindowDiarizer:
         if self._preview_transcriber is not None:
             self._preview_thread = threading.Thread(target=self._run_realtime_preview, name="RealtimePreview", daemon=True)
             self._preview_thread.start()
+        self._live_probe_thread = threading.Thread(target=self._run_live_speaker_probe, name="LiveSpeakerProbe", daemon=True)
+        self._live_probe_thread.start()
 
     def _prepare_model_dependencies(self, include_asr_probe: bool, force_runtime_warmup: bool = False) -> None:
         self.bus.emit("status", {"message": "Loading transcription model."})
@@ -450,6 +454,148 @@ class WindowDiarizer:
         self.bus.emit("status", {"message": f"Loaded speaker group {group_name}."})
         return self.emit_speaker_state()
 
+    @staticmethod
+    def _centroid_payload(centroid: Any) -> dict[str, Any]:
+        vector = np.asarray(centroid, dtype="<f4")
+        return {
+            "centroid": vector.astype(float).tolist(),
+            "centroid_encoding": "float32-base64-le",
+            "centroid_b64": base64.b64encode(vector.tobytes()).decode("ascii"),
+            "centroid_length": int(vector.size),
+        }
+
+    @staticmethod
+    def _centroid_from_payload(item: dict[str, Any]) -> list[float]:
+        encoded = str(item.get("centroid_b64") or "")
+        if encoded:
+            raw = base64.b64decode(encoded)
+            vector = np.frombuffer(raw, dtype="<f4").astype(np.float32, copy=True)
+            expected_length = int(item.get("centroid_length") or 0)
+            if expected_length and vector.size != expected_length:
+                raise ValueError("Speaker centroid length does not match its encoded payload.")
+            if vector.size <= 0:
+                raise ValueError("Speaker centroid is empty.")
+            return vector.astype(float).tolist()
+        centroid = item.get("centroid")
+        if not isinstance(centroid, list) or not centroid:
+            raise ValueError("Speaker profile is missing a centroid.")
+        return [float(value) for value in centroid]
+
+    def export_speaker_group_file(self, name: str) -> dict[str, Any]:
+        self._sync_metadata_with_memory()
+        raw_name = str(name or "").strip() or self._speaker_group_name or "speakers"
+        group_name = safe_library_name(raw_name)
+        profiles = self.memory.export_profiles()
+        if not profiles:
+            raise ValueError("No speakers to save yet.")
+        with self._speaker_lock:
+            metadata_by_label = {
+                label: dict(metadata)
+                for label, metadata in self._speaker_metadata.items()
+            }
+
+        exported_speakers: list[dict[str, Any]] = []
+        for profile in profiles:
+            label = str(profile["label"])
+            metadata = metadata_by_label.get(label, {})
+            reference_audio_payload: dict[str, Any] | None = None
+            reference_audio = str(metadata.get("reference_audio") or "")
+            if reference_audio:
+                reference_path = Path(reference_audio)
+                if reference_path.is_file():
+                    reference_bytes = reference_path.read_bytes()
+                    media_type = mimetypes.guess_type(str(reference_path))[0] or "application/octet-stream"
+                    reference_audio_payload = {
+                        "filename": safe_reference_filename(reference_path.name),
+                        "media_type": media_type,
+                        "data_url": f"data:{media_type};base64,{base64.b64encode(reference_bytes).decode('ascii')}",
+                    }
+            exported_speaker = {
+                "label": label,
+                "name": str(metadata.get("name") or ""),
+                "source": str(metadata.get("source") or "detected"),
+                "locked": bool(metadata.get("locked") or profile.get("locked")),
+                "reference_audio": reference_audio_payload,
+                "sentence_count": int(profile.get("sentence_count") or 1),
+                "speech_seconds": float(profile.get("speech_seconds") or 0.0),
+                "created_at": float(profile.get("created_at") or time.time()),
+                "last_seen_at": float(profile.get("last_seen_at") or time.time()),
+            }
+            exported_speaker.update(self._centroid_payload(profile["centroid"]))
+            exported_speakers.append(exported_speaker)
+
+        with self._speaker_lock:
+            self._speaker_group_name = group_name
+        return {
+            "version": 1,
+            "format": "whospeaks-speaker-group",
+            "name": group_name,
+            "saved_at": datetime.now().isoformat(timespec="seconds"),
+            "embedding_provider": self.args.embedding_provider,
+            "embedding_device": self.args.embedding_device,
+            "speakers": exported_speakers,
+        }
+
+    def import_speaker_group_file(self, manifest: dict[str, Any]) -> dict[str, Any]:
+        if not isinstance(manifest, dict):
+            raise ValueError("Speaker group file is invalid.")
+        if str(manifest.get("format") or "") not in {"", "whospeaks-speaker-group"}:
+            raise ValueError("Speaker group file is not a WhoSpeaks speaker group.")
+        provider = str(manifest.get("embedding_provider") or "")
+        if provider and provider != self.args.embedding_provider:
+            raise ValueError(
+                f"Speaker group uses embedding provider {provider!r}, current provider is {self.args.embedding_provider!r}."
+            )
+        raw_profiles = manifest.get("speakers")
+        if not isinstance(raw_profiles, list) or not raw_profiles:
+            raise ValueError("Speaker group file has no speaker list.")
+
+        group_name = safe_library_name(str(manifest.get("name") or "imported_speakers"))
+        imported_references_dir = self.speaker_library_dir / "_imported_references" / group_name
+        seed_profiles: list[dict[str, Any]] = []
+        metadata_by_label: dict[str, dict[str, Any]] = {}
+        for index, item in enumerate(raw_profiles, 1):
+            if not isinstance(item, dict):
+                continue
+            label = f"S{index}"
+            reference_audio = ""
+            reference_payload = item.get("reference_audio")
+            if isinstance(reference_payload, dict):
+                data_url = str(reference_payload.get("data_url") or "")
+                if data_url:
+                    raw_audio = base64.b64decode(data_url.split(",", 1)[-1])
+                    imported_references_dir.mkdir(parents=True, exist_ok=True)
+                    filename = safe_reference_filename(str(reference_payload.get("filename") or f"{label}.wav"))
+                    reference_path = imported_references_dir / f"{label}_{filename}"
+                    reference_path.write_bytes(raw_audio)
+                    reference_audio = str(reference_path)
+            metadata_by_label[label] = {
+                "name": str(item.get("name") or ""),
+                "source": str(item.get("source") or "detected"),
+                "locked": bool(item.get("locked")),
+                "reference_audio": reference_audio,
+            }
+            seed_profiles.append({
+                "centroid": self._centroid_from_payload(item),
+                "sentence_count": max(1, int(item.get("sentence_count") or 1)),
+                "speech_seconds": float(item.get("speech_seconds") or 0.0),
+                "locked": bool(item.get("locked")),
+                "metadata": metadata_by_label[label],
+            })
+        if not seed_profiles:
+            raise ValueError("Speaker group file has no usable speaker profiles.")
+
+        self.memory = self._new_memory()
+        with self._speaker_lock:
+            self._speaker_group_name = group_name
+            self._speaker_metadata = metadata_by_label
+            self._seed_profiles = [dict(item) for item in seed_profiles]
+        self._rehydrate_seed_profiles()
+        with self._unknown_lock:
+            self._unknown_sentences = []
+        self.bus.emit("status", {"message": f"Imported speaker group {group_name}."})
+        return self.emit_speaker_state()
+
     def add_reference_speaker(self, name: str, filename: str, audio_b64: str) -> dict[str, Any]:
         clean_name = " ".join(str(name or "").strip().split())[:80]
         if not clean_name:
@@ -645,6 +791,9 @@ class WindowDiarizer:
         if self._preview_thread is not None and self._preview_thread.is_alive():
             self._preview_thread.join(timeout=2.0)
         self._preview_thread = None
+        if self._live_probe_thread is not None and self._live_probe_thread.is_alive():
+            self._live_probe_thread.join(timeout=2.0)
+        self._live_probe_thread = None
         if self._preview_transcriber is not None:
             self._preview_transcriber.close()
         self._preview_transcriber = None
@@ -989,6 +1138,35 @@ class WindowDiarizer:
             starts=starts,
             backend="rms",
         )
+
+    def _audio_has_rms_speech(self, audio: np.ndarray, sample_rate: int) -> bool:
+        if audio.size <= 0 or sample_rate <= 0:
+            return False
+        frame_seconds = max(0.01, float(getattr(self.args, "vad_frame_seconds", 0.03)))
+        frame_samples = max(1, int(sample_rate * frame_seconds))
+        threshold = max(0.0, float(getattr(self.args, "vad_speech_rms_threshold", 0.003)))
+        min_speech_seconds = max(
+            0.0,
+            float(
+                getattr(
+                    self.args,
+                    "live_speaker_probe_min_speech_seconds",
+                    getattr(self.args, "vad_min_speech_seconds", 0.15),
+                )
+            ),
+        )
+        speech_seconds = 0.0
+        for start in range(0, audio.size, frame_samples):
+            end = min(audio.size, start + frame_samples)
+            if end - start < max(1, frame_samples // 2):
+                break
+            frame = audio[start:end]
+            rms_value = float(np.sqrt(np.mean(frame * frame)))
+            if rms_value >= threshold:
+                speech_seconds += (end - start) / float(sample_rate)
+                if speech_seconds >= min_speech_seconds:
+                    return True
+        return False
 
     def _silero_vad_window_state(
         self,
@@ -1335,6 +1513,51 @@ class WindowDiarizer:
             "quality": decision.quality,
             "assignment_source": "realtime_preview_embedding",
         }
+
+    def _run_live_speaker_probe(self) -> None:
+        if not bool(getattr(self.args, "live_speaker_probe", True)):
+            return
+        interval_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_interval_seconds", 0.5)))
+        window_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_window_seconds", 2.0)))
+        min_advance = max(0.0, float(getattr(self.args, "live_speaker_probe_min_advance_seconds", interval_seconds)))
+        hold_seconds = max(0.0, float(getattr(self.args, "live_speaker_probe_hold_seconds", 2.0)))
+        last_probe_right = -1.0
+        while not self._stop.wait(interval_seconds):
+            if self.memory.profile_count() <= 0:
+                continue
+            right = self.playback_time()
+            if right <= 0.0:
+                continue
+            if last_probe_right >= 0.0 and right < last_probe_right + min_advance:
+                continue
+            left = max(0.0, right - window_seconds)
+            audio, sample_rate = self._audio_window_copy(left, right)
+            duration_seconds = audio.size / float(sample_rate) if sample_rate > 0 else 0.0
+            if duration_seconds < max(0.0, float(self.args.realtime_preview_diarize_min_audio_seconds)):
+                continue
+            last_probe_right = right
+            if not self._audio_has_rms_speech(audio, sample_rate):
+                continue
+            speaker_payload = self._score_realtime_preview_speaker(audio, duration_seconds)
+            if self._stop.is_set():
+                break
+            assigned_speaker = speaker_payload.get("assigned_speaker")
+            if not assigned_speaker:
+                continue
+            self.bus.emit(
+                "live_speaker",
+                {
+                    **speaker_payload,
+                    "speaker_id": assigned_speaker,
+                    "live": True,
+                    "fallback": True,
+                    "start": round(float(left), 4),
+                    "end": round(float(right), 4),
+                    "audio_length_seconds": round(float(duration_seconds), 4),
+                    "hold_seconds": round(float(hold_seconds), 4),
+                    "assignment_source": "last_2s_embedding_probe",
+                },
+            )
 
     def _run_realtime_preview(self) -> None:
         transcriber = self._preview_transcriber
