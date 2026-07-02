@@ -136,7 +136,7 @@ HTML = r"""<!doctype html>
     .speaker-empty { padding:12px; color:var(--muted); font-size:11px; }
     .speaker-item { --speaker-color:transparent; min-width:0; display:grid; border-bottom:1px solid var(--line); background:#0F161F; }
     .speaker-item:last-child { border-bottom:0; }
-    .speaker-item.editing { position:relative; z-index:1; border:1px solid #1179C7; border-radius:7px; box-shadow:0 0 0 1px rgba(23,183,254,.2); }
+    .speaker-item.editing { position:relative; z-index:1; border:1px solid var(--speaker-color); border-radius:7px; box-shadow:0 0 0 1px color-mix(in srgb, var(--speaker-color) 28%, transparent); }
     .speaker-item-summary { width:100%; min-height:60px; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:8px; padding:9px 10px 9px 12px; border:0; border-radius:0; background:transparent; color:#C6D0DC; text-align:left; box-shadow:inset 4px 0 0 var(--speaker-color); cursor:pointer; }
     .speaker-summary-body { min-width:0; display:grid; gap:2px; }
     .speaker-row-title { min-width:0; color:#E8EEF5; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -150,7 +150,7 @@ HTML = r"""<!doctype html>
     .speaker-reference-status.has-reference { color:#AEB9C5; }
     .speaker-reference-status.has-reference .speaker-reference-icon { border:0; border-radius:0; width:13px; height:8px; border-left:2px solid #3DC77C; border-bottom:2px solid #3DC77C; transform:rotate(-45deg) translateY(-1px); }
     .speaker-item-tail { align-self:stretch; display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; gap:7px; color:#AEB9C5; }
-    .speaker-filter-controls { display:flex; align-items:center; gap:4px; }
+    .speaker-filter-controls, .speaker-transcript-actions { display:flex; align-items:center; gap:4px; }
     .speaker-filter-toggle { min-height:20px; width:39px; border:1px solid #20303E; border-radius:999px; padding:0 4px; display:inline-flex; align-items:center; justify-content:center; gap:3px; background:#0B1015; color:#8392A2; }
     .speaker-filter-toggle.active { border-color:#1789F2; color:#FFFFFF; background:rgba(23,137,242,.16); }
     .speaker-filter-toggle.mute.active { border-color:#DF3C36; background:rgba(152,29,32,.28); }
@@ -161,19 +161,21 @@ HTML = r"""<!doctype html>
     .speaker-filter-toggle.mute.active .speaker-filter-switch { background:#981D20; }
     .speaker-filter-toggle.active .speaker-filter-switch::after { transform:translateX(7px); background:#FFFFFF; }
     .speaker-filter-toggle:focus-visible { outline:1px solid #17B7FE; outline-offset:2px; }
+    .transcript-icon-button { min-height:24px; width:28px; border:1px solid #20303E; border-radius:6px; padding:0; display:inline-grid; place-items:center; background:#0B1015; color:#AEB9C5; }
+    .transcript-icon-button:hover { border-color:#2C4052; color:#FFFFFF; }
+    .transcript-icon-button svg { width:13px; height:13px; display:block; }
     .speaker-chevron { width:8px; height:8px; border-right:2px solid currentColor; border-bottom:2px solid currentColor; transform:rotate(-45deg); opacity:.72; }
     .speaker-item.editing .speaker-chevron { transform:rotate(45deg) translateY(-2px); }
     .speaker-editor { display:grid; gap:8px; padding:0 10px 10px; }
     .speaker-editor[hidden] { display:none; }
     .speaker-panel input[type="text"] { width:100%; min-height:32px; border:1px solid var(--line); border-radius:6px; padding:0 9px; background:#0B1015; color:#E8EEF5; font-size:12px; }
     .speaker-reference-actions { display:flex; gap:7px; align-items:center; flex-wrap:wrap; }
-    .speaker-reference-button, .speaker-panel #recordReference, .speaker-panel #stopReference { min-height:30px; border:1px solid #20303E; border-radius:6px; padding:0 10px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:#121C26; color:#C6D0DC; font-size:12px; white-space:nowrap; }
+    .speaker-reference-button, .speaker-panel #recordReference { min-height:30px; border:1px solid #20303E; border-radius:6px; padding:0 10px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:#121C26; color:#C6D0DC; font-size:12px; white-space:nowrap; }
     .speaker-editor .speaker-reference-button { display:inline-flex; }
     .speaker-reference-title { color:#C6D0DC; font-size:12px; }
     .speaker-reference-button input { display:none; }
     .speaker-reference-button svg, .speaker-panel #recordReference svg { width:14px; height:14px; flex:0 0 auto; }
     .speaker-panel #recordReference.recording { border-color:#DF3C36; color:#FFFFFF; background:#981D20; }
-    .speaker-panel #stopReference:disabled { display:none; }
     .speaker-record-seconds { color:#9EAAB6; font-size:11px; }
     .speaker-settings-panel { display:grid; gap:8px; }
     .speaker-tools { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; }
@@ -182,8 +184,25 @@ HTML = r"""<!doctype html>
     .speaker-tools input { min-height:30px; border:1px solid var(--line); border-radius:6px; padding:0 8px; background:#0B1015; color:#FFFFFF; font-size:13px; }
     .speaker-panel button { font-weight:400; }
     .status { max-height:180px; overflow:auto; color:var(--muted); font-size:12px; line-height:1.3; padding-top:2px; }
-    .transcript-panel { min-height:0; margin:0 8px 8px; display:grid; grid-template-rows:auto minmax(0,1fr); }
-    .transcript-panel .section-title { padding:6px 8px; border-bottom:1px solid var(--line); }
+    .transcript-panel { min-height:0; margin:0 8px 8px; display:grid; grid-template-rows:auto minmax(0,1fr); position:relative; }
+    .transcript-header { display:grid; grid-template-columns:auto minmax(240px,1fr) auto; gap:8px 14px; align-items:center; padding:10px; border-bottom:1px solid var(--line); }
+    .transcript-title { grid-column:1 / -1; margin:0; color:#E8EEF5; font-size:15px; line-height:1.2; font-weight:400; }
+    .transcript-left-tools, .transcript-right-tools { display:flex; align-items:center; gap:8px; }
+    .transcript-right-tools { justify-content:flex-end; }
+    .follow-live-toggle { min-height:22px; display:inline-flex; align-items:center; gap:7px; color:#C6D0DC; font-size:12px; }
+    .follow-live-toggle input { position:absolute; opacity:0; pointer-events:none; }
+    .follow-live-track { position:relative; width:38px; height:20px; border-radius:999px; background:#22313E; box-shadow:inset 0 0 0 1px #20303E; }
+    .follow-live-track::after { content:""; position:absolute; left:2px; top:2px; width:16px; height:16px; border-radius:50%; background:#AEB9C5; transition:transform .12s ease, background .12s ease; }
+    .follow-live-toggle input:checked + .follow-live-track { background:#1789F2; box-shadow:inset 0 0 0 1px #17B7FE; }
+    .follow-live-toggle input:checked + .follow-live-track::after { transform:translateX(18px); background:#FFFFFF; }
+    .transcript-search { min-width:0; position:relative; }
+    .transcript-search input { width:100%; min-height:34px; border:1px solid var(--line); border-radius:7px; padding:0 34px 0 11px; background:#0B1015; color:#E8EEF5; font-size:13px; outline:none; }
+    .transcript-search svg { position:absolute; right:10px; top:50%; width:16px; height:16px; transform:translateY(-50%); color:#8392A2; pointer-events:none; }
+    .transcript-settings-menu { position:relative; }
+    .transcript-settings-panel { position:absolute; right:0; top:calc(100% + 6px); z-index:30; min-width:190px; display:grid; gap:7px; padding:9px; border:1px solid var(--line); border-radius:7px; background:#0F161F; box-shadow:0 18px 46px rgba(0,0,0,.42); }
+    .transcript-settings-panel[hidden] { display:none; }
+    .transcript-settings-panel label { display:flex; align-items:center; gap:7px; color:#C6D0DC; font-size:12px; }
+    .transcript-settings-panel input { width:14px; height:14px; accent-color:#17B7FE; }
     .sentences { min-height:0; overflow:auto; padding:8px; }
     .row { border-bottom:1px solid var(--line); padding:7px 2px; }
     .top { display:flex; gap:8px; align-items:flex-start; justify-content:space-between; margin-bottom:4px; color:var(--muted); font-size:11px; }
@@ -192,6 +211,10 @@ HTML = r"""<!doctype html>
     .badge.unknown { color:#c3ccd6; border-color:#7d8997; background:#0B1015; }
     .badge.new { color:#fff; border-color:#ef4444; background:#b91c1c; text-transform:uppercase; letter-spacing:0; }
     .badge.state { color:#d7dee8; border-color:var(--line); background:#0B1015; font-weight:400; }
+    .transcript-panel.hide-tags .badge.new, .transcript-panel.hide-tags .badge.state { display:none; }
+    .transcript-panel.hide-time .sentence-duration, .transcript-panel.hide-time .sentence-range { display:none; }
+    .transcript-panel.hide-speech-rate .sentence-speech-rate { display:none; }
+    .transcript-panel.hide-probabilities .prob { display:none; }
     .speaker-name, .speaker-row-title { font-weight:600; }
     .text { font-size:15px; line-height:1.34; }
     .row.realtime .text { color:#d7dee8; }
@@ -215,6 +238,8 @@ HTML = r"""<!doctype html>
       .workspace { order:2; display:flex; flex-direction:column; min-height:0; }
       .source-row { grid-template-columns:1fr; }
       .mode, .preset, .source, .speaker-panel input, .speaker-panel select, button { min-height:38px; font-size:14px; }
+      .speaker-filter-toggle { min-height:20px; width:39px; font-size:12px; }
+      .transcript-icon-button { min-height:24px; width:28px; font-size:13px; }
       .sensitivity { grid-template-columns:1fr; }
       .sensitivity strong { text-align:left; }
       .media-card { margin:8px; gap:8px; }
@@ -227,6 +252,8 @@ HTML = r"""<!doctype html>
       .media-expand { width:38px; height:38px; justify-self:start; }
       .capture-panel { min-height:0; padding:10px; grid-template-columns:1fr; }
       .transcript-panel { margin:0 8px 8px; min-height:45vh; display:block; }
+      .transcript-header { grid-template-columns:1fr; gap:8px; padding:9px; }
+      .transcript-left-tools, .transcript-right-tools { justify-content:flex-start; }
       .sentences { overflow:visible; padding:8px; }
       .status { max-height:130px; }
       .speaker-list { max-height:none; }
@@ -402,7 +429,52 @@ HTML = r"""<!doctype html>
         </section>
       </section>
       <section class="transcript-panel">
-        <div class="section-title">Transcript</div>
+        <div class="transcript-header">
+          <h2 class="transcript-title">Live transcript</h2>
+          <div class="transcript-left-tools">
+            <label class="follow-live-toggle">
+              <input id="followLive" type="checkbox" checked>
+              <span class="follow-live-track" aria-hidden="true"></span>
+              <span>Follow live</span>
+            </label>
+          </div>
+          <div class="transcript-search">
+            <input id="transcriptSearch" type="search" placeholder="Search transcript" autocomplete="off">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m20 20-3.5-3.5"></path>
+            </svg>
+          </div>
+          <div class="transcript-right-tools">
+            <button id="copyTranscript" class="transcript-icon-button" type="button" title="Copy transcript" aria-label="Copy transcript">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+            <button id="downloadTranscript" class="transcript-icon-button" type="button" title="Download transcript" aria-label="Download transcript">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3v12"></path>
+                <path d="m7 10 5 5 5-5"></path>
+                <path d="M5 21h14"></path>
+              </svg>
+            </button>
+            <div class="transcript-settings-menu">
+              <button id="transcriptSettings" class="transcript-icon-button" type="button" title="Transcript settings" aria-label="Transcript settings" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 1 1 7.1 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1Z"></path>
+                </svg>
+              </button>
+              <div id="transcriptSettingsPanel" class="transcript-settings-panel" hidden>
+                <label><input id="showTranscriptTags" type="checkbox" checked> Show tags</label>
+                <label><input id="showTranscriptTime" type="checkbox" checked> Show time information</label>
+                <label><input id="showTranscriptSpeechRate" type="checkbox" checked> Show speech/audio rate</label>
+                <label><input id="showTranscriptProbabilities" type="checkbox" checked> Show probabilities</label>
+              </div>
+            </div>
+          </div>
+        </div>
         <section id="sentences" class="sentences"></section>
       </section>
     </section>
@@ -443,7 +515,6 @@ HTML = r"""<!doctype html>
                   </svg>
                   <span>Record from mic</span>
                 </button>
-                <button id="stopReference" type="button" disabled>Stop & add</button>
                 <span id="referenceRecordSeconds" class="speaker-record-seconds">0.0s</span>
               </div>
             </form>
@@ -504,6 +575,17 @@ const streamHint = document.getElementById("streamHint");
 const statusBox = document.getElementById("status");
 const statusCard = document.querySelector(".status-card");
 const sentences = document.getElementById("sentences");
+const transcriptPanel = document.querySelector(".transcript-panel");
+const followLive = document.getElementById("followLive");
+const transcriptSearch = document.getElementById("transcriptSearch");
+const copyTranscriptButton = document.getElementById("copyTranscript");
+const downloadTranscriptButton = document.getElementById("downloadTranscript");
+const transcriptSettingsButton = document.getElementById("transcriptSettings");
+const transcriptSettingsPanel = document.getElementById("transcriptSettingsPanel");
+const showTranscriptTags = document.getElementById("showTranscriptTags");
+const showTranscriptTime = document.getElementById("showTranscriptTime");
+const showTranscriptSpeechRate = document.getElementById("showTranscriptSpeechRate");
+const showTranscriptProbabilities = document.getElementById("showTranscriptProbabilities");
 const inputMode = document.getElementById("inputMode");
 const newSpeakerSensitivity = document.getElementById("newSpeakerSensitivity");
 const newSpeakerSensitivityLabel = document.getElementById("newSpeakerSensitivityLabel");
@@ -526,7 +608,7 @@ const speakerTabPanels = Array.from(document.querySelectorAll(".speaker-tab-pane
 const referenceSpeakerForm = document.getElementById("referenceSpeakerForm");
 const referenceSpeakerFile = document.getElementById("referenceSpeakerFile");
 const recordReferenceButton = document.getElementById("recordReference");
-const stopReferenceButton = document.getElementById("stopReference");
+const recordReferenceButtonLabel = recordReferenceButton.querySelector("span");
 const referenceRecordSeconds = document.getElementById("referenceRecordSeconds");
 const speakerColors = __SPEAKER_COLORS__;
 const initialSource = __SOURCE_JSON__;
@@ -562,9 +644,12 @@ let speakerSensitivityDirty = false;
 let speakerLibraryState = initialSpeakerLibrary || {group_name:"", groups:[], speakers:[]};
 let speakerNames = {};
 let renderedSpeakerSentenceCounts = {};
+let renderedSpeakerSpeakingSeconds = {};
 let hasRenderedFinalSentenceRows = false;
 let soloSpeakerIds = new Set();
 let mutedSpeakerIds = new Set();
+let followLiveEnabled = true;
+let transcriptSearchText = "";
 let referenceRecordStream = null;
 let referenceRecordContext = null;
 let referenceRecordSource = null;
@@ -1107,6 +1192,7 @@ function resetTranscriptDisplay() {
   statusBox.textContent = "";
   currentRealtimeGeneration = 0;
   renderedSpeakerSentenceCounts = {};
+  renderedSpeakerSpeakingSeconds = {};
   hasRenderedFinalSentenceRows = false;
   refreshSpeakerPanelSentenceCounts();
 }
@@ -1135,6 +1221,7 @@ function logRejectedPlayback(results) {
   });
 }
 function scrollSentencesToBottom() {
+  if (!followLiveEnabled) return;
   requestAnimationFrame(() => {
     if (sentences.scrollHeight > sentences.clientHeight + 4) {
       sentences.scrollTop = sentences.scrollHeight;
@@ -1184,9 +1271,15 @@ function speakerTranscriptVisible(speakerId) {
   if (soloSpeakerIds.size > 0) return soloSpeakerIds.has(speakerId);
   return true;
 }
-function refreshTranscriptSpeakerFilters() {
+function transcriptSearchVisible(row) {
+  const query = transcriptSearchText.trim().toLowerCase();
+  if (!query) return true;
+  const searchable = (row.dataset.searchText || "").toLowerCase();
+  return query.split(/\s+/).every(term => searchable.includes(term));
+}
+function refreshTranscriptVisibility() {
   Array.from(sentences.querySelectorAll(".row")).forEach(row => {
-    row.hidden = !speakerTranscriptVisible(row.dataset.speaker);
+    row.hidden = !speakerTranscriptVisible(row.dataset.speaker) || !transcriptSearchVisible(row);
   });
 }
 function setSpeakerFilter(speakerId, mode, active) {
@@ -1197,8 +1290,18 @@ function setSpeakerFilter(speakerId, mode, active) {
   } else {
     target.delete(speakerId);
   }
-  refreshTranscriptSpeakerFilters();
+  refreshTranscriptVisibility();
   renderSpeakerPanel();
+}
+function setTranscriptSettingsOpen(open) {
+  transcriptSettingsPanel.hidden = !open;
+  transcriptSettingsButton.setAttribute("aria-expanded", open ? "true" : "false");
+}
+function applyTranscriptDisplaySettings() {
+  transcriptPanel.classList.toggle("hide-tags", !showTranscriptTags.checked);
+  transcriptPanel.classList.toggle("hide-time", !showTranscriptTime.checked);
+  transcriptPanel.classList.toggle("hide-speech-rate", !showTranscriptSpeechRate.checked);
+  transcriptPanel.classList.toggle("hide-probabilities", !showTranscriptProbabilities.checked);
 }
 function updateSpeakerState(state) {
   if (!state || typeof state !== "object") return;
@@ -1215,7 +1318,7 @@ function updateSpeakerState(state) {
     }
   });
   pruneSpeakerFilterState();
-  refreshTranscriptSpeakerFilters();
+  refreshTranscriptVisibility();
   recomputeRenderedSpeakerSentenceCounts();
   updateSpeakerCount();
   renderSpeakerPanel();
@@ -1237,6 +1340,7 @@ function selectedSpeaker() {
 }
 function recomputeRenderedSpeakerSentenceCounts() {
   const counts = {};
+  const speakingSeconds = {};
   let hasFinalRows = false;
   Array.from(sentences.querySelectorAll(".row")).forEach(row => {
     if (row.dataset.realtime === "true") return;
@@ -1244,8 +1348,12 @@ function recomputeRenderedSpeakerSentenceCounts() {
     const speakerId = row.dataset.speaker;
     if (!speakerId || speakerId === "UNKNOWN") return;
     counts[speakerId] = (counts[speakerId] || 0) + 1;
+    const start = Number(row.dataset.start || 0);
+    const end = Number(row.dataset.end || 0);
+    speakingSeconds[speakerId] = (speakingSeconds[speakerId] || 0) + Math.max(0, end - start);
   });
   renderedSpeakerSentenceCounts = counts;
+  renderedSpeakerSpeakingSeconds = speakingSeconds;
   hasRenderedFinalSentenceRows = hasFinalRows;
 }
 function speakerPanelSentenceCount(speaker) {
@@ -1255,23 +1363,38 @@ function speakerPanelSentenceCount(speaker) {
   }
   return Number((speaker && speaker.sentence_count) || 0);
 }
+function speakerPanelSpeakingSeconds(speaker) {
+  const speakerId = speaker && speaker.id;
+  if (hasRenderedFinalSentenceRows && speakerId) {
+    return renderedSpeakerSpeakingSeconds[speakerId] || 0;
+  }
+  return Number((speaker && speaker.speech_seconds) || 0);
+}
 function refreshSpeakerPanelSentenceCounts() {
   recomputeRenderedSpeakerSentenceCounts();
   Array.from(speakerList.querySelectorAll(".speaker-item")).forEach(row => {
     const speaker = speakerLibraryState.speakers.find(item => item.id === row.dataset.speakerId);
     const count = row.querySelector(".speaker-sentence-count");
     if (speaker && count) {
-      count.textContent = speakerSentenceText(speakerPanelSentenceCount(speaker));
+      count.textContent = speakerSentenceText(speakerPanelSentenceCount(speaker), speakerPanelSpeakingSeconds(speaker));
     }
   });
 }
-function speakerSentenceText(count) {
+function speakerSpeakingTimeText(seconds) {
+  const totalSeconds = Math.max(0, Number(seconds || 0));
+  if (totalSeconds < 60) return `${totalSeconds.toFixed(1)}s`;
+  const roundedSeconds = Math.round(totalSeconds);
+  const minutes = Math.floor(roundedSeconds / 60);
+  const remainingSeconds = roundedSeconds % 60;
+  return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+function speakerSentenceText(count, speakingSeconds = 0) {
   const total = Number(count || 0);
-  return `${total} ${total === 1 ? "sentence" : "sentences"}`;
+  return `${total} ${total === 1 ? "sentence" : "sentences"} · ${speakerSpeakingTimeText(speakingSeconds)}`;
 }
 function speakerReferenceText(speaker) {
   const hasReference = Boolean(speaker.reference_audio || speaker.locked || speaker.source === "reference");
-  if (!hasReference) return "No reference voice";
+  if (!hasReference) return "";
   const seconds = Number(speaker.speech_seconds || 0);
   return seconds > 0 ? `Reference voice added (${Math.round(seconds)}s)` : "Reference voice added";
 }
@@ -1323,8 +1446,47 @@ function createSpeakerFilterToggle(speaker, mode) {
   button.appendChild(switchTrack);
   return button;
 }
+function createTranscriptActionIcon(kind) {
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+  if (kind === "download") {
+    appendSvgElement(svg, "path", {d: "M12 3v12"});
+    appendSvgElement(svg, "path", {d: "m7 10 5 5 5-5"});
+    appendSvgElement(svg, "path", {d: "M5 21h14"});
+  } else {
+    appendSvgElement(svg, "rect", {x: "9", y: "9", width: "11", height: "11", rx: "2"});
+    appendSvgElement(svg, "path", {d: "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"});
+  }
+  return svg;
+}
+function createTranscriptActionButton(kind, speaker) {
+  const speakerName = speaker ? speakerPanelName(speaker) : "";
+  const label = `${kind === "download" ? "Download" : "Copy"} ${speakerName ? `${speakerName} transcript` : "transcript"}`;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "transcript-icon-button speaker-transcript-action";
+  button.title = label;
+  button.setAttribute("aria-label", label);
+  button.appendChild(createTranscriptActionIcon(kind));
+  button.addEventListener("click", event => {
+    event.stopPropagation();
+    if (kind === "download") {
+      downloadTranscript(speaker ? speaker.id : null);
+    } else {
+      copyTranscript(speaker ? speaker.id : null);
+    }
+  });
+  button.addEventListener("keydown", event => event.stopPropagation());
+  return button;
+}
 function isSpeakerRowControl(target) {
-  return target instanceof Element && target.closest(".speaker-row-name-input, .speaker-filter-toggle");
+  return target instanceof Element && target.closest(".speaker-row-name-input, .speaker-filter-toggle, .speaker-transcript-action");
 }
 function setEditingSpeaker(speakerId, options = {}) {
   const requestedId = speakerId || "";
@@ -1498,19 +1660,21 @@ function renderSpeakerPanel() {
     }
     const sentenceCount = document.createElement("span");
     sentenceCount.className = "speaker-sentence-count";
-    sentenceCount.textContent = speakerSentenceText(speakerPanelSentenceCount(speaker));
-    const referenceStatus = document.createElement("span");
-    referenceStatus.className = `speaker-reference-status${hasReference ? " has-reference" : ""}`;
-    const referenceIcon = document.createElement("span");
-    referenceIcon.className = "speaker-reference-icon";
-    referenceIcon.setAttribute("aria-hidden", "true");
-    const referenceText = document.createElement("span");
-    referenceText.textContent = speakerReferenceText(speaker);
-    referenceStatus.appendChild(referenceIcon);
-    referenceStatus.appendChild(referenceText);
+    sentenceCount.textContent = speakerSentenceText(speakerPanelSentenceCount(speaker), speakerPanelSpeakingSeconds(speaker));
     body.appendChild(title);
     body.appendChild(sentenceCount);
-    body.appendChild(referenceStatus);
+    if (hasReference) {
+      const referenceStatus = document.createElement("span");
+      referenceStatus.className = "speaker-reference-status has-reference";
+      const referenceIcon = document.createElement("span");
+      referenceIcon.className = "speaker-reference-icon";
+      referenceIcon.setAttribute("aria-hidden", "true");
+      const referenceText = document.createElement("span");
+      referenceText.textContent = speakerReferenceText(speaker);
+      referenceStatus.appendChild(referenceIcon);
+      referenceStatus.appendChild(referenceText);
+      body.appendChild(referenceStatus);
+    }
 
     const tail = document.createElement("span");
     tail.className = "speaker-item-tail";
@@ -1519,6 +1683,11 @@ function renderSpeakerPanel() {
     filterControls.appendChild(createSpeakerFilterToggle(speaker, "solo"));
     filterControls.appendChild(createSpeakerFilterToggle(speaker, "mute"));
     tail.appendChild(filterControls);
+    const transcriptActions = document.createElement("span");
+    transcriptActions.className = "speaker-transcript-actions";
+    transcriptActions.appendChild(createTranscriptActionButton("copy", speaker));
+    transcriptActions.appendChild(createTranscriptActionButton("download", speaker));
+    tail.appendChild(transcriptActions);
     const chevron = document.createElement("span");
     chevron.className = "speaker-chevron";
     chevron.setAttribute("aria-hidden", "true");
@@ -1560,10 +1729,13 @@ function fileToBase64(file) {
   });
 }
 function updateReferenceRecordingControls(recording) {
-  recordReferenceButton.disabled = recording;
-  stopReferenceButton.disabled = !recording;
+  recordReferenceButton.disabled = false;
   referenceSpeakerFile.disabled = recording;
   recordReferenceButton.classList.toggle("recording", recording);
+  if (recordReferenceButtonLabel) {
+    recordReferenceButtonLabel.textContent = recording ? "Stop and add" : "Record from mic";
+  }
+  recordReferenceButton.setAttribute("aria-label", recording ? "Stop and add reference recording" : "Record reference from microphone");
 }
 function arrayBufferToBase64(buffer) {
   const bytes = new Uint8Array(buffer);
@@ -1672,7 +1844,6 @@ async function startReferenceRecording() {
   referenceRecordSampleRate = targetCaptureSampleRate;
   referenceRecordSeconds.textContent = "0.0s";
   recordReferenceButton.disabled = true;
-  stopReferenceButton.disabled = true;
   referenceSpeakerFile.disabled = true;
   try {
     referenceRecordStream = await navigator.mediaDevices.getUserMedia({
@@ -1730,7 +1901,6 @@ async function stopAndAddReferenceRecording() {
     log("Reference clip is too short.");
     return;
   }
-  stopReferenceButton.disabled = true;
   recordReferenceButton.disabled = true;
   try {
     const audio_b64 = encodeWavDataUrl(recording.samples, recording.sampleRate);
@@ -1785,6 +1955,72 @@ function ratioLabel(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number.toFixed(2) : "n/a";
 }
+function transcriptTimeLabel(value) {
+  const total = Math.max(0, Number(value || 0));
+  const minutes = Math.floor(total / 60);
+  const seconds = total - (minutes * 60);
+  return `${String(minutes).padStart(2, "0")}:${seconds.toFixed(1).padStart(4, "0")}`;
+}
+function transcriptExportRows(speakerId = null) {
+  return Array.from(sentences.querySelectorAll(".row"))
+    .filter(row => row.dataset.realtime !== "true")
+    .filter(row => !speakerId || row.dataset.speaker === speakerId)
+    .map(row => ({
+      speaker: speakerDisplayLabel(row.dataset.speaker === "UNKNOWN" ? null : row.dataset.speaker),
+      start: transcriptTimeLabel(row.dataset.start),
+      end: transcriptTimeLabel(row.dataset.end),
+      text: row.dataset.text || "",
+    }))
+    .filter(row => row.text.trim());
+}
+function transcriptExportText(speakerId = null) {
+  const rows = transcriptExportRows(speakerId);
+  return rows.map(row => `[${row.start} - ${row.end}] ${row.speaker}: ${row.text}`).join("\n");
+}
+function transcriptExportFilename(speakerId = null) {
+  const suffix = speakerId ? `-${speakerDisplayLabel(speakerId).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}` : "";
+  return `whospeaks-transcript${suffix || ""}.txt`;
+}
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const area = document.createElement("textarea");
+  area.value = text;
+  area.style.position = "fixed";
+  area.style.left = "-9999px";
+  document.body.appendChild(area);
+  area.focus();
+  area.select();
+  document.execCommand("copy");
+  area.remove();
+}
+function copyTranscript(speakerId = null) {
+  const text = transcriptExportText(speakerId);
+  if (!text) {
+    log("No transcript text to copy.");
+    return;
+  }
+  copyTextToClipboard(text)
+    .then(() => log(speakerId ? `Copied ${speakerDisplayLabel(speakerId)} transcript.` : "Copied transcript."))
+    .catch(error => log(`Copy failed: ${error.message}`));
+}
+function downloadTranscript(speakerId = null) {
+  const text = transcriptExportText(speakerId);
+  if (!text) {
+    log("No transcript text to download.");
+    return;
+  }
+  const url = URL.createObjectURL(new Blob([text], {type: "text/plain;charset=utf-8"}));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = transcriptExportFilename(speakerId);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
 function findSentenceRow(index) {
   const key = String(index);
   return Array.from(sentences.querySelectorAll(".row")).find(row => row.dataset.index === key) || null;
@@ -1793,7 +2029,7 @@ function clearRealtimeRows(generation) {
   currentRealtimeGeneration = Math.max(currentRealtimeGeneration, Number(generation || 0));
   Array.from(sentences.querySelectorAll(".row[data-realtime='true']")).forEach(row => row.remove());
   refreshSpeakerPanelSentenceCounts();
-  refreshTranscriptSpeakerFilters();
+  refreshTranscriptVisibility();
 }
 function renderSentence(item) {
   if (item.realtime && Number(item.realtime_generation || 0) < currentRealtimeGeneration) {
@@ -1823,6 +2059,10 @@ function renderSentence(item) {
   const endSeconds = Number(item.end || 0);
   const durationSeconds = Math.max(0, endSeconds - startSeconds);
   const ratio = Number(item.speech_audio_ratio);
+  row.dataset.start = String(startSeconds);
+  row.dataset.end = String(endSeconds);
+  row.dataset.text = item.text || "";
+  row.dataset.searchText = item.text || "";
 
   const top = document.createElement("div");
   top.className = "top";
@@ -1853,15 +2093,18 @@ function renderSentence(item) {
   }
 
   const duration = document.createElement("span");
+  duration.className = "sentence-duration";
   duration.textContent = secondsLabel(durationSeconds);
   topLeft.appendChild(duration);
 
   const range = document.createElement("span");
+  range.className = "sentence-range";
   range.textContent = `(${secondsLabel(startSeconds)} - ${secondsLabel(endSeconds)})`;
   topLeft.appendChild(range);
 
   if (Number.isFinite(ratio)) {
     const ratioSpan = document.createElement("span");
+    ratioSpan.className = "sentence-speech-rate";
     ratioSpan.textContent = `speech/audio ${ratioLabel(item.speech_audio_ratio)}`;
     topLeft.appendChild(ratioSpan);
   }
@@ -1891,7 +2134,7 @@ function renderSentence(item) {
     prob.title = item.error;
   }
   refreshSpeakerPanelSentenceCounts();
-  refreshTranscriptSpeakerFilters();
+  refreshTranscriptVisibility();
   if (isNewRow || item.realtime) {
     scrollSentencesToBottom();
   }
@@ -1910,6 +2153,25 @@ function connect() {
   es.addEventListener("realtime_clear", e => clearRealtimeRows(JSON.parse(e.data).generation));
   es.addEventListener("done", e => { stopPlaybackClock(); stopBrowserAudioCapture(); setState("Stopped"); start.disabled = false; stop.disabled = true; setSourceControlsDisabled(false); log(JSON.parse(e.data).message); });
 }
+followLive.addEventListener("change", () => {
+  followLiveEnabled = followLive.checked;
+  if (followLiveEnabled) scrollSentencesToBottom();
+});
+transcriptSearch.addEventListener("input", () => {
+  transcriptSearchText = transcriptSearch.value || "";
+  refreshTranscriptVisibility();
+});
+copyTranscriptButton.addEventListener("click", () => copyTranscript());
+downloadTranscriptButton.addEventListener("click", () => downloadTranscript());
+transcriptSettingsButton.addEventListener("click", event => {
+  event.stopPropagation();
+  setTranscriptSettingsOpen(transcriptSettingsPanel.hidden);
+});
+transcriptSettingsPanel.addEventListener("click", event => event.stopPropagation());
+[showTranscriptTags, showTranscriptTime, showTranscriptSpeechRate, showTranscriptProbabilities].forEach(control => {
+  control.addEventListener("change", applyTranscriptDisplaySettings);
+});
+applyTranscriptDisplaySettings();
 start.addEventListener("click", async () => {
   start.disabled = true; stop.disabled = false; setSourceControlsDisabled(true); resetTranscriptDisplay(); setState("Starting"); connect();
   if (browserStreamMode) {
@@ -2001,6 +2263,9 @@ sourceModeOptionButtons.forEach(button => {
 document.addEventListener("click", event => {
   if (!sourceModeMenu.contains(event.target)) {
     setSourceModeMenuOpen(false);
+  }
+  if (!transcriptSettingsButton.contains(event.target) && !transcriptSettingsPanel.contains(event.target)) {
+    setTranscriptSettingsOpen(false);
   }
 });
 newSpeakerSensitivity.addEventListener("input", () => {
@@ -2104,10 +2369,11 @@ referenceSpeakerForm.addEventListener("submit", async event => {
   }
 });
 recordReferenceButton.addEventListener("click", () => {
+  if (referenceRecordStream || referenceRecordPending) {
+    stopAndAddReferenceRecording().catch(error => log(`Add recorded reference failed: ${error.message}`));
+    return;
+  }
   startReferenceRecording().catch(error => log(`Reference recording failed: ${error.message}`));
-});
-stopReferenceButton.addEventListener("click", () => {
-  stopAndAddReferenceRecording().catch(error => log(`Add recorded reference failed: ${error.message}`));
 });
 load.addEventListener("click", async () => {
   setSourceModeMenuOpen(false);
