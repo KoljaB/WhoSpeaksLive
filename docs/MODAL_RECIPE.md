@@ -1,7 +1,7 @@
 # Modal Recipe
 
-This recipe deploys the WhoSpeaks remote ASR backend to Modal and points the
-local UI at that GPU service.
+This recipe deploys the public WhoSpeaks browser UI to Modal and verifies that
+the public URL works end to end.
 
 ## 1. Install The Project
 
@@ -17,72 +17,75 @@ Make sure Modal is installed and authenticated:
 .\.venv\Scripts\python.exe -m modal token set
 ```
 
-## 2. Deploy Remote ASR
+## 2. Deploy The Public UI
 
 ```powershell
-.\.venv\Scripts\python.exe -m modal deploy --strategy recreate --name whospeaks-live-asr src\whospeaks\window\modal_asr_server.py
+$env:PYTHONIOENCODING='utf-8'
+.\.venv\Scripts\python.exe -m modal deploy --strategy recreate --name whospeaks-youtube-window-diarize src\whospeaks\window\modal_youtube_window_diarize_gui.py
 ```
 
-The endpoint should be:
-
-```text
-https://lonligrin--whospeaks-live-asr.modal.run
-```
-
-Check health:
+The deployment defaults to `WHOSPEAKS_MODAL_GPU=T4` and a 60-second idle
+scaledown window. To test a stronger GPU only when needed:
 
 ```powershell
-curl.exe -sS https://lonligrin--whospeaks-live-asr.modal.run/health
-```
-
-## 3. Start The UI Against Modal
-
-```powershell
-.\.venv\Scripts\python.exe -m whospeaks.window.youtube_gui `
-  --host 127.0.0.1 `
-  --port 8796 `
-  --no-browser `
-  --asr-backend remote `
-  --remote-asr-url https://lonligrin--whospeaks-live-asr.modal.run `
-  --remote-asr-timeout-seconds 240 `
-  --skip-download `
-  --work-dir runtime\media\local-filefeed `
-  --no-startup-warmup-before-url
+$env:WHOSPEAKS_MODAL_GPU='L4'
 ```
 
 Open:
 
 ```text
-http://127.0.0.1:8796/
+https://lonligrin--whospeaks-youtube-window-diarize-youtube-wind-4fd2fa.modal.run
 ```
 
-## 4. Verify End To End
+## 3. Verify The Public URL
 
-1. Click `Start transcription`.
-2. Wait for Modal warmup on first start.
-3. Confirm the header changes to active transcription or diarization.
-4. Confirm final transcript rows appear with speaker labels and timestamps.
-5. Confirm the speaker panel creates and updates detected speakers.
-6. Confirm at least one new speaker or reassignment appears in the status log
-   on the Philomena Cunk sample video.
+1. Open the public URL in a browser.
+2. Click `Start transcription`.
+3. Wait for model warmup on first start.
+4. Confirm the header changes to `Transcribing`.
+5. Confirm realtime text appears as a `Live` transcript row.
+6. Confirm final transcript rows appear with speaker names, timestamps, and
+   probability summaries.
+7. Confirm the speaker panel shows detected speakers and sentence/time totals.
+8. Confirm at least one speaker is marked `Live` while audio is playing.
+
+## 4. Optional Remote ASR Service
+
+For a split deployment where the UI runs elsewhere and only final ASR windows
+run on Modal:
+
+```powershell
+$env:PYTHONIOENCODING='utf-8'
+.\.venv\Scripts\python.exe -m modal deploy --strategy recreate --name whospeaks-live-asr src\whospeaks\window\modal_asr_server.py
+```
+
+Endpoint:
+
+```text
+https://lonligrin--whospeaks-live-asr.modal.run
+```
+
+Health check:
+
+```powershell
+curl.exe -sS https://lonligrin--whospeaks-live-asr.modal.run/health
+```
 
 ## 5. Troubleshooting
 
-- HTTP 422 on `/transcribe-window` usually means FastAPI did not resolve the
-  `Request` annotation correctly.
-- `libcublas.so.12 is not found` means the image does not include CUDA runtime
-  libraries.
-- First Modal starts can take around two minutes while the image starts and the
-  model cache is warmed.
-- Use `--strategy recreate` after changing route definitions or image packages.
+- Use `$env:PYTHONIOENCODING='utf-8'` before deploy on Windows.
+- Stop the full public UI app when done testing so no GPU web-server container
+  remains active:
 
-## 6. Future Full-UI Modal Hosting
-
-For hosting the entire UI on Modal, port the old wrapper from:
-
-```text
-D:\Projekte\WhoSpeaks\tools\modal_youtube_window_diarize_gui.py
+```powershell
+.\.venv\Scripts\python.exe -m modal app stop --yes whospeaks-youtube-window-diarize
 ```
 
-That file already contains the full Modal web-server shape, CUDA image setup,
-cache volume policy, and long-running GPU worker settings.
+- Use `--strategy recreate` after changing route definitions, image packages,
+  or web-server startup behavior.
+- First full-UI deploys are slow because Kroko is built into the image.
+- First public page loads may wait for Modal GPU scheduling and model warmup.
+- `libcublas.so.12 is not found` means the image does not include CUDA runtime
+  libraries.
+- HTTP 422 on `/transcribe-window` usually means FastAPI did not resolve the
+  `Request` annotation correctly.

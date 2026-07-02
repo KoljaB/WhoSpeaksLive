@@ -1,10 +1,43 @@
 # Modal Deployment Notes
 
-WhoSpeaks currently uses Modal for the remote ASR backend: the browser UI runs
-normally, but final transcription windows are sent to a GPU-backed Modal HTTP
-service.
+WhoSpeaks now has two Modal deployments: the public full browser UI and the
+remote ASR service used for smaller split deployments.
 
-## Current Endpoint
+## Public Full UI
+
+- App name: `whospeaks-youtube-window-diarize`
+- Public URL: `https://lonligrin--whospeaks-youtube-window-diarize-youtube-wind-4fd2fa.modal.run`
+- Source file: `src/whospeaks/window/modal_youtube_window_diarize_gui.py`
+- Runtime: CUDA 12.6, Python 3.11, Modal T4 GPU by default
+- Cache volume: `whospeaks-youtube-window-diarize-cache`
+- Entrypoint inside Modal: `python -m whospeaks.window.youtube_gui`
+
+The full UI image bakes the cleaned `src/`, `vendor/`, `tools/`, test fixtures,
+and the local Philomena Cunk media cache into the image. Runtime models, speaker
+libraries, generated outputs, and mutable media are stored under `/cache`.
+
+Deploy:
+
+```powershell
+$env:PYTHONIOENCODING='utf-8'
+.\.venv\Scripts\python.exe -m modal deploy --strategy recreate --name whospeaks-youtube-window-diarize src\whospeaks\window\modal_youtube_window_diarize_gui.py
+```
+
+Cost controls:
+
+- The full UI wrapper defaults to `WHOSPEAKS_MODAL_GPU=T4`.
+- Override only when needed, for example
+  `$env:WHOSPEAKS_MODAL_GPU='L4'` before deploy.
+- Idle containers scale down after `60` seconds by default. Override with
+  `WHOSPEAKS_MODAL_SCALEDOWN_WINDOW_SECONDS` if a longer warm container window
+  is worth the extra spend.
+- Stop a running public UI container immediately with:
+
+```powershell
+.\.venv\Scripts\python.exe -m modal app stop --yes whospeaks-youtube-window-diarize
+```
+
+## Remote ASR Endpoint
 
 - App name: `whospeaks-live-asr`
 - Web endpoint: `https://lonligrin--whospeaks-live-asr.modal.run`
@@ -18,98 +51,71 @@ The service exposes:
 - `GET /health`
 - `POST /transcribe-window?sample_rate=16000&encoding=float32`
 
-`POST /transcribe-window` accepts raw little-endian `float32` mono PCM audio and
-returns faster-whisper segments, word timestamps, and timing metadata.
+## Public Browser Verification
 
-## Verified Command
+Verified on 2026-07-02 with the in-app Browser against the public URL:
 
-Deploy or redeploy the ASR service:
-
-```powershell
-.\.venv\Scripts\python.exe -m modal deploy --strategy recreate --name whospeaks-live-asr src\whospeaks\window\modal_asr_server.py
+```text
+https://lonligrin--whospeaks-youtube-window-diarize-youtube-wind-4fd2fa.modal.run
 ```
 
-Run the current UI against the Modal ASR endpoint:
+Visible browser state from the public page:
 
-```powershell
-.\.venv\Scripts\python.exe -m whospeaks.window.youtube_gui `
-  --host 127.0.0.1 `
-  --port 8796 `
-  --no-browser `
-  --asr-backend remote `
-  --remote-asr-url https://lonligrin--whospeaks-live-asr.modal.run `
-  --remote-asr-timeout-seconds 240 `
-  --skip-download `
-  --work-dir runtime\media\local-filefeed `
-  --no-startup-warmup-before-url
+- Header showed `Transcribing`.
+- Playback was active at `01:47 / 05:03`.
+- Live transcript area showed final sentence rows with speaker labels, time
+  ranges, speech/audio rates, and probability summaries.
+- A live row was visible: `Speaker 3 Live`, with realtime text still updating.
+- Speaker panel showed `Detected speakers (4)`.
+- Speaker assignment was visible for `Speaker 1`, `Speaker 2`, `Speaker 3`, and
+  `Speaker 4`.
+- Speaker totals were visible, for example `Speaker 1 15 sentences · 51.4s`.
+- Status log showed model warmup, realtime preview startup, ASR window
+  transcription, and accepted sentence counts.
+
+Representative visible transcript rows:
+
+```text
+Speaker 1: Which was more culturally significant, the Renaissance or Single Ladies by Beyoncé?
+Speaker 2: They both have their period.
+Speaker 3: I don't think they had many homeless people in ancient Egypt.
+Speaker 3 Live: You got your dead body, and you light out on a table...
 ```
 
-## Browser Verification
+Representative Modal log lines from the same public run:
 
-Verified on 2026-07-02 with the in-app Browser at `http://127.0.0.1:8796/`.
+```text
+Realtime preview ready in 3.82s (kroko_onnx).
+Growing-window transcription started (continuous, min playback advance 0.75s).
+Transcribed 7.78s window in 0.35s; segments=1 words=12 accepted=1.
+Embedded sentence 0 in 0.02s; speaker=S1 new=1 unk=0.0 top=1.0 margin=1.0.
+Transcribed 6.73s window in 0.49s; segments=2 words=16 accepted=2.
+Embedded sentence 1 in 0.03s; speaker=S2 new=1 unk=0.0 top=0.0792 margin=1.0.
+```
 
-The deployed health endpoint also returned:
+## Earlier ASR-Only Verification
+
+The remote ASR endpoint was also verified from the local UI on 2026-07-02. Its
+health endpoint returned:
 
 ```json
 {"ok":true,"service":"whospeaks-live-asr","model":"large-v2","device":"cuda","compute_type":"float16","model_loaded":true}
-```
-
-Observed results:
-
-- Start transcription launched the YouTube sample run.
-- The UI entered the active `Diarizing` state.
-- The transcript showed final accepted sentences with speaker names, time ranges,
-  speech/audio rates, and probability bars.
-- Live transcript rows appeared while the run was still in progress.
-- Speaker assignment worked: the UI showed 5 detected speakers.
-- Speaker totals updated, for example `Speaker 1` with 23 sentences and `1:12`
-  total speaking time.
-- New speaker detection worked: `Speaker 5` was created during the run.
-- Reassignment worked in logs, including unknown sentences reassigned to known
-  speakers after stronger speaker references were available.
-
-Representative local verification log lines:
-
-```text
-Remote faster-whisper large-v2 ASR ready
-Transcribed 8.50s window in 2.03s; segments=2 words=33 accepted=1
-Embedded sentence 15 in 0.05s; speaker=S3 new=0 unk=0.0669 top=0.7729 margin=0.5348
-Embedded sentence 20 in 0.03s; speaker=S4 new=1 unk=0.0 top=0.0592 margin=0.0501
-Reassigned unknown sentence 17 to S1 (sim=0.3338, margin=0.2005)
-Embedded sentence 28 in 0.06s; speaker=S5 new=1 unk=0.0 top=0.3187 margin=0.1368
 ```
 
 ## Problems And Fixes
 
 | Problem | Symptom | Fix |
 | --- | --- | --- |
-| FastAPI treated the request body parameter as a missing query parameter. | `/transcribe-window` returned HTTP 422 with `loc=["query","request"]`. | Removed postponed annotations from the Modal ASR module so `request: Request` resolves to the actual FastAPI `Request` class at route registration time. |
-| Modal kept serving an older function object during route testing. | The 422 persisted after the local source was changed. | Redeployed with `--strategy recreate` so existing containers were terminated and rebuilt. |
-| The first image did not include CUDA runtime libraries. | `/transcribe-window` returned HTTP 500 with `RuntimeError: Library libcublas.so.12 is not found`. | Switched from Debian slim to `nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04` with Python 3.11. |
-| Starting the local verification server with PowerShell `Start-Process` hit duplicate environment keys. | Windows reported duplicate `PATH`/`Path` entries. | Started the verification server with Python `subprocess.Popen` and a sanitized environment. |
-| Browser media playback initially needed a user gesture. | The status log showed `audio playback blocked: NotAllowedError` at startup. | Browser interaction still started the run; backend warmup and transcript processing proceeded after the user-driven start action. |
-| The historical full Modal GUI app was not immediately schedulable. | The old app `whospeaks-youtube-window-diarize` waited for GPU capacity. | Verified the current repo through the local UI against the new Modal ASR endpoint. The old full-GUI wrapper remains useful for a future port. |
-
-## Old Full-GUI Modal App
-
-The previous repo at `D:\Projekte\WhoSpeaks` contains
-`tools\modal_youtube_window_diarize_gui.py`, a full Modal web-server wrapper for
-the older GUI. It deployed app `whospeaks-youtube-window-diarize` and ran the
-whole UI inside Modal.
-
-Important details from that wrapper:
-
-- Base image: `nvidia/cuda:12.6.3-cudnn-runtime-ubuntu22.04`
-- Runtime packages: ffmpeg, git, curl, build tools, PortAudio, libsndfile
-- Python packages: torch/torchaudio CUDA wheels, faster-whisper, RealtimeSTT,
-  stream2sentence, yt-dlp, onnxruntime-gpu, ESPnet and speaker-model packages
-- Persistent volume: `whospeaks-youtube-window-diarize-cache`
-- Modal primitive: `@modal.web_server(PORT, startup_timeout=20 * 60)`
-- GPU: `gpu="any"`
-
-That wrapper has not yet been ported to the cleaned `src/whospeaks` layout. If
-we need the entire current UI hosted on Modal, port this file next instead of
-starting from scratch.
+| FastAPI treated the ASR request body parameter as a missing query parameter. | `/transcribe-window` returned HTTP 422 with `loc=["query","request"]`. | Removed postponed annotations from the Modal ASR module so `request: Request` resolves to the actual FastAPI `Request` class at route registration time. |
+| Modal kept serving an older ASR function object during route testing. | The 422 persisted after the local source was changed. | Redeployed with `--strategy recreate` so existing containers were terminated and rebuilt. |
+| The first ASR image did not include CUDA runtime libraries. | `/transcribe-window` returned HTTP 500 with `RuntimeError: Library libcublas.so.12 is not found`. | Switched from Debian slim to `nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04` with Python 3.11. |
+| The old full-UI wrapper used the pre-restructure `tools/` layout. | It could not represent the cleaned `src/whospeaks` project. | Added `modal_youtube_window_diarize_gui.py`, which bakes `src/`, `vendor/`, `tools/`, fixtures, and cached demo media, then launches `python -m whospeaks.window.youtube_gui`. |
+| Modal imports the deployment file from `/root/modal_youtube_window_diarize_gui.py` inside the container. | The first full-UI container crashed with `IndexError: 3` from `Path(__file__).parents[3]`. | Added `_local_root()` so the wrapper resolves either the local checkout during deploy or `/root/WhoSpeaksLive` inside Modal. |
+| Windows could not print Modal build progress characters. | The deploy command failed locally with a `charmap` encoding error. | Forced UTF-8 for deploys with `$env:PYTHONIOENCODING='utf-8'`. |
+| The first fixed full-UI redeploy hit the local command timeout while building Kroko. | Modal built the expensive `kroko-onnx` wheel but the local deploy process exited before creating the app objects. | Reran the deploy after the image layer was cached; the second deploy completed in about 10 seconds. |
+| Browser automation click calls timed out while the public page was busy. | Playwright and coordinate click calls reset the browser-control session even though the click reached the app. | Confirmed delivery via Modal logs, recovered the live public tab, and verified visible DOM state from the same running page. |
+| Browser media playback initially needed a user gesture. | Status log showed `audio playback blocked: NotAllowedError`. | The explicit browser Start interaction still triggered backend warmup and synchronized playback; the public page then advanced and produced live/final transcript rows. |
+| The full public UI could keep a GPU web-server container alive while the page was open or shortly after testing. | Modal usage dropped to only a few dollars of remaining workspace credit. | Stopped the active container and app, changed the full-UI default from `gpu="any"` to T4, and reduced the default idle scaledown window from 10 minutes to 60 seconds. |
 
 ## Security And Repo Hygiene
 
