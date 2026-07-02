@@ -39,6 +39,18 @@ def _safe_console_text(text: object) -> str:
 def _console_print(text: object) -> None:
     print(_safe_console_text(text), flush=True)
 
+
+def _env_float(name: str, default: float) -> float:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        _console_print(f"Ignoring invalid {name}={raw!r}; using {default}.")
+        return default
+
+
 DEFAULT_OUTPUT_DIR = WINDOW_OUTPUT_DIR
 DEFAULT_SPEAKER_LIBRARY_DIR = SPEAKER_LIBRARY_DIR
 DEFAULT_VALIDATION_OUTPUT = WINDOW_VALIDATION_OUTPUT
@@ -55,12 +67,16 @@ DEFAULT_KROKO_PREVIEW_MODEL_PATH = Path(os.environ.get(
     str(KROKO_MODEL_DIR / DEFAULT_KROKO_PREVIEW_MODEL),
 ))
 DEFAULT_FAST_WHISPER_CACHE = CACHE_DIR / "faster-whisper"
+DEFAULT_EMBEDDING_HELPER_RESPONSE_TIMEOUT_SECONDS = _env_float(
+    "WHOSPEAKS_EMBEDDING_HELPER_RESPONSE_TIMEOUT_SECONDS",
+    600.0,
+)
 SILERO_VAD_SAMPLE_RATE = 16000
 SILERO_VAD_CHUNK_SAMPLES = 512
 KROKO_PREVIEW_FRAME_SECONDS = 0.02
 DEFAULT_KROKO_16L_CHUNK_SECONDS = 16 * KROKO_PREVIEW_FRAME_SECONDS
 DEFAULT_REMOTE_ASR_URL = os.environ.get("WHOSPEAKS_REMOTE_ASR_URL", "http://192.168.178.22:8650")
-DEFAULT_WINDOW_EMBEDDING_PROVIDER = os.environ.get("WHOSPEAKS_WINDOW_EMBEDDING_PROVIDER", "speechbrain_ecapa")
+DEFAULT_WINDOW_EMBEDDING_PROVIDER = "espnet_ecapa_wavlm_joint=0.725+jungjee_rawnet3=1+wespeaker_campplus=0.35"
 NEW_SPEAKER_SENSITIVITY_FIELDS = (
     "new_speaker_threshold",
     "duplicate_profile_similarity",

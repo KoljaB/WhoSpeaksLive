@@ -75,7 +75,12 @@ class WindowDiarizer:
         self._stream_audio_chunks: list[np.ndarray] = []
         self._stream_audio_samples = 0
         self.duration = len(self.audio) / float(self.sample_rate)
-        self.embedding = EmbeddingSubprocessClient(args.embedding_python, args.embedding_provider, args.embedding_device)
+        self.embedding = EmbeddingSubprocessClient(
+            args.embedding_python,
+            args.embedding_provider,
+            args.embedding_device,
+            response_timeout_seconds=getattr(args, "embedding_helper_response_timeout_seconds", 600.0),
+        )
         self.memory = self._new_memory()
         self.speaker_library_dir = Path(getattr(args, "speaker_library_dir", DEFAULT_SPEAKER_LIBRARY_DIR))
         self._speaker_lock = threading.Lock()

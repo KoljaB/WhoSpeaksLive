@@ -652,6 +652,64 @@ class RepositoryStructureTests(unittest.TestCase):
             os.environ.update(original_env)
             importlib.reload(paths)
 
+    def test_window_gui_default_embedding_provider_matches_promoted_stack(self) -> None:
+        import whospeaks.window.window_config as window_config
+
+        original_env = dict(os.environ)
+        try:
+            os.environ["WHOSPEAKS_WINDOW_EMBEDDING_PROVIDER"] = "speechbrain_ecapa"
+            reloaded = importlib.reload(window_config)
+            self.assertEqual(
+                reloaded.DEFAULT_WINDOW_EMBEDDING_PROVIDER,
+                "espnet_ecapa_wavlm_joint=0.725+jungjee_rawnet3=1+wespeaker_campplus=0.35",
+            )
+        finally:
+            os.environ.clear()
+            os.environ.update(original_env)
+            importlib.reload(window_config)
+
+    def test_window_gui_tuned_default_parameters_match_promoted_set(self) -> None:
+        from whospeaks.window.youtube_window_diarize_gui import parse_args
+
+        expected = {
+            "embedding_provider": "espnet_ecapa_wavlm_joint=0.725+jungjee_rawnet3=1+wespeaker_campplus=0.35",
+            "same_speaker_similarity": 0.37,
+            "similarity_temperature": 0.0576,
+            "speaker_softmax_temperature": 0.0539,
+            "new_speaker_threshold": 0.38,
+            "duplicate_profile_similarity": 0.4,
+            "unknown_short_threshold": 0.333,
+            "min_first_speaker_seconds": 1.3098,
+            "min_new_speaker_seconds": 1.6,
+            "late_new_speaker_min_seconds": 3.4127,
+            "max_speakers": 12,
+            "min_margin": 0.0386,
+            "margin_temperature": 0.03,
+            "update_unknown_max": 0.54,
+            "new_speaker_confirmation_count": 1,
+            "new_speaker_confirmation_similarity": 0.5033,
+            "max_pending_new_speakers": 6,
+            "min_new_speaker_words": 3,
+            "retro_reassign_min_similarity": 0.05,
+            "retro_reassign_min_margin": 0.0,
+            "min_embed_seconds": 0.5,
+            "min_speech_audio_ratio": 0.0,
+            "sentence_boundary_pre_padding_seconds": 0.06,
+            "sentence_boundary_post_padding_seconds": 0.09,
+            "sentence_boundary_gap_ratio": 0.6,
+            "realtime_preview_diarize_min_audio_seconds": 1.5,
+            "realtime_preview_diarize_min_advance_seconds": 0.75,
+            "realtime_preview_diarize_min_similarity": 0.45,
+            "realtime_preview_diarize_min_margin": 0.08,
+            "realtime_preview_diarize_min_known_probability": 0.5,
+        }
+
+        with mock.patch.object(sys, "argv", ["youtube_window_diarize_gui.py"]):
+            args = parse_args()
+
+        for name, value in expected.items():
+            self.assertEqual(getattr(args, name), value, name)
+
     def test_cunk_canonical_is_a_small_fixture(self) -> None:
         from whospeaks.paths import CUNK_CANONICAL
 

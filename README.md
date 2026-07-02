@@ -35,6 +35,15 @@ Old script paths remain available as compatibility wrappers:
 .\.venv\Scripts\python.exe tools\benchmark_voice_embeddings.py --help
 ```
 
+When using remote ASR, speaker embeddings still run locally. The first startup
+of the default high-quality stacked embedding provider may download and load
+large models before the browser URL is released. If a clean machine needs more
+time, use:
+
+```powershell
+.\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --embedding-helper-response-timeout-seconds 900
+```
+
 ## Layout
 
 Source code lives under `src/whospeaks/`. Copied third-party sources live under

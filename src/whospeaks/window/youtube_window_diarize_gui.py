@@ -107,6 +107,7 @@ from whospeaks.window.window_remote_asr import RemoteWindowAsrClient  # noqa: E4
 
 from whospeaks.window.window_runtime import (  # noqa: E402
     DEFAULT_CUNK_CANONICAL,
+    DEFAULT_EMBEDDING_HELPER_RESPONSE_TIMEOUT_SECONDS,
     DEFAULT_FAST_WHISPER_CACHE,
     DEFAULT_KROKO_PREVIEW_MODEL,
     DEFAULT_KROKO_PREVIEW_PYTHON,
@@ -761,6 +762,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--embedding-python", type=Path, default=default_embedding_python())
     parser.add_argument("--embedding-device", default="cuda")
     parser.add_argument(
+        "--embedding-helper-response-timeout-seconds",
+        type=float,
+        default=DEFAULT_EMBEDDING_HELPER_RESPONSE_TIMEOUT_SECONDS,
+        help=(
+            "Maximum time to wait for an embedding helper response. First startup of the "
+            "default high-quality stacked provider may need several minutes while models "
+            "download and initialize."
+        ),
+    )
+    parser.add_argument(
         "--speaker-library-dir",
         type=Path,
         default=DEFAULT_SPEAKER_LIBRARY_DIR,
@@ -997,7 +1008,9 @@ def main() -> int:
     print(
         f"[{datetime.now().strftime('%H:%M:%S')}] Startup config: "
         f"url={args.url} port={args.port} asr_backend={args.asr_backend} "
-        f"embedding_provider={args.embedding_provider} realtime_preview={args.realtime_preview_engine}.",
+        f"embedding_provider={args.embedding_provider} "
+        f"embedding_timeout={args.embedding_helper_response_timeout_seconds:.0f}s "
+        f"realtime_preview={args.realtime_preview_engine}.",
         flush=True,
     )
     if args.validate_window_replay:
