@@ -16,7 +16,7 @@ from typing import Any
 
 import numpy as np
 
-from audio_utils import (
+from whospeaks.common.audio_utils import (
     SAMPLE_RATE,
     json_dumps,
     load_audio_file,
@@ -24,9 +24,8 @@ from audio_utils import (
     pad_audio,
     trim_silence,
 )
+from whospeaks.paths import CACHE_DIR, EMBEDDING_VENV, PROJECT_ROOT, TOOLS_DIR
 
-TOOLS_DIR = Path(__file__).resolve().parent
-ROOT = TOOLS_DIR.parent
 DEFAULT_HELPER_SCRIPT = TOOLS_DIR / "realtime_speakerdiarize.py"
 
 DEFAULT_EMBEDDING_PROVIDER = "speechbrain_ecapa"
@@ -53,7 +52,7 @@ BENCHMARK_PROVIDER_ALIASES = {
 
 
 def _load_project_env() -> None:
-    for path in (ROOT / ".env", ROOT / ".env.local", TOOLS_DIR / ".env"):
+    for path in (PROJECT_ROOT / ".env", PROJECT_ROOT / ".env.local"):
         if not path.exists():
             continue
         for raw_line in path.read_text(encoding="utf-8").splitlines():
@@ -83,7 +82,7 @@ def _normalize_hf_token_env() -> bool:
 
 def configure_embedding_env() -> None:
     _load_project_env()
-    cache = ROOT / ".cache"
+    cache = CACHE_DIR
     env_defaults = {
         "HF_HOME": cache / "huggingface",
         "TRANSFORMERS_CACHE": cache / "huggingface" / "transformers",
@@ -132,7 +131,7 @@ def canonical_embedding_provider_name(value: str) -> str:
 
 
 def default_embedding_python() -> Path:
-    candidate = ROOT / ".venv-voice-embeddings" / "Scripts" / "python.exe"
+    candidate = EMBEDDING_VENV / "Scripts" / "python.exe"
     if candidate.exists():
         return candidate
     return Path(sys.executable)
@@ -154,7 +153,7 @@ class SpeechBrainProvider:
 
         self.torch = torch
         self.device = choose_torch_device(device)
-        savedir = ROOT / ".cache" / "speechbrain" / sanitize(model_id)
+        savedir = CACHE_DIR / "speechbrain" / sanitize(model_id)
         self.model = EncoderClassifier.from_hparams(
             source=model_id,
             savedir=str(savedir),
@@ -213,7 +212,7 @@ class PyannoteModelProvider:
 
         load_kwargs: dict[str, Any] = {
             "use_auth_token": token,
-            "cache_dir": str(ROOT / ".cache" / "pyannote"),
+            "cache_dir": str(CACHE_DIR / "pyannote"),
         }
         if model_id == "pyannote/embedding":
             load_kwargs["strict"] = False
@@ -249,9 +248,7 @@ class BenchmarkAdapterProvider:
         configure_embedding_env()
         import torch
 
-        if str(TOOLS_DIR) not in sys.path:
-            sys.path.insert(0, str(TOOLS_DIR))
-        from benchmark_voice_embeddings import ADAPTERS, ENGINES, configure_env
+        from whospeaks.embeddings.benchmark_voice_embeddings import ADAPTERS, ENGINES, configure_env
 
         configure_env()
         if engine_id not in ENGINES:
@@ -365,7 +362,7 @@ def create_single_embedding_provider(provider: str, device: str) -> Any:
         f"Unsupported embedding provider {provider!r}. Supported providers: "
         "speechbrain_ecapa, speechbrain_resnet, resemblyzer, pyannote_embedding, "
         "pyannote_wespeaker_resnet34_lm, benchmark provider IDs from "
-        "tools/benchmark_voice_embeddings.py, or a '+' stack of them."
+        "whospeaks-embedding-benchmark, or a '+' stack of them."
     )
 
 
@@ -420,7 +417,7 @@ class EmbeddingSubprocessClient:
         ]
         self._process = subprocess.Popen(
             command,
-            cwd=str(ROOT),
+            cwd=str(PROJECT_ROOT),
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

@@ -20,10 +20,10 @@ from typing import Any
 import numpy as np
 from stream2sentence import generate_sentences, init_tokenizer
 
-from audio_utils import load_audio_file, pad_audio, trim_silence, write_wav
-from embedding_providers import EmbeddingSubprocessClient
-from speaker_embedding_cluster import SpeakerMemory
-from window_config import (
+from whospeaks.common.audio_utils import load_audio_file, pad_audio, trim_silence, write_wav
+from whospeaks.embeddings.embedding_providers import EmbeddingSubprocessClient
+from whospeaks.speakers.speaker_embedding_cluster import SpeakerMemory
+from whospeaks.window.window_config import (
     DEFAULT_REALTIMESTT_ROOT,
     DEFAULT_SPEAKER_LIBRARY_DIR,
     NEW_SPEAKER_SENSITIVITY_FIELDS,
@@ -37,7 +37,7 @@ from window_config import (
     safe_reference_filename,
     speaker_group_dir,
 )
-from window_domain import (
+from whospeaks.window.window_domain import (
     EmbeddingSentenceJob,
     MediaFiles,
     PendingUnknownSentence,
@@ -46,16 +46,16 @@ from window_domain import (
     VadWindowState,
     WindowTranscript,
 )
-from window_events import EventBus
-from window_media import resolve_browser_stream_id
-from window_preview import (
+from whospeaks.window.window_events import EventBus
+from whospeaks.window.window_media import resolve_browser_stream_id
+from whospeaks.window.window_preview import (
     KrokoRealtimePreviewTranscriber,
     KrokoSubprocessPreviewTranscriber,
     MockRealtimePreviewTranscriber,
     RealtimePreviewTranscriber,
 )
-from window_remote_asr import RemoteWindowAsrClient
-from window_text import (
+from whospeaks.window.window_remote_asr import RemoteWindowAsrClient
+from whospeaks.window.window_text import (
     is_embedding_candidate_text,
     round_optional,
     split_words_with_stream2sentence,

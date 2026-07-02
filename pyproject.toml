@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whospeaks"
+version = "0.1.0"
+description = "Local speaker diarization and realtime voice-labeling tools."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+whospeaks-window = "whospeaks.window.youtube_gui:main"
+whospeaks-realtime = "whospeaks.realtime.realtime_speakerdiarize:main"
+whospeaks-filefeed-replay = "whospeaks.replay.youtube_local_filefeed_replay:main"
+whospeaks-embedding-benchmark = "whospeaks.embeddings.benchmark_voice_embeddings:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src", "vendor"]
+
+[tool.setuptools.package-data]
+stream2sentence = ["data/*.json"]
+RealtimeSTT = ["assets/**/*"]

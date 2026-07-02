@@ -9,15 +9,26 @@ import sys
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-TOOLS = Path(__file__).resolve().parent
-os.environ.setdefault("NLTK_DATA", str(ROOT / ".cache" / "nltk"))
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-if str(TOOLS) not in sys.path:
-    sys.path.insert(0, str(TOOLS))
+from whospeaks.paths import (
+    CACHE_DIR,
+    CUNK_CANONICAL,
+    KROKO_MODEL_DIR,
+    PROJECT_ROOT,
+    SPEAKER_LIBRARY_DIR,
+    TOOLS_DIR,
+    VENDOR_DIR,
+    VENVS_DIR,
+    WINDOW_OUTPUT_DIR,
+    WINDOW_VALIDATION_OUTPUT,
+)
 
-from textcolors.speaker_color_allocation import SpeakerColorAllocator
+ROOT = PROJECT_ROOT
+TOOLS = TOOLS_DIR
+os.environ.setdefault("NLTK_DATA", str(CACHE_DIR / "nltk"))
+if str(VENDOR_DIR) not in sys.path:
+    sys.path.insert(0, str(VENDOR_DIR))
+
+from whospeaks.textcolors.speaker_color_allocation import SpeakerColorAllocator
 
 def _safe_console_text(text: object) -> str:
     value = str(text)
@@ -28,22 +39,22 @@ def _safe_console_text(text: object) -> str:
 def _console_print(text: object) -> None:
     print(_safe_console_text(text), flush=True)
 
-DEFAULT_OUTPUT_DIR = TOOLS / ".window_diarize"
-DEFAULT_SPEAKER_LIBRARY_DIR = ROOT / "speakers"
-DEFAULT_VALIDATION_OUTPUT = TOOLS / ".window_diarize_validation" / "latest.json"
-DEFAULT_CUNK_CANONICAL = ROOT / "output_elevenlabs_cunk" / "cunk_on_earth_clip.canonical_diarization.json"
+DEFAULT_OUTPUT_DIR = WINDOW_OUTPUT_DIR
+DEFAULT_SPEAKER_LIBRARY_DIR = SPEAKER_LIBRARY_DIR
+DEFAULT_VALIDATION_OUTPUT = WINDOW_VALIDATION_OUTPUT
+DEFAULT_CUNK_CANONICAL = CUNK_CANONICAL
 SPEAKER_COLORS = SpeakerColorAllocator(max_colors=16, allow_reuse=True).palette()
-DEFAULT_REALTIMESTT_ROOT = Path(os.environ.get("REALTIMESTT_ROOT", str(ROOT)))
+DEFAULT_REALTIMESTT_ROOT = Path(os.environ.get("REALTIMESTT_ROOT", str(VENDOR_DIR)))
 DEFAULT_KROKO_PREVIEW_PYTHON = Path(os.environ.get(
     "WHOSPEAKS_KROKO_PREVIEW_PYTHON",
-    str(ROOT / ".venvs" / "kroko-install-test" / "Scripts" / "python.exe"),
+    str(VENVS_DIR / "kroko-install-test" / "Scripts" / "python.exe"),
 ))
 DEFAULT_KROKO_PREVIEW_MODEL = "Kroko-EN-Community-64-L-Streaming-001.data"
 DEFAULT_KROKO_PREVIEW_MODEL_PATH = Path(os.environ.get(
     "WHOSPEAKS_KROKO_PREVIEW_MODEL_PATH",
-    str(ROOT / "test-model-cache" / "kroko-onnx" / DEFAULT_KROKO_PREVIEW_MODEL),
+    str(KROKO_MODEL_DIR / DEFAULT_KROKO_PREVIEW_MODEL),
 ))
-DEFAULT_FAST_WHISPER_CACHE = ROOT / ".cache" / "faster-whisper"
+DEFAULT_FAST_WHISPER_CACHE = CACHE_DIR / "faster-whisper"
 SILERO_VAD_SAMPLE_RATE = 16000
 SILERO_VAD_CHUNK_SAMPLES = 512
 KROKO_PREVIEW_FRAME_SECONDS = 0.02
@@ -121,7 +132,7 @@ def default_silero_vad_model_path() -> Path | None:
     site_package_roots = [
         Path(sys.prefix) / "Lib" / "site-packages",
         ROOT / ".venv-voice-embeddings" / "Lib" / "site-packages",
-        ROOT / ".venvs" / "kroko-install-test" / "Lib" / "site-packages",
+        VENVS_DIR / "kroko-install-test" / "Lib" / "site-packages",
         DEFAULT_REALTIMESTT_ROOT / ".venvs" / "kroko-install-test" / "Lib" / "site-packages",
         DEFAULT_REALTIMESTT_ROOT / ".venvs" / "install-matrix" / "default-faster-whisper" / "Lib" / "site-packages",
         DEFAULT_REALTIMESTT_ROOT / ".venvs" / "install-matrix" / "all" / "Lib" / "site-packages",
@@ -286,7 +297,7 @@ def default_faster_whisper_download_root() -> Path | None:
     return DEFAULT_FAST_WHISPER_CACHE if DEFAULT_FAST_WHISPER_CACHE.exists() else None
 
 
-from window_gui_html import HTML  # noqa: E402
+from whospeaks.window.window_gui_html import HTML  # noqa: E402
 
 
 

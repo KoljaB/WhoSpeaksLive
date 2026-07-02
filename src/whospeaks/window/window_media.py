@@ -6,8 +6,8 @@ import argparse
 import re
 from urllib.parse import urlparse
 
-from window_domain import MediaFiles
-from youtube_local_filefeed_replay import (
+from whospeaks.window.window_domain import MediaFiles
+from whospeaks.replay.youtube_local_filefeed_replay import (
     download_audio,
     download_video,
     newest_matching_file,

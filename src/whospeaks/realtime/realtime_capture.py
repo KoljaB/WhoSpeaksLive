@@ -17,9 +17,9 @@ from urllib.parse import parse_qs, urlparse
 
 import numpy as np
 
-from audio_utils import SAMPLE_RATE, audio_to_float_mono, json_dumps
-from realtime_speaker_engine import RealtimeSpeakerEngine
-from realtime_transcript import split_transcript_by_timestamps
+from whospeaks.common.audio_utils import SAMPLE_RATE, audio_to_float_mono, json_dumps
+from whospeaks.realtime.realtime_speaker_engine import RealtimeSpeakerEngine
+from whospeaks.realtime.realtime_transcript import split_transcript_by_timestamps
 
 def extract_youtube_video_id(url: str) -> str:
     parsed = urlparse(url)

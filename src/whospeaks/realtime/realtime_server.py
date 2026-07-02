@@ -8,9 +8,9 @@ import queue
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
-from audio_utils import json_dumps
-from realtime_capture import EventBus, TraceLogger, YouTubeWasapiController
-from realtime_gui_html import HTML
+from whospeaks.common.audio_utils import json_dumps
+from whospeaks.realtime.realtime_capture import EventBus, TraceLogger, YouTubeWasapiController
+from whospeaks.realtime.realtime_gui_html import HTML
 
 class RequestHandler(BaseHTTPRequestHandler):
     server: "GuiServer"

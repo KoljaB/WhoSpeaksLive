@@ -10,14 +10,14 @@ from typing import Any
 
 import numpy as np
 
-from audio_utils import SAMPLE_RATE
+from whospeaks.common.audio_utils import SAMPLE_RATE
 
 DEFAULT_SENTENCE_BOUNDARY_PRE_PADDING_SECONDS = 0.06
 DEFAULT_SENTENCE_BOUNDARY_POST_PADDING_SECONDS = 0.09
 DEFAULT_SENTENCE_BOUNDARY_GAP_RATIO = 0.6
 
 
-from realtime_gui_html import HTML
+from whospeaks.realtime.realtime_gui_html import HTML
 
 
 

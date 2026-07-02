@@ -1,16 +1,33 @@
+# Virtual environments
 .venv/
 .venv-*/
 .venvs/
-.cache/
+
+# Local environment
 .env
+.env.*
+!.env.example
+
+# Python caches
 __pycache__/
 *.py[cod]
-realtime_output/
+*.pyo
+*.egg-info/
+
+# Local runtime data
+runtime/
+.cache/
 hub/
-assets/
+test-model-cache/
+speakers/
+output_*_cunk/
+realtime_output/
 benchmarks/
 youtube2transcripts/
-output_*_cunk/
+assets/
+*.wav
+
+# Legacy generated tool outputs
 tools/.local_filefeed_media/
 tools/.realtime_speakerdiarize_traces/
 tools/.realtime_speakerdiarize_validation/
@@ -18,4 +35,7 @@ tools/.window_diarize/
 tools/.canonical_sentence_feature_cache/
 tools/.window_diarize_feature_cache/
 tools/.window_diarize_validation/
-test-model-cache/
+
+# Local app/runtime metadata
+.codex-runtime/
+.git.invalid-*/

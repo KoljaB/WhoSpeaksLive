@@ -6,8 +6,8 @@ import re
 from typing import Any
 
 from stream2sentence import generate_sentences, init_tokenizer
-from window_config import _console_print
-from window_domain import (
+from whospeaks.window.window_config import _console_print
+from whospeaks.window.window_domain import (
     DEFAULT_SENTENCE_BOUNDARY_GAP_RATIO,
     DEFAULT_SENTENCE_BOUNDARY_POST_PADDING_SECONDS,
     DEFAULT_SENTENCE_BOUNDARY_PRE_PADDING_SECONDS,

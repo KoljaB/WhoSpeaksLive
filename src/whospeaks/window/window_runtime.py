@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from window_config import (
+from whospeaks.window.window_config import (
     DEFAULT_CUNK_CANONICAL,
     DEFAULT_FAST_WHISPER_CACHE,
     DEFAULT_KROKO_16L_CHUNK_SECONDS,
@@ -38,17 +38,17 @@ from window_config import (
     safe_reference_filename,
     speaker_group_dir,
 )
-from window_diarizer import WindowDiarizer
-from window_events import EventBus, RecordingEventBus
-from window_gui_html import HTML
-from window_preview import (
+from whospeaks.window.window_diarizer import WindowDiarizer
+from whospeaks.window.window_events import EventBus, RecordingEventBus
+from whospeaks.window.window_gui_html import HTML
+from whospeaks.window.window_preview import (
     KrokoRealtimePreviewTranscriber,
     KrokoSubprocessPreviewTranscriber,
     MockRealtimePreviewTranscriber,
     RealtimePreviewTranscriber,
     infer_kroko_preview_chunk_seconds,
 )
-from window_text import (
+from whospeaks.window.window_text import (
     LEFT_ATTACHING_TOKEN_STARTS,
     VOCABLE_WORDS,
     find_sentence_span,

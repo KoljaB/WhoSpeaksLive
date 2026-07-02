@@ -1,0 +1,1 @@
+"""Growing-window diarization GUI."""

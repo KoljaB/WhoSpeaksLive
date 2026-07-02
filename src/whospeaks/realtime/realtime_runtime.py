@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from realtime_capture import (
+from whospeaks.realtime.realtime_capture import (
     EventBus,
     TraceLogger,
     VideoClock,
@@ -11,8 +11,8 @@ from realtime_capture import (
     extract_youtube_video_id,
     list_audio_input_devices,
 )
-from realtime_server import GuiServer, RequestHandler
-from realtime_speaker_engine import (
+from whospeaks.realtime.realtime_server import GuiServer, RequestHandler
+from whospeaks.realtime.realtime_speaker_engine import (
     ProcessedSentenceRecord,
     RealtimeSpeakerEngine,
     SentenceJob,
@@ -23,7 +23,7 @@ from realtime_speaker_engine import (
     is_reassignment_candidate,
     speaker_probability_key,
 )
-from realtime_transcript import (
+from whospeaks.realtime.realtime_transcript import (
     DEFAULT_SENTENCE_BOUNDARY_GAP_RATIO,
     DEFAULT_SENTENCE_BOUNDARY_POST_PADDING_SECONDS,
     DEFAULT_SENTENCE_BOUNDARY_PRE_PADDING_SECONDS,

@@ -14,9 +14,9 @@ from typing import Any
 
 import numpy as np
 
-from audio_utils import SAMPLE_RATE, clamp01, normalize_vector, pad_audio, trim_silence, write_wav
-from embedding_providers import EmbeddingSubprocessClient
-from realtime_speaker_memory import SpeakerDecision, SpeakerMemory
+from whospeaks.common.audio_utils import SAMPLE_RATE, clamp01, normalize_vector, pad_audio, trim_silence, write_wav
+from whospeaks.embeddings.embedding_providers import EmbeddingSubprocessClient
+from whospeaks.speakers.realtime_speaker_memory import SpeakerDecision, SpeakerMemory
 
 @dataclass
 class SentenceJob:

@@ -1,0 +1,1 @@
+"""Speaker color allocation helpers."""

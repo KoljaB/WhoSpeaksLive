@@ -7,8 +7,8 @@ import threading
 from datetime import datetime
 from typing import Any
 
-from audio_utils import json_dumps
-from window_config import _console_print
+from whospeaks.common.audio_utils import json_dumps
+from whospeaks.window.window_config import _console_print
 
 class EventBus:
     def __init__(self) -> None:

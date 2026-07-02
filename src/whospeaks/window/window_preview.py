@@ -15,8 +15,8 @@ from typing import Any
 
 import numpy as np
 
-from audio_utils import json_dumps
-from window_config import (
+from whospeaks.common.audio_utils import json_dumps
+from whospeaks.window.window_config import (
     DEFAULT_KROKO_16L_CHUNK_SECONDS,
     KROKO_PREVIEW_FRAME_SECONDS,
     ROOT,

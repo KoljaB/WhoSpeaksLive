@@ -10,7 +10,7 @@ from urllib.request import Request, urlopen
 
 import numpy as np
 
-from window_domain import TimedWord
+from whospeaks.window.window_domain import TimedWord
 
 
 def _word_attr(word: Any, name: str, default: Any = None) -> Any:
