@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+from collections import deque
 from datetime import datetime
 import json
 import math
@@ -82,6 +83,12 @@ class WindowDiarizer:
         self.duration = len(self.audio) / float(self.sample_rate)
         self.embedding = self._new_embedding_client(args)
         self.memory = self._new_memory()
+        self.live_embedding = self._new_live_embedding_client(args)
+        self._live_embedding_separate = self.live_embedding is not self.embedding
+        self.live_memory = self._new_memory() if self._live_embedding_separate else self.memory
+        self._live_probability_history: deque[tuple[float, dict[str, float]]] = deque(
+            maxlen=max(1, int(getattr(args, "live_speaker_ema_count", 3)))
+        )
         self.speaker_library_dir = Path(getattr(args, "speaker_library_dir", DEFAULT_SPEAKER_LIBRARY_DIR))
         self._speaker_lock = threading.Lock()
         self._speaker_group_name = ""
@@ -114,6 +121,9 @@ class WindowDiarizer:
         self._live_speaker_embedding_next_at = 0.0
         self._live_speaker_embedding_latency_ewma: float | None = None
         self._live_speaker_embedding_last_status_at = 0.0
+        self._live_speaker_verify_lock = threading.Lock()
+        self._live_speaker_verify_next_at = 0.0
+        self._live_speaker_verify_last_status_at = 0.0
         self._vad_model: Any = None
         self._vad_model_backend = ""
         self._vad_model_error: str | None = None
@@ -125,21 +135,28 @@ class WindowDiarizer:
         self._asr_probe_warmed_at: float | None = None
         self._speaker_generation = 0
 
-    def _new_embedding_client(self, args: argparse.Namespace) -> Any:
+    def _new_embedding_client(self, args: argparse.Namespace, provider: str | None = None) -> Any:
         embeddings_backend = str(getattr(args, "embeddings_backend", "local") or "local").strip().lower().replace("-", "_")
+        embedding_provider = str(provider or args.embedding_provider)
         if embeddings_backend == "remote":
             return RemoteEmbeddingClient(
                 base_url=args.remote_embeddings_url,
-                provider=args.embedding_provider,
+                provider=embedding_provider,
                 device=getattr(args, "remote_embeddings_device", "auto"),
                 timeout_seconds=getattr(args, "remote_embeddings_timeout_seconds", 600.0),
             )
         return EmbeddingSubprocessClient(
             args.embedding_python,
-            args.embedding_provider,
+            embedding_provider,
             args.embedding_device,
             response_timeout_seconds=getattr(args, "embedding_helper_response_timeout_seconds", 600.0),
         )
+
+    def _new_live_embedding_client(self, args: argparse.Namespace) -> Any:
+        provider = str(getattr(args, "live_speaker_embedding_provider", "") or "").strip()
+        if not provider or provider == str(args.embedding_provider):
+            return self.embedding
+        return self._new_embedding_client(args, provider=provider)
 
     def prepare_before_browser_release(self) -> None:
         self.bus.emit(
@@ -245,6 +262,17 @@ class WindowDiarizer:
             max_pending_new_speakers=self.args.max_pending_new_speakers,
         )
 
+    def _reset_live_speaker_memory(self) -> None:
+        if not hasattr(self, "_live_embedding_separate"):
+            self._live_embedding_separate = False
+        self.live_memory = self._new_memory() if self._live_embedding_separate else self.memory
+        history = getattr(self, "_live_probability_history", None)
+        if history is None:
+            history = deque(maxlen=max(1, int(getattr(self.args, "live_speaker_ema_count", 3))))
+            self._live_probability_history = history
+        history.clear()
+        self._live_speaker_verify_next_at = 0.0
+
     def _rehydrate_seed_profiles(self) -> None:
         with self._speaker_lock:
             seed_profiles = [dict(item) for item in self._seed_profiles]
@@ -260,6 +288,7 @@ class WindowDiarizer:
         else:
             self.memory.replace_profiles([])
         self._sync_metadata_with_memory()
+        self._reset_live_speaker_memory()
 
     def _reset_runtime_session_state(self, *, emit: bool = True) -> dict[str, Any]:
         self.memory = self._new_memory()
@@ -381,6 +410,7 @@ class WindowDiarizer:
         if jobs is not None:
             self._cancel_pending_embedding_jobs(jobs)
         self.memory = self._new_memory()
+        self._reset_live_speaker_memory()
         with self._speaker_lock:
             self._speaker_metadata = {}
             self._seed_profiles = []
@@ -684,6 +714,14 @@ class WindowDiarizer:
             sentence_count=1,
             locked=True,
         )
+        if self._live_embedding_separate:
+            self._update_live_speaker_memory(
+                label,
+                pad_audio(trim_silence(audio, sample_rate), self.args.min_embed_seconds, sample_rate),
+                sample_rate,
+                duration_seconds,
+                ".live-reference.wav",
+            )
         with self._speaker_lock:
             self._speaker_metadata[label] = {
                 "name": clean_name,
@@ -1667,8 +1705,8 @@ class WindowDiarizer:
             },
         )
 
-    def _embed_audio_chunk(self, audio: np.ndarray, sample_rate: int, suffix: str) -> np.ndarray:
-        embed_audio = getattr(self.embedding, "embed_audio", None)
+    def _embed_audio_chunk_with_client(self, client: Any, audio: np.ndarray, sample_rate: int, suffix: str) -> np.ndarray:
+        embed_audio = getattr(client, "embed_audio", None)
         if callable(embed_audio) and not self.args.keep_segment_audio:
             return embed_audio(audio, sample_rate)
 
@@ -1677,13 +1715,19 @@ class WindowDiarizer:
             wav_path = Path(handle.name)
         try:
             write_wav(wav_path, audio, sample_rate)
-            return self.embedding.embed_wav(wav_path)
+            return client.embed_wav(wav_path)
         finally:
             if not self.args.keep_segment_audio:
                 try:
                     wav_path.unlink(missing_ok=True)
                 except Exception:
                     pass
+
+    def _embed_audio_chunk(self, audio: np.ndarray, sample_rate: int, suffix: str) -> np.ndarray:
+        return self._embed_audio_chunk_with_client(self.embedding, audio, sample_rate, suffix)
+
+    def _embed_live_audio_chunk(self, audio: np.ndarray, sample_rate: int, suffix: str) -> np.ndarray:
+        return self._embed_audio_chunk_with_client(self.live_embedding, audio, sample_rate, suffix)
 
     def _warm_embedding(self, force: bool = False) -> None:
         if self._embedding_warmed and not force:
@@ -1698,6 +1742,12 @@ class WindowDiarizer:
             self.bus.emit("status", {"message": f"Remote embeddings server ready at {self.embedding.base_url} (health={health_status})."})
         started = time.monotonic()
         self._embed_audio_chunk(np.zeros(int(self.sample_rate * 0.6), dtype=np.float32), self.sample_rate, ".warm.wav")
+        if self._live_embedding_separate:
+            self._embed_live_audio_chunk(
+                np.zeros(int(self.sample_rate * 0.6), dtype=np.float32),
+                self.sample_rate,
+                ".live-warm.wav",
+            )
         self._embedding_warmed = True
         self._embedding_warmed_at = time.monotonic()
         self.bus.emit("status", {"message": f"Speaker embedding model ready in {self._embedding_warmed_at - started:.2f}s."})
@@ -1715,6 +1765,62 @@ class WindowDiarizer:
             "quality": None,
             "assignment_source": "realtime_preview",
         }
+
+    @staticmethod
+    def _speaker_id_from_probability_key(key: str) -> str | None:
+        value = str(key or "").strip().lower()
+        if not value.startswith("speaker") or not value[7:].isdigit():
+            return None
+        index = int(value[7:])
+        return f"S{index}" if index > 0 else None
+
+    def _live_speaker_ema_probabilities(self, probabilities: dict[str, float]) -> dict[str, float]:
+        now = time.monotonic()
+        window_seconds = max(0.0, float(getattr(self.args, "live_speaker_ema_window_seconds", 1.0)))
+        max_count = max(1, int(getattr(self.args, "live_speaker_ema_count", 3)))
+        alpha = max(0.05, min(1.0, float(getattr(self.args, "live_speaker_ema_alpha", 0.55))))
+        clean = {str(key): float(value) for key, value in (probabilities or {}).items()}
+        self._live_probability_history.append((now, clean))
+        history = [
+            item
+            for item in self._live_probability_history
+            if window_seconds <= 0.0 or now - item[0] <= window_seconds
+        ][-max_count:]
+        self._live_probability_history = deque(
+            history,
+            maxlen=max(1, int(getattr(self.args, "live_speaker_ema_count", 3))),
+        )
+        if not history:
+            return clean
+        keys = sorted({key for _time, item in history for key in item})
+        ema = {key: float(history[0][1].get(key, 0.0)) for key in keys}
+        for _time, item in history[1:]:
+            for key in keys:
+                ema[key] = alpha * float(item.get(key, 0.0)) + (1.0 - alpha) * ema.get(key, 0.0)
+        total = sum(max(0.0, value) for value in ema.values())
+        if total > 0.0:
+            ema = {key: max(0.0, value) / total for key, value in ema.items()}
+        return {key: round(float(value), 4) for key, value in ema.items()}
+
+    def _assign_live_speaker_from_probabilities(
+        self,
+        probabilities: dict[str, float],
+        fallback_speaker: str | None,
+    ) -> str | None:
+        speaker_items = [
+            (self._speaker_id_from_probability_key(key), float(value))
+            for key, value in probabilities.items()
+            if self._speaker_id_from_probability_key(key) is not None
+        ]
+        if not speaker_items:
+            return fallback_speaker
+        speaker, probability = max(speaker_items, key=lambda item: item[1])
+        unknown = float(probabilities.get("unknown", 0.0))
+        if probability <= unknown:
+            return None
+        if probability < float(self.args.realtime_preview_diarize_min_known_probability):
+            return None
+        return speaker
 
     def _live_speaker_embedding_lock(self) -> threading.Lock:
         lock = getattr(self, "_live_speaker_embedding_throttle_lock", None)
@@ -1793,6 +1899,118 @@ class WindowDiarizer:
             },
         )
 
+    def _live_speaker_change_verification_enabled(self) -> bool:
+        return bool(getattr(self.args, "live_speaker_verify_on_change", False)) and bool(
+            getattr(self, "_live_embedding_separate", False)
+        )
+
+    def _live_speaker_verify_min_interval_seconds(self) -> float:
+        try:
+            value = float(getattr(self.args, "live_speaker_verify_min_interval_seconds", 2.0))
+        except (TypeError, ValueError):
+            value = 2.0
+        if not math.isfinite(value):
+            value = 2.0
+        return max(0.0, value)
+
+    def _try_reserve_live_speaker_verification(self) -> bool:
+        now = time.monotonic()
+        lock = getattr(self, "_live_speaker_verify_lock", None)
+        if lock is None:
+            lock = threading.Lock()
+            self._live_speaker_verify_lock = lock
+        with lock:
+            next_at = float(getattr(self, "_live_speaker_verify_next_at", 0.0))
+            if now < next_at:
+                return False
+            self._live_speaker_verify_next_at = now + self._live_speaker_verify_min_interval_seconds()
+            return True
+
+    def _score_live_speaker_with_full_stack(
+        self,
+        audio: np.ndarray,
+        sample_rate: int,
+        duration_seconds: float,
+    ) -> dict[str, Any]:
+        if duration_seconds < max(0.0, float(self.args.realtime_preview_diarize_min_audio_seconds)):
+            return self._realtime_unknown_speaker_payload()
+        if self.memory.profile_count() <= 0:
+            return self._realtime_unknown_speaker_payload()
+
+        chunk = pad_audio(trim_silence(audio, sample_rate), self.args.min_embed_seconds, sample_rate)
+        embedding = self._embed_audio_chunk(chunk, sample_rate, ".live-verify.wav")
+        decision = self.memory.score_existing(
+            embedding,
+            duration_seconds,
+            min_similarity=self.args.realtime_preview_diarize_min_similarity,
+            min_margin=self.args.realtime_preview_diarize_min_margin,
+        )
+        probabilities = dict(decision.probabilities)
+        assigned_speaker = self._assign_live_speaker_from_probabilities(
+            probabilities,
+            decision.assigned_speaker,
+        )
+        self._ensure_speaker_metadata(assigned_speaker)
+        return {
+            "assigned_speaker": assigned_speaker,
+            **self._speaker_info_for_payload(assigned_speaker),
+            "created_speaker": False,
+            "probabilities": probabilities,
+            "similarities": decision.similarities,
+            "unknown_probability": decision.unknown_probability,
+            "top_similarity": decision.top_similarity,
+            "margin": decision.margin,
+            "quality": decision.quality,
+            "assignment_source": "live_full_stack_change_verify",
+        }
+
+    def _verify_live_speaker_change(
+        self,
+        audio: np.ndarray,
+        sample_rate: int,
+        duration_seconds: float,
+        fast_payload: dict[str, Any],
+        active_speaker: str | None,
+    ) -> dict[str, Any] | None:
+        if not self._live_speaker_change_verification_enabled():
+            return fast_payload
+        if not self._try_reserve_live_speaker_verification():
+            now = time.monotonic()
+            if now - float(getattr(self, "_live_speaker_verify_last_status_at", 0.0)) >= 30.0:
+                self._live_speaker_verify_last_status_at = now
+                self.bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            "Skipped full-stack live speaker verification during cooldown; "
+                            f"current speaker remains {active_speaker or 'unknown'}."
+                        )
+                    },
+                )
+            return None
+        try:
+            verified_payload = self._score_live_speaker_with_full_stack(audio, sample_rate, duration_seconds)
+        except Exception as exc:
+            self.bus.emit(
+                "status",
+                {
+                    "message": (
+                        "Full-stack live speaker verification failed: "
+                        f"{type(exc).__name__}: {exc}"
+                    )
+                },
+            )
+            return None
+
+        return {
+            **verified_payload,
+            "fast_assigned_speaker": fast_payload.get("assigned_speaker"),
+            "fast_probabilities": fast_payload.get("probabilities"),
+            "fast_raw_probabilities": fast_payload.get("raw_probabilities"),
+            "verified_live_change": True,
+            "previous_live_speaker": active_speaker,
+        }
+
     def _score_realtime_preview_speaker(
         self,
         audio: np.ndarray,
@@ -1803,15 +2021,16 @@ class WindowDiarizer:
             min_audio_seconds = float(self.args.realtime_preview_diarize_min_audio_seconds)
         if duration_seconds < max(0.0, float(min_audio_seconds)):
             return self._realtime_unknown_speaker_payload()
-        if self.memory.profile_count() <= 0:
+        memory = self.live_memory
+        if memory.profile_count() <= 0:
             return self._realtime_unknown_speaker_payload()
 
         chunk = pad_audio(trim_silence(audio, self.sample_rate), self.args.min_embed_seconds, self.sample_rate)
         try:
             embed_started = time.monotonic()
-            embedding = self._embed_audio_chunk(chunk, self.sample_rate, ".live.wav")
+            embedding = self._embed_live_audio_chunk(chunk, self.sample_rate, ".live.wav")
             self._record_live_speaker_embedding_latency(time.monotonic() - embed_started)
-            decision = self.memory.score_existing(
+            decision = memory.score_existing(
                 embedding,
                 duration_seconds,
                 min_similarity=self.args.realtime_preview_diarize_min_similarity,
@@ -1821,28 +2040,60 @@ class WindowDiarizer:
             self.bus.emit("status", {"message": f"Realtime preview speaker scoring error: {type(exc).__name__}: {exc}"})
             return self._realtime_unknown_speaker_payload()
 
-        assigned_speaker = decision.assigned_speaker
-        if assigned_speaker:
-            try:
-                speaker_probability = float(decision.probabilities.get(f"speaker{int(assigned_speaker[1:])}", 0.0))
-            except Exception:
-                speaker_probability = 0.0
-            if speaker_probability < self.args.realtime_preview_diarize_min_known_probability:
-                assigned_speaker = None
+        raw_probabilities = dict(decision.probabilities)
+        smoothed_probabilities = self._live_speaker_ema_probabilities(raw_probabilities)
+        assigned_speaker = self._assign_live_speaker_from_probabilities(
+            smoothed_probabilities,
+            decision.assigned_speaker,
+        )
         self._ensure_speaker_metadata(assigned_speaker)
 
         return {
             "assigned_speaker": assigned_speaker,
             **self._speaker_info_for_payload(assigned_speaker),
             "created_speaker": False,
-            "probabilities": decision.probabilities,
+            "probabilities": smoothed_probabilities,
+            "raw_probabilities": raw_probabilities,
             "similarities": decision.similarities,
             "unknown_probability": decision.unknown_probability,
             "top_similarity": decision.top_similarity,
             "margin": decision.margin,
             "quality": decision.quality,
-            "assignment_source": "realtime_preview_embedding",
+            "assignment_source": (
+                "live_fast_embedding_ema"
+                if self._live_embedding_separate
+                else "realtime_preview_embedding_ema"
+            ),
         }
+
+    def _update_live_speaker_memory(
+        self,
+        speaker_id: str | None,
+        audio: np.ndarray,
+        sample_rate: int,
+        duration_seconds: float,
+        suffix: str = ".live-profile.wav",
+    ) -> None:
+        if not self._live_embedding_separate or not speaker_id:
+            return
+        try:
+            embedding = self._embed_live_audio_chunk(audio, sample_rate, suffix)
+            self.live_memory.upsert_profile(
+                str(speaker_id),
+                embedding,
+                duration_seconds=duration_seconds,
+                sentence_count=1,
+            )
+        except Exception as exc:
+            self.bus.emit(
+                "status",
+                {
+                    "message": (
+                        "Live speaker profile update failed "
+                        f"for {speaker_id}: {type(exc).__name__}: {exc}"
+                    )
+                },
+            )
 
     def _run_live_speaker_probe(self) -> None:
         if not bool(getattr(self.args, "live_speaker_probe", True)):
@@ -1850,18 +2101,45 @@ class WindowDiarizer:
         interval_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_interval_seconds", 0.4)))
         window_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_window_seconds", 1.25)))
         min_advance = max(0.0, float(getattr(self.args, "live_speaker_probe_min_advance_seconds", interval_seconds)))
-        hold_seconds = max(0.0, float(getattr(self.args, "live_speaker_probe_hold_seconds", 2.0)))
+        hold_seconds = max(0.0, float(getattr(self.args, "live_speaker_probe_hold_seconds", 1.5)))
+        clear_on_silence = bool(getattr(self.args, "live_speaker_probe_clear_on_silence", True))
+        clear_window_seconds = max(
+            0.05,
+            float(getattr(self.args, "live_speaker_probe_clear_window_seconds", min(window_seconds, 1.0))),
+        )
+        clear_unknown_count = max(0, int(getattr(self.args, "live_speaker_probe_clear_unknown_count", 2)))
         probe_min_audio_seconds = min(
             window_seconds,
             max(0.0, float(getattr(self.args, "realtime_preview_diarize_min_audio_seconds", window_seconds))),
         )
         last_probe_right = -1.0
+        active_speaker: str | None = None
+        consecutive_unknown = 0
         while not self._stop.wait(interval_seconds):
             if self.memory.profile_count() <= 0:
                 continue
             right = self.playback_time()
             if right <= 0.0:
                 continue
+            if active_speaker and clear_on_silence:
+                clear_left = max(0.0, right - min(clear_window_seconds, window_seconds))
+                clear_audio, clear_sample_rate = self._audio_window_copy(clear_left, right)
+                if clear_audio.size > 0 and not self._audio_has_rms_speech(clear_audio, clear_sample_rate):
+                    self.bus.emit(
+                        "live_speaker_clear",
+                        {
+                            "speaker_id": active_speaker,
+                            "live": False,
+                            "fallback": True,
+                            "start": round(float(clear_left), 4),
+                            "end": round(float(right), 4),
+                            "reason": "silence",
+                            "assignment_source": "live_speaker_embedding_probe_clear",
+                        },
+                    )
+                    active_speaker = None
+                    consecutive_unknown = 0
+                    self._live_probability_history.clear()
             if last_probe_right >= 0.0 and right < last_probe_right + min_advance:
                 continue
             left = max(0.0, right - window_seconds)
@@ -1883,7 +2161,72 @@ class WindowDiarizer:
                 break
             assigned_speaker = speaker_payload.get("assigned_speaker")
             if not assigned_speaker:
+                consecutive_unknown += 1
+                if active_speaker and clear_unknown_count and consecutive_unknown >= clear_unknown_count:
+                    verification_payload = self._verify_live_speaker_change(
+                        audio,
+                        sample_rate,
+                        duration_seconds,
+                        speaker_payload,
+                        active_speaker,
+                    )
+                    if verification_payload is None:
+                        continue
+                    verified_speaker = verification_payload.get("assigned_speaker")
+                    if verified_speaker:
+                        active_speaker = str(verified_speaker)
+                        consecutive_unknown = 0
+                        self.bus.emit(
+                            "live_speaker",
+                            {
+                                **verification_payload,
+                                "speaker_id": active_speaker,
+                                "live": True,
+                                "fallback": True,
+                                "start": round(float(left), 4),
+                                "end": round(float(right), 4),
+                                "audio_length_seconds": round(float(duration_seconds), 4),
+                                "hold_seconds": round(float(hold_seconds), 4),
+                                "assignment_source": str(
+                                    verification_payload.get("assignment_source")
+                                    or "live_full_stack_change_verify"
+                                ),
+                            },
+                        )
+                        continue
+                    self.bus.emit(
+                        "live_speaker_clear",
+                        {
+                            "speaker_id": active_speaker,
+                            "live": False,
+                            "fallback": True,
+                            "start": round(float(left), 4),
+                            "end": round(float(right), 4),
+                            "reason": "unknown",
+                            "unknown_count": consecutive_unknown,
+                            "assignment_source": "live_speaker_embedding_probe_clear",
+                        },
+                    )
+                    active_speaker = None
+                    self._live_probability_history.clear()
                 continue
+            if active_speaker and str(assigned_speaker) != str(active_speaker):
+                verification_payload = self._verify_live_speaker_change(
+                    audio,
+                    sample_rate,
+                    duration_seconds,
+                    speaker_payload,
+                    active_speaker,
+                )
+                if verification_payload is None:
+                    continue
+                assigned_speaker = verification_payload.get("assigned_speaker")
+                if not assigned_speaker:
+                    consecutive_unknown += 1
+                    continue
+                speaker_payload = verification_payload
+            active_speaker = str(assigned_speaker)
+            consecutive_unknown = 0
             self.bus.emit(
                 "live_speaker",
                 {
@@ -1895,7 +2238,10 @@ class WindowDiarizer:
                     "end": round(float(right), 4),
                     "audio_length_seconds": round(float(duration_seconds), 4),
                     "hold_seconds": round(float(hold_seconds), 4),
-                    "assignment_source": "live_speaker_embedding_probe",
+                    "assignment_source": str(
+                        speaker_payload.get("assignment_source")
+                        or "live_speaker_embedding_probe"
+                    ),
                 },
             )
 
@@ -2313,6 +2659,13 @@ class WindowDiarizer:
             sentence_payload,
         )
         self.bus.emit("sentence", sentence_payload)
+        self._update_live_speaker_memory(
+            decision.assigned_speaker,
+            chunk,
+            job.sample_rate,
+            duration_seconds,
+            ".live-sentence.wav",
+        )
         if decision.assigned_speaker is None:
             self._remember_unknown_sentence(index, base_payload, embedding, duration_seconds)
         elif decision.created_speaker:

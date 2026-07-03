@@ -678,6 +678,8 @@ let speakerNames = {};
 let renderedSpeakerSentenceCounts = {};
 let renderedSpeakerSpeakingSeconds = {};
 let hasRenderedFinalSentenceRows = false;
+let fastSpeakerPanelStats = {};
+let fastSpeakerPanelLastRight = null;
 let soloSpeakerIds = new Set();
 let mutedSpeakerIds = new Set();
 let followLiveEnabled = true;
@@ -1421,8 +1423,36 @@ function recomputeRenderedSpeakerSentenceCounts() {
   renderedSpeakerSpeakingSeconds = speakingSeconds;
   hasRenderedFinalSentenceRows = hasFinalRows;
 }
+function fastSpeakerPanelActive() {
+  return Object.keys(fastSpeakerPanelStats).length > 0;
+}
+function ensureSpeakerPanelSpeaker(speakerId) {
+  if (!speakerId || speakerId === "UNKNOWN") return;
+  if (speakerLibraryState.speakers.some(speaker => speaker.id === speakerId)) return;
+  const speaker = {
+    id: speakerId,
+    name: "",
+    display_name: speakerDisplayLabel(speakerId),
+    source: "detected",
+    locked: false,
+    sentence_count: 0,
+    speech_seconds: 0,
+    reference_audio: "",
+  };
+  speakerLibraryState = {
+    ...speakerLibraryState,
+    speakers: [...speakerLibraryState.speakers, speaker],
+  };
+  speakerNames[speakerId] = speaker.display_name;
+  pruneSpeakerFilterState();
+  updateSpeakerCount();
+  renderSpeakerPanel();
+}
 function speakerPanelSentenceCount(speaker) {
   const speakerId = speaker && speaker.id;
+  if (fastSpeakerPanelActive() && speakerId) {
+    return Number((fastSpeakerPanelStats[speakerId] || {}).count || 0);
+  }
   if (hasRenderedFinalSentenceRows && speakerId) {
     return renderedSpeakerSentenceCounts[speakerId] || 0;
   }
@@ -1430,10 +1460,16 @@ function speakerPanelSentenceCount(speaker) {
 }
 function speakerPanelSpeakingSeconds(speaker) {
   const speakerId = speaker && speaker.id;
+  if (fastSpeakerPanelActive() && speakerId) {
+    return Number((fastSpeakerPanelStats[speakerId] || {}).speakingSeconds || 0);
+  }
   if (hasRenderedFinalSentenceRows && speakerId) {
     return renderedSpeakerSpeakingSeconds[speakerId] || 0;
   }
   return Number((speaker && speaker.speech_seconds) || 0);
+}
+function speakerPanelCountUnit() {
+  return fastSpeakerPanelActive() ? "fast window" : "sentence";
 }
 function refreshSpeakerPanelSentenceCounts() {
   recomputeRenderedSpeakerSentenceCounts();
@@ -1441,7 +1477,11 @@ function refreshSpeakerPanelSentenceCounts() {
     const speaker = speakerLibraryState.speakers.find(item => item.id === row.dataset.speakerId);
     const count = row.querySelector(".speaker-sentence-count");
     if (speaker && count) {
-      count.textContent = speakerSentenceText(speakerPanelSentenceCount(speaker), speakerPanelSpeakingSeconds(speaker));
+      count.textContent = speakerSentenceText(
+        speakerPanelSentenceCount(speaker),
+        speakerPanelSpeakingSeconds(speaker),
+        speakerPanelCountUnit(),
+      );
     }
   });
 }
@@ -1469,7 +1509,10 @@ function clearFallbackLiveSpeaker() {
 function clearLiveSpeakerState() {
   currentLiveSpeakerId = "";
   transcriptLiveSpeakerId = "";
+  fastSpeakerPanelStats = {};
+  fastSpeakerPanelLastRight = null;
   clearFallbackLiveSpeaker();
+  refreshSpeakerPanelSentenceCounts();
   refreshLiveSpeakerHighlight();
 }
 function activeFallbackLiveSpeakerId(nowMs = performance.now()) {
@@ -1479,7 +1522,7 @@ function activeFallbackLiveSpeakerId(nowMs = performance.now()) {
   return "";
 }
 function reconcileLiveSpeakerHighlight() {
-  currentLiveSpeakerId = transcriptLiveSpeakerId || activeFallbackLiveSpeakerId();
+  currentLiveSpeakerId = activeFallbackLiveSpeakerId() || transcriptLiveSpeakerId;
   refreshLiveSpeakerHighlight();
 }
 function scheduleFallbackLiveSpeakerExpiry() {
@@ -1497,10 +1540,40 @@ function scheduleFallbackLiveSpeakerExpiry() {
 function applyFallbackLiveSpeaker(item) {
   const speakerId = item && (item.assigned_speaker || item.speaker_id);
   if (!speakerId || speakerId === "UNKNOWN") return;
+  applyFastSpeakerPanelSignal(item);
   fallbackLiveSpeakerId = speakerId;
   fallbackLiveSpeakerUntilMs = performance.now() + Math.max(0, Number(item.hold_seconds || 2.0)) * 1000;
   scheduleFallbackLiveSpeakerExpiry();
   reconcileLiveSpeakerHighlight();
+}
+function clearFallbackLiveSpeakerFromProbe(item) {
+  const speakerId = item && (item.assigned_speaker || item.speaker_id);
+  if (speakerId && fallbackLiveSpeakerId && speakerId !== fallbackLiveSpeakerId) return;
+  clearFallbackLiveSpeaker();
+  reconcileLiveSpeakerHighlight();
+}
+function applyFastSpeakerPanelSignal(item) {
+  const speakerId = item && (item.assigned_speaker || item.speaker_id);
+  if (!speakerId || speakerId === "UNKNOWN") return;
+  ensureSpeakerPanelSpeaker(speakerId);
+  const start = Number(item.start || 0);
+  const end = Number(item.end || start);
+  if (!(end > start)) return;
+  const previousRight = fastSpeakerPanelLastRight === null ? start : fastSpeakerPanelLastRight;
+  const uncoveredStart = Math.max(start, previousRight);
+  const seconds = Math.max(0, end - uncoveredStart);
+  const current = fastSpeakerPanelStats[speakerId] || {count: 0, speakingSeconds: 0};
+  fastSpeakerPanelStats = {
+    ...fastSpeakerPanelStats,
+    [speakerId]: {
+      count: current.count + 1,
+      speakingSeconds: current.speakingSeconds + seconds,
+      lastStart: start,
+      lastEnd: end,
+    },
+  };
+  fastSpeakerPanelLastRight = Math.max(previousRight, end);
+  refreshSpeakerPanelSentenceCounts();
 }
 function updateCurrentLiveSpeakerFromRealtimeRows() {
   const realtimeRows = Array.from(sentences.querySelectorAll(".row[data-realtime='true']"));
@@ -1516,9 +1589,9 @@ function speakerSpeakingTimeText(seconds) {
   const remainingSeconds = roundedSeconds % 60;
   return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
 }
-function speakerSentenceText(count, speakingSeconds = 0) {
+function speakerSentenceText(count, speakingSeconds = 0, unit = "sentence") {
   const total = Number(count || 0);
-  return `${total} ${total === 1 ? "sentence" : "sentences"} · ${speakerSpeakingTimeText(speakingSeconds)}`;
+  return `${total} ${unit}${total === 1 ? "" : "s"} · ${speakerSpeakingTimeText(speakingSeconds)}`;
 }
 function speakerReferenceText(speaker) {
   const hasReference = Boolean(speaker.reference_audio || speaker.locked || speaker.source === "reference");
@@ -1816,7 +1889,11 @@ function renderSpeakerPanel() {
     }
     const sentenceCount = document.createElement("span");
     sentenceCount.className = "speaker-sentence-count";
-    sentenceCount.textContent = speakerSentenceText(speakerPanelSentenceCount(speaker), speakerPanelSpeakingSeconds(speaker));
+    sentenceCount.textContent = speakerSentenceText(
+      speakerPanelSentenceCount(speaker),
+      speakerPanelSpeakingSeconds(speaker),
+      speakerPanelCountUnit(),
+    );
     body.appendChild(titleRow);
     body.appendChild(sentenceCount);
     if (hasReference) {
@@ -2314,6 +2391,7 @@ function connect() {
   es.addEventListener("sentence", e => renderSentence(JSON.parse(e.data)));
   es.addEventListener("realtime", e => renderSentence(JSON.parse(e.data)));
   es.addEventListener("live_speaker", e => applyFallbackLiveSpeaker(JSON.parse(e.data)));
+  es.addEventListener("live_speaker_clear", e => clearFallbackLiveSpeakerFromProbe(JSON.parse(e.data)));
   es.addEventListener("realtime_clear", e => clearRealtimeRows(JSON.parse(e.data).generation));
   es.addEventListener("done", e => { stopPlaybackClock(); stopBrowserAudioCapture(); setState("Stopped"); start.disabled = false; stop.disabled = true; setSourceControlsDisabled(false); log(JSON.parse(e.data).message); });
 }

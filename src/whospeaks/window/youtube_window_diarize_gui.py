@@ -496,6 +496,13 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
     try:
         controller.start()
         replay_started = time.monotonic()
+        bus.emit(
+            "validation_replay_start",
+            {
+                "replay_speed": args.validation_replay_speed,
+                "duration_seconds": round(float(controller.duration), 4),
+            },
+        )
         last_report = -1
         while not bus.done.is_set():
             elapsed = time.monotonic() - replay_started
@@ -589,6 +596,18 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "vad_frame_seconds": args.vad_frame_seconds,
             "vad_merge_gap_seconds": args.vad_merge_gap_seconds,
             "vad_min_speech_seconds": args.vad_min_speech_seconds,
+            "live_speaker_embedding_provider": args.live_speaker_embedding_provider,
+            "live_speaker_embedding_min_interval_seconds": args.live_speaker_embedding_min_interval_seconds,
+            "live_speaker_embedding_target_utilization": args.live_speaker_embedding_target_utilization,
+            "live_speaker_verify_on_change": args.live_speaker_verify_on_change,
+            "live_speaker_verify_min_interval_seconds": args.live_speaker_verify_min_interval_seconds,
+            "live_speaker_ema_window_seconds": args.live_speaker_ema_window_seconds,
+            "live_speaker_ema_count": args.live_speaker_ema_count,
+            "live_speaker_ema_alpha": args.live_speaker_ema_alpha,
+            "live_speaker_probe_interval_seconds": args.live_speaker_probe_interval_seconds,
+            "live_speaker_probe_window_seconds": args.live_speaker_probe_window_seconds,
+            "live_speaker_probe_hold_seconds": args.live_speaker_probe_hold_seconds,
+            "live_speaker_probe_min_advance_seconds": args.live_speaker_probe_min_advance_seconds,
         },
         "min_speech_audio_ratio": args.min_speech_audio_ratio,
         "speech_audio_ratio": ratio_summary(final_payloads, args.min_speech_audio_ratio),
@@ -674,7 +693,12 @@ def parse_args() -> argparse.Namespace:
         help="Minimum browser playback-time advance required before starting the next pass.",
     )
     parser.add_argument("--min-window-seconds", type=float, default=2.0)
-    parser.add_argument("--unstable-tail-seconds", type=float, default=1.0)
+    parser.add_argument(
+        "--unstable-tail-seconds",
+        type=float,
+        default=1.35,
+        help="Minimum seconds after a candidate sentence's last word before committing a punctuation-ending sentence.",
+    )
     parser.add_argument(
         "--vad-sentence-splitting",
         action=argparse.BooleanOptionalAction,
@@ -714,13 +738,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--vad-silence-seconds",
         type=float,
-        default=0.8,
+        default=1.1,
         help="Trailing silence required before VAD forces the current window to finalize.",
     )
     parser.add_argument(
         "--vad-final-window-post-silence-seconds",
         type=float,
-        default=0.45,
+        default=0.75,
         help="On a VAD split, transcribe the previous final window only this far after VAD speech end.",
     )
     parser.add_argument(
@@ -792,6 +816,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--embedding-provider", default=DEFAULT_WINDOW_EMBEDDING_PROVIDER)
     parser.add_argument("--embedding-python", type=Path, default=default_embedding_python())
     parser.add_argument("--embedding-device", default="cuda")
+    parser.add_argument(
+        "--live-speaker-embedding-provider",
+        default="jungjee_rawnet3",
+        help="Single provider used only for fast live speaker assignment. Empty uses --embedding-provider.",
+    )
     parser.add_argument(
         "--embeddings-backend",
         "--embedding-backend",
@@ -992,14 +1021,44 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-embedding-min-interval-seconds",
         type=float,
-        default=0.75,
+        default=0.5,
         help="Minimum wall-clock spacing between live speaker embedding requests from preview/probe paths.",
     )
     parser.add_argument(
         "--live-speaker-embedding-target-utilization",
         type=float,
-        default=0.25,
+        default=0.5,
         help="Target fraction of wall time live speaker embeddings may occupy; use 1.0 to disable latency backoff.",
+    )
+    parser.add_argument(
+        "--live-speaker-verify-on-change",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Use the full embedding stack to confirm visible live speaker changes proposed by the fast provider.",
+    )
+    parser.add_argument(
+        "--live-speaker-verify-min-interval-seconds",
+        type=float,
+        default=2.0,
+        help="Minimum wall-clock spacing between full-stack live speaker change verification requests.",
+    )
+    parser.add_argument(
+        "--live-speaker-ema-window-seconds",
+        type=float,
+        default=1.0,
+        help="Wall-clock window used for smoothing live speaker probabilities.",
+    )
+    parser.add_argument(
+        "--live-speaker-ema-count",
+        type=int,
+        default=3,
+        help="Maximum number of recent live speaker probability snapshots blended by EMA.",
+    )
+    parser.add_argument(
+        "--live-speaker-ema-alpha",
+        type=float,
+        default=0.55,
+        help="EMA weight for the newest live speaker probability snapshot.",
     )
     parser.add_argument(
         "--live-speaker-probe",
@@ -1010,25 +1069,25 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-probe-interval-seconds",
         type=float,
-        default=0.4,
+        default=0.5,
         help="Seconds between fallback live-speaker probes.",
     )
     parser.add_argument(
         "--live-speaker-probe-window-seconds",
         type=float,
-        default=1.25,
+        default=1.0,
         help="Recent audio window scored by the fallback live-speaker probe.",
     )
     parser.add_argument(
         "--live-speaker-probe-hold-seconds",
         type=float,
-        default=2.0,
+        default=1.5,
         help="Seconds the browser keeps a fallback live-speaker highlight after a matching probe.",
     )
     parser.add_argument(
         "--live-speaker-probe-min-advance-seconds",
         type=float,
-        default=0.4,
+        default=0.5,
         help="Minimum playback advance before rescoring the fallback live-speaker probe window.",
     )
     parser.add_argument(
@@ -1036,6 +1095,24 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=0.15,
         help="Minimum RMS-gated speech inside the probe window before embedding it.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-clear-on-silence",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Clear the fallback live speaker when the recent audio window has no RMS-gated speech.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-clear-window-seconds",
+        type=float,
+        default=1.0,
+        help="Recent audio duration checked for silence before clearing the fallback live speaker.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-clear-unknown-count",
+        type=int,
+        default=2,
+        help="Clear the fallback live speaker after this many consecutive speech probes score as UNKNOWN; use 0 to disable.",
     )
     parser.add_argument(
         "--realtime-preview-engine-options-json",

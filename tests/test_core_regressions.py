@@ -24,7 +24,9 @@ from whospeaks.embeddings.embedding_providers import EmbeddingSubprocessClient, 
 from whospeaks.speakers.realtime_speaker_memory import SpeakerMemory as RealtimeSpeakerMemory
 from whospeaks.speakers.speaker_embedding_cluster import SpeakerMemory as ClusterSpeakerMemory
 from whospeaks.window.window_diarizer import WindowDiarizer
+from whospeaks.window.window_events import RecordingEventBus
 from whospeaks.window.window_gui_html import HTML
+from whospeaks.window.live_speaker_probe_scoring import score_live_speaker_probe
 from whospeaks.window.window_preview import KrokoSubprocessPreviewTranscriber
 
 
@@ -63,6 +65,93 @@ class SpeakerDecisionContractTests(unittest.TestCase):
         decision = memory.classify(np.array([1.0, 0.0, 0.0], dtype=np.float32), 1.2)
         self.assert_created_speaker_probability_contract(decision)
 
+    def test_cluster_memory_upsert_keeps_explicit_speaker_label(self) -> None:
+        memory = ClusterSpeakerMemory(min_first_speaker_seconds=0.1)
+
+        label = memory.upsert_profile("S3", np.array([1.0, 0.0, 0.0], dtype=np.float32), 1.0)
+        decision = memory.score_existing(np.array([1.0, 0.0, 0.0], dtype=np.float32), 1.0)
+
+        self.assertEqual(label, "S3")
+        self.assertEqual(decision.assigned_speaker, "S3")
+
+
+class WindowEventBusTests(unittest.TestCase):
+    def test_recording_event_bus_records_json_safe_payloads(self) -> None:
+        bus = RecordingEventBus()
+
+        bus.emit("validation_replay_start", {"replay_speed": 1.0})
+
+        self.assertEqual(bus.records[0]["event"], "validation_replay_start")
+        self.assertEqual(bus.records[0]["payload"], {"replay_speed": 1.0})
+        self.assertIsInstance(bus.records[0]["time"], float)
+
+
+class LiveSpeakerProbeScoringTests(unittest.TestCase):
+    def test_live_speaker_probe_score_uses_sidebar_counted_slices(self) -> None:
+        records = [
+            {
+                "time": 100.0,
+                "event": "validation_replay_start",
+                "payload": {"replay_speed": 1.0},
+            },
+            {
+                "time": 101.7,
+                "event": "live_speaker",
+                "payload": {"speaker_id": "S1", "start": 0.5, "end": 1.5},
+            },
+            {
+                "time": 104.6,
+                "event": "live_speaker",
+                "payload": {"speaker_id": "S2", "start": 3.5, "end": 4.5},
+            },
+        ]
+        canonical = [
+            {"speaker": "A", "start": 0.0, "end": 2.0, "text": "a"},
+            {"speaker": "B", "start": 3.0, "end": 5.0, "text": "b"},
+        ]
+
+        score = score_live_speaker_probe(records, canonical)
+
+        self.assertEqual(score["raw_live_speaker_event_count"], 2)
+        self.assertEqual(score["sidebar_counted_live_seconds"], 2.0)
+        self.assertEqual(score["any_live_speech_coverage"], 0.5)
+        self.assertEqual(score["correct_live_speaker_coverage"], 0.5)
+        self.assertEqual(score["profile_map"], {"S1": "A", "S2": "B"})
+        self.assertEqual(score["lag_after_window_end_seconds"]["median"], 0.15)
+
+    def test_live_speaker_probe_clear_events_are_speaker_specific(self) -> None:
+        records = [
+            {
+                "time": 10.0,
+                "event": "validation_replay_start",
+                "payload": {"replay_speed": 1.0},
+            },
+            {
+                "time": 11.0,
+                "event": "live_speaker",
+                "payload": {"speaker_id": "S1", "start": 1.0, "end": 2.0, "hold_seconds": 4.0},
+            },
+            {
+                "time": 12.0,
+                "event": "live_speaker_clear",
+                "payload": {"speaker_id": "S2", "reason": "stale"},
+            },
+            {
+                "time": 13.0,
+                "event": "live_speaker_clear",
+                "payload": {"speaker_id": "S1", "reason": "silence"},
+            },
+        ]
+        canonical = [{"speaker": "A", "start": 1.0, "end": 3.0, "text": "a"}]
+
+        score = score_live_speaker_probe(records, canonical)
+
+        self.assertEqual(
+            score["active_live_slices"],
+            [{"speaker": "S1", "start": 1.0, "end": 3.0, "duration_seconds": 2.0}],
+        )
+        self.assertEqual(score["active_correct_live_speaker_coverage"], 1.0)
+
 
 class WindowHtmlSafetyTests(unittest.TestCase):
     def test_speaker_label_is_inserted_as_text_not_markup(self) -> None:
@@ -76,6 +165,7 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn('let currentLiveSpeakerId = "";', HTML)
         self.assertIn('let transcriptLiveSpeakerId = "";', HTML)
         self.assertIn('let fallbackLiveSpeakerId = "";', HTML)
+        self.assertIn("let fastSpeakerPanelStats = {};", HTML)
         self.assertIn("let hasRenderedFinalSentenceRows = false;", HTML)
         self.assertIn("row.dataset.speaker = item.assigned_speaker || \"UNKNOWN\";", HTML)
         self.assertIn('row.style.setProperty("--live-row-color", color || "#8F9BA8");', HTML)
@@ -85,6 +175,8 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("updateCurrentLiveSpeakerFromRealtimeRows();", HTML)
         self.assertIn("speakingSeconds[speakerId] = (speakingSeconds[speakerId] || 0) + Math.max(0, end - start);", HTML)
         self.assertIn("renderedSpeakerSpeakingSeconds = speakingSeconds;", HTML)
+        self.assertIn("function applyFastSpeakerPanelSignal(item)", HTML)
+        self.assertIn('applyFastSpeakerPanelSignal(item);', HTML)
         self.assertIn("refreshSpeakerPanelSentenceCounts();", HTML)
         self.assertLess(
             HTML.index('row.dataset.speaker = item.assigned_speaker || "UNKNOWN";'),
@@ -331,9 +423,14 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn('titleRow.appendChild(createSpeakerLiveIndicator());', HTML)
         self.assertIn('indicator.remove();', HTML)
         self.assertIn("function applyFallbackLiveSpeaker(item)", HTML)
+        self.assertIn("function clearFallbackLiveSpeakerFromProbe(item)", HTML)
+        self.assertIn('if (speakerId && fallbackLiveSpeakerId && speakerId !== fallbackLiveSpeakerId) return;', HTML)
         self.assertIn('es.addEventListener("live_speaker", e => applyFallbackLiveSpeaker(JSON.parse(e.data)));', HTML)
+        self.assertIn('es.addEventListener("live_speaker_clear", e => clearFallbackLiveSpeakerFromProbe(JSON.parse(e.data)));', HTML)
         self.assertIn('fallbackLiveSpeakerUntilMs = performance.now() + Math.max(0, Number(item.hold_seconds || 2.0)) * 1000;', HTML)
-        self.assertIn("currentLiveSpeakerId = transcriptLiveSpeakerId || activeFallbackLiveSpeakerId();", HTML)
+        self.assertIn("currentLiveSpeakerId = activeFallbackLiveSpeakerId() || transcriptLiveSpeakerId;", HTML)
+        self.assertIn('return fastSpeakerPanelActive() ? "fast window" : "sentence";', HTML)
+        self.assertIn("fastSpeakerPanelStats[speakerId]", HTML)
         self.assertIn('row.classList.toggle("live-speaker", Boolean(currentLiveSpeakerId) && speaker.id === currentLiveSpeakerId);', HTML)
         self.assertNotIn("speaker-editing-badge", HTML)
         self.assertIn(".speaker-row-name-input", HTML)
@@ -373,7 +470,8 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn('if (row.dataset.realtime === "true") return;', HTML)
         self.assertIn("function speakerPanelSpeakingSeconds(speaker)", HTML)
         self.assertIn('return renderedSpeakerSpeakingSeconds[speakerId] || 0;', HTML)
-        self.assertIn('return `${total} ${total === 1 ? "sentence" : "sentences"} · ${speakerSpeakingTimeText(speakingSeconds)}`;', HTML)
+        self.assertIn('function speakerSentenceText(count, speakingSeconds = 0, unit = "sentence")', HTML)
+        self.assertIn('return `${total} ${unit}${total === 1 ? "" : "s"} · ${speakerSpeakingTimeText(speakingSeconds)}`;', HTML)
         self.assertIn("function refreshSpeakerPanelSentenceCounts()", HTML)
         self.assertIn("speakerPanelSentenceCount(speaker)", HTML)
         self.assertIn("speakerPanelSpeakingSeconds(speaker)", HTML)
@@ -692,6 +790,65 @@ class WindowStreamingAudioTests(unittest.TestCase):
         self.assertLessEqual(remaining, 3.2)
         self.assertTrue(any(event == "status" for event, _payload in diarizer.bus.events))
 
+    def test_live_speaker_change_verification_uses_full_stack_result(self) -> None:
+        class Bus:
+            def emit(self, event: str, payload: dict[str, object]) -> None:
+                pass
+
+        class Memory:
+            def profile_count(self) -> int:
+                return 2
+
+            def score_existing(
+                self,
+                embedding: np.ndarray,
+                duration_seconds: float,
+                min_similarity: float | None = None,
+                min_margin: float | None = None,
+            ) -> object:
+                return argparse.Namespace(
+                    assigned_speaker="S2",
+                    probabilities={"unknown": 0.05, "speaker1": 0.05, "speaker2": 0.9},
+                    similarities={"S1": 0.2, "S2": 0.8},
+                    unknown_probability=0.05,
+                    top_similarity=0.8,
+                    margin=0.6,
+                    quality=1.0,
+                )
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            live_speaker_verify_on_change=True,
+            live_speaker_verify_min_interval_seconds=0.0,
+            realtime_preview_diarize_min_audio_seconds=0.2,
+            realtime_preview_diarize_min_similarity=0.45,
+            realtime_preview_diarize_min_margin=0.08,
+            realtime_preview_diarize_min_known_probability=0.5,
+            min_embed_seconds=0.5,
+        )
+        diarizer.bus = Bus()
+        diarizer.memory = Memory()
+        diarizer._speaker_lock = threading.Lock()
+        diarizer._speaker_metadata = {}
+        diarizer._live_embedding_separate = True
+        diarizer._live_speaker_verify_lock = threading.Lock()
+        diarizer._live_speaker_verify_next_at = 0.0
+        diarizer._embed_audio_chunk = mock.Mock(return_value=np.array([1.0, 0.0], dtype=np.float32))
+
+        result = diarizer._verify_live_speaker_change(
+            np.ones(20, dtype=np.float32),
+            10,
+            2.0,
+            {"assigned_speaker": "S1", "probabilities": {"speaker1": 0.85, "unknown": 0.15}},
+            "S1",
+        )
+
+        self.assertIsNotNone(result)
+        assert result is not None
+        self.assertEqual(result["assigned_speaker"], "S2")
+        self.assertEqual(result["assignment_source"], "live_full_stack_change_verify")
+        self.assertEqual(result["fast_assigned_speaker"], "S1")
+
 
 class EmbeddingSubprocessClientTests(unittest.TestCase):
     def test_embed_wav_times_out_and_kills_unresponsive_helper(self) -> None:
@@ -901,6 +1058,10 @@ class RepositoryStructureTests(unittest.TestCase):
             "retro_reassign_min_margin": 0.0,
             "min_embed_seconds": 0.5,
             "min_speech_audio_ratio": 0.0,
+            "live_speaker_embedding_provider": "jungjee_rawnet3",
+            "unstable_tail_seconds": 1.35,
+            "vad_silence_seconds": 1.1,
+            "vad_final_window_post_silence_seconds": 0.75,
             "sentence_boundary_pre_padding_seconds": 0.06,
             "sentence_boundary_post_padding_seconds": 0.09,
             "sentence_boundary_gap_ratio": 0.6,
@@ -909,11 +1070,21 @@ class RepositoryStructureTests(unittest.TestCase):
             "realtime_preview_diarize_min_similarity": 0.45,
             "realtime_preview_diarize_min_margin": 0.08,
             "realtime_preview_diarize_min_known_probability": 0.5,
-            "live_speaker_embedding_min_interval_seconds": 0.75,
-            "live_speaker_embedding_target_utilization": 0.25,
-            "live_speaker_probe_interval_seconds": 0.4,
-            "live_speaker_probe_window_seconds": 1.25,
-            "live_speaker_probe_min_advance_seconds": 0.4,
+            "live_speaker_embedding_min_interval_seconds": 0.5,
+            "live_speaker_embedding_target_utilization": 0.5,
+            "live_speaker_verify_on_change": False,
+            "live_speaker_verify_min_interval_seconds": 2.0,
+            "live_speaker_ema_window_seconds": 1.0,
+            "live_speaker_ema_count": 3,
+            "live_speaker_ema_alpha": 0.55,
+            "live_speaker_probe_interval_seconds": 0.5,
+            "live_speaker_probe_window_seconds": 1.0,
+            "live_speaker_probe_hold_seconds": 1.5,
+            "live_speaker_probe_min_advance_seconds": 0.5,
+            "live_speaker_probe_min_speech_seconds": 0.15,
+            "live_speaker_probe_clear_on_silence": True,
+            "live_speaker_probe_clear_window_seconds": 1.0,
+            "live_speaker_probe_clear_unknown_count": 2,
         }
 
         with mock.patch.object(sys, "argv", ["youtube_window_diarize_gui.py"]):
