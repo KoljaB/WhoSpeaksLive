@@ -7,8 +7,8 @@ Last updated: 2026-07-03
 Best no-canonical experimental replay found during the 2026-07-03 continuation:
 
 ```text
-global_robust_score:      0.835246
-mean_video_score:         0.855009
+global_robust_score:      0.835299
+mean_video_score:         0.855105
 worst_video_score:        0.809006
 bottom3_mean_video_score: 0.815263
 ```
@@ -68,13 +68,23 @@ low_cohesion_absorb min_row_similarity=0.1
 low_cohesion_absorb small_profile_share_for_loss=0.12
 low_cohesion_absorb small_profile_max_score_loss=0.1
 
+recycle_absorbed_profile_islands max_donor_share=0.10
+recycle_absorbed_profile_islands max_donor_own_mean=0.56
+recycle_absorbed_profile_islands min_donor_nearest=0.28
+recycle_absorbed_profile_islands max_neighbor_gap=2.0
+recycle_absorbed_profile_islands max_island_duration=0.8
+recycle_absorbed_profile_islands max_current_score=0.35
+recycle_absorbed_profile_islands max_score_margin=0.12
+recycle_absorbed_profile_islands max_recycle_seconds_per_donor=2.0
+recycle_absorbed_profile_islands duration_weight=0.05
+
 safe_merge thresholds: 0.53 global, 0.40 for profiles <=12 seconds, only when profile_count <=5
 ```
 
 Reproducibility output:
 
 ```text
-runtime\optimization\adaptive_retro_threshold_grid.json
+runtime\optimization\recycle_absorbed_profile_islands_full.json
 ```
 
 Additional clustering override versus the parameter-only defaults:
