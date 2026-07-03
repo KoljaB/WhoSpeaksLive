@@ -7,13 +7,13 @@ Last updated: 2026-07-03
 Best no-canonical experimental replay found during the 2026-07-03 continuation:
 
 ```text
-global_robust_score:      0.830113
-mean_video_score:         0.852899
-worst_video_score:        0.800507
-bottom3_mean_video_score: 0.805776
+global_robust_score:      0.832941
+mean_video_score:         0.853295
+worst_video_score:        0.807473
+bottom3_mean_video_score: 0.809247
 ```
 
-This result uses the provider stack below plus no-canonical prototype reassignment, turn-taking HMM smoothing, and safe profile-merge postprocessing:
+This result uses the provider stack below plus no-canonical prototype reassignment, turn-taking HMM smoothing, low-cohesion profile absorption, and safe profile-merge postprocessing:
 
 ```text
 espnet_ecapa_wavlm_joint=0.74
@@ -47,11 +47,24 @@ turn_hmm base_switch_penalty=-0.022
 turn_hmm question_switch_bonus=0.008
 turn_hmm backchannel_switch_bonus=0.181
 turn_hmm after_backchannel_switch_bonus=0.0
-turn_hmm short_turn_switch_bonus=0.0
+turn_hmm short_turn_switch_bonus=0.035
 turn_hmm current_label_bias=0.175
 turn_hmm max_score_loss=0.29
 turn_hmm max_dialogue_gap=2.8
 turn_hmm short_duration=0.85
+
+low_cohesion_absorb max_per_profile=32
+low_cohesion_absorb prototype_min_duration=0.15
+low_cohesion_absorb top_k=12
+low_cohesion_absorb centroid_blend=0.372
+low_cohesion_absorb min_profile_seconds=4.0
+low_cohesion_absorb max_profile_seconds=45.0
+low_cohesion_absorb max_profile_share=0.16
+low_cohesion_absorb max_own_mean=0.56
+low_cohesion_absorb min_nearest_centroid=0.28
+low_cohesion_absorb max_nearest_centroid=0.42
+low_cohesion_absorb max_score_loss=0.18
+low_cohesion_absorb min_row_similarity=0.1
 
 safe_merge thresholds: 0.53 global, 0.40 for profiles <=12 seconds, only when profile_count <=5
 ```
@@ -59,10 +72,10 @@ safe_merge thresholds: 0.53 global, 0.40 for profiles <=12 seconds, only when pr
 Reproducibility output:
 
 ```text
-runtime\optimization\turn_taking_hmm_local_refine_centered_500.json
+runtime\optimization\turn_hmm_absorb_refine_400.json
 ```
 
-Important caveat: this is still an experimental cached replay result. It does not use canonical speaker identity or video-specific rules, but the prototype reassignment was tested as a postprocess and still needs a live-compatible online implementation before promotion as the product default.
+Important caveat: this is still an experimental cached replay result. It does not use canonical speaker identity or video-specific rules, but the prototype, turn-HMM, and low-cohesion absorption stages were tested as postprocesses and still need a live-compatible online implementation before promotion as the product default.
 
 ## Current Best Live-Compatible Parameter-Only Cached-Replay Score
 
