@@ -88,3 +88,4 @@ class EmbeddingSentenceJob:
     audio: np.ndarray
     sample_rate: int
     duration_seconds: float
+    speaker_generation: int = 0

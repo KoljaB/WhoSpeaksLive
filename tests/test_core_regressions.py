@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import io
+import json
 import os
 import subprocess
 import sys
@@ -18,7 +19,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "tools"
 
-from whospeaks.embeddings.embedding_providers import EmbeddingSubprocessClient
+from whospeaks.common.audio_utils import write_wav
+from whospeaks.embeddings.embedding_providers import EmbeddingSubprocessClient, RemoteEmbeddingClient
 from whospeaks.speakers.realtime_speaker_memory import SpeakerMemory as RealtimeSpeakerMemory
 from whospeaks.speakers.speaker_embedding_cluster import SpeakerMemory as ClusterSpeakerMemory
 from whospeaks.window.window_diarizer import WindowDiarizer
@@ -283,6 +285,11 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn('data-speaker-tab="settings"', HTML)
         self.assertIn('id="speakerPanelTitle" class="speaker-panel-title">Detected speakers (0)</h2>', HTML)
         self.assertIn('id="addReferenceSpeaker"', HTML)
+        self.assertIn('id="clearSpeakers"', HTML)
+        self.assertIn('Clear speakers</button>', HTML)
+        self.assertIn('const clearSpeakersButton = document.getElementById("clearSpeakers");', HTML)
+        self.assertIn('const result = await post("/api/speakers/clear", {});', HTML)
+        self.assertIn("resetTranscriptDisplay();", HTML)
         self.assertNotIn('id="speakerGroupCurrent"', HTML)
         self.assertNotIn("Current:", HTML)
         self.assertIn('class="speaker-file-actions"', HTML)
@@ -463,6 +470,59 @@ class WindowStreamingAudioTests(unittest.TestCase):
         self.assertEqual(state["speakers"][0]["display_name"], "Alice")
         np.testing.assert_array_equal(target.memory.profiles[0]["centroid"], centroid)
 
+    def test_clear_speakers_resets_memory_metadata_and_pending_unknowns(self) -> None:
+        class FakeBus:
+            def __init__(self) -> None:
+                self.events: list[tuple[str, object]] = []
+
+            def emit(self, event: str, payload: object) -> None:
+                self.events.append((event, payload))
+
+        class FakeMemory:
+            def __init__(self, profiles: list[dict[str, object]] | None = None) -> None:
+                self.profiles = profiles or []
+
+            def export_profiles(self) -> list[dict[str, object]]:
+                return [dict(profile) for profile in self.profiles]
+
+        old_memory = FakeMemory([{
+            "label": "S1",
+            "index": 1,
+            "centroid": np.array([1.0, 0.0], dtype=np.float32),
+            "sentence_count": 2,
+            "speech_seconds": 3.5,
+            "created_at": 1.0,
+            "last_seen_at": 2.0,
+            "locked": False,
+        }])
+        new_memory = FakeMemory()
+        with tempfile.TemporaryDirectory() as tmp:
+            diarizer = WindowDiarizer.__new__(WindowDiarizer)
+            diarizer.args = argparse.Namespace(embedding_provider="mock")
+            diarizer.speaker_library_dir = Path(tmp)
+            diarizer.memory = old_memory
+            diarizer._new_memory = lambda: new_memory
+            diarizer._speaker_lock = threading.Lock()
+            diarizer._unknown_lock = threading.Lock()
+            diarizer._unknown_sentences = [object()]
+            diarizer._speaker_metadata = {"S1": {"name": "Alice"}}
+            diarizer._speaker_group_name = "Loaded"
+            diarizer._seed_profiles = [{"centroid": [1.0, 0.0]}]
+            diarizer._embedding_jobs = None
+            diarizer._speaker_generation = 7
+            diarizer.bus = FakeBus()
+
+            state = diarizer.clear_speakers()
+
+        self.assertIs(diarizer.memory, new_memory)
+        self.assertEqual(diarizer._speaker_generation, 8)
+        self.assertEqual(diarizer._unknown_sentences, [])
+        self.assertEqual(diarizer._speaker_metadata, {})
+        self.assertEqual(diarizer._seed_profiles, [])
+        self.assertEqual(state["group_name"], "")
+        self.assertEqual(state["speakers"], [])
+        self.assertTrue(any(event == "speakers" for event, _payload in diarizer.bus.events))
+
     def test_browser_stream_audio_uses_chunks_and_slices_across_boundaries(self) -> None:
         diarizer = WindowDiarizer.__new__(WindowDiarizer)
         diarizer._audio_lock = threading.Lock()
@@ -613,6 +673,58 @@ class KrokoPreviewStartupTests(unittest.TestCase):
         self.assertIn(str(TOOLS / "kroko_realtime_preview_worker.py"), command)
 
 
+class RemoteEmbeddingClientTests(unittest.TestCase):
+    def test_remote_embedding_client_posts_pcm16_with_encoded_provider(self) -> None:
+        class FakeResponse:
+            def __init__(self, payload: dict[str, object]) -> None:
+                self.payload = json.dumps(payload).encode("utf-8")
+
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, *_args: object) -> None:
+                return None
+
+            def read(self) -> bytes:
+                return self.payload
+
+        calls: list[tuple[str, bytes | None, float | None]] = []
+
+        def fake_urlopen(request_or_url: object, timeout: float | None = None) -> FakeResponse:
+            url = getattr(request_or_url, "full_url", request_or_url)
+            data = getattr(request_or_url, "data", None)
+            calls.append((str(url), data, timeout))
+            if str(url).endswith("/health"):
+                return FakeResponse({"ok": True, "service": "embeddings"})
+            if "/load?" in str(url):
+                return FakeResponse({"ok": True})
+            if "/embed-pcm16?" in str(url):
+                return FakeResponse({"ok": True, "embedding": [1.0, 2.0, 2.0]})
+            raise AssertionError(f"Unexpected URL: {url}")
+
+        with tempfile.TemporaryDirectory() as directory:
+            wav_path = Path(directory) / "voice.wav"
+            write_wav(wav_path, np.ones(1600, dtype=np.float32) * 0.1, 16000)
+            client = RemoteEmbeddingClient(
+                "http://192.168.178.22:8660",
+                "espnet_ecapa_wavlm_joint=0.725+jungjee_rawnet3=1",
+                timeout_seconds=12.0,
+            )
+            with mock.patch("whospeaks.embeddings.embedding_providers.urlopen", side_effect=fake_urlopen):
+                self.assertEqual(client.health()["service"], "embeddings")
+                embedding = client.embed_wav(wav_path)
+
+        self.assertTrue(any("/load?" in url for url, _data, _timeout in calls))
+        embed_calls = [(url, data) for url, data, _timeout in calls if "/embed-pcm16?" in url]
+        self.assertEqual(len(embed_calls), 1)
+        embed_url, embed_body = embed_calls[0]
+        self.assertIn("%2B", embed_url)
+        self.assertIn("encoding=pcm16", embed_url)
+        self.assertIsNotNone(embed_body)
+        self.assertEqual(len(embed_body or b"") % 2, 0)
+        self.assertTrue(np.allclose(embedding, np.array([1.0 / 3.0, 2.0 / 3.0, 2.0 / 3.0], dtype=np.float32)))
+
+
 class RepositoryStructureTests(unittest.TestCase):
     def test_package_imports_do_not_require_tools_on_sys_path(self) -> None:
         self.assertNotIn(str(TOOLS), sys.path)
@@ -702,6 +814,9 @@ class RepositoryStructureTests(unittest.TestCase):
             "realtime_preview_diarize_min_similarity": 0.45,
             "realtime_preview_diarize_min_margin": 0.08,
             "realtime_preview_diarize_min_known_probability": 0.5,
+            "live_speaker_probe_interval_seconds": 0.4,
+            "live_speaker_probe_window_seconds": 1.25,
+            "live_speaker_probe_min_advance_seconds": 0.4,
         }
 
         with mock.patch.object(sys, "argv", ["youtube_window_diarize_gui.py"]):
@@ -709,6 +824,25 @@ class RepositoryStructureTests(unittest.TestCase):
 
         for name, value in expected.items():
             self.assertEqual(getattr(args, name), value, name)
+
+    def test_window_gui_accepts_remote_embeddings_backend_alias(self) -> None:
+        from whospeaks.window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(
+            sys,
+            "argv",
+            [
+                "youtube_window_diarize_gui.py",
+                "-embeddings-backend",
+                "remote",
+                "--remote-embeddings-url",
+                "http://192.168.178.22:8660",
+            ],
+        ):
+            args = parse_args()
+
+        self.assertEqual(args.embeddings_backend, "remote")
+        self.assertEqual(args.remote_embeddings_url, "http://192.168.178.22:8660")
 
     def test_cunk_canonical_is_a_small_fixture(self) -> None:
         from whospeaks.paths import CUNK_CANONICAL

@@ -22,7 +22,7 @@ import numpy as np
 from stream2sentence import generate_sentences, init_tokenizer
 
 from whospeaks.common.audio_utils import load_audio_file, pad_audio, trim_silence, write_wav
-from whospeaks.embeddings.embedding_providers import EmbeddingSubprocessClient
+from whospeaks.embeddings.embedding_providers import EmbeddingSubprocessClient, RemoteEmbeddingClient
 from whospeaks.speakers.speaker_embedding_cluster import SpeakerMemory
 from whospeaks.window.window_config import (
     DEFAULT_REALTIMESTT_ROOT,
@@ -75,12 +75,7 @@ class WindowDiarizer:
         self._stream_audio_chunks: list[np.ndarray] = []
         self._stream_audio_samples = 0
         self.duration = len(self.audio) / float(self.sample_rate)
-        self.embedding = EmbeddingSubprocessClient(
-            args.embedding_python,
-            args.embedding_provider,
-            args.embedding_device,
-            response_timeout_seconds=getattr(args, "embedding_helper_response_timeout_seconds", 600.0),
-        )
+        self.embedding = self._new_embedding_client(args)
         self.memory = self._new_memory()
         self.speaker_library_dir = Path(getattr(args, "speaker_library_dir", DEFAULT_SPEAKER_LIBRARY_DIR))
         self._speaker_lock = threading.Lock()
@@ -116,6 +111,23 @@ class WindowDiarizer:
         self._asr_probe_warmed = False
         self._embedding_warmed_at: float | None = None
         self._asr_probe_warmed_at: float | None = None
+        self._speaker_generation = 0
+
+    def _new_embedding_client(self, args: argparse.Namespace) -> Any:
+        embeddings_backend = str(getattr(args, "embeddings_backend", "local") or "local").strip().lower().replace("-", "_")
+        if embeddings_backend == "remote":
+            return RemoteEmbeddingClient(
+                base_url=args.remote_embeddings_url,
+                provider=args.embedding_provider,
+                device=getattr(args, "remote_embeddings_device", "auto"),
+                timeout_seconds=getattr(args, "remote_embeddings_timeout_seconds", 600.0),
+            )
+        return EmbeddingSubprocessClient(
+            args.embedding_python,
+            args.embedding_provider,
+            args.embedding_device,
+            response_timeout_seconds=getattr(args, "embedding_helper_response_timeout_seconds", 600.0),
+        )
 
     def prepare_before_browser_release(self) -> None:
         self.bus.emit(
@@ -330,6 +342,21 @@ class WindowDiarizer:
                 raise ValueError(f"Unknown speaker {label}.")
             self._speaker_metadata[label]["name"] = clean_name
         self.bus.emit("status", {"message": f"Renamed {label} to {clean_name or label}."})
+        return self.emit_speaker_state()
+
+    def clear_speakers(self) -> dict[str, Any]:
+        self._speaker_generation += 1
+        jobs = self._embedding_jobs
+        if jobs is not None:
+            self._cancel_pending_embedding_jobs(jobs)
+        self.memory = self._new_memory()
+        with self._speaker_lock:
+            self._speaker_metadata = {}
+            self._seed_profiles = []
+            self._speaker_group_name = ""
+        with self._unknown_lock:
+            self._unknown_sentences = []
+        self.bus.emit("status", {"message": "Cleared speakers."})
         return self.emit_speaker_state()
 
     def save_speaker_group(self, name: str) -> dict[str, Any]:
@@ -1431,27 +1458,40 @@ class WindowDiarizer:
             },
         )
 
+    def _embed_audio_chunk(self, audio: np.ndarray, sample_rate: int, suffix: str) -> np.ndarray:
+        embed_audio = getattr(self.embedding, "embed_audio", None)
+        if callable(embed_audio) and not self.args.keep_segment_audio:
+            return embed_audio(audio, sample_rate)
+
+        self.args.output_dir.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(suffix=suffix, prefix="window-diarize-", dir=str(self.args.output_dir), delete=False) as handle:
+            wav_path = Path(handle.name)
+        try:
+            write_wav(wav_path, audio, sample_rate)
+            return self.embedding.embed_wav(wav_path)
+        finally:
+            if not self.args.keep_segment_audio:
+                try:
+                    wav_path.unlink(missing_ok=True)
+                except Exception:
+                    pass
+
     def _warm_embedding(self, force: bool = False) -> None:
         if self._embedding_warmed and not force:
             self.bus.emit("status", {"message": "Speaker embedding model already warm."})
             return
         warmup_label = "Refreshing" if self._embedding_warmed else "Warming"
         self.bus.emit("status", {"message": f"{warmup_label} speaker embedding model before playback."})
-        self.args.output_dir.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile(suffix=".warm.wav", prefix="window-diarize-", dir=str(self.args.output_dir), delete=False) as handle:
-            wav_path = Path(handle.name)
-        try:
-            write_wav(wav_path, np.zeros(int(self.sample_rate * 0.6), dtype=np.float32), self.sample_rate)
-            started = time.monotonic()
-            self.embedding.embed_wav(wav_path)
-            self._embedding_warmed = True
-            self._embedding_warmed_at = time.monotonic()
-            self.bus.emit("status", {"message": f"Speaker embedding model ready in {self._embedding_warmed_at - started:.2f}s."})
-        finally:
-            try:
-                wav_path.unlink(missing_ok=True)
-            except Exception:
-                pass
+        if isinstance(self.embedding, RemoteEmbeddingClient):
+            self.bus.emit("status", {"message": f"Checking remote embeddings server at {self.embedding.base_url}."})
+            health = self.embedding.health()
+            health_status = health.get("status") or health.get("service") or health.get("raw") or "ok"
+            self.bus.emit("status", {"message": f"Remote embeddings server ready at {self.embedding.base_url} (health={health_status})."})
+        started = time.monotonic()
+        self._embed_audio_chunk(np.zeros(int(self.sample_rate * 0.6), dtype=np.float32), self.sample_rate, ".warm.wav")
+        self._embedding_warmed = True
+        self._embedding_warmed_at = time.monotonic()
+        self.bus.emit("status", {"message": f"Speaker embedding model ready in {self._embedding_warmed_at - started:.2f}s."})
 
     def _realtime_unknown_speaker_payload(self) -> dict[str, Any]:
         return {
@@ -1467,19 +1507,22 @@ class WindowDiarizer:
             "assignment_source": "realtime_preview",
         }
 
-    def _score_realtime_preview_speaker(self, audio: np.ndarray, duration_seconds: float) -> dict[str, Any]:
-        if duration_seconds < max(0.0, float(self.args.realtime_preview_diarize_min_audio_seconds)):
+    def _score_realtime_preview_speaker(
+        self,
+        audio: np.ndarray,
+        duration_seconds: float,
+        min_audio_seconds: float | None = None,
+    ) -> dict[str, Any]:
+        if min_audio_seconds is None:
+            min_audio_seconds = float(self.args.realtime_preview_diarize_min_audio_seconds)
+        if duration_seconds < max(0.0, float(min_audio_seconds)):
             return self._realtime_unknown_speaker_payload()
         if self.memory.profile_count() <= 0:
             return self._realtime_unknown_speaker_payload()
 
-        self.args.output_dir.mkdir(parents=True, exist_ok=True)
         chunk = pad_audio(trim_silence(audio, self.sample_rate), self.args.min_embed_seconds, self.sample_rate)
-        with tempfile.NamedTemporaryFile(suffix=".live.wav", prefix="window-diarize-", dir=str(self.args.output_dir), delete=False) as handle:
-            wav_path = Path(handle.name)
         try:
-            write_wav(wav_path, chunk, self.sample_rate)
-            embedding = self.embedding.embed_wav(wav_path)
+            embedding = self._embed_audio_chunk(chunk, self.sample_rate, ".live.wav")
             decision = self.memory.score_existing(
                 embedding,
                 duration_seconds,
@@ -1489,12 +1532,6 @@ class WindowDiarizer:
         except Exception as exc:
             self.bus.emit("status", {"message": f"Realtime preview speaker scoring error: {type(exc).__name__}: {exc}"})
             return self._realtime_unknown_speaker_payload()
-        finally:
-            if not self.args.keep_segment_audio:
-                try:
-                    wav_path.unlink(missing_ok=True)
-                except Exception:
-                    pass
 
         assigned_speaker = decision.assigned_speaker
         if assigned_speaker:
@@ -1522,10 +1559,14 @@ class WindowDiarizer:
     def _run_live_speaker_probe(self) -> None:
         if not bool(getattr(self.args, "live_speaker_probe", True)):
             return
-        interval_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_interval_seconds", 0.5)))
-        window_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_window_seconds", 2.0)))
+        interval_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_interval_seconds", 0.4)))
+        window_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_window_seconds", 1.25)))
         min_advance = max(0.0, float(getattr(self.args, "live_speaker_probe_min_advance_seconds", interval_seconds)))
         hold_seconds = max(0.0, float(getattr(self.args, "live_speaker_probe_hold_seconds", 2.0)))
+        probe_min_audio_seconds = min(
+            window_seconds,
+            max(0.0, float(getattr(self.args, "realtime_preview_diarize_min_audio_seconds", window_seconds))),
+        )
         last_probe_right = -1.0
         while not self._stop.wait(interval_seconds):
             if self.memory.profile_count() <= 0:
@@ -1538,12 +1579,16 @@ class WindowDiarizer:
             left = max(0.0, right - window_seconds)
             audio, sample_rate = self._audio_window_copy(left, right)
             duration_seconds = audio.size / float(sample_rate) if sample_rate > 0 else 0.0
-            if duration_seconds < max(0.0, float(self.args.realtime_preview_diarize_min_audio_seconds)):
+            if duration_seconds < probe_min_audio_seconds:
                 continue
             last_probe_right = right
             if not self._audio_has_rms_speech(audio, sample_rate):
                 continue
-            speaker_payload = self._score_realtime_preview_speaker(audio, duration_seconds)
+            speaker_payload = self._score_realtime_preview_speaker(
+                audio,
+                duration_seconds,
+                min_audio_seconds=probe_min_audio_seconds,
+            )
             if self._stop.is_set():
                 break
             assigned_speaker = speaker_payload.get("assigned_speaker")
@@ -1560,7 +1605,7 @@ class WindowDiarizer:
                     "end": round(float(right), 4),
                     "audio_length_seconds": round(float(duration_seconds), 4),
                     "hold_seconds": round(float(hold_seconds), 4),
-                    "assignment_source": "last_2s_embedding_probe",
+                    "assignment_source": "live_speaker_embedding_probe",
                 },
             )
 
@@ -1893,6 +1938,7 @@ class WindowDiarizer:
             audio=audio,
             sample_rate=sample_rate,
             duration_seconds=duration_seconds,
+            speaker_generation=self._speaker_generation,
         )
         jobs = self._embedding_jobs
         if jobs is None:
@@ -1904,20 +1950,22 @@ class WindowDiarizer:
     def _process_sentence_embedding(self, job: EmbeddingSentenceJob) -> None:
         base_payload = job.base_payload
         index = job.index
+        if job.speaker_generation != self._speaker_generation:
+            self.bus.emit("status", {"message": f"Skipped stale speaker embedding for sentence {index}."})
+            return
         chunk = pad_audio(
             trim_silence(job.audio, job.sample_rate),
             self.args.min_embed_seconds,
             job.sample_rate,
         )
         duration_seconds = job.duration_seconds
-        self.args.output_dir.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile(suffix=".sentence.wav", prefix="window-diarize-", dir=str(self.args.output_dir), delete=False) as handle:
-            wav_path = Path(handle.name)
         try:
             self.bus.emit("status", {"message": f"Embedding sentence {index}: {job.text[:72]}"})
             embed_started = time.monotonic()
-            write_wav(wav_path, chunk, job.sample_rate)
-            embedding = self.embedding.embed_wav(wav_path)
+            embedding = self._embed_audio_chunk(chunk, job.sample_rate, ".sentence.wav")
+            if job.speaker_generation != self._speaker_generation:
+                self.bus.emit("status", {"message": f"Discarded stale speaker embedding for sentence {index}."})
+                return
             decision = self.memory.classify(
                 embedding,
                 duration_seconds,
@@ -1951,12 +1999,6 @@ class WindowDiarizer:
                 "margin": None,
             })
             return
-        finally:
-            if not self.args.keep_segment_audio:
-                try:
-                    wav_path.unlink(missing_ok=True)
-                except Exception:
-                    pass
         self._ensure_speaker_metadata(decision.assigned_speaker)
         self.bus.emit("sentence", {
             **base_payload,

@@ -131,7 +131,10 @@ HTML = r"""<!doctype html>
     .speaker-tab-panel[hidden] { display:none; }
     .speaker-panel-header { margin:0 0 7px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .speaker-panel-title { margin:0; color:#D7DEE8; font-size:13px; font-weight:400; line-height:1.25; }
-    .add-speaker-button { min-height:28px; flex:0 0 auto; border-color:#20303E; background:#121C26; color:#C6D0DC; padding:0 9px; font-size:12px; }
+    .speaker-panel-actions { flex:0 0 auto; display:flex; align-items:center; gap:7px; }
+    .add-speaker-button, .clear-speakers-button { min-height:28px; flex:0 0 auto; border-color:#20303E; background:#121C26; color:#C6D0DC; padding:0 9px; font-size:12px; }
+    .clear-speakers-button { color:#E0A0A0; }
+    .clear-speakers-button:disabled { opacity:.45; color:#87919C; }
     .manual-speaker-composer { display:grid; gap:8px; margin:0 0 8px; padding:9px 10px 10px 12px; border:1px solid var(--line); border-radius:7px; background:#0F161F; box-shadow:inset 4px 0 0 #17B7FE; }
     .manual-speaker-composer[hidden] { display:none; }
     .speaker-list { display:grid; gap:0; max-height:none; overflow:hidden; border:1px solid var(--line); border-radius:7px; background:#0B1015; }
@@ -499,7 +502,10 @@ HTML = r"""<!doctype html>
         <div class="speaker-tab-panel" data-speaker-panel="speakers">
           <div class="speaker-panel-header">
             <h2 id="speakerPanelTitle" class="speaker-panel-title">Detected speakers (0)</h2>
-            <button id="addReferenceSpeaker" class="add-speaker-button" type="button" aria-expanded="false">Add speaker</button>
+            <span class="speaker-panel-actions">
+              <button id="clearSpeakers" class="clear-speakers-button" type="button">Clear speakers</button>
+              <button id="addReferenceSpeaker" class="add-speaker-button" type="button" aria-expanded="false">Add speaker</button>
+            </span>
           </div>
           <div id="manualSpeakerComposer" class="manual-speaker-composer" hidden>
             <input id="manualSpeakerName" class="speaker-row-name-input manual-speaker-name" type="text" placeholder="Speaker name" autocomplete="off" aria-label="New speaker name">
@@ -613,6 +619,7 @@ const speakerCountLabel = document.getElementById("speakerCountLabel");
 const speakerPanelTitle = document.getElementById("speakerPanelTitle");
 const speakerList = document.getElementById("speakerList");
 const speakerEditorDock = document.getElementById("speakerEditorDock");
+const clearSpeakersButton = document.getElementById("clearSpeakers");
 const addReferenceSpeakerButton = document.getElementById("addReferenceSpeaker");
 const manualSpeakerComposer = document.getElementById("manualSpeakerComposer");
 const manualSpeakerName = document.getElementById("manualSpeakerName");
@@ -1691,6 +1698,7 @@ function downloadJsonFile(filename, payload) {
 }
 function renderSpeakerPanel() {
   speakerPanelTitle.textContent = `Detected speakers (${speakerLibraryState.speakers.length})`;
+  clearSpeakersButton.disabled = !speakerLibraryState.speakers.length;
   syncManualSpeakerComposer();
   speakerList.textContent = "";
   if (!speakerLibraryState.speakers.length) {
@@ -2411,6 +2419,28 @@ addReferenceSpeakerButton.addEventListener("click", () => {
     referenceSpeakerFile.value = "";
   }
   renderSpeakerPanel();
+});
+clearSpeakersButton.addEventListener("click", async () => {
+  if (!speakerLibraryState.speakers.length) return;
+  clearSpeakersButton.disabled = true;
+  try {
+    const result = await post("/api/speakers/clear", {});
+    editingSpeakerId = "";
+    pendingSpeakerNameFocusId = "";
+    manualSpeakerComposerOpen = false;
+    pendingManualSpeakerNameFocus = false;
+    manualSpeakerName.value = "";
+    soloSpeakerIds.clear();
+    mutedSpeakerIds.clear();
+    clearLiveSpeakerState();
+    resetTranscriptDisplay();
+    updateSpeakerState(result.speaker_state);
+    log("Cleared speakers.");
+  } catch (error) {
+    log(`Clear speakers failed: ${error.message}`);
+  } finally {
+    renderSpeakerPanel();
+  }
 });
 manualSpeakerName.addEventListener("keydown", event => {
   if (event.key === "Enter") {

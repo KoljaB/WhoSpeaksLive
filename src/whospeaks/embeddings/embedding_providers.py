@@ -13,6 +13,9 @@ import threading
 import time
 from pathlib import Path
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 import numpy as np
 
@@ -563,6 +566,125 @@ class EmbeddingSubprocessClient:
         if not lines:
             return ""
         return "Helper output: " + " | ".join(lines)
+
+
+class RemoteEmbeddingClient:
+    """HTTP client for the Linux GPU embeddings server."""
+
+    def __init__(
+        self,
+        base_url: str,
+        provider: str,
+        device: str = "auto",
+        timeout_seconds: float = 600.0,
+    ) -> None:
+        self.base_url = str(base_url or "").rstrip("/")
+        if not self.base_url:
+            raise ValueError("Remote embeddings base URL must not be empty.")
+        self.provider = str(provider or DEFAULT_EMBEDDING_PROVIDER)
+        self.device = str(device or "auto")
+        self.timeout_seconds = max(1.0, float(timeout_seconds))
+        self._loaded = False
+        self._lock = threading.Lock()
+
+    def health(self) -> dict[str, Any]:
+        raw = self._read_url(f"{self.base_url}/health", timeout=min(self.timeout_seconds, 10.0))
+        return self._json_response(raw, "health")
+
+    def load(self) -> dict[str, Any]:
+        with self._lock:
+            return self._load_locked()
+
+    def embed_audio(self, audio: np.ndarray, sample_rate: int = SAMPLE_RATE) -> np.ndarray:
+        with self._lock:
+            if not self._loaded:
+                self._load_locked()
+            prepared = pad_audio(trim_silence(np.asarray(audio, dtype=np.float32).reshape(-1), sample_rate), 0.5, sample_rate)
+            pcm16 = (np.clip(prepared, -1.0, 1.0) * 32767.0).astype(np.int16)
+            query = urlencode({
+                "provider": self.provider,
+                "device": self.device,
+                "sample_rate": int(sample_rate),
+                "encoding": "pcm16",
+            })
+            request = Request(
+                f"{self.base_url}/embed-pcm16?{query}",
+                data=np.ascontiguousarray(pcm16).tobytes(),
+                headers={"Content-Type": "application/octet-stream"},
+                method="POST",
+            )
+            result = self._json_response(
+                self._open_request(request, timeout=self.timeout_seconds),
+                "embed-pcm16",
+            )
+        if result.get("error"):
+            raise RuntimeError(f"Remote embeddings error: {result['error']}")
+        embedding = self._embedding_from_result(result)
+        return normalize_vector(embedding)
+
+    def embed_wav(self, path: Path) -> np.ndarray:
+        audio, sample_rate = load_audio_file(path)
+        return self.embed_audio(audio, sample_rate)
+
+    def shutdown(self, lock_timeout_seconds: float = 5.0) -> None:
+        return None
+
+    def _load_locked(self) -> dict[str, Any]:
+        if self._loaded:
+            return {"ok": True, "cached": True}
+        query = urlencode({"provider": self.provider, "device": self.device})
+        request = Request(f"{self.base_url}/load?{query}", data=b"", method="POST")
+        result = self._json_response(
+            self._open_request(request, timeout=self.timeout_seconds),
+            "load",
+        )
+        if result.get("error"):
+            raise RuntimeError(f"Remote embeddings load error: {result['error']}")
+        if result.get("ok") is False:
+            raise RuntimeError(f"Remote embeddings load failed: {result}")
+        self._loaded = True
+        return result
+
+    def _embedding_from_result(self, result: dict[str, Any]) -> Any:
+        for key in ("embedding", "vector"):
+            if key in result:
+                return result[key]
+        embeddings = result.get("embeddings")
+        if isinstance(embeddings, list) and embeddings:
+            return embeddings[0]
+        raise RuntimeError("Remote embeddings response did not include an embedding vector.")
+
+    def _json_response(self, raw: bytes, action: str) -> dict[str, Any]:
+        text = raw.decode("utf-8", errors="replace").strip()
+        if not text:
+            return {}
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"Remote embeddings returned non-JSON {action} response.") from exc
+        if not isinstance(data, dict):
+            raise RuntimeError(f"Remote embeddings returned an unexpected {action} response.")
+        return data
+
+    def _read_url(self, url: str, timeout: float) -> bytes:
+        try:
+            with urlopen(url, timeout=timeout) as response:
+                return response.read()
+        except HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace").strip()
+            raise RuntimeError(f"Remote embeddings HTTP {exc.code}: {detail[:300]}") from exc
+        except URLError as exc:
+            raise RuntimeError(f"Remote embeddings connection failed: {exc.reason}") from exc
+
+    def _open_request(self, request: Request, timeout: float) -> bytes:
+        try:
+            with urlopen(request, timeout=timeout) as response:
+                return response.read()
+        except HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace").strip()
+            raise RuntimeError(f"Remote embeddings HTTP {exc.code}: {detail[:300]}") from exc
+        except URLError as exc:
+            raise RuntimeError(f"Remote embeddings connection failed: {exc.reason}") from exc
 
 
 def run_embedding_helper(args: argparse.Namespace) -> int:

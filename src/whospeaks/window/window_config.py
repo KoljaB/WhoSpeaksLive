@@ -76,7 +76,12 @@ SILERO_VAD_CHUNK_SAMPLES = 512
 KROKO_PREVIEW_FRAME_SECONDS = 0.02
 DEFAULT_KROKO_16L_CHUNK_SECONDS = 16 * KROKO_PREVIEW_FRAME_SECONDS
 DEFAULT_REMOTE_ASR_URL = os.environ.get("WHOSPEAKS_REMOTE_ASR_URL", "http://192.168.178.22:8650")
-DEFAULT_WINDOW_EMBEDDING_PROVIDER = "espnet_ecapa_wavlm_joint=0.725+jungjee_rawnet3=1+wespeaker_campplus=0.35"
+DEFAULT_REMOTE_EMBEDDINGS_URL = os.environ.get("WHOSPEAKS_REMOTE_EMBEDDINGS_URL", "http://192.168.178.22:8660")
+DEFAULT_REMOTE_EMBEDDINGS_TIMEOUT_SECONDS = _env_float(
+    "WHOSPEAKS_REMOTE_EMBEDDINGS_TIMEOUT_SECONDS",
+    600.0,
+)
+DEFAULT_WINDOW_EMBEDDING_PROVIDER = "espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12"
 NEW_SPEAKER_SENSITIVITY_FIELDS = (
     "new_speaker_threshold",
     "duplicate_profile_similarity",
@@ -115,7 +120,7 @@ NEW_SPEAKER_SENSITIVITY_PRESETS: dict[int, dict[str, Any]] = {
         "late_new_speaker_min_seconds": 3.4127,
         "min_new_speaker_words": 3,
         "new_speaker_confirmation_count": 1,
-        "new_speaker_confirmation_similarity": 0.5033,
+        "new_speaker_confirmation_similarity": 0.5149,
     },
     4: {
         "label": "Sensitive",

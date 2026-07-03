@@ -114,6 +114,8 @@ from whospeaks.window.window_runtime import (  # noqa: E402
     DEFAULT_OUTPUT_DIR,
     DEFAULT_REALTIMESTT_ROOT,
     DEFAULT_REMOTE_ASR_URL,
+    DEFAULT_REMOTE_EMBEDDINGS_TIMEOUT_SECONDS,
+    DEFAULT_REMOTE_EMBEDDINGS_URL,
     DEFAULT_SPEAKER_LIBRARY_DIR,
     DEFAULT_VALIDATION_OUTPUT,
     DEFAULT_WINDOW_EMBEDDING_PROVIDER,
@@ -232,6 +234,9 @@ class Handler(BaseHTTPRequestHandler):
                     str(payload.get("speaker_id", "")),
                     str(payload.get("name", "")),
                 )
+                self._send_json({"ok": True, "speaker_state": state})
+            elif path == "/api/speakers/clear":
+                state = self.server.controller.clear_speakers()
                 self._send_json({"ok": True, "speaker_state": state})
             elif path == "/api/speakers/save":
                 payload = self._read_json_body()
@@ -520,8 +525,10 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
         "validation_replay_speed": args.validation_replay_speed,
         "validation_keep_preview": args.validation_keep_preview,
         "embedding_provider": args.embedding_provider,
+        "embeddings_backend": args.embeddings_backend,
         "embedding_device": args.embedding_device,
         "embedding_python": str(args.embedding_python),
+        "remote_embeddings_url": args.remote_embeddings_url,
         "clustering_args": {
             "same_speaker_similarity": args.same_speaker_similarity,
             "similarity_temperature": args.similarity_temperature,
@@ -762,6 +769,33 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--embedding-python", type=Path, default=default_embedding_python())
     parser.add_argument("--embedding-device", default="cuda")
     parser.add_argument(
+        "--embeddings-backend",
+        "--embedding-backend",
+        "-embeddings-backend",
+        choices=("local", "remote"),
+        default="local",
+        help="Speaker embedding backend. Use remote to send embedding requests to the Linux GPU server.",
+    )
+    parser.add_argument(
+        "--remote-embeddings-url",
+        "--remote-embedding-url",
+        default=DEFAULT_REMOTE_EMBEDDINGS_URL,
+        help="Base URL of the remote voice embeddings server.",
+    )
+    parser.add_argument(
+        "--remote-embeddings-timeout-seconds",
+        "--remote-embedding-timeout-seconds",
+        type=float,
+        default=DEFAULT_REMOTE_EMBEDDINGS_TIMEOUT_SECONDS,
+        help="HTTP timeout for remote embedding health, load, and embed requests.",
+    )
+    parser.add_argument(
+        "--remote-embeddings-device",
+        "--remote-embedding-device",
+        default="auto",
+        help="Device query parameter sent to the remote embeddings server.",
+    )
+    parser.add_argument(
         "--embedding-helper-response-timeout-seconds",
         type=float,
         default=DEFAULT_EMBEDDING_HELPER_RESPONSE_TIMEOUT_SECONDS,
@@ -786,18 +820,18 @@ def parse_args() -> argparse.Namespace:
         help="Optional five-step new-speaker spawning sensitivity preset. Position 3 matches the tuned defaults.",
     )
     parser.add_argument("--same-speaker-similarity", type=float, default=0.37)
-    parser.add_argument("--similarity-temperature", type=float, default=0.0576)
-    parser.add_argument("--speaker-softmax-temperature", type=float, default=0.0539)
+    parser.add_argument("--similarity-temperature", type=float, default=0.0648)
+    parser.add_argument("--speaker-softmax-temperature", type=float, default=0.0443)
     parser.add_argument("--new-speaker-threshold", type=float, default=0.38)
     parser.add_argument("--duplicate-profile-similarity", type=float, default=0.4)
-    parser.add_argument("--unknown-short-threshold", type=float, default=0.333)
+    parser.add_argument("--unknown-short-threshold", type=float, default=0.3225)
     parser.add_argument("--min-first-speaker-seconds", type=float, default=1.3098)
     parser.add_argument("--min-new-speaker-seconds", type=float, default=1.6)
     parser.add_argument("--late-new-speaker-min-seconds", type=float, default=3.4127)
     parser.add_argument("--max-speakers", type=int, default=12)
     parser.add_argument("--min-margin", type=float, default=0.0386)
     parser.add_argument("--margin-temperature", type=float, default=0.03)
-    parser.add_argument("--update-unknown-max", type=float, default=0.54)
+    parser.add_argument("--update-unknown-max", type=float, default=0.61)
     parser.add_argument(
         "--new-speaker-confirmation-count",
         type=int,
@@ -807,7 +841,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--new-speaker-confirmation-similarity",
         type=float,
-        default=0.5033,
+        default=0.5149,
         help="Minimum cosine similarity between pending new-speaker candidates before creating a speaker.",
     )
     parser.add_argument("--max-pending-new-speakers", type=int, default=6)
@@ -918,13 +952,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-probe-interval-seconds",
         type=float,
-        default=0.5,
+        default=0.4,
         help="Seconds between fallback live-speaker probes.",
     )
     parser.add_argument(
         "--live-speaker-probe-window-seconds",
         type=float,
-        default=2.0,
+        default=1.25,
         help="Recent audio window scored by the fallback live-speaker probe.",
     )
     parser.add_argument(
@@ -936,7 +970,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-probe-min-advance-seconds",
         type=float,
-        default=0.5,
+        default=0.4,
         help="Minimum playback advance before rescoring the fallback live-speaker probe window.",
     )
     parser.add_argument(
@@ -1008,6 +1042,7 @@ def main() -> int:
     print(
         f"[{datetime.now().strftime('%H:%M:%S')}] Startup config: "
         f"url={args.url} port={args.port} asr_backend={args.asr_backend} "
+        f"embeddings_backend={args.embeddings_backend} "
         f"embedding_provider={args.embedding_provider} "
         f"embedding_timeout={args.embedding_helper_response_timeout_seconds:.0f}s "
         f"realtime_preview={args.realtime_preview_engine}.",

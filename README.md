@@ -44,6 +44,17 @@ time, use:
 .\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --embedding-helper-response-timeout-seconds 900
 ```
 
+To run both final ASR and speaker embeddings on the Linux GPU box:
+
+```powershell
+.\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --port 8796 --asr-backend remote --remote-asr-url http://192.168.178.22:8650 --embeddings-backend remote --remote-embeddings-url http://192.168.178.22:8660
+```
+
+Fast live-speaker highlighting probes the latest `1.25` seconds of audio every
+`0.4` seconds by default. Tune it with
+`--live-speaker-probe-window-seconds` and
+`--live-speaker-probe-interval-seconds`.
+
 ## Layout
 
 Source code lives under `src/whospeaks/`. Copied third-party sources live under
