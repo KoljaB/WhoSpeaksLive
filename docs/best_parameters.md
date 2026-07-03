@@ -7,10 +7,10 @@ Last updated: 2026-07-03
 Best no-canonical experimental replay found during the 2026-07-03 continuation:
 
 ```text
-global_robust_score:      0.829815
-mean_video_score:         0.852801
+global_robust_score:      0.830113
+mean_video_score:         0.852899
 worst_video_score:        0.800507
-bottom3_mean_video_score: 0.804147
+bottom3_mean_video_score: 0.805776
 ```
 
 This result uses the provider stack below plus no-canonical prototype reassignment, turn-taking HMM smoothing, and safe profile-merge postprocessing:
@@ -40,18 +40,18 @@ prototype min_delta=0.108
 turn_hmm max_per_profile=32
 turn_hmm prototype_min_duration=0.15
 turn_hmm prototype_max_unknown=1.0
-turn_hmm top_k=10
-turn_hmm centroid_blend=0.727
+turn_hmm top_k=12
+turn_hmm centroid_blend=0.372
 turn_hmm emission_weight=1.0
-turn_hmm base_switch_penalty=0.008
-turn_hmm question_switch_bonus=0.0
-turn_hmm backchannel_switch_bonus=0.168
+turn_hmm base_switch_penalty=-0.022
+turn_hmm question_switch_bonus=0.008
+turn_hmm backchannel_switch_bonus=0.181
 turn_hmm after_backchannel_switch_bonus=0.0
 turn_hmm short_turn_switch_bonus=0.0
-turn_hmm current_label_bias=0.127
-turn_hmm max_score_loss=0.282
+turn_hmm current_label_bias=0.175
+turn_hmm max_score_loss=0.29
 turn_hmm max_dialogue_gap=2.8
-turn_hmm short_duration=1.4
+turn_hmm short_duration=0.85
 
 safe_merge thresholds: 0.53 global, 0.40 for profiles <=12 seconds, only when profile_count <=5
 ```
@@ -59,7 +59,7 @@ safe_merge thresholds: 0.53 global, 0.40 for profiles <=12 seconds, only when pr
 Reproducibility output:
 
 ```text
-runtime\optimization\turn_taking_hmm_local_refine_350.json
+runtime\optimization\turn_taking_hmm_local_refine_centered_500.json
 ```
 
 Important caveat: this is still an experimental cached replay result. It does not use canonical speaker identity or video-specific rules, but the prototype reassignment was tested as a postprocess and still needs a live-compatible online implementation before promotion as the product default.
