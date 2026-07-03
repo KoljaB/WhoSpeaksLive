@@ -7,10 +7,10 @@ Last updated: 2026-07-03
 Best no-canonical experimental replay found during the 2026-07-03 continuation:
 
 ```text
-global_robust_score:      0.834767
-mean_video_score:         0.854640
+global_robust_score:      0.835246
+mean_video_score:         0.855009
 worst_video_score:        0.809006
-bottom3_mean_video_score: 0.813418
+bottom3_mean_video_score: 0.815263
 ```
 
 This result uses the provider stack below plus no-canonical prototype reassignment, turn-taking HMM smoothing, low-cohesion profile absorption, and safe profile-merge postprocessing:
@@ -74,14 +74,14 @@ safe_merge thresholds: 0.53 global, 0.40 for profiles <=12 seconds, only when pr
 Reproducibility output:
 
 ```text
-runtime\optimization\small_profile_absorb_loss_experiment.json
+runtime\optimization\adaptive_retro_threshold_grid.json
 ```
 
 Additional clustering override versus the parameter-only defaults:
 
 ```text
 unknown_short_threshold=0.27
-adaptive retro_reassign_min_similarity=0.12 only when base_predicted_speaker_count == 6, otherwise 0.05
+adaptive retro_reassign_min_similarity=0.20 only when base_predicted_speaker_count == 6, otherwise 0.05
 ```
 
 Important caveat: this is still an experimental cached replay result. It does not use canonical speaker identity or video-specific rules, but the prototype, turn-HMM, and low-cohesion absorption stages were tested as postprocesses and still need a live-compatible online implementation before promotion as the product default.
