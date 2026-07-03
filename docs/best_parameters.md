@@ -7,10 +7,10 @@ Last updated: 2026-07-03
 Best no-canonical experimental replay found during the 2026-07-03 continuation:
 
 ```text
-global_robust_score:      0.832941
-mean_video_score:         0.853295
+global_robust_score:      0.833291
+mean_video_score:         0.853665
 worst_video_score:        0.807473
-bottom3_mean_video_score: 0.809247
+bottom3_mean_video_score: 0.810223
 ```
 
 This result uses the provider stack below plus no-canonical prototype reassignment, turn-taking HMM smoothing, low-cohesion profile absorption, and safe profile-merge postprocessing:
@@ -40,18 +40,18 @@ prototype min_delta=0.108
 turn_hmm max_per_profile=32
 turn_hmm prototype_min_duration=0.15
 turn_hmm prototype_max_unknown=1.0
-turn_hmm top_k=12
-turn_hmm centroid_blend=0.372
+turn_hmm top_k=20
+turn_hmm centroid_blend=0.475
 turn_hmm emission_weight=1.0
-turn_hmm base_switch_penalty=-0.022
-turn_hmm question_switch_bonus=0.008
-turn_hmm backchannel_switch_bonus=0.181
-turn_hmm after_backchannel_switch_bonus=0.0
-turn_hmm short_turn_switch_bonus=0.035
-turn_hmm current_label_bias=0.175
-turn_hmm max_score_loss=0.29
-turn_hmm max_dialogue_gap=2.8
-turn_hmm short_duration=0.85
+turn_hmm base_switch_penalty=0.025
+turn_hmm question_switch_bonus=0.021
+turn_hmm backchannel_switch_bonus=0.296
+turn_hmm after_backchannel_switch_bonus=0.02
+turn_hmm short_turn_switch_bonus=0.0
+turn_hmm current_label_bias=0.211
+turn_hmm max_score_loss=0.133
+turn_hmm max_dialogue_gap=1.4
+turn_hmm short_duration=0.45
 
 low_cohesion_absorb max_per_profile=32
 low_cohesion_absorb prototype_min_duration=0.15
@@ -72,7 +72,13 @@ safe_merge thresholds: 0.53 global, 0.40 for profiles <=12 seconds, only when pr
 Reproducibility output:
 
 ```text
-runtime\optimization\turn_hmm_absorb_refine_400.json
+runtime\optimization\config_absorb_refine_500_seed11.json
+```
+
+Additional clustering override versus the parameter-only defaults:
+
+```text
+unknown_short_threshold=0.27
 ```
 
 Important caveat: this is still an experimental cached replay result. It does not use canonical speaker identity or video-specific rules, but the prototype, turn-HMM, and low-cohesion absorption stages were tested as postprocesses and still need a live-compatible online implementation before promotion as the product default.
