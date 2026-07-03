@@ -7,36 +7,42 @@ Last updated: 2026-07-03
 Best no-canonical experimental replay found during the 2026-07-03 continuation:
 
 ```text
-global_robust_score:      0.821240
-mean_video_score:         0.845151
-worst_video_score:        0.788334
-bottom3_mean_video_score: 0.799377
+global_robust_score:      0.829061
+mean_video_score:         0.851914
+worst_video_score:        0.799829
+bottom3_mean_video_score: 0.803732
 ```
 
 This result uses the provider stack below plus a no-canonical prototype reassignment and safe profile-merge postprocessor:
 
 ```text
-postprocess=prototype_kdox
+espnet_ecapa_wavlm_joint=0.74
+jungjee_rawnet3=0.99
+wespeaker_campplus=0.34
+speechbrain_resnet=0.35
+resemblyzer=0.12
+
+postprocess=prototype_all_rows_local_refine
 merge_mode=safe_merge
-prototype max_per_profile=24
-prototype_min_duration=0.5
-prototype_max_unknown=0.75
-prototype top_k=3
-prototype centroid_blend=0.35
-prototype only_low_confidence=true
+prototype max_per_profile=32
+prototype_min_duration=0.15
+prototype_max_unknown=1.0
+prototype top_k=12
+prototype centroid_blend=0.555
+prototype only_low_confidence=false
 prototype reassign_unknown=true
-prototype max_reassign_duration=2.0
-prototype min_unknown=0.55
-prototype max_margin=0.06
-prototype min_similarity=0.2
-prototype min_delta=0.1
+prototype max_reassign_duration=8.0
+prototype min_unknown=0.79
+prototype max_margin=0.324
+prototype min_similarity=-0.039
+prototype min_delta=0.108
 safe_merge thresholds: 0.53 global, 0.40 for profiles <=12 seconds, only when profile_count <=5
 ```
 
 Reproducibility output:
 
 ```text
-runtime\optimization\stack_postprocess_search_20.json
+runtime\optimization\prototype_reassign_local_refine_500.json
 ```
 
 Important caveat: this is still an experimental cached replay result. It does not use canonical speaker identity or video-specific rules, but the prototype reassignment was tested as a postprocess and still needs a live-compatible online implementation before promotion as the product default.
