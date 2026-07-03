@@ -59,8 +59,11 @@ HTML = r"""<!doctype html>
     .dropdown-control { position:relative; min-height:34px; display:flex; align-items:center; border:1px solid var(--line); border-radius:7px; background:#0F161F; color:var(--text); font-size:13px; font-weight:400; }
     .dropdown-control::after { content:""; position:absolute; right:15px; top:50%; width:8px; height:8px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:translateY(-65%) rotate(45deg); opacity:.9; pointer-events:none; }
     .select-control { width:100%; min-width:0; }
-    .select-control select { width:100%; min-width:0; min-height:32px; border:0; border-radius:7px; padding:0 36px 0 12px; background:transparent; color:inherit; font:inherit; appearance:none; outline:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .mode, .speaker-panel select { width:100%; min-height:30px; border:1px solid var(--line); border-radius:6px; padding:0 30px 0 8px; font-size:13px; background-color:#0F161F; color:var(--text); appearance:none; }
+    .select-control select { width:100%; min-width:0; min-height:32px; border:0; border-radius:7px; padding:0 36px 0 12px; background:#0F161F; color:var(--text); color-scheme:dark; font:inherit; appearance:none; outline:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .select-control select option, .mode option, .speaker-panel select option { background:#0B1015; color:var(--text); }
+    .select-control select option:checked, .mode option:checked, .speaker-panel select option:checked { background:#0F161F; color:#FFFFFF; }
+    .select-control select option:disabled, .mode option:disabled, .speaker-panel select option:disabled { background:#0B1015; color:#536271; }
+    .mode, .speaker-panel select { width:100%; min-height:30px; border:1px solid var(--line); border-radius:6px; padding:0 30px 0 8px; font-size:13px; background-color:#0F161F; color:var(--text); color-scheme:dark; appearance:none; }
     .source, .speaker-panel input { width:100%; min-height:30px; border:1px solid var(--line); border-radius:6px; padding:0 8px; font-size:13px; background:#0B1015; color:var(--text); }
     .mode:disabled, .preset:disabled, .source:disabled { opacity:.6; }
     .sensitivity { min-height:48px; display:grid; gap:6px; color:var(--muted); font-size:12px; padding:5px 0 8px; border-bottom:1px solid var(--line); }
@@ -188,6 +191,8 @@ HTML = r"""<!doctype html>
     .speaker-panel #recordReference.recording { border-color:#DF3C36; color:var(--text); background:#981D20; }
     .speaker-record-seconds { color:#9EAAB6; font-size:11px; }
     .speaker-settings-panel { display:grid; gap:8px; }
+    .speaker-setting-toggle { min-height:24px; display:flex; align-items:center; gap:8px; color:#C6D0DC; font-size:12px; line-height:1.25; }
+    .speaker-setting-toggle input { width:14px; height:14px; margin:0; accent-color:#1789F2; }
     .speaker-tools { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; }
     .speaker-tools strong { grid-column:1 / -1; color:var(--text); font-size:13px; }
     .speaker-file-actions { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
@@ -546,6 +551,10 @@ HTML = r"""<!doctype html>
               <strong id="newSpeakerSensitivityLabel"></strong>
             </span>
           </label>
+          <label class="speaker-setting-toggle" title="When enabled, later prototype evidence may revise an already labeled transcript row. Disabled still allows UNKNOWN rows to be filled later.">
+            <input id="allowSpeakerReassignment" type="checkbox">
+            <span>Allow later speaker reassignment</span>
+          </label>
           <div class="speaker-tools">
             <strong>Speaker groups</strong>
             <span class="speaker-file-actions">
@@ -610,6 +619,7 @@ const showTranscriptProbabilities = document.getElementById("showTranscriptProba
 const inputMode = document.getElementById("inputMode");
 const newSpeakerSensitivity = document.getElementById("newSpeakerSensitivity");
 const newSpeakerSensitivityLabel = document.getElementById("newSpeakerSensitivityLabel");
+const allowSpeakerReassignment = document.getElementById("allowSpeakerReassignment");
 const loadSpeakerGroupButton = document.getElementById("loadSpeakerGroup");
 const saveSpeakerGroupButton = document.getElementById("saveSpeakerGroup");
 const speakerGroupFile = document.getElementById("speakerGroupFile");
@@ -635,6 +645,7 @@ const speakerColors = __SPEAKER_COLORS__;
 const initialSource = __SOURCE_JSON__;
 const presetVideos = __PRESET_VIDEOS__;
 const speakerSensitivityConfig = __NEW_SPEAKER_SENSITIVITY_JSON__;
+const speakerRefinementConfig = __SPEAKER_REFINEMENT_JSON__;
 const initialSpeakerLibrary = __SPEAKER_LIBRARY_JSON__;
 const svgNamespace = "http://www.w3.org/2000/svg";
 const targetCaptureSampleRate = 16000;
@@ -902,8 +913,25 @@ async function applySpeakerSensitivityIfDirty() {
   if (!speakerSensitivityDirty) return null;
   return applySpeakerSensitivity();
 }
+function syncSpeakerReassignmentSetting(settings) {
+  if (!settings || typeof settings !== "object") return;
+  allowSpeakerReassignment.checked = Boolean(settings.allow_reassignment);
+}
+async function applySpeakerReassignmentSetting() {
+  const requested = allowSpeakerReassignment.checked;
+  try {
+    const result = await post("/api/settings", {allow_speaker_reassignment: requested});
+    syncSpeakerReassignmentSetting(result.speaker_refinement);
+    return result;
+  } catch (error) {
+    allowSpeakerReassignment.checked = !requested;
+    log(`Speaker reassignment setting failed: ${error.message}`);
+    throw error;
+  }
+}
 newSpeakerSensitivity.value = speakerSensitivityConfig.selected || 3;
 updateSpeakerSensitivityLabel();
+syncSpeakerReassignmentSetting(speakerRefinementConfig);
 function extractYouTubeId(url) {
   const text = String(url || "");
   try {
@@ -956,6 +984,7 @@ async function prepareBrowserStreamSession() {
   const url = browserStreamSourceUrl();
   if (browserStreamPrepared && browserStreamPreparedUrl === url) return;
   const result = await post("/api/browser-stream", {url});
+  if (result.speaker_state) updateSpeakerState(result.speaker_state);
   browserStreamPrepared = true;
   browserStreamPreparedUrl = url;
   mediaVersion = Number(result.version || mediaVersion || Date.now());
@@ -1218,10 +1247,19 @@ function resetTranscriptDisplay() {
   statusBox.textContent = "";
   currentRealtimeGeneration = 0;
   clearLiveSpeakerState();
+  clearUnsavedDetectedSpeakerDisplay();
   renderedSpeakerSentenceCounts = {};
   renderedSpeakerSpeakingSeconds = {};
   hasRenderedFinalSentenceRows = false;
   refreshSpeakerPanelSentenceCounts();
+}
+function clearUnsavedDetectedSpeakerDisplay() {
+  if (speakerLibraryState.group_name) return;
+  const retainedSpeakers = speakerLibraryState.speakers.filter(speaker => (
+    speaker.source === "reference" || speaker.locked || speaker.reference_audio
+  ));
+  if (retainedSpeakers.length === speakerLibraryState.speakers.length) return;
+  updateSpeakerState({...speakerLibraryState, speakers: retainedSpeakers});
 }
 function refreshMediaElements(version) {
   setBrowserStreamMode(false);
@@ -2308,7 +2346,8 @@ start.addEventListener("click", async () => {
       await startBrowserAudioCapture();
       setState("Warming backend");
       setStreamHint(captureSourceKind === "microphone" ? "Microphone capture is armed; warming backend." : "Audio capture is armed; warming backend before transcription starts.");
-      await post("/api/start");
+      const result = await post("/api/start");
+      if (result.speaker_state) updateSpeakerState(result.speaker_state);
     } catch (error) {
       stopBrowserAudioCapture();
       start.disabled = false; stop.disabled = true; setSourceControlsDisabled(false); setState("Ready"); log(`Start failed: ${error.message}`);
@@ -2322,7 +2361,8 @@ start.addEventListener("click", async () => {
     await applySpeakerSensitivityIfDirty();
     setState("Warming backend");
     log("Warming backend before playback starts. First Modal starts can take about two minutes.");
-    await post("/api/start");
+    const result = await post("/api/start");
+    if (result.speaker_state) updateSpeakerState(result.speaker_state);
   } catch (error) {
     start.disabled = false; stop.disabled = true; setSourceControlsDisabled(false); setState("Ready"); log(`Start failed: ${error.message}`);
     return;
@@ -2405,6 +2445,14 @@ newSpeakerSensitivity.addEventListener("change", () => {
       log(`New speaker sensitivity set to ${applied.level}. ${applied.label}.`);
     })
     .catch(error => log(`Sensitivity update failed: ${error.message}`));
+});
+allowSpeakerReassignment.addEventListener("change", () => {
+  applySpeakerReassignmentSetting()
+    .then(result => {
+      const enabled = Boolean((result.speaker_refinement || {}).allow_reassignment);
+      log(enabled ? "Later speaker reassignment enabled." : "Later speaker reassignment disabled.");
+    })
+    .catch(() => {});
 });
 speakerTabButtons.forEach(button => {
   button.addEventListener("click", () => setSpeakerTab(button.dataset.speakerTab));
@@ -2572,6 +2620,7 @@ load.addEventListener("click", async () => {
   connect();
   try {
     const media = await post("/api/load-url", {url});
+    if (media.speaker_state) updateSpeakerState(media.speaker_state);
     source.value = media.url;
     syncPresetSelection(media.url);
     refreshMediaElements(media.version);
@@ -2583,6 +2632,7 @@ load.addEventListener("click", async () => {
     log(`Load failed: ${error.message}`);
     try {
       const fallback = await post("/api/browser-stream", {url});
+      if (fallback.speaker_state) updateSpeakerState(fallback.speaker_state);
       source.value = fallback.url;
       syncPresetSelection(fallback.url);
       setBrowserStreamMode(true, fallback.url, "display");

@@ -145,6 +145,7 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/":
             media = self.server.current_media()
+            speaker_state = self.server.controller.initial_speaker_state()
             html = (
                 HTML
                 .replace("__SOURCE_JSON__", json_dumps(media.url))
@@ -154,7 +155,8 @@ class Handler(BaseHTTPRequestHandler):
                     "__NEW_SPEAKER_SENSITIVITY_JSON__",
                     json_dumps(new_speaker_sensitivity_config(getattr(self.server.args, "new_speaker_sensitivity", 3))),
                 )
-                .replace("__SPEAKER_LIBRARY_JSON__", json_dumps(self.server.controller.speaker_state()))
+                .replace("__SPEAKER_REFINEMENT_JSON__", json_dumps(self.server.controller.speaker_refinement_settings()))
+                .replace("__SPEAKER_LIBRARY_JSON__", json_dumps(speaker_state))
             )
             self._send_bytes(html.encode("utf-8"), "text/html; charset=utf-8")
         elif path == "/events":
@@ -173,8 +175,8 @@ class Handler(BaseHTTPRequestHandler):
             path = urlparse(self.path).path
             if path == "/api/start":
                 self.server.bus.emit("status", {"message": "Browser Start request received."})
-                self.server.controller.start()
-                self._send_json({"ok": True})
+                speaker_state = self.server.controller.start()
+                self._send_json({"ok": True, "speaker_state": speaker_state})
             elif path == "/api/stop":
                 self.server.controller.stop()
                 self._send_json({"ok": True})
@@ -192,6 +194,7 @@ class Handler(BaseHTTPRequestHandler):
                     "audio_file": str(media.audio_file),
                     "video_file": str(media.video_file),
                     "version": self.server.media_version,
+                    "speaker_state": self.server.controller.speaker_state(),
                 })
             elif path == "/api/browser-stream":
                 payload = self._read_json_body()
@@ -205,6 +208,7 @@ class Handler(BaseHTTPRequestHandler):
                     "video_id": media.video_id,
                     "browser_stream": True,
                     "version": self.server.media_version,
+                    "speaker_state": self.server.controller.speaker_state(),
                 })
             elif path == "/api/audio-chunk":
                 payload = self._read_json_body()
@@ -224,10 +228,18 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json({"ok": True})
             elif path == "/api/settings":
                 payload = self._read_json_body()
-                sensitivity = self.server.controller.set_new_speaker_sensitivity(
-                    payload.get("new_speaker_sensitivity", getattr(self.server.args, "new_speaker_sensitivity", 3))
-                )
-                self._send_json({"ok": True, "new_speaker_sensitivity": sensitivity})
+                response: dict[str, Any] = {"ok": True}
+                if "new_speaker_sensitivity" in payload:
+                    response["new_speaker_sensitivity"] = self.server.controller.set_new_speaker_sensitivity(
+                        payload.get("new_speaker_sensitivity", getattr(self.server.args, "new_speaker_sensitivity", 3))
+                    )
+                if "allow_speaker_reassignment" in payload:
+                    response["speaker_refinement"] = self.server.controller.set_allow_speaker_reassignment(
+                        payload.get("allow_speaker_reassignment")
+                    )
+                else:
+                    response["speaker_refinement"] = self.server.controller.speaker_refinement_settings()
+                self._send_json(response)
             elif path == "/api/speakers/rename":
                 payload = self._read_json_body()
                 state = self.server.controller.rename_speaker(
@@ -550,6 +562,18 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "min_speech_audio_ratio": args.min_speech_audio_ratio,
             "retro_reassign_min_similarity": args.retro_reassign_min_similarity,
             "retro_reassign_min_margin": args.retro_reassign_min_margin,
+            "speaker_refinement": args.speaker_refinement,
+            "allow_speaker_reassignment": args.allow_speaker_reassignment,
+            "speaker_refinement_max_per_profile": args.speaker_refinement_max_per_profile,
+            "speaker_refinement_min_duration": args.speaker_refinement_min_duration,
+            "speaker_refinement_max_unknown": args.speaker_refinement_max_unknown,
+            "speaker_refinement_top_k": args.speaker_refinement_top_k,
+            "speaker_refinement_centroid_blend": args.speaker_refinement_centroid_blend,
+            "speaker_refinement_unknown_min_similarity": args.speaker_refinement_unknown_min_similarity,
+            "speaker_refinement_unknown_min_margin": args.speaker_refinement_unknown_min_margin,
+            "speaker_refinement_known_max_duration": args.speaker_refinement_known_max_duration,
+            "speaker_refinement_known_min_similarity": args.speaker_refinement_known_min_similarity,
+            "speaker_refinement_known_min_delta": args.speaker_refinement_known_min_delta,
             "new_speaker_sensitivity": getattr(args, "new_speaker_sensitivity", 3),
             "new_speaker_sensitivity_label": getattr(args, "new_speaker_sensitivity_label", "Balanced"),
             "vad_sentence_splitting": args.vad_sentence_splitting,
@@ -863,6 +887,28 @@ def parse_args() -> argparse.Namespace:
         default=0.0,
         help="Minimum top-vs-runner-up similarity gap for retro UNKNOWN reassignment when multiple speakers exist.",
     )
+    parser.add_argument(
+        "--speaker-refinement",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enable prototype-based live refinement. Stable mode only fills UNKNOWN rows later.",
+    )
+    parser.add_argument(
+        "--allow-speaker-reassignment",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Allow prototype refinement to change already assigned speaker labels.",
+    )
+    parser.add_argument("--speaker-refinement-max-per-profile", type=int, default=32)
+    parser.add_argument("--speaker-refinement-min-duration", type=float, default=0.15)
+    parser.add_argument("--speaker-refinement-max-unknown", type=float, default=1.0)
+    parser.add_argument("--speaker-refinement-top-k", type=int, default=12)
+    parser.add_argument("--speaker-refinement-centroid-blend", type=float, default=0.555)
+    parser.add_argument("--speaker-refinement-unknown-min-similarity", type=float, default=0.20)
+    parser.add_argument("--speaker-refinement-unknown-min-margin", type=float, default=0.0)
+    parser.add_argument("--speaker-refinement-known-max-duration", type=float, default=8.0)
+    parser.add_argument("--speaker-refinement-known-min-similarity", type=float, default=-0.039)
+    parser.add_argument("--speaker-refinement-known-min-delta", type=float, default=0.108)
     parser.add_argument("--min-embed-seconds", type=float, default=0.5)
     parser.add_argument(
         "--min-speech-audio-ratio",
@@ -942,6 +988,18 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=0.5,
         help="Minimum known-speaker probability before the live row label switches from Unknown to a speaker.",
+    )
+    parser.add_argument(
+        "--live-speaker-embedding-min-interval-seconds",
+        type=float,
+        default=0.75,
+        help="Minimum wall-clock spacing between live speaker embedding requests from preview/probe paths.",
+    )
+    parser.add_argument(
+        "--live-speaker-embedding-target-utilization",
+        type=float,
+        default=0.25,
+        help="Target fraction of wall time live speaker embeddings may occupy; use 1.0 to disable latency backoff.",
     )
     parser.add_argument(
         "--live-speaker-probe",

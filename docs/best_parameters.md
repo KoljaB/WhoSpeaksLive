@@ -106,6 +106,22 @@ bottom3_mean_video_score: 0.789563
 total_unknown_rate:       0.006729
 ```
 
+## Live Prototype Refinement Scores
+
+These scores use the current live default provider stack (`speechbrain_resnet=0.38`) and the new live-compatible prototype refinement path. The checkbox-off mode keeps already assigned speaker labels stable and only fills rows that were UNKNOWN first. The checkbox-on mode also allows later prototype evidence to revise already assigned transcript rows.
+
+```text
+no prototype refinement:        0.813546
+checkbox off, stable labels:    0.817220
+checkbox on, allow reassignment: 0.817988
+```
+
+Reproducibility output:
+
+```text
+runtime\optimization\live_refinement_modes_speechbrain038.json
+```
+
 ## Provider Stack
 
 ```text

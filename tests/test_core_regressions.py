@@ -196,7 +196,9 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("--text:#F1F5F8;", HTML)
         self.assertIn(".dropdown-control { position:relative; min-height:34px; display:flex; align-items:center; border:1px solid var(--line); border-radius:7px; background:#0F161F; color:var(--text);", HTML)
         self.assertIn(".dropdown-control::after { content:\"\"; position:absolute; right:15px; top:50%; width:8px; height:8px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor;", HTML)
-        self.assertIn(".select-control select { width:100%; min-width:0; min-height:32px; border:0; border-radius:7px; padding:0 36px 0 12px; background:transparent; color:inherit; font:inherit; appearance:none;", HTML)
+        self.assertIn(".select-control select { width:100%; min-width:0; min-height:32px; border:0; border-radius:7px; padding:0 36px 0 12px; background:#0F161F; color:var(--text); color-scheme:dark;", HTML)
+        self.assertIn(".select-control select option, .mode option, .speaker-panel select option { background:#0B1015; color:var(--text); }", HTML)
+        self.assertIn(".select-control select option:checked, .mode option:checked, .speaker-panel select option:checked { background:#0F161F; color:#FFFFFF; }", HTML)
         self.assertIn('class="source-mode-button dropdown-control"', HTML)
         self.assertIn('class="select-control dropdown-control"><select id="preset"', HTML)
         self.assertNotIn("background-image:linear-gradient", HTML)
@@ -375,6 +377,10 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("function refreshSpeakerPanelSentenceCounts()", HTML)
         self.assertIn("speakerPanelSentenceCount(speaker)", HTML)
         self.assertIn("speakerPanelSpeakingSeconds(speaker)", HTML)
+        self.assertIn("function clearUnsavedDetectedSpeakerDisplay()", HTML)
+        self.assertIn('if (speakerLibraryState.group_name) return;', HTML)
+        self.assertIn("if (result.speaker_state) updateSpeakerState(result.speaker_state);", HTML)
+        self.assertIn("if (media.speaker_state) updateSpeakerState(media.speaker_state);", HTML)
         self.assertIn("async function commitSpeakerNameInput(speaker, input)", HTML)
         self.assertIn('title.value = speakerPanelName(speaker);', HTML)
         self.assertIn('title.addEventListener("blur"', HTML)
@@ -504,7 +510,9 @@ class WindowStreamingAudioTests(unittest.TestCase):
             diarizer._new_memory = lambda: new_memory
             diarizer._speaker_lock = threading.Lock()
             diarizer._unknown_lock = threading.Lock()
+            diarizer._sentence_refinement_lock = threading.Lock()
             diarizer._unknown_sentences = [object()]
+            diarizer._sentence_refinement_records = {1: {"assigned_speaker": "S1"}}
             diarizer._speaker_metadata = {"S1": {"name": "Alice"}}
             diarizer._speaker_group_name = "Loaded"
             diarizer._seed_profiles = [{"centroid": [1.0, 0.0]}]
@@ -522,6 +530,68 @@ class WindowStreamingAudioTests(unittest.TestCase):
         self.assertEqual(state["group_name"], "")
         self.assertEqual(state["speakers"], [])
         self.assertTrue(any(event == "speakers" for event, _payload in diarizer.bus.events))
+
+    def test_initial_speaker_state_resets_idle_detected_runtime_profiles(self) -> None:
+        class FakeBus:
+            def __init__(self) -> None:
+                self.events: list[tuple[str, object]] = []
+
+            def emit(self, event: str, payload: object) -> None:
+                self.events.append((event, payload))
+
+        class FakeMemory:
+            def __init__(self, profiles: list[dict[str, object]] | None = None) -> None:
+                self.profiles = profiles or []
+
+            def export_profiles(self) -> list[dict[str, object]]:
+                return [dict(profile) for profile in self.profiles]
+
+            def replace_profiles(self, profiles: list[dict[str, object]]) -> None:
+                self.profiles = [dict(profile) for profile in profiles]
+
+        old_memory = FakeMemory([{
+            "label": "S1",
+            "index": 1,
+            "centroid": np.array([1.0, 0.0], dtype=np.float32),
+            "sentence_count": 4,
+            "speech_seconds": 10.4,
+            "created_at": 1.0,
+            "last_seen_at": 2.0,
+            "locked": False,
+        }])
+        new_memory = FakeMemory()
+        with tempfile.TemporaryDirectory() as tmp:
+            diarizer = WindowDiarizer.__new__(WindowDiarizer)
+            diarizer.args = argparse.Namespace(embedding_provider="mock")
+            diarizer.speaker_library_dir = Path(tmp)
+            diarizer.memory = old_memory
+            diarizer._new_memory = lambda: new_memory
+            diarizer._speaker_lock = threading.Lock()
+            diarizer._unknown_lock = threading.Lock()
+            diarizer._sentence_refinement_lock = threading.Lock()
+            diarizer._preview_lock = threading.Lock()
+            diarizer._thread = None
+            diarizer._preview_thread = None
+            diarizer._live_probe_thread = None
+            diarizer._unknown_sentences = [object()]
+            diarizer._sentence_refinement_records = {1: {"assigned_speaker": "S1"}}
+            diarizer._speaker_metadata = {"S1": {"name": "Stale", "source": "detected"}}
+            diarizer._speaker_group_name = ""
+            diarizer._seed_profiles = []
+            diarizer._preview_left = 12.0
+            diarizer._preview_generation = 2
+            diarizer._preview_paused = True
+            diarizer.bus = FakeBus()
+
+            state = diarizer.initial_speaker_state()
+
+        self.assertIs(diarizer.memory, new_memory)
+        self.assertEqual(diarizer._unknown_sentences, [])
+        self.assertEqual(diarizer._sentence_refinement_records, {})
+        self.assertEqual(diarizer._speaker_metadata, {})
+        self.assertEqual(state["speakers"], [])
+        self.assertFalse(any(event == "speakers" for event, _payload in diarizer.bus.events))
+        self.assertTrue(any(event == "realtime_clear" for event, _payload in diarizer.bus.events))
 
     def test_browser_stream_audio_uses_chunks_and_slices_across_boundaries(self) -> None:
         diarizer = WindowDiarizer.__new__(WindowDiarizer)
@@ -596,6 +666,31 @@ class WindowStreamingAudioTests(unittest.TestCase):
         audio[50:90] = 0.01
 
         self.assertTrue(diarizer._audio_has_rms_speech(audio, 100))
+
+    def test_live_speaker_embedding_throttle_uses_latency_target(self) -> None:
+        class Bus:
+            def __init__(self) -> None:
+                self.events: list[tuple[str, dict[str, object]]] = []
+
+            def emit(self, event: str, payload: dict[str, object]) -> None:
+                self.events.append((event, payload))
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            live_speaker_embedding_min_interval_seconds=0.75,
+            live_speaker_embedding_target_utilization=0.25,
+        )
+        diarizer.bus = Bus()
+
+        self.assertTrue(diarizer._try_reserve_live_speaker_embedding())
+        self.assertFalse(diarizer._try_reserve_live_speaker_embedding())
+
+        diarizer._record_live_speaker_embedding_latency(1.0)
+
+        remaining = diarizer._live_speaker_embedding_next_at - time.monotonic()
+        self.assertGreaterEqual(remaining, 2.8)
+        self.assertLessEqual(remaining, 3.2)
+        self.assertTrue(any(event == "status" for event, _payload in diarizer.bus.events))
 
 
 class EmbeddingSubprocessClientTests(unittest.TestCase):
@@ -773,7 +868,7 @@ class RepositoryStructureTests(unittest.TestCase):
             reloaded = importlib.reload(window_config)
             self.assertEqual(
                 reloaded.DEFAULT_WINDOW_EMBEDDING_PROVIDER,
-                "espnet_ecapa_wavlm_joint=0.725+jungjee_rawnet3=1+wespeaker_campplus=0.35",
+                "espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12",
             )
         finally:
             os.environ.clear()
@@ -784,22 +879,22 @@ class RepositoryStructureTests(unittest.TestCase):
         from whospeaks.window.youtube_window_diarize_gui import parse_args
 
         expected = {
-            "embedding_provider": "espnet_ecapa_wavlm_joint=0.725+jungjee_rawnet3=1+wespeaker_campplus=0.35",
+            "embedding_provider": "espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12",
             "same_speaker_similarity": 0.37,
-            "similarity_temperature": 0.0576,
-            "speaker_softmax_temperature": 0.0539,
+            "similarity_temperature": 0.0648,
+            "speaker_softmax_temperature": 0.0443,
             "new_speaker_threshold": 0.38,
             "duplicate_profile_similarity": 0.4,
-            "unknown_short_threshold": 0.333,
+            "unknown_short_threshold": 0.3225,
             "min_first_speaker_seconds": 1.3098,
             "min_new_speaker_seconds": 1.6,
             "late_new_speaker_min_seconds": 3.4127,
             "max_speakers": 12,
             "min_margin": 0.0386,
             "margin_temperature": 0.03,
-            "update_unknown_max": 0.54,
+            "update_unknown_max": 0.61,
             "new_speaker_confirmation_count": 1,
-            "new_speaker_confirmation_similarity": 0.5033,
+            "new_speaker_confirmation_similarity": 0.5149,
             "max_pending_new_speakers": 6,
             "min_new_speaker_words": 3,
             "retro_reassign_min_similarity": 0.05,
@@ -814,6 +909,8 @@ class RepositoryStructureTests(unittest.TestCase):
             "realtime_preview_diarize_min_similarity": 0.45,
             "realtime_preview_diarize_min_margin": 0.08,
             "realtime_preview_diarize_min_known_probability": 0.5,
+            "live_speaker_embedding_min_interval_seconds": 0.75,
+            "live_speaker_embedding_target_utilization": 0.25,
             "live_speaker_probe_interval_seconds": 0.4,
             "live_speaker_probe_window_seconds": 1.25,
             "live_speaker_probe_min_advance_seconds": 0.4,

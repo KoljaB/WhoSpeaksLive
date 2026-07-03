@@ -2,6 +2,34 @@
 
 This process finds better live-compatible speaker diarization parameters by replaying cached live sentence windows against ElevenLabs canonical baselines and keeping only changes that can be reproduced by the real live path.
 
+The only score that counts is the score produced by the same live-compatible pipeline used by:
+
+tools/youtube_window_diarize_gui.py
+
+A score is invalid unless all of the following are true:
+
+1. The exact code path is available to the live GUI or shared production/live diarization path.
+2. The system uses no speaker prior knowledge, no answer key, no canonical labels, no video-specific identities.
+3. The method can run online/streaming, without future transcript/audio access except what the live system would have at that moment.
+4. Cached replay may only be used as a deterministic simulator of the live path.
+5. Any postprocessing used for scoring must also be wired into the live path.
+6. Do not report any cached-only, experimental-only, oracle, non-live, or not-yet-wired score as “best score” or “achieved score.”
+7. If a score does not satisfy all conditions, label it INVALID_FOR_TARGET.
+
+Your task now:
+
+A. Audit the repository and identify every score in docs, logs, and code.
+B. Separate them into:
+   - VALID_LIVE_COMPATIBLE
+   - INVALID_EXPERIMENTAL_REPLAY
+   - INVALID_ORACLE_OR_PRIOR
+   - UNKNOWN
+C. Update docs/best_parameters.md so it contains only the best VALID_LIVE_COMPATIBLE parameter set.
+D. Add a section called “Invalid research-only results” and move the 0.835299 result there with a clear warning.
+E. Add or update a test/evaluation script that prints whether a score is VALID_FOR_TARGET=true or false.
+F. Continue optimization, but only count scores where VALID_FOR_TARGET=true.
+G. Do not claim the target is reached until VALID_FOR_TARGET=true and score >= 0.85.
+
 ## Goal
 
 The optimizer should answer one question:
