@@ -799,8 +799,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--interval-seconds",
         type=float,
-        default=0.0,
-        help="Fixed delay between transcription passes. 0 runs continuously with no overlap.",
+        default=0.7,
+        help="Fixed delay between transcription passes, also used as cooldown after a successful sentence split. 0 runs continuously with no overlap.",
     )
     parser.add_argument(
         "--min-playback-advance-seconds",
@@ -1137,13 +1137,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-embedding-min-interval-seconds",
         type=float,
-        default=0.5,
+        default=0.2,
         help="Minimum wall-clock spacing between live speaker embedding requests from preview/probe paths.",
     )
     parser.add_argument(
         "--live-speaker-embedding-target-utilization",
         type=float,
-        default=0.5,
+        default=1.0,
         help="Target fraction of wall time live speaker embeddings may occupy; use 1.0 to disable latency backoff.",
     )
     parser.add_argument(
@@ -1167,7 +1167,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-ema-count",
         type=int,
-        default=3,
+        default=1,
         help="Maximum number of recent live speaker probability snapshots blended by EMA.",
     )
     parser.add_argument(
@@ -1185,7 +1185,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-probe-interval-seconds",
         type=float,
-        default=0.5,
+        default=0.2,
         help="Seconds between fallback live-speaker probes.",
     )
     parser.add_argument(
@@ -1209,7 +1209,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-probe-min-advance-seconds",
         type=float,
-        default=0.5,
+        default=0.2,
         help="Minimum playback advance before rescoring the fallback live-speaker probe window.",
     )
     parser.add_argument(
@@ -1437,31 +1437,31 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-raw-change-snap",
         action=argparse.BooleanOptionalAction,
-        default=False,
+        default=True,
         help="Allow strong unsmoothed live probabilities to switch away from the active speaker before EMA catches up.",
     )
     parser.add_argument(
         "--live-speaker-raw-change-min-probability",
         type=float,
-        default=0.62,
+        default=0.7,
         help="Minimum raw known-speaker probability required for a live speaker-change snap.",
     )
     parser.add_argument(
         "--live-speaker-raw-change-min-margin",
         type=float,
-        default=0.18,
+        default=0.25,
         help="Minimum raw probability lead over the active speaker required for a live speaker-change snap.",
     )
     parser.add_argument(
         "--live-speaker-sentence-hint",
         action=argparse.BooleanOptionalAction,
-        default=False,
+        default=True,
         help="Let fresh final sentence assignments seed the visible live speaker when no stronger live tag is active.",
     )
     parser.add_argument(
         "--live-speaker-sentence-hint-override",
         action=argparse.BooleanOptionalAction,
-        default=False,
+        default=True,
         help="Allow fresh final sentence assignments to replace the current fallback live speaker.",
     )
     parser.add_argument(
@@ -1491,7 +1491,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-sentence-hint-hold-seconds",
         type=float,
-        default=1.0,
+        default=0.3,
         help="Browser hold duration for live-speaker sentence hints.",
     )
     parser.add_argument(

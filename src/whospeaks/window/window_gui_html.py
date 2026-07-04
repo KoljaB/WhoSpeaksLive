@@ -144,16 +144,19 @@ HTML = r"""<!doctype html>
     .speaker-empty { padding:12px; color:var(--muted); font-size:11px; }
     .speaker-item { --speaker-color:transparent; min-width:0; display:grid; border-bottom:1px solid var(--line); background:#0F161F; }
     .speaker-item:last-child { border-bottom:0; }
-    .speaker-item.live-speaker { background:color-mix(in srgb, var(--speaker-color) 10%, #0F161F); }
+    .speaker-item.live-speaker { background:color-mix(in srgb, var(--speaker-color) 18%, #0F161F); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--speaker-color) 35%, transparent); }
     .speaker-item.editing { position:relative; z-index:1; border:1px solid var(--speaker-color); border-radius:7px; box-shadow:0 0 0 1px color-mix(in srgb, var(--speaker-color) 28%, transparent); }
     .speaker-item-summary { width:100%; min-height:60px; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:8px; padding:9px 10px 9px 12px; border:0; border-radius:0; background:transparent; color:#C6D0DC; text-align:left; box-shadow:inset 4px 0 0 var(--speaker-color); cursor:pointer; }
+    .speaker-item.live-speaker .speaker-item-summary { box-shadow:inset 4px 0 0 var(--speaker-color), inset 7px 0 14px color-mix(in srgb, var(--speaker-color) 18%, transparent); }
     .speaker-summary-body { min-width:0; display:grid; gap:2px; }
     .speaker-title-row { min-width:0; display:flex; align-items:center; gap:7px; }
     .speaker-row-title { min-width:0; color:#E8EEF5; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .speaker-item:not(.editing) .speaker-row-title { color:var(--speaker-color); }
     .speaker-title-row .speaker-row-name-input { flex:1 1 auto; }
-    .speaker-live-indicator { flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; color:var(--speaker-color); font-size:12px; line-height:1; }
-    .speaker-live-indicator svg { width:13px; height:13px; display:block; }
+    .speaker-live-indicator { flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; padding:2px 6px; border:1px solid color-mix(in srgb, var(--speaker-color) 55%, transparent); border-radius:999px; background:color-mix(in srgb, var(--speaker-color) 18%, #0B1015); color:var(--speaker-color); font-size:12px; line-height:1; box-shadow:0 0 14px color-mix(in srgb, var(--speaker-color) 18%, transparent); }
+    .speaker-live-indicator svg { width:13px; height:13px; display:block; animation:livePulse 1s ease-in-out infinite; }
+    @keyframes livePulse { 0%, 100% { opacity:.58; transform:scale(.92); } 50% { opacity:1; transform:scale(1.08); } }
+    @media (prefers-reduced-motion: reduce) { .speaker-live-indicator svg { animation:none; } }
     .speaker-row-name-input { min-width:0; width:100%; height:24px; margin:-2px -5px; border:1px solid transparent; border-radius:5px; padding:0 4px; background:transparent; color:#E8EEF5; font:inherit; font-size:13px; font-weight:600; outline:none; }
     .speaker-row-name-input:focus { border-color:#20303E; background:#0B1015; }
     .manual-speaker-name { margin:0; width:100%; }
@@ -235,6 +238,7 @@ HTML = r"""<!doctype html>
     .speaker-name, .speaker-row-title { font-weight:600; }
     .text { font-size:15px; line-height:1.34; }
     .row.realtime { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 10%, #0B1015); }
+    .row.realtime.live-speaker-row { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, #0B1015); border-bottom-color:color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, var(--line)); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, transparent), inset 7px 0 14px color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, transparent); }
     .row.realtime .text { color:#d7dee8; }
     .prob { flex:0 0 min(180px, 24vw); display:flex; width:min(180px, 24vw); height:6px; overflow:hidden; border:1px solid var(--line); border-radius:4px; background:#0B1015; margin-top:4px; }
     .prob span { display:block; height:100%; min-width:0; }
@@ -691,6 +695,7 @@ let fallbackLiveSpeakerId = "";
 let fallbackLiveSpeakerUntilMs = 0;
 let fallbackLiveSpeakerExpiryTimer = null;
 let fallbackLiveSpeakerClearTimer = null;
+let liveSpeakerTimeline = [];
 let browserLiveObservationTimer = null;
 let browserLiveObservationBuffer = [];
 let browserLiveObservationStarted = false;
@@ -1501,9 +1506,6 @@ function recomputeRenderedSpeakerSentenceCounts() {
   renderedSpeakerSpeakingSeconds = speakingSeconds;
   hasRenderedFinalSentenceRows = hasFinalRows;
 }
-function fastSpeakerPanelActive() {
-  return Object.keys(fastSpeakerPanelStats).length > 0;
-}
 function ensureSpeakerPanelSpeaker(speakerId) {
   if (!speakerId || speakerId === "UNKNOWN") return;
   if (speakerLibraryState.speakers.some(speaker => speaker.id === speakerId)) return;
@@ -1528,9 +1530,6 @@ function ensureSpeakerPanelSpeaker(speakerId) {
 }
 function speakerPanelSentenceCount(speaker) {
   const speakerId = speaker && speaker.id;
-  if (fastSpeakerPanelActive() && speakerId) {
-    return Number((fastSpeakerPanelStats[speakerId] || {}).count || 0);
-  }
   if (hasRenderedFinalSentenceRows && speakerId) {
     return renderedSpeakerSentenceCounts[speakerId] || 0;
   }
@@ -1538,16 +1537,13 @@ function speakerPanelSentenceCount(speaker) {
 }
 function speakerPanelSpeakingSeconds(speaker) {
   const speakerId = speaker && speaker.id;
-  if (fastSpeakerPanelActive() && speakerId) {
-    return Number((fastSpeakerPanelStats[speakerId] || {}).speakingSeconds || 0);
-  }
   if (hasRenderedFinalSentenceRows && speakerId) {
     return renderedSpeakerSpeakingSeconds[speakerId] || 0;
   }
   return Number((speaker && speaker.speech_seconds) || 0);
 }
 function speakerPanelCountUnit() {
-  return fastSpeakerPanelActive() ? "fast window" : "sentence";
+  return "sentence";
 }
 function refreshSpeakerPanelSentenceCounts() {
   recomputeRenderedSpeakerSentenceCounts();
@@ -1593,15 +1589,114 @@ function clearLiveSpeakerState() {
   transcriptLiveSpeakerId = "";
   fastSpeakerPanelStats = {};
   fastSpeakerPanelLastRight = null;
+  liveSpeakerTimeline = [];
   clearFallbackLiveSpeaker();
-  refreshSpeakerPanelSentenceCounts();
-  refreshLiveSpeakerHighlight();
+  refreshRealtimeRowsFromLiveSpeaker();
 }
 function activeFallbackLiveSpeakerId(nowMs = performance.now()) {
   if (!fallbackLiveSpeakerId) return "";
   if (fallbackLiveSpeakerUntilMs > nowMs) return fallbackLiveSpeakerId;
   clearFallbackLiveSpeaker();
   return "";
+}
+function normalizedLiveSpeakerId(speakerId) {
+  const value = String(speakerId || "").trim();
+  return value && value !== "UNKNOWN" ? value : "";
+}
+function finiteAudioSecond(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+function pruneLiveSpeakerTimeline(minEndSeconds) {
+  const cutoff = Math.max(0, finiteAudioSecond(minEndSeconds, 0));
+  liveSpeakerTimeline = liveSpeakerTimeline.filter(item => finiteAudioSecond(item.end, 0) >= cutoff);
+}
+function rememberLiveSpeakerEvidence(speakerId, item) {
+  const normalizedSpeakerId = normalizedLiveSpeakerId(speakerId);
+  if (!normalizedSpeakerId || !item) return;
+  const fallbackEnd = playbackSeconds();
+  const end = finiteAudioSecond(item.end, fallbackEnd);
+  const audioLength = Math.max(0, finiteAudioSecond(item.audio_length_seconds, 0));
+  const fallbackStart = Math.max(0, end - audioLength);
+  const start = finiteAudioSecond(item.start, fallbackStart);
+  if (!(end > start)) return;
+  liveSpeakerTimeline.push({speakerId: normalizedSpeakerId, start, end});
+  pruneLiveSpeakerTimeline(end - 90);
+}
+function realtimeDominanceScoredEnd(start, end) {
+  const duration = Math.max(0, end - start);
+  if (duration <= 2) return end;
+  const tailSeconds = duration >= 8 ? 2 : (duration - 2) * 0.25;
+  return Math.max(start + 0.1, end - tailSeconds);
+}
+function dominantRealtimeSpeakerId(start, end) {
+  const rowStart = Math.max(0, finiteAudioSecond(start, 0));
+  const rowEnd = Math.max(rowStart, finiteAudioSecond(end, rowStart));
+  if (!(rowEnd > rowStart)) return "";
+  const scoredEnd = realtimeDominanceScoredEnd(rowStart, rowEnd);
+  const weights = {};
+  liveSpeakerTimeline.forEach(item => {
+    const speakerId = normalizedLiveSpeakerId(item.speakerId);
+    if (!speakerId) return;
+    const overlapStart = Math.max(rowStart, finiteAudioSecond(item.start, rowStart));
+    const overlapEnd = Math.min(scoredEnd, finiteAudioSecond(item.end, rowStart));
+    const seconds = Math.max(0, overlapEnd - overlapStart);
+    if (seconds <= 0) return;
+    weights[speakerId] = (weights[speakerId] || 0) + seconds;
+  });
+  let bestSpeakerId = "";
+  let bestSeconds = 0;
+  Object.entries(weights).forEach(([speakerId, seconds]) => {
+    if (seconds > bestSeconds) {
+      bestSpeakerId = speakerId;
+      bestSeconds = seconds;
+    }
+  });
+  return bestSeconds >= 0.1 ? bestSpeakerId : "";
+}
+function realtimeRowDisplaySpeakerId(rawSpeakerId = "", start = 0, end = 0, previousSpeakerId = "") {
+  return (
+    dominantRealtimeSpeakerId(start, end)
+    || normalizedLiveSpeakerId(previousSpeakerId)
+    || activeFallbackLiveSpeakerId()
+    || normalizedLiveSpeakerId(rawSpeakerId)
+  );
+}
+function applyRealtimeRowSpeaker(row, speakerId) {
+  const normalizedSpeakerId = normalizedLiveSpeakerId(speakerId);
+  const color = speakerColor(normalizedSpeakerId);
+  row.dataset.speaker = normalizedSpeakerId || "UNKNOWN";
+  row.classList.toggle("live-speaker-row", Boolean(normalizedSpeakerId));
+  row.style.setProperty("--live-row-color", color || "#8F9BA8");
+  const badge = row.querySelector(".speaker-name");
+  if (!badge) return;
+  badge.className = `${normalizedSpeakerId ? "badge" : "badge unknown"} speaker-name`;
+  badge.textContent = speakerDisplayLabel(normalizedSpeakerId);
+  if (color) {
+    badge.style.color = color;
+    badge.style.borderColor = color;
+    badge.style.background = "#0B1015";
+  } else {
+    badge.style.removeProperty("color");
+    badge.style.removeProperty("border-color");
+    badge.style.removeProperty("background");
+  }
+}
+function refreshRealtimeRowsFromLiveSpeaker() {
+  Array.from(sentences.querySelectorAll(".row[data-realtime='true']")).forEach(row => {
+    applyRealtimeRowSpeaker(
+      row,
+      realtimeRowDisplaySpeakerId(
+        row.dataset.rawSpeaker || "",
+        row.dataset.start,
+        row.dataset.end,
+        row.dataset.speaker,
+      ),
+    );
+  });
+  updateCurrentLiveSpeakerFromRealtimeRows();
+  refreshSpeakerPanelSentenceCounts();
+  refreshTranscriptVisibility();
 }
 function reconcileLiveSpeakerHighlight() {
   currentLiveSpeakerId = activeFallbackLiveSpeakerId() || transcriptLiveSpeakerId;
@@ -1614,28 +1709,29 @@ function scheduleFallbackLiveSpeakerExpiry() {
   }
   const remainingMs = fallbackLiveSpeakerUntilMs - performance.now();
   if (!fallbackLiveSpeakerId || remainingMs <= 0) {
-    reconcileLiveSpeakerHighlight();
+    refreshRealtimeRowsFromLiveSpeaker();
     return;
   }
-  fallbackLiveSpeakerExpiryTimer = setTimeout(reconcileLiveSpeakerHighlight, remainingMs + 25);
+  fallbackLiveSpeakerExpiryTimer = setTimeout(refreshRealtimeRowsFromLiveSpeaker, remainingMs + 25);
 }
 function applyFallbackLiveSpeaker(item) {
-  const speakerId = item && (item.assigned_speaker || item.speaker_id);
-  if (!speakerId || speakerId === "UNKNOWN") return;
+  const speakerId = normalizedLiveSpeakerId(item && (item.assigned_speaker || item.speaker_id));
+  if (!speakerId) return;
   if (item.only_if_no_live_speaker && currentLiveSpeakerId) return;
   if (fallbackLiveSpeakerClearTimer) {
     clearTimeout(fallbackLiveSpeakerClearTimer);
     fallbackLiveSpeakerClearTimer = null;
   }
   applyFastSpeakerPanelSignal(item);
+  rememberLiveSpeakerEvidence(speakerId, item);
   const holdSeconds = Math.max(0, Number(item.hold_seconds || 2.0));
   fallbackLiveSpeakerId = speakerId;
   fallbackLiveSpeakerUntilMs = performance.now() + holdSeconds * 1000;
   scheduleFallbackLiveSpeakerExpiry();
-  reconcileLiveSpeakerHighlight();
+  refreshRealtimeRowsFromLiveSpeaker();
 }
 function clearFallbackLiveSpeakerFromProbe(item) {
-  const speakerId = item && (item.assigned_speaker || item.speaker_id);
+  const speakerId = normalizedLiveSpeakerId(item && (item.assigned_speaker || item.speaker_id));
   if (speakerId && fallbackLiveSpeakerId && speakerId !== fallbackLiveSpeakerId) return;
   const debounceSeconds = Math.max(0, Number(liveSpeakerConfig.unknown_clear_debounce_seconds || 0));
   if (fallbackLiveSpeakerId && item && item.reason === "unknown" && debounceSeconds > 0) {
@@ -1647,15 +1743,15 @@ function clearFallbackLiveSpeakerFromProbe(item) {
       fallbackLiveSpeakerClearTimer = null;
       if (fallbackLiveSpeakerId === expectedSpeakerId) {
         clearFallbackLiveSpeaker();
-        reconcileLiveSpeakerHighlight();
+        refreshRealtimeRowsFromLiveSpeaker();
       }
     }, debounceMs);
     scheduleFallbackLiveSpeakerExpiry();
-    reconcileLiveSpeakerHighlight();
+    refreshRealtimeRowsFromLiveSpeaker();
     return;
   }
   clearFallbackLiveSpeaker();
-  reconcileLiveSpeakerHighlight();
+  refreshRealtimeRowsFromLiveSpeaker();
 }
 function applyFastSpeakerPanelSignal(item) {
   const speakerId = item && (item.assigned_speaker || item.speaker_id);
@@ -2389,15 +2485,22 @@ function renderSentence(item) {
   row.className = item.realtime ? "row realtime" : "row";
   row.dataset.index = item.index;
   row.dataset.realtime = item.realtime ? "true" : "false";
-  row.dataset.speaker = item.assigned_speaker || "UNKNOWN";
-  const speakerLabel = speakerDisplayLabel(item.assigned_speaker);
-  const color = speakerColor(item.assigned_speaker);
-  const speakerClass = item.assigned_speaker ? "badge" : "badge unknown";
-  const stateLabel = item.realtime ? "Live" : (item.pending ? "Embedding" : (item.error ? "Error" : (item.revision ? "Revised" : "")));
   const startSeconds = Number(item.start || 0);
   const endSeconds = Number(item.end || 0);
   const durationSeconds = Math.max(0, endSeconds - startSeconds);
   const ratio = Number(item.speech_audio_ratio);
+  const rawSpeakerId = normalizedLiveSpeakerId(item.assigned_speaker);
+  const previousDisplaySpeakerId = item.realtime ? normalizedLiveSpeakerId(row.dataset.speaker) : "";
+  const displaySpeakerId = item.realtime
+    ? realtimeRowDisplaySpeakerId(rawSpeakerId, startSeconds, endSeconds, previousDisplaySpeakerId)
+    : rawSpeakerId;
+  row.dataset.rawSpeaker = item.realtime ? rawSpeakerId : "";
+  row.dataset.speaker = displaySpeakerId || "UNKNOWN";
+  row.classList.toggle("live-speaker-row", item.realtime && Boolean(displaySpeakerId));
+  const speakerLabel = speakerDisplayLabel(displaySpeakerId);
+  const color = speakerColor(displaySpeakerId);
+  const speakerClass = displaySpeakerId ? "badge" : "badge unknown";
+  const stateLabel = item.realtime ? "Live" : (item.pending ? "Embedding" : (item.error ? "Error" : (item.revision ? "Revised" : "")));
   row.dataset.start = String(startSeconds);
   row.dataset.end = String(endSeconds);
   row.dataset.text = item.text || "";

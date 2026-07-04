@@ -89,3 +89,13 @@ class EmbeddingSentenceJob:
     sample_rate: int
     duration_seconds: float
     speaker_generation: int = 0
+
+
+@dataclass
+class LiveSpeakerMemoryUpdateJob:
+    speaker_id: str
+    audio: np.ndarray
+    sample_rate: int
+    duration_seconds: float
+    suffix: str = ".live-profile.wav"
+    speaker_generation: int = 0

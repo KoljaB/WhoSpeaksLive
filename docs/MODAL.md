@@ -11,6 +11,10 @@ remote ASR service used for smaller split deployments.
 - Runtime: CUDA 12.6, Python 3.11, Modal T4 GPU by default
 - Cache volume: `whospeaks-youtube-window-diarize-cache`
 - Entrypoint inside Modal: `python -m whospeaks.window.youtube_gui`
+- Default embedding stack:
+  `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50`
+- Default live speaker tuning matches the best measured browser-live run:
+  0.20s probe cadence, EMA count 1, raw-change snapping, and sentence hints.
 
 The full UI image bakes the cleaned `src/`, `vendor/`, `tools/`, test fixtures,
 and the local Philomena Cunk media cache into the image. Runtime models, speaker

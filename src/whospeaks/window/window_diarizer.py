@@ -46,6 +46,7 @@ from whospeaks.window.window_config import (
 )
 from whospeaks.window.window_domain import (
     EmbeddingSentenceJob,
+    LiveSpeakerMemoryUpdateJob,
     MediaFiles,
     PendingUnknownSentence,
     SentencePart,
@@ -98,6 +99,7 @@ class WindowDiarizer:
         self._speaker_group_name = ""
         self._speaker_metadata: dict[str, dict[str, Any]] = {}
         self._seed_profiles: list[dict[str, Any]] = []
+        self._seed_live_profiles: list[dict[str, Any]] = []
         self._model: Any = None
         self._model_lock = threading.Lock()
         self._thread: threading.Thread | None = None
@@ -116,6 +118,9 @@ class WindowDiarizer:
         self._speaker_last_media_end: dict[str, float] = {}
         self._embedding_jobs: "queue.Queue[EmbeddingSentenceJob | None] | None" = None
         self._embedding_thread: threading.Thread | None = None
+        self._live_memory_update_jobs: "queue.Queue[LiveSpeakerMemoryUpdateJob | None] | None" = None
+        self._live_memory_update_thread: threading.Thread | None = None
+        self._live_memory_update_lock = threading.Lock()
         self._preview_thread: threading.Thread | None = None
         self._live_probe_thread: threading.Thread | None = None
         self._preview_transcriber: RealtimePreviewTranscriber | None = None
@@ -164,6 +169,67 @@ class WindowDiarizer:
             return self.embedding
         return self._new_embedding_client(args, provider=provider)
 
+    def _current_live_embedding_provider(self) -> str:
+        provider = str(getattr(self.args, "live_speaker_embedding_provider", "") or "").strip()
+        return provider or str(self.args.embedding_provider)
+
+    def _serialized_live_speaker_profiles(
+        self,
+        main_profiles: list[dict[str, Any]],
+        *,
+        portable: bool,
+    ) -> list[dict[str, Any]]:
+        if not getattr(self, "_live_embedding_separate", False):
+            return []
+        live_memory = getattr(self, "live_memory", None)
+        export_profiles = getattr(live_memory, "export_profiles", None)
+        if not callable(export_profiles):
+            return []
+        main_labels = {str(profile.get("label") or "") for profile in main_profiles}
+        live_profiles = [
+            dict(profile)
+            for profile in export_profiles()
+            if str(profile.get("label") or "") in main_labels
+        ]
+        serialized: list[dict[str, Any]] = []
+        for profile in live_profiles:
+            item = {
+                "label": str(profile.get("label") or ""),
+                "sentence_count": int(profile.get("sentence_count") or 1),
+                "speech_seconds": float(profile.get("speech_seconds") or 0.0),
+                "created_at": float(profile.get("created_at") or time.time()),
+                "last_seen_at": float(profile.get("last_seen_at") or time.time()),
+                "locked": bool(profile.get("locked")),
+            }
+            if portable:
+                item.update(self._centroid_payload(profile["centroid"]))
+            else:
+                item["centroid"] = np.asarray(profile["centroid"], dtype=np.float32).astype(float).tolist()
+            serialized.append(item)
+        return serialized
+
+    def _live_seed_profiles_from_manifest(self, manifest: dict[str, Any]) -> list[dict[str, Any]]:
+        if not getattr(self, "_live_embedding_separate", False):
+            return []
+        live_provider = str(manifest.get("live_embedding_provider") or "")
+        if not live_provider or live_provider != self._current_live_embedding_provider():
+            return []
+        raw_profiles = manifest.get("live_speakers")
+        if not isinstance(raw_profiles, list):
+            return []
+        seed_profiles: list[dict[str, Any]] = []
+        for item in raw_profiles:
+            if not isinstance(item, dict):
+                continue
+            seed_profiles.append({
+                "label": str(item.get("label") or ""),
+                "centroid": self._centroid_from_payload(item),
+                "sentence_count": max(1, int(item.get("sentence_count") or 1)),
+                "speech_seconds": float(item.get("speech_seconds") or 0.0),
+                "locked": bool(item.get("locked")),
+            })
+        return seed_profiles
+
     def prepare_before_browser_release(self) -> None:
         self.bus.emit(
             "status",
@@ -189,6 +255,7 @@ class WindowDiarizer:
         self._playback_clock_started_at = time.monotonic()
         self._last_playback_jump_warning_at = 0.0
         self._start_embedding_worker()
+        self._start_live_memory_update_worker()
         self._thread = threading.Thread(target=self._run, name="WindowDiarizer", daemon=True)
         self._thread.start()
         self.bus.emit("status", {"message": "Diarization worker started; synchronized playback can begin."})
@@ -279,6 +346,18 @@ class WindowDiarizer:
         history.clear()
         self._live_speaker_verify_next_at = 0.0
 
+    def _live_memory_update_lock_obj(self) -> threading.Lock:
+        lock = getattr(self, "_live_memory_update_lock", None)
+        if lock is None:
+            lock = threading.Lock()
+            self._live_memory_update_lock = lock
+        return lock
+
+    def _cancel_pending_live_memory_update_jobs(self) -> None:
+        live_jobs = getattr(self, "_live_memory_update_jobs", None)
+        if live_jobs is not None:
+            self._cancel_pending_embedding_jobs(live_jobs)
+
     def _recent_unknown_pair_queue(self) -> deque[PendingUnknownSentence]:
         queue = getattr(self, "_recent_unknown_pair_candidates", None)
         if queue is None:
@@ -293,6 +372,7 @@ class WindowDiarizer:
     def _rehydrate_seed_profiles(self) -> None:
         with self._speaker_lock:
             seed_profiles = [dict(item) for item in self._seed_profiles]
+            seed_live_profiles = [dict(item) for item in getattr(self, "_seed_live_profiles", [])]
         seed_metadata = {
             f"S{index}": dict(item.get("metadata") or {})
             for index, item in enumerate(seed_profiles, 1)
@@ -306,6 +386,16 @@ class WindowDiarizer:
             self.memory.replace_profiles([])
         self._sync_metadata_with_memory()
         self._reset_live_speaker_memory()
+        if self._live_embedding_separate and seed_live_profiles:
+            for index, profile in enumerate(seed_live_profiles, 1):
+                label = str(profile.get("label") or f"S{index}")
+                self.live_memory.upsert_profile(
+                    label,
+                    profile["centroid"],
+                    duration_seconds=float(profile.get("speech_seconds") or 0.0),
+                    sentence_count=max(1, int(profile.get("sentence_count") or 1)),
+                    locked=bool(profile.get("locked")),
+                )
 
     def _reset_runtime_session_state(self, *, emit: bool = True) -> dict[str, Any]:
         self.memory = self._new_memory()
@@ -423,15 +513,18 @@ class WindowDiarizer:
         return self.emit_speaker_state()
 
     def clear_speakers(self) -> dict[str, Any]:
-        self._speaker_generation += 1
-        jobs = self._embedding_jobs
-        if jobs is not None:
-            self._cancel_pending_embedding_jobs(jobs)
-        self.memory = self._new_memory()
-        self._reset_live_speaker_memory()
+        with self._live_memory_update_lock_obj():
+            self._speaker_generation = int(getattr(self, "_speaker_generation", 0)) + 1
+            jobs = getattr(self, "_embedding_jobs", None)
+            if jobs is not None:
+                self._cancel_pending_embedding_jobs(jobs)
+            self._cancel_pending_live_memory_update_jobs()
+            self.memory = self._new_memory()
+            self._reset_live_speaker_memory()
         with self._speaker_lock:
             self._speaker_metadata = {}
             self._seed_profiles = []
+            self._seed_live_profiles = []
             self._speaker_group_name = ""
         with self._unknown_lock:
             self._clear_unknown_sentence_state_locked()
@@ -441,6 +534,8 @@ class WindowDiarizer:
 
     def save_speaker_group(self, name: str) -> dict[str, Any]:
         self._sync_metadata_with_memory()
+        self._drain_embedding_jobs()
+        self._drain_live_memory_update_jobs()
         group_name = safe_library_name(name)
         group_dir = speaker_group_dir(self.speaker_library_dir, group_name)
         references_dir = group_dir / "references"
@@ -487,12 +582,15 @@ class WindowDiarizer:
                 "last_seen_at": float(profile.get("last_seen_at") or time.time()),
             })
 
+        saved_live_profiles = self._serialized_live_speaker_profiles(profiles, portable=False)
         manifest = {
             "version": 1,
             "name": group_name,
             "saved_at": datetime.now().isoformat(timespec="seconds"),
             "embedding_provider": self.args.embedding_provider,
             "embedding_device": self.args.embedding_device,
+            "live_embedding_provider": self._current_live_embedding_provider(),
+            "live_speakers": saved_live_profiles,
             "speakers": saved_profiles,
         }
         (group_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -512,6 +610,16 @@ class WindowDiarizer:
                     },
                 }
                 for profile in saved_profiles
+            ]
+            self._seed_live_profiles = [
+                {
+                    "label": profile["label"],
+                    "centroid": profile["centroid"],
+                    "sentence_count": profile["sentence_count"],
+                    "speech_seconds": profile["speech_seconds"],
+                    "locked": profile["locked"],
+                }
+                for profile in saved_live_profiles
             ]
         self.bus.emit("status", {"message": f"Saved speaker group {group_name}."})
         return self.emit_speaker_state()
@@ -555,12 +663,20 @@ class WindowDiarizer:
                 "metadata": metadata_by_label[label],
             })
 
-        self.memory = self._new_memory()
-        with self._speaker_lock:
-            self._speaker_group_name = group_name
-            self._speaker_metadata = metadata_by_label
-            self._seed_profiles = [dict(item) for item in seed_profiles]
-        self._rehydrate_seed_profiles()
+        seed_live_profiles = self._live_seed_profiles_from_manifest(manifest)
+        with self._live_memory_update_lock_obj():
+            self._speaker_generation = int(getattr(self, "_speaker_generation", 0)) + 1
+            jobs = getattr(self, "_embedding_jobs", None)
+            if jobs is not None:
+                self._cancel_pending_embedding_jobs(jobs)
+            self._cancel_pending_live_memory_update_jobs()
+            self.memory = self._new_memory()
+            with self._speaker_lock:
+                self._speaker_group_name = group_name
+                self._speaker_metadata = metadata_by_label
+                self._seed_profiles = [dict(item) for item in seed_profiles]
+                self._seed_live_profiles = [dict(item) for item in seed_live_profiles]
+            self._rehydrate_seed_profiles()
         with self._unknown_lock:
             self._clear_unknown_sentence_state_locked()
         self._clear_sentence_refinement_records()
@@ -596,6 +712,8 @@ class WindowDiarizer:
 
     def export_speaker_group_file(self, name: str) -> dict[str, Any]:
         self._sync_metadata_with_memory()
+        self._drain_embedding_jobs()
+        self._drain_live_memory_update_jobs()
         raw_name = str(name or "").strip() or self._speaker_group_name or "speakers"
         group_name = safe_library_name(raw_name)
         profiles = self.memory.export_profiles()
@@ -637,6 +755,7 @@ class WindowDiarizer:
             exported_speaker.update(self._centroid_payload(profile["centroid"]))
             exported_speakers.append(exported_speaker)
 
+        exported_live_speakers = self._serialized_live_speaker_profiles(profiles, portable=True)
         with self._speaker_lock:
             self._speaker_group_name = group_name
         return {
@@ -646,6 +765,8 @@ class WindowDiarizer:
             "saved_at": datetime.now().isoformat(timespec="seconds"),
             "embedding_provider": self.args.embedding_provider,
             "embedding_device": self.args.embedding_device,
+            "live_embedding_provider": self._current_live_embedding_provider(),
+            "live_speakers": exported_live_speakers,
             "speakers": exported_speakers,
         }
 
@@ -698,12 +819,20 @@ class WindowDiarizer:
         if not seed_profiles:
             raise ValueError("Speaker group file has no usable speaker profiles.")
 
-        self.memory = self._new_memory()
-        with self._speaker_lock:
-            self._speaker_group_name = group_name
-            self._speaker_metadata = metadata_by_label
-            self._seed_profiles = [dict(item) for item in seed_profiles]
-        self._rehydrate_seed_profiles()
+        seed_live_profiles = self._live_seed_profiles_from_manifest(manifest)
+        with self._live_memory_update_lock_obj():
+            self._speaker_generation = int(getattr(self, "_speaker_generation", 0)) + 1
+            jobs = getattr(self, "_embedding_jobs", None)
+            if jobs is not None:
+                self._cancel_pending_embedding_jobs(jobs)
+            self._cancel_pending_live_memory_update_jobs()
+            self.memory = self._new_memory()
+            with self._speaker_lock:
+                self._speaker_group_name = group_name
+                self._speaker_metadata = metadata_by_label
+                self._seed_profiles = [dict(item) for item in seed_profiles]
+                self._seed_live_profiles = [dict(item) for item in seed_live_profiles]
+            self._rehydrate_seed_profiles()
         with self._unknown_lock:
             self._clear_unknown_sentence_state_locked()
         self.bus.emit("status", {"message": f"Imported speaker group {group_name}."})
@@ -739,6 +868,7 @@ class WindowDiarizer:
                 sample_rate,
                 duration_seconds,
                 ".live-reference.wav",
+                speaker_generation=self._speaker_generation,
             )
         with self._speaker_lock:
             self._speaker_metadata[label] = {
@@ -944,6 +1074,8 @@ class WindowDiarizer:
         self._playback_clock_started_at = None
         self._drain_embedding_jobs()
         self._stop_embedding_worker()
+        self._drain_live_memory_update_jobs()
+        self._stop_live_memory_update_worker()
 
     def set_media(self, media: MediaFiles) -> None:
         self.stop()
@@ -996,6 +1128,8 @@ class WindowDiarizer:
     def shutdown(self) -> None:
         self.stop()
         self.embedding.shutdown()
+        if self.live_embedding is not self.embedding:
+            self.live_embedding.shutdown()
 
     def _start_embedding_worker(self) -> None:
         self._stop_embedding_worker()
@@ -1008,7 +1142,7 @@ class WindowDiarizer:
         self._embedding_thread.start()
 
     def _drain_embedding_jobs(self, timeout_seconds: float = 10.0) -> bool:
-        jobs = self._embedding_jobs
+        jobs = getattr(self, "_embedding_jobs", None)
         if jobs is None:
             return True
         if getattr(jobs, "unfinished_tasks", 0) > 0:
@@ -1041,6 +1175,68 @@ class WindowDiarizer:
                 if job is None:
                     return
                 self._process_sentence_embedding(job)
+            finally:
+                jobs.task_done()
+
+    def _start_live_memory_update_worker(self) -> None:
+        self._stop_live_memory_update_worker()
+        if not self._live_embedding_separate:
+            self._live_memory_update_jobs = None
+            self._live_memory_update_thread = None
+            return
+        try:
+            queue_size = int(getattr(self.args, "live_speaker_memory_update_queue_size", 64))
+        except (TypeError, ValueError):
+            queue_size = 64
+        self._live_memory_update_jobs = queue.Queue(maxsize=max(1, queue_size))
+        self._live_memory_update_thread = threading.Thread(
+            target=self._run_live_memory_update_jobs,
+            name="LiveSpeakerMemoryUpdate",
+            daemon=True,
+        )
+        self._live_memory_update_thread.start()
+
+    def _drain_live_memory_update_jobs(self, timeout_seconds: float = 10.0) -> bool:
+        jobs = getattr(self, "_live_memory_update_jobs", None)
+        if jobs is None:
+            return True
+        if getattr(jobs, "unfinished_tasks", 0) > 0:
+            self.bus.emit("status", {"message": "Draining queued live speaker profile updates."})
+        drained = self._wait_for_embedding_jobs(jobs, timeout_seconds)
+        if not drained:
+            self.bus.emit(
+                "status",
+                {"message": "Timed out draining queued live speaker profile updates; cancelling pending updates."},
+            )
+            self._cancel_pending_embedding_jobs(jobs)
+        return drained
+
+    def _stop_live_memory_update_worker(self) -> None:
+        jobs = self._live_memory_update_jobs
+        thread = self._live_memory_update_thread
+        if jobs is not None and thread is not None and thread.is_alive():
+            try:
+                jobs.put(None, timeout=1.0)
+            except queue.Full:
+                self._cancel_pending_embedding_jobs(jobs)
+                jobs.put(None)
+            self._wait_for_embedding_jobs(jobs, 5.0)
+            thread.join(timeout=5.0)
+            if thread.is_alive():
+                self.bus.emit("status", {"message": "Live speaker profile update worker did not stop before timeout."})
+        self._live_memory_update_jobs = None
+        self._live_memory_update_thread = None
+
+    def _run_live_memory_update_jobs(self) -> None:
+        jobs = self._live_memory_update_jobs
+        if jobs is None:
+            return
+        while True:
+            job = jobs.get()
+            try:
+                if job is None:
+                    return
+                self._process_live_speaker_memory_update(job)
             finally:
                 jobs.task_done()
 
@@ -1115,7 +1311,7 @@ class WindowDiarizer:
         return np.concatenate(pieces).astype(np.float32, copy=False)
 
     @staticmethod
-    def _wait_for_embedding_jobs(jobs: "queue.Queue[EmbeddingSentenceJob | None]", timeout_seconds: float) -> bool:
+    def _wait_for_embedding_jobs(jobs: "queue.Queue[Any]", timeout_seconds: float) -> bool:
         deadline = time.monotonic() + max(0.0, float(timeout_seconds))
         while getattr(jobs, "unfinished_tasks", 0) > 0:
             if time.monotonic() >= deadline:
@@ -1124,7 +1320,7 @@ class WindowDiarizer:
         return True
 
     @staticmethod
-    def _cancel_pending_embedding_jobs(jobs: "queue.Queue[EmbeddingSentenceJob | None]") -> None:
+    def _cancel_pending_embedding_jobs(jobs: "queue.Queue[Any]") -> None:
         while True:
             try:
                 jobs.get_nowait()
@@ -2519,24 +2715,68 @@ class WindowDiarizer:
         sample_rate: int,
         duration_seconds: float,
         suffix: str = ".live-profile.wav",
+        speaker_generation: int | None = None,
     ) -> None:
-        if not self._live_embedding_separate or not speaker_id:
+        if not getattr(self, "_live_embedding_separate", False) or not speaker_id:
+            return
+        job = LiveSpeakerMemoryUpdateJob(
+            speaker_id=str(speaker_id),
+            audio=np.asarray(audio, dtype=np.float32).copy(),
+            sample_rate=int(sample_rate),
+            duration_seconds=float(duration_seconds),
+            suffix=suffix,
+            speaker_generation=(
+                int(getattr(self, "_speaker_generation", 0))
+                if speaker_generation is None
+                else int(speaker_generation)
+            ),
+        )
+        jobs = getattr(self, "_live_memory_update_jobs", None)
+        if jobs is None:
+            self._process_live_speaker_memory_update(job)
             return
         try:
-            embedding = self._embed_live_audio_chunk(audio, sample_rate, suffix)
-            self.live_memory.upsert_profile(
-                str(speaker_id),
-                embedding,
-                duration_seconds=duration_seconds,
-                sentence_count=1,
-            )
+            jobs.put_nowait(job)
+        except queue.Full:
+            try:
+                jobs.get_nowait()
+            except queue.Empty:
+                pass
+            else:
+                jobs.task_done()
+                self.bus.emit(
+                    "status",
+                    {"message": "Dropped stale queued live speaker profile update because the queue is full."},
+                )
+            try:
+                jobs.put_nowait(job)
+            except queue.Full:
+                self.bus.emit(
+                    "status",
+                    {"message": "Skipped live speaker profile update because the queue is still full."},
+                )
+
+    def _process_live_speaker_memory_update(self, job: LiveSpeakerMemoryUpdateJob) -> None:
+        try:
+            if job.speaker_generation != getattr(self, "_speaker_generation", 0):
+                return
+            embedding = self._embed_live_audio_chunk(job.audio, job.sample_rate, job.suffix)
+            with self._live_memory_update_lock_obj():
+                if job.speaker_generation != getattr(self, "_speaker_generation", 0):
+                    return
+                self.live_memory.upsert_profile(
+                    job.speaker_id,
+                    embedding,
+                    duration_seconds=job.duration_seconds,
+                    sentence_count=1,
+                )
         except Exception as exc:
             self.bus.emit(
                 "status",
                 {
                     "message": (
                         "Live speaker profile update failed "
-                        f"for {speaker_id}: {type(exc).__name__}: {exc}"
+                        f"for {job.speaker_id}: {type(exc).__name__}: {exc}"
                     )
                 },
             )
@@ -3033,6 +3273,8 @@ class WindowDiarizer:
                     left = max(left, vad_next_left)
                 if transcript.sentences or vad_next_left is not None:
                     self._advance_realtime_preview_after_commit(left)
+                    if interval_seconds > 0.0 and not media_final_flush:
+                        next_tick = time.monotonic() + interval_seconds
                 self.bus.emit("status", {"message": f"Window left={left:.2f}s right={right:.2f}s sentences={len(transcript.sentences)}."})
                 if media_final_flush:
                     break
@@ -3042,6 +3284,7 @@ class WindowDiarizer:
             self._pause_realtime_preview()
             self._drain_embedding_jobs()
             self._revisit_unknown_sentences()
+            self._drain_live_memory_update_jobs()
             self.bus.emit("done", {"message": "Window diarization stopped."})
 
     def _transcribe_window(self, model: Any, left: float, right: float, final_flush: bool = False) -> WindowTranscript:
@@ -3362,6 +3605,7 @@ class WindowDiarizer:
             job.sample_rate,
             duration_seconds,
             ".live-sentence.wav",
+            speaker_generation=job.speaker_generation,
         )
         if decision.assigned_speaker is None:
             self._remember_unknown_sentence(index, base_payload, embedding, duration_seconds)

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import inspect
 import importlib
 import io
 import json
 import os
+import queue
 import subprocess
 import sys
 import tempfile
@@ -24,6 +26,7 @@ from whospeaks.embeddings.embedding_providers import EmbeddingSubprocessClient, 
 from whospeaks.speakers.realtime_speaker_memory import SpeakerMemory as RealtimeSpeakerMemory
 from whospeaks.speakers.speaker_embedding_cluster import SpeakerMemory as ClusterSpeakerMemory
 from whospeaks.window.window_diarizer import WindowDiarizer
+from whospeaks.window.window_domain import LiveSpeakerMemoryUpdateJob
 from whospeaks.window.window_events import RecordingEventBus
 from whospeaks.window.window_gui_html import HTML
 from whospeaks.window.browser_live_speaker_scoring import score_browser_live_speaker_samples
@@ -289,9 +292,20 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn('let currentLiveSpeakerId = "";', HTML)
         self.assertIn('let transcriptLiveSpeakerId = "";', HTML)
         self.assertIn('let fallbackLiveSpeakerId = "";', HTML)
+        self.assertIn("let liveSpeakerTimeline = [];", HTML)
         self.assertIn("let fastSpeakerPanelStats = {};", HTML)
         self.assertIn("let hasRenderedFinalSentenceRows = false;", HTML)
-        self.assertIn("row.dataset.speaker = item.assigned_speaker || \"UNKNOWN\";", HTML)
+        self.assertIn("function dominantRealtimeSpeakerId(start, end)", HTML)
+        self.assertIn("function realtimeDominanceScoredEnd(start, end)", HTML)
+        self.assertIn("const tailSeconds = duration >= 8 ? 2 : (duration - 2) * 0.25;", HTML)
+        self.assertIn("function rememberLiveSpeakerEvidence(speakerId, item)", HTML)
+        self.assertIn("liveSpeakerTimeline.push({speakerId: normalizedSpeakerId, start, end});", HTML)
+        self.assertIn("liveSpeakerTimeline = [];", HTML)
+        self.assertIn("const previousDisplaySpeakerId = item.realtime ? normalizedLiveSpeakerId(row.dataset.speaker) : \"\";", HTML)
+        self.assertIn("realtimeRowDisplaySpeakerId(rawSpeakerId, startSeconds, endSeconds, previousDisplaySpeakerId)", HTML)
+        self.assertIn('row.dataset.rawSpeaker = item.realtime ? rawSpeakerId : "";', HTML)
+        self.assertIn('row.dataset.speaker = displaySpeakerId || "UNKNOWN";', HTML)
+        self.assertIn('row.classList.toggle("live-speaker-row", item.realtime && Boolean(displaySpeakerId));', HTML)
         self.assertIn('row.style.setProperty("--live-row-color", color || "#8F9BA8");', HTML)
         self.assertIn("function updateCurrentLiveSpeakerFromRealtimeRows()", HTML)
         self.assertIn('transcriptLiveSpeakerId = activeRow && activeRow.dataset.speaker !== "UNKNOWN" ? activeRow.dataset.speaker : "";', HTML)
@@ -304,7 +318,7 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("if (item.only_if_no_live_speaker && currentLiveSpeakerId) return;", HTML)
         self.assertIn("refreshSpeakerPanelSentenceCounts();", HTML)
         self.assertLess(
-            HTML.index('row.dataset.speaker = item.assigned_speaker || "UNKNOWN";'),
+            HTML.index('row.dataset.speaker = displaySpeakerId || "UNKNOWN";'),
             HTML.index("refreshSpeakerPanelSentenceCounts();", HTML.index("function renderSentence(item)")),
         )
 
@@ -319,7 +333,7 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("function pruneSpeakerFilterState()", HTML)
         self.assertIn("refreshTranscriptVisibility();", HTML)
         self.assertLess(
-            HTML.index('row.dataset.speaker = item.assigned_speaker || "UNKNOWN";'),
+            HTML.index('row.dataset.speaker = displaySpeakerId || "UNKNOWN";'),
             HTML.index("refreshTranscriptVisibility();", HTML.index("function renderSentence(item)")),
         )
 
@@ -529,9 +543,13 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn(".sensitivity input { flex:0 1 50%; max-width:50%; min-width:120px;", HTML)
         self.assertIn(".manual-speaker-composer { display:grid; gap:8px;", HTML)
         self.assertIn(".speaker-item { --speaker-color:transparent;", HTML)
-        self.assertIn(".speaker-item.live-speaker { background:color-mix(in srgb, var(--speaker-color) 10%, #0F161F); }", HTML)
+        self.assertIn(".speaker-item.live-speaker { background:color-mix(in srgb, var(--speaker-color) 18%, #0F161F);", HTML)
+        self.assertIn(".speaker-item.live-speaker .speaker-item-summary { box-shadow:inset 4px 0 0 var(--speaker-color), inset 7px 0 14px", HTML)
         self.assertIn(".speaker-title-row { min-width:0; display:flex; align-items:center; gap:7px; }", HTML)
-        self.assertIn(".speaker-live-indicator { flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; color:var(--speaker-color);", HTML)
+        self.assertIn(".speaker-live-indicator { flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; padding:2px 6px;", HTML)
+        self.assertIn("animation:livePulse 1s ease-in-out infinite;", HTML)
+        self.assertIn("@keyframes livePulse", HTML)
+        self.assertIn("@media (prefers-reduced-motion: reduce)", HTML)
         self.assertIn(".speaker-item-summary { width:100%; min-height:60px; display:grid; grid-template-columns:minmax(0,1fr) auto;", HTML)
         self.assertIn("box-shadow:inset 4px 0 0 var(--speaker-color);", HTML)
         self.assertNotIn("speaker-avatar", HTML)
@@ -543,19 +561,30 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn(".speaker-filter-toggle.mute.active", HTML)
         self.assertIn(".transcript-icon-button { min-height:24px; width:28px;", HTML)
         self.assertIn(".row.realtime { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 10%, #0B1015); }", HTML)
+        self.assertIn(".row.realtime.live-speaker-row { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, #0B1015);", HTML)
+        self.assertIn("border-bottom-color:color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, var(--line));", HTML)
+        self.assertNotIn("inset 4px 0 0 var(--live-row-color, #8F9BA8)", HTML)
         self.assertIn("function createSpeakerLiveIndicator()", HTML)
         self.assertIn('indicator.appendChild(document.createTextNode("Live"));', HTML)
         self.assertIn('titleRow.appendChild(createSpeakerLiveIndicator());', HTML)
         self.assertIn('indicator.remove();', HTML)
         self.assertIn("function applyFallbackLiveSpeaker(item)", HTML)
         self.assertIn("function clearFallbackLiveSpeakerFromProbe(item)", HTML)
+        self.assertIn("function refreshRealtimeRowsFromLiveSpeaker()", HTML)
+        self.assertIn("row.dataset.start", HTML)
+        self.assertIn("row.dataset.end", HTML)
+        self.assertIn("row.dataset.speaker", HTML)
+        self.assertIn("rememberLiveSpeakerEvidence(speakerId, item);", HTML)
+        self.assertIn('row.classList.toggle("live-speaker-row", Boolean(normalizedSpeakerId));', HTML)
+        self.assertIn('fallbackLiveSpeakerExpiryTimer = setTimeout(refreshRealtimeRowsFromLiveSpeaker, remainingMs + 25);', HTML)
         self.assertIn('if (speakerId && fallbackLiveSpeakerId && speakerId !== fallbackLiveSpeakerId) return;', HTML)
         self.assertIn('es.addEventListener("live_speaker", e => applyFallbackLiveSpeaker(JSON.parse(e.data)));', HTML)
         self.assertIn('es.addEventListener("live_speaker_clear", e => clearFallbackLiveSpeakerFromProbe(JSON.parse(e.data)));', HTML)
         self.assertIn("const holdSeconds = Math.max(0, Number(item.hold_seconds || 2.0));", HTML)
         self.assertIn("fallbackLiveSpeakerUntilMs = performance.now() + holdSeconds * 1000;", HTML)
         self.assertIn("currentLiveSpeakerId = activeFallbackLiveSpeakerId() || transcriptLiveSpeakerId;", HTML)
-        self.assertIn('return fastSpeakerPanelActive() ? "fast window" : "sentence";', HTML)
+        self.assertIn('return "sentence";', HTML)
+        self.assertNotIn("fast window", HTML)
         self.assertIn("fastSpeakerPanelStats[speakerId]", HTML)
         self.assertIn('row.classList.toggle("live-speaker", Boolean(currentLiveSpeakerId) && speaker.id === currentLiveSpeakerId);', HTML)
         self.assertNotIn("speaker-editing-badge", HTML)
@@ -655,10 +684,38 @@ class WindowStreamingAudioTests(unittest.TestCase):
                         "locked": bool(item.get("locked")),
                     })
 
+            def upsert_profile(
+                self,
+                label: str,
+                embedding: np.ndarray,
+                duration_seconds: float = 0.0,
+                sentence_count: int = 1,
+                locked: bool = False,
+            ) -> str:
+                index = int(label[1:]) if label.startswith("S") and label[1:].isdigit() else len(self.profiles) + 1
+                self.profiles.append({
+                    "label": label,
+                    "index": index,
+                    "centroid": np.asarray(embedding, dtype=np.float32),
+                    "sentence_count": int(sentence_count),
+                    "speech_seconds": float(duration_seconds),
+                    "created_at": time.time(),
+                    "last_seen_at": time.time(),
+                    "locked": bool(locked),
+                })
+                self.profiles.sort(key=lambda profile: int(profile["index"]))
+                return label
+
         centroid = np.array([0.125, -0.5, 0.33333334, 1.0], dtype=np.float32)
+        second_centroid = np.array([0.25, 0.75, -0.125, 0.5], dtype=np.float32)
+        live_centroid = np.array([0.0, 0.25, 0.75], dtype=np.float32)
         with tempfile.TemporaryDirectory() as tmp:
             source = WindowDiarizer.__new__(WindowDiarizer)
-            source.args = argparse.Namespace(embedding_provider="mock", embedding_device="cpu")
+            source.args = argparse.Namespace(
+                embedding_provider="mock-main",
+                embedding_device="cpu",
+                live_speaker_embedding_provider="mock-live",
+            )
             source.speaker_library_dir = Path(tmp)
             source.memory = FakeMemory([{
                 "label": "S1",
@@ -669,36 +726,84 @@ class WindowStreamingAudioTests(unittest.TestCase):
                 "created_at": 10.0,
                 "last_seen_at": 12.0,
                 "locked": True,
+            }, {
+                "label": "S2",
+                "index": 2,
+                "centroid": second_centroid,
+                "sentence_count": 5,
+                "speech_seconds": 12.5,
+                "created_at": 10.0,
+                "last_seen_at": 12.0,
+                "locked": False,
             }])
+            source.live_memory = FakeMemory([{
+                "label": "S2",
+                "index": 2,
+                "centroid": live_centroid,
+                "sentence_count": 2,
+                "speech_seconds": 6.25,
+                "created_at": 10.0,
+                "last_seen_at": 12.0,
+                "locked": False,
+            }])
+            source._live_embedding_separate = True
+            source._embedding_jobs = None
+            source._live_memory_update_jobs = None
             source._speaker_lock = threading.Lock()
             source._unknown_lock = threading.Lock()
-            source._speaker_metadata = {"S1": {"name": "Alice", "source": "reference", "locked": True, "reference_audio": ""}}
+            source._speaker_metadata = {
+                "S1": {"name": "Alice", "source": "reference", "locked": True, "reference_audio": ""},
+                "S2": {"name": "Bob", "source": "detected", "locked": False, "reference_audio": ""},
+            }
             source._speaker_group_name = ""
             source._seed_profiles = []
+            source._seed_live_profiles = []
             source.bus = FakeBus()
 
             group = source.export_speaker_group_file("Local group")
 
+            created_memories: list[FakeMemory] = []
+
+            def new_memory() -> FakeMemory:
+                memory = FakeMemory()
+                created_memories.append(memory)
+                return memory
+
             target = WindowDiarizer.__new__(WindowDiarizer)
-            target.args = argparse.Namespace(embedding_provider="mock", embedding_device="cpu")
+            target.args = argparse.Namespace(
+                embedding_provider="mock-main",
+                embedding_device="cpu",
+                live_speaker_embedding_provider="mock-live",
+            )
             target.speaker_library_dir = Path(tmp)
             target.memory = FakeMemory()
-            target._new_memory = lambda: FakeMemory()
+            target.live_memory = FakeMemory()
+            target._live_embedding_separate = True
+            target._new_memory = new_memory
             target._speaker_lock = threading.Lock()
             target._unknown_lock = threading.Lock()
             target._unknown_sentences = []
             target._speaker_metadata = {}
             target._speaker_group_name = ""
             target._seed_profiles = []
+            target._seed_live_profiles = []
+            target._embedding_jobs = None
+            target._live_memory_update_jobs = None
             target.bus = FakeBus()
 
             state = target.import_speaker_group_file(group)
 
         self.assertEqual(group["format"], "whospeaks-speaker-group")
+        self.assertEqual(group["live_embedding_provider"], "mock-live")
         self.assertEqual(group["speakers"][0]["centroid_encoding"], "float32-base64-le")
+        self.assertEqual(group["live_speakers"][0]["label"], "S2")
+        self.assertEqual(group["live_speakers"][0]["centroid_encoding"], "float32-base64-le")
         self.assertEqual(state["group_name"], "Local_group")
         self.assertEqual(state["speakers"][0]["display_name"], "Alice")
         np.testing.assert_array_equal(target.memory.profiles[0]["centroid"], centroid)
+        np.testing.assert_array_equal(target.memory.profiles[1]["centroid"], second_centroid)
+        self.assertEqual(target.live_memory.profiles[0]["label"], "S2")
+        np.testing.assert_array_equal(target.live_memory.profiles[0]["centroid"], live_centroid)
 
     def test_clear_speakers_resets_memory_metadata_and_pending_unknowns(self) -> None:
         class FakeBus:
@@ -1066,6 +1171,147 @@ class WindowStreamingAudioTests(unittest.TestCase):
         self.assertLessEqual(remaining, 3.2)
         self.assertTrue(any(event == "status" for event, _payload in diarizer.bus.events))
 
+    def test_live_speaker_memory_update_is_queued_when_worker_exists(self) -> None:
+        class Bus:
+            def emit(self, _event: str, _payload: object) -> None:
+                return None
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer._live_embedding_separate = True
+        diarizer._speaker_generation = 4
+        diarizer._live_memory_update_jobs = queue.Queue(maxsize=2)
+        diarizer.bus = Bus()
+        diarizer._embed_live_audio_chunk = mock.Mock(return_value=np.array([1.0, 0.0], dtype=np.float32))
+
+        diarizer._update_live_speaker_memory(
+            "S1",
+            np.array([0.2, 0.3], dtype=np.float32),
+            16000,
+            1.25,
+            ".live-sentence.wav",
+            speaker_generation=4,
+        )
+
+        diarizer._embed_live_audio_chunk.assert_not_called()
+        job = diarizer._live_memory_update_jobs.get_nowait()
+        diarizer._live_memory_update_jobs.task_done()
+        self.assertIsInstance(job, LiveSpeakerMemoryUpdateJob)
+        assert isinstance(job, LiveSpeakerMemoryUpdateJob)
+        self.assertEqual(job.speaker_id, "S1")
+        self.assertEqual(job.sample_rate, 16000)
+        self.assertEqual(job.duration_seconds, 1.25)
+        self.assertEqual(job.suffix, ".live-sentence.wav")
+        self.assertEqual(job.speaker_generation, 4)
+
+    def test_live_speaker_memory_update_reembeds_with_live_provider(self) -> None:
+        class Bus:
+            def emit(self, _event: str, _payload: object) -> None:
+                return None
+
+        class Memory:
+            def __init__(self) -> None:
+                self.upserts: list[tuple[str, np.ndarray, float, int]] = []
+
+            def upsert_profile(
+                self,
+                label: str,
+                embedding: np.ndarray,
+                duration_seconds: float = 0.0,
+                sentence_count: int = 1,
+                locked: bool = False,
+            ) -> str:
+                self.upserts.append((label, embedding, duration_seconds, sentence_count))
+                return label
+
+        live_embedding = np.array([0.0, 1.0], dtype=np.float32)
+        audio = np.array([0.2, 0.3], dtype=np.float32)
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer._speaker_generation = 6
+        diarizer.bus = Bus()
+        diarizer.live_memory = Memory()
+        diarizer._embed_live_audio_chunk = mock.Mock(return_value=live_embedding)
+
+        diarizer._process_live_speaker_memory_update(
+            LiveSpeakerMemoryUpdateJob(
+                speaker_id="S2",
+                audio=audio,
+                sample_rate=16000,
+                duration_seconds=2.5,
+                suffix=".live-sentence.wav",
+                speaker_generation=6,
+            )
+        )
+
+        diarizer._embed_live_audio_chunk.assert_called_once()
+        np.testing.assert_array_equal(diarizer._embed_live_audio_chunk.call_args.args[0], audio)
+        self.assertEqual(diarizer._embed_live_audio_chunk.call_args.args[1:], (16000, ".live-sentence.wav"))
+        self.assertEqual(len(diarizer.live_memory.upserts), 1)
+        label, embedding, duration_seconds, sentence_count = diarizer.live_memory.upserts[0]
+        self.assertEqual(label, "S2")
+        np.testing.assert_array_equal(embedding, live_embedding)
+        self.assertEqual(duration_seconds, 2.5)
+        self.assertEqual(sentence_count, 1)
+
+    def test_stale_live_speaker_memory_update_does_not_upsert(self) -> None:
+        class Bus:
+            def emit(self, _event: str, _payload: object) -> None:
+                return None
+
+        class Memory:
+            def upsert_profile(self, *_args: object, **_kwargs: object) -> str:
+                raise AssertionError("stale live speaker memory update should not upsert")
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer._speaker_generation = 8
+        diarizer.bus = Bus()
+        diarizer.live_memory = Memory()
+        diarizer._embed_live_audio_chunk = mock.Mock(return_value=np.array([1.0, 0.0], dtype=np.float32))
+
+        diarizer._process_live_speaker_memory_update(
+            LiveSpeakerMemoryUpdateJob(
+                speaker_id="S1",
+                audio=np.array([0.2, 0.3], dtype=np.float32),
+                sample_rate=16000,
+                duration_seconds=1.0,
+                speaker_generation=7,
+            )
+        )
+
+        diarizer._embed_live_audio_chunk.assert_not_called()
+
+    def test_live_speaker_memory_update_rechecks_generation_after_embedding(self) -> None:
+        class Bus:
+            def emit(self, _event: str, _payload: object) -> None:
+                return None
+
+        class Memory:
+            def upsert_profile(self, *_args: object, **_kwargs: object) -> str:
+                raise AssertionError("live speaker memory update should not upsert after generation changes")
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer._speaker_generation = 3
+        diarizer._live_memory_update_lock = threading.Lock()
+        diarizer.bus = Bus()
+        diarizer.live_memory = Memory()
+
+        def embed_and_clear(*_args: object) -> np.ndarray:
+            diarizer._speaker_generation = 4
+            return np.array([1.0, 0.0], dtype=np.float32)
+
+        diarizer._embed_live_audio_chunk = mock.Mock(side_effect=embed_and_clear)
+
+        diarizer._process_live_speaker_memory_update(
+            LiveSpeakerMemoryUpdateJob(
+                speaker_id="S1",
+                audio=np.array([0.2, 0.3], dtype=np.float32),
+                sample_rate=16000,
+                duration_seconds=1.0,
+                speaker_generation=3,
+            )
+        )
+
+        diarizer._embed_live_audio_chunk.assert_called_once()
+
     def test_live_speaker_change_verification_uses_full_stack_result(self) -> None:
         class Bus:
             def emit(self, event: str, payload: dict[str, object]) -> None:
@@ -1313,6 +1559,7 @@ class RepositoryStructureTests(unittest.TestCase):
 
         expected = {
             "embedding_provider": "espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12",
+            "interval_seconds": 0.7,
             "same_speaker_similarity": 0.37,
             "similarity_temperature": 0.0648,
             "speaker_softmax_temperature": 0.0443,
@@ -1346,18 +1593,18 @@ class RepositoryStructureTests(unittest.TestCase):
             "realtime_preview_diarize_min_similarity": 0.45,
             "realtime_preview_diarize_min_margin": 0.08,
             "realtime_preview_diarize_min_known_probability": 0.5,
-            "live_speaker_embedding_min_interval_seconds": 0.5,
-            "live_speaker_embedding_target_utilization": 0.5,
+            "live_speaker_embedding_min_interval_seconds": 0.2,
+            "live_speaker_embedding_target_utilization": 1.0,
             "live_speaker_verify_on_change": False,
             "live_speaker_verify_min_interval_seconds": 2.0,
             "live_speaker_ema_window_seconds": 1.0,
-            "live_speaker_ema_count": 3,
+            "live_speaker_ema_count": 1,
             "live_speaker_ema_alpha": 0.55,
-            "live_speaker_probe_interval_seconds": 0.5,
+            "live_speaker_probe_interval_seconds": 0.2,
             "live_speaker_probe_attack_interval_seconds": 0.0,
             "live_speaker_probe_window_seconds": 1.0,
             "live_speaker_probe_hold_seconds": 1.0,
-            "live_speaker_probe_min_advance_seconds": 0.5,
+            "live_speaker_probe_min_advance_seconds": 0.2,
             "live_speaker_probe_attack_min_advance_seconds": 0.0,
             "live_speaker_probe_min_speech_seconds": 0.15,
             "live_speaker_probe_clear_on_silence": True,
@@ -1370,13 +1617,14 @@ class RepositoryStructureTests(unittest.TestCase):
             "live_speaker_probe_unknown_release_count": 3,
             "live_speaker_probe_unknown_release_ema_alpha": 0.5,
             "live_speaker_probe_unknown_release_margin": 0.0,
-            "live_speaker_raw_change_snap": False,
-            "live_speaker_raw_change_min_probability": 0.62,
-            "live_speaker_raw_change_min_margin": 0.18,
-            "live_speaker_sentence_hint": False,
+            "live_speaker_raw_change_snap": True,
+            "live_speaker_raw_change_min_probability": 0.7,
+            "live_speaker_raw_change_min_margin": 0.25,
+            "live_speaker_sentence_hint": True,
+            "live_speaker_sentence_hint_override": True,
             "live_speaker_sentence_hint_max_lag_seconds": 1.25,
             "live_speaker_sentence_hint_new_speaker_max_lag_seconds": 1.25,
-            "live_speaker_sentence_hint_hold_seconds": 1.0,
+            "live_speaker_sentence_hint_hold_seconds": 0.3,
             "browser_live_observation_output": None,
             "browser_live_observation_interval_seconds": 0.1,
             "browser_live_observation_max_sample_gap_seconds": 0.5,
@@ -1388,6 +1636,19 @@ class RepositoryStructureTests(unittest.TestCase):
 
         for name, value in expected.items():
             self.assertEqual(getattr(args, name), value, name)
+
+    def test_window_loop_restarts_interval_after_successful_split(self) -> None:
+        source = inspect.getsource(WindowDiarizer._run)
+
+        guard = "if transcript.sentences or vad_next_left is not None:"
+        guard_at = source.index(guard)
+        advance_at = source.index("self._advance_realtime_preview_after_commit(left)", guard_at)
+        cooldown_guard_at = source.index("if interval_seconds > 0.0 and not media_final_flush:", advance_at)
+        cooldown_at = source.index("next_tick = time.monotonic() + interval_seconds", cooldown_guard_at)
+
+        self.assertLess(guard_at, advance_at)
+        self.assertLess(advance_at, cooldown_guard_at)
+        self.assertLess(cooldown_guard_at, cooldown_at)
 
     def test_window_gui_accepts_remote_embeddings_backend_alias(self) -> None:
         from whospeaks.window.youtube_window_diarize_gui import parse_args

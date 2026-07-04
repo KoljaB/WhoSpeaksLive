@@ -17,6 +17,38 @@ APP_NAME = "whospeaks-youtube-window-diarize"
 PORT = 8000
 MODAL_GPU = os.environ.get("WHOSPEAKS_MODAL_GPU", "T4")
 MODAL_SCALEDOWN_WINDOW_SECONDS = int(os.environ.get("WHOSPEAKS_MODAL_SCALEDOWN_WINDOW_SECONDS", "60"))
+BEST_MODAL_EMBEDDING_PROVIDER = "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50"
+BEST_MODAL_LIVE_EXTRA_ARGS = [
+    "--live-speaker-embedding-provider",
+    BEST_MODAL_EMBEDDING_PROVIDER,
+    "--live-speaker-probe-interval-seconds",
+    "0.20",
+    "--live-speaker-probe-min-advance-seconds",
+    "0.20",
+    "--live-speaker-embedding-min-interval-seconds",
+    "0.20",
+    "--live-speaker-embedding-target-utilization",
+    "1.0",
+    "--live-speaker-ema-count",
+    "1",
+    "--live-speaker-raw-change-snap",
+    "--live-speaker-raw-change-min-probability",
+    "0.70",
+    "--live-speaker-raw-change-min-margin",
+    "0.25",
+    "--live-speaker-sentence-hint",
+    "--live-speaker-sentence-hint-override",
+    "--live-speaker-sentence-hint-hold-seconds",
+    "0.30",
+]
+MODAL_EMBEDDING_PROVIDER = os.environ.get(
+    "WHOSPEAKS_MODAL_EMBEDDING_PROVIDER",
+    BEST_MODAL_EMBEDDING_PROVIDER,
+)
+MODAL_EXTRA_ARGS = os.environ.get(
+    "WHOSPEAKS_MODAL_EXTRA_ARGS",
+    " ".join(shlex.quote(part) for part in BEST_MODAL_LIVE_EXTRA_ARGS),
+)
 REMOTE_ROOT = PurePosixPath("/root/WhoSpeaksLive")
 REMOTE_BAKED_MEDIA = REMOTE_ROOT / "runtime" / "media" / "local-filefeed"
 REMOTE_CACHE = PurePosixPath("/cache")
@@ -71,6 +103,8 @@ CACHE_ENV = {
     "OMP_NUM_THREADS": "1",
     "MKL_NUM_THREADS": "1",
     "KROKO_ONNX_SUPPRESS_LICENSE_OUTPUT": "1",
+    "WHOSPEAKS_MODAL_EMBEDDING_PROVIDER": MODAL_EMBEDDING_PROVIDER,
+    "WHOSPEAKS_MODAL_EXTRA_ARGS": MODAL_EXTRA_ARGS,
 }
 
 PYPI_PACKAGES = [
@@ -89,6 +123,7 @@ PYPI_PACKAGES = [
     "silero-vad==6.2.1",
     "huggingface-hub>=0.34.0,<1.0",
     "transformers==4.57.6",
+    "pyannote.audio==3.3.2",
 ]
 
 
@@ -234,7 +269,7 @@ def _command() -> list[str]:
         "--embedding-python",
         sys.executable,
         "--embedding-provider",
-        os.environ.get("WHOSPEAKS_MODAL_EMBEDDING_PROVIDER", "speechbrain_ecapa"),
+        os.environ.get("WHOSPEAKS_MODAL_EMBEDDING_PROVIDER", MODAL_EMBEDDING_PROVIDER),
         "--embedding-device",
         "cuda",
         "--device",
@@ -263,7 +298,7 @@ def _command() -> list[str]:
     silero_path = _silero_model_path()
     if silero_path is not None:
         command.extend(["--vad-silero-onnx-model-path", str(silero_path)])
-    extra_args = os.environ.get("WHOSPEAKS_MODAL_EXTRA_ARGS", "").strip()
+    extra_args = os.environ.get("WHOSPEAKS_MODAL_EXTRA_ARGS", MODAL_EXTRA_ARGS).strip()
     if extra_args:
         command.extend(shlex.split(extra_args))
     return command

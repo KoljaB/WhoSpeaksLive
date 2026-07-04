@@ -25,7 +25,13 @@ $env:PYTHONIOENCODING='utf-8'
 ```
 
 The deployment defaults to `WHOSPEAKS_MODAL_GPU=T4` and a 60-second idle
-scaledown window. To test a stronger GPU only when needed:
+scaledown window. It also defaults to the best measured live speaker stack:
+
+```text
+pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50
+```
+
+To test a stronger GPU only when needed:
 
 ```powershell
 $env:WHOSPEAKS_MODAL_GPU='L4'

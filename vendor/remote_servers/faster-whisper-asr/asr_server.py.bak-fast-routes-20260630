@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import os
+import tempfile
+import time
+from pathlib import Path
+from typing import Optional
+
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import JSONResponse
+from faster_whisper import WhisperModel
+
+MODEL_NAME = os.environ.get("ASR_MODEL", "large-v2")
+DEVICE = os.environ.get("ASR_DEVICE", "cuda")
+COMPUTE_TYPE = os.environ.get("ASR_COMPUTE_TYPE", "float16")
+HOST = os.environ.get("ASR_HOST", "0.0.0.0")
+PORT = int(os.environ.get("ASR_PORT", "8650"))
+LOCAL_FILES_ONLY = os.environ.get("ASR_LOCAL_FILES_ONLY", "1") not in {"0", "false", "False"}
+
+app = FastAPI(title="faster-whisper ASR", version="1.0.0")
+model: WhisperModel | None = None
+model_loaded_at: float | None = None
+
+
+def get_model() -> WhisperModel:
+    if model is None:
+        raise HTTPException(status_code=503, detail="model_not_loaded")
+    return model
+
+
+@app.on_event("startup")
+def load_model() -> None:
+    global model, model_loaded_at
+    start = time.perf_counter()
+    model = WhisperModel(
+        MODEL_NAME,
+        device=DEVICE,
+        compute_type=COMPUTE_TYPE,
+        local_files_only=LOCAL_FILES_ONLY,
+    )
+    model_loaded_at = time.perf_counter() - start
+
+
+@app.get("/health")
+def health() -> dict:
+    return {
+        "ok": model is not None,
+        "model": MODEL_NAME,
+        "device": DEVICE,
+        "compute_type": COMPUTE_TYPE,
+        "language": "en",
+        "model_loaded_seconds": model_loaded_at,
+    }
+
+
+async def read_audio_bytes(request: Request, file: Optional[UploadFile]) -> tuple[bytes, str]:
+    if file is not None:
+        payload = await file.read()
+        filename = file.filename or "audio"
+    else:
+        payload = await request.body()
+        filename = request.headers.get("x-filename", "audio")
+
+    if not payload:
+        raise HTTPException(status_code=400, detail="empty_audio_payload")
+    return payload, filename
+
+
+def suffix_for(filename: str, content_type: str | None) -> str:
+    ext = Path(filename).suffix
+    if ext:
+        return ext
+    if content_type == "audio/wav":
+        return ".wav"
+    if content_type in {"audio/mpeg", "audio/mp3"}:
+        return ".mp3"
+    if content_type == "audio/ogg":
+        return ".ogg"
+    if content_type == "audio/webm":
+        return ".webm"
+    return ".bin"
+
+
+@app.post("/transcribe")
+@app.post("/v1/audio/transcriptions")
+async def transcribe(
+    request: Request,
+    file: Optional[UploadFile] = File(default=None),
+    beam_size: int = Form(default=1),
+    vad_filter: bool = Form(default=False),
+    word_timestamps: bool = Form(default=False),
+) -> JSONResponse:
+    audio_bytes, filename = await read_audio_bytes(request, file)
+    content_type = file.content_type if file is not None else request.headers.get("content-type")
+    suffix = suffix_for(filename, content_type)
+
+    started = time.perf_counter()
+    with tempfile.NamedTemporaryFile(prefix="asr_", suffix=suffix, delete=True) as tmp:
+        tmp.write(audio_bytes)
+        tmp.flush()
+
+        segments_iter, info = get_model().transcribe(
+            tmp.name,
+            language="en",
+            task="transcribe",
+            beam_size=beam_size,
+            vad_filter=vad_filter,
+            word_timestamps=word_timestamps,
+        )
+        segments = []
+        text_parts = []
+        for segment in segments_iter:
+            words = None
+            if word_timestamps and segment.words:
+                words = [
+                    {"start": w.start, "end": w.end, "word": w.word, "probability": w.probability}
+                    for w in segment.words
+                ]
+            item = {
+                "id": segment.id,
+                "start": segment.start,
+                "end": segment.end,
+                "text": segment.text,
+                "avg_logprob": segment.avg_logprob,
+                "no_speech_prob": segment.no_speech_prob,
+            }
+            if words is not None:
+                item["words"] = words
+            segments.append(item)
+            text_parts.append(segment.text)
+
+    elapsed = time.perf_counter() - started
+    return JSONResponse(
+        {
+            "text": "".join(text_parts).strip(),
+            "language": "en",
+            "detected_language": info.language,
+            "language_probability": info.language_probability,
+            "duration": info.duration,
+            "duration_after_vad": info.duration_after_vad,
+            "elapsed_seconds": elapsed,
+            "model": MODEL_NAME,
+            "device": DEVICE,
+            "compute_type": COMPUTE_TYPE,
+            "segments": segments,
+        }
+    )
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("asr_server:app", host=HOST, port=PORT, log_level="info")
