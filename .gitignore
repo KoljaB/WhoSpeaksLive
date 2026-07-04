@@ -39,3 +39,6 @@ tools/.window_diarize_validation/
 # Local app/runtime metadata
 .codex-runtime/
 .git.invalid-*/
+
+# Private/internal documentation snapshots
+docs-private/
