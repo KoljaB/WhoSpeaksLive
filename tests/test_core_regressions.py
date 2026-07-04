@@ -1484,7 +1484,7 @@ class RemoteEmbeddingClientTests(unittest.TestCase):
             wav_path = Path(directory) / "voice.wav"
             write_wav(wav_path, np.ones(1600, dtype=np.float32) * 0.1, 16000)
             client = RemoteEmbeddingClient(
-                "http://192.168.178.22:8660",
+                "http://127.0.0.1:8660",
                 "espnet_ecapa_wavlm_joint=0.725+jungjee_rawnet3=1",
                 timeout_seconds=12.0,
             )
@@ -1668,13 +1668,13 @@ class RepositoryStructureTests(unittest.TestCase):
                 "-embeddings-backend",
                 "remote",
                 "--remote-embeddings-url",
-                "http://192.168.178.22:8660",
+                "http://127.0.0.1:8660",
             ],
         ):
             args = parse_args()
 
         self.assertEqual(args.embeddings_backend, "remote")
-        self.assertEqual(args.remote_embeddings_url, "http://192.168.178.22:8660")
+        self.assertEqual(args.remote_embeddings_url, "http://127.0.0.1:8660")
 
     def test_cunk_canonical_is_a_small_fixture(self) -> None:
         from paths import CUNK_CANONICAL

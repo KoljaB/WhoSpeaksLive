@@ -213,10 +213,9 @@ class PyannoteModelProvider:
             load_kwargs["weights_only"] = False
             return original_torch_load(*load_args, **load_kwargs)
 
-        load_kwargs: dict[str, Any] = {
-            "use_auth_token": token,
-            "cache_dir": str(CACHE_DIR / "pyannote"),
-        }
+        load_kwargs: dict[str, Any] = {"cache_dir": str(CACHE_DIR / "pyannote")}
+        if token:
+            load_kwargs["use_auth_token"] = token
         if model_id == "pyannote/embedding":
             load_kwargs["strict"] = False
 
@@ -227,12 +226,10 @@ class PyannoteModelProvider:
             torch.load = original_torch_load
         if model is None:
             raise RuntimeError(f"{model_id} could not be loaded from the local pyannote cache.")
-        self.inference = Inference(
-            model,
-            window="whole",
-            device=self.device,
-            use_auth_token=token,
-        )
+        inference_kwargs: dict[str, Any] = {"window": "whole", "device": self.device}
+        if token:
+            inference_kwargs["use_auth_token"] = token
+        self.inference = Inference(model, **inference_kwargs)
 
     def embed(self, audio: np.ndarray, sample_rate: int) -> np.ndarray:
         audio = np.asarray(audio, dtype=np.float32).reshape(-1)

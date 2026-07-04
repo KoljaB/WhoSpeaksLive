@@ -60,7 +60,7 @@ ffmpeg -version
 Clone the repository or open an existing checkout. The examples below assume:
 
 ```powershell
-cd D:\Projekte
+cd C:\Projects
 git clone https://github.com/KoljaB/WhoSpeaksLive.git
 cd WhoSpeaksLive
 ```
@@ -109,7 +109,7 @@ curl.exe http://YOUR_GPU_SERVER_IP:8660/health
 curl.exe http://YOUR_GPU_SERVER_IP:8660/providers
 ```
 
-Replace `YOUR_GPU_SERVER_IP` with the IP address of your Linux GPU server, for example `192.168.178.22`.
+Replace `YOUR_GPU_SERVER_IP` with the IP address of your Linux GPU server, for example `192.168.1.50`.
 
 ## First End-To-End Launch
 
@@ -138,10 +138,10 @@ Default paths:
 You can redirect local state with environment variables:
 
 ```powershell
-$env:WHOSPEAKS_RUNTIME_DIR = "D:\whospeaks-runtime"
-$env:WHOSPEAKS_CACHE_DIR = "D:\whospeaks-runtime\cache"
-$env:WHOSPEAKS_MODEL_DIR = "D:\whospeaks-runtime\models"
-$env:WHOSPEAKS_SPEAKER_LIBRARY_DIR = "D:\whospeaks-runtime\speakers"
+$env:WHOSPEAKS_RUNTIME_DIR = "C:\whospeaks-runtime"
+$env:WHOSPEAKS_CACHE_DIR = "C:\whospeaks-runtime\cache"
+$env:WHOSPEAKS_MODEL_DIR = "C:\whospeaks-runtime\models"
+$env:WHOSPEAKS_SPEAKER_LIBRARY_DIR = "C:\whospeaks-runtime\speakers"
 ```
 
 ## Local All-In-One Setup

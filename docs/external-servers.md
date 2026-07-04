@@ -170,7 +170,7 @@ Then switch to the tuned command in [Quickstart](quickstart.md).
 
 For a temporary terminal session, keep the `uvicorn` commands open.
 
-For daily use, run each service under `systemd`, `tmux`, `screen`, or your desktop autostart system. The copied `desktop-controls/` folders contain the start/stop shell scripts used by the source machine, but you should inspect paths before using them on a different server.
+For daily use, run each service under `systemd`, `tmux`, `screen`, or your desktop autostart system. The copied `desktop-controls/` folders contain optional `systemctl --user` start/stop helpers. They assume service names `faster-whisper-asr.service` and `voice-embeddings-server.service`; override them with `WHOSPEAKS_ASR_SERVICE` or `WHOSPEAKS_EMBEDDINGS_SERVICE` if your unit names differ.
 
 ## Common Failures
 

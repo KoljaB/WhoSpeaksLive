@@ -24,7 +24,7 @@ Run the core regression suite:
 Check whitespace before committing:
 
 ```powershell
-git -c safe.directory=D:/Projekte/SpeakerDiarization -C D:\Projekte\SpeakerDiarization diff --check
+git diff --check
 ```
 
 Check copied standalone Python files when editing server snapshots:

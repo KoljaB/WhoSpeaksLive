@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-LOG=/home/lon/Dev/voice-embeddings-server/embeddings-desktop-control.log
-SERVICE=voice-embeddings-server.service
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+LOG="${WHOSPEAKS_EMBEDDINGS_CONTROL_LOG:-"$SCRIPT_DIR/embeddings-desktop-control.log"}"
+SERVICE="${WHOSPEAKS_EMBEDDINGS_SERVICE:-voice-embeddings-server.service}"
 
 {
   echo "[$(date -Is)] start requested"

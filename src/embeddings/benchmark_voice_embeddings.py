@@ -381,12 +381,10 @@ class PyannoteModelAdapter:
                 f"{model_id} could not be loaded. HF_TOKEN is "
                 f"{'set' if token else 'not set'}, but pyannote.audio returned None."
             )
-        self.inference = Inference(
-            self.model,
-            window="whole",
-            device=torch.device(device),
-            use_auth_token=token,
-        )
+        inference_kwargs: dict[str, Any] = {"window": "whole", "device": torch.device(device)}
+        if token:
+            inference_kwargs["use_auth_token"] = token
+        self.inference = Inference(self.model, **inference_kwargs)
 
     def infer(self, audio: Any, sample_rate: int) -> Any:
         import torch

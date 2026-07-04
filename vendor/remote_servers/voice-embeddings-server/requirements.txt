@@ -1,18 +1,20 @@
 # Recommended provider coverage for the WhoSpeaksLive embeddings server.
 # Install torch/torchaudio from the PyTorch CUDA wheel index before this file.
 av>=11.0.0
-espnet>=202402
-espnet-model-zoo>=0.1.7
+espnet==202511
+espnet-model-zoo==0.1.7
 fastapi>=0.110
-huggingface-hub>=0.22
+g2p_en>=2.1.0
+huggingface-hub>=0.34,<1
 librosa>=0.10.1
+matplotlib>=3.8
 modelscope>=1.14
-numpy>=1.26,<2
+numpy>=2.0,<3
 nvidia-ml-py>=12.535
-pyannote.audio>=3.1.1
+pyannote.audio==3.3.2
 resemblyzer>=0.1.4
 soundfile>=0.12.1
 speechbrain>=1.0.0
-transformers>=4.39
+transformers>=4.39,<5
 uvicorn[standard]>=0.29
-wespeaker>=1.0.0
+wespeaker @ git+https://github.com/wenet-e2e/wespeaker.git@d2846b26c5979f52bc269906779b8c99ee1be0ce

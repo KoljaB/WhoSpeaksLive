@@ -7,13 +7,13 @@
   "media": {
     "title": "Philomena Cunk's most HILARIOUS interviews | Cunk on Earth - BBC",
     "source_url": "https://www.youtube.com/watch?v=JWS-qfR6K3w",
-    "audio_file": "D:\\Projekte\\WhoSpeaks\\output_pyannote_cunk\\cunk_on_earth_clip.mp3",
+    "audio_file": "cunk_on_earth_clip.mp3",
     "duration_sec": 303.891
   },
   "provenance": {
     "provider": "ElevenLabs",
     "model_id": "scribe_v2",
-    "source_raw_json": "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_cunk\\cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+    "source_raw_json": "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.4.raw.json",
     "generated_at_utc": "2026-06-26T15:03:57.649118+00:00",
     "language_code": "eng",
     "language_probability": 1.0,

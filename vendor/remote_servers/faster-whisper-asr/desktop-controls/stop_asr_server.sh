@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -u
 
-SERVICE="faster-whisper-asr.service"
-LOG_FILE="/home/lon/Dev/faster-whisper-asr/asr-desktop-control.log"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+SERVICE="${WHOSPEAKS_ASR_SERVICE:-faster-whisper-asr.service}"
+LOG_FILE="${WHOSPEAKS_ASR_CONTROL_LOG:-"$SCRIPT_DIR/asr-desktop-control.log"}"
 
 timestamp() {
     date '+%Y-%m-%d %H:%M:%S'

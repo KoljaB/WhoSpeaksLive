@@ -28,10 +28,12 @@ assets/
 *.wav
 
 # Legacy generated tool outputs
+*.bak-*
 
 # Local app/runtime metadata
 .codex-runtime/
 .git.invalid-*/
+/sessions/
 
 # Private/internal documentation snapshots
 docs-private/
