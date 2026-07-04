@@ -17,13 +17,13 @@ media playback
 
 ## Main Components
 
-- `src/whospeaks/window/youtube_window_diarize_gui.py`: CLI, HTTP server, API routes, and application wiring.
-- `src/whospeaks/window/window_diarizer.py`: main diarization controller and growing-window loop.
-- `src/whospeaks/window/window_gui_html.py`: browser UI HTML, CSS, and JavaScript.
-- `src/whospeaks/window/window_remote_asr.py`: remote ASR client.
-- `src/whospeaks/embeddings/embedding_providers.py`: local and remote embedding clients.
-- `src/whospeaks/speakers/`: speaker memory and clustering logic.
-- `src/whospeaks/window/*_scoring.py`: validation scoring helpers.
+- `src/window/youtube_window_diarize_gui.py`: CLI, HTTP server, API routes, and application wiring.
+- `src/window/window_diarizer.py`: main diarization controller and growing-window loop.
+- `src/window/window_gui_html.py`: browser UI HTML, CSS, and JavaScript.
+- `src/window/window_remote_asr.py`: remote ASR client.
+- `src/embeddings/embedding_providers.py`: local and remote embedding clients.
+- `src/speakers/`: speaker memory and clustering logic.
+- `src/window/*_scoring.py`: validation scoring helpers.
 - `vendor/remote_servers/`: copied FastAPI server snapshots for remote ASR and embeddings.
 
 ## Final ASR Loop

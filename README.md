@@ -2,6 +2,14 @@
 
 WhoSpeaksLive is a local-first speaker diarization app for turning live or replayed media into speaker-labeled transcripts, with a browser UI for fast live speaker feedback, final sentence assignment, speaker library management, and validation.
 
+## Start Here
+
+For a full working setup, follow these in order:
+
+1. [Installation](docs/installation.md): install the Windows controller.
+2. [External ASR and embeddings servers](docs/external-servers.md): set up the Linux GPU services.
+3. [Quickstart](docs/quickstart.md): verify the smoke provider, then run the tuned provider stack.
+
 ## Documentation
 
 | Topic | Document |

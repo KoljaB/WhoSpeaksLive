@@ -36,5 +36,16 @@ Because those two jobs can use different embedding providers, the app can mainta
 - `whospeaks-realtime`: realtime speaker diarization entry point.
 - `whospeaks-filefeed-replay`: local filefeed replay support.
 - `whospeaks-embedding-benchmark`: compare speaker embedding providers.
+- `whospeaks-browser-live-eval`: drive the browser UI and score rendered live speaker output.
 
-Compatibility wrappers remain in `tools/` for older command lines.
+Command entry points are declared in `pyproject.toml` and call package modules directly.
+
+## Recommended Setup
+
+The practical install path is a Windows controller plus Linux GPU services:
+
+- Install the Windows controller from [Installation](installation.md).
+- Start ASR and embeddings from [External Servers](external-servers.md).
+- Launch and verify the app from [Quickstart](quickstart.md).
+
+This setup keeps the UI local while expensive model loading happens on the GPU server.

@@ -1,30 +1,57 @@
 # Quickstart
 
-Start the browser app, open the displayed URL, load media, and watch the right-hand speaker panel plus the live transcript while the final transcript is built.
+Start with a small smoke run, then move to the tuned provider stacks after the remote services are healthy.
 
-## Recommended GPU Server Launch
+## Before You Start
 
-Use this when ASR and embeddings are already running on a remote Linux GPU server:
+Complete:
+
+1. [Installation](installation.md) on the Windows controller.
+2. [External Servers](external-servers.md) on the Linux GPU server.
+
+Verify from Windows:
 
 ```powershell
-.\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --port 8796 --asr-backend remote --remote-asr-url http://192.168.178.22:8650 --embeddings-backend remote --remote-embeddings-url http://192.168.178.22:8660 --embedding-provider "espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12" --live-speaker-embedding-provider "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50"
+curl.exe http://YOUR_GPU_SERVER_IP:8650/health
+curl.exe http://YOUR_GPU_SERVER_IP:8660/health
+curl.exe http://YOUR_GPU_SERVER_IP:8660/providers
+```
+
+Replace `YOUR_GPU_SERVER_IP` with your Linux GPU server address.
+
+## First End-To-End Run
+
+Use a smoke provider first. This proves the UI, media loading, ASR route, embedding route, and speaker assignment pipeline work:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --port 8796 --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660 --embedding-provider "speechbrain_ecapa" --live-speaker-embedding-provider "speechbrain_ecapa" --vad-backend rms --realtime-preview-engine off
+```
+
+The command prints a browser URL. Open it, load or replay media, then press Start.
+
+## Public High-Quality Run
+
+After the smoke provider works, use this public provider stack:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --port 8796 --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660 --embedding-provider "espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12" --live-speaker-embedding-provider "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50" --vad-backend rms --realtime-preview-engine off
+```
+
+This avoids `jungjee_rawnet3`, which needs an extra RawNet3 artifact that is not included in the public source snapshot.
+
+## Tuned Best Run
+
+Use this when the embeddings server has the `jungjee_rawnet3` artifact provisioned:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --port 8796 --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660 --embedding-provider "espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12" --live-speaker-embedding-provider "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50" --vad-backend rms --realtime-preview-engine off
 ```
 
 The live-speaker timing defaults are tuned for fast feedback, so the command does not need the older long list of `--live-speaker-*` timing flags.
 
-## Minimal Local Launch
+## Optional Local Preview
 
-Use this when the local machine has the required ASR and embedding dependencies:
-
-```powershell
-.\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --port 8796
-```
-
-If the port is already in use, choose another port:
-
-```powershell
-.\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --port 8797
-```
+The commands above disable local realtime preview with `--realtime-preview-engine off`. Remove that flag only after the local RealtimeSTT/Kroko preview environment is installed and working.
 
 ## First Session
 
@@ -50,5 +77,5 @@ The live layer may change faster than the final transcript. The final transcript
 
 - Learn the full browser workflow in [Live Window Workflow](live-window-workflow.md).
 - Reuse speakers with [Speaker Libraries](speaker-libraries.md).
-- Run GPU services with [External Servers](external-servers.md).
 - Tune behavior with [Configuration](configuration.md).
+- Validate changes with [Validation And Scoring](validation-and-scoring.md).

@@ -265,7 +265,9 @@ class PyannoteModelProvider:
         token = os.getenv("HF_ACCESS_TOKEN") or os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN")
         self.torch = torch
         self.device = torch.device(choose_torch_device(device))
-        load_kwargs: dict[str, Any] = {"use_auth_token": token, "cache_dir": str(ROOT / ".cache" / "pyannote")}
+        load_kwargs: dict[str, Any] = {"cache_dir": str(ROOT / ".cache" / "pyannote")}
+        if token:
+            load_kwargs["use_auth_token"] = token
         if model_id == "pyannote/embedding":
             load_kwargs["strict"] = False
         original_torch_load = torch.load

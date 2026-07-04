@@ -62,4 +62,4 @@ Review whether these vendored server copies should be wired into the local app, 
 ## Git status summary
 
 Working tree is dirty. New files from this task are under `vendor/remote_servers/` and `sessions/`.
-Existing modified files include docs and `src/whospeaks/window/*` changes from prior work.
+Existing modified files include docs and `src/window/*` changes from prior work.

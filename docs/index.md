@@ -2,11 +2,20 @@
 
 This documentation is organized by the task a reader is trying to complete.
 
+## Full Working Install Path
+
+Follow these in order for a new machine:
+
+1. [Installation](installation.md): prepare the Windows controller and install console commands.
+2. [External servers](external-servers.md): prepare ASR and embeddings on the Linux GPU server.
+3. [Quickstart](quickstart.md): run the smoke provider, then switch to higher-quality providers.
+4. [Troubleshooting](troubleshooting.md): use health checks and common failure fixes when a step fails.
+
 ## Start Here
 
 - [Overview](overview.md): what WhoSpeaksLive does and where it fits.
-- [Installation](installation.md): prepare a local checkout and Python environment.
-- [Quickstart](quickstart.md): launch the browser app with local or remote acceleration.
+- [Installation](installation.md): prepare the Windows controller and Python environment.
+- [Quickstart](quickstart.md): launch the browser app after remote services are healthy.
 
 ## User Workflows
 
@@ -16,7 +25,7 @@ This documentation is organized by the task a reader is trying to complete.
 
 ## System Setup
 
-- [External servers](external-servers.md): run ASR and embeddings services on a GPU machine.
+- [External servers](external-servers.md): run ASR and embeddings services on a Linux GPU machine.
 - [Configuration](configuration.md): choose the most important runtime flags.
 - [Modal deployment](modal-deployment.md): deploy supported remote components on Modal.
 

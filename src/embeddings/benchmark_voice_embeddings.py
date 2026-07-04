@@ -14,9 +14,9 @@ import traceback
 from pathlib import Path
 from typing import Any, Callable
 
+from paths import CACHE_DIR, OUTPUTS_DIR, PROJECT_ROOT
 
-ROOT = Path(__file__).resolve().parents[1]
-OUT_DIR = ROOT / "benchmarks" / "voice_embeddings"
+OUT_DIR = OUTPUTS_DIR / "benchmarks" / "voice_embeddings"
 DEFAULT_AUDIO = OUT_DIR / "five_second_voice.wav"
 RESULTS_JSONL = OUT_DIR / "results.jsonl"
 SUMMARY_CSV = OUT_DIR / "summary.csv"
@@ -88,7 +88,7 @@ ENGINES: dict[str, dict[str, str]] = {
     "jungjee_rawnet3": {
         "name": "jungjee/RawNet3",
         "kind": "rawnet3_local",
-        "model": str(ROOT / ".cache" / "source" / "RawNet" / "python" / "RawNet3"),
+        "model": str(CACHE_DIR / "source" / "RawNet" / "python" / "RawNet3"),
     },
     "wavlm_base_sv": {
         "name": "microsoft/wavlm-base-sv",
@@ -104,7 +104,7 @@ ENGINES: dict[str, dict[str, str]] = {
 
 
 def configure_env() -> None:
-    cache = ROOT / ".cache"
+    cache = CACHE_DIR
     env_defaults = {
         "HF_HOME": cache / "huggingface",
         "TRANSFORMERS_CACHE": cache / "huggingface" / "transformers",
@@ -121,6 +121,16 @@ def configure_env() -> None:
         os.environ.setdefault(key, str(value))
         Path(os.environ[key]).mkdir(parents=True, exist_ok=True)
 
+    s3prl_download_dir = cache / "s3prl" / "download"
+    s3prl_download_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        from importlib import import_module
+
+        s3prl_download = import_module("s3prl.util.download")
+        s3prl_download.set_dir(s3prl_download_dir)
+    except Exception:
+        pass
+
     os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
     os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
@@ -133,8 +143,8 @@ def resolve_modelscope_model_path(model_id: str) -> str:
     if not provider or not model_name:
         return str(model_id)
     candidates = [
-        ROOT / ".cache" / "modelscope" / "models" / provider / model_name,
-        ROOT / ".cache" / "modelscope" / provider / model_name,
+        CACHE_DIR / "modelscope" / "models" / provider / model_name,
+        CACHE_DIR / "modelscope" / provider / model_name,
     ]
     for candidate in candidates:
         if (candidate / "configuration.json").is_file() or (candidate / "config.yaml").is_file():
@@ -322,7 +332,7 @@ class SpeechBrainAdapter:
         import torch
         from speechbrain.inference.speaker import EncoderClassifier
 
-        savedir = ROOT / ".cache" / "speechbrain" / sanitize(model_id)
+        savedir = CACHE_DIR / "speechbrain" / sanitize(model_id)
         self.device = device
         self.model = EncoderClassifier.from_hparams(
             source=model_id,
@@ -348,7 +358,7 @@ class PyannoteModelAdapter:
             or os.getenv("HF_TOKEN")
             or os.getenv("HUGGINGFACE_TOKEN")
         )
-        cache_dir = ROOT / ".cache" / "pyannote"
+        cache_dir = CACHE_DIR / "pyannote"
         original_torch_load = torch.load
 
         def trusted_torch_load(*load_args: Any, **load_kwargs: Any) -> Any:
@@ -375,6 +385,7 @@ class PyannoteModelAdapter:
             self.model,
             window="whole",
             device=torch.device(device),
+            use_auth_token=token,
         )
 
     def infer(self, audio: Any, sample_rate: int) -> Any:
@@ -398,10 +409,10 @@ class PyannotePretrainedEmbeddingAdapter:
         )
         self.torch = torch
         self.device = torch.device(device)
-        self.model = PretrainedSpeakerEmbedding(
-            model_id,
-            device=self.device,
-        )
+        model_kwargs: dict[str, Any] = {"device": self.device}
+        if token:
+            model_kwargs["use_auth_token"] = token
+        self.model = PretrainedSpeakerEmbedding(model_id, **model_kwargs)
 
     def infer(self, audio: Any, sample_rate: int) -> Any:
         waveform = self.torch.from_numpy(audio).reshape(1, 1, -1)
@@ -492,7 +503,7 @@ class EspnetAdapter:
         from espnet2.bin.spk_inference import Speech2Embedding
         from espnet_model_zoo.downloader import ModelDownloader
 
-        cache_dir = Path(os.environ.get("ESPNET_MODEL_ZOO_CACHE", ROOT / ".cache" / "espnet_model_zoo"))
+        cache_dir = Path(os.environ.get("ESPNET_MODEL_ZOO_CACHE", CACHE_DIR / "espnet_model_zoo"))
         downloader = ModelDownloader(cachedir=cache_dir)
         kwargs = downloader.download_and_unpack(model_id)
         self.model = Speech2Embedding(device=device, dtype="float32", **kwargs)
@@ -772,7 +783,7 @@ def benchmark_parent(args: argparse.Namespace) -> int:
         try:
             proc = subprocess.run(
                 cmd,
-                cwd=str(ROOT),
+                cwd=str(PROJECT_ROOT),
                 env=os.environ.copy(),
                 text=True,
                 encoding="utf-8",

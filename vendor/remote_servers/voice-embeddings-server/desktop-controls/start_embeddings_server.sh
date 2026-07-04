@@ -12,7 +12,9 @@ SERVICE=voice-embeddings-server.service
 } >>"$LOG" 2>&1 || true
 
 if systemctl --user is-active --quiet "$SERVICE"; then
-  notify-send "Embeddings server started" "Listening on http://192.168.178.22:8660" || true
+  HOST="${EMBEDDINGS_HOST:-0.0.0.0}"
+  PORT="${EMBEDDINGS_PORT:-8660}"
+  notify-send "Embeddings server started" "Listening on http://${HOST}:${PORT}" || true
   exit 0
 fi
 

@@ -4,8 +4,8 @@ Develop against small, repeatable checks first, then validate full media workflo
 
 ## Repository Layout
 
-- `src/whospeaks/`: application source.
-- `tools/`: compatibility wrappers for historical command paths.
+- `src/`: application source.
+- Console commands are declared in `pyproject.toml` and point directly at package modules.
 - `tests/`: regression tests and deterministic fixtures.
 - `vendor/`: copied third-party or external source snapshots used by the project.
 - `vendor/remote_servers/`: ASR and embeddings server snapshots copied from the Linux GPU host.
@@ -31,6 +31,14 @@ Check copied standalone Python files when editing server snapshots:
 
 ```powershell
 .\.venv\Scripts\python.exe -m py_compile vendor\remote_servers\faster-whisper-asr\asr_server.py vendor\remote_servers\voice-embeddings-server\embeddings_server.py
+```
+
+Check the controller install path after packaging changes:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-controller.txt
+.\.venv\Scripts\python.exe -m pip install -e . --no-deps
+.\.venv\Scripts\whospeaks-window.exe --help
 ```
 
 ## Documentation Rules

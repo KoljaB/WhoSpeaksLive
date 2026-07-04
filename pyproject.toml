@@ -11,10 +11,11 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.scripts]
-whospeaks-window = "whospeaks.window.youtube_gui:main"
-whospeaks-realtime = "whospeaks.realtime.realtime_speakerdiarize:main"
-whospeaks-filefeed-replay = "whospeaks.replay.youtube_local_filefeed_replay:main"
-whospeaks-embedding-benchmark = "whospeaks.embeddings.benchmark_voice_embeddings:main"
+whospeaks-window = "window.youtube_window_diarize_gui:main"
+whospeaks-realtime = "realtime.realtime_speakerdiarize:main"
+whospeaks-filefeed-replay = "replay.youtube_local_filefeed_replay:main"
+whospeaks-embedding-benchmark = "embeddings.benchmark_voice_embeddings:main"
+whospeaks-browser-live-eval = "window.browser_live_speaker_eval:main"
 
 [tool.setuptools]
 include-package-data = true

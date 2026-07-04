@@ -1,43 +1,125 @@
 # Installation
 
-Install WhoSpeaksLive from a checkout, then choose whether heavy ASR and embeddings run locally or on a remote GPU server.
+Install the Windows controller first, then connect it to ASR and embeddings either on a Linux GPU server or on the same machine.
 
-## Requirements
+## Recommended Topology
 
-- Windows is the primary local development environment used by this checkout.
-- Python 3.11 or newer.
-- A virtual environment for the app.
-- `ffmpeg` or compatible media tooling available to the audio stack.
-- Optional: a CUDA-capable GPU for local ASR and embeddings.
-- Optional: a Linux GPU server for remote ASR and embeddings.
+The easiest reliable setup is:
 
-The project metadata intentionally keeps Python dependencies light. The historical `requirements.txt` is present for the full runtime environment, but large ML packages are not installed automatically by package metadata.
+- Windows machine: browser UI, media download, orchestration, speaker library files.
+- Linux GPU server: faster-whisper ASR on port `8650`.
+- Linux GPU server: voice embeddings on port `8660`.
 
-## Local Editable Install
+This keeps the interactive UI responsive and avoids loading several large ML models on the Windows controller. Local all-in-one operation is possible, but it is harder to install and needs enough VRAM for ASR plus embeddings.
 
-From the repository root:
+## Install Order
+
+1. Install Windows prerequisites.
+2. Create the Windows controller virtual environment.
+3. Install the controller package and controller dependencies.
+4. Set up the Linux GPU servers from [External Servers](external-servers.md).
+5. Verify both remote `/health` endpoints.
+6. Launch the browser app from [Quickstart](quickstart.md).
+
+## Windows Prerequisites
+
+Install these on the Windows controller:
+
+- Git.
+- Python 3.11, 64-bit.
+- `ffmpeg` on `PATH`.
+- A modern browser.
+
+Check Python:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -e .
+py -0p
+py -3.11 --version
 ```
 
-Check the command entry points:
+Install `ffmpeg` with one of these package managers:
 
 ```powershell
-whospeaks-window --help
-whospeaks-realtime --help
-whospeaks-filefeed-replay --help
-whospeaks-embedding-benchmark --help
+winget install Gyan.FFmpeg
 ```
 
-The compatibility wrappers are also available:
+or:
 
 ```powershell
-.\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --help
-.\.venv\Scripts\python.exe tools\realtime_speakerdiarize.py --help
-.\.venv\Scripts\python.exe tools\youtube_local_filefeed_replay.py --help
-.\.venv\Scripts\python.exe tools\benchmark_voice_embeddings.py --help
+choco install ffmpeg
 ```
+
+Open a new PowerShell window after installing `ffmpeg`, then verify:
+
+```powershell
+ffmpeg -version
+```
+
+## Get The Source
+
+Clone the repository or open an existing checkout. The examples below assume:
+
+```powershell
+cd D:\Projekte
+git clone https://github.com/KoljaB/WhoSpeaksLive.git
+cd WhoSpeaksLive
+```
+
+If your checkout lives somewhere else, run the commands from that repository root.
+
+## Create The Controller Venv
+
+Create and update the virtual environment:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip setuptools wheel
+```
+
+Install the minimal controller dependency set for the recommended remote-server setup:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-controller.txt
+.\.venv\Scripts\python.exe -m pip install -e . --no-deps
+```
+
+Check that the console entry points are installed:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --help
+.\.venv\Scripts\whospeaks-realtime.exe --help
+.\.venv\Scripts\whospeaks-filefeed-replay.exe --help
+.\.venv\Scripts\whospeaks-embedding-benchmark.exe --help
+.\.venv\Scripts\whospeaks-browser-live-eval.exe --help
+```
+
+## First Controller Smoke Check
+
+This only checks that the controller package imports and the browser server can parse options. It does not prove the remote GPU services are running:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --help
+```
+
+After the remote servers are running, verify them from Windows:
+
+```powershell
+curl.exe http://YOUR_GPU_SERVER_IP:8650/health
+curl.exe http://YOUR_GPU_SERVER_IP:8660/health
+curl.exe http://YOUR_GPU_SERVER_IP:8660/providers
+```
+
+Replace `YOUR_GPU_SERVER_IP` with the IP address of your Linux GPU server, for example `192.168.178.22`.
+
+## First End-To-End Launch
+
+Use a conservative first launch that avoids optional local preview/VAD dependencies:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --port 8796 --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660 --embedding-provider "speechbrain_ecapa" --live-speaker-embedding-provider "speechbrain_ecapa" --vad-backend rms --realtime-preview-engine off
+```
+
+When this works, move to the tuned provider commands in [Quickstart](quickstart.md).
 
 ## Runtime Data
 
@@ -62,12 +144,23 @@ $env:WHOSPEAKS_MODEL_DIR = "D:\whospeaks-runtime\models"
 $env:WHOSPEAKS_SPEAKER_LIBRARY_DIR = "D:\whospeaks-runtime\speakers"
 ```
 
-## First Startup Cost
+## Local All-In-One Setup
 
-The default high-quality embedding stack can download and load large models on a clean machine. If the app starts but waits a long time before releasing the browser URL, either let model loading finish or increase the helper timeout:
+Local ASR and local embeddings require the larger historical environment:
 
 ```powershell
-.\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --embedding-helper-response-timeout-seconds 900
+.\.venv\Scripts\python.exe -m pip install --extra-index-url https://download.pytorch.org/whl/cu118 -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -e . --no-deps
 ```
 
-For faster iteration, use remote ASR and remote embeddings as described in [External Servers](external-servers.md).
+This path is slower to install and more likely to hit CUDA, PyTorch, model-cache, or VRAM issues. Use the remote-server setup first unless you specifically need everything on one Windows machine.
+
+## Optional Realtime Preview
+
+The first launch above disables the local realtime preview engine with `--realtime-preview-engine off`. Final transcript diarization and live speaker probing still work.
+
+Kroko/RealtimeSTT preview is optional and currently depends on a separate local RealtimeSTT/Kroko environment plus model files. If that environment exists, remove `--realtime-preview-engine off` or point `--realtime-preview-python` and `--realtime-preview-model-path` at the working preview environment.
+
+## Next Step
+
+Set up the Linux GPU services in [External Servers](external-servers.md), then launch the app with [Quickstart](quickstart.md).

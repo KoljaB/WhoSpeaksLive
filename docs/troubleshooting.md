@@ -1,22 +1,56 @@
 # Troubleshooting
 
-Most problems fall into four groups: models are not loaded, the wrong backend is selected, speaker profiles are incompatible, or browser-visible live state differs from backend events.
+Most setup failures are caused by missing local dependencies, remote services not listening, model downloads not finished, or provider artifacts that are not installed.
+
+## Start With The Health Checklist
+
+From the Windows controller:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --help
+ffmpeg -version
+curl.exe http://YOUR_GPU_SERVER_IP:8650/health
+curl.exe http://YOUR_GPU_SERVER_IP:8660/health
+curl.exe http://YOUR_GPU_SERVER_IP:8660/providers
+```
+
+If one of these fails, fix it before launching the browser app.
+
+## PowerShell Cannot Find The Command
+
+If `.\.venv\Scripts\whospeaks-window.exe` does not exist, reinstall the controller package:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-controller.txt
+.\.venv\Scripts\python.exe -m pip install -e . --no-deps
+```
+
+If `.venv` does not exist, follow [Installation](installation.md) from the beginning.
+
+## ffmpeg Is Missing
+
+Media download and decoding can fail if `ffmpeg` is not on `PATH`.
+
+Install it, open a new PowerShell window, then verify:
+
+```powershell
+ffmpeg -version
+```
 
 ## The Browser URL Does Not Appear
 
 Check whether model loading is still in progress. Large embedding stacks can take a while on first startup.
 
-Try:
+For the first run, prefer the smoke command from [Quickstart](quickstart.md):
 
 ```powershell
-.\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --embedding-helper-response-timeout-seconds 900
+.\.venv\Scripts\whospeaks-window.exe --port 8796 --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660 --embedding-provider "speechbrain_ecapa" --live-speaker-embedding-provider "speechbrain_ecapa" --vad-backend rms --realtime-preview-engine off
 ```
 
-If using remote services, check:
+If using local embeddings, increase the helper timeout:
 
 ```powershell
-curl.exe http://192.168.178.22:8650/health
-curl.exe http://192.168.178.22:8660/health
+.\.venv\Scripts\whospeaks-window.exe --embedding-helper-response-timeout-seconds 900
 ```
 
 ## Remote ASR Fails
@@ -24,33 +58,59 @@ curl.exe http://192.168.178.22:8660/health
 Confirm the local command includes:
 
 ```text
---asr-backend remote --remote-asr-url http://192.168.178.22:8650
+--asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650
 ```
 
-Then check the ASR server route:
+Check the ASR route:
 
 ```powershell
-curl.exe http://192.168.178.22:8650/health
+curl.exe http://YOUR_GPU_SERVER_IP:8650/health
 ```
 
-If health fails, restart the ASR server on the GPU host.
+If health fails:
+
+- Make sure the Linux command used `--host 0.0.0.0 --port 8650`.
+- Check that the Linux firewall allows port `8650`.
+- Check that `ASR_LOCAL_FILES_ONLY=0` is set for the first model download, or that the model is already cached.
+- Check the server terminal for faster-whisper or CUDA errors.
 
 ## Remote Embeddings Fail
 
 Confirm the local command includes:
 
 ```text
---embeddings-backend remote --remote-embeddings-url http://192.168.178.22:8660
+--embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660
 ```
 
 Check health and provider list:
 
 ```powershell
-curl.exe http://192.168.178.22:8660/health
-curl.exe http://192.168.178.22:8660/providers
+curl.exe http://YOUR_GPU_SERVER_IP:8660/health
+curl.exe http://YOUR_GPU_SERVER_IP:8660/providers
 ```
 
-If a provider needs Hugging Face access, make sure the token is configured as an environment variable on the server, not committed to the repo.
+Load the smoke provider:
+
+```powershell
+curl.exe -X POST "http://YOUR_GPU_SERVER_IP:8660/load?provider=speechbrain_ecapa&device=auto"
+```
+
+If provider loading fails:
+
+- Check the Linux server terminal for the real Python exception.
+- Use `speechbrain_ecapa` before trying provider stacks.
+- Set `HF_TOKEN` for pyannote providers.
+- Use the public high-quality stack if `jungjee_rawnet3` is missing.
+- Restart the embeddings process after changing Python packages.
+
+## CUDA Out Of Memory
+
+Start smaller:
+
+1. Load only `speechbrain_ecapa`.
+2. Stop other GPU processes.
+3. Start ASR and embeddings in separate terminals so you can see which process uses VRAM.
+4. Move to provider stacks only after the smoke provider works.
 
 ## Loaded Speakers Do Not Assign Immediately
 

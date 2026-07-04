@@ -6,8 +6,8 @@ Modal deployment is intended for running supported remote components away from t
 
 The repository contains Modal-related code for the window diarization flow:
 
-- `src/whospeaks/window/modal_youtube_window_diarize_gui.py`
-- `src/whospeaks/window/modal_asr_server.py`
+- `src/window/modal_youtube_window_diarize_gui.py`
+- `src/window/modal_asr_server.py`
 
 Older internal Modal notes were moved to ignored `docs-private/`. This public document keeps only stable operational guidance.
 
@@ -29,7 +29,7 @@ Use a persistent Linux GPU server instead when:
 
 1. Install and authenticate the Modal CLI according to Modal's own documentation.
 2. Keep secrets and tokens in Modal secrets, not in source files.
-3. Start from the Modal entry points under `src/whospeaks/window/`.
+3. Start from the Modal entry points under `src/window/`.
 4. Validate health and latency with a small replay before running a full session.
 5. Record the exact provider strings used for any scoring run.
 

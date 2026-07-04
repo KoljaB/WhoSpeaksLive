@@ -1,0 +1,11 @@
+# Minimal Windows controller dependencies for the recommended setup:
+# local browser UI plus remote ASR and remote embeddings.
+#
+# The full historical environment is still captured in requirements.txt, but
+# this file is the better first install target for a clean controller machine.
+av>=11.0.0
+librosa>=0.10.1
+numpy>=1.26,<2
+onnxruntime>=1.17
+soundfile>=0.12.1
+yt-dlp>=2024.3.10

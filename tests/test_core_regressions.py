@@ -19,19 +19,21 @@ from unittest import mock
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-TOOLS = ROOT / "tools"
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
-from whospeaks.common.audio_utils import write_wav
-from whospeaks.embeddings.embedding_providers import EmbeddingSubprocessClient, RemoteEmbeddingClient
-from whospeaks.speakers.realtime_speaker_memory import SpeakerMemory as RealtimeSpeakerMemory
-from whospeaks.speakers.speaker_embedding_cluster import SpeakerMemory as ClusterSpeakerMemory
-from whospeaks.window.window_diarizer import WindowDiarizer
-from whospeaks.window.window_domain import LiveSpeakerMemoryUpdateJob
-from whospeaks.window.window_events import RecordingEventBus
-from whospeaks.window.window_gui_html import HTML
-from whospeaks.window.browser_live_speaker_scoring import score_browser_live_speaker_samples
-from whospeaks.window.live_speaker_probe_scoring import score_live_speaker_probe
-from whospeaks.window.window_preview import KrokoSubprocessPreviewTranscriber
+from common.audio_utils import write_wav
+from embeddings.embedding_providers import EmbeddingSubprocessClient, RemoteEmbeddingClient
+from speakers.realtime_speaker_memory import SpeakerMemory as RealtimeSpeakerMemory
+from speakers.speaker_embedding_cluster import SpeakerMemory as ClusterSpeakerMemory
+from window.window_diarizer import WindowDiarizer
+from window.window_domain import LiveSpeakerMemoryUpdateJob
+from window.window_events import RecordingEventBus
+from window.window_gui_html import HTML
+from window.browser_live_speaker_scoring import score_browser_live_speaker_samples
+from window.live_speaker_probe_scoring import score_live_speaker_probe
+from window.window_preview import KrokoSubprocessPreviewTranscriber
 
 
 def realtime_memory() -> RealtimeSpeakerMemory:
@@ -1439,12 +1441,14 @@ class KrokoPreviewStartupTests(unittest.TestCase):
             realtime_preview_realtimestt_root=None,
         )
 
-        with mock.patch("whospeaks.window.window_preview.subprocess.Popen", return_value=FakeProcess()) as popen:
+        with mock.patch("window.window_preview.subprocess.Popen", return_value=FakeProcess()) as popen:
             transcriber = KrokoSubprocessPreviewTranscriber(args)
             transcriber.close()
 
         command = popen.call_args.args[0]
-        self.assertIn(str(TOOLS / "kroko_realtime_preview_worker.py"), command)
+        self.assertIn("-m", command)
+        self.assertIn("workers.kroko_realtime_preview_worker", command)
+        self.assertFalse(any(part.endswith("kroko_realtime_preview_worker.py") for part in command))
 
 
 class RemoteEmbeddingClientTests(unittest.TestCase):
@@ -1484,7 +1488,7 @@ class RemoteEmbeddingClientTests(unittest.TestCase):
                 "espnet_ecapa_wavlm_joint=0.725+jungjee_rawnet3=1",
                 timeout_seconds=12.0,
             )
-            with mock.patch("whospeaks.embeddings.embedding_providers.urlopen", side_effect=fake_urlopen):
+            with mock.patch("embeddings.embedding_providers.urlopen", side_effect=fake_urlopen):
                 self.assertEqual(client.health()["service"], "embeddings")
                 embedding = client.embed_wav(wav_path)
 
@@ -1501,13 +1505,16 @@ class RemoteEmbeddingClientTests(unittest.TestCase):
 
 class RepositoryStructureTests(unittest.TestCase):
     def test_package_imports_do_not_require_tools_on_sys_path(self) -> None:
-        self.assertNotIn(str(TOOLS), sys.path)
+        self.assertFalse((ROOT / "tools").exists())
         self.assertEqual(WindowDiarizer.__name__, "WindowDiarizer")
 
-    def test_legacy_window_wrapper_still_imports(self) -> None:
+    def test_window_module_entrypoint_prints_help(self) -> None:
+        env = dict(os.environ)
+        env["PYTHONPATH"] = str(SRC) + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
         completed = subprocess.run(
-            [sys.executable, str(TOOLS / "youtube_window_diarize_gui.py"), "--help"],
+            [sys.executable, "-m", "window.youtube_window_diarize_gui", "--help"],
             cwd=str(ROOT),
+            env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -1518,7 +1525,7 @@ class RepositoryStructureTests(unittest.TestCase):
         self.assertIn("Growing-window faster-whisper speaker diarization GUI", completed.stdout)
 
     def test_runtime_dir_env_redirects_mutable_defaults(self) -> None:
-        import whospeaks.paths as paths
+        import paths as paths
 
         original_env = dict(os.environ)
         try:
@@ -1539,7 +1546,7 @@ class RepositoryStructureTests(unittest.TestCase):
             importlib.reload(paths)
 
     def test_window_gui_default_embedding_provider_matches_promoted_stack(self) -> None:
-        import whospeaks.window.window_config as window_config
+        import window.window_config as window_config
 
         original_env = dict(os.environ)
         try:
@@ -1555,7 +1562,7 @@ class RepositoryStructureTests(unittest.TestCase):
             importlib.reload(window_config)
 
     def test_window_gui_tuned_default_parameters_match_promoted_set(self) -> None:
-        from whospeaks.window.youtube_window_diarize_gui import parse_args
+        from window.youtube_window_diarize_gui import parse_args
 
         expected = {
             "embedding_provider": "espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12",
@@ -1651,7 +1658,7 @@ class RepositoryStructureTests(unittest.TestCase):
         self.assertLess(cooldown_guard_at, cooldown_at)
 
     def test_window_gui_accepts_remote_embeddings_backend_alias(self) -> None:
-        from whospeaks.window.youtube_window_diarize_gui import parse_args
+        from window.youtube_window_diarize_gui import parse_args
 
         with mock.patch.object(
             sys,
@@ -1670,25 +1677,14 @@ class RepositoryStructureTests(unittest.TestCase):
         self.assertEqual(args.remote_embeddings_url, "http://192.168.178.22:8660")
 
     def test_cunk_canonical_is_a_small_fixture(self) -> None:
-        from whospeaks.paths import CUNK_CANONICAL
+        from paths import CUNK_CANONICAL
 
         self.assertTrue(CUNK_CANONICAL.is_file())
         self.assertIn("tests", CUNK_CANONICAL.parts)
         self.assertIn("fixtures", CUNK_CANONICAL.parts)
 
-    def test_tools_contains_only_wrappers_and_ignored_runtime_artifacts(self) -> None:
-        wrapper_names = {
-            "benchmark_voice_embeddings.py",
-            "kroko_realtime_preview_worker.py",
-            "realtime_speakerdiarize.py",
-            "run_browser_live_speaker_eval.py",
-            "youtube_local_filefeed_replay.py",
-            "youtube_window_diarize_gui.py",
-        }
-        actual_files = {path.name for path in TOOLS.glob("*.py")}
-        self.assertEqual(actual_files, wrapper_names)
-        self.assertFalse((TOOLS / ".window_diarize").exists())
-        self.assertFalse((TOOLS / ".local_filefeed_media").exists())
+    def test_legacy_tools_folder_is_removed(self) -> None:
+        self.assertFalse((ROOT / "tools").exists())
 
 
 if __name__ == "__main__":

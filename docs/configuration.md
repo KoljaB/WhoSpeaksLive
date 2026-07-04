@@ -7,13 +7,13 @@ Most users only need backend URLs and provider choices; deeper timing and cluste
 Use local backends when all dependencies and models are installed locally:
 
 ```powershell
-.\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --port 8796
+.\.venv\Scripts\whospeaks-window.exe --port 8796
 ```
 
 Use remote backends when ASR and embeddings run on a GPU server:
 
 ```powershell
-.\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --asr-backend remote --remote-asr-url http://192.168.178.22:8650 --embeddings-backend remote --remote-embeddings-url http://192.168.178.22:8660
+.\.venv\Scripts\whospeaks-window.exe --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660
 ```
 
 ## Embedding Providers
@@ -22,11 +22,25 @@ Final speaker assignment uses `--embedding-provider`.
 
 Live speaker feedback can use `--live-speaker-embedding-provider`. If omitted, the app can use the final provider. If specified differently, the app keeps live profiles compatible with that live provider.
 
-Recommended high-quality final stack:
+Smoke-test stack:
+
+```text
+speechbrain_ecapa
+```
+
+Public high-quality final stack:
+
+```text
+espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12
+```
+
+Tuned best final stack:
 
 ```text
 espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12
 ```
+
+The tuned best stack requires `jungjee_rawnet3`, which is not fully provisioned by the public source snapshot. Use the public high-quality stack until the RawNet3 artifact is installed on the embeddings server.
 
 Recommended fast live stack:
 
@@ -76,7 +90,7 @@ See [Installation](installation.md) for the default path layout.
 The CLI is the authoritative option list:
 
 ```powershell
-.\.venv\Scripts\python.exe tools\youtube_window_diarize_gui.py --help
+.\.venv\Scripts\whospeaks-window.exe --help
 ```
 
 Document only the flags you actually rely on in shared workflows. Keep one-off optimization experiments out of public docs until they become repeatable defaults.

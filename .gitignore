@@ -19,7 +19,7 @@ runtime/
 .cache/
 hub/
 test-model-cache/
-speakers/
+/speakers/
 output_*_cunk/
 realtime_output/
 benchmarks/
@@ -28,13 +28,6 @@ assets/
 *.wav
 
 # Legacy generated tool outputs
-tools/.local_filefeed_media/
-tools/.realtime_speakerdiarize_traces/
-tools/.realtime_speakerdiarize_validation/
-tools/.window_diarize/
-tools/.canonical_sentence_feature_cache/
-tools/.window_diarize_feature_cache/
-tools/.window_diarize_validation/
 
 # Local app/runtime metadata
 .codex-runtime/
