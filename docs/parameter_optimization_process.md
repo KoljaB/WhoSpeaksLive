@@ -2,6 +2,8 @@
 
 This process finds better live-compatible speaker diarization parameters by replaying cached live sentence windows against ElevenLabs canonical baselines and keeping only changes that can be reproduced by the real live path.
 
+Some of the files may be in D:\Projekte\WhoSpeaks
+
 The only score that counts is the score produced by the same live-compatible pipeline used by:
 
 tools/youtube_window_diarize_gui.py

@@ -26,6 +26,7 @@ from whospeaks.speakers.speaker_embedding_cluster import SpeakerMemory as Cluste
 from whospeaks.window.window_diarizer import WindowDiarizer
 from whospeaks.window.window_events import RecordingEventBus
 from whospeaks.window.window_gui_html import HTML
+from whospeaks.window.browser_live_speaker_scoring import score_browser_live_speaker_samples
 from whospeaks.window.live_speaker_probe_scoring import score_live_speaker_probe
 from whospeaks.window.window_preview import KrokoSubprocessPreviewTranscriber
 
@@ -152,6 +153,129 @@ class LiveSpeakerProbeScoringTests(unittest.TestCase):
         )
         self.assertEqual(score["active_correct_live_speaker_coverage"], 1.0)
 
+    def test_live_speaker_probe_unknown_clear_debounce_extends_visible_active_speaker(self) -> None:
+        records = [
+            {
+                "time": 10.0,
+                "event": "validation_replay_start",
+                "payload": {"replay_speed": 1.0},
+            },
+            {
+                "time": 11.0,
+                "event": "live_speaker",
+                "payload": {"speaker_id": "S1", "start": 1.0, "end": 2.0, "hold_seconds": 1.0},
+            },
+            {
+                "time": 11.8,
+                "event": "live_speaker_clear",
+                "payload": {"speaker_id": "S1", "reason": "unknown"},
+            },
+        ]
+        canonical = [{"speaker": "A", "start": 1.0, "end": 2.3, "text": "a"}]
+
+        score = score_live_speaker_probe(records, canonical, unknown_clear_debounce_seconds=0.5)
+
+        self.assertEqual(score["unknown_clear_debounce_seconds"], 0.5)
+        self.assertEqual(
+            score["active_live_slices"],
+            [{"speaker": "S1", "start": 1.0, "end": 2.3, "duration_seconds": 1.3}],
+        )
+
+    def test_live_speaker_probe_latency_score_uses_visible_active_speaker(self) -> None:
+        records = [
+            {
+                "time": 100.0,
+                "event": "validation_replay_start",
+                "payload": {"replay_speed": 1.0},
+            },
+            {
+                "time": 100.8,
+                "event": "live_speaker",
+                "payload": {"speaker_id": "S1", "start": 0.0, "end": 0.5, "hold_seconds": 1.0},
+            },
+            {
+                "time": 103.4,
+                "event": "live_speaker",
+                "payload": {"speaker_id": "S2", "start": 3.0, "end": 3.5, "hold_seconds": 1.0},
+            },
+        ]
+        canonical = [
+            {"speaker": "A", "start": 0.0, "end": 3.0, "text": "a"},
+            {"speaker": "B", "start": 3.0, "end": 6.0, "text": "b"},
+        ]
+
+        score = score_live_speaker_probe(records, canonical)
+        latency = score["live_turn_latency"]
+
+        self.assertEqual(latency["turn_count"], 2)
+        self.assertEqual(latency["speaker_change_turn_count"], 1)
+        self.assertEqual(latency["missed_turn_count"], 0)
+        self.assertEqual(latency["first_correct_latency_seconds"]["median"], 0.6)
+        self.assertEqual(latency["speaker_change_latency_seconds"]["median"], 0.4)
+        self.assertEqual(latency["first_correct_latency_score"], 0.95)
+        self.assertEqual(latency["speaker_change_latency_score"], 1.0)
+        self.assertIn("latency_weighted_live_speaker_score", score)
+
+
+class BrowserLiveSpeakerScoringTests(unittest.TestCase):
+    def test_browser_live_speaker_score_uses_dom_observed_state(self) -> None:
+        samples = [
+            {"playback_time": 0.0, "dom_live_speaker_ids": ["S1"]},
+            {"playback_time": 1.0, "dom_live_speaker_ids": ["S1"]},
+            {"playback_time": 2.0, "dom_live_speaker_ids": []},
+            {"playback_time": 3.0, "dom_live_speaker_ids": ["S2"]},
+            {"playback_time": 4.0, "dom_live_speaker_ids": ["S2"]},
+        ]
+        canonical = [
+            {"speaker": "A", "start": 0.0, "end": 2.0, "text": "a"},
+            {"speaker": "B", "start": 3.0, "end": 4.0, "text": "b"},
+        ]
+
+        score = score_browser_live_speaker_samples(samples, canonical, max_sample_gap_seconds=1.0)
+
+        self.assertEqual(score["speaker_map"], {"S1": "A", "S2": "B"})
+        self.assertEqual(score["correct_live_seconds"], 3.0)
+        self.assertEqual(score["missing_live_speech_seconds"], 0.0)
+        self.assertEqual(score["wrong_live_speech_seconds"], 0.0)
+        self.assertEqual(score["strict_browser_live_score"], 1.0)
+
+    def test_browser_live_speaker_score_penalizes_wrong_duplicate_speaker_id(self) -> None:
+        samples = [
+            {"playback_time": 0.0, "dom_live_speaker_ids": ["S1"]},
+            {"playback_time": 1.0, "dom_live_speaker_ids": ["S1"]},
+            {"playback_time": 2.0, "dom_live_speaker_ids": ["S2"]},
+            {"playback_time": 3.0, "dom_live_speaker_ids": ["S2"]},
+        ]
+        canonical = [{"speaker": "A", "start": 0.0, "end": 3.0, "text": "a"}]
+
+        score = score_browser_live_speaker_samples(samples, canonical, max_sample_gap_seconds=1.0)
+
+        self.assertEqual(score["speaker_map"], {"S1": "A"})
+        self.assertEqual(score["correct_live_seconds"], 2.0)
+        self.assertEqual(score["wrong_live_speech_seconds"], 1.0)
+        self.assertLess(score["strict_browser_live_score"], score["correct_live_speaker_coverage"])
+
+    def test_browser_live_speaker_score_reports_correct_interruption_flicker(self) -> None:
+        samples = [
+            {"playback_time": 0.0, "dom_live_speaker_ids": ["S1"]},
+            {"playback_time": 1.0, "dom_live_speaker_ids": ["S1"]},
+            {"playback_time": 1.4, "dom_live_speaker_ids": []},
+            {"playback_time": 2.0, "dom_live_speaker_ids": ["S1"]},
+            {"playback_time": 3.0, "dom_live_speaker_ids": ["S1"]},
+        ]
+        canonical = [{"speaker": "A", "start": 0.0, "end": 3.0, "text": "a"}]
+
+        score = score_browser_live_speaker_samples(
+            samples,
+            canonical,
+            max_sample_gap_seconds=1.0,
+            flicker_gap_seconds=0.25,
+        )
+
+        self.assertEqual(score["flicker"]["correct_interruption_count"], 1)
+        self.assertAlmostEqual(score["flicker"]["correct_interruption_seconds"], 0.6)
+        self.assertGreater(score["missing_live_speech_seconds"], 0.0)
+
 
 class WindowHtmlSafetyTests(unittest.TestCase):
     def test_speaker_label_is_inserted_as_text_not_markup(self) -> None:
@@ -177,6 +301,7 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("renderedSpeakerSpeakingSeconds = speakingSeconds;", HTML)
         self.assertIn("function applyFastSpeakerPanelSignal(item)", HTML)
         self.assertIn('applyFastSpeakerPanelSignal(item);', HTML)
+        self.assertIn("if (item.only_if_no_live_speaker && currentLiveSpeakerId) return;", HTML)
         self.assertIn("refreshSpeakerPanelSentenceCounts();", HTML)
         self.assertLess(
             HTML.index('row.dataset.speaker = item.assigned_speaker || "UNKNOWN";'),
@@ -427,7 +552,8 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn('if (speakerId && fallbackLiveSpeakerId && speakerId !== fallbackLiveSpeakerId) return;', HTML)
         self.assertIn('es.addEventListener("live_speaker", e => applyFallbackLiveSpeaker(JSON.parse(e.data)));', HTML)
         self.assertIn('es.addEventListener("live_speaker_clear", e => clearFallbackLiveSpeakerFromProbe(JSON.parse(e.data)));', HTML)
-        self.assertIn('fallbackLiveSpeakerUntilMs = performance.now() + Math.max(0, Number(item.hold_seconds || 2.0)) * 1000;', HTML)
+        self.assertIn("const holdSeconds = Math.max(0, Number(item.hold_seconds || 2.0));", HTML)
+        self.assertIn("fallbackLiveSpeakerUntilMs = performance.now() + holdSeconds * 1000;", HTML)
         self.assertIn("currentLiveSpeakerId = activeFallbackLiveSpeakerId() || transcriptLiveSpeakerId;", HTML)
         self.assertIn('return fastSpeakerPanelActive() ? "fast window" : "sentence";', HTML)
         self.assertIn("fastSpeakerPanelStats[speakerId]", HTML)
@@ -765,6 +891,156 @@ class WindowStreamingAudioTests(unittest.TestCase):
 
         self.assertTrue(diarizer._audio_has_rms_speech(audio, 100))
 
+    def test_sentence_live_speaker_hint_emits_fresh_assignment(self) -> None:
+        class Bus:
+            def __init__(self) -> None:
+                self.events: list[tuple[str, dict[str, object]]] = []
+
+            def emit(self, event: str, payload: dict[str, object]) -> None:
+                self.events.append((event, payload))
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            live_speaker_sentence_hint=True,
+            live_speaker_sentence_hint_max_lag_seconds=1.25,
+            live_speaker_sentence_hint_new_speaker_max_lag_seconds=8.0,
+            live_speaker_sentence_hint_hold_seconds=1.0,
+            live_speaker_probe_hold_seconds=2.0,
+        )
+        diarizer.bus = Bus()
+        diarizer.playback_time = lambda: 10.5
+
+        diarizer._maybe_emit_sentence_live_speaker_hint(
+            {
+                "assigned_speaker": "S2",
+                "start": 8.0,
+                "end": 10.0,
+                "probabilities": {"speaker2": 0.9},
+            },
+            2.0,
+        )
+
+        self.assertEqual(len(diarizer.bus.events), 1)
+        event, payload = diarizer.bus.events[0]
+        self.assertEqual(event, "live_speaker")
+        self.assertEqual(payload["speaker_id"], "S2")
+        self.assertTrue(payload["sentence_hint"])
+        self.assertTrue(payload["only_if_no_live_speaker"])
+        self.assertEqual(payload["assignment_source"], "final_sentence_live_hint")
+        self.assertEqual(payload["live_hint_lag_seconds"], 0.5)
+
+    def test_sentence_live_speaker_hint_skips_stale_assignment(self) -> None:
+        class Bus:
+            def __init__(self) -> None:
+                self.events: list[tuple[str, dict[str, object]]] = []
+
+            def emit(self, event: str, payload: dict[str, object]) -> None:
+                self.events.append((event, payload))
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            live_speaker_sentence_hint=True,
+            live_speaker_sentence_hint_max_lag_seconds=1.25,
+            live_speaker_sentence_hint_new_speaker_max_lag_seconds=8.0,
+            live_speaker_sentence_hint_hold_seconds=1.0,
+            live_speaker_probe_hold_seconds=2.0,
+        )
+        diarizer.bus = Bus()
+        diarizer.playback_time = lambda: 12.0
+
+        diarizer._maybe_emit_sentence_live_speaker_hint(
+            {
+                "assigned_speaker": "S2",
+                "start": 8.0,
+                "end": 10.0,
+                "probabilities": {"speaker2": 0.9},
+            },
+            2.0,
+        )
+
+        self.assertEqual(diarizer.bus.events, [])
+
+    def test_sentence_live_speaker_hint_allows_new_speaker_lag(self) -> None:
+        class Bus:
+            def __init__(self) -> None:
+                self.events: list[tuple[str, dict[str, object]]] = []
+
+            def emit(self, event: str, payload: dict[str, object]) -> None:
+                self.events.append((event, payload))
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            live_speaker_sentence_hint=True,
+            live_speaker_sentence_hint_max_lag_seconds=1.25,
+            live_speaker_sentence_hint_new_speaker_max_lag_seconds=8.0,
+            live_speaker_sentence_hint_hold_seconds=1.0,
+            live_speaker_probe_hold_seconds=2.0,
+        )
+        diarizer.bus = Bus()
+        diarizer.playback_time = lambda: 15.0
+
+        diarizer._maybe_emit_sentence_live_speaker_hint(
+            {
+                "assigned_speaker": "S2",
+                "created_speaker": True,
+                "start": 8.0,
+                "end": 10.0,
+                "probabilities": {"speaker2": 1.0},
+            },
+            2.0,
+        )
+
+        self.assertEqual(len(diarizer.bus.events), 1)
+        _event, payload = diarizer.bus.events[0]
+        self.assertEqual(payload["speaker_id"], "S2")
+        self.assertEqual(payload["live_hint_lag_seconds"], 5.0)
+
+    def test_raw_live_speaker_change_snap_promotes_strong_unsmoothed_change(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            live_speaker_raw_change_snap=True,
+            live_speaker_raw_change_min_probability=0.62,
+            live_speaker_raw_change_min_margin=0.18,
+            realtime_preview_diarize_min_known_probability=0.5,
+        )
+        diarizer._speaker_lock = threading.Lock()
+        diarizer._speaker_metadata = {}
+
+        payload = diarizer._maybe_promote_raw_live_speaker_change(
+            "S1",
+            {
+                "assigned_speaker": "S1",
+                "speaker_name": "",
+                "probabilities": {"speaker1": 0.7, "speaker2": 0.2, "unknown": 0.1},
+                "raw_probabilities": {"speaker1": 0.25, "speaker2": 0.78, "unknown": 0.05},
+                "assignment_source": "live_fast_embedding_ema",
+            },
+        )
+
+        self.assertEqual(payload["assigned_speaker"], "S2")
+        self.assertEqual(payload["assignment_source"], "live_fast_embedding_raw_change_snap")
+        self.assertEqual(payload["raw_change_previous_speaker"], "S1")
+        self.assertEqual(payload["smoothed_assigned_speaker"], "S1")
+
+    def test_raw_live_speaker_change_snap_requires_margin(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            live_speaker_raw_change_snap=True,
+            live_speaker_raw_change_min_probability=0.62,
+            live_speaker_raw_change_min_margin=0.18,
+            realtime_preview_diarize_min_known_probability=0.5,
+        )
+
+        original = {
+            "assigned_speaker": "S1",
+            "probabilities": {"speaker1": 0.7, "speaker2": 0.2, "unknown": 0.1},
+            "raw_probabilities": {"speaker1": 0.58, "speaker2": 0.7, "unknown": 0.05},
+            "assignment_source": "live_fast_embedding_ema",
+        }
+        payload = diarizer._maybe_promote_raw_live_speaker_change("S1", original)
+
+        self.assertIs(payload, original)
+
     def test_live_speaker_embedding_throttle_uses_latency_target(self) -> None:
         class Bus:
             def __init__(self) -> None:
@@ -1078,13 +1354,33 @@ class RepositoryStructureTests(unittest.TestCase):
             "live_speaker_ema_count": 3,
             "live_speaker_ema_alpha": 0.55,
             "live_speaker_probe_interval_seconds": 0.5,
+            "live_speaker_probe_attack_interval_seconds": 0.0,
             "live_speaker_probe_window_seconds": 1.0,
-            "live_speaker_probe_hold_seconds": 1.5,
+            "live_speaker_probe_hold_seconds": 1.0,
             "live_speaker_probe_min_advance_seconds": 0.5,
+            "live_speaker_probe_attack_min_advance_seconds": 0.0,
             "live_speaker_probe_min_speech_seconds": 0.15,
             "live_speaker_probe_clear_on_silence": True,
             "live_speaker_probe_clear_window_seconds": 1.0,
+            "live_speaker_probe_clear_silence_count": 1,
             "live_speaker_probe_clear_unknown_count": 2,
+            "live_speaker_probe_unknown_clear_debounce_seconds": 0.0,
+            "live_speaker_probe_unknown_keepalive": False,
+            "live_speaker_probe_unknown_release_smoothing": "none",
+            "live_speaker_probe_unknown_release_count": 3,
+            "live_speaker_probe_unknown_release_ema_alpha": 0.5,
+            "live_speaker_probe_unknown_release_margin": 0.0,
+            "live_speaker_raw_change_snap": False,
+            "live_speaker_raw_change_min_probability": 0.62,
+            "live_speaker_raw_change_min_margin": 0.18,
+            "live_speaker_sentence_hint": False,
+            "live_speaker_sentence_hint_max_lag_seconds": 1.25,
+            "live_speaker_sentence_hint_new_speaker_max_lag_seconds": 1.25,
+            "live_speaker_sentence_hint_hold_seconds": 1.0,
+            "browser_live_observation_output": None,
+            "browser_live_observation_interval_seconds": 0.1,
+            "browser_live_observation_max_sample_gap_seconds": 0.5,
+            "browser_live_observation_flicker_gap_seconds": 0.25,
         }
 
         with mock.patch.object(sys, "argv", ["youtube_window_diarize_gui.py"]):
@@ -1124,6 +1420,7 @@ class RepositoryStructureTests(unittest.TestCase):
             "benchmark_voice_embeddings.py",
             "kroko_realtime_preview_worker.py",
             "realtime_speakerdiarize.py",
+            "run_browser_live_speaker_eval.py",
             "youtube_local_filefeed_replay.py",
             "youtube_window_diarize_gui.py",
         }

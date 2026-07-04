@@ -134,6 +134,12 @@ from whospeaks.window.window_runtime import (  # noqa: E402
     infer_kroko_preview_chunk_seconds,
     new_speaker_sensitivity_config,
 )
+from whospeaks.window.browser_live_speaker_scoring import (  # noqa: E402
+    DEFAULT_BROWSER_OBSERVATION_FLICKER_GAP_SECONDS,
+    DEFAULT_BROWSER_OBSERVATION_INTERVAL_SECONDS,
+    DEFAULT_BROWSER_OBSERVATION_MAX_SAMPLE_GAP_SECONDS,
+    BrowserLiveObservationRecorder,
+)
 
 class Handler(BaseHTTPRequestHandler):
     server: "WindowServer"
@@ -156,6 +162,20 @@ class Handler(BaseHTTPRequestHandler):
                     json_dumps(new_speaker_sensitivity_config(getattr(self.server.args, "new_speaker_sensitivity", 3))),
                 )
                 .replace("__SPEAKER_REFINEMENT_JSON__", json_dumps(self.server.controller.speaker_refinement_settings()))
+                .replace(
+                    "__LIVE_SPEAKER_JSON__",
+                    json_dumps({
+                        "unknown_clear_debounce_seconds": max(
+                            0.0,
+                            float(getattr(self.server.args, "live_speaker_probe_unknown_clear_debounce_seconds", 0.0)),
+                        ),
+                        "browser_observation_enabled": self.server.browser_live_observation_enabled,
+                        "browser_observation_interval_seconds": max(
+                            0.02,
+                            float(getattr(self.server.args, "browser_live_observation_interval_seconds", DEFAULT_BROWSER_OBSERVATION_INTERVAL_SECONDS)),
+                        ),
+                    }),
+                )
                 .replace("__SPEAKER_LIBRARY_JSON__", json_dumps(speaker_state))
             )
             self._send_bytes(html.encode("utf-8"), "text/html; charset=utf-8")
@@ -226,6 +246,15 @@ class Handler(BaseHTTPRequestHandler):
                 payload = self._read_json_body()
                 self.server.controller.set_playback_time(float(payload.get("seconds", 0.0)))
                 self._send_json({"ok": True})
+            elif path == "/api/live-observation":
+                payload = self._read_json_body()
+                count = self.server.record_browser_live_observation(payload.get("samples", []))
+                self._send_json({"ok": True, "sample_count": count})
+            elif path == "/api/live-observation-finish":
+                payload = self._read_json_body()
+                count = self.server.record_browser_live_observation(payload.get("samples", []))
+                summary = self.server.finish_browser_live_observation(str(payload.get("reason") or "done"))
+                self._send_json({"ok": True, "sample_count": count, "summary": summary})
             elif path == "/api/settings":
                 payload = self._read_json_body()
                 response: dict[str, Any] = {"ok": True}
@@ -364,6 +393,40 @@ class WindowServer(ThreadingHTTPServer):
         self.bus = bus
         self.controller = controller
         self._media_lock = threading.Lock()
+        self.browser_live_recorder = (
+            BrowserLiveObservationRecorder(
+                output_path=args.browser_live_observation_output,
+                canonical_path=args.validation_canonical,
+                max_sample_gap_seconds=args.browser_live_observation_max_sample_gap_seconds,
+                flicker_gap_seconds=args.browser_live_observation_flicker_gap_seconds,
+            )
+            if args.browser_live_observation_output is not None
+            else None
+        )
+
+    @property
+    def browser_live_observation_enabled(self) -> bool:
+        return self.browser_live_recorder is not None
+
+    def record_browser_live_observation(self, samples: Any) -> int:
+        if self.browser_live_recorder is None:
+            return 0
+        if not isinstance(samples, list):
+            samples = []
+        return self.browser_live_recorder.record(samples)
+
+    def finish_browser_live_observation(self, reason: str = "done") -> dict[str, Any]:
+        if self.browser_live_recorder is None:
+            return {}
+        summary = self.browser_live_recorder.finish(reason=reason)
+        self.bus.emit("status", {
+            "message": (
+                "Browser live-speaker observation score "
+                f"{summary.get('strict_browser_live_score', 0.0):.3f} written to "
+                f"{self.browser_live_recorder.output_path}"
+            ),
+        })
+        return summary
 
     def current_media(self) -> MediaFiles:
         with self._media_lock:
@@ -605,9 +668,62 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "live_speaker_ema_count": args.live_speaker_ema_count,
             "live_speaker_ema_alpha": args.live_speaker_ema_alpha,
             "live_speaker_probe_interval_seconds": args.live_speaker_probe_interval_seconds,
+            "live_speaker_probe_attack_interval_seconds": args.live_speaker_probe_attack_interval_seconds,
             "live_speaker_probe_window_seconds": args.live_speaker_probe_window_seconds,
             "live_speaker_probe_hold_seconds": args.live_speaker_probe_hold_seconds,
             "live_speaker_probe_min_advance_seconds": args.live_speaker_probe_min_advance_seconds,
+            "live_speaker_probe_attack_min_advance_seconds": args.live_speaker_probe_attack_min_advance_seconds,
+            "live_speaker_probe_clear_silence_count": args.live_speaker_probe_clear_silence_count,
+            "live_speaker_probe_clear_unknown_count": args.live_speaker_probe_clear_unknown_count,
+            "live_speaker_probe_unknown_clear_debounce_seconds": args.live_speaker_probe_unknown_clear_debounce_seconds,
+            "live_speaker_probe_unknown_keepalive": args.live_speaker_probe_unknown_keepalive,
+            "live_speaker_probe_unknown_release_smoothing": args.live_speaker_probe_unknown_release_smoothing,
+            "live_speaker_probe_unknown_release_count": args.live_speaker_probe_unknown_release_count,
+            "live_speaker_probe_unknown_release_ema_alpha": args.live_speaker_probe_unknown_release_ema_alpha,
+            "live_speaker_probe_unknown_release_margin": args.live_speaker_probe_unknown_release_margin,
+            "live_speaker_weak_profile_assist": args.live_speaker_weak_profile_assist,
+            "live_speaker_weak_profile_max_speech_seconds": args.live_speaker_weak_profile_max_speech_seconds,
+            "live_speaker_weak_profile_min_similarity": args.live_speaker_weak_profile_min_similarity,
+            "live_speaker_weak_profile_min_margin": args.live_speaker_weak_profile_min_margin,
+            "live_speaker_weak_profile_max_unknown_probability": (
+                args.live_speaker_weak_profile_max_unknown_probability
+            ),
+            "section_gap_new_speaker": args.section_gap_new_speaker,
+            "section_gap_new_speaker_min_gap_seconds": args.section_gap_new_speaker_min_gap_seconds,
+            "section_gap_new_speaker_min_prior_speech_seconds": (
+                args.section_gap_new_speaker_min_prior_speech_seconds
+            ),
+            "section_gap_new_speaker_min_duration_seconds": (
+                args.section_gap_new_speaker_min_duration_seconds
+            ),
+            "section_gap_new_speaker_min_similarity": args.section_gap_new_speaker_min_similarity,
+            "section_gap_new_speaker_max_similarity": args.section_gap_new_speaker_max_similarity,
+            "section_gap_new_speaker_min_margin": args.section_gap_new_speaker_min_margin,
+            "unknown_pair_new_speaker": args.unknown_pair_new_speaker,
+            "unknown_pair_new_speaker_max_gap_seconds": args.unknown_pair_new_speaker_max_gap_seconds,
+            "unknown_pair_new_speaker_min_unknown_duration_seconds": (
+                args.unknown_pair_new_speaker_min_unknown_duration_seconds
+            ),
+            "unknown_pair_new_speaker_min_current_duration_seconds": (
+                args.unknown_pair_new_speaker_min_current_duration_seconds
+            ),
+            "unknown_pair_new_speaker_min_pair_similarity": args.unknown_pair_new_speaker_min_pair_similarity,
+            "unknown_pair_new_speaker_max_existing_similarity": (
+                args.unknown_pair_new_speaker_max_existing_similarity
+            ),
+            "unknown_pair_new_speaker_max_existing_margin": args.unknown_pair_new_speaker_max_existing_margin,
+            "unknown_pair_new_speaker_min_unknown_probability": (
+                args.unknown_pair_new_speaker_min_unknown_probability
+            ),
+            "live_speaker_raw_change_snap": args.live_speaker_raw_change_snap,
+            "live_speaker_raw_change_min_probability": args.live_speaker_raw_change_min_probability,
+            "live_speaker_raw_change_min_margin": args.live_speaker_raw_change_min_margin,
+            "live_speaker_sentence_hint": args.live_speaker_sentence_hint,
+            "live_speaker_sentence_hint_max_lag_seconds": args.live_speaker_sentence_hint_max_lag_seconds,
+            "live_speaker_sentence_hint_new_speaker_max_lag_seconds": args.live_speaker_sentence_hint_new_speaker_max_lag_seconds,
+            "live_speaker_sentence_hint_new_speaker_hold_seconds": args.live_speaker_sentence_hint_new_speaker_hold_seconds,
+            "live_speaker_sentence_hint_new_speaker_max_top_similarity": args.live_speaker_sentence_hint_new_speaker_max_top_similarity,
+            "live_speaker_sentence_hint_hold_seconds": args.live_speaker_sentence_hint_hold_seconds,
         },
         "min_speech_audio_ratio": args.min_speech_audio_ratio,
         "speech_audio_ratio": ratio_summary(final_payloads, args.min_speech_audio_ratio),
@@ -1073,6 +1189,12 @@ def parse_args() -> argparse.Namespace:
         help="Seconds between fallback live-speaker probes.",
     )
     parser.add_argument(
+        "--live-speaker-probe-attack-interval-seconds",
+        type=float,
+        default=0.0,
+        help="Optional faster probe interval while acquiring a speaker or resolving UNKNOWN; 0 disables.",
+    )
+    parser.add_argument(
         "--live-speaker-probe-window-seconds",
         type=float,
         default=1.0,
@@ -1081,7 +1203,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-probe-hold-seconds",
         type=float,
-        default=1.5,
+        default=1.0,
         help="Seconds the browser keeps a fallback live-speaker highlight after a matching probe.",
     )
     parser.add_argument(
@@ -1091,10 +1213,22 @@ def parse_args() -> argparse.Namespace:
         help="Minimum playback advance before rescoring the fallback live-speaker probe window.",
     )
     parser.add_argument(
+        "--live-speaker-probe-attack-min-advance-seconds",
+        type=float,
+        default=0.0,
+        help="Optional faster minimum playback advance during attack cadence; 0 uses the attack interval.",
+    )
+    parser.add_argument(
         "--live-speaker-probe-min-speech-seconds",
         type=float,
         default=0.15,
         help="Minimum RMS-gated speech inside the probe window before embedding it.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-speech-backend",
+        choices=("rms", "vad"),
+        default="rms",
+        help="Speech gate used by live-speaker probe windows. 'vad' reuses the configured VAD backend.",
     )
     parser.add_argument(
         "--live-speaker-probe-clear-on-silence",
@@ -1103,16 +1237,274 @@ def parse_args() -> argparse.Namespace:
         help="Clear the fallback live speaker when the recent audio window has no RMS-gated speech.",
     )
     parser.add_argument(
+        "--live-speaker-clear-on-vad-split",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Clear the fallback live speaker when the main VAD finalizes a sentence window after trailing silence.",
+    )
+    parser.add_argument(
         "--live-speaker-probe-clear-window-seconds",
         type=float,
         default=1.0,
         help="Recent audio duration checked for silence before clearing the fallback live speaker.",
     )
     parser.add_argument(
+        "--live-speaker-probe-clear-silence-count",
+        type=int,
+        default=1,
+        help="Clear the fallback live speaker after this many consecutive silent clear windows.",
+    )
+    parser.add_argument(
         "--live-speaker-probe-clear-unknown-count",
         type=int,
         default=2,
         help="Clear the fallback live speaker after this many consecutive speech probes score as UNKNOWN; use 0 to disable.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-unknown-clear-debounce-seconds",
+        type=float,
+        default=0.0,
+        help="Delay UNKNOWN fallback-live-speaker clear events in the browser by this many seconds; 0 clears immediately.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-unknown-keepalive",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Keep the current fallback live speaker highlighted during pre-clear UNKNOWN probes.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-unknown-release-smoothing",
+        choices=("none", "sma", "ema"),
+        default="none",
+        help="Smooth current-speaker versus UNKNOWN evidence before releasing the fallback live speaker.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-unknown-release-count",
+        type=int,
+        default=3,
+        help="Number of recent UNKNOWN release samples used by SMA/EMA release smoothing.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-unknown-release-ema-alpha",
+        type=float,
+        default=0.5,
+        help="EMA weight for the newest UNKNOWN release sample.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-unknown-release-margin",
+        type=float,
+        default=0.0,
+        help="Tolerance added to the current speaker probability before UNKNOWN release wins.",
+    )
+    parser.add_argument(
+        "--live-speaker-provisional-new-speaker",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Emit a temporary live speaker id for speech that does not yet match any known speaker.",
+    )
+    parser.add_argument(
+        "--live-speaker-provisional-min-audio-seconds",
+        type=float,
+        default=1.0,
+        help="Minimum live probe audio duration before creating a provisional live speaker.",
+    )
+    parser.add_argument(
+        "--live-speaker-provisional-min-unknown-probability",
+        type=float,
+        default=0.5,
+        help="Minimum unknown probability required before creating a provisional live speaker.",
+    )
+    parser.add_argument(
+        "--live-speaker-weak-profile-assist",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Allow a stricter, similarity-based live assignment for very young known-speaker profiles.",
+    )
+    parser.add_argument(
+        "--live-speaker-weak-profile-max-speech-seconds",
+        type=float,
+        default=2.5,
+        help="Maximum accumulated profile speech seconds considered weak for live-speaker assist.",
+    )
+    parser.add_argument(
+        "--live-speaker-weak-profile-min-similarity",
+        type=float,
+        default=0.40,
+        help="Minimum top similarity for weak-profile live-speaker assist.",
+    )
+    parser.add_argument(
+        "--live-speaker-weak-profile-min-margin",
+        type=float,
+        default=0.12,
+        help="Minimum top-vs-runner-up margin for weak-profile live-speaker assist.",
+    )
+    parser.add_argument(
+        "--live-speaker-weak-profile-max-unknown-probability",
+        type=float,
+        default=0.55,
+        help="Maximum UNKNOWN probability allowed for weak-profile live-speaker assist.",
+    )
+    parser.add_argument(
+        "--section-gap-new-speaker",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Allow a long media gap plus moderate similarity to create a new section speaker.",
+    )
+    parser.add_argument(
+        "--section-gap-new-speaker-min-gap-seconds",
+        type=float,
+        default=60.0,
+        help="Minimum media-time gap since the matched speaker last ended before section-gap splitting.",
+    )
+    parser.add_argument(
+        "--section-gap-new-speaker-min-prior-speech-seconds",
+        type=float,
+        default=8.0,
+        help="Minimum existing profile speech seconds required before section-gap splitting can clone it.",
+    )
+    parser.add_argument(
+        "--section-gap-new-speaker-min-duration-seconds",
+        type=float,
+        default=5.0,
+        help="Minimum current sentence duration for section-gap new-speaker splitting.",
+    )
+    parser.add_argument(
+        "--section-gap-new-speaker-min-similarity",
+        type=float,
+        default=0.35,
+        help="Minimum similarity to an old speaker for section-gap new-speaker splitting.",
+    )
+    parser.add_argument(
+        "--section-gap-new-speaker-max-similarity",
+        type=float,
+        default=0.58,
+        help="Maximum similarity to an old speaker before section-gap splitting treats it as the same speaker.",
+    )
+    parser.add_argument(
+        "--section-gap-new-speaker-min-margin",
+        type=float,
+        default=0.08,
+        help="Minimum top-vs-runner-up margin for section-gap new-speaker splitting.",
+    )
+    parser.add_argument(
+        "--unknown-pair-new-speaker",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Create a new speaker when a recent UNKNOWN sentence pairs with a longer weak existing-speaker match.",
+    )
+    parser.add_argument(
+        "--unknown-pair-new-speaker-max-gap-seconds",
+        type=float,
+        default=4.0,
+        help="Maximum gap between a pending UNKNOWN sentence and the current sentence for pair-based new-speaker creation.",
+    )
+    parser.add_argument(
+        "--unknown-pair-new-speaker-min-unknown-duration-seconds",
+        type=float,
+        default=0.2,
+        help="Minimum duration of the pending UNKNOWN sentence used for pair-based new-speaker creation.",
+    )
+    parser.add_argument(
+        "--unknown-pair-new-speaker-min-current-duration-seconds",
+        type=float,
+        default=2.5,
+        help="Minimum current sentence duration for pair-based new-speaker creation.",
+    )
+    parser.add_argument(
+        "--unknown-pair-new-speaker-min-pair-similarity",
+        type=float,
+        default=0.45,
+        help="Minimum embedding similarity between UNKNOWN and current sentence for pair-based new-speaker creation.",
+    )
+    parser.add_argument(
+        "--unknown-pair-new-speaker-max-existing-similarity",
+        type=float,
+        default=0.55,
+        help="Maximum similarity to an existing speaker before pair-based new-speaker creation is suppressed.",
+    )
+    parser.add_argument(
+        "--unknown-pair-new-speaker-max-existing-margin",
+        type=float,
+        default=0.20,
+        help="Maximum existing-speaker margin allowed for pair-based new-speaker creation.",
+    )
+    parser.add_argument(
+        "--unknown-pair-new-speaker-min-unknown-probability",
+        type=float,
+        default=0.10,
+        help="Minimum UNKNOWN probability on the current sentence for pair-based new-speaker creation.",
+    )
+    parser.add_argument(
+        "--live-speaker-raw-change-snap",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Allow strong unsmoothed live probabilities to switch away from the active speaker before EMA catches up.",
+    )
+    parser.add_argument(
+        "--live-speaker-raw-change-min-probability",
+        type=float,
+        default=0.62,
+        help="Minimum raw known-speaker probability required for a live speaker-change snap.",
+    )
+    parser.add_argument(
+        "--live-speaker-raw-change-min-margin",
+        type=float,
+        default=0.18,
+        help="Minimum raw probability lead over the active speaker required for a live speaker-change snap.",
+    )
+    parser.add_argument(
+        "--live-speaker-sentence-hint",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Let fresh final sentence assignments seed the visible live speaker when no stronger live tag is active.",
+    )
+    parser.add_argument(
+        "--live-speaker-sentence-hint-override",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Allow fresh final sentence assignments to replace the current fallback live speaker.",
+    )
+    parser.add_argument(
+        "--live-speaker-sentence-hint-max-lag-seconds",
+        type=float,
+        default=1.25,
+        help="Maximum playback lag after a final sentence end for emitting a live-speaker sentence hint.",
+    )
+    parser.add_argument(
+        "--live-speaker-sentence-hint-new-speaker-max-lag-seconds",
+        type=float,
+        default=1.25,
+        help="Maximum playback lag for a newly created speaker's first live-speaker sentence hint.",
+    )
+    parser.add_argument(
+        "--live-speaker-sentence-hint-new-speaker-hold-seconds",
+        type=float,
+        default=-1.0,
+        help="Optional hold duration for newly created speaker sentence hints; negative uses the normal hint hold.",
+    )
+    parser.add_argument(
+        "--live-speaker-sentence-hint-new-speaker-max-top-similarity",
+        type=float,
+        default=1.0,
+        help="Only emit delayed new-speaker sentence hints when the new profile's top existing-speaker similarity is at or below this value.",
+    )
+    parser.add_argument(
+        "--live-speaker-sentence-hint-hold-seconds",
+        type=float,
+        default=1.0,
+        help="Browser hold duration for live-speaker sentence hints.",
+    )
+    parser.add_argument(
+        "--live-speaker-sentence-hint-hold-through-sentence",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="When a final sentence is assigned before playback has passed its end, keep its live hint through that end plus the hint hold.",
+    )
+    parser.add_argument(
+        "--live-speaker-sentence-hint-min-duration-seconds",
+        type=float,
+        default=0.0,
+        help="Minimum final sentence duration required before it may emit a live-speaker sentence hint.",
     )
     parser.add_argument(
         "--realtime-preview-engine-options-json",
@@ -1129,6 +1521,30 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--validation-final-wait-seconds", type=float, default=90.0)
     parser.add_argument("--validation-match-mode", choices=("auto", "timestamp", "text"), default="auto")
     parser.add_argument(
+        "--browser-live-observation-output",
+        type=Path,
+        default=None,
+        help="When set, the browser samples the rendered live-speaker DOM state and writes a strict browser-observed score JSON here.",
+    )
+    parser.add_argument(
+        "--browser-live-observation-interval-seconds",
+        type=float,
+        default=DEFAULT_BROWSER_OBSERVATION_INTERVAL_SECONDS,
+        help="Seconds between browser DOM live-speaker samples.",
+    )
+    parser.add_argument(
+        "--browser-live-observation-max-sample-gap-seconds",
+        type=float,
+        default=DEFAULT_BROWSER_OBSERVATION_MAX_SAMPLE_GAP_SECONDS,
+        help="Maximum playback span represented by one browser DOM sample interval.",
+    )
+    parser.add_argument(
+        "--browser-live-observation-flicker-gap-seconds",
+        type=float,
+        default=DEFAULT_BROWSER_OBSERVATION_FLICKER_GAP_SECONDS,
+        help="Minimum in-turn live-speaker gap counted as visible flicker.",
+    )
+    parser.add_argument(
         "--validation-keep-preview",
         action="store_true",
         help="Keep realtime preview enabled during validation. Final sentence metrics usually do not need this.",
@@ -1142,6 +1558,8 @@ def parse_args() -> argparse.Namespace:
     args.validation_output = args.validation_output.resolve()
     if args.validation_trace_output is not None:
         args.validation_trace_output = args.validation_trace_output.resolve()
+    if args.browser_live_observation_output is not None:
+        args.browser_live_observation_output = args.browser_live_observation_output.resolve()
     if args.download_root is not None:
         args.download_root = args.download_root.resolve()
     if args.realtime_preview_model_path is not None:

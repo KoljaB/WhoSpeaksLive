@@ -646,6 +646,7 @@ const initialSource = __SOURCE_JSON__;
 const presetVideos = __PRESET_VIDEOS__;
 const speakerSensitivityConfig = __NEW_SPEAKER_SENSITIVITY_JSON__;
 const speakerRefinementConfig = __SPEAKER_REFINEMENT_JSON__;
+const liveSpeakerConfig = __LIVE_SPEAKER_JSON__;
 const initialSpeakerLibrary = __SPEAKER_LIBRARY_JSON__;
 const svgNamespace = "http://www.w3.org/2000/svg";
 const targetCaptureSampleRate = 16000;
@@ -689,6 +690,11 @@ let transcriptLiveSpeakerId = "";
 let fallbackLiveSpeakerId = "";
 let fallbackLiveSpeakerUntilMs = 0;
 let fallbackLiveSpeakerExpiryTimer = null;
+let fallbackLiveSpeakerClearTimer = null;
+let browserLiveObservationTimer = null;
+let browserLiveObservationBuffer = [];
+let browserLiveObservationStarted = false;
+let browserLiveObservationPosting = false;
 let referenceRecordStream = null;
 let referenceRecordContext = null;
 let referenceRecordSource = null;
@@ -1197,6 +1203,12 @@ async function post(path, payload={}) {
   if (!r.ok) throw new Error(data.error || r.statusText);
   return data;
 }
+function browserLiveObservationEnabled() {
+  return Boolean(liveSpeakerConfig.browser_observation_enabled);
+}
+function browserLiveObservationIntervalMs() {
+  return Math.max(20, Number(liveSpeakerConfig.browser_observation_interval_seconds || 0.1) * 1000);
+}
 function mediaSeconds(element) {
   const seconds = Number(element.currentTime || 0);
   return Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
@@ -1217,6 +1229,69 @@ function playbackSeconds() {
     seconds = Math.min(audioSeconds || videoSeconds, videoSeconds || audioSeconds);
   }
   return Math.min(seconds, playbackClockMaxSeconds());
+}
+function browserLiveObservationSample() {
+  if (!browserLiveObservationEnabled() || !browserLiveObservationStarted) return;
+  const liveRows = Array.from(speakerList.querySelectorAll(".speaker-item.live-speaker"));
+  const domLiveSpeakerIds = liveRows
+    .map(row => row.dataset.speakerId || "")
+    .filter(Boolean);
+  browserLiveObservationBuffer.push({
+    wall_time: Date.now() / 1000,
+    performance_ms: performance.now(),
+    playback_time: playbackSeconds(),
+    dom_live_speaker_ids: domLiveSpeakerIds,
+    visible_live_speaker_id: domLiveSpeakerIds.length === 1 ? domLiveSpeakerIds[0] : "",
+    current_live_speaker_id: currentLiveSpeakerId || "",
+    transcript_live_speaker_id: transcriptLiveSpeakerId || "",
+    fallback_live_speaker_id: fallbackLiveSpeakerId || "",
+    runtime_state: state.textContent || "",
+  });
+  if (browserLiveObservationBuffer.length >= 10) {
+    void flushBrowserLiveObservation(false, "batch");
+  }
+}
+async function flushBrowserLiveObservation(finalFlush=false, reason="batch") {
+  if (!browserLiveObservationEnabled()) return null;
+  if (browserLiveObservationPosting && !finalFlush) return null;
+  const samples = browserLiveObservationBuffer.splice(0);
+  if (!samples.length && !finalFlush) return null;
+  browserLiveObservationPosting = true;
+  try {
+    const endpoint = finalFlush ? "/api/live-observation-finish" : "/api/live-observation";
+    return await post(endpoint, {samples, reason});
+  } catch (error) {
+    if (samples.length) browserLiveObservationBuffer = samples.concat(browserLiveObservationBuffer);
+    log(`Browser live observation failed: ${error.message}`);
+    return null;
+  } finally {
+    browserLiveObservationPosting = false;
+  }
+}
+function stopBrowserLiveObservationTimerOnly() {
+  if (browserLiveObservationTimer) {
+    clearInterval(browserLiveObservationTimer);
+    browserLiveObservationTimer = null;
+  }
+}
+function startBrowserLiveObservation() {
+  if (!browserLiveObservationEnabled()) return;
+  stopBrowserLiveObservationTimerOnly();
+  browserLiveObservationBuffer = [];
+  browserLiveObservationStarted = true;
+  browserLiveObservationSample();
+  browserLiveObservationTimer = setInterval(browserLiveObservationSample, browserLiveObservationIntervalMs());
+}
+async function stopBrowserLiveObservation(reason="done") {
+  if (!browserLiveObservationEnabled() || !browserLiveObservationStarted) return null;
+  stopBrowserLiveObservationTimerOnly();
+  browserLiveObservationSample();
+  browserLiveObservationStarted = false;
+  const result = await flushBrowserLiveObservation(true, reason);
+  if (result && result.summary) {
+    log(`Browser live score ${Number(result.summary.strict_browser_live_score || 0).toFixed(3)}`);
+  }
+  return result;
 }
 function startPlaybackClock() {
   if (playbackTimer) clearInterval(playbackTimer);
@@ -1245,6 +1320,9 @@ function stopPlaybackClock() {
   playbackClockStartedAt = null;
 }
 function resetTranscriptDisplay() {
+  stopBrowserLiveObservationTimerOnly();
+  browserLiveObservationStarted = false;
+  browserLiveObservationBuffer = [];
   sentences.textContent = "";
   statusBox.textContent = "";
   currentRealtimeGeneration = 0;
@@ -1505,6 +1583,10 @@ function clearFallbackLiveSpeaker() {
     clearTimeout(fallbackLiveSpeakerExpiryTimer);
     fallbackLiveSpeakerExpiryTimer = null;
   }
+  if (fallbackLiveSpeakerClearTimer) {
+    clearTimeout(fallbackLiveSpeakerClearTimer);
+    fallbackLiveSpeakerClearTimer = null;
+  }
 }
 function clearLiveSpeakerState() {
   currentLiveSpeakerId = "";
@@ -1540,15 +1622,38 @@ function scheduleFallbackLiveSpeakerExpiry() {
 function applyFallbackLiveSpeaker(item) {
   const speakerId = item && (item.assigned_speaker || item.speaker_id);
   if (!speakerId || speakerId === "UNKNOWN") return;
+  if (item.only_if_no_live_speaker && currentLiveSpeakerId) return;
+  if (fallbackLiveSpeakerClearTimer) {
+    clearTimeout(fallbackLiveSpeakerClearTimer);
+    fallbackLiveSpeakerClearTimer = null;
+  }
   applyFastSpeakerPanelSignal(item);
+  const holdSeconds = Math.max(0, Number(item.hold_seconds || 2.0));
   fallbackLiveSpeakerId = speakerId;
-  fallbackLiveSpeakerUntilMs = performance.now() + Math.max(0, Number(item.hold_seconds || 2.0)) * 1000;
+  fallbackLiveSpeakerUntilMs = performance.now() + holdSeconds * 1000;
   scheduleFallbackLiveSpeakerExpiry();
   reconcileLiveSpeakerHighlight();
 }
 function clearFallbackLiveSpeakerFromProbe(item) {
   const speakerId = item && (item.assigned_speaker || item.speaker_id);
   if (speakerId && fallbackLiveSpeakerId && speakerId !== fallbackLiveSpeakerId) return;
+  const debounceSeconds = Math.max(0, Number(liveSpeakerConfig.unknown_clear_debounce_seconds || 0));
+  if (fallbackLiveSpeakerId && item && item.reason === "unknown" && debounceSeconds > 0) {
+    const expectedSpeakerId = fallbackLiveSpeakerId;
+    const debounceMs = debounceSeconds * 1000;
+    if (fallbackLiveSpeakerClearTimer) clearTimeout(fallbackLiveSpeakerClearTimer);
+    fallbackLiveSpeakerUntilMs = Math.max(fallbackLiveSpeakerUntilMs, performance.now() + debounceMs);
+    fallbackLiveSpeakerClearTimer = setTimeout(() => {
+      fallbackLiveSpeakerClearTimer = null;
+      if (fallbackLiveSpeakerId === expectedSpeakerId) {
+        clearFallbackLiveSpeaker();
+        reconcileLiveSpeakerHighlight();
+      }
+    }, debounceMs);
+    scheduleFallbackLiveSpeakerExpiry();
+    reconcileLiveSpeakerHighlight();
+    return;
+  }
   clearFallbackLiveSpeaker();
   reconcileLiveSpeakerHighlight();
 }
@@ -2393,7 +2498,16 @@ function connect() {
   es.addEventListener("live_speaker", e => applyFallbackLiveSpeaker(JSON.parse(e.data)));
   es.addEventListener("live_speaker_clear", e => clearFallbackLiveSpeakerFromProbe(JSON.parse(e.data)));
   es.addEventListener("realtime_clear", e => clearRealtimeRows(JSON.parse(e.data).generation));
-  es.addEventListener("done", e => { stopPlaybackClock(); stopBrowserAudioCapture(); setState("Stopped"); start.disabled = false; stop.disabled = true; setSourceControlsDisabled(false); log(JSON.parse(e.data).message); });
+  es.addEventListener("done", e => {
+    stopPlaybackClock();
+    stopBrowserAudioCapture();
+    void stopBrowserLiveObservation("done");
+    setState("Stopped");
+    start.disabled = false;
+    stop.disabled = true;
+    setSourceControlsDisabled(false);
+    log(JSON.parse(e.data).message);
+  });
 }
 followLive.addEventListener("change", () => {
   followLiveEnabled = followLive.checked;
@@ -2449,10 +2563,11 @@ start.addEventListener("click", async () => {
   video.currentTime = 0; audio.currentTime = 0; video.muted = true; audio.volume = 1.0;
   logRejectedPlayback(await Promise.allSettled([video.play(), audio.play()]));
   startPlaybackClock();
+  startBrowserLiveObservation();
   setState("Playing");
 });
 stop.addEventListener("click", async () => {
-  stop.disabled = true; start.disabled = false; setSourceControlsDisabled(false); setState("Stopping"); stopPlaybackClock(); stopBrowserAudioCapture(); video.pause(); audio.pause(); await post("/api/stop");
+  stop.disabled = true; start.disabled = false; setSourceControlsDisabled(false); setState("Stopping"); stopPlaybackClock(); stopBrowserAudioCapture(); video.pause(); audio.pause(); await stopBrowserLiveObservation("stop"); await post("/api/stop");
 });
 preset.addEventListener("change", () => {
   if (preset.value) {

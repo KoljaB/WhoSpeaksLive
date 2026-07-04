@@ -25,7 +25,11 @@ from stream2sentence import generate_sentences, init_tokenizer
 
 from whospeaks.common.audio_utils import load_audio_file, pad_audio, trim_silence, write_wav
 from whospeaks.embeddings.embedding_providers import EmbeddingSubprocessClient, RemoteEmbeddingClient
-from whospeaks.speakers.speaker_embedding_cluster import SpeakerMemory
+from whospeaks.speakers.speaker_embedding_cluster import (
+    SpeakerDecision,
+    SpeakerMemory,
+    cosine_similarity,
+)
 from whospeaks.window.window_config import (
     DEFAULT_REALTIMESTT_ROOT,
     DEFAULT_SPEAKER_LIBRARY_DIR,
@@ -105,9 +109,11 @@ class WindowDiarizer:
         self._last_playback_jump_warning_at = 0.0
         self._unknown_lock = threading.Lock()
         self._unknown_sentences: list[PendingUnknownSentence] = []
+        self._recent_unknown_pair_candidates: deque[PendingUnknownSentence] = deque(maxlen=24)
         self._sentence_refinement_lock = threading.Lock()
         self._sentence_refinement_records: dict[int, dict[str, Any]] = {}
         self._sentence_refinement_run_lock = threading.Lock()
+        self._speaker_last_media_end: dict[str, float] = {}
         self._embedding_jobs: "queue.Queue[EmbeddingSentenceJob | None] | None" = None
         self._embedding_thread: threading.Thread | None = None
         self._preview_thread: threading.Thread | None = None
@@ -273,6 +279,17 @@ class WindowDiarizer:
         history.clear()
         self._live_speaker_verify_next_at = 0.0
 
+    def _recent_unknown_pair_queue(self) -> deque[PendingUnknownSentence]:
+        queue = getattr(self, "_recent_unknown_pair_candidates", None)
+        if queue is None:
+            queue = deque(maxlen=24)
+            self._recent_unknown_pair_candidates = queue
+        return queue
+
+    def _clear_unknown_sentence_state_locked(self) -> None:
+        self._unknown_sentences = []
+        self._recent_unknown_pair_queue().clear()
+
     def _rehydrate_seed_profiles(self) -> None:
         with self._speaker_lock:
             seed_profiles = [dict(item) for item in self._seed_profiles]
@@ -294,8 +311,9 @@ class WindowDiarizer:
         self.memory = self._new_memory()
         self._rehydrate_seed_profiles()
         with self._unknown_lock:
-            self._unknown_sentences = []
+            self._clear_unknown_sentence_state_locked()
         self._clear_sentence_refinement_records()
+        self._speaker_last_media_end = {}
         self._reset_realtime_preview_state()
         if emit:
             return self.emit_speaker_state()
@@ -416,7 +434,7 @@ class WindowDiarizer:
             self._seed_profiles = []
             self._speaker_group_name = ""
         with self._unknown_lock:
-            self._unknown_sentences = []
+            self._clear_unknown_sentence_state_locked()
         self._clear_sentence_refinement_records()
         self.bus.emit("status", {"message": "Cleared speakers."})
         return self.emit_speaker_state()
@@ -544,7 +562,7 @@ class WindowDiarizer:
             self._seed_profiles = [dict(item) for item in seed_profiles]
         self._rehydrate_seed_profiles()
         with self._unknown_lock:
-            self._unknown_sentences = []
+            self._clear_unknown_sentence_state_locked()
         self._clear_sentence_refinement_records()
         self.bus.emit("status", {"message": f"Loaded speaker group {group_name}."})
         return self.emit_speaker_state()
@@ -687,7 +705,7 @@ class WindowDiarizer:
             self._seed_profiles = [dict(item) for item in seed_profiles]
         self._rehydrate_seed_profiles()
         with self._unknown_lock:
-            self._unknown_sentences = []
+            self._clear_unknown_sentence_state_locked()
         self.bus.emit("status", {"message": f"Imported speaker group {group_name}."})
         return self.emit_speaker_state()
 
@@ -1286,6 +1304,22 @@ class WindowDiarizer:
                     return True
         return False
 
+    def _audio_has_live_probe_speech(
+        self,
+        left: float,
+        right: float,
+        audio: np.ndarray,
+        sample_rate: int,
+    ) -> bool:
+        backend = str(getattr(self.args, "live_speaker_probe_speech_backend", "rms") or "rms").lower()
+        if backend != "vad":
+            return self._audio_has_rms_speech(audio, sample_rate)
+        if audio.size <= 0 or sample_rate <= 0 or right <= left:
+            return False
+        if getattr(self.args, "vad_backend", "silero") == "rms":
+            return self._rms_vad_window_state(left, right, audio, sample_rate).has_speech
+        return self._silero_vad_window_state(left, right, audio, sample_rate).has_speech
+
     def _silero_vad_window_state(
         self,
         left: float,
@@ -1396,6 +1430,7 @@ class WindowDiarizer:
                 if item.index != index
             ]
             self._unknown_sentences.append(pending)
+            self._recent_unknown_pair_queue().append(pending)
 
     def _remove_unknown_sentence(self, index: int) -> bool:
         with self._unknown_lock:
@@ -1449,6 +1484,226 @@ class WindowDiarizer:
         }
         with self._sentence_refinement_lock:
             self._sentence_refinement_records[int(index)] = record
+        assigned_speaker = str(payload.get("assigned_speaker") or "")
+        if assigned_speaker:
+            try:
+                end = float(base_payload.get("end"))
+            except (TypeError, ValueError):
+                end = float("nan")
+            if math.isfinite(end):
+                self._speaker_last_media_end[assigned_speaker] = max(
+                    end,
+                    float(self._speaker_last_media_end.get(assigned_speaker, 0.0)),
+                )
+
+    def _next_detected_speaker_label(self) -> str:
+        max_index = 0
+        for profile in self.memory.export_profiles():
+            label = str(profile.get("label") or "").strip().upper()
+            if label.startswith("S") and label[1:].isdigit():
+                max_index = max(max_index, int(label[1:]))
+        return f"S{max_index + 1}"
+
+    def _section_gap_new_speaker_decision(
+        self,
+        embedding: np.ndarray,
+        duration_seconds: float,
+        base_payload: dict[str, Any],
+        *,
+        allow_new_speaker: bool,
+    ) -> SpeakerDecision | None:
+        if not allow_new_speaker or not bool(getattr(self.args, "section_gap_new_speaker", False)):
+            return None
+        if self.memory.profile_count() <= 0:
+            return None
+        try:
+            start = float(base_payload.get("start"))
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(start):
+            return None
+        try:
+            min_gap = max(0.0, float(getattr(self.args, "section_gap_new_speaker_min_gap_seconds", 60.0)))
+            min_prior = max(
+                0.0,
+                float(getattr(self.args, "section_gap_new_speaker_min_prior_speech_seconds", 8.0)),
+            )
+            min_duration = max(
+                0.0,
+                float(getattr(self.args, "section_gap_new_speaker_min_duration_seconds", 5.0)),
+            )
+            min_similarity = float(getattr(self.args, "section_gap_new_speaker_min_similarity", 0.35))
+            max_similarity = float(getattr(self.args, "section_gap_new_speaker_max_similarity", 0.58))
+            min_margin = max(0.0, float(getattr(self.args, "section_gap_new_speaker_min_margin", 0.08)))
+        except (TypeError, ValueError):
+            return None
+        if duration_seconds < min_duration:
+            return None
+        preview = self.memory.score_existing(
+            embedding,
+            duration_seconds,
+            min_similarity=-1.0,
+            min_margin=0.0,
+        )
+        similarities = dict(preview.similarities or {})
+        if not similarities:
+            return None
+        top_speaker, top_similarity = max(similarities.items(), key=lambda item: float(item[1]))
+        top_speaker = str(top_speaker)
+        top_similarity = float(top_similarity)
+        ordered = sorted((float(value) for value in similarities.values()), reverse=True)
+        runner_up = ordered[1] if len(ordered) > 1 else -1.0
+        margin = top_similarity - runner_up if len(ordered) > 1 else 1.0
+        if top_similarity < min_similarity or top_similarity >= max_similarity or margin < min_margin:
+            return None
+        previous_end = self._speaker_last_media_end.get(top_speaker)
+        if previous_end is None or start - previous_end < min_gap:
+            return None
+        prior_seconds = 0.0
+        for profile in self.memory.export_profiles():
+            if str(profile.get("label") or "") != top_speaker:
+                continue
+            try:
+                prior_seconds = max(0.0, float(profile.get("speech_seconds") or 0.0))
+            except (TypeError, ValueError):
+                prior_seconds = 0.0
+            break
+        if prior_seconds < min_prior:
+            return None
+        label = self._next_detected_speaker_label()
+        self.memory.upsert_profile(label, embedding, duration_seconds=duration_seconds, sentence_count=1)
+        speaker_key = f"speaker{int(label[1:])}" if label.startswith("S") and label[1:].isdigit() else label
+        return SpeakerDecision(
+            assigned_speaker=label,
+            created_speaker=True,
+            probabilities={"unknown": 0.0, speaker_key: 1.0},
+            similarities={**similarities, label: 1.0},
+            unknown_probability=0.0,
+            top_similarity=round(float(top_similarity), 4),
+            margin=round(float(margin), 4),
+            quality=preview.quality,
+            assignment_source="section_gap_new_speaker",
+        )
+
+    def _unknown_pair_new_speaker_decision(
+        self,
+        embedding: np.ndarray,
+        duration_seconds: float,
+        base_payload: dict[str, Any],
+        existing_decision: SpeakerDecision,
+        *,
+        allow_new_speaker: bool,
+    ) -> SpeakerDecision | None:
+        if not allow_new_speaker or not bool(getattr(self.args, "unknown_pair_new_speaker", False)):
+            return None
+        if self.memory.profile_count() <= 0:
+            return None
+        try:
+            current_start = float(base_payload.get("start"))
+            min_duration = max(
+                0.0,
+                float(getattr(self.args, "unknown_pair_new_speaker_min_current_duration_seconds", 2.5)),
+            )
+            max_gap = max(
+                0.0,
+                float(getattr(self.args, "unknown_pair_new_speaker_max_gap_seconds", 4.0)),
+            )
+            min_unknown_duration = max(
+                0.0,
+                float(getattr(self.args, "unknown_pair_new_speaker_min_unknown_duration_seconds", 0.2)),
+            )
+            min_pair_similarity = float(getattr(self.args, "unknown_pair_new_speaker_min_pair_similarity", 0.45))
+            max_existing_similarity = float(
+                getattr(self.args, "unknown_pair_new_speaker_max_existing_similarity", 0.55)
+            )
+            max_existing_margin = max(
+                0.0,
+                float(getattr(self.args, "unknown_pair_new_speaker_max_existing_margin", 0.20)),
+            )
+            min_unknown_probability = max(
+                0.0,
+                float(getattr(self.args, "unknown_pair_new_speaker_min_unknown_probability", 0.10)),
+            )
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(current_start) or duration_seconds < min_duration:
+            return None
+        try:
+            top_similarity = float(existing_decision.top_similarity)
+        except (TypeError, ValueError):
+            top_similarity = 1.0
+        try:
+            margin = float(existing_decision.margin)
+        except (TypeError, ValueError):
+            margin = 1.0
+        try:
+            unknown_probability = float(existing_decision.unknown_probability)
+        except (TypeError, ValueError):
+            unknown_probability = 0.0
+        if (
+            top_similarity > max_existing_similarity
+            or margin > max_existing_margin
+            or unknown_probability < min_unknown_probability
+        ):
+            return None
+
+        with self._unknown_lock:
+            candidates = list(self._unknown_sentences)
+            recent_pair_candidates = list(self._recent_unknown_pair_queue())
+        seen_candidate_indexes = {candidate.index for candidate in candidates}
+        candidates.extend(
+            candidate
+            for candidate in recent_pair_candidates
+            if candidate.index not in seen_candidate_indexes
+        )
+        best_candidate: PendingUnknownSentence | None = None
+        best_similarity = -1.0
+        best_gap = 0.0
+        for candidate in candidates:
+            if candidate.duration_seconds < min_unknown_duration:
+                continue
+            try:
+                candidate_end = float(candidate.base_payload.get("end"))
+            except (TypeError, ValueError):
+                continue
+            gap_seconds = current_start - candidate_end
+            if gap_seconds < 0.0 or gap_seconds > max_gap:
+                continue
+            try:
+                pair_similarity = cosine_similarity(embedding, candidate.embedding)
+            except Exception:
+                continue
+            if pair_similarity > best_similarity:
+                best_candidate = candidate
+                best_similarity = float(pair_similarity)
+                best_gap = float(gap_seconds)
+        if best_candidate is None or best_similarity < min_pair_similarity:
+            return None
+
+        label = self._next_detected_speaker_label()
+        combined_embedding = embedding + best_candidate.embedding
+        self.memory.upsert_profile(
+            label,
+            combined_embedding,
+            duration_seconds=duration_seconds + best_candidate.duration_seconds,
+            sentence_count=2,
+        )
+        self._remove_unknown_sentence(best_candidate.index)
+        speaker_key = f"speaker{int(label[1:])}" if label.startswith("S") and label[1:].isdigit() else label
+        return SpeakerDecision(
+            assigned_speaker=label,
+            created_speaker=True,
+            probabilities={"unknown": 0.0, speaker_key: 1.0},
+            similarities={
+                **dict(existing_decision.similarities or {}),
+                label: round(float(best_similarity), 4),
+            },
+            unknown_probability=round(float(unknown_probability), 4),
+            top_similarity=round(float(top_similarity), 4),
+            margin=round(float(margin), 4),
+            quality=existing_decision.quality,
+            assignment_source="unknown_pair_new_speaker",
+        )
 
     @staticmethod
     def _prototype_probabilities(assigned_speaker: str, scores: dict[str, float]) -> dict[str, float]:
@@ -1822,6 +2077,189 @@ class WindowDiarizer:
             return None
         return speaker
 
+    def _maybe_assign_weak_profile_live_speaker(self, decision: Any) -> tuple[str | None, dict[str, Any]]:
+        if not bool(getattr(self.args, "live_speaker_weak_profile_assist", False)):
+            return None, {}
+        similarities = getattr(decision, "similarities", None)
+        if not isinstance(similarities, dict) or not similarities:
+            return None, {}
+        try:
+            max_profile_seconds = max(
+                0.0,
+                float(getattr(self.args, "live_speaker_weak_profile_max_speech_seconds", 2.5)),
+            )
+            min_similarity = float(getattr(self.args, "live_speaker_weak_profile_min_similarity", 0.40))
+            min_margin = max(
+                0.0,
+                float(getattr(self.args, "live_speaker_weak_profile_min_margin", 0.12)),
+            )
+            max_unknown = max(
+                0.0,
+                float(getattr(self.args, "live_speaker_weak_profile_max_unknown_probability", 0.55)),
+            )
+        except (TypeError, ValueError):
+            return None, {}
+        top_speaker, top_similarity = max(
+            ((str(speaker), float(value)) for speaker, value in similarities.items()),
+            key=lambda item: item[1],
+        )
+        sorted_similarities = sorted((float(value) for value in similarities.values()), reverse=True)
+        runner_up = sorted_similarities[1] if len(sorted_similarities) > 1 else -1.0
+        margin = top_similarity - runner_up if len(sorted_similarities) > 1 else 1.0
+        try:
+            unknown_probability = max(0.0, float(getattr(decision, "unknown_probability", 1.0)))
+        except (TypeError, ValueError):
+            unknown_probability = 1.0
+        if top_similarity < min_similarity or margin < min_margin or unknown_probability > max_unknown:
+            return None, {}
+        profile_seconds = None
+        try:
+            profiles = self.live_memory.export_profiles()
+        except Exception:
+            profiles = []
+        for profile in profiles:
+            if str(profile.get("label") or "") == top_speaker:
+                try:
+                    profile_seconds = max(0.0, float(profile.get("speech_seconds") or 0.0))
+                except (TypeError, ValueError):
+                    profile_seconds = None
+                break
+        if profile_seconds is None or profile_seconds > max_profile_seconds:
+            return None, {}
+        return top_speaker, {
+            "weak_profile_live_assist": True,
+            "weak_profile_speech_seconds": round(float(profile_seconds), 4),
+            "weak_profile_min_similarity": round(float(min_similarity), 4),
+            "weak_profile_min_margin": round(float(min_margin), 4),
+            "weak_profile_max_unknown_probability": round(float(max_unknown), 4),
+        }
+
+    def _probability_for_speaker_id(self, probabilities: dict[str, float], speaker_id: str | None) -> float:
+        if not speaker_id:
+            return 0.0
+        for key, value in (probabilities or {}).items():
+            if self._speaker_id_from_probability_key(str(key)) == str(speaker_id):
+                try:
+                    return max(0.0, float(value))
+                except (TypeError, ValueError):
+                    return 0.0
+        return 0.0
+
+    def _maybe_promote_raw_live_speaker_change(
+        self,
+        active_speaker: str | None,
+        speaker_payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        if not active_speaker or not bool(getattr(self.args, "live_speaker_raw_change_snap", True)):
+            return speaker_payload
+        raw_probabilities = speaker_payload.get("raw_probabilities")
+        if not isinstance(raw_probabilities, dict):
+            return speaker_payload
+        speaker_items = [
+            (self._speaker_id_from_probability_key(str(key)), float(value))
+            for key, value in raw_probabilities.items()
+            if self._speaker_id_from_probability_key(str(key)) is not None
+        ]
+        if not speaker_items:
+            return speaker_payload
+        raw_speaker, raw_probability = max(speaker_items, key=lambda item: item[1])
+        if not raw_speaker or str(raw_speaker) == str(active_speaker):
+            return speaker_payload
+        try:
+            min_probability = max(
+                float(getattr(self.args, "realtime_preview_diarize_min_known_probability", 0.5)),
+                float(getattr(self.args, "live_speaker_raw_change_min_probability", 0.62)),
+            )
+        except (TypeError, ValueError):
+            min_probability = 0.62
+        try:
+            min_margin = max(0.0, float(getattr(self.args, "live_speaker_raw_change_min_margin", 0.18)))
+        except (TypeError, ValueError):
+            min_margin = 0.18
+        active_probability = self._probability_for_speaker_id(raw_probabilities, active_speaker)
+        try:
+            unknown_probability = max(0.0, float(raw_probabilities.get("unknown", 0.0)))
+        except (TypeError, ValueError):
+            unknown_probability = 0.0
+        if raw_probability < min_probability:
+            return speaker_payload
+        if raw_probability <= unknown_probability:
+            return speaker_payload
+        if raw_probability < active_probability + min_margin:
+            return speaker_payload
+        self._ensure_speaker_metadata(raw_speaker)
+        return {
+            **speaker_payload,
+            "assigned_speaker": raw_speaker,
+            **self._speaker_info_for_payload(raw_speaker),
+            "probabilities": dict(raw_probabilities),
+            "assignment_source": "live_fast_embedding_raw_change_snap",
+            "smoothed_assigned_speaker": speaker_payload.get("assigned_speaker"),
+            "smoothed_probabilities": speaker_payload.get("probabilities"),
+            "raw_change_previous_speaker": active_speaker,
+            "raw_change_probability": round(float(raw_probability), 4),
+            "raw_change_previous_probability": round(float(active_probability), 4),
+            "raw_change_min_probability": round(float(min_probability), 4),
+            "raw_change_min_margin": round(float(min_margin), 4),
+        }
+
+    def _should_hold_live_speaker_on_unknown(
+        self,
+        active_speaker: str | None,
+        speaker_payload: dict[str, Any],
+    ) -> tuple[bool, dict[str, Any]]:
+        mode = str(getattr(self.args, "live_speaker_probe_unknown_release_smoothing", "none") or "none").lower()
+        if mode not in {"sma", "ema"} or not active_speaker:
+            return False, {}
+        probabilities = speaker_payload.get("probabilities")
+        if not isinstance(probabilities, dict):
+            probabilities = {}
+        active_probability = self._probability_for_speaker_id(probabilities, active_speaker)
+        try:
+            unknown_probability = max(0.0, float(probabilities.get("unknown", 0.0)))
+        except (TypeError, ValueError):
+            unknown_probability = 0.0
+        max_count = max(1, int(getattr(self.args, "live_speaker_probe_unknown_release_count", 3)))
+        if getattr(self, "_live_unknown_release_speaker", None) != active_speaker:
+            self._live_unknown_release_speaker = active_speaker
+            self._live_unknown_release_history = deque(maxlen=max_count)
+        history = getattr(self, "_live_unknown_release_history", deque(maxlen=max_count))
+        if history.maxlen != max_count:
+            history = deque(history, maxlen=max_count)
+        history.append((active_probability, unknown_probability))
+        self._live_unknown_release_history = history
+        if mode == "ema":
+            alpha = max(0.05, min(1.0, float(getattr(
+                self.args,
+                "live_speaker_probe_unknown_release_ema_alpha",
+                0.5,
+            ))))
+            active_smoothed, unknown_smoothed = history[0]
+            for active_item, unknown_item in list(history)[1:]:
+                active_smoothed = alpha * active_item + (1.0 - alpha) * active_smoothed
+                unknown_smoothed = alpha * unknown_item + (1.0 - alpha) * unknown_smoothed
+        else:
+            active_smoothed = sum(item[0] for item in history) / max(1, len(history))
+            unknown_smoothed = sum(item[1] for item in history) / max(1, len(history))
+        try:
+            margin = max(0.0, float(getattr(
+                self.args,
+                "live_speaker_probe_unknown_release_margin",
+                0.0,
+            )))
+        except (TypeError, ValueError):
+            margin = 0.0
+        hold = active_smoothed + margin >= unknown_smoothed
+        return hold, {
+            "release_smoothing": mode,
+            "release_smoothing_count": len(history),
+            "release_active_probability": round(float(active_probability), 4),
+            "release_unknown_probability": round(float(unknown_probability), 4),
+            "release_active_smoothed": round(float(active_smoothed), 4),
+            "release_unknown_smoothed": round(float(unknown_smoothed), 4),
+            "release_margin": round(float(margin), 4),
+        }
+
     def _live_speaker_embedding_lock(self) -> threading.Lock:
         lock = getattr(self, "_live_speaker_embedding_throttle_lock", None)
         if lock is None:
@@ -2046,6 +2484,9 @@ class WindowDiarizer:
             smoothed_probabilities,
             decision.assigned_speaker,
         )
+        assist_payload: dict[str, Any] = {}
+        if not assigned_speaker:
+            assigned_speaker, assist_payload = self._maybe_assign_weak_profile_live_speaker(decision)
         self._ensure_speaker_metadata(assigned_speaker)
 
         return {
@@ -2059,10 +2500,15 @@ class WindowDiarizer:
             "top_similarity": decision.top_similarity,
             "margin": decision.margin,
             "quality": decision.quality,
+            **assist_payload,
             "assignment_source": (
-                "live_fast_embedding_ema"
-                if self._live_embedding_separate
-                else "realtime_preview_embedding_ema"
+                "live_weak_profile_assist"
+                if assist_payload
+                else (
+                    "live_fast_embedding_ema"
+                    if self._live_embedding_separate
+                    else "realtime_preview_embedding_ema"
+                )
             ),
         }
 
@@ -2099,23 +2545,43 @@ class WindowDiarizer:
         if not bool(getattr(self.args, "live_speaker_probe", True)):
             return
         interval_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_interval_seconds", 0.4)))
+        attack_interval_seconds = max(
+            0.0,
+            float(getattr(self.args, "live_speaker_probe_attack_interval_seconds", 0.0)),
+        )
         window_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_window_seconds", 1.25)))
         min_advance = max(0.0, float(getattr(self.args, "live_speaker_probe_min_advance_seconds", interval_seconds)))
+        attack_min_advance = max(
+            0.0,
+            float(getattr(self.args, "live_speaker_probe_attack_min_advance_seconds", 0.0)),
+        )
+        if attack_interval_seconds > 0.0 and attack_min_advance <= 0.0:
+            attack_min_advance = attack_interval_seconds
         hold_seconds = max(0.0, float(getattr(self.args, "live_speaker_probe_hold_seconds", 1.5)))
         clear_on_silence = bool(getattr(self.args, "live_speaker_probe_clear_on_silence", True))
         clear_window_seconds = max(
             0.05,
             float(getattr(self.args, "live_speaker_probe_clear_window_seconds", min(window_seconds, 1.0))),
         )
+        clear_silence_count = max(1, int(getattr(self.args, "live_speaker_probe_clear_silence_count", 1)))
         clear_unknown_count = max(0, int(getattr(self.args, "live_speaker_probe_clear_unknown_count", 2)))
+        unknown_keepalive = bool(getattr(self.args, "live_speaker_probe_unknown_keepalive", False))
         probe_min_audio_seconds = min(
             window_seconds,
             max(0.0, float(getattr(self.args, "realtime_preview_diarize_min_audio_seconds", window_seconds))),
         )
         last_probe_right = -1.0
         active_speaker: str | None = None
+        provisional_counter = 0
         consecutive_unknown = 0
-        while not self._stop.wait(interval_seconds):
+        consecutive_silence = 0
+        while True:
+            attack_mode = attack_interval_seconds > 0.0 and (
+                not active_speaker or consecutive_unknown > 0
+            )
+            wait_seconds = attack_interval_seconds if attack_mode else interval_seconds
+            if self._stop.wait(max(0.05, wait_seconds)):
+                break
             if self.memory.profile_count() <= 0:
                 continue
             right = self.playback_time()
@@ -2124,23 +2590,35 @@ class WindowDiarizer:
             if active_speaker and clear_on_silence:
                 clear_left = max(0.0, right - min(clear_window_seconds, window_seconds))
                 clear_audio, clear_sample_rate = self._audio_window_copy(clear_left, right)
-                if clear_audio.size > 0 and not self._audio_has_rms_speech(clear_audio, clear_sample_rate):
-                    self.bus.emit(
-                        "live_speaker_clear",
-                        {
-                            "speaker_id": active_speaker,
-                            "live": False,
-                            "fallback": True,
-                            "start": round(float(clear_left), 4),
-                            "end": round(float(right), 4),
-                            "reason": "silence",
-                            "assignment_source": "live_speaker_embedding_probe_clear",
-                        },
-                    )
-                    active_speaker = None
-                    consecutive_unknown = 0
-                    self._live_probability_history.clear()
-            if last_probe_right >= 0.0 and right < last_probe_right + min_advance:
+                if clear_audio.size > 0 and not self._audio_has_live_probe_speech(
+                    clear_left,
+                    right,
+                    clear_audio,
+                    clear_sample_rate,
+                ):
+                    consecutive_silence += 1
+                    if consecutive_silence >= clear_silence_count:
+                        self.bus.emit(
+                            "live_speaker_clear",
+                            {
+                                "speaker_id": active_speaker,
+                                "live": False,
+                                "fallback": True,
+                                "start": round(float(clear_left), 4),
+                                "end": round(float(right), 4),
+                                "reason": "silence",
+                                "silence_count": consecutive_silence,
+                                "assignment_source": "live_speaker_embedding_probe_clear",
+                            },
+                        )
+                        active_speaker = None
+                        consecutive_unknown = 0
+                        consecutive_silence = 0
+                        self._live_probability_history.clear()
+                else:
+                    consecutive_silence = 0
+            current_min_advance = attack_min_advance if attack_mode else min_advance
+            if last_probe_right >= 0.0 and right < last_probe_right + current_min_advance:
                 continue
             left = max(0.0, right - window_seconds)
             audio, sample_rate = self._audio_window_copy(left, right)
@@ -2148,7 +2626,7 @@ class WindowDiarizer:
             if duration_seconds < probe_min_audio_seconds:
                 continue
             last_probe_right = right
-            if not self._audio_has_rms_speech(audio, sample_rate):
+            if not self._audio_has_live_probe_speech(left, right, audio, sample_rate):
                 continue
             if not self._try_reserve_live_speaker_embedding():
                 continue
@@ -2157,11 +2635,92 @@ class WindowDiarizer:
                 duration_seconds,
                 min_audio_seconds=probe_min_audio_seconds,
             )
+            speaker_payload = self._maybe_promote_raw_live_speaker_change(active_speaker, speaker_payload)
             if self._stop.is_set():
                 break
             assigned_speaker = speaker_payload.get("assigned_speaker")
             if not assigned_speaker:
-                consecutive_unknown += 1
+                if (
+                    bool(getattr(self.args, "live_speaker_provisional_new_speaker", False))
+                    and not active_speaker
+                    and duration_seconds >= max(
+                        0.0,
+                        float(getattr(self.args, "live_speaker_provisional_min_audio_seconds", 1.0)),
+                    )
+                ):
+                    probabilities = speaker_payload.get("probabilities")
+                    if not isinstance(probabilities, dict):
+                        probabilities = {}
+                    try:
+                        unknown_probability = max(0.0, float(probabilities.get("unknown", 0.0)))
+                    except (TypeError, ValueError):
+                        unknown_probability = 0.0
+                    min_unknown_probability = max(
+                        0.0,
+                        float(getattr(self.args, "live_speaker_provisional_min_unknown_probability", 0.5)),
+                    )
+                    if unknown_probability >= min_unknown_probability:
+                        provisional_counter += 1
+                        active_speaker = f"LIVE_NEW_{provisional_counter}"
+                        self._ensure_speaker_metadata(active_speaker, source="live_provisional")
+                        consecutive_unknown = 0
+                        consecutive_silence = 0
+                        self._live_probability_history.clear()
+                        self.bus.emit(
+                            "live_speaker",
+                            {
+                                **speaker_payload,
+                                "assigned_speaker": active_speaker,
+                                **self._speaker_info_for_payload(active_speaker),
+                                "created_speaker": True,
+                                "speaker_id": active_speaker,
+                                "live": True,
+                                "fallback": True,
+                                "provisional_speaker": True,
+                                "start": round(float(left), 4),
+                                "end": round(float(right), 4),
+                                "audio_length_seconds": round(float(duration_seconds), 4),
+                                "hold_seconds": round(float(hold_seconds), 4),
+                                "assignment_source": "live_provisional_new_speaker",
+                            },
+                        )
+                        continue
+                smoothed_hold, release_payload = self._should_hold_live_speaker_on_unknown(
+                    active_speaker,
+                    speaker_payload,
+                )
+                if active_speaker and (unknown_keepalive or smoothed_hold):
+                    if smoothed_hold:
+                        consecutive_unknown = 0
+                    else:
+                        consecutive_unknown += 1
+                    self.bus.emit(
+                        "live_speaker",
+                        {
+                            **speaker_payload,
+                            "assigned_speaker": active_speaker,
+                            **self._speaker_info_for_payload(active_speaker),
+                            "created_speaker": False,
+                            "speaker_id": active_speaker,
+                            "live": True,
+                            "fallback": True,
+                            "start": round(float(left), 4),
+                            "end": round(float(right), 4),
+                            "audio_length_seconds": round(float(duration_seconds), 4),
+                            "hold_seconds": round(float(hold_seconds), 4),
+                            **release_payload,
+                            "debounced_unknown": True,
+                            "assignment_source": (
+                                "live_speaker_unknown_release_smoothing"
+                                if smoothed_hold
+                                else "live_speaker_unknown_keepalive"
+                            ),
+                        },
+                    )
+                    if smoothed_hold or clear_unknown_count <= 0 or consecutive_unknown < clear_unknown_count:
+                        continue
+                else:
+                    consecutive_unknown += 1
                 if active_speaker and clear_unknown_count and consecutive_unknown >= clear_unknown_count:
                     verification_payload = self._verify_live_speaker_change(
                         audio,
@@ -2208,6 +2767,8 @@ class WindowDiarizer:
                         },
                     )
                     active_speaker = None
+                    self._live_unknown_release_speaker = None
+                    self._live_unknown_release_history = deque()
                     self._live_probability_history.clear()
                 continue
             if active_speaker and str(assigned_speaker) != str(active_speaker):
@@ -2227,6 +2788,9 @@ class WindowDiarizer:
                 speaker_payload = verification_payload
             active_speaker = str(assigned_speaker)
             consecutive_unknown = 0
+            consecutive_silence = 0
+            self._live_unknown_release_speaker = None
+            self._live_unknown_release_history = deque()
             self.bus.emit(
                 "live_speaker",
                 {
@@ -2433,6 +2997,18 @@ class WindowDiarizer:
                             )
                         },
                     )
+                    if bool(getattr(self.args, "live_speaker_clear_on_vad_split", False)):
+                        self.bus.emit(
+                            "live_speaker_clear",
+                            {
+                                "live": False,
+                                "fallback": True,
+                                "start": round(float(speech_end), 4),
+                                "end": round(float(right), 4),
+                                "reason": "vad_silence_split",
+                                "assignment_source": "main_vad_silence_split_clear",
+                            },
+                        )
                 self.bus.emit("status", {"message": f"Transcribing{final_note} window left={left:.2f}s right={transcribe_right:.2f}s."})
                 transcribe_started = time.monotonic()
                 transcript = self._transcribe_window(model, left, transcribe_right, final_flush=transcript_final_flush)
@@ -2584,6 +3160,111 @@ class WindowDiarizer:
         jobs.put(job)
         self.bus.emit("status", {"message": f"Queued speaker embedding for sentence {index}: {sentence.text[:72]}"})
 
+    def _maybe_emit_sentence_live_speaker_hint(
+        self,
+        sentence_payload: dict[str, Any],
+        duration_seconds: float,
+    ) -> None:
+        if not bool(getattr(self.args, "live_speaker_sentence_hint", True)):
+            return
+        try:
+            min_duration = max(
+                0.0,
+                float(getattr(self.args, "live_speaker_sentence_hint_min_duration_seconds", 0.0)),
+            )
+        except (TypeError, ValueError):
+            min_duration = 0.0
+        if duration_seconds < min_duration:
+            return
+        speaker_id = str(sentence_payload.get("assigned_speaker") or "")
+        if not speaker_id or speaker_id == "UNKNOWN":
+            return
+        try:
+            end = float(sentence_payload.get("end") or 0.0)
+            playback_time = float(self.playback_time())
+        except (TypeError, ValueError):
+            return
+        try:
+            max_lag = max(0.0, float(getattr(self.args, "live_speaker_sentence_hint_max_lag_seconds", 1.25)))
+        except (TypeError, ValueError):
+            max_lag = 1.25
+        created_speaker = bool(sentence_payload.get("created_speaker"))
+        if created_speaker:
+            try:
+                max_lag = max(
+                    max_lag,
+                    max(0.0, float(getattr(
+                        self.args,
+                        "live_speaker_sentence_hint_new_speaker_max_lag_seconds",
+                        1.25,
+                    ))),
+                )
+            except (TypeError, ValueError):
+                max_lag = max(max_lag, 1.25)
+            try:
+                max_top_similarity = float(getattr(
+                    self.args,
+                    "live_speaker_sentence_hint_new_speaker_max_top_similarity",
+                    1.0,
+                ))
+            except (TypeError, ValueError):
+                max_top_similarity = 1.0
+            try:
+                top_similarity = float(sentence_payload.get("top_similarity"))
+            except (TypeError, ValueError):
+                top_similarity = 1.0
+            if top_similarity > max_top_similarity:
+                return
+        lag_seconds = playback_time - end
+        if lag_seconds > max_lag:
+            return
+        try:
+            hold_seconds = max(
+                0.0,
+                float(getattr(
+                    self.args,
+                    "live_speaker_sentence_hint_hold_seconds",
+                    getattr(self.args, "live_speaker_probe_hold_seconds", 1.0),
+                )),
+            )
+        except (TypeError, ValueError):
+            hold_seconds = 1.0
+        if created_speaker:
+            try:
+                new_speaker_hold = float(getattr(
+                    self.args,
+                    "live_speaker_sentence_hint_new_speaker_hold_seconds",
+                    -1.0,
+                ))
+            except (TypeError, ValueError):
+                new_speaker_hold = -1.0
+            if new_speaker_hold >= 0.0:
+                hold_seconds = max(hold_seconds, new_speaker_hold)
+        if bool(getattr(self.args, "live_speaker_sentence_hint_hold_through_sentence", False)):
+            hold_seconds = max(hold_seconds, max(0.0, end - playback_time) + hold_seconds)
+        if hold_seconds <= 0.0:
+            return
+        self.bus.emit(
+            "live_speaker",
+            {
+                **sentence_payload,
+                "speaker_id": speaker_id,
+                "live": True,
+                "fallback": True,
+                "sentence_hint": True,
+                "only_if_no_live_speaker": not bool(
+                    getattr(self.args, "live_speaker_sentence_hint_override", False)
+                ),
+                "start": sentence_payload.get("start"),
+                "end": sentence_payload.get("end"),
+                "audio_length_seconds": round(float(max(0.0, duration_seconds)), 4),
+                "hold_seconds": round(float(hold_seconds), 4),
+                "playback_time": round(float(playback_time), 4),
+                "live_hint_lag_seconds": round(float(lag_seconds), 4),
+                "assignment_source": "final_sentence_live_hint",
+            },
+        )
+
     def _process_sentence_embedding(self, job: EmbeddingSentenceJob) -> None:
         base_payload = job.base_payload
         index = job.index
@@ -2603,13 +3284,28 @@ class WindowDiarizer:
             if job.speaker_generation != self._speaker_generation:
                 self.bus.emit("status", {"message": f"Discarded stale speaker embedding for sentence {index}."})
                 return
-            decision = self.memory.classify(
+            allow_new_speaker = len(text_content_words(job.text)) >= self.args.min_new_speaker_words
+            decision = self._section_gap_new_speaker_decision(
                 embedding,
                 duration_seconds,
-                allow_new_speaker=(
-                    len(text_content_words(job.text)) >= self.args.min_new_speaker_words
-                ),
+                base_payload,
+                allow_new_speaker=allow_new_speaker,
             )
+            if decision is None:
+                decision = self.memory.classify(
+                    embedding,
+                    duration_seconds,
+                    allow_new_speaker=allow_new_speaker,
+                )
+                pair_decision = self._unknown_pair_new_speaker_decision(
+                    embedding,
+                    duration_seconds,
+                    base_payload,
+                    decision,
+                    allow_new_speaker=allow_new_speaker,
+                )
+                if pair_decision is not None:
+                    decision = pair_decision
             self.bus.emit("status", {
                 "message": (
                     f"Embedded sentence {index} in {time.monotonic() - embed_started:.2f}s; "
@@ -2659,6 +3355,7 @@ class WindowDiarizer:
             sentence_payload,
         )
         self.bus.emit("sentence", sentence_payload)
+        self._maybe_emit_sentence_live_speaker_hint(sentence_payload, duration_seconds)
         self._update_live_speaker_memory(
             decision.assigned_speaker,
             chunk,

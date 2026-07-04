@@ -2,6 +2,91 @@
 
 Last updated: 2026-07-03
 
+## Current Best Real Browser Live Speaker Score
+
+Best promoted/default browser-observed Cunk run found on 2026-07-03:
+
+```text
+strict_browser_live_score:              0.337831
+correct_live_speaker_coverage:          0.476218
+correct_live_precision_during_speech:   0.832661
+missing_live_speech_ratio:              0.428077
+wrong_live_speech_ratio:                0.095705
+outside_speech_live_ratio:              0.087870
+live drops / acquires:                  46 / 46
+missed turns:                           20 / 45
+missed speaker-change turns:            17 / 36
+median first-correct latency:            1.3562s
+median speaker-change latency:           1.3870s
+```
+
+Reproducibility output:
+
+```text
+runtime\validation\cunk-browser-live-observed-baseline-current.json
+```
+
+Command:
+
+```text
+.\.venv\Scripts\python.exe tools\run_browser_live_speaker_eval.py --port 8798 --output runtime\validation\cunk-browser-live-observed-baseline-current.json --server-log runtime\validation\cunk-browser-live-observed-baseline-current.server.log --timeout-seconds 900 --headless --asr-backend remote --remote-asr-url http://192.168.178.22:8650 --embeddings-backend remote --remote-embeddings-url http://192.168.178.22:8660
+```
+
+Browser-live experiments that were not promoted:
+
+```text
+runtime\validation\cunk-browser-live-observed-hold250-keepalive-target100.json
+  score 0.305336, coverage improved to 0.595095 but wrong_live_speech_ratio rose to 0.239222.
+
+runtime\validation\cunk-browser-live-observed-fast-hold180-clear2.json
+  score 0.329171, coverage improved to 0.496732 but wrong_live_speech_ratio rose to 0.136018.
+
+runtime\validation\cunk-browser-live-observed-hold150-only.json
+  score 0.309819, modest coverage gain was outweighed by higher wrong and flicker penalties.
+
+runtime\validation\cunk-browser-live-observed-sentence-hint-defaults.json
+  score 0.351970, wrong_live_speech_ratio fell to 0.071295 in one run, but the same default behavior did not reproduce
+  in runtime\validation\cunk-browser-live-observed-final-defaults.json (score 0.243556), so sentence hints stay off by default.
+
+runtime\validation\cunk-browser-live-observed-new-speaker-hint.json
+  score 0.318652, surfaced S2/RENAISSANCE_INTERVIEWEE but added too much wrong-speaker boundary time.
+
+runtime\validation\cunk-browser-live-observed-wespeaker-live-provider.json
+  score 0.179770, worse than the default jungjee_rawnet3 live provider.
+
+runtime\validation\cunk-browser-live-observed-speechbrain-live-provider.json
+  score 0.166507, worse than the default jungjee_rawnet3 live provider.
+
+runtime\validation\cunk-browser-live-observed-stricter-live-thresholds.json
+  score 0.248550, reduced live time too much.
+
+runtime\validation\cunk-browser-live-observed-raw-change-snap.json
+  score 0.268829, raw speaker-change snaps increased visible gaps/flicker and are off by default.
+```
+
+Current promoted live-speaker defaults remain:
+
+```text
+live_speaker_embedding_provider=jungjee_rawnet3
+live_speaker_embedding_min_interval_seconds=0.5
+live_speaker_embedding_target_utilization=0.5
+live_speaker_ema_window_seconds=1.0
+live_speaker_ema_count=3
+live_speaker_ema_alpha=0.55
+live_speaker_probe_interval_seconds=0.5
+live_speaker_probe_window_seconds=1.0
+live_speaker_probe_hold_seconds=1.0
+live_speaker_probe_min_advance_seconds=0.5
+live_speaker_probe_clear_on_silence=true
+live_speaker_probe_clear_window_seconds=1.0
+live_speaker_probe_clear_silence_count=1
+live_speaker_probe_clear_unknown_count=2
+live_speaker_probe_unknown_keepalive=false
+live_speaker_probe_unknown_release_smoothing=none
+live_speaker_raw_change_snap=false
+live_speaker_sentence_hint=false
+```
+
 ## Current Best Cached-Replay Score
 
 Best no-canonical experimental replay found during the 2026-07-03 continuation:
