@@ -108,7 +108,7 @@ from window.window_config import (  # noqa: E402
     DEFAULT_CUNK_CANONICAL,
     DEFAULT_EMBEDDING_HELPER_RESPONSE_TIMEOUT_SECONDS,
     DEFAULT_FAST_WHISPER_CACHE,
-    DEFAULT_KROKO_PREVIEW_MODEL,
+    DEFAULT_KROKO_PREVIEW_MODEL_PRESET,
     DEFAULT_KROKO_PREVIEW_PYTHON,
     DEFAULT_OUTPUT_DIR,
     DEFAULT_REALTIMESTT_ROOT,
@@ -118,15 +118,18 @@ from window.window_config import (  # noqa: E402
     DEFAULT_SPEAKER_LIBRARY_DIR,
     DEFAULT_VALIDATION_OUTPUT,
     DEFAULT_WINDOW_EMBEDDING_PROVIDER,
+    KROKO_PREVIEW_MODEL_PRESETS,
     NEW_SPEAKER_SENSITIVITY_PRESETS,
     PRESET_YOUTUBE_VIDEOS,
     SPEAKER_COLORS,
     apply_new_speaker_sensitivity,
     default_faster_whisper_download_root,
     default_kroko_preview_model_path,
+    default_kroko_preview_startup_timeout_seconds,
     default_silero_vad_backend,
     default_silero_vad_model_path,
     new_speaker_sensitivity_config,
+    normalize_kroko_preview_model_preset,
 )
 from window.window_diarizer import WindowDiarizer  # noqa: E402
 from window.window_events import EventBus, RecordingEventBus  # noqa: E402
@@ -914,7 +917,12 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
         while not bus.done.is_set():
             elapsed = time.monotonic() - replay_started
             playback_seconds = min(controller.duration, elapsed * max(0.01, args.validation_replay_speed))
-            controller.set_playback_time(playback_seconds)
+            # Validation replay owns the synthetic media clock; allow accelerated
+            # runs to advance faster than the browser/live wall-clock clamp.
+            controller.set_playback_time(
+                playback_seconds,
+                reset=bool(args.validation_replay_speed > 1.0),
+            )
             report_second = int(playback_seconds // 15) * 15
             if report_second != last_report and report_second > 0:
                 last_report = report_second
@@ -1105,7 +1113,16 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
     return 0
 
 
+def _argv_has_option(argv: list[str], option: str) -> bool:
+    option_prefix = f"{option}="
+    return any(item == option or item.startswith(option_prefix) for item in argv)
+
+
 def parse_args() -> argparse.Namespace:
+    raw_argv = sys.argv[1:]
+    preview_model_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model")
+    preview_model_path_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model-path")
+    preview_model_preset_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model-preset")
     default_vad_model_path = default_silero_vad_model_path()
     parser = argparse.ArgumentParser(description="Growing-window faster-whisper speaker diarization GUI.")
     parser.add_argument("--url", default=DEFAULT_URL)
@@ -1436,10 +1453,17 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--realtime-preview-model",
-        default=DEFAULT_KROKO_PREVIEW_MODEL,
-        help="Kroko/Banafo model name for replace-only realtime preview text.",
+        default=None,
+        help="Kroko/Banafo model name for replace-only realtime preview text. Overrides --realtime-preview-model-preset.",
     )
-    parser.add_argument("--realtime-preview-model-path", type=Path, default=default_kroko_preview_model_path())
+    parser.add_argument(
+        "--realtime-preview-model-preset",
+        type=normalize_kroko_preview_model_preset,
+        default=DEFAULT_KROKO_PREVIEW_MODEL_PRESET,
+        metavar="{community-64l,pro-16l}",
+        help="Named Kroko preview model preset. Use pro-16l for Kroko-EN-Pro-16-L-Streaming-001.data.",
+    )
+    parser.add_argument("--realtime-preview-model-path", type=Path, default=None)
     parser.add_argument("--realtime-preview-download-root", type=Path, default=None)
     parser.add_argument("--realtime-preview-python", type=Path, default=DEFAULT_KROKO_PREVIEW_PYTHON)
     parser.add_argument("--realtime-preview-realtimestt-root", type=Path, default=DEFAULT_REALTIMESTT_ROOT)
@@ -1448,8 +1472,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--realtime-preview-startup-timeout-seconds",
         type=float,
-        default=12.0,
-        help="Maximum time to wait for the realtime preview engine before disabling preview.",
+        default=None,
+        help="Maximum time to wait for the realtime preview engine before disabling preview. Defaults to 45s for pro-16l and 12s otherwise.",
     )
     parser.add_argument(
         "--realtime-preview-request-timeout-seconds",
@@ -1918,6 +1942,14 @@ def parse_args() -> argparse.Namespace:
         help="Keep realtime preview enabled during validation. Final sentence metrics usually do not need this.",
     )
     args = parser.parse_args()
+    if args.realtime_preview_model is None:
+        args.realtime_preview_model = KROKO_PREVIEW_MODEL_PRESETS[args.realtime_preview_model_preset]
+    else:
+        args.realtime_preview_model_preset = "custom"
+    if args.realtime_preview_startup_timeout_seconds is None:
+        args.realtime_preview_startup_timeout_seconds = default_kroko_preview_startup_timeout_seconds(
+            args.realtime_preview_model_preset
+        )
     args.work_dir = args.work_dir.resolve()
     args.output_dir = args.output_dir.resolve()
     args.embedding_python = args.embedding_python.resolve()
@@ -1930,6 +1962,16 @@ def parse_args() -> argparse.Namespace:
         args.browser_live_observation_output = args.browser_live_observation_output.resolve()
     if args.download_root is not None:
         args.download_root = args.download_root.resolve()
+    if args.realtime_preview_model_path is None:
+        use_env_model_path = not (
+            preview_model_was_explicit
+            or preview_model_path_was_explicit
+            or preview_model_preset_was_explicit
+        )
+        args.realtime_preview_model_path = default_kroko_preview_model_path(
+            args.realtime_preview_model,
+            use_env=use_env_model_path,
+        )
     if args.realtime_preview_model_path is not None:
         args.realtime_preview_model_path = args.realtime_preview_model_path.resolve()
     if args.realtime_preview_download_root is not None:
@@ -1960,13 +2002,19 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Parsing command line.", flush=True)
     args = parse_args()
+    preview_model_display = (
+        args.realtime_preview_model_path.name
+        if args.realtime_preview_model_path is not None
+        else args.realtime_preview_model
+    )
     print(
         f"[{datetime.now().strftime('%H:%M:%S')}] Startup config: "
         f"url={args.url} port={args.port} asr_backend={args.asr_backend} "
         f"embeddings_backend={args.embeddings_backend} "
         f"embedding_provider={args.embedding_provider} "
         f"embedding_timeout={args.embedding_helper_response_timeout_seconds:.0f}s "
-        f"realtime_preview={args.realtime_preview_engine}.",
+        f"realtime_preview={args.realtime_preview_engine} "
+        f"preview_model={args.realtime_preview_model_preset}:{preview_model_display}.",
         flush=True,
     )
     if args.validate_window_replay:
