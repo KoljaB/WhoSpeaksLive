@@ -1,0 +1,103 @@
+{
+  "name": "S_o3y7CzDUY_livewindow_60_90_cuda",
+  "source_validation_output": "D:\\Projekte\\SpeakerDiarization\\runtime\\validation\\missing_1x\\S_o3y7CzDUY_livewindow_60_90_cuda_1x.json",
+  "source_validation_trace": "D:\\Projekte\\SpeakerDiarization\\runtime\\validation\\missing_1x\\S_o3y7CzDUY_livewindow_60_90_cuda_1x.trace.jsonl",
+  "url": "https://www.youtube.com/watch?v=S_o3y7CzDUY",
+  "video_id": "S_o3y7CzDUY",
+  "audio_file": "D:\\Projekte\\SpeakerDiarization\\runtime\\local_filefeed_media_missing_1x\\S_o3y7CzDUY.audio.mp3",
+  "canonical": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\S_o3y7CzDUY\\S_o3y7CzDUY.canonical_diarization.json",
+  "sample_rate": 16000,
+  "sentence_count": 274,
+  "providers": [
+    "espnet_ecapa_wavlm_joint",
+    "espnet_rawnet3",
+    "jungjee_rawnet3",
+    "nemo_titanet_large",
+    "pyannote_wespeaker_resnet34_lm",
+    "resemblyzer",
+    "speaker3d_campplus",
+    "speaker3d_eres2netv2",
+    "speechbrain_ecapa",
+    "speechbrain_resnet",
+    "speechbrain_xvector",
+    "wavlm_base_sv",
+    "wespeaker_campplus",
+    "wespeaker_resnet34_lm_onnx",
+    "pyannote_embedding"
+  ],
+  "embedding_device": "cuda",
+  "embedding_python": "D:\\Projekte\\SpeakerDiarization\\.venv-voice-embeddings\\Scripts\\python.exe",
+  "min_embed_seconds": 0.5,
+  "audio_files": "live_embedding_input",
+  "audio_preprocessing": "pad_audio(trim_silence(raw_sentence_audio), min_embed_seconds)",
+  "validation_replay_speed": 1.0,
+  "validation_elapsed_seconds": 1585.5,
+  "validation_final_segments": 274,
+  "validation_live_final_words": 4171,
+  "validation_text_recall": 0.9012,
+  "validation_text_precision": 0.9662,
+  "validation_segment_accuracy": 0.9817,
+  "validation_duration_accuracy": 0.9979,
+  "embedding_outputs": {
+    "espnet_ecapa_wavlm_joint": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "espnet_rawnet3": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\espnet_rawnet3\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\espnet_rawnet3\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "jungjee_rawnet3": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\jungjee_rawnet3\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\jungjee_rawnet3\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "nemo_titanet_large": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\nemo_titanet_large\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\nemo_titanet_large\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "pyannote_wespeaker_resnet34_lm": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_wespeaker_resnet34_lm\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_wespeaker_resnet34_lm\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "resemblyzer": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\resemblyzer\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\resemblyzer\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "speaker3d_campplus": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\speaker3d_campplus\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\speaker3d_campplus\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "speaker3d_eres2netv2": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\speaker3d_eres2netv2\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\speaker3d_eres2netv2\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "speechbrain_ecapa": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\speechbrain_ecapa\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\speechbrain_ecapa\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "speechbrain_resnet": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\speechbrain_resnet\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\speechbrain_resnet\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "speechbrain_xvector": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\speechbrain_xvector\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\speechbrain_xvector\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "wavlm_base_sv": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\wavlm_base_sv\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\wavlm_base_sv\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "wespeaker_campplus": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\wespeaker_campplus\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\wespeaker_campplus\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "wespeaker_resnet34_lm_onnx": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    "pyannote_embedding": {
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    }
+  }
+}

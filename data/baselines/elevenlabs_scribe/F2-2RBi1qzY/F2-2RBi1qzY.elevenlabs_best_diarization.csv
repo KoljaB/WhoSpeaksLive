@@ -1,0 +1,101 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,0.32,3.15,2.83,"First of all, congrats on your little bump. Um-"
+seg_0001,SPEAKER_2,speaker_1,3.2,4.36,1.16,Congrats on your little bump.
+seg_0002,SPEAKER_3,speaker_2,5.32,6.46,1.14,What about my bump?
+seg_0003,SPEAKER_2,speaker_1,8.92,10.38,1.46,You've got two nice ones.
+seg_0004,SPEAKER_1,speaker_0,10.4,10.75,0.35,Do you-
+seg_0005,SPEAKER_3,speaker_2,10.78,13.36,2.58,"Are these... They are kind of bumps, aren't they?"
+seg_0006,SPEAKER_2,speaker_1,13.9,16.76,2.86,"No, not bumps. They're lovely lady lumps."
+seg_0007,SPEAKER_3,speaker_2,16.86,16.87,0.01,Okay.
+seg_0008,SPEAKER_2,speaker_1,16.9,17.439,0.539,Check it out.
+seg_0009,SPEAKER_3,speaker_2,17.64,18.7,1.06,Thank you. Thank you.
+seg_0010,SPEAKER_1,speaker_0,19.06,19.2,0.14,Are you-
+seg_0011,SPEAKER_3,speaker_2,19.25,21.2,1.95,You like the movie? Are you a Woody Allen fan?
+seg_0012,SPEAKER_1,speaker_0,21.28,25.66,4.38,"I love most of his movies, and this one was so, like, visually amazing."
+seg_0013,SPEAKER_3,speaker_2,25.74,26.84,1.1,"Yeah, it's gorgeous."
+seg_0014,SPEAKER_1,speaker_0,26.88,29.88,3.0,Did you guys love wearing those kind of clothes that you-
+seg_0015,SPEAKER_3,speaker_2,30.14,30.91,0.77,Yeah.
+seg_0016,SPEAKER_2,speaker_1,30.94,31.14,0.2,Yeah.
+seg_0017,SPEAKER_3,speaker_2,31.17,32.269,1.099,"And, you know, working in digital-"
+seg_0018,SPEAKER_2,speaker_1,32.269,35.52,3.251,"And everyone wants to talk about the clothes, but I wonder if they would ask the men about the clothes."
+seg_0019,SPEAKER_1,speaker_0,36.38,36.98,0.6,I would.
+seg_0020,SPEAKER_3,speaker_2,37.16,39.56,2.4,I love little Je- Jesse's suits-
+seg_0021,SPEAKER_2,speaker_1,39.66,40.04,0.38,He has some beautiful-
+seg_0022,SPEAKER_3,speaker_2,40.05,40.05,0.0,And how he-
+seg_0023,SPEAKER_2,speaker_1,40.05,40.64,0.59,That's what I'm saying
+seg_0024,SPEAKER_3,speaker_2,40.68,41.07,0.39,"... turns it. Oh, I know. Everybody-"
+seg_0025,SPEAKER_2,speaker_1,41.07,42.24,1.17,"His, his wardrobe was beautiful."
+seg_0026,SPEAKER_3,speaker_2,42.3,42.54,0.24,I know.
+seg_0027,SPEAKER_2,speaker_1,42.76,44.1,1.34,Corey's wardrobe was-
+seg_0028,SPEAKER_3,speaker_2,44.38,44.449,0.069,He's so great
+seg_0029,SPEAKER_2,speaker_1,44.449,46.14,1.691,... gorgeous. Those high-waisted pants.
+seg_0030,SPEAKER_3,speaker_2,46.18,46.92,0.74,He's so great.
+seg_0031,SPEAKER_2,speaker_1,46.94,47.67,0.73,I w- I would wish men more high-waisted pants like that still.
+seg_0032,SPEAKER_3,speaker_2,47.67,49.48,1.81,I'm sorry too. I know. Me too.
+seg_0033,SPEAKER_2,speaker_1,50.18,53.6,3.42,"Or, or the father with his, with his, his tank top and vest."
+seg_0034,SPEAKER_3,speaker_2,53.74,54.6,0.86,"Oh, it's so good."
+seg_0035,SPEAKER_2,speaker_1,54.61,56.02,1.41,"Just like, it's just like that, you could feel it."
+seg_0036,SPEAKER_3,speaker_2,56.03,60.11,4.08,"Did you catch the, the tablecloth on the, on the light in the Italian restaurant when they eat spaghetti and the-"
+seg_0037,SPEAKER_2,speaker_1,60.11,60.99,0.88,"Oh, I didn't notice that. No"
+seg_0038,SPEAKER_3,speaker_2,60.99,61.91,0.92,... that.
+seg_0039,SPEAKER_2,speaker_1,61.94,62.24,0.3,So I feel like-
+seg_0040,SPEAKER_3,speaker_2,62.28,64.56,2.28,"There was so much warmth of everything, you know?"
+seg_0041,SPEAKER_2,speaker_1,64.62,67.54,2.92,"Yeah. It's not just the women that, that have the clothes."
+seg_0042,SPEAKER_3,speaker_2,67.66,68.01,0.35,But Vittorio-
+seg_0043,SPEAKER_2,speaker_1,68.01,69.81,1.8,"I mean, I feel like the women get the conversation, but it was like-"
+seg_0044,SPEAKER_3,speaker_2,69.86,70.02,0.16,Yeah
+seg_0045,SPEAKER_2,speaker_1,70.36,72.2,1.84,... every detail with everybody.
+seg_0046,SPEAKER_3,speaker_2,72.26,72.66,0.4,But yeah.
+seg_0047,SPEAKER_2,speaker_1,72.88,73.15,0.27,It was so beautiful.
+seg_0048,SPEAKER_3,speaker_2,73.15,75.33,2.18,It was amazing to look at. And then to see it-
+seg_0049,SPEAKER_2,speaker_1,75.37,75.82,0.45,Steve's white suits.
+seg_0050,SPEAKER_3,speaker_2,76.14,76.48,0.34,Yes.
+seg_0051,SPEAKER_2,speaker_1,76.52,81.64,5.12,"And then you notice in LA, like, everybody's in cream colors, and all the men are wearing, like, white and cream."
+seg_0052,SPEAKER_3,speaker_2,81.67,81.67,0.0,Mm-hmm.
+seg_0053,SPEAKER_2,speaker_1,81.68,87.32,5.64,"And then you get to New York, and it's a little bit more browns and moodier. And, and Susie really told such a story-"
+seg_0054,SPEAKER_3,speaker_2,87.54,88.56,1.02,"Yeah, amazing"
+seg_0055,SPEAKER_2,speaker_1,88.76,95.34,6.58,"... um, alongside Vittorio because it's, it is a lot brighter and sunnier in LA. And, and New York has just this steaminess to it."
+seg_0056,SPEAKER_1,speaker_0,95.78,99.7,3.92,"And I think, you know, the whole Hollywood glam, it's so glamorous and everything."
+seg_0057,SPEAKER_2,speaker_1,100.02,100.03,0.01,Mm-hmm.
+seg_0058,SPEAKER_1,speaker_0,100.06,106.17,6.11,Can you relate to the things they were saying about Hollywood? It's so easy to get seduced by the fame and the money and the glamor and-
+seg_0059,SPEAKER_3,speaker_2,106.18,112.28,6.1,"Oh, you see it all the time. That was one of my favorite things about the movie, were the subtle turns to-"
+seg_0060,SPEAKER_2,speaker_1,112.42,112.7,0.28,Mm-hmm
+seg_0061,SPEAKER_3,speaker_2,112.9,114.54,1.64,"... their own, um,"
+seg_0062,SPEAKER_3,speaker_2,115.8,118.89,3.09,"transition into, like, the ego of-"
+seg_0063,SPEAKER_2,speaker_1,118.94,118.95,0.01,Mm-hmm
+seg_0064,SPEAKER_3,speaker_2,119.08,120.92,1.84,... showbiz that Kristen has in that scene-
+seg_0065,SPEAKER_2,speaker_1,121.04,121.05,0.01,Mm-hmm
+seg_0066,SPEAKER_3,speaker_2,121.16,126.76,5.6,"... with Steve Carell. And then with, with Bobby taking on the persona of a club owner."
+seg_0067,SPEAKER_2,speaker_1,126.99,127.01,0.02,Mm-hmm.
+seg_0068,SPEAKER_3,speaker_2,127.68,131.179,3.499,"But still, like, these are things you do when you're an, an adult."
+seg_0069,SPEAKER_2,speaker_1,131.46,131.62,0.16,Yeah.
+seg_0070,SPEAKER_3,speaker_2,131.78,133.12,1.34,When you have to work.
+seg_0071,SPEAKER_2,speaker_1,133.26,133.269,0.009,Yeah.
+seg_0072,SPEAKER_3,speaker_2,133.34,135.72,2.38,You have to... You play a part.
+seg_0073,SPEAKER_2,speaker_1,135.96,136.24,0.28,Mm-hmm.
+seg_0074,SPEAKER_3,speaker_2,136.62,145.43,8.81,"You, you play at your life in a, in a way that you find successful or, um... So it's, it's a lot about choices."
+seg_0075,SPEAKER_2,speaker_1,145.57,145.66,0.09,Mm-hmm.
+seg_0076,SPEAKER_3,speaker_2,146.32,152.04,5.72,"And then they carry, you know, they carry this, this, this love, you know, and it's just very-"
+seg_0077,SPEAKER_2,speaker_1,152.68,152.86,0.18,Yeah. It's-
+seg_0078,SPEAKER_3,speaker_2,152.87,153.45,0.58,It's very grown up and warm
+seg_0079,SPEAKER_2,speaker_1,153.45,158.92,5.47,"... it's neat to see where they came from, though, and see how authentic these people truly are and what good people they truly are, too-"
+seg_0080,SPEAKER_3,speaker_2,159.08,159.5,0.42,Yeah
+seg_0081,SPEAKER_2,speaker_1,160.2,165.46,5.26,"... because it's, it's what you would see from the outside of the cafe society. You could dismiss each of their characters, you know?"
+seg_0082,SPEAKER_3,speaker_2,165.5,165.65,0.15,Right.
+seg_0083,SPEAKER_2,speaker_1,165.66,185.18,19.52,"But to see what a heart and soul each of them have is, is nice. And it's something that, you know, I, that's the thing, you know, as far as, like, relating to it personally that you see. You know, you have these ideas of people that you're fans of, and then you meet them and get to know them as a person. And oftentimes you're such a greater fan of them as a person than you are as the person that people feel like they know."
+seg_0084,SPEAKER_3,speaker_2,185.31,185.31,0.0,Mm-hmm.
+seg_0085,SPEAKER_2,speaker_1,185.32,188.19,2.87,"And that's always, that, that's always nice and refreshing when you-"
+seg_0086,SPEAKER_3,speaker_2,188.22,188.34,0.12,Yeah
+seg_0087,SPEAKER_2,speaker_1,188.4,189.0,0.6,... when you see that.
+seg_0088,SPEAKER_3,speaker_2,189.24,189.4,0.16,Yeah.
+seg_0089,SPEAKER_1,speaker_0,190.3,196.68,6.38,"Do you feel like... What do you feel like is the biggest misconceptions about fame and, and Hollywood in general?"
+seg_0090,SPEAKER_2,speaker_1,198.2,246.2,48.0,"I think the idea that people think that they know you, I think because of, um, the, the, how intrusive media is these days. Um, they f- there's, people care so much more about your personal life than they do your work. And if you aren't open with your personal life, then they just make it up for you and share it for you. So I think the biggest misconception I see often is people feeling like they know someone that they don't, um, because they know what the media has, has created of someone. And the disappointing thing is when you meet the people, they're always so much more awesome than, than, than, than they're portrayed to be. I mean, that's, that's normally my experience. And even people that are portrayed to be really great people, they're just, um, a lot more complicated and interesting and, and nuanced and caring and thoughtful. And that's always, that's always nice, you know-"
+seg_0091,SPEAKER_3,speaker_2,246.25,246.26,0.01,Mm-hmm
+seg_0092,SPEAKER_2,speaker_1,246.28,250.62,4.34,... to see that your idea of someone isn't always who they actually are.
+seg_0093,SPEAKER_3,speaker_2,251.02,251.109,0.089,Mm-hmm. Yeah.
+seg_0094,SPEAKER_2,speaker_1,251.109,251.64,0.531,Yeah.
+seg_0095,SPEAKER_3,speaker_2,251.84,253.04,1.2,Yeah.
+seg_0096,SPEAKER_1,speaker_0,253.34,254.02,0.68,Thank you.
+seg_0097,SPEAKER_2,speaker_1,254.18,254.23,0.05,Thank you.
+seg_0098,SPEAKER_3,speaker_2,254.23,254.68,0.45,"Okay. Thank you. Thank you, guys."
+seg_0099,SPEAKER_2,speaker_1,254.74,255.24,0.5,Take care.

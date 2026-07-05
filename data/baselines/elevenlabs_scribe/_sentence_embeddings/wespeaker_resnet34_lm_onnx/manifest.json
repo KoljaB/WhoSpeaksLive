@@ -1,0 +1,255 @@
+{
+  "status": "ok",
+  "provider": "wespeaker_resnet34_lm_onnx",
+  "backend": "remote",
+  "remote_url": "http://192.168.178.22:8660",
+  "device": "cuda",
+  "load_result": {
+    "ok": true,
+    "requested_device": "cuda",
+    "resolved_device": "cuda",
+    "warmup_seconds": 2.0,
+    "loaded": [
+      {
+        "provider": "wespeaker_resnet34_lm_onnx",
+        "weight": 1.0,
+        "device": "cuda",
+        "dim": 256
+      }
+    ],
+    "warmups": [
+      {
+        "provider": "wespeaker_resnet34_lm_onnx",
+        "weight": 1.0,
+        "device": "cuda",
+        "elapsed_seconds": 0.3432710130000487,
+        "dim": 256,
+        "warmup_seconds": 2.0
+      }
+    ],
+    "elapsed_seconds": 0.3436594779996085
+  },
+  "video_count": 27,
+  "segment_count": 2586,
+  "created_video_count": 27,
+  "skipped_video_count": 0,
+  "elapsed_seconds": 126.95590539998375,
+  "outputs": [
+    {
+      "video": "1NBVQB-Srpw",
+      "segments": 85,
+      "status": "created",
+      "elapsed_seconds": 2.596514399861917,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\1NBVQB-Srpw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\1NBVQB-Srpw.segments.json"
+    },
+    {
+      "video": "20v1OxUXcQY",
+      "segments": 98,
+      "status": "created",
+      "elapsed_seconds": 3.092123300069943,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\20v1OxUXcQY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\20v1OxUXcQY.segments.json"
+    },
+    {
+      "video": "acbnyagl8jo",
+      "segments": 94,
+      "status": "created",
+      "elapsed_seconds": 2.938723700121045,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\acbnyagl8jo.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\acbnyagl8jo.segments.json"
+    },
+    {
+      "video": "aHGd6LqAVzw",
+      "segments": 57,
+      "status": "created",
+      "elapsed_seconds": 2.170359400101006,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\aHGd6LqAVzw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\aHGd6LqAVzw.segments.json"
+    },
+    {
+      "video": "blcKeLDDzSM",
+      "segments": 61,
+      "status": "created",
+      "elapsed_seconds": 2.120304899988696,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\blcKeLDDzSM.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\blcKeLDDzSM.segments.json"
+    },
+    {
+      "video": "bPpcfH_HHH8",
+      "segments": 101,
+      "status": "created",
+      "elapsed_seconds": 3.002517400076613,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\bPpcfH_HHH8.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\bPpcfH_HHH8.segments.json"
+    },
+    {
+      "video": "cLdy4P-XJPE",
+      "segments": 52,
+      "status": "created",
+      "elapsed_seconds": 2.6372016000095755,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\cLdy4P-XJPE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\cLdy4P-XJPE.segments.json"
+    },
+    {
+      "video": "cunk",
+      "segments": 45,
+      "status": "created",
+      "elapsed_seconds": 1.8448656999971718,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\cunk.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\cunk.segments.json"
+    },
+    {
+      "video": "Dd7FixvoKBw",
+      "segments": 57,
+      "status": "created",
+      "elapsed_seconds": 1.6743668001145124,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\Dd7FixvoKBw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\Dd7FixvoKBw.segments.json"
+    },
+    {
+      "video": "DsyfYJ5Ou3g",
+      "segments": 70,
+      "status": "created",
+      "elapsed_seconds": 2.1677511997986585,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\DsyfYJ5Ou3g.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\DsyfYJ5Ou3g.segments.json"
+    },
+    {
+      "video": "e3h6es6zh1c",
+      "segments": 50,
+      "status": "created",
+      "elapsed_seconds": 1.6712158999871463,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\e3h6es6zh1c.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\e3h6es6zh1c.segments.json"
+    },
+    {
+      "video": "F2-2RBi1qzY",
+      "segments": 100,
+      "status": "created",
+      "elapsed_seconds": 3.535058500012383,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\F2-2RBi1qzY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\F2-2RBi1qzY.segments.json"
+    },
+    {
+      "video": "gj7BRMuB-n4",
+      "segments": 155,
+      "status": "created",
+      "elapsed_seconds": 4.7600255000870675,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\gj7BRMuB-n4.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\gj7BRMuB-n4.segments.json"
+    },
+    {
+      "video": "k1tsGGz-Qw0",
+      "segments": 83,
+      "status": "created",
+      "elapsed_seconds": 2.811461400007829,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\k1tsGGz-Qw0.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\k1tsGGz-Qw0.segments.json"
+    },
+    {
+      "video": "KdOXM3I_5hk",
+      "segments": 245,
+      "status": "created",
+      "elapsed_seconds": 6.7926133999135345,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\KdOXM3I_5hk.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\KdOXM3I_5hk.segments.json"
+    },
+    {
+      "video": "L-CfFo5aQGU",
+      "segments": 132,
+      "status": "created",
+      "elapsed_seconds": 6.1873880999628454,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\L-CfFo5aQGU.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\L-CfFo5aQGU.segments.json"
+    },
+    {
+      "video": "mBeT_AoCXvc",
+      "segments": 96,
+      "status": "created",
+      "elapsed_seconds": 4.087276100181043,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\mBeT_AoCXvc.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\mBeT_AoCXvc.segments.json"
+    },
+    {
+      "video": "mWABb5Dy9BQ",
+      "segments": 219,
+      "status": "created",
+      "elapsed_seconds": 6.824015400139615,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\mWABb5Dy9BQ.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\mWABb5Dy9BQ.segments.json"
+    },
+    {
+      "video": "oFBuCp19L7M",
+      "segments": 95,
+      "status": "created",
+      "elapsed_seconds": 3.2040591998957098,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\oFBuCp19L7M.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\oFBuCp19L7M.segments.json"
+    },
+    {
+      "video": "onHUfyRP1BE",
+      "segments": 9,
+      "status": "created",
+      "elapsed_seconds": 1.0895948000252247,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\onHUfyRP1BE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\onHUfyRP1BE.segments.json"
+    },
+    {
+      "video": "pD4IdQTmneI",
+      "segments": 15,
+      "status": "created",
+      "elapsed_seconds": 1.0015860002022237,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\pD4IdQTmneI.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\pD4IdQTmneI.segments.json"
+    },
+    {
+      "video": "PhofRoLXqhE",
+      "segments": 100,
+      "status": "created",
+      "elapsed_seconds": 5.662324000149965,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\PhofRoLXqhE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\PhofRoLXqhE.segments.json"
+    },
+    {
+      "video": "S_o3y7CzDUY",
+      "segments": 76,
+      "status": "created",
+      "elapsed_seconds": 4.841913599986583,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\S_o3y7CzDUY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\S_o3y7CzDUY.segments.json"
+    },
+    {
+      "video": "vIfGgDnmBXg",
+      "segments": 145,
+      "status": "created",
+      "elapsed_seconds": 4.27243909984827,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\vIfGgDnmBXg.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\vIfGgDnmBXg.segments.json"
+    },
+    {
+      "video": "WNZn37Uc700",
+      "segments": 174,
+      "status": "created",
+      "elapsed_seconds": 4.931468699825928,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\WNZn37Uc700.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\WNZn37Uc700.segments.json"
+    },
+    {
+      "video": "y_5WfLjvOK4",
+      "segments": 91,
+      "status": "created",
+      "elapsed_seconds": 6.010890000034124,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\y_5WfLjvOK4.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\y_5WfLjvOK4.segments.json"
+    },
+    {
+      "video": "ZY0DG8rUnCA",
+      "segments": 81,
+      "status": "created",
+      "elapsed_seconds": 2.5426055998541415,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\ZY0DG8rUnCA.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wespeaker_resnet34_lm_onnx\\ZY0DG8rUnCA.segments.json"
+    }
+  ]
+}

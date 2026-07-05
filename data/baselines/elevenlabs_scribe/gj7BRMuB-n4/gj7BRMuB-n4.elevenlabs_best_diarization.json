@@ -1,0 +1,2327 @@
+[
+  {
+    "segment_id": "seg_0000",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 0.24,
+    "end_sec": 13.26,
+    "start_time": "00:00.240",
+    "end_time": "00:13.260",
+    "duration_sec": 13.02,
+    "text": "I'm here with Kate McKinnon. Her new movie, Rough Night, is in theaters next Friday. Don't drink, it's a prop. Kate and I are about to play a game of deception called True True Confession Session.",
+    "word_start_index": 0,
+    "word_end_index": 35
+  },
+  {
+    "segment_id": "seg_0001",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 22.14,
+    "end_sec": 30.56,
+    "start_time": "00:22.140",
+    "end_time": "00:30.560",
+    "duration_sec": 8.42,
+    "text": "First we're gonna need another player to fill out this table, and we found a good one. He's the host of American Grit on Fox. Please welcome John Cena. Whoo.",
+    "word_start_index": 36,
+    "word_end_index": 65
+  },
+  {
+    "segment_id": "seg_0002",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 34.22,
+    "end_sec": 35.56,
+    "start_time": "00:34.220",
+    "end_time": "00:35.560",
+    "duration_sec": 1.34,
+    "text": "Don't drink that.",
+    "word_start_index": 66,
+    "word_end_index": 68
+  },
+  {
+    "segment_id": "seg_0003",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 37.7,
+    "end_sec": 41.85,
+    "start_time": "00:37.700",
+    "end_time": "00:41.850",
+    "duration_sec": 4.15,
+    "text": "It's a prop. It's a prop. This is a prop. This is supposed to be like a detective envelope.",
+    "word_start_index": 69,
+    "word_end_index": 87
+  },
+  {
+    "segment_id": "seg_0004",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 41.85,
+    "end_sec": 42.69,
+    "start_time": "00:41.850",
+    "end_time": "00:42.690",
+    "duration_sec": 0.84,
+    "text": "God, it's urine.",
+    "word_start_index": 88,
+    "word_end_index": 90
+  },
+  {
+    "segment_id": "seg_0005",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 42.74,
+    "end_sec": 44.919,
+    "start_time": "00:42.740",
+    "end_time": "00:44.919",
+    "duration_sec": 2.179,
+    "text": "Don't, don't... That's not urine.",
+    "word_start_index": 91,
+    "word_end_index": 95
+  },
+  {
+    "segment_id": "seg_0006",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 44.949,
+    "end_sec": 44.949,
+    "start_time": "00:44.949",
+    "end_time": "00:44.949",
+    "duration_sec": 0.0,
+    "text": "Ugh.",
+    "word_start_index": 96,
+    "word_end_index": 96
+  },
+  {
+    "segment_id": "seg_0007",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 44.98,
+    "end_sec": 63.54,
+    "start_time": "00:44.980",
+    "end_time": "01:03.540",
+    "duration_sec": 18.56,
+    "text": "Guys, here's how the game works. In front of each of us are two envelopes containing confessions sessions. One of the envelopes is something that actually happened to us in real life. The other envelope is a lie. Once you read your confession, the other two have 60 seconds to interrogate you, then each of us have to guess whether you've been telling the truth or lying. John, you'll go first.",
+    "word_start_index": 97,
+    "word_end_index": 167
+  },
+  {
+    "segment_id": "seg_0008",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 63.98,
+    "end_sec": 64.86,
+    "start_time": "01:03.980",
+    "end_time": "01:04.860",
+    "duration_sec": 0.88,
+    "text": "This is complicated.",
+    "word_start_index": 168,
+    "word_end_index": 170
+  },
+  {
+    "segment_id": "seg_0009",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 64.94,
+    "end_sec": 67.86,
+    "start_time": "01:04.940",
+    "end_time": "01:07.860",
+    "duration_sec": 2.92,
+    "text": "Kate, which envelope should he open? Which envelope?",
+    "word_start_index": 171,
+    "word_end_index": 178
+  },
+  {
+    "segment_id": "seg_0010",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 68.44,
+    "end_sec": 68.55,
+    "start_time": "01:08.440",
+    "end_time": "01:08.550",
+    "duration_sec": 0.11,
+    "text": "One.",
+    "word_start_index": 179,
+    "word_end_index": 179
+  },
+  {
+    "segment_id": "seg_0011",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 68.55,
+    "end_sec": 69.58,
+    "start_time": "01:08.550",
+    "end_time": "01:09.580",
+    "duration_sec": 1.03,
+    "text": "One. Mm.",
+    "word_start_index": 180,
+    "word_end_index": 181
+  },
+  {
+    "segment_id": "seg_0012",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 71.34,
+    "end_sec": 71.63,
+    "start_time": "01:11.340",
+    "end_time": "01:11.630",
+    "duration_sec": 0.29,
+    "text": "Hold on, I-",
+    "word_start_index": 182,
+    "word_end_index": 184
+  },
+  {
+    "segment_id": "seg_0013",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 71.66,
+    "end_sec": 72.7,
+    "start_time": "01:11.660",
+    "end_time": "01:12.700",
+    "duration_sec": 1.04,
+    "text": "Envelope number one.",
+    "word_start_index": 185,
+    "word_end_index": 187
+  },
+  {
+    "segment_id": "seg_0014",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 72.88,
+    "end_sec": 75.06,
+    "start_time": "01:12.880",
+    "end_time": "01:15.060",
+    "duration_sec": 2.18,
+    "text": "I don't want you to see anything here. Okay, um.",
+    "word_start_index": 188,
+    "word_end_index": 197
+  },
+  {
+    "segment_id": "seg_0015",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 75.14,
+    "end_sec": 76.36,
+    "start_time": "01:15.140",
+    "end_time": "01:16.360",
+    "duration_sec": 1.22,
+    "text": "You're gonna have to read it to us anyway.",
+    "word_start_index": 198,
+    "word_end_index": 206
+  },
+  {
+    "segment_id": "seg_0016",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 78.14,
+    "end_sec": 87.64,
+    "start_time": "01:18.140",
+    "end_time": "01:27.640",
+    "duration_sec": 9.5,
+    "text": "Okay, so I, I just, I read what's on the card. Okay, fair enough. Uh, \"I was once hit by a car while riding my bike and the driver was my girlfriend.\"",
+    "word_start_index": 207,
+    "word_end_index": 238
+  },
+  {
+    "segment_id": "seg_0017",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 89.25,
+    "end_sec": 89.5,
+    "start_time": "01:29.250",
+    "end_time": "01:29.500",
+    "duration_sec": 0.25,
+    "text": "Mm-hmm.",
+    "word_start_index": 239,
+    "word_end_index": 239
+  },
+  {
+    "segment_id": "seg_0018",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 89.79,
+    "end_sec": 90.06,
+    "start_time": "01:29.790",
+    "end_time": "01:30.060",
+    "duration_sec": 0.27,
+    "text": "Mm, that's it.",
+    "word_start_index": 240,
+    "word_end_index": 242
+  },
+  {
+    "segment_id": "seg_0019",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 90.44,
+    "end_sec": 90.86,
+    "start_time": "01:30.440",
+    "end_time": "01:30.860",
+    "duration_sec": 0.42,
+    "text": "What was her name?",
+    "word_start_index": 243,
+    "word_end_index": 246
+  },
+  {
+    "segment_id": "seg_0020",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 91.5,
+    "end_sec": 92.24,
+    "start_time": "01:31.500",
+    "end_time": "01:32.240",
+    "duration_sec": 0.74,
+    "text": "My name is John Cena.",
+    "word_start_index": 247,
+    "word_end_index": 251
+  },
+  {
+    "segment_id": "seg_0021",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 92.36,
+    "end_sec": 93.34,
+    "start_time": "01:32.360",
+    "end_time": "01:33.340",
+    "duration_sec": 0.98,
+    "text": "No, what's her name?",
+    "word_start_index": 252,
+    "word_end_index": 255
+  },
+  {
+    "segment_id": "seg_0022",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 95.98,
+    "end_sec": 96.86,
+    "start_time": "01:35.980",
+    "end_time": "01:36.860",
+    "duration_sec": 0.88,
+    "text": "That is, uh...",
+    "word_start_index": 256,
+    "word_end_index": 258
+  },
+  {
+    "segment_id": "seg_0023",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 98.62,
+    "end_sec": 100.38,
+    "start_time": "01:38.620",
+    "end_time": "01:40.380",
+    "duration_sec": 1.76,
+    "text": "That's enough questions out of you. I already told you my name.",
+    "word_start_index": 259,
+    "word_end_index": 270
+  },
+  {
+    "segment_id": "seg_0024",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 101.5,
+    "end_sec": 103.84,
+    "start_time": "01:41.500",
+    "end_time": "01:43.840",
+    "duration_sec": 2.34,
+    "text": "Were you dating at the time of the hit?",
+    "word_start_index": 271,
+    "word_end_index": 279
+  },
+  {
+    "segment_id": "seg_0025",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 103.96,
+    "end_sec": 104.14,
+    "start_time": "01:43.960",
+    "end_time": "01:44.140",
+    "duration_sec": 0.18,
+    "text": "Yes.",
+    "word_start_index": 280,
+    "word_end_index": 280
+  },
+  {
+    "segment_id": "seg_0026",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 104.92,
+    "end_sec": 106.72,
+    "start_time": "01:44.920",
+    "end_time": "01:46.720",
+    "duration_sec": 1.8,
+    "text": "And why were you riding your bike and she was in the car?",
+    "word_start_index": 281,
+    "word_end_index": 293
+  },
+  {
+    "segment_id": "seg_0027",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 107.08,
+    "end_sec": 110.16,
+    "start_time": "01:47.080",
+    "end_time": "01:50.160",
+    "duration_sec": 3.08,
+    "text": "'Cause as a young man, I fancied myself physically fit.",
+    "word_start_index": 294,
+    "word_end_index": 303
+  },
+  {
+    "segment_id": "seg_0028",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 111.48,
+    "end_sec": 115.36,
+    "start_time": "01:51.480",
+    "end_time": "01:55.360",
+    "duration_sec": 3.88,
+    "text": "You wouldn't travel in other, any transportation but bicycling?",
+    "word_start_index": 304,
+    "word_end_index": 312
+  },
+  {
+    "segment_id": "seg_0029",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 115.58,
+    "end_sec": 119.15,
+    "start_time": "01:55.580",
+    "end_time": "01:59.150",
+    "duration_sec": 3.57,
+    "text": "I, there's enough horsepower in this body to bicycle around West Newbury just fine.",
+    "word_start_index": 313,
+    "word_end_index": 326
+  },
+  {
+    "segment_id": "seg_0030",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 122.36,
+    "end_sec": 125.62,
+    "start_time": "02:02.360",
+    "end_time": "02:05.620",
+    "duration_sec": 3.26,
+    "text": "Did she cry when she found that she'd injured her one true love?",
+    "word_start_index": 327,
+    "word_end_index": 339
+  },
+  {
+    "segment_id": "seg_0031",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 125.94,
+    "end_sec": 128.28,
+    "start_time": "02:05.940",
+    "end_time": "02:08.280",
+    "duration_sec": 2.34,
+    "text": "Uh, nope, and that was the abrupt end of the relationship.",
+    "word_start_index": 340,
+    "word_end_index": 350
+  },
+  {
+    "segment_id": "seg_0032",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 130.07,
+    "end_sec": 130.07,
+    "start_time": "02:10.070",
+    "end_time": "02:10.070",
+    "duration_sec": 0.0,
+    "text": "Oh.",
+    "word_start_index": 351,
+    "word_end_index": 351
+  },
+  {
+    "segment_id": "seg_0033",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 130.08,
+    "end_sec": 130.16,
+    "start_time": "02:10.080",
+    "end_time": "02:10.160",
+    "duration_sec": 0.08,
+    "text": "Yeah.",
+    "word_start_index": 352,
+    "word_end_index": 352
+  },
+  {
+    "segment_id": "seg_0034",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 130.19,
+    "end_sec": 130.4,
+    "start_time": "02:10.190",
+    "end_time": "02:10.400",
+    "duration_sec": 0.21,
+    "text": "Huh.",
+    "word_start_index": 353,
+    "word_end_index": 353
+  },
+  {
+    "segment_id": "seg_0035",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 130.65,
+    "end_sec": 130.65,
+    "start_time": "02:10.650",
+    "end_time": "02:10.650",
+    "duration_sec": 0.0,
+    "text": "Huh.",
+    "word_start_index": 354,
+    "word_end_index": 354
+  },
+  {
+    "segment_id": "seg_0036",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 130.68,
+    "end_sec": 132.06,
+    "start_time": "02:10.680",
+    "end_time": "02:12.060",
+    "duration_sec": 1.38,
+    "text": "Okay. That, that was a good question.",
+    "word_start_index": 355,
+    "word_end_index": 361
+  },
+  {
+    "segment_id": "seg_0037",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 132.1,
+    "end_sec": 133.52,
+    "start_time": "02:12.100",
+    "end_time": "02:13.520",
+    "duration_sec": 1.42,
+    "text": "What sort of bike was it?",
+    "word_start_index": 362,
+    "word_end_index": 367
+  },
+  {
+    "segment_id": "seg_0038",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 133.84,
+    "end_sec": 134.66,
+    "start_time": "02:13.840",
+    "end_time": "02:14.660",
+    "duration_sec": 0.82,
+    "text": "It was a 10-speed.",
+    "word_start_index": 368,
+    "word_end_index": 371
+  },
+  {
+    "segment_id": "seg_0039",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 134.84,
+    "end_sec": 135.2,
+    "start_time": "02:14.840",
+    "end_time": "02:15.200",
+    "duration_sec": 0.36,
+    "text": "What color?",
+    "word_start_index": 372,
+    "word_end_index": 373
+  },
+  {
+    "segment_id": "seg_0040",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 135.58,
+    "end_sec": 136.04,
+    "start_time": "02:15.580",
+    "end_time": "02:16.040",
+    "duration_sec": 0.46,
+    "text": "It was maroon.",
+    "word_start_index": 374,
+    "word_end_index": 376
+  },
+  {
+    "segment_id": "seg_0041",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 136.14,
+    "end_sec": 136.8,
+    "start_time": "02:16.140",
+    "end_time": "02:16.800",
+    "duration_sec": 0.66,
+    "text": "What year?",
+    "word_start_index": 377,
+    "word_end_index": 378
+  },
+  {
+    "segment_id": "seg_0042",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 137.1,
+    "end_sec": 138.02,
+    "start_time": "02:17.100",
+    "end_time": "02:18.020",
+    "duration_sec": 0.92,
+    "text": "It was 1994.",
+    "word_start_index": 379,
+    "word_end_index": 381
+  },
+  {
+    "segment_id": "seg_0043",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 138.2,
+    "end_sec": 139.57,
+    "start_time": "02:18.200",
+    "end_time": "02:19.570",
+    "duration_sec": 1.37,
+    "text": "What grade were you in in school?",
+    "word_start_index": 382,
+    "word_end_index": 388
+  },
+  {
+    "segment_id": "seg_0044",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 139.82,
+    "end_sec": 141.16,
+    "start_time": "02:19.820",
+    "end_time": "02:21.160",
+    "duration_sec": 1.34,
+    "text": "I was just entering college.",
+    "word_start_index": 389,
+    "word_end_index": 393
+  },
+  {
+    "segment_id": "seg_0045",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 142.62,
+    "end_sec": 143.62,
+    "start_time": "02:22.620",
+    "end_time": "02:23.620",
+    "duration_sec": 1.0,
+    "text": "Where was the accident?",
+    "word_start_index": 394,
+    "word_end_index": 397
+  },
+  {
+    "segment_id": "seg_0046",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 143.91,
+    "end_sec": 143.91,
+    "start_time": "02:23.910",
+    "end_time": "02:23.910",
+    "duration_sec": 0.0,
+    "text": "True.",
+    "word_start_index": 398,
+    "word_end_index": 398
+  },
+  {
+    "segment_id": "seg_0047",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 144.48,
+    "end_sec": 148.58,
+    "start_time": "02:24.480",
+    "end_time": "02:28.580",
+    "duration_sec": 4.1,
+    "text": "It was, it was, uh, on a small street outside of Route 113, West Newbury, Massachusetts.",
+    "word_start_index": 399,
+    "word_end_index": 414
+  },
+  {
+    "segment_id": "seg_0048",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 148.66,
+    "end_sec": 156.2,
+    "start_time": "02:28.660",
+    "end_time": "02:36.200",
+    "duration_sec": 7.54,
+    "text": "I think I, I have enough questions. Enough questions. If th- if this is a lie, this dude should win an Oscar. That actually happened.",
+    "word_start_index": 415,
+    "word_end_index": 439
+  },
+  {
+    "segment_id": "seg_0049",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 156.28,
+    "end_sec": 158.4,
+    "start_time": "02:36.280",
+    "end_time": "02:38.400",
+    "duration_sec": 2.12,
+    "text": "It's gotta be real. The details are too good.",
+    "word_start_index": 440,
+    "word_end_index": 448
+  },
+  {
+    "segment_id": "seg_0050",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 158.62,
+    "end_sec": 160.76,
+    "start_time": "02:38.620",
+    "end_time": "02:40.760",
+    "duration_sec": 2.14,
+    "text": "Yeah. I say-... real.",
+    "word_start_index": 449,
+    "word_end_index": 453
+  },
+  {
+    "segment_id": "seg_0051",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 162.32,
+    "end_sec": 164.26,
+    "start_time": "02:42.320",
+    "end_time": "02:44.260",
+    "duration_sec": 1.94,
+    "text": "Well, you're both right. It's real.",
+    "word_start_index": 454,
+    "word_end_index": 459
+  },
+  {
+    "segment_id": "seg_0052",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 165.69,
+    "end_sec": 165.69,
+    "start_time": "02:45.690",
+    "end_time": "02:45.690",
+    "duration_sec": 0.0,
+    "text": "Oh.",
+    "word_start_index": 460,
+    "word_end_index": 460
+  },
+  {
+    "segment_id": "seg_0053",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 165.7,
+    "end_sec": 167.65,
+    "start_time": "02:45.700",
+    "end_time": "02:47.650",
+    "duration_sec": 1.95,
+    "text": "Hey, I almost died. I almost died.",
+    "word_start_index": 461,
+    "word_end_index": 467
+  },
+  {
+    "segment_id": "seg_0054",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 167.66,
+    "end_sec": 169.76,
+    "start_time": "02:47.660",
+    "end_time": "02:49.760",
+    "duration_sec": 2.1,
+    "text": "Oh my God, you almost died.",
+    "word_start_index": 468,
+    "word_end_index": 473
+  },
+  {
+    "segment_id": "seg_0055",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 170.2,
+    "end_sec": 171.19,
+    "start_time": "02:50.200",
+    "end_time": "02:51.190",
+    "duration_sec": 0.99,
+    "text": "It's true. It's true.",
+    "word_start_index": 474,
+    "word_end_index": 477
+  },
+  {
+    "segment_id": "seg_0056",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 171.19,
+    "end_sec": 171.56,
+    "start_time": "02:51.190",
+    "end_time": "02:51.560",
+    "duration_sec": 0.37,
+    "text": "You almost died.",
+    "word_start_index": 478,
+    "word_end_index": 480
+  },
+  {
+    "segment_id": "seg_0057",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 172.44,
+    "end_sec": 172.94,
+    "start_time": "02:52.440",
+    "end_time": "02:52.940",
+    "duration_sec": 0.5,
+    "text": "That's great.",
+    "word_start_index": 481,
+    "word_end_index": 482
+  },
+  {
+    "segment_id": "seg_0058",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 172.98,
+    "end_sec": 174.07,
+    "start_time": "02:52.980",
+    "end_time": "02:54.070",
+    "duration_sec": 1.09,
+    "text": "That is great. You almost died.",
+    "word_start_index": 483,
+    "word_end_index": 488
+  },
+  {
+    "segment_id": "seg_0059",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 174.08,
+    "end_sec": 175.26,
+    "start_time": "02:54.080",
+    "end_time": "02:55.260",
+    "duration_sec": 1.18,
+    "text": "That's great, he almost died.",
+    "word_start_index": 489,
+    "word_end_index": 493
+  },
+  {
+    "segment_id": "seg_0060",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 175.44,
+    "end_sec": 175.67,
+    "start_time": "02:55.440",
+    "end_time": "02:55.670",
+    "duration_sec": 0.23,
+    "text": "All right.",
+    "word_start_index": 494,
+    "word_end_index": 495
+  },
+  {
+    "segment_id": "seg_0061",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 175.72,
+    "end_sec": 178.08,
+    "start_time": "02:55.720",
+    "end_time": "02:58.080",
+    "duration_sec": 2.36,
+    "text": "And then, but he didn't. I love that. I love that.",
+    "word_start_index": 496,
+    "word_end_index": 506
+  },
+  {
+    "segment_id": "seg_0062",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 179.28,
+    "end_sec": 181.67,
+    "start_time": "02:59.280",
+    "end_time": "03:01.670",
+    "duration_sec": 2.39,
+    "text": "Which envelope, envelope, envelope?",
+    "word_start_index": 507,
+    "word_end_index": 510
+  },
+  {
+    "segment_id": "seg_0063",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 181.7,
+    "end_sec": 182.38,
+    "start_time": "03:01.700",
+    "end_time": "03:02.380",
+    "duration_sec": 0.68,
+    "text": "Do I choose?",
+    "word_start_index": 511,
+    "word_end_index": 513
+  },
+  {
+    "segment_id": "seg_0064",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 182.56,
+    "end_sec": 182.9,
+    "start_time": "03:02.560",
+    "end_time": "03:02.900",
+    "duration_sec": 0.34,
+    "text": "Yeah.",
+    "word_start_index": 514,
+    "word_end_index": 514
+  },
+  {
+    "segment_id": "seg_0065",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 182.96,
+    "end_sec": 184.16,
+    "start_time": "03:02.960",
+    "end_time": "03:04.160",
+    "duration_sec": 1.2,
+    "text": "Well, to me, you're always a number two.",
+    "word_start_index": 515,
+    "word_end_index": 522
+  },
+  {
+    "segment_id": "seg_0066",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 185.18,
+    "end_sec": 185.72,
+    "start_time": "03:05.180",
+    "end_time": "03:05.720",
+    "duration_sec": 0.54,
+    "text": "Thank you.",
+    "word_start_index": 523,
+    "word_end_index": 524
+  },
+  {
+    "segment_id": "seg_0067",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 187.35,
+    "end_sec": 187.35,
+    "start_time": "03:07.350",
+    "end_time": "03:07.350",
+    "duration_sec": 0.0,
+    "text": "Aw.",
+    "word_start_index": 525,
+    "word_end_index": 525
+  },
+  {
+    "segment_id": "seg_0068",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 187.4,
+    "end_sec": 188.44,
+    "start_time": "03:07.400",
+    "end_time": "03:08.440",
+    "duration_sec": 1.04,
+    "text": "Thank you, appreciate that.",
+    "word_start_index": 526,
+    "word_end_index": 529
+  },
+  {
+    "segment_id": "seg_0069",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 192.79,
+    "end_sec": 195.38,
+    "start_time": "03:12.790",
+    "end_time": "03:15.380",
+    "duration_sec": 2.59,
+    "text": "\"I made out with Gwyneth Paltrow during an SNL sketch.\"",
+    "word_start_index": 530,
+    "word_end_index": 539
+  },
+  {
+    "segment_id": "seg_0070",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 198.16,
+    "end_sec": 200.9,
+    "start_time": "03:18.160",
+    "end_time": "03:20.900",
+    "duration_sec": 2.74,
+    "text": "Okay. What was the game of the sketch?",
+    "word_start_index": 540,
+    "word_end_index": 547
+  },
+  {
+    "segment_id": "seg_0071",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 201.7,
+    "end_sec": 216.76,
+    "start_time": "03:21.700",
+    "end_time": "03:36.760",
+    "duration_sec": 15.06,
+    "text": "It was a Maya sketch. That's a prop, don't smoke that. It's a prop. It's all fake. It's fake smoke. It was a Maya sketch, something about high school, and we were in a, we were boyfriend and girlfriend or something like that. And I, I never go for it when I, if I have a kissing scene, but she went, she went for it.",
+    "word_start_index": 548,
+    "word_end_index": 612
+  },
+  {
+    "segment_id": "seg_0072",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 217.06,
+    "end_sec": 218.16,
+    "start_time": "03:37.060",
+    "end_time": "03:38.160",
+    "duration_sec": 1.1,
+    "text": "How long had you been on the show?",
+    "word_start_index": 613,
+    "word_end_index": 620
+  },
+  {
+    "segment_id": "seg_0073",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 218.84,
+    "end_sec": 219.44,
+    "start_time": "03:38.840",
+    "end_time": "03:39.440",
+    "duration_sec": 0.6,
+    "text": "Two seasons.",
+    "word_start_index": 621,
+    "word_end_index": 622
+  },
+  {
+    "segment_id": "seg_0074",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 219.74,
+    "end_sec": 219.96,
+    "start_time": "03:39.740",
+    "end_time": "03:39.960",
+    "duration_sec": 0.22,
+    "text": "Tongue?",
+    "word_start_index": 623,
+    "word_end_index": 623
+  },
+  {
+    "segment_id": "seg_0075",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 220.6,
+    "end_sec": 220.76,
+    "start_time": "03:40.600",
+    "end_time": "03:40.760",
+    "duration_sec": 0.16,
+    "text": "Yeah.",
+    "word_start_index": 624,
+    "word_end_index": 624
+  },
+  {
+    "segment_id": "seg_0076",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 222.4,
+    "end_sec": 229.48,
+    "start_time": "03:42.400",
+    "end_time": "03:49.480",
+    "duration_sec": 7.08,
+    "text": "I went for it. I, it didn't make it to air, but I think if it did make it to air, then maybe we would've struck up a relationship maybe.",
+    "word_start_index": 625,
+    "word_end_index": 654
+  },
+  {
+    "segment_id": "seg_0077",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 230.08,
+    "end_sec": 232.2,
+    "start_time": "03:50.080",
+    "end_time": "03:52.200",
+    "duration_sec": 2.12,
+    "text": "You seem to be stuttering a lot there, Fallon.",
+    "word_start_index": 655,
+    "word_end_index": 663
+  },
+  {
+    "segment_id": "seg_0078",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 233.6,
+    "end_sec": 235.7,
+    "start_time": "03:53.600",
+    "end_time": "03:55.700",
+    "duration_sec": 2.1,
+    "text": "Did you rehearse the kiss during the week?",
+    "word_start_index": 664,
+    "word_end_index": 671
+  },
+  {
+    "segment_id": "seg_0079",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 237.0,
+    "end_sec": 237.2,
+    "start_time": "03:57.000",
+    "end_time": "03:57.200",
+    "duration_sec": 0.2,
+    "text": "No.",
+    "word_start_index": 672,
+    "word_end_index": 672
+  },
+  {
+    "segment_id": "seg_0080",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 238.22,
+    "end_sec": 238.7,
+    "start_time": "03:58.220",
+    "end_time": "03:58.700",
+    "duration_sec": 0.48,
+    "text": "Ah.",
+    "word_start_index": 673,
+    "word_end_index": 673
+  },
+  {
+    "segment_id": "seg_0081",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 239.22,
+    "end_sec": 242.44,
+    "start_time": "03:59.220",
+    "end_time": "04:02.440",
+    "duration_sec": 3.22,
+    "text": "We didn't rehearse the kiss during the... It's just, she just, dress rehearsal, I guess-",
+    "word_start_index": 674,
+    "word_end_index": 688
+  },
+  {
+    "segment_id": "seg_0082",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 242.46,
+    "end_sec": 244.44,
+    "start_time": "04:02.460",
+    "end_time": "04:04.440",
+    "duration_sec": 1.98,
+    "text": "You seem to be moving your head a lot there, Fallon.",
+    "word_start_index": 689,
+    "word_end_index": 699
+  },
+  {
+    "segment_id": "seg_0083",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 245.98,
+    "end_sec": 247.53,
+    "start_time": "04:05.980",
+    "end_time": "04:07.530",
+    "duration_sec": 1.55,
+    "text": "You're not moving your head. Why, what is it?",
+    "word_start_index": 700,
+    "word_end_index": 708
+  },
+  {
+    "segment_id": "seg_0084",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 247.56,
+    "end_sec": 248.51,
+    "start_time": "04:07.560",
+    "end_time": "04:08.510",
+    "duration_sec": 0.95,
+    "text": "I'm not moving at all, Fallon.",
+    "word_start_index": 709,
+    "word_end_index": 714
+  },
+  {
+    "segment_id": "seg_0085",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 248.53,
+    "end_sec": 250.8,
+    "start_time": "04:08.530",
+    "end_time": "04:10.800",
+    "duration_sec": 2.27,
+    "text": "But I know, but I'm not, but I'm just a very physical person.",
+    "word_start_index": 715,
+    "word_end_index": 727
+  },
+  {
+    "segment_id": "seg_0086",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 250.88,
+    "end_sec": 253.32,
+    "start_time": "04:10.880",
+    "end_time": "04:13.320",
+    "duration_sec": 2.44,
+    "text": "Don't talk to me. Talk to both of us, Fallon.",
+    "word_start_index": 728,
+    "word_end_index": 737
+  },
+  {
+    "segment_id": "seg_0087",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 254.36,
+    "end_sec": 256.719,
+    "start_time": "04:14.360",
+    "end_time": "04:16.719",
+    "duration_sec": 2.359,
+    "text": "Well, we're trying to save your ass here, okay?",
+    "word_start_index": 738,
+    "word_end_index": 746
+  },
+  {
+    "segment_id": "seg_0088",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 256.86,
+    "end_sec": 258.25,
+    "start_time": "04:16.860",
+    "end_time": "04:18.250",
+    "duration_sec": 1.39,
+    "text": "Okay, okay.",
+    "word_start_index": 747,
+    "word_end_index": 748
+  },
+  {
+    "segment_id": "seg_0089",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 258.28,
+    "end_sec": 259.56,
+    "start_time": "04:18.280",
+    "end_time": "04:19.560",
+    "duration_sec": 1.28,
+    "text": "We want to kind of deal.",
+    "word_start_index": 749,
+    "word_end_index": 754
+  },
+  {
+    "segment_id": "seg_0090",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 259.899,
+    "end_sec": 260.88,
+    "start_time": "04:19.899",
+    "end_time": "04:20.880",
+    "duration_sec": 0.981,
+    "text": "Okay, let's cut a deal.",
+    "word_start_index": 755,
+    "word_end_index": 759
+  },
+  {
+    "segment_id": "seg_0091",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 261.42,
+    "end_sec": 264.18,
+    "start_time": "04:21.420",
+    "end_time": "04:24.180",
+    "duration_sec": 2.76,
+    "text": "I can get you immunity and relocation.",
+    "word_start_index": 760,
+    "word_end_index": 766
+  },
+  {
+    "segment_id": "seg_0092",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 265.62,
+    "end_sec": 267.9,
+    "start_time": "04:25.620",
+    "end_time": "04:27.900",
+    "duration_sec": 2.28,
+    "text": "Uh, what do you think? Truth or lie?",
+    "word_start_index": 767,
+    "word_end_index": 774
+  },
+  {
+    "segment_id": "seg_0093",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 268.12,
+    "end_sec": 268.84,
+    "start_time": "04:28.120",
+    "end_time": "04:28.840",
+    "duration_sec": 0.72,
+    "text": "I think it's total BS.",
+    "word_start_index": 775,
+    "word_end_index": 779
+  },
+  {
+    "segment_id": "seg_0094",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 269.36,
+    "end_sec": 270.96,
+    "start_time": "04:29.360",
+    "end_time": "04:30.960",
+    "duration_sec": 1.6,
+    "text": "Yeah, I agree. It's a lie.",
+    "word_start_index": 780,
+    "word_end_index": 785
+  },
+  {
+    "segment_id": "seg_0095",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 271.2,
+    "end_sec": 271.29,
+    "start_time": "04:31.200",
+    "end_time": "04:31.290",
+    "duration_sec": 0.09,
+    "text": "Yeah?",
+    "word_start_index": 786,
+    "word_end_index": 786
+  },
+  {
+    "segment_id": "seg_0096",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 271.5,
+    "end_sec": 272.06,
+    "start_time": "04:31.500",
+    "end_time": "04:32.060",
+    "duration_sec": 0.56,
+    "text": "I don't buy it.",
+    "word_start_index": 787,
+    "word_end_index": 790
+  },
+  {
+    "segment_id": "seg_0097",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 272.66,
+    "end_sec": 275.16,
+    "start_time": "04:32.660",
+    "end_time": "04:35.160",
+    "duration_sec": 2.5,
+    "text": "It's a total lie. She's very professional. She would never do that.",
+    "word_start_index": 791,
+    "word_end_index": 802
+  },
+  {
+    "segment_id": "seg_0098",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 278.05,
+    "end_sec": 278.05,
+    "start_time": "04:38.050",
+    "end_time": "04:38.050",
+    "duration_sec": 0.0,
+    "text": "Yeah.",
+    "word_start_index": 803,
+    "word_end_index": 803
+  },
+  {
+    "segment_id": "seg_0099",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 278.44,
+    "end_sec": 279.74,
+    "start_time": "04:38.440",
+    "end_time": "04:39.740",
+    "duration_sec": 1.3,
+    "text": "All right. Horrible liar. It means we're good friends.",
+    "word_start_index": 804,
+    "word_end_index": 812
+  },
+  {
+    "segment_id": "seg_0100",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 279.75,
+    "end_sec": 280.56,
+    "start_time": "04:39.750",
+    "end_time": "04:40.560",
+    "duration_sec": 0.81,
+    "text": "I'm really bad at it.",
+    "word_start_index": 813,
+    "word_end_index": 817
+  },
+  {
+    "segment_id": "seg_0101",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 280.6,
+    "end_sec": 287.38,
+    "start_time": "04:40.600",
+    "end_time": "04:47.380",
+    "duration_sec": 6.78,
+    "text": "Yeah, I'm a bad liar. All right. Kate, it is your turn. I will choose the envelope. To me, you are a number one.",
+    "word_start_index": 818,
+    "word_end_index": 841
+  },
+  {
+    "segment_id": "seg_0102",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 287.44,
+    "end_sec": 288.1,
+    "start_time": "04:47.440",
+    "end_time": "04:48.100",
+    "duration_sec": 0.66,
+    "text": "Oh, bless you.",
+    "word_start_index": 842,
+    "word_end_index": 844
+  },
+  {
+    "segment_id": "seg_0103",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 288.34,
+    "end_sec": 288.6,
+    "start_time": "04:48.340",
+    "end_time": "04:48.600",
+    "duration_sec": 0.26,
+    "text": "Yeah.",
+    "word_start_index": 845,
+    "word_end_index": 845
+  },
+  {
+    "segment_id": "seg_0104",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 289.26,
+    "end_sec": 289.8,
+    "start_time": "04:49.260",
+    "end_time": "04:49.800",
+    "duration_sec": 0.54,
+    "text": "Oh my goodness.",
+    "word_start_index": 846,
+    "word_end_index": 848
+  },
+  {
+    "segment_id": "seg_0105",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 289.96,
+    "end_sec": 290.84,
+    "start_time": "04:49.960",
+    "end_time": "04:50.840",
+    "duration_sec": 0.88,
+    "text": "That's what's in the cup.",
+    "word_start_index": 849,
+    "word_end_index": 853
+  },
+  {
+    "segment_id": "seg_0106",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 290.99,
+    "end_sec": 291.26,
+    "start_time": "04:50.990",
+    "end_time": "04:51.260",
+    "duration_sec": 0.27,
+    "text": "That's sweet.",
+    "word_start_index": 854,
+    "word_end_index": 855
+  },
+  {
+    "segment_id": "seg_0107",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 291.68,
+    "end_sec": 293.58,
+    "start_time": "04:51.680",
+    "end_time": "04:53.580",
+    "duration_sec": 1.9,
+    "text": "I know. I drank it.",
+    "word_start_index": 856,
+    "word_end_index": 860
+  },
+  {
+    "segment_id": "seg_0108",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 293.82,
+    "end_sec": 295.2,
+    "start_time": "04:53.820",
+    "end_time": "04:55.200",
+    "duration_sec": 1.38,
+    "text": "Yeah, you did. Certainly did.",
+    "word_start_index": 861,
+    "word_end_index": 865
+  },
+  {
+    "segment_id": "seg_0109",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 295.8,
+    "end_sec": 299.06,
+    "start_time": "04:55.800",
+    "end_time": "04:59.060",
+    "duration_sec": 3.26,
+    "text": "\"I once snuck into a zoo after hours.\"",
+    "word_start_index": 866,
+    "word_end_index": 873
+  },
+  {
+    "segment_id": "seg_0110",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 302.74,
+    "end_sec": 305.82,
+    "start_time": "05:02.740",
+    "end_time": "05:05.820",
+    "duration_sec": 3.08,
+    "text": "Why would you want to sneak into a zoo? To see a, a, a certain animal?",
+    "word_start_index": 874,
+    "word_end_index": 889
+  },
+  {
+    "segment_id": "seg_0111",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 306.56,
+    "end_sec": 306.74,
+    "start_time": "05:06.560",
+    "end_time": "05:06.740",
+    "duration_sec": 0.18,
+    "text": "Yes.",
+    "word_start_index": 890,
+    "word_end_index": 890
+  },
+  {
+    "segment_id": "seg_0112",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 307.19,
+    "end_sec": 309.46,
+    "start_time": "05:07.190",
+    "end_time": "05:09.460",
+    "duration_sec": 2.27,
+    "text": "Do you have a thing for zoos, or were you just being rebellious?",
+    "word_start_index": 891,
+    "word_end_index": 903
+  },
+  {
+    "segment_id": "seg_0113",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 310.24,
+    "end_sec": 310.86,
+    "start_time": "05:10.240",
+    "end_time": "05:10.860",
+    "duration_sec": 0.62,
+    "text": "I enjoy a zoo.",
+    "word_start_index": 904,
+    "word_end_index": 907
+  },
+  {
+    "segment_id": "seg_0114",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 313.36,
+    "end_sec": 314.219,
+    "start_time": "05:13.360",
+    "end_time": "05:14.219",
+    "duration_sec": 0.859,
+    "text": "Do you, do you live close to a zoo?",
+    "word_start_index": 908,
+    "word_end_index": 916
+  },
+  {
+    "segment_id": "seg_0115",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 314.64,
+    "end_sec": 314.65,
+    "start_time": "05:14.640",
+    "end_time": "05:14.650",
+    "duration_sec": 0.01,
+    "text": "No.",
+    "word_start_index": 917,
+    "word_end_index": 917
+  },
+  {
+    "segment_id": "seg_0116",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 315.58,
+    "end_sec": 316.7,
+    "start_time": "05:15.580",
+    "end_time": "05:16.700",
+    "duration_sec": 1.12,
+    "text": "So you'd had to travel to get there?",
+    "word_start_index": 918,
+    "word_end_index": 925
+  },
+  {
+    "segment_id": "seg_0117",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 316.89,
+    "end_sec": 317.08,
+    "start_time": "05:16.890",
+    "end_time": "05:17.080",
+    "duration_sec": 0.19,
+    "text": "Oh, yeah.",
+    "word_start_index": 926,
+    "word_end_index": 927
+  },
+  {
+    "segment_id": "seg_0118",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 317.6,
+    "end_sec": 318.2,
+    "start_time": "05:17.600",
+    "end_time": "05:18.200",
+    "duration_sec": 0.6,
+    "text": "You were there alone?",
+    "word_start_index": 928,
+    "word_end_index": 931
+  },
+  {
+    "segment_id": "seg_0119",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 318.76,
+    "end_sec": 318.86,
+    "start_time": "05:18.760",
+    "end_time": "05:18.860",
+    "duration_sec": 0.1,
+    "text": "No.",
+    "word_start_index": 932,
+    "word_end_index": 932
+  },
+  {
+    "segment_id": "seg_0120",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 319.62,
+    "end_sec": 320.38,
+    "start_time": "05:19.620",
+    "end_time": "05:20.380",
+    "duration_sec": 0.76,
+    "text": "Besides the animals.",
+    "word_start_index": 933,
+    "word_end_index": 935
+  },
+  {
+    "segment_id": "seg_0121",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 321.0,
+    "end_sec": 321.38,
+    "start_time": "05:21.000",
+    "end_time": "05:21.380",
+    "duration_sec": 0.38,
+    "text": "No.",
+    "word_start_index": 936,
+    "word_end_index": 936
+  },
+  {
+    "segment_id": "seg_0122",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 321.82,
+    "end_sec": 324.12,
+    "start_time": "05:21.820",
+    "end_time": "05:24.120",
+    "duration_sec": 2.3,
+    "text": "Did the travel include anything like an airline flight?",
+    "word_start_index": 937,
+    "word_end_index": 945
+  },
+  {
+    "segment_id": "seg_0123",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 324.38,
+    "end_sec": 324.56,
+    "start_time": "05:24.380",
+    "end_time": "05:24.560",
+    "duration_sec": 0.18,
+    "text": "Yes.",
+    "word_start_index": 946,
+    "word_end_index": 946
+  },
+  {
+    "segment_id": "seg_0124",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 326.24,
+    "end_sec": 328.16,
+    "start_time": "05:26.240",
+    "end_time": "05:28.160",
+    "duration_sec": 1.92,
+    "text": "You flew to a place to go-",
+    "word_start_index": 947,
+    "word_end_index": 953
+  },
+  {
+    "segment_id": "seg_0125",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 328.46,
+    "end_sec": 328.58,
+    "start_time": "05:28.460",
+    "end_time": "05:28.580",
+    "duration_sec": 0.12,
+    "text": "Let me-",
+    "word_start_index": 954,
+    "word_end_index": 955
+  },
+  {
+    "segment_id": "seg_0126",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 328.59,
+    "end_sec": 329.56,
+    "start_time": "05:28.590",
+    "end_time": "05:29.560",
+    "duration_sec": 0.97,
+    "text": "... after hours to a zoo",
+    "word_start_index": 956,
+    "word_end_index": 961
+  },
+  {
+    "segment_id": "seg_0127",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 329.82,
+    "end_sec": 330.5,
+    "start_time": "05:29.820",
+    "end_time": "05:30.500",
+    "duration_sec": 0.68,
+    "text": "... get this straight.",
+    "word_start_index": 962,
+    "word_end_index": 965
+  },
+  {
+    "segment_id": "seg_0128",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 330.88,
+    "end_sec": 331.03,
+    "start_time": "05:30.880",
+    "end_time": "05:31.030",
+    "duration_sec": 0.15,
+    "text": "What?",
+    "word_start_index": 966,
+    "word_end_index": 966
+  },
+  {
+    "segment_id": "seg_0129",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 331.28,
+    "end_sec": 336.5,
+    "start_time": "05:31.280",
+    "end_time": "05:36.500",
+    "duration_sec": 5.22,
+    "text": "You took a plane to walk to a zoo to go over into a zoo after hours?",
+    "word_start_index": 967,
+    "word_end_index": 983
+  },
+  {
+    "segment_id": "seg_0130",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 337.27,
+    "end_sec": 341.74,
+    "start_time": "05:37.270",
+    "end_time": "05:41.740",
+    "duration_sec": 4.47,
+    "text": "The zoo wasn't the only reason I'd boarded the plane, but it was one of them.",
+    "word_start_index": 984,
+    "word_end_index": 999
+  },
+  {
+    "segment_id": "seg_0131",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 344.34,
+    "end_sec": 345.9,
+    "start_time": "05:44.340",
+    "end_time": "05:45.900",
+    "duration_sec": 1.56,
+    "text": "Was there a, were the animals sleeping?",
+    "word_start_index": 1000,
+    "word_end_index": 1006
+  },
+  {
+    "segment_id": "seg_0132",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 347.02,
+    "end_sec": 347.14,
+    "start_time": "05:47.020",
+    "end_time": "05:47.140",
+    "duration_sec": 0.12,
+    "text": "No.",
+    "word_start_index": 1007,
+    "word_end_index": 1007
+  },
+  {
+    "segment_id": "seg_0133",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 347.98,
+    "end_sec": 349.08,
+    "start_time": "05:47.980",
+    "end_time": "05:49.080",
+    "duration_sec": 1.1,
+    "text": "First class or coach?",
+    "word_start_index": 1008,
+    "word_end_index": 1011
+  },
+  {
+    "segment_id": "seg_0134",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 350.26,
+    "end_sec": 350.64,
+    "start_time": "05:50.260",
+    "end_time": "05:50.640",
+    "duration_sec": 0.38,
+    "text": "Coach.",
+    "word_start_index": 1012,
+    "word_end_index": 1012
+  },
+  {
+    "segment_id": "seg_0135",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 350.9,
+    "end_sec": 352.0,
+    "start_time": "05:50.900",
+    "end_time": "05:52.000",
+    "duration_sec": 1.1,
+    "text": "I don't believe a word of it.",
+    "word_start_index": 1013,
+    "word_end_index": 1019
+  },
+  {
+    "segment_id": "seg_0136",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 352.2,
+    "end_sec": 352.9,
+    "start_time": "05:52.200",
+    "end_time": "05:52.900",
+    "duration_sec": 0.7,
+    "text": "Wait, wait, wait.",
+    "word_start_index": 1020,
+    "word_end_index": 1022
+  },
+  {
+    "segment_id": "seg_0137",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 352.96,
+    "end_sec": 353.62,
+    "start_time": "05:52.960",
+    "end_time": "05:53.620",
+    "duration_sec": 0.66,
+    "text": "I'm sorry, wait.",
+    "word_start_index": 1023,
+    "word_end_index": 1025
+  },
+  {
+    "segment_id": "seg_0138",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 354.24,
+    "end_sec": 356.66,
+    "start_time": "05:54.240",
+    "end_time": "05:56.660",
+    "duration_sec": 2.42,
+    "text": "Wait, why would she, would she, she could fly coach. I fly coach.",
+    "word_start_index": 1026,
+    "word_end_index": 1038
+  },
+  {
+    "segment_id": "seg_0139",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 356.7,
+    "end_sec": 360.16,
+    "start_time": "05:56.700",
+    "end_time": "06:00.160",
+    "duration_sec": 3.46,
+    "text": "Not to, not to hop the wall in a zoo you don't fly coach. Everybody knows that.",
+    "word_start_index": 1039,
+    "word_end_index": 1055
+  },
+  {
+    "segment_id": "seg_0140",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 360.88,
+    "end_sec": 366.98,
+    "start_time": "06:00.880",
+    "end_time": "06:06.980",
+    "duration_sec": 6.1,
+    "text": "What are you talking about? That's not the point. That's so... I love that that's the last, last time we ever talk to each other.",
+    "word_start_index": 1056,
+    "word_end_index": 1080
+  },
+  {
+    "segment_id": "seg_0141",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 368.34,
+    "end_sec": 370.6,
+    "start_time": "06:08.340",
+    "end_time": "06:10.600",
+    "duration_sec": 2.26,
+    "text": "I think... Well, I can get enough questions in there.",
+    "word_start_index": 1081,
+    "word_end_index": 1090
+  },
+  {
+    "segment_id": "seg_0142",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 370.69,
+    "end_sec": 370.69,
+    "start_time": "06:10.690",
+    "end_time": "06:10.690",
+    "duration_sec": 0.0,
+    "text": "Mm.",
+    "word_start_index": 1091,
+    "word_end_index": 1091
+  },
+  {
+    "segment_id": "seg_0143",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 370.7,
+    "end_sec": 372.54,
+    "start_time": "06:10.700",
+    "end_time": "06:12.540",
+    "duration_sec": 1.84,
+    "text": "But... Mm.",
+    "word_start_index": 1092,
+    "word_end_index": 1093
+  },
+  {
+    "segment_id": "seg_0144",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 372.72,
+    "end_sec": 376.099,
+    "start_time": "06:12.720",
+    "end_time": "06:16.099",
+    "duration_sec": 3.379,
+    "text": "Too busy playing your games. Well, joke's on you, buster.",
+    "word_start_index": 1094,
+    "word_end_index": 1103
+  },
+  {
+    "segment_id": "seg_0145",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 376.75,
+    "end_sec": 378.8,
+    "start_time": "06:16.750",
+    "end_time": "06:18.800",
+    "duration_sec": 2.05,
+    "text": "Why's the joke on me, buster? I didn't even do anything yet.",
+    "word_start_index": 1104,
+    "word_end_index": 1115
+  },
+  {
+    "segment_id": "seg_0146",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 378.86,
+    "end_sec": 379.13,
+    "start_time": "06:18.860",
+    "end_time": "06:19.130",
+    "duration_sec": 0.27,
+    "text": "I don't know.",
+    "word_start_index": 1116,
+    "word_end_index": 1118
+  },
+  {
+    "segment_id": "seg_0147",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 379.28,
+    "end_sec": 379.82,
+    "start_time": "06:19.280",
+    "end_time": "06:19.820",
+    "duration_sec": 0.54,
+    "text": "I say-",
+    "word_start_index": 1119,
+    "word_end_index": 1120
+  },
+  {
+    "segment_id": "seg_0148",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 380.08,
+    "end_sec": 380.52,
+    "start_time": "06:20.080",
+    "end_time": "06:20.520",
+    "duration_sec": 0.44,
+    "text": "Say no way.",
+    "word_start_index": 1121,
+    "word_end_index": 1123
+  },
+  {
+    "segment_id": "seg_0149",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 380.8,
+    "end_sec": 384.29,
+    "start_time": "06:20.800",
+    "end_time": "06:24.290",
+    "duration_sec": 3.49,
+    "text": "I say totally happened. Yes, I think it happened. You say didn't happen.",
+    "word_start_index": 1124,
+    "word_end_index": 1136
+  },
+  {
+    "segment_id": "seg_0150",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 384.34,
+    "end_sec": 385.159,
+    "start_time": "06:24.340",
+    "end_time": "06:25.159",
+    "duration_sec": 0.819,
+    "text": "It's a lie.",
+    "word_start_index": 1137,
+    "word_end_index": 1139
+  },
+  {
+    "segment_id": "seg_0151",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 385.22,
+    "end_sec": 388.36,
+    "start_time": "06:25.220",
+    "end_time": "06:28.360",
+    "duration_sec": 3.14,
+    "text": "I say it's the truth. Yes, it is the truth.",
+    "word_start_index": 1140,
+    "word_end_index": 1149
+  },
+  {
+    "segment_id": "seg_0152",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 392.04,
+    "end_sec": 397.76,
+    "start_time": "06:32.040",
+    "end_time": "06:37.760",
+    "duration_sec": 5.72,
+    "text": "Yes. Adventurous, adventurous, creative mind. Our thanks to Kate McKinnon and John Cena for the true confessions.",
+    "word_start_index": 1150,
+    "word_end_index": 1166
+  },
+  {
+    "segment_id": "seg_0153",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 402.6,
+    "end_sec": 402.9,
+    "start_time": "06:42.600",
+    "end_time": "06:42.900",
+    "duration_sec": 0.3,
+    "text": "Uh,",
+    "word_start_index": 1167,
+    "word_end_index": 1167
+  },
+  {
+    "segment_id": "seg_0154",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 405.36,
+    "end_sec": 407.84,
+    "start_time": "06:45.360",
+    "end_time": "06:47.840",
+    "duration_sec": 2.48,
+    "text": "yeah. I ain't playin'",
+    "word_start_index": 1168,
+    "word_end_index": 1171
+  }
+]

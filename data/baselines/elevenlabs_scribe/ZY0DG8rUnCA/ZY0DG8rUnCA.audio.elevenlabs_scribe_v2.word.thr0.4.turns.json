@@ -1,0 +1,488 @@
+[
+  {
+    "speaker": "speaker_0",
+    "start": 8.78,
+    "end": 9.26,
+    "text": "How much?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 10.3,
+    "end": 12.08,
+    "text": "69 cent."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 12.12,
+    "end": 12.74,
+    "text": "And the gas."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 13.84,
+    "end": 15.8,
+    "text": "Y'all getting any rain up your way?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 17.42,
+    "end": 18.42,
+    "text": "What way would that be?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 18.74,
+    "end": 20.32,
+    "text": "I seen you was from Dallas."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 22.94,
+    "end": 25.78,
+    "text": "What business is it of yours where I'm from,"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 27.72,
+    "end": 28.28,
+    "text": "friendo?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 31.0,
+    "end": 32.61,
+    "text": "I didn't mean nothing by it."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 32.74,
+    "end": 33.86,
+    "text": "You didn't mean nothing."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 34.94,
+    "end": 36.32,
+    "text": "Just passing the time."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 38.66,
+    "end": 41.98,
+    "text": "If you don't wanna accept that, I don't know what else I can do for you."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 45.36,
+    "end": 46.52,
+    "text": "Will there be something else?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 46.94,
+    "end": 48.54,
+    "text": "I don't know. Will there?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 55.3,
+    "end": 56.14,
+    "text": "Is something wrong?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 56.62,
+    "end": 57.0,
+    "text": "With what?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 57.2,
+    "end": 57.84,
+    "text": "With anything."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 59.58,
+    "end": 63.46,
+    "text": "Is that what you're asking me? Is there something wrong with anything?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 64.28,
+    "end": 65.36,
+    "text": "Will there be anything else?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 65.62,
+    "end": 66.58,
+    "text": "You already asked me that."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 70.26,
+    "end": 72.94,
+    "text": "Oh, well, I need to see about closing now."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 73.48,
+    "end": 74.3,
+    "text": "See about closing."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 74.58,
+    "end": 74.94,
+    "text": "Yes, sir."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 75.14,
+    "end": 76.14,
+    "text": "What time do you close?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 76.4,
+    "end": 77.6,
+    "text": "Now. We close now."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 77.78,
+    "end": 79.84,
+    "text": "Now is not a time. What time do you close?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 79.94,
+    "end": 81.64,
+    "text": "Generally around dark. At dark."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 86.54,
+    "end": 88.08,
+    "text": "You don't know what you're talking about, do you?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 88.54,
+    "end": 88.9,
+    "text": "Sir?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 90.78,
+    "end": 93.9,
+    "text": "I said you don't know what you're talking about."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 97.04,
+    "end": 98.26,
+    "text": "What time do you go to bed?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 98.84,
+    "end": 99.24,
+    "text": "Sir?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 99.74,
+    "end": 103.02,
+    "text": "You're a bit, uh, fragile. I said what time do you go to bed?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 105.12,
+    "end": 105.3,
+    "text": "Oh,"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 107.84,
+    "end": 111.1,
+    "text": "somewhere around 9:30. I'd, I'd say around 9:30."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 111.6,
+    "end": 112.54,
+    "text": "I could come back then."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 112.96,
+    "end": 115.26,
+    "text": "Why would you be coming back? We'll be closed."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 115.38,
+    "end": 116.08,
+    "text": "Yeah, you said that."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 118.52,
+    "end": 120.0,
+    "text": "Well, I got to close now."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 120.22,
+    "end": 121.8,
+    "text": "You live in that house out back?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 124.0,
+    "end": 124.8,
+    "text": "Yes, I do."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 125.86,
+    "end": 126.98,
+    "text": "You lived here all your life?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 128.72,
+    "end": 132.36,
+    "text": "This was my wife's father's place o- originally."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 135.3,
+    "end": 136.12,
+    "text": "You married into it."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 137.26,
+    "end": 139.8,
+    "text": "We lived in Temple, Texas for many years."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 141.44,
+    "end": 146.88,
+    "text": "Raised a family there in Temple. We come out here about four years ago."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 147.52,
+    "end": 148.48,
+    "text": "You married into it."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 149.45,
+    "end": 150.74,
+    "text": "If that's the way you wanna put it."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 151.06,
+    "end": 152.88,
+    "text": "Well, I don't have some way to put it."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 154.08,
+    "end": 154.92,
+    "text": "That's the way it is."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 163.38,
+    "end": 165.72,
+    "text": "What's the most you ever lost on a coin toss?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 167.14,
+    "end": 167.42,
+    "text": "Sir?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 167.8,
+    "end": 170.78,
+    "text": "The most you ever lost on a coin toss."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 172.92,
+    "end": 174.84,
+    "text": "I don't know. I couldn't say."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 178.23,
+    "end": 178.6,
+    "text": "Call it."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 179.46,
+    "end": 179.88,
+    "text": "Call it."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 179.92,
+    "end": 180.14,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 181.26,
+    "end": 181.9,
+    "text": "For what?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 182.28,
+    "end": 182.84,
+    "text": "Just call it."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 185.9,
+    "end": 189.58,
+    "text": "Well, we need to know what we're calling it for here."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 189.74,
+    "end": 194.28,
+    "text": "You need to call it. I can't call it for you. Well, it wouldn't be fair."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 195.12,
+    "end": 196.36,
+    "text": "I didn't put nothing up."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 196.5,
+    "end": 200.9,
+    "text": "Yes, you did. You've been putting it up your whole life. You just didn't know it."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 202.58,
+    "end": 204.1,
+    "text": "You know what date is on this coin?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 204.88,
+    "end": 205.08,
+    "text": "No."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 205.42,
+    "end": 213.44,
+    "text": "1958. It's been traveling 22 years to get here, and now it's here, and it's either heads or tails,"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 214.72,
+    "end": 215.94,
+    "text": "and you have to say call it."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 216.7,
+    "end": 219.62,
+    "text": "Look, I n- need to know what I stand to win."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 219.76,
+    "end": 220.299,
+    "text": "Everything."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 221.8,
+    "end": 222.29,
+    "text": "How's that?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 222.78,
+    "end": 224.6,
+    "text": "You stand to win everything. Call it."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 229.42,
+    "end": 229.84,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 231.68,
+    "end": 232.46,
+    "text": "Heads then."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 237.56,
+    "end": 238.08,
+    "text": "Well done."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 240.72,
+    "end": 241.64,
+    "text": "Don't put it in your pocket."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 241.76,
+    "end": 241.98,
+    "text": "Sir?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 242.74,
+    "end": 244.6,
+    "text": "Don't put it in your pocket. It's your lucky quarter."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 246.64,
+    "end": 247.94,
+    "text": "Where you want me to put it?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 248.04,
+    "end": 249.12,
+    "text": "Anywhere not in your pocket"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 250.38,
+    "end": 253.22,
+    "text": "or it'll get mixed in with the others and become just a coin."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 257.84,
+    "end": 258.399,
+    "text": "Which it is."
+  }
+]

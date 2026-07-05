@@ -98,7 +98,7 @@ from realtime.realtime_transcript import (
 )
 
 def read_canonical_segments(path: Path) -> list[dict[str, Any]]:
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = json.loads(path.read_text(encoding="utf-8-sig"))
     if isinstance(data, list):
         return data
     if isinstance(data, dict) and isinstance(data.get("segments"), list):

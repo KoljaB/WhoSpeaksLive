@@ -1,0 +1,71 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,3.96,18.88,14.92,"Britain is home to almost 30,000 Thai people, and in the heart of southwest London is Europe's only purpose-built Thai temple, where I'll be serving up a very special meal. I love Thai food. I love cooking it, and I love eating it. But this has to be the most daunting task so far."
+seg_0001,SPEAKER_1,speaker_0,21.11,28.54,7.43,This small and revered group of Buddhist monks live in the monastery attached to the temple. They spend most of their waking hours meditating and studying.
+seg_0002,SPEAKER_1,speaker_0,30.5,37.8,7.3,"Buddhist teachings forbid them to cook, so it's up to the local Thai community to offer the one meal the monks are allowed to eat at 11:00 each day."
+seg_0003,SPEAKER_1,speaker_0,40.52,48.46,7.94,"Helping me fulfill this honor and privilege is Chang, executive chef of the Blue Elephant, one of London's top Thai restaurants. Morning. Chang, good morning. How are you?"
+seg_0004,SPEAKER_2,speaker_1,48.48,49.72,1.24,"Good morning, Gordon. How are you?"
+seg_0005,SPEAKER_1,speaker_0,49.76,50.18,0.42,Good to see you.
+seg_0006,SPEAKER_2,speaker_1,50.269,51.8,1.531,Thank you for come to the Blue Elephant.
+seg_0007,SPEAKER_1,speaker_0,51.86,53.04,1.18,"God, a little bit tight in here, no?"
+seg_0008,SPEAKER_2,speaker_1,53.1,54.78,1.68,"Of course. Because this is the Thai kitchen, no?"
+seg_0009,SPEAKER_1,speaker_0,55.14,57.44,2.3,"Where have you gone, Chang? Morning, everybody."
+seg_0010,SPEAKER_3,speaker_2,57.949,57.949,0.0,Oh.
+seg_0011,SPEAKER_1,speaker_0,58.04,58.66,0.62,"Uh, hi."
+seg_0012,SPEAKER_2,speaker_1,59.19,60.03,0.84,"I'm here, I'm here."
+seg_0013,SPEAKER_1,speaker_0,60.04,60.76,0.72,"Pressure's on, right?"
+seg_0014,SPEAKER_2,speaker_1,60.88,61.04,0.16,Yeah.
+seg_0015,SPEAKER_1,speaker_0,61.4,62.58,1.18,So they've gotta be before 11:00.
+seg_0016,SPEAKER_2,speaker_1,62.76,62.84,0.08,Yeah.
+seg_0017,SPEAKER_1,speaker_0,62.98,63.84,0.86,Are they fussy eaters?
+seg_0018,SPEAKER_2,speaker_1,64.04,64.22,0.18,No.
+seg_0019,SPEAKER_1,speaker_0,64.56,64.57,0.01,No.
+seg_0020,SPEAKER_2,speaker_1,64.599,65.94,1.341,"They are really nice, they're really kind."
+seg_0021,SPEAKER_1,speaker_0,65.97,67.06,1.09,Great. Do they ever send food back?
+seg_0022,SPEAKER_2,speaker_1,67.8,68.0,0.2,No.
+seg_0023,SPEAKER_1,speaker_0,68.2,68.24,0.04,No.
+seg_0024,SPEAKER_2,speaker_1,68.3,68.62,0.32,Never.
+seg_0025,SPEAKER_1,speaker_0,71.19,81.02,9.83,"The restaurant prepares the very best dishes to offer to the monastery, and every dish has to be perfect, like these savory dumplings known as moneybags. So that's a moneybag. And that's it."
+seg_0026,SPEAKER_2,speaker_1,81.56,83.62,2.06,Yeah. So easy and simple.
+seg_0027,SPEAKER_1,speaker_0,84.1,84.13,0.03,Uh-huh.
+seg_0028,SPEAKER_2,speaker_1,84.18,84.84,0.66,Maybe you can try.
+seg_0029,SPEAKER_1,speaker_0,85.6,94.66,9.06,"These dumplings are usually served as a starter. Pork and crab meat are wrapped in a delicate bean curd pastry, and the tops are tied with thin strips of spring onion. Now the shoelace."
+seg_0030,SPEAKER_2,speaker_1,94.72,96.0,1.28,"Now is, uh, the next step."
+seg_0031,SPEAKER_1,speaker_0,98.1,98.6,0.5,Nice and tight.
+seg_0032,SPEAKER_2,speaker_1,98.62,99.34,0.72,Very tight.
+seg_0033,SPEAKER_1,speaker_0,99.86,102.25,2.39,And how do you call the moneybag in your language? It's called-
+seg_0034,SPEAKER_2,speaker_1,102.3,104.1,1.8,"Uh, thung aun, thung thong."
+seg_0035,SPEAKER_1,speaker_0,104.36,104.8,0.44,Thung thong.
+seg_0036,SPEAKER_2,speaker_1,104.98,107.3,2.32,Thung thong or thung aun yong.
+seg_0037,SPEAKER_1,speaker_0,107.38,108.26,0.88,Right. Moneybags.
+seg_0038,SPEAKER_2,speaker_1,108.42,108.68,0.26,Okay.
+seg_0039,SPEAKER_1,speaker_0,108.72,109.24,0.52,"Okay, good."
+seg_0040,SPEAKER_2,speaker_1,110.01,110.01,0.0,Good.
+seg_0041,SPEAKER_1,speaker_0,110.04,125.1,15.06,"Chang's authentic moneybags are delicious, but I want to show him my take on a classic, Thailand's national dish, pad Thai. Okay, a quick pad Thai. I fry shallots, garlic, and chili with salt and a little bit of sugar. Color on the shallots."
+seg_0042,SPEAKER_1,speaker_0,126.62,134.12,7.5,Half the spring onions. This is a dish I love cooking at home. I'm using delicious king prawns and adding some extras like chili and tamarind paste.
+seg_0043,SPEAKER_1,speaker_0,136.28,137.94,1.66,I'm so excited I'm gonna be cooking for the monks today.
+seg_0044,SPEAKER_2,speaker_1,138.22,138.48,0.26,Yes.
+seg_0045,SPEAKER_1,speaker_0,138.92,140.36,1.44,Never cooked for monks before.
+seg_0046,SPEAKER_2,speaker_1,140.37,140.7,0.33,"Me too, me too, you know?"
+seg_0047,SPEAKER_1,speaker_0,141.62,148.0,6.38,"Those prawns smell amazing. My pad Thai is made sweet and sour with fish sauce, salt, and sugar."
+seg_0048,SPEAKER_1,speaker_0,150.94,153.92,2.98,Turn up the gas. And the tamarind paste.
+seg_0049,SPEAKER_1,speaker_0,156.82,161.26,4.44,A beaten egg is cooked in the wok and then added with the noodles and bean sprouts to the sauce.
+seg_0050,SPEAKER_1,speaker_0,162.78,164.46,1.68,"I hope they're gonna be happy with this, you know that?"
+seg_0051,SPEAKER_2,speaker_1,164.48,166.04,1.56,I think the monk will be happy.
+seg_0052,SPEAKER_1,speaker_0,167.24,175.96,8.72,"Prawns and fresh coriander finish the pad Thai. But what will Chang think of my quick and easy version of this classic? And then some peanuts around the outside. Happy? Oh, no."
+seg_0053,SPEAKER_2,speaker_1,175.98,176.78,0.8,But I have to taste.
+seg_0054,SPEAKER_1,speaker_0,177.3,178.24,0.94,"Yeah, please. I'd like to-"
+seg_0055,SPEAKER_2,speaker_1,178.26,180.02,1.76,"Before you go call pad Thai, I have to taste it first."
+seg_0056,SPEAKER_2,speaker_1,187.19,188.82,1.63,What you want to know from me? Ask me.
+seg_0057,SPEAKER_1,speaker_0,189.38,190.62,1.24,"Well, uh, uh, how is it?"
+seg_0058,SPEAKER_2,speaker_1,191.4,191.56,0.16,Hmm?
+seg_0059,SPEAKER_1,speaker_0,192.26,193.3,1.04,"Oh, no. Look at that face."
+seg_0060,SPEAKER_2,speaker_1,194.1,195.36,1.26,This is not pad Thai at all.
+seg_0061,SPEAKER_1,speaker_0,195.6,196.18,0.58,This is not pad Thai?
+seg_0062,SPEAKER_2,speaker_1,196.86,197.0,0.14,No.
+seg_0063,SPEAKER_1,speaker_0,197.14,197.15,0.01,No.
+seg_0064,SPEAKER_2,speaker_1,197.16,199.46,2.3,"Pad Thai have to be sweet, sour, and salty."
+seg_0065,SPEAKER_1,speaker_0,202.7,206.14,3.44,I think that doesn't taste too bad. It's not perfect.
+seg_0066,SPEAKER_2,speaker_1,206.16,207.66,1.5,"For you, but not for me."
+seg_0067,SPEAKER_1,speaker_0,209.0,211.4,2.4,You're a tough cookie. I'm gonna keep an eye on the monks-
+seg_0068,SPEAKER_2,speaker_1,211.49,211.49,0.0,Okay
+seg_0069,SPEAKER_1,speaker_0,211.49,212.22,0.73,... to see how it goes down.

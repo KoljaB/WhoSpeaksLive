@@ -1,0 +1,13 @@
+{
+  "status": "failed",
+  "provider": "speaker3d_eres2netv2",
+  "backend": "remote",
+  "remote_url": "http://192.168.178.22:8660",
+  "device": "cuda",
+  "video_count": 0,
+  "segment_count": 0,
+  "created_video_count": 0,
+  "skipped_video_count": 0,
+  "error_type": "RuntimeError",
+  "error": "Remote embeddings HTTP 500: {\"detail\":\"speaker3d_eres2netv2_provider_failed: OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 23.50 GiB of which 26.31 MiB is free. Process 1782 has 1.53 GiB memory in use. Process 1776 has 4.08 GiB memory in use. Including non-PyTorch memory, this"
+}

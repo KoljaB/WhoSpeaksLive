@@ -1,0 +1,255 @@
+{
+  "status": "ok",
+  "provider": "speechbrain_resnet",
+  "backend": "remote",
+  "remote_url": "http://192.168.178.22:8660",
+  "device": "cuda",
+  "load_result": {
+    "ok": true,
+    "requested_device": "cuda",
+    "resolved_device": "cuda",
+    "warmup_seconds": 2.0,
+    "loaded": [
+      {
+        "provider": "speechbrain_resnet",
+        "weight": 1.0,
+        "device": "cuda",
+        "dim": 256
+      }
+    ],
+    "warmups": [
+      {
+        "provider": "speechbrain_resnet",
+        "weight": 1.0,
+        "device": "cuda",
+        "elapsed_seconds": 0.23755153999809409,
+        "dim": 256,
+        "warmup_seconds": 2.0
+      }
+    ],
+    "elapsed_seconds": 0.2387095349986339
+  },
+  "video_count": 27,
+  "segment_count": 2586,
+  "created_video_count": 27,
+  "skipped_video_count": 0,
+  "elapsed_seconds": 121.02490429999307,
+  "outputs": [
+    {
+      "video": "1NBVQB-Srpw",
+      "segments": 85,
+      "status": "created",
+      "elapsed_seconds": 2.957985599990934,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\1NBVQB-Srpw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\1NBVQB-Srpw.segments.json"
+    },
+    {
+      "video": "20v1OxUXcQY",
+      "segments": 98,
+      "status": "created",
+      "elapsed_seconds": 3.4888895999174565,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\20v1OxUXcQY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\20v1OxUXcQY.segments.json"
+    },
+    {
+      "video": "acbnyagl8jo",
+      "segments": 94,
+      "status": "created",
+      "elapsed_seconds": 3.158339299960062,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\acbnyagl8jo.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\acbnyagl8jo.segments.json"
+    },
+    {
+      "video": "aHGd6LqAVzw",
+      "segments": 57,
+      "status": "created",
+      "elapsed_seconds": 2.2805840999353677,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\aHGd6LqAVzw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\aHGd6LqAVzw.segments.json"
+    },
+    {
+      "video": "blcKeLDDzSM",
+      "segments": 61,
+      "status": "created",
+      "elapsed_seconds": 2.0643581999465823,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\blcKeLDDzSM.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\blcKeLDDzSM.segments.json"
+    },
+    {
+      "video": "bPpcfH_HHH8",
+      "segments": 101,
+      "status": "created",
+      "elapsed_seconds": 2.5988507999572903,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\bPpcfH_HHH8.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\bPpcfH_HHH8.segments.json"
+    },
+    {
+      "video": "cLdy4P-XJPE",
+      "segments": 52,
+      "status": "created",
+      "elapsed_seconds": 2.7145388999488205,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\cLdy4P-XJPE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\cLdy4P-XJPE.segments.json"
+    },
+    {
+      "video": "cunk",
+      "segments": 45,
+      "status": "created",
+      "elapsed_seconds": 1.3973733999300748,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\cunk.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\cunk.segments.json"
+    },
+    {
+      "video": "Dd7FixvoKBw",
+      "segments": 57,
+      "status": "created",
+      "elapsed_seconds": 1.2979300001170486,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\Dd7FixvoKBw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\Dd7FixvoKBw.segments.json"
+    },
+    {
+      "video": "DsyfYJ5Ou3g",
+      "segments": 70,
+      "status": "created",
+      "elapsed_seconds": 1.8811816999223083,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\DsyfYJ5Ou3g.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\DsyfYJ5Ou3g.segments.json"
+    },
+    {
+      "video": "e3h6es6zh1c",
+      "segments": 50,
+      "status": "created",
+      "elapsed_seconds": 1.5172601998783648,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\e3h6es6zh1c.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\e3h6es6zh1c.segments.json"
+    },
+    {
+      "video": "F2-2RBi1qzY",
+      "segments": 100,
+      "status": "created",
+      "elapsed_seconds": 2.7561948001384735,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\F2-2RBi1qzY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\F2-2RBi1qzY.segments.json"
+    },
+    {
+      "video": "gj7BRMuB-n4",
+      "segments": 155,
+      "status": "created",
+      "elapsed_seconds": 4.149713500170037,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\gj7BRMuB-n4.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\gj7BRMuB-n4.segments.json"
+    },
+    {
+      "video": "k1tsGGz-Qw0",
+      "segments": 83,
+      "status": "created",
+      "elapsed_seconds": 2.5104137000162154,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\k1tsGGz-Qw0.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\k1tsGGz-Qw0.segments.json"
+    },
+    {
+      "video": "KdOXM3I_5hk",
+      "segments": 245,
+      "status": "created",
+      "elapsed_seconds": 6.138513499870896,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\KdOXM3I_5hk.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\KdOXM3I_5hk.segments.json"
+    },
+    {
+      "video": "L-CfFo5aQGU",
+      "segments": 132,
+      "status": "created",
+      "elapsed_seconds": 6.117268200032413,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\L-CfFo5aQGU.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\L-CfFo5aQGU.segments.json"
+    },
+    {
+      "video": "mBeT_AoCXvc",
+      "segments": 96,
+      "status": "created",
+      "elapsed_seconds": 4.333241199841723,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\mBeT_AoCXvc.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\mBeT_AoCXvc.segments.json"
+    },
+    {
+      "video": "mWABb5Dy9BQ",
+      "segments": 219,
+      "status": "created",
+      "elapsed_seconds": 5.623963600024581,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\mWABb5Dy9BQ.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\mWABb5Dy9BQ.segments.json"
+    },
+    {
+      "video": "oFBuCp19L7M",
+      "segments": 95,
+      "status": "created",
+      "elapsed_seconds": 3.0223054999951273,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\oFBuCp19L7M.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\oFBuCp19L7M.segments.json"
+    },
+    {
+      "video": "onHUfyRP1BE",
+      "segments": 9,
+      "status": "created",
+      "elapsed_seconds": 1.3518087998963892,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\onHUfyRP1BE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\onHUfyRP1BE.segments.json"
+    },
+    {
+      "video": "pD4IdQTmneI",
+      "segments": 15,
+      "status": "created",
+      "elapsed_seconds": 0.96731310011819,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\pD4IdQTmneI.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\pD4IdQTmneI.segments.json"
+    },
+    {
+      "video": "PhofRoLXqhE",
+      "segments": 100,
+      "status": "created",
+      "elapsed_seconds": 6.064503400120884,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\PhofRoLXqhE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\PhofRoLXqhE.segments.json"
+    },
+    {
+      "video": "S_o3y7CzDUY",
+      "segments": 76,
+      "status": "created",
+      "elapsed_seconds": 5.264303700067103,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\S_o3y7CzDUY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\S_o3y7CzDUY.segments.json"
+    },
+    {
+      "video": "vIfGgDnmBXg",
+      "segments": 145,
+      "status": "created",
+      "elapsed_seconds": 3.6623305999673903,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\vIfGgDnmBXg.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\vIfGgDnmBXg.segments.json"
+    },
+    {
+      "video": "WNZn37Uc700",
+      "segments": 174,
+      "status": "created",
+      "elapsed_seconds": 4.820675099967048,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\WNZn37Uc700.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\WNZn37Uc700.segments.json"
+    },
+    {
+      "video": "y_5WfLjvOK4",
+      "segments": 91,
+      "status": "created",
+      "elapsed_seconds": 6.477811299962923,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\y_5WfLjvOK4.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\y_5WfLjvOK4.segments.json"
+    },
+    {
+      "video": "ZY0DG8rUnCA",
+      "segments": 81,
+      "status": "created",
+      "elapsed_seconds": 2.043582000071183,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\ZY0DG8rUnCA.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\speechbrain_resnet\\ZY0DG8rUnCA.segments.json"
+    }
+  ]
+}

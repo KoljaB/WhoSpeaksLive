@@ -1,0 +1,1472 @@
+[
+  {
+    "speaker": "speaker_0",
+    "start": 0.38,
+    "end": 0.85,
+    "text": "How are you?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 0.85,
+    "end": 1.44,
+    "text": "Good to see you, Gordon Ramsay."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 1.52,
+    "end": 2.24,
+    "text": "Welcome, Norm Macdonald."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 2.25,
+    "end": 3.01,
+    "text": "How you doing, man?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 3.04,
+    "end": 3.9,
+    "text": "Okay, good. Now-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 3.949,
+    "end": 6.979,
+    "text": "You're gonna show both of us, uh, how to cook something fantastic today. Is that correct?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 7.01,
+    "end": 13.38,
+    "text": "Yes. We're gonna do an, the most amazing red mullet with some fennel, orange, and on the back of how bad you were last time, this is gonna be cooked in a bag."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 13.66,
+    "end": 14.78,
+    "text": "Uh, okay. We're gonna cook this in a bag."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 14.82,
+    "end": 15.04,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 15.26,
+    "end": 16.919,
+    "text": "You are known, you clap your hands a lot."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 16.94,
+    "end": 17.13,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 17.14,
+    "end": 19.16,
+    "text": "You yell at people. You're intimidating."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 19.17,
+    "end": 19.17,
+    "text": "Uh-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 19.18,
+    "end": 20.22,
+    "text": "This is gonna go very badly."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 20.26,
+    "end": 21.16,
+    "text": "As well as you two guys."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 21.3,
+    "end": 21.41,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 21.41,
+    "end": 21.68,
+    "text": "No, come on."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 21.8,
+    "end": 22.14,
+    "text": "Very good."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 22.19,
+    "end": 24.76,
+    "text": "Uh, right. First thing I want you to do is to segment an orange."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 24.84,
+    "end": 24.93,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 24.93,
+    "end": 25.52,
+    "text": "Okay, Norm?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 25.9,
+    "end": 26.16,
+    "text": "Yeah?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 26.4,
+    "end": 27.8,
+    "text": "Wakey-wakey. Okay."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 28.1,
+    "end": 30.9,
+    "text": "Well, no- no one else in the world says segment an orange."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 31.57,
+    "end": 31.57,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 31.62,
+    "end": 31.78,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 31.88,
+    "end": 34.5,
+    "text": "You just cut the edges off. That's what you want, right? You want the-"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 34.53,
+    "end": 36.3,
+    "text": "No, no, you've already started the wrong end. Look, that's the bit there."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 36.44,
+    "end": 37.83,
+    "text": "All right. All right. Okay."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 37.92,
+    "end": 41.19,
+    "text": "So just top and tail it like that. Look. Come on. Wake up. Stay with me."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 41.26,
+    "end": 42.78,
+    "text": "I'm up, I'm up to four segments."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 43.46,
+    "end": 45.3,
+    "text": "So, so. Now-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 45.34,
+    "end": 46.91,
+    "text": "Why? You didn't tell me a number of segments."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 47.0,
+    "end": 48.05,
+    "text": "No, no, no, no, no."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 48.06,
+    "end": 50.24,
+    "text": "He wants the edges off, I think."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 50.64,
+    "end": 51.2,
+    "text": "One way or another, I'm gonna."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 52.26,
+    "end": 53.52,
+    "text": "Hey, hey, hey, hey, hey, hey! Hey!"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 55.42,
+    "end": 55.56,
+    "text": "Right."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 55.6,
+    "end": 55.61,
+    "text": "What?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 55.64,
+    "end": 56.1,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 56.14,
+    "end": 56.31,
+    "text": "I got it."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 56.36,
+    "end": 58.38,
+    "text": "Norm, so you go from there. Look, all the way around."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 58.48,
+    "end": 58.58,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 58.84,
+    "end": 58.92,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 59.06,
+    "end": 61.16,
+    "text": "Seven minutes of audio will play for this whole hour."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 61.22,
+    "end": 63.37,
+    "text": "Now, all the way there. Once you've gone all the way around-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 63.37,
+    "end": 63.96,
+    "text": "Between you two guys."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 63.98,
+    "end": 64.03,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 64.03,
+    "end": 64.72,
+    "text": "All right, here we go. Yeah."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 64.92,
+    "end": 66.17,
+    "text": "Uh, Conan, pay attention, please. Watch."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 66.19,
+    "end": 66.759,
+    "text": "Yeah, all right. I'm over here."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 66.77,
+    "end": 66.77,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 66.96,
+    "end": 67.94,
+    "text": "I've got my own orange going. All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 67.95,
+    "end": 70.06,
+    "text": "Okay, watch. All the way around. So take off the skin."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 70.44,
+    "end": 70.45,
+    "text": "Uh, uh."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 70.46,
+    "end": 70.89,
+    "text": "And then from there-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 71.06,
+    "end": 71.8,
+    "text": "You're not teaching me"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 71.82,
+    "end": 71.84,
+    "text": "... now-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 71.85,
+    "end": 72.76,
+    "text": "You're just showing up"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 73.64,
+    "end": 76.3,
+    "text": "... yeah. And then, and then from there, that's a segment."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 76.32,
+    "end": 77.1,
+    "text": "There you go. All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 77.22,
+    "end": 77.36,
+    "text": "There you segment."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 77.42,
+    "end": 78.42,
+    "text": "Cheerio and chop-chop."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 78.49,
+    "end": 78.49,
+    "text": "Left and right."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 78.49,
+    "end": 78.91,
+    "text": "There we go. All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 78.94,
+    "end": 79.26,
+    "text": "Off you go."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 79.34,
+    "end": 79.39,
+    "text": "I'll do that."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 79.39,
+    "end": 79.98,
+    "text": "Now watch your fingers."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 80.3,
+    "end": 80.82,
+    "text": "I'll do that."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 81.0,
+    "end": 81.02,
+    "text": "Now."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 81.06,
+    "end": 81.22,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 81.28,
+    "end": 81.86,
+    "text": "And then after that..."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 82.2,
+    "end": 82.37,
+    "text": "All right"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 82.4,
+    "end": 82.64,
+    "text": "... okay."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 82.78,
+    "end": 83.22,
+    "text": "Now look at this."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 83.28,
+    "end": 83.29,
+    "text": "Sh-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 83.3,
+    "end": 84.43,
+    "text": "Mine's pretty good over here"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 84.48,
+    "end": 84.65,
+    "text": "... show, show."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 84.65,
+    "end": 86.84,
+    "text": "There's some sections of, uh, skin still, but what the hell."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 86.92,
+    "end": 87.66,
+    "text": "Where, where- where's the orange gone?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 87.7,
+    "end": 90.899,
+    "text": "And it's, like, 1:00 in the morning. Who, you know? All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 90.94,
+    "end": 94.55,
+    "text": "Forget that one. Right. Fennel. Okay, here we go. Now with the fennel-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 94.7,
+    "end": 95.45,
+    "text": "Oh, all right. Whoa, okay"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 95.45,
+    "end": 96.02,
+    "text": "... okay, so push it off."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 96.11,
+    "end": 96.11,
+    "text": "Yep."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 96.12,
+    "end": 97.64,
+    "text": "And just slice that down nice and thin."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 97.66,
+    "end": 98.38,
+    "text": "Now that I can do."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 98.52,
+    "end": 98.8,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 98.97,
+    "end": 99.91,
+    "text": "That looks... See, that was explained clearly."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 99.92,
+    "end": 100.3,
+    "text": "Watch, watch your fingers."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 100.36,
+    "end": 101.759,
+    "text": "I segmented another one."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 101.92,
+    "end": 103.76,
+    "text": "Where's the s- where- where's the segment?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 103.79,
+    "end": 104.02,
+    "text": "What?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 104.28,
+    "end": 105.34,
+    "text": "Where is it? Where is it?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 105.88,
+    "end": 106.92,
+    "text": "I threw it over there."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 108.29,
+    "end": 108.62,
+    "text": "Oh, jeez. Okay, look."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 108.66,
+    "end": 109.88,
+    "text": "All right. I'm, I'm doing well, Gordon."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 109.93,
+    "end": 109.93,
+    "text": "So, so-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 109.98,
+    "end": 110.57,
+    "text": "I will be the one-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 110.64,
+    "end": 112.14,
+    "text": "That's the good part. That's the inside part."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 112.28,
+    "end": 112.63,
+    "text": "Right. Okay, okay."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 112.63,
+    "end": 113.24,
+    "text": "All right, stop yelling."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 113.28,
+    "end": 113.4,
+    "text": "I..."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 115.18,
+    "end": 115.19,
+    "text": "I'm sorry."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 115.2,
+    "end": 115.5,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 115.7,
+    "end": 115.82,
+    "text": "Cook."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 115.88,
+    "end": 116.96,
+    "text": "Right. That's great."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 117.06,
+    "end": 117.19,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 117.24,
+    "end": 118.38,
+    "text": "Now from there, take your bag."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 118.56,
+    "end": 118.84,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 119.14,
+    "end": 121.11,
+    "text": "Okay. Now we'll do one each, okay? Here we go."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 121.12,
+    "end": 122.6,
+    "text": "Why would you become a cook?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 125.42,
+    "end": 129.96,
+    "text": "Come on, Norm, keep it together. Okay. It's not that bad."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 132.06,
+    "end": 132.42,
+    "text": "Uh, big boy."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 132.72,
+    "end": 133.36,
+    "text": "Okay, all right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 133.64,
+    "end": 134.109,
+    "text": "The word, the-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 134.2,
+    "end": 134.209,
+    "text": "So-"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 134.209,
+    "end": 134.25,
+    "text": "... the word's chef."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 134.25,
+    "end": 134.25,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 134.25,
+    "end": 136.62,
+    "text": "Chef. I'm sorry, chef. You're right. I know."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 136.66,
+    "end": 138.12,
+    "text": "Lady, lady, ladies cook."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 138.22,
+    "end": 138.91,
+    "text": "I know, I know."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 138.92,
+    "end": 139.88,
+    "text": "Okay. All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 140.29,
+    "end": 140.36,
+    "text": "Right."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 140.4,
+    "end": 140.41,
+    "text": "Oh."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 140.42,
+    "end": 144.14,
+    "text": "I think, Joe, think it's... Oh,. All right, all right."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 144.18,
+    "end": 144.66,
+    "text": "No, you okay?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 144.96,
+    "end": 146.17,
+    "text": "Um, I, um-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 146.36,
+    "end": 147.12,
+    "text": "Hey, hey, hey, hey!"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 147.56,
+    "end": 147.59,
+    "text": "Oh, God."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 147.6,
+    "end": 149.12,
+    "text": "We can bleep out the swear-"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 149.24,
+    "end": 149.35,
+    "text": "Oh, God"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 149.35,
+    "end": 151.59,
+    "text": "... when there's this going around, I can't do anything with that."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 151.59,
+    "end": 153.579,
+    "text": "I was waving to the camera."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 153.64,
+    "end": 153.69,
+    "text": "And this goes in."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 153.7,
+    "end": 154.54,
+    "text": "I was waving."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 154.7,
+    "end": 155.74,
+    "text": "All right. So we got the-"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 155.98,
+    "end": 156.13,
+    "text": "Right"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 156.13,
+    "end": 157.04,
+    "text": "... vegetables in the bag."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 157.46,
+    "end": 158.48,
+    "text": "Okay. Right. Fennel."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 158.54,
+    "end": 158.84,
+    "text": "Fennel."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 158.93,
+    "end": 158.93,
+    "text": "Fennel."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 158.98,
+    "end": 160.18,
+    "text": "The fennel goes in the bag."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 160.19,
+    "end": 161.3,
+    "text": "Uh, oh. Don't you-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 161.38,
+    "end": 162.3,
+    "text": "Well, you need the bag"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 162.34,
+    "end": 163.8,
+    "text": "... I need the bag."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 163.92,
+    "end": 165.89,
+    "text": "Stop it! Stop it!"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 167.72,
+    "end": 168.35,
+    "text": "Okay. Now, w-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 168.35,
+    "end": 169.2,
+    "text": "None of this will air"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 169.28,
+    "end": 169.47,
+    "text": "... okay, okay."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 169.47,
+    "end": 171.72,
+    "text": "We're gonna show an old F Troop in this section."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 172.29,
+    "end": 173.38,
+    "text": "S- right, right. Fennel on-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 173.44,
+    "end": 174.23,
+    "text": "All right, fennel in here"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 174.42,
+    "end": 174.65,
+    "text": "... okay, on there."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 174.65,
+    "end": 176.36,
+    "text": "By the way, there's a bottle of booze."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 176.58,
+    "end": 177.06,
+    "text": "Oh, hey."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 177.74,
+    "end": 178.9,
+    "text": "Norm, you're supposed to be following me."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 179.02,
+    "end": 179.3,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 179.36,
+    "end": 179.53,
+    "text": "All right, oranges."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 179.53,
+    "end": 180.88,
+    "text": "All right, so we put oranges in here."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 180.93,
+    "end": 181.45,
+    "text": "Okay. And then from there-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 181.51,
+    "end": 181.76,
+    "text": "This is a mess"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 181.84,
+    "end": 182.94,
+    "text": "... red mullet."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 182.97,
+    "end": 182.97,
+    "text": "Okay. Red mullet."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 182.97,
+    "end": 182.97,
+    "text": "Red mu-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 182.98,
+    "end": 183.39,
+    "text": "Is that a kind of fish?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 183.39,
+    "end": 184.66,
+    "text": "No, no, no, knife doesn't go in the bag."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 184.84,
+    "end": 185.0,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 185.1,
+    "end": 185.109,
+    "text": "I gotcha."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 185.12,
+    "end": 186.88,
+    "text": "You'll sli- you'll slice someone's throat open, Norm."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 186.92,
+    "end": 186.96,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 187.18,
+    "end": 190.46,
+    "text": "Okay, right. From there, a little bit of salt, a little bit of pepper, olive oil."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 190.489,
+    "end": 190.72,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 190.73,
+    "end": 190.73,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 190.74,
+    "end": 191.62,
+    "text": "A little olive oil."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 191.64,
+    "end": 191.769,
+    "text": "Now-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 192.06,
+    "end": 192.99,
+    "text": "A little aglio e olio"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 193.02,
+    "end": 195.44,
+    "text": "... now from there, now watch carefully, a bit of seasoning. Okay?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 195.94,
+    "end": 196.46,
+    "text": "Uh. Whoa, okay."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 196.64,
+    "end": 199.1,
+    "text": "Norm, you're making me feel dizzy standing there looking busy. Right."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 199.109,
+    "end": 199.109,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 199.14,
+    "end": 199.6,
+    "text": "Here we go."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 200.14,
+    "end": 200.64,
+    "text": "This is crazy."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 200.86,
+    "end": 207.48,
+    "text": "I'll tell you one thing, man, I'm not eating this of yours. That's all I can guarantee."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 207.54,
+    "end": 208.36,
+    "text": "Don't... Oh."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 208.54,
+    "end": 208.65,
+    "text": "This is-"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 208.7,
+    "end": 210.59,
+    "text": "Stop. You haven't even tasted it yet."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 210.6,
+    "end": 215.39,
+    "text": "Why are we even having a cooking segment at this point? Why would there even be a cooking segment?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 217.26,
+    "end": 219.96,
+    "text": "My fault for letting anybody even have a cooking segment with you people."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 220.02,
+    "end": 220.44,
+    "text": "Right. Here we go."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 220.58,
+    "end": 221.18,
+    "text": "Ridiculous."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 221.35,
+    "end": 223.18,
+    "text": "Right, no, right here. Right, fold the bag over."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 223.24,
+    "end": 223.46,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 223.66,
+    "end": 223.81,
+    "text": "Oh, yeah."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 223.81,
+    "end": 224.82,
+    "text": "Okay. Nice and tight."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 224.9,
+    "end": 225.12,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 225.18,
+    "end": 228.579,
+    "text": "Okay? And then from there, twist the paper so we seal the ends."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 228.59,
+    "end": 228.92,
+    "text": "Twist the paper. All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 228.94,
+    "end": 229.42,
+    "text": "Nice and tight."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 229.66,
+    "end": 230.9,
+    "text": "Oh, God, I hope he's a magician."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 232.38,
+    "end": 233.01,
+    "text": "Nice and... Nice and tight."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 233.04,
+    "end": 233.96,
+    "text": "A bird's gonna come out."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 234.049,
+    "end": 234.049,
+    "text": "Okay?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 234.08,
+    "end": 234.82,
+    "text": "Yeah. All right, here we go."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 234.85,
+    "end": 235.17,
+    "text": "Now, all the way-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 235.68,
+    "end": 235.88,
+    "text": "All right"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 235.9,
+    "end": 236.549,
+    "text": "... all the way around."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 236.72,
+    "end": 236.95,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 237.04,
+    "end": 237.32,
+    "text": "Okay?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 237.38,
+    "end": 238.049,
+    "text": "Now chop-chop."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 238.08,
+    "end": 238.2,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 238.56,
+    "end": 240.24,
+    "text": "Now from there, a little hole."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 240.28,
+    "end": 241.06,
+    "text": "A little hole."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 241.14,
+    "end": 241.46,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 241.49,
+    "end": 241.49,
+    "text": "Right there."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 241.5,
+    "end": 244.02,
+    "text": "And then from there, pour a little bit of wine in there."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 244.04,
+    "end": 246.1,
+    "text": "That's a big waste of wine right there, buddy boy."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 246.109,
+    "end": 246.109,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 246.109,
+    "end": 246.39,
+    "text": "All right, right in here."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 246.4,
+    "end": 251.12,
+    "text": "And then from there, turn it around. Okay. Oh,."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 251.16,
+    "end": 251.34,
+    "text": "What?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 251.42,
+    "end": 252.07,
+    "text": "Come on, Norm."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 252.15,
+    "end": 253.92,
+    "text": "What the is that?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 254.22,
+    "end": 256.0,
+    "text": "You're gonna be tight. It's tight."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 256.3,
+    "end": 256.76,
+    "text": "What have you done?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 256.82,
+    "end": 258.519,
+    "text": "Gordon then goes, \"Look what Norm did.\""
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 260.22,
+    "end": 261.81,
+    "text": "We've got to turn the bag so it's tight."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 262.1,
+    "end": 263.23,
+    "text": "This is Paul Simon's welfare."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 263.23,
+    "end": 264.2,
+    "text": "This is not gonna air."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 264.25,
+    "end": 264.25,
+    "text": "So-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 264.26,
+    "end": 265.94,
+    "text": "This will never be seen by anybody."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 266.39,
+    "end": 266.4,
+    "text": "Just-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 266.409,
+    "end": 268.44,
+    "text": "This will never be seen by anybody"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 268.54,
+    "end": 269.76,
+    "text": "... just, just concentrate."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 269.82,
+    "end": 270.45,
+    "text": "We've learned."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 271.4,
+    "end": 271.64,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 271.69,
+    "end": 272.92,
+    "text": "Okay, what does it look like at the end?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 272.98,
+    "end": 272.99,
+    "text": "Okay. Right."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 273.02,
+    "end": 275.2,
+    "text": "Oh, look, it just came out magically from a pan."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 275.78,
+    "end": 277.36,
+    "text": "This is how it's cooked. As it cooks-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 277.39,
+    "end": 277.69,
+    "text": "Oh, yeah, yeah"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 277.72,
+    "end": 279.22,
+    "text": "... it steams inside the bag."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 279.32,
+    "end": 279.56,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 279.87,
+    "end": 280.9,
+    "text": "Okay? So then you rip it open."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 281.24,
+    "end": 281.26,
+    "text": "Wow."
+  }
+]

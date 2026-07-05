@@ -1,0 +1,220 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,0.1,17.0,16.9,"Here's how it works. In front of each of us are two envelopes containing confessions. One is true, and the other is a lie. Once you read the confession, the two other players get to interrogate you. They have to come to a unanimous decision. Is it the truth, or is it the lie? Uh, Billie, you'll go first. Colin, which envelope should she open?"
+seg_0001,SPEAKER_2,speaker_1,17.36,18.7,1.34,"Mm, uh, two."
+seg_0002,SPEAKER_1,speaker_0,19.94,20.66,0.72,Mm. Mm-hmm.
+seg_0003,SPEAKER_3,speaker_2,20.78,21.16,0.38,This?
+seg_0004,SPEAKER_1,speaker_0,21.36,22.86,1.5,Mm. Numero dos.
+seg_0005,SPEAKER_3,speaker_2,24.76,25.06,0.3,Wait.
+seg_0006,SPEAKER_1,speaker_0,26.55,27.64,1.09,That's how you open an envelope?
+seg_0007,SPEAKER_3,speaker_2,27.86,28.24,0.38,Shut up.
+seg_0008,SPEAKER_3,speaker_2,29.58,30.94,1.36,"Oh, it's open on the bottom."
+seg_0009,SPEAKER_1,speaker_0,31.0,31.16,0.16,Yeah.
+seg_0010,SPEAKER_3,speaker_2,32.9,33.91,1.01,"Okay, are you ready for this?"
+seg_0011,SPEAKER_1,speaker_0,34.36,35.12,0.76,Okay. Wow.
+seg_0012,SPEAKER_3,speaker_2,35.62,37.41,1.79,That is a strong case.
+seg_0013,SPEAKER_1,speaker_0,37.46,38.25,0.79,"Strong fake cigarette, yeah."
+seg_0014,SPEAKER_3,speaker_2,38.34,38.74,0.4,Um-
+seg_0015,SPEAKER_3,speaker_2,40.0,45.7,5.7,"So, I once farted in my friend's mouth while she was yawning, and she threw up."
+seg_0016,SPEAKER_1,speaker_0,48.52,49.44,0.92,"All right, what year was this?"
+seg_0017,SPEAKER_3,speaker_2,53.68,58.86,5.18,"Um, it was, um, I was 12, so I, it was-"
+seg_0018,SPEAKER_1,speaker_0,59.0,59.38,0.38,Last year
+seg_0019,SPEAKER_3,speaker_2,59.84,60.49,0.65,... eight.
+seg_0020,SPEAKER_1,speaker_0,60.949,60.949,0.0,Yeah.
+seg_0021,SPEAKER_3,speaker_2,60.949,60.949,0.0,"But, uh-"
+seg_0022,SPEAKER_1,speaker_0,60.98,62.04,1.06,"So it was last year. Okay, great"
+seg_0023,SPEAKER_3,speaker_2,62.14,64.06,1.92,... it was 2014.
+seg_0024,SPEAKER_1,speaker_0,64.099,64.29,0.191,"Okay, okay."
+seg_0025,SPEAKER_3,speaker_2,64.3,64.31,0.01,I was 12.
+seg_0026,SPEAKER_1,speaker_0,64.31,65.26,0.95,"And where, where were you?"
+seg_0027,SPEAKER_3,speaker_2,65.74,66.4,0.66,I was in my yard.
+seg_0028,SPEAKER_1,speaker_0,66.96,67.88,0.92,"Out back, in your backyard?"
+seg_0029,SPEAKER_3,speaker_2,67.92,69.62,1.7,"Yeah, in my backyard. In my backyard."
+seg_0030,SPEAKER_2,speaker_1,70.08,70.58,0.5,Daytime?
+seg_0031,SPEAKER_3,speaker_2,70.86,71.02,0.16,Yeah.
+seg_0032,SPEAKER_1,speaker_0,71.92,73.76,1.84,"No, they were at nighttime in the backyard. What are you-"
+seg_0033,SPEAKER_1,speaker_0,75.56,76.23,0.67,"Camping, you think they were camping?"
+seg_0034,SPEAKER_2,speaker_1,76.24,76.85,0.61,"Well, yeah, he-"
+seg_0035,SPEAKER_1,speaker_0,76.88,79.65,2.77,"What were you doing, like wrestling or fooling around or doing gymnastics?"
+seg_0036,SPEAKER_3,speaker_2,80.11,80.11,0.0,Um-
+seg_0037,SPEAKER_2,speaker_1,80.13,80.3,0.17,Whoa
+seg_0038,SPEAKER_3,speaker_2,80.36,84.6,4.24,"... I was, so I was, it was like, there was a, there was a, a table, and she was sitting."
+seg_0039,SPEAKER_1,speaker_0,85.0,85.26,0.26,"Oh, please."
+seg_0040,SPEAKER_3,speaker_2,85.32,88.94,3.62,"I was standing here. So she was sitting, like facing this way. I was standing here facing that way."
+seg_0041,SPEAKER_1,speaker_0,89.3,89.56,0.26,Okay.
+seg_0042,SPEAKER_3,speaker_2,89.9,90.5,0.6,She was eating.
+seg_0043,SPEAKER_1,speaker_0,90.64,91.66,1.02,And where's the table? Say I'm the table.
+seg_0044,SPEAKER_3,speaker_2,91.7,92.84,1.14,The table's here.
+seg_0045,SPEAKER_1,speaker_0,92.87,92.87,0.0,Yeah.
+seg_0046,SPEAKER_3,speaker_2,92.92,94.4,1.48,So she was facing the other way.
+seg_0047,SPEAKER_1,speaker_0,94.48,94.78,0.3,Okay.
+seg_0048,SPEAKER_2,speaker_1,94.83,95.1,0.27,What was she eating?
+seg_0049,SPEAKER_3,speaker_2,95.52,95.92,0.4,Pizza.
+seg_0050,SPEAKER_2,speaker_1,96.36,96.74,0.38,Pizza.
+seg_0051,SPEAKER_1,speaker_0,96.78,97.7,0.92,Daytime pizza.
+seg_0052,SPEAKER_3,speaker_2,99.26,100.6,1.34,You want some nighttime pizza? Like...
+seg_0053,SPEAKER_1,speaker_0,100.64,105.34,4.7,That's kind of nighttime. All right. Kind of running out of time here. I don't know. We didn't even ask enough questions.
+seg_0054,SPEAKER_2,speaker_1,105.4,105.41,0.01,Okay.
+seg_0055,SPEAKER_1,speaker_0,105.41,107.15,1.74,"Wait, so, and are you friends with her today?"
+seg_0056,SPEAKER_3,speaker_2,108.24,109.46,1.22,"Yeah, sorta."
+seg_0057,SPEAKER_1,speaker_0,110.74,111.72,0.98,Was it weird after that?
+seg_0058,SPEAKER_2,speaker_1,111.73,111.87,0.14,That is-
+seg_0059,SPEAKER_3,speaker_2,112.46,113.53,1.07,It was so funny.
+seg_0060,SPEAKER_3,speaker_2,115.19,115.7,0.51,So funny.
+seg_0061,SPEAKER_1,speaker_0,115.78,116.68,0.9,What do we think? I think-
+seg_0062,SPEAKER_2,speaker_1,117.64,117.73,0.09,I think-
+seg_0063,SPEAKER_1,speaker_0,117.73,118.0,0.27,I think
+seg_0064,SPEAKER_2,speaker_1,118.72,119.33,0.61,... true.
+seg_0065,SPEAKER_1,speaker_0,119.6,120.07,0.47,"Yeah, I think true."
+seg_0066,SPEAKER_3,speaker_2,120.29,120.29,0.0,Oh.
+seg_0067,SPEAKER_1,speaker_0,120.34,121.69,1.35,I think it sounds like something that weirdly-
+seg_0068,SPEAKER_3,speaker_2,121.76,122.34,0.58,Yeah.
+seg_0069,SPEAKER_1,speaker_0,123.26,123.69,0.43,Is it true?
+seg_0070,SPEAKER_3,speaker_2,124.34,125.36,1.02,"Uh, yes."
+seg_0071,SPEAKER_1,speaker_0,128.8,134.609,5.809,"Whoa. Oh, man. Oh my God. That just, but why did you do that? Did you do that on- What, why did you do that? Was that on purpose?"
+seg_0072,SPEAKER_3,speaker_2,134.7,139.92,5.22,"It was silent. Listen, it was silent. I did not think it would be bad, but you know those are always the worst ones, you know?"
+seg_0073,SPEAKER_2,speaker_1,139.98,140.24,0.26,That's right.
+seg_0074,SPEAKER_1,speaker_0,140.36,141.62,1.26,"See, you got it. Alright, here we go."
+seg_0075,SPEAKER_3,speaker_2,141.72,142.299,0.579,That's the problem.
+seg_0076,SPEAKER_1,speaker_0,142.36,145.36,3.0,"Which envelope should I open? Which, uh- Truth or lie, what do you think?"
+seg_0077,SPEAKER_2,speaker_1,145.54,145.62,0.08,Uh-
+seg_0078,SPEAKER_1,speaker_0,145.64,146.76,1.12,Billie? Colin?
+seg_0079,SPEAKER_3,speaker_2,148.62,149.9,1.28,"Uh, uh, one."
+seg_0080,SPEAKER_1,speaker_0,150.2,150.3,0.1,Yeah.
+seg_0081,SPEAKER_3,speaker_2,150.54,150.59,0.05,One.
+seg_0082,SPEAKER_1,speaker_0,150.62,152.4,1.78,"Doesn't really matter,'cause I'm such a good actor."
+seg_0083,SPEAKER_3,speaker_2,152.54,153.769,1.229,"Whoa. Whoa, whoa."
+seg_0084,SPEAKER_3,speaker_2,156.46,156.9,0.44,Shut up.
+seg_0085,SPEAKER_2,speaker_1,157.02,158.28,1.26,Ever see a little movie called Taxi?
+seg_0086,SPEAKER_1,speaker_0,161.24,166.44,5.2,"Okay, here we go. Uh, oh, I got fired from my job at the supermarket for pretending to be French."
+seg_0087,SPEAKER_3,speaker_2,170.18,170.46,0.28,When?
+seg_0088,SPEAKER_1,speaker_0,171.02,173.67,2.65,"Uh, this is, I was 15, so I'd probably say this is, yeah, 30 years ago."
+seg_0089,SPEAKER_2,speaker_1,173.7,175.2,1.5,"What, what was the name of the supermarket?"
+seg_0090,SPEAKER_1,speaker_0,175.72,177.96,2.24,"Oddly, it was Great American, was the name of the supermarket."
+seg_0091,SPEAKER_3,speaker_2,178.02,179.64,1.62,Can you repeat what happened?
+seg_0092,SPEAKER_1,speaker_0,179.7,182.02,2.32,I got fired from my job for pretending to be French.
+seg_0093,SPEAKER_3,speaker_2,183.5,184.72,1.22,Why were you pretending to be French?
+seg_0094,SPEAKER_1,speaker_0,184.84,185.86,1.02,I was bored.
+seg_0095,SPEAKER_3,speaker_2,185.92,186.24,0.32,You were bored.
+seg_0096,SPEAKER_1,speaker_0,186.36,189.78,3.42,"I was bored. I was putting stickers on canned, canned foods."
+seg_0097,SPEAKER_3,speaker_2,190.03,190.03,0.0,Putting stickers on cans.
+seg_0098,SPEAKER_1,speaker_0,190.04,193.16,3.12,"I was bored, and people would ask me questions, and I'd be like, ""No."""
+seg_0099,SPEAKER_1,speaker_0,195.28,200.64,5.36,"No. And then some, sometimes people would ask me for something, I'd go, ""Uh, you want,"" and I would point to French dressing."
+seg_0100,SPEAKER_1,speaker_0,202.52,210.49,7.97,"Or if it was around the mustard, I'd be, ""French's Mustard."" But that was at my, and I think someone ratted on me. Someone complained, and then they said, ""Who did it?"" And then one of my friends ratted on me."
+seg_0101,SPEAKER_2,speaker_1,210.5,211.12,0.62,"Some French guy, yeah?"
+seg_0102,SPEAKER_1,speaker_0,211.42,215.76,4.34,"Yeah, yeah. ""Who was, who's pretending to be French and not helping people?"" And then I was like, ""I don't know who did it."""
+seg_0103,SPEAKER_2,speaker_1,215.78,217.72,1.94,"Sound like a very pretentious 15-year-old, by the way."
+seg_0104,SPEAKER_1,speaker_0,219.3,219.31,0.01,Eh.
+seg_0105,SPEAKER_3,speaker_2,219.34,220.92,1.58,So you were pretending to not understand them.
+seg_0106,SPEAKER_1,speaker_0,221.18,222.08,0.9,"Uh, no."
+seg_0107,SPEAKER_3,speaker_2,222.18,222.5,0.32,Okay.
+seg_0108,SPEAKER_1,speaker_0,222.6,224.38,1.78,I don't know.
+seg_0109,SPEAKER_3,speaker_2,225.2,225.9,0.7,You were 15.
+seg_0110,SPEAKER_1,speaker_0,225.94,226.24,0.3,Yeah.
+seg_0111,SPEAKER_1,speaker_0,227.5,228.72,1.22,"All right, what do you guys think?"
+seg_0112,SPEAKER_3,speaker_2,229.92,230.66,0.74,Uh...
+seg_0113,SPEAKER_2,speaker_1,234.32,235.42,1.1,"I, I don't think so."
+seg_0114,SPEAKER_3,speaker_2,237.12,238.8,1.68,Mm-mm. I wanna say
+seg_0115,SPEAKER_3,speaker_2,240.52,242.46,1.94,"it's almost, like, not funny enough to be true."
+seg_0116,SPEAKER_3,speaker_2,244.46,246.9,2.44,"But you know what I'm saying? Like, you agree?"
+seg_0117,SPEAKER_1,speaker_0,247.02,248.34,1.32,"Now I'm thinking, now I'm thinking it did happen."
+seg_0118,SPEAKER_3,speaker_2,248.4,250.4,2.0,You know what I'm saying? Oh.
+seg_0119,SPEAKER_2,speaker_1,250.84,251.78,0.94,Now you're thinking it did happen?
+seg_0120,SPEAKER_1,speaker_0,251.82,252.42,0.6,Now I'm thinking it did happen.
+seg_0121,SPEAKER_3,speaker_2,252.44,255.73,3.29,"So I'm just gonna say it happened. You can say it didn't, so we can just one-up each other way."
+seg_0122,SPEAKER_1,speaker_0,255.78,256.38,0.6,"Okay, good."
+seg_0123,SPEAKER_3,speaker_2,256.57,256.7,0.13,Okay?
+seg_0124,SPEAKER_1,speaker_0,257.24,258.399,1.159,"No, I think you have to be unanimous."
+seg_0125,SPEAKER_3,speaker_2,258.459,258.579,0.12,No.
+seg_0126,SPEAKER_2,speaker_1,258.589,258.959,0.37,"Oh, we do?"
+seg_0127,SPEAKER_3,speaker_2,259.14,260.209,1.069,"No. Okay, sure."
+seg_0128,SPEAKER_2,speaker_1,260.22,265.06,4.84,"I like it how you, I like it how he's played this game. He goes, ""No, I think you have to be unani-"" You don't even know the rules of the game."
+seg_0129,SPEAKER_1,speaker_0,266.18,269.14,2.96,"All right, uh, you have to be unanimous. Ready? One, two, three, yay or nay."
+seg_0130,SPEAKER_3,speaker_2,269.64,269.65,0.01,Y-
+seg_0131,SPEAKER_2,speaker_1,270.02,270.23,0.21,Yay.
+seg_0132,SPEAKER_3,speaker_2,270.23,270.26,0.03,Yay.
+seg_0133,SPEAKER_2,speaker_1,270.6,270.63,0.03,Yay.
+seg_0134,SPEAKER_1,speaker_0,270.63,271.64,1.01,"You think yay, it did happen."
+seg_0135,SPEAKER_3,speaker_2,271.7,272.54,0.84,I think it did happen.
+seg_0136,SPEAKER_1,speaker_0,272.6,274.04,1.44,Yeah. It did not happen.
+seg_0137,SPEAKER_2,speaker_1,274.13,274.13,0.0,Oh.
+seg_0138,SPEAKER_3,speaker_2,275.06,275.27,0.21,"Okay, good."
+seg_0139,SPEAKER_1,speaker_0,275.32,275.8,0.48,You were right.
+seg_0140,SPEAKER_3,speaker_2,276.04,276.19,0.15,"No, good."
+seg_0141,SPEAKER_1,speaker_0,276.19,277.099,0.909,You should've stuck to your gut.
+seg_0142,SPEAKER_3,speaker_2,277.54,277.79,0.25,That's good.
+seg_0143,SPEAKER_1,speaker_0,277.79,280.62,2.83,That's the lesson learned. Stick to your gut. No.
+seg_0144,SPEAKER_2,speaker_1,280.98,281.32,0.34,Oh.
+seg_0145,SPEAKER_1,speaker_0,281.38,287.31,5.93,"I did get fired, but it was for doing, uh, it was for doing whip-its. All right, Colin, I think you should, you should, uh, I think you should-"
+seg_0146,SPEAKER_2,speaker_1,287.34,287.84,0.5,"Come on, baby"
+seg_0147,SPEAKER_1,speaker_0,288.06,290.16,2.1,"... I think number one,'cause you know why? You're number one to me, man."
+seg_0148,SPEAKER_2,speaker_1,290.28,291.3,1.02,"Oh, thanks."
+seg_0149,SPEAKER_3,speaker_2,291.49,291.5,0.01,Oh.
+seg_0150,SPEAKER_1,speaker_0,291.54,292.92,1.38,Yeah. Here we go.
+seg_0151,SPEAKER_2,speaker_1,293.14,293.78,0.64,"Okay, ready?"
+seg_0152,SPEAKER_1,speaker_0,294.24,294.38,0.14,Yeah.
+seg_0153,SPEAKER_2,speaker_1,295.54,299.06,3.52,My first stand-up set was in a police station while I was under arrest.
+seg_0154,SPEAKER_3,speaker_2,299.94,300.51,0.57,That's so good.
+seg_0155,SPEAKER_1,speaker_0,300.56,302.84,2.28,This is absolutely true. This is so true.
+seg_0156,SPEAKER_3,speaker_2,303.06,303.76,0.7,"I, I love-"
+seg_0157,SPEAKER_1,speaker_0,303.82,304.44,0.62,He's Colin Quinn.
+seg_0158,SPEAKER_3,speaker_2,304.48,304.55,0.07,I just love hearing this
+seg_0159,SPEAKER_1,speaker_0,304.55,313.88,9.33,"... he's the most Irish guy I know. This is the perfect for his one-man show, for his book. This is so him. He did stand-up in a police station. I, I... Why were you arrested?"
+seg_0160,SPEAKER_2,speaker_1,314.64,316.42,1.78,Possession of a controlled substance.
+seg_0161,SPEAKER_1,speaker_0,318.56,320.33,1.77,"Do you had weed on you, or is it something else?"
+seg_0162,SPEAKER_2,speaker_1,320.88,320.98,0.1,Yeah.
+seg_0163,SPEAKER_1,speaker_0,321.02,321.96,0.94,"Yeah, you wanna say what it was?"
+seg_0164,SPEAKER_1,speaker_0,323.39,325.5,2.11,"Go on, say what... Wait, but how old were you?"
+seg_0165,SPEAKER_2,speaker_1,325.54,327.14,1.6,You think I'd get arrested for weed? Come on.
+seg_0166,SPEAKER_3,speaker_2,328.76,329.5,0.74,How old were you?
+seg_0167,SPEAKER_2,speaker_1,329.94,331.09,1.15,"Uh, 22."
+seg_0168,SPEAKER_1,speaker_0,331.32,338.02,6.7,"Oh my gosh, he totally did this. It was, it was, it was you-know-what in a thing-... and he got busted. Were you in a car or something, driving?"
+seg_0169,SPEAKER_3,speaker_2,338.04,338.86,0.82,You said you know what.
+seg_0170,SPEAKER_2,speaker_1,338.91,338.91,0.0,No.
+seg_0171,SPEAKER_1,speaker_0,338.94,344.28,5.34,"Oh, that's right,'cause you grew up in the streets of Brooklyn. And that's how you have your accent. So you're walking around, and you started some trouble."
+seg_0172,SPEAKER_3,speaker_2,344.32,345.87,1.55,"I just like picturing it, so I'm gonna say it's true."
+seg_0173,SPEAKER_1,speaker_0,345.9,347.2,1.3,You got in a fight. You got in a fight with somebody?
+seg_0174,SPEAKER_3,speaker_2,347.52,348.63,1.11,I think I like it.
+seg_0175,SPEAKER_2,speaker_1,348.63,348.64,0.01,No.
+seg_0176,SPEAKER_1,speaker_0,348.76,350.16,1.4,"Uh, how did you get arrested?"
+seg_0177,SPEAKER_3,speaker_2,350.24,350.31,0.07,"Well, you do know-"
+seg_0178,SPEAKER_2,speaker_1,350.31,350.56,0.25,What's that?
+seg_0179,SPEAKER_1,speaker_0,350.6,351.66,1.06,How did you get arrested? You were buying?
+seg_0180,SPEAKER_2,speaker_1,351.86,353.28,1.42,"Possession of a controlled sub- well, yeah."
+seg_0181,SPEAKER_1,speaker_0,353.36,353.89,0.53,"But what, in a joint?"
+seg_0182,SPEAKER_2,speaker_1,353.89,354.42,0.53,In a rollie-
+seg_0183,SPEAKER_1,speaker_0,354.84,355.61,0.77,So it was on some Andre jeans?
+seg_0184,SPEAKER_2,speaker_1,355.66,356.23,0.57,... on 43rd Street.
+seg_0185,SPEAKER_1,speaker_0,356.24,357.27,1.03,How much cocaine did you have?
+seg_0186,SPEAKER_2,speaker_1,357.31,357.57,0.26,In a rollie.
+seg_0187,SPEAKER_1,speaker_0,357.76,358.04,0.28,Yeah.
+seg_0188,SPEAKER_2,speaker_1,358.18,358.94,0.76,It was fake.
+seg_0189,SPEAKER_1,speaker_0,359.8,360.42,0.62,It was fake cocaine?
+seg_0190,SPEAKER_2,speaker_1,360.54,361.02,0.48,It was fake.
+seg_0191,SPEAKER_3,speaker_2,361.34,361.51,0.17,"Like, what?"
+seg_0192,SPEAKER_2,speaker_1,361.51,362.54,1.03,Don't do fake cocaine.
+seg_0193,SPEAKER_2,speaker_1,363.96,364.38,0.42,I love it.
+seg_0194,SPEAKER_1,speaker_0,364.46,364.91,0.45,"Don't, don't be a-"
+seg_0195,SPEAKER_3,speaker_2,364.91,365.13,0.22,There's certainly not fake cocaine
+seg_0196,SPEAKER_1,speaker_0,365.13,371.62,6.49,"... you're not a role model to children. Don't do fake cocaine. Don't do cocaine at all. Don't do it, real or fake."
+seg_0197,SPEAKER_3,speaker_2,373.16,373.95,0.79,What's fake cocaine made out of?
+seg_0198,SPEAKER_1,speaker_0,373.98,374.34,0.36,I don't know.
+seg_0199,SPEAKER_3,speaker_2,374.4,374.51,0.11,Salt? Like-
+seg_0200,SPEAKER_1,speaker_0,374.51,376.32,1.81,"I, I really, I, I know him pretty well."
+seg_0201,SPEAKER_2,speaker_1,376.44,376.5,0.06,It's called procaine.
+seg_0202,SPEAKER_3,speaker_2,376.66,376.69,0.03,What?
+seg_0203,SPEAKER_1,speaker_0,377.36,377.9,0.54,Procaine.
+seg_0204,SPEAKER_2,speaker_1,378.0,378.84,0.84,That's what they called it.
+seg_0205,SPEAKER_1,speaker_0,379.5,382.94,3.44,"I, I, I think of course this would happen to him,'cause he, this, he has this type of luck."
+seg_0206,SPEAKER_3,speaker_2,382.99,384.88,1.89,"I, I just love to picture it."
+seg_0207,SPEAKER_1,speaker_0,384.92,384.93,0.01,Yeah.
+seg_0208,SPEAKER_3,speaker_2,384.94,386.35,1.41,"So I'm gonna... I feel like it's true, you know?"
+seg_0209,SPEAKER_1,speaker_0,386.4,389.68,3.28,"Gosh, if he's lying, you're a genius,'cause he is a good actor too. I'm gonna say it's true."
+seg_0210,SPEAKER_3,speaker_2,389.78,390.4,0.62,I think it's true.
+seg_0211,SPEAKER_1,speaker_0,391.48,391.82,0.34,It's true.
+seg_0212,SPEAKER_3,speaker_2,392.0,392.5,0.5,What?
+seg_0213,SPEAKER_2,speaker_1,393.2,393.28,0.08,Yeah.
+seg_0214,SPEAKER_1,speaker_0,395.4,396.27,0.87,I love you.
+seg_0215,SPEAKER_3,speaker_2,396.28,396.41,0.13,Come on.
+seg_0216,SPEAKER_1,speaker_0,396.41,402.08,5.67,"Come on. I love you, buddy. Oh, there's the truth right there. Billie Eilish, Colin Quinn, everybody."
+seg_0217,SPEAKER_4,speaker_3,403.68,407.56,3.88,"Uh, uh-huh. It's on and on and on. Uh, I said."
+seg_0218,SPEAKER_4,speaker_3,409.24,410.72,1.48,And it's on and on and on

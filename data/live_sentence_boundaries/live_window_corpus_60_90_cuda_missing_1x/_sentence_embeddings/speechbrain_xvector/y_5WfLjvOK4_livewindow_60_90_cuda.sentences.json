@@ -1,0 +1,3284 @@
+{
+  "provider": "speechbrain_xvector",
+  "video": "y_5WfLjvOK4",
+  "folder": "y_5WfLjvOK4_livewindow_60_90_cuda",
+  "sentence_file": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\y_5WfLjvOK4_livewindow_60_90_cuda\\sentences.jsonl",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    327,
+    512
+  ],
+  "elapsed_seconds": 14.401907599996775,
+  "sentences": [
+    {
+      "index": 0,
+      "text": "AMNA NAWAZ For a look at what's ahead on the foreign policy front, we're joined by the former U.S. ambassador to Russia, John Sullivan.",
+      "start": 0.94,
+      "end": 6.63,
+      "audio_length_seconds": 5.69,
+      "embedding_audio_seconds": 5.32,
+      "audio_file": "audio\\sentence_0000.wav",
+      "word_count": 25
+    },
+    {
+      "index": 1,
+      "text": "CBS News National Security Contributor Michael Morrell.",
+      "start": 6.87,
+      "end": 10.34,
+      "audio_length_seconds": 3.47,
+      "embedding_audio_seconds": 3.33,
+      "audio_file": "audio\\sentence_0001.wav",
+      "word_count": 7
+    },
+    {
+      "index": 2,
+      "text": "Paul, former Obama administration under secretary of defense for policy Michelle Flournoy, and former Trump administration national security adviser General H.R. McMaster, who joins us from Palo Alto.",
+      "start": 10.34,
+      "end": 21.372,
+      "audio_length_seconds": 11.032,
+      "embedding_audio_seconds": 10.662,
+      "audio_file": "audio\\sentence_0002.wav",
+      "word_count": 29
+    },
+    {
+      "index": 3,
+      "text": "So it's good to have all of you here.",
+      "start": 21.372,
+      "end": 23.562,
+      "audio_length_seconds": 2.19,
+      "embedding_audio_seconds": 2.19,
+      "audio_file": "audio\\sentence_0003.wav",
+      "word_count": 9
+    },
+    {
+      "index": 4,
+      "text": "You know, February 24, 2022, was a wake -up call for the world on the national security front.",
+      "start": 23.562,
+      "end": 32.412,
+      "audio_length_seconds": 8.85,
+      "embedding_audio_seconds": 8.85,
+      "audio_file": "audio\\sentence_0004.wav",
+      "word_count": 18
+    },
+    {
+      "index": 5,
+      "text": "That's when Russia invaded Ukraine.",
+      "start": 32.412,
+      "end": 34.862,
+      "audio_length_seconds": 2.45,
+      "embedding_audio_seconds": 2.45,
+      "audio_file": "audio\\sentence_0005.wav",
+      "word_count": 5
+    },
+    {
+      "index": 6,
+      "text": "And, Ambassador Sullivan, I know you were posted to Moscow at the time.",
+      "start": 34.862,
+      "end": 39.552,
+      "audio_length_seconds": 4.69,
+      "embedding_audio_seconds": 4.51,
+      "audio_file": "audio\\sentence_0006.wav",
+      "word_count": 13
+    },
+    {
+      "index": 7,
+      "text": "It must have been surreal.",
+      "start": 39.872,
+      "end": 41.222,
+      "audio_length_seconds": 1.35,
+      "embedding_audio_seconds": 1.24,
+      "audio_file": "audio\\sentence_0007.wav",
+      "word_count": 5
+    },
+    {
+      "index": 8,
+      "text": "I mean, European nations really didn't believe the United States that this was going to happen, and then it did.",
+      "start": 41.222,
+      "end": 45.732,
+      "audio_length_seconds": 4.51,
+      "embedding_audio_seconds": 4.51,
+      "audio_file": "audio\\sentence_0008.wav",
+      "word_count": 20
+    },
+    {
+      "index": 9,
+      "text": "What was that like?",
+      "start": 45.732,
+      "end": 46.956,
+      "audio_length_seconds": 1.224,
+      "embedding_audio_seconds": 1.044,
+      "audio_file": "audio\\sentence_0009.wav",
+      "word_count": 4
+    },
+    {
+      "index": 10,
+      "text": "Well, it was literally a wake -up call in the middle of the night.",
+      "start": 46.956,
+      "end": 49.876,
+      "audio_length_seconds": 2.92,
+      "embedding_audio_seconds": 2.92,
+      "audio_file": "audio\\sentence_0010.wav",
+      "word_count": 14
+    },
+    {
+      "index": 11,
+      "text": "We had a code.",
+      "start": 49.876,
+      "end": 50.766,
+      "audio_length_seconds": 0.89,
+      "embedding_audio_seconds": 0.89,
+      "audio_file": "audio\\sentence_0011.wav",
+      "word_count": 4
+    },
+    {
+      "index": 12,
+      "text": "The watchstander at the embassy called me well before dawn to say that the invasion had started.",
+      "start": 50.766,
+      "end": 57.406,
+      "audio_length_seconds": 6.64,
+      "embedding_audio_seconds": 6.34,
+      "audio_file": "audio\\sentence_0012.wav",
+      "word_count": 17
+    },
+    {
+      "index": 13,
+      "text": "We knew it was going to happen.",
+      "start": 57.406,
+      "end": 58.526,
+      "audio_length_seconds": 1.12,
+      "embedding_audio_seconds": 1.12,
+      "audio_file": "audio\\sentence_0013.wav",
+      "word_count": 7
+    },
+    {
+      "index": 14,
+      "text": "We'd been predicting it for months.",
+      "start": 58.526,
+      "end": 60.256,
+      "audio_length_seconds": 1.73,
+      "embedding_audio_seconds": 1.73,
+      "audio_file": "audio\\sentence_0014.wav",
+      "word_count": 6
+    },
+    {
+      "index": 15,
+      "text": "I'd spoken to Secretary Blinken just a few days before, on February 19, and he asked me what the mood was.",
+      "start": 60.256,
+      "end": 66.524,
+      "audio_length_seconds": 6.268,
+      "embedding_audio_seconds": 6.008,
+      "audio_file": "audio\\sentence_0015.wav",
+      "word_count": 21
+    },
+    {
+      "index": 16,
+      "text": "And I said it felt like August 31, 1939, a world leader was going to launch an aggressive war on the European continent with unknown consequences.",
+      "start": 66.524,
+      "end": 77.494,
+      "audio_length_seconds": 10.97,
+      "embedding_audio_seconds": 10.97,
+      "audio_file": "audio\\sentence_0016.wav",
+      "word_count": 26
+    },
+    {
+      "index": 17,
+      "text": "I then thought, jeez, I hope—I haven't overstated this.",
+      "start": 77.974,
+      "end": 81.542,
+      "audio_length_seconds": 3.568,
+      "embedding_audio_seconds": 3.268,
+      "audio_file": "audio\\sentence_0017.wav",
+      "word_count": 9
+    },
+    {
+      "index": 18,
+      "text": "So, on the one hand, I was appalled by what happened on the 24th, but relieved that my advice to the secretary of state turned out to be true.",
+      "start": 81.542,
+      "end": 89.23,
+      "audio_length_seconds": 7.688,
+      "embedding_audio_seconds": 7.688,
+      "audio_file": "audio\\sentence_0018.wav",
+      "word_count": 29
+    },
+    {
+      "index": 19,
+      "text": "but we were very confident in our assessment about what he was gonna do.",
+      "start": 89.23,
+      "end": 92.606,
+      "audio_length_seconds": 3.376,
+      "embedding_audio_seconds": 3.376,
+      "audio_file": "audio\\sentence_0019.wav",
+      "word_count": 14
+    },
+    {
+      "index": 20,
+      "text": "The only question was, when?",
+      "start": 92.606,
+      "end": 93.816,
+      "audio_length_seconds": 1.21,
+      "embedding_audio_seconds": 1.21,
+      "audio_file": "audio\\sentence_0020.wav",
+      "word_count": 5
+    },
+    {
+      "index": 21,
+      "text": "But what was so surreal, as a reporter, was that all of our allies were doubting that Vladimir Putin would do this.",
+      "start": 93.816,
+      "end": 102.216,
+      "audio_length_seconds": 8.4,
+      "embedding_audio_seconds": 7.93,
+      "audio_file": "audio\\sentence_0021.wav",
+      "word_count": 22
+    },
+    {
+      "index": 22,
+      "text": "Yeah.",
+      "start": 102.216,
+      "end": 102.426,
+      "audio_length_seconds": 0.21,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0022.wav",
+      "word_count": 1
+    },
+    {
+      "index": 23,
+      "text": "Oh, listen, I spent a lot of time talking to fellow ambassadors in Moscow, the U.S. business community in Moscow.",
+      "start": 102.426,
+      "end": 111.446,
+      "audio_length_seconds": 9.02,
+      "embedding_audio_seconds": 8.39,
+      "audio_file": "audio\\sentence_0023.wav",
+      "word_count": 21
+    },
+    {
+      "index": 24,
+      "text": "I met almost on a weekly basis with the American Chamber of Commerce representatives, U.S. business people who had been in Moscow for years, and I'd been telling them what was going to happen, and they scoffed.",
+      "start": 111.446,
+      "end": 123.366,
+      "audio_length_seconds": 11.92,
+      "embedding_audio_seconds": 11.92,
+      "audio_file": "audio\\sentence_0024.wav",
+      "word_count": 38
+    },
+    {
+      "index": 25,
+      "text": "They said, oh, you're chicken little.",
+      "start": 123.366,
+      "end": 126.306,
+      "audio_length_seconds": 2.94,
+      "embedding_audio_seconds": 2.94,
+      "audio_file": "audio\\sentence_0025.wav",
+      "word_count": 6
+    },
+    {
+      "index": 26,
+      "text": "The sky is falling.",
+      "start": 126.306,
+      "end": 127.456,
+      "audio_length_seconds": 1.15,
+      "embedding_audio_seconds": 1.15,
+      "audio_file": "audio\\sentence_0026.wav",
+      "word_count": 4
+    },
+    {
+      "index": 27,
+      "text": "Absolutely not.",
+      "start": 127.546,
+      "end": 128.346,
+      "audio_length_seconds": 0.8,
+      "embedding_audio_seconds": 0.8,
+      "audio_file": "audio\\sentence_0027.wav",
+      "word_count": 2
+    },
+    {
+      "index": 28,
+      "text": "This is irrational.",
+      "start": 128.346,
+      "end": 129.256,
+      "audio_length_seconds": 0.91,
+      "embedding_audio_seconds": 0.91,
+      "audio_file": "audio\\sentence_0028.wav",
+      "word_count": 3
+    },
+    {
+      "index": 29,
+      "text": "Putin would never do it.",
+      "start": 129.256,
+      "end": 130.466,
+      "audio_length_seconds": 1.21,
+      "embedding_audio_seconds": 1.16,
+      "audio_file": "audio\\sentence_0029.wav",
+      "word_count": 5
+    },
+    {
+      "index": 30,
+      "text": "Those same people, on February 25th, were texting me on their way to the airport saying, goodbye, I was right.",
+      "start": 130.466,
+      "end": 138.456,
+      "audio_length_seconds": 7.99,
+      "embedding_audio_seconds": 7.74,
+      "audio_file": "audio\\sentence_0030.wav",
+      "word_count": 20
+    },
+    {
+      "index": 31,
+      "text": "And for those who had Russian spouses and children who may have dual citizenship, seeking help so that their children, teenagers, wouldn't get drafted into what was going to be, they knew now, a war that President Putin had launched.",
+      "start": 138.456,
+      "end": 154.446,
+      "audio_length_seconds": 15.99,
+      "embedding_audio_seconds": 15.99,
+      "audio_file": "audio\\sentence_0031.wav",
+      "word_count": 40
+    },
+    {
+      "index": 32,
+      "text": "It's incredible.",
+      "start": 154.446,
+      "end": 156.336,
+      "audio_length_seconds": 1.89,
+      "embedding_audio_seconds": 1.7,
+      "audio_file": "audio\\sentence_0032.wav",
+      "word_count": 2
+    },
+    {
+      "index": 33,
+      "text": "And, to date, sanctions have not stopped Vladimir Putin, and he is making clear that this war is going to continue, and that has global ramifications.",
+      "start": 157.476,
+      "end": 167.606,
+      "audio_length_seconds": 10.13,
+      "embedding_audio_seconds": 10.13,
+      "audio_file": "audio\\sentence_0033.wav",
+      "word_count": 26
+    },
+    {
+      "index": 34,
+      "text": "And it will continue to in the year ahead.",
+      "start": 167.606,
+      "end": 169.716,
+      "audio_length_seconds": 2.11,
+      "embedding_audio_seconds": 2.11,
+      "audio_file": "audio\\sentence_0034.wav",
+      "word_count": 9
+    },
+    {
+      "index": 35,
+      "text": "Absolutely.",
+      "start": 170.316,
+      "end": 170.916,
+      "audio_length_seconds": 0.6,
+      "embedding_audio_seconds": 0.6,
+      "audio_file": "audio\\sentence_0035.wav",
+      "word_count": 1
+    },
+    {
+      "index": 36,
+      "text": "I think in 2023, we're likely to see minimal Russian gains on the military battlefield, but more of Putin's spoiler campaign, where he's using missiles and drones to take out civilian infrastructure, target electricity, target water supplies, really trying to break the will of the Ukrainian people, while also hoping that Europe has a very cold, dark winter and the energy prices, the risk of a recession.",
+      "start": 170.916,
+      "end": 198.886,
+      "audio_length_seconds": 27.97,
+      "embedding_audio_seconds": 27.97,
+      "audio_file": "audio\\sentence_0036.wav",
+      "word_count": 67
+    },
+    {
+      "index": 37,
+      "text": "And he's seeking to break the will of the Ukrainians and of NATO.",
+      "start": 198.886,
+      "end": 203.45,
+      "audio_length_seconds": 4.564,
+      "embedding_audio_seconds": 4.564,
+      "audio_file": "audio\\sentence_0037.wav",
+      "word_count": 13
+    },
+    {
+      "index": 38,
+      "text": "I don't think he's going to be successful.",
+      "start": 203.45,
+      "end": 205.256,
+      "audio_length_seconds": 1.806,
+      "embedding_audio_seconds": 1.806,
+      "audio_file": "audio\\sentence_0038.wav",
+      "word_count": 8
+    },
+    {
+      "index": 39,
+      "text": "But he still doesn't seem to have grasped that his military cannot actually achieve his political objectives in Ukraine.",
+      "start": 205.256,
+      "end": 213.986,
+      "audio_length_seconds": 8.73,
+      "embedding_audio_seconds": 8.72,
+      "audio_file": "audio\\sentence_0039.wav",
+      "word_count": 19
+    },
+    {
+      "index": 40,
+      "text": "So, I think, in 2023, we're either going to see some kind of escalation on Putin's side and or, possibly both, some entry into some negotiations, if, in fact, the Western and Ukrainian will holds and Putin realizes he can't actually achieve his objectives, so he wants to put lipstick on a pig and declare victory somehow.",
+      "start": 213.986,
+      "end": 237.586,
+      "audio_length_seconds": 23.6,
+      "embedding_audio_seconds": 23.43,
+      "audio_file": "audio\\sentence_0040.wav",
+      "word_count": 57
+    },
+    {
+      "index": 41,
+      "text": "General McMaster, Vladimir Putin just recently visited a military outpost for the first time with his generals.",
+      "start": 237.586,
+      "end": 247.656,
+      "audio_length_seconds": 10.07,
+      "embedding_audio_seconds": 9.4,
+      "audio_file": "audio\\sentence_0041.wav",
+      "word_count": 17
+    },
+    {
+      "index": 42,
+      "text": "Some have read that as an indication that he is doubling down.",
+      "start": 247.656,
+      "end": 252.546,
+      "audio_length_seconds": 4.89,
+      "embedding_audio_seconds": 4.89,
+      "audio_file": "audio\\sentence_0042.wav",
+      "word_count": 12
+    },
+    {
+      "index": 43,
+      "text": "What do you see happening here?",
+      "start": 253.586,
+      "end": 256.956,
+      "audio_length_seconds": 3.37,
+      "embedding_audio_seconds": 3.23,
+      "audio_file": "audio\\sentence_0043.wav",
+      "word_count": 6
+    },
+    {
+      "index": 44,
+      "text": "Some Ukrainian generals are forecasting a Russian offensive could begin as soon as January.",
+      "start": 256.956,
+      "end": 263.226,
+      "audio_length_seconds": 6.27,
+      "embedding_audio_seconds": 6.27,
+      "audio_file": "audio\\sentence_0044.wav",
+      "word_count": 14
+    },
+    {
+      "index": 45,
+      "text": "I think that's likely to be the case, Margaret, but it's going to fail.",
+      "start": 265.676,
+      "end": 268.906,
+      "audio_length_seconds": 3.23,
+      "embedding_audio_seconds": 3.02,
+      "audio_file": "audio\\sentence_0045.wav",
+      "word_count": 14
+    },
+    {
+      "index": 46,
+      "text": "I mean, Putin is in denial.",
+      "start": 268.906,
+      "end": 270.796,
+      "audio_length_seconds": 1.89,
+      "embedding_audio_seconds": 1.89,
+      "audio_file": "audio\\sentence_0046.wav",
+      "word_count": 6
+    },
+    {
+      "index": 47,
+      "text": "He's a man who's always been obsessed, right, obsessed with restoring Russia to national greatness and he fancied himself as the new czar presiding over an expanding Russian empire.",
+      "start": 270.796,
+      "end": 280.206,
+      "audio_length_seconds": 9.41,
+      "embedding_audio_seconds": 9.32,
+      "audio_file": "audio\\sentence_0047.wav",
+      "word_count": 29
+    },
+    {
+      "index": 48,
+      "text": "Well, he's failed utterly, but he's increasingly isolated.",
+      "start": 280.206,
+      "end": 283.156,
+      "audio_length_seconds": 2.95,
+      "embedding_audio_seconds": 2.95,
+      "audio_file": "audio\\sentence_0048.wav",
+      "word_count": 8
+    },
+    {
+      "index": 49,
+      "text": "You know, Putin, he's kind of a street thug.",
+      "start": 283.156,
+      "end": 285.8,
+      "audio_length_seconds": 2.644,
+      "embedding_audio_seconds": 2.29,
+      "audio_file": "audio\\sentence_0049.wav",
+      "word_count": 9
+    },
+    {
+      "index": 50,
+      "text": "I mean, you know, he's a bully and a coward at the same time.",
+      "start": 285.8,
+      "end": 289.708,
+      "audio_length_seconds": 3.908,
+      "embedding_audio_seconds": 3.908,
+      "audio_file": "audio\\sentence_0050.wav",
+      "word_count": 14
+    },
+    {
+      "index": 51,
+      "text": "And this is the reason why I think now we have agency, Margaret.",
+      "start": 289.708,
+      "end": 294.258,
+      "audio_length_seconds": 4.55,
+      "embedding_audio_seconds": 4.55,
+      "audio_file": "audio\\sentence_0051.wav",
+      "word_count": 13
+    },
+    {
+      "index": 52,
+      "text": "We can stop meeting out of assistance.",
+      "start": 294.258,
+      "end": 296.648,
+      "audio_length_seconds": 2.39,
+      "embedding_audio_seconds": 2.39,
+      "audio_file": "audio\\sentence_0052.wav",
+      "word_count": 7
+    },
+    {
+      "index": 53,
+      "text": "we can give Ukrainians what they need to protect their population and their infrastructure and to sustain a counter -offensive to regain at least the territories taken since the renewed offensive on February 24th.",
+      "start": 296.648,
+      "end": 309.332,
+      "audio_length_seconds": 12.684,
+      "embedding_audio_seconds": 12.684,
+      "audio_file": "audio\\sentence_0053.wav",
+      "word_count": 34
+    },
+    {
+      "index": 54,
+      "text": "So, you know, I'm pretty confident about the Ukrainians' ability to sustain their will, like Michelle.",
+      "start": 309.332,
+      "end": 313.382,
+      "audio_length_seconds": 4.05,
+      "embedding_audio_seconds": 4.05,
+      "audio_file": "audio\\sentence_0054.wav",
+      "word_count": 16
+    },
+    {
+      "index": 55,
+      "text": "And I think we just have to bolster our own will and those of like -minded partners across NATO and the European Union, principally.",
+      "start": 313.382,
+      "end": 320.632,
+      "audio_length_seconds": 7.25,
+      "embedding_audio_seconds": 6.89,
+      "audio_file": "audio\\sentence_0055.wav",
+      "word_count": 24
+    },
+    {
+      "index": 56,
+      "text": "Mike Morrell, I want to know what you think the red line is.",
+      "start": 321.592,
+      "end": 326.572,
+      "audio_length_seconds": 4.98,
+      "embedding_audio_seconds": 4.93,
+      "audio_file": "audio\\sentence_0056.wav",
+      "word_count": 13
+    },
+    {
+      "index": 57,
+      "text": "From what I hear, it's Crimea, that if the Ukrainians tried to retake that area, that that might lead to the escalation that you were just referring to.",
+      "start": 326.572,
+      "end": 336.862,
+      "audio_length_seconds": 10.29,
+      "embedding_audio_seconds": 10.26,
+      "audio_file": "audio\\sentence_0057.wav",
+      "word_count": 28
+    },
+    {
+      "index": 58,
+      "text": "What are your thoughts on that and the contact the CIA is having with Russian intelligence?",
+      "start": 336.862,
+      "end": 341.432,
+      "audio_length_seconds": 4.57,
+      "embedding_audio_seconds": 4.57,
+      "audio_file": "audio\\sentence_0058.wav",
+      "word_count": 16
+    },
+    {
+      "index": 59,
+      "text": "So, Crimea is the most important piece for Putin, right, in terms of what he's taken since 2014.",
+      "start": 342.032,
+      "end": 347.922,
+      "audio_length_seconds": 5.89,
+      "embedding_audio_seconds": 5.6,
+      "audio_file": "audio\\sentence_0059.wav",
+      "word_count": 18
+    },
+    {
+      "index": 60,
+      "text": "But I'm not sure what that escalation could look like.",
+      "start": 347.922,
+      "end": 353.852,
+      "audio_length_seconds": 5.93,
+      "embedding_audio_seconds": 5.84,
+      "audio_file": "audio\\sentence_0060.wav",
+      "word_count": 10
+    },
+    {
+      "index": 61,
+      "text": "I mean, he doesn't have a lot left from a military perspective.",
+      "start": 353.852,
+      "end": 357.562,
+      "audio_length_seconds": 3.71,
+      "embedding_audio_seconds": 3.51,
+      "audio_file": "audio\\sentence_0061.wav",
+      "word_count": 12
+    },
+    {
+      "index": 62,
+      "text": "His troops, as a matter of fact, are digging in to defensive positions in eastern Ukraine right now.",
+      "start": 358.142,
+      "end": 365.092,
+      "audio_length_seconds": 6.95,
+      "embedding_audio_seconds": 6.95,
+      "audio_file": "audio\\sentence_0062.wav",
+      "word_count": 18
+    },
+    {
+      "index": 63,
+      "text": "Right?",
+      "start": 365.092,
+      "end": 365.462,
+      "audio_length_seconds": 0.37,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0063.wav",
+      "word_count": 1
+    },
+    {
+      "index": 64,
+      "text": "They're afraid of a Ukrainian offensive, particularly as we provide more.",
+      "start": 365.462,
+      "end": 369.432,
+      "audio_length_seconds": 3.97,
+      "embedding_audio_seconds": 3.97,
+      "audio_file": "audio\\sentence_0064.wav",
+      "word_count": 11
+    },
+    {
+      "index": 65,
+      "text": "So, I'm not sure what he can do, what he has left in his bag, if the Ukrainians were to go into Crimea.",
+      "start": 369.432,
+      "end": 377.122,
+      "audio_length_seconds": 7.69,
+      "embedding_audio_seconds": 7.35,
+      "audio_file": "audio\\sentence_0065.wav",
+      "word_count": 23
+    },
+    {
+      "index": 66,
+      "text": "And I would not dissuade them from doing that.",
+      "start": 377.292,
+      "end": 379.962,
+      "audio_length_seconds": 2.67,
+      "embedding_audio_seconds": 2.36,
+      "audio_file": "audio\\sentence_0066.wav",
+      "word_count": 9
+    },
+    {
+      "index": 67,
+      "text": "Director Burns did have contact.",
+      "start": 379.962,
+      "end": 382.512,
+      "audio_length_seconds": 2.55,
+      "embedding_audio_seconds": 1.92,
+      "audio_file": "audio\\sentence_0067.wav",
+      "word_count": 5
+    },
+    {
+      "index": 68,
+      "text": "team met face -to -face with his Russian counterpart.",
+      "start": 382.512,
+      "end": 385.622,
+      "audio_length_seconds": 3.11,
+      "embedding_audio_seconds": 3.11,
+      "audio_file": "audio\\sentence_0068.wav",
+      "word_count": 9
+    },
+    {
+      "index": 69,
+      "text": "I mean, the intelligence channels are open, they're functioning.",
+      "start": 385.622,
+      "end": 389.552,
+      "audio_length_seconds": 3.93,
+      "embedding_audio_seconds": 3.93,
+      "audio_file": "audio\\sentence_0069.wav",
+      "word_count": 9
+    },
+    {
+      "index": 70,
+      "text": "They're not at the table with the diplomats functioning very much right now, as you would say.",
+      "start": 389.552,
+      "end": 395.002,
+      "audio_length_seconds": 5.45,
+      "embedding_audio_seconds": 5.45,
+      "audio_file": "audio\\sentence_0070.wav",
+      "word_count": 17
+    },
+    {
+      "index": 71,
+      "text": "But when you hear escalation, people fear Vladimir Putin's nuclear arsenal.",
+      "start": 395.002,
+      "end": 399.872,
+      "audio_length_seconds": 4.87,
+      "embedding_audio_seconds": 4.87,
+      "audio_file": "audio\\sentence_0071.wav",
+      "word_count": 11
+    },
+    {
+      "index": 72,
+      "text": "What is the probability of it being used?",
+      "start": 400.392,
+      "end": 402.922,
+      "audio_length_seconds": 2.53,
+      "embedding_audio_seconds": 2.45,
+      "audio_file": "audio\\sentence_0072.wav",
+      "word_count": 8
+    },
+    {
+      "index": 73,
+      "text": "So, I hope that part of the communication, right, between Director Burns and his counterparts in Russia are, here is what the United States will do if you were to use a nuclear weapon or biological weapons on the battlefield.",
+      "start": 402.922,
+      "end": 417.272,
+      "audio_length_seconds": 14.35,
+      "embedding_audio_seconds": 14.03,
+      "audio_file": "audio\\sentence_0073.wav",
+      "word_count": 40
+    },
+    {
+      "index": 74,
+      "text": "field.",
+      "start": 417.272,
+      "end": 417.502,
+      "audio_length_seconds": 0.23,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0074.wav",
+      "word_count": 1
+    },
+    {
+      "index": 75,
+      "text": "And I hope that we've sent a message that our response would be significant and consequential, right, to give them—to force them to think about whether using nuclear weapons or weapons of mass destruction of any type, right, would ultimately blow back against Russian interests.",
+      "start": 417.712,
+      "end": 434.862,
+      "audio_length_seconds": 17.15,
+      "embedding_audio_seconds": 17.15,
+      "audio_file": "audio\\sentence_0075.wav",
+      "word_count": 45
+    },
+    {
+      "index": 76,
+      "text": "What does significant look like?",
+      "start": 434.862,
+      "end": 437.712,
+      "audio_length_seconds": 2.85,
+      "embedding_audio_seconds": 2.56,
+      "audio_file": "audio\\sentence_0076.wav",
+      "word_count": 5
+    },
+    {
+      "index": 77,
+      "text": "I think what it looks like is U.S. forces attacking Russia forces inside Ukraine.",
+      "start": 437.712,
+      "end": 442.642,
+      "audio_length_seconds": 4.93,
+      "embedding_audio_seconds": 4.93,
+      "audio_file": "audio\\sentence_0077.wav",
+      "word_count": 15
+    },
+    {
+      "index": 78,
+      "text": "I think that would force Vladimir Putin to think twice.",
+      "start": 443.042,
+      "end": 446.346,
+      "audio_length_seconds": 3.304,
+      "embedding_audio_seconds": 2.974,
+      "audio_file": "audio\\sentence_0078.wav",
+      "word_count": 10
+    },
+    {
+      "index": 79,
+      "text": "I think the international dimension is important here.",
+      "start": 446.346,
+      "end": 449.256,
+      "audio_length_seconds": 2.91,
+      "embedding_audio_seconds": 2.63,
+      "audio_file": "audio\\sentence_0079.wav",
+      "word_count": 8
+    },
+    {
+      "index": 80,
+      "text": "I mean, Putin is pretty isolated, but you've had the prime minister of India come out and say, we don't want to see nuclear weapons used.",
+      "start": 449.256,
+      "end": 456.224,
+      "audio_length_seconds": 6.968,
+      "embedding_audio_seconds": 6.968,
+      "audio_file": "audio\\sentence_0080.wav",
+      "word_count": 26
+    },
+    {
+      "index": 81,
+      "text": "you've had Xi Jinping, probably Putin's closest ally, come out and be very clear that nuclear weapons should not be used.",
+      "start": 456.224,
+      "end": 463.596,
+      "audio_length_seconds": 7.372,
+      "embedding_audio_seconds": 7.372,
+      "audio_file": "audio\\sentence_0081.wav",
+      "word_count": 21
+    },
+    {
+      "index": 82,
+      "text": "So, I think Putin would also find him incredibly isolated, not only from the West, but from much of the international community as well.",
+      "start": 463.596,
+      "end": 473.366,
+      "audio_length_seconds": 9.77,
+      "embedding_audio_seconds": 9.74,
+      "audio_file": "audio\\sentence_0082.wav",
+      "word_count": 24
+    },
+    {
+      "index": 83,
+      "text": "Ambassador Sullivan, just to button this part of the conversation up, does Putin care that he's isolated?",
+      "start": 473.846,
+      "end": 479.234,
+      "audio_length_seconds": 5.388,
+      "embedding_audio_seconds": 5.388,
+      "audio_file": "audio\\sentence_0083.wav",
+      "word_count": 17
+    },
+    {
+      "index": 84,
+      "text": "We made the same arguments to him to not invade Ukraine, that it'd be isolated, that the consequences would be devastating, that the international community, not just—they refer to the United States and our allies and partners as the collective West, that it wouldn't be just the collective West.",
+      "start": 479.234,
+      "end": 494.484,
+      "audio_length_seconds": 15.25,
+      "embedding_audio_seconds": 15.25,
+      "audio_file": "audio\\sentence_0084.wav",
+      "word_count": 49
+    },
+    {
+      "index": 85,
+      "text": "That turned out to be true, 141 countries condemned and deplored the invasion of Ukraine by Russia and the General Assembly just after it occurred.",
+      "start": 494.484,
+      "end": 505.094,
+      "audio_length_seconds": 10.61,
+      "embedding_audio_seconds": 10.49,
+      "audio_file": "audio\\sentence_0085.wav",
+      "word_count": 25
+    },
+    {
+      "index": 86,
+      "text": "He doesn't care.",
+      "start": 505.384,
+      "end": 506.234,
+      "audio_length_seconds": 0.85,
+      "embedding_audio_seconds": 0.72,
+      "audio_file": "audio\\sentence_0086.wav",
+      "word_count": 3
+    },
+    {
+      "index": 87,
+      "text": "He's got his plan.",
+      "start": 506.234,
+      "end": 507.914,
+      "audio_length_seconds": 1.68,
+      "embedding_audio_seconds": 1.2,
+      "audio_file": "audio\\sentence_0087.wav",
+      "word_count": 4
+    },
+    {
+      "index": 88,
+      "text": "He's going to regather the Russian lands.",
+      "start": 507.914,
+      "end": 510.184,
+      "audio_length_seconds": 2.27,
+      "embedding_audio_seconds": 2.27,
+      "audio_file": "audio\\sentence_0088.wav",
+      "word_count": 7
+    },
+    {
+      "index": 89,
+      "text": "His response would be, Peter the Great didn't care what other leaders thought.",
+      "start": 510.184,
+      "end": 515.514,
+      "audio_length_seconds": 5.33,
+      "embedding_audio_seconds": 5.06,
+      "audio_file": "audio\\sentence_0089.wav",
+      "word_count": 13
+    },
+    {
+      "index": 90,
+      "text": "Peter the Great did what he needed to do to gather the Russian lands, to recreate this triune ruse, this mythic, in some sense, in his own mind, Russian empire that he wants to restore.",
+      "start": 516.034,
+      "end": 531.304,
+      "audio_length_seconds": 15.27,
+      "embedding_audio_seconds": 15.27,
+      "audio_file": "audio\\sentence_0090.wav",
+      "word_count": 35
+    },
+    {
+      "index": 91,
+      "text": "He's messianic.",
+      "start": 531.474,
+      "end": 532.584,
+      "audio_length_seconds": 1.11,
+      "embedding_audio_seconds": 0.94,
+      "audio_file": "audio\\sentence_0091.wav",
+      "word_count": 2
+    },
+    {
+      "index": 92,
+      "text": "He doesn't care.",
+      "start": 532.584,
+      "end": 533.534,
+      "audio_length_seconds": 0.95,
+      "embedding_audio_seconds": 0.81,
+      "audio_file": "audio\\sentence_0092.wav",
+      "word_count": 3
+    },
+    {
+      "index": 93,
+      "text": "Well, that's terrifying.",
+      "start": 534.524,
+      "end": 535.894,
+      "audio_length_seconds": 1.37,
+      "embedding_audio_seconds": 1.37,
+      "audio_file": "audio\\sentence_0093.wav",
+      "word_count": 3
+    },
+    {
+      "index": 94,
+      "text": "I want to take a very quick break, because we have so many more national security issues to continue to talk about.",
+      "start": 537.394,
+      "end": 543.504,
+      "audio_length_seconds": 6.11,
+      "embedding_audio_seconds": 6.11,
+      "audio_file": "audio\\sentence_0094.wav",
+      "word_count": 22
+    },
+    {
+      "index": 95,
+      "text": "And we'll be back with more of our panel.",
+      "start": 543.504,
+      "end": 545.974,
+      "audio_length_seconds": 2.47,
+      "embedding_audio_seconds": 2.29,
+      "audio_file": "audio\\sentence_0095.wav",
+      "word_count": 9
+    },
+    {
+      "index": 96,
+      "text": "Stay with us.",
+      "start": 546.084,
+      "end": 546.834,
+      "audio_length_seconds": 0.75,
+      "embedding_audio_seconds": 0.74,
+      "audio_file": "audio\\sentence_0096.wav",
+      "word_count": 3
+    },
+    {
+      "index": 97,
+      "text": "Welcome back to Face the Nation, and we continue our conversation now with our foreign policy panel.",
+      "start": 549.784,
+      "end": 555.334,
+      "audio_length_seconds": 5.55,
+      "embedding_audio_seconds": 5.18,
+      "audio_file": "audio\\sentence_0097.wav",
+      "word_count": 17
+    },
+    {
+      "index": 98,
+      "text": "H.R. McMaster, General McMaster, I want to ask you, from a military perspective, we heard the CIA director describe a full -fledged military partnership between Russia and Iran.",
+      "start": 555.334,
+      "end": 569.004,
+      "audio_length_seconds": 13.67,
+      "embedding_audio_seconds": 13.61,
+      "audio_file": "audio\\sentence_0098.wav",
+      "word_count": 29
+    },
+    {
+      "index": 99,
+      "text": "What does this look like?",
+      "start": 570.014,
+      "end": 571.718,
+      "audio_length_seconds": 1.704,
+      "embedding_audio_seconds": 1.664,
+      "audio_file": "audio\\sentence_0099.wav",
+      "word_count": 5
+    },
+    {
+      "index": 100,
+      "text": "I mean, we know Iranian drones are being used on the battlefield in Ukraine, but where does this head next?",
+      "start": 571.718,
+      "end": 578.348,
+      "audio_length_seconds": 6.63,
+      "embedding_audio_seconds": 6.63,
+      "audio_file": "audio\\sentence_0100.wav",
+      "word_count": 20
+    },
+    {
+      "index": 101,
+      "text": "Well, I think where it heads next is support for Russia's war -making machine more broadly.",
+      "start": 580.378,
+      "end": 585.262,
+      "audio_length_seconds": 4.884,
+      "embedding_audio_seconds": 4.604,
+      "audio_file": "audio\\sentence_0101.wav",
+      "word_count": 16
+    },
+    {
+      "index": 102,
+      "text": "I think you're going to see missiles.",
+      "start": 585.262,
+      "end": 586.792,
+      "audio_length_seconds": 1.53,
+      "embedding_audio_seconds": 1.53,
+      "audio_file": "audio\\sentence_0102.wav",
+      "word_count": 7
+    },
+    {
+      "index": 103,
+      "text": "You already have reports of Islamic Revolutionary Guards Corps trainers and assemblers of these drones.",
+      "start": 586.792,
+      "end": 593.082,
+      "audio_length_seconds": 6.29,
+      "embedding_audio_seconds": 6.29,
+      "audio_file": "audio\\sentence_0103.wav",
+      "word_count": 15
+    },
+    {
+      "index": 104,
+      "text": "And I think what we're recognizing is these problem sets that we're facing with the theocratic dictatorship in Iran and the revanchist, hyper -nationalist Putin, they're connected to each other.",
+      "start": 593.082,
+      "end": 604.212,
+      "audio_length_seconds": 11.13,
+      "embedding_audio_seconds": 11.13,
+      "audio_file": "audio\\sentence_0104.wav",
+      "word_count": 30
+    },
+    {
+      "index": 105,
+      "text": "they're connected to China which of course also has just doubled down on on its relationship Xi Jinping's relationship with Vladimir Putin and support for Putin.",
+      "start": 604.212,
+      "end": 613.564,
+      "audio_length_seconds": 9.352,
+      "embedding_audio_seconds": 9.162,
+      "audio_file": "audio\\sentence_0105.wav",
+      "word_count": 26
+    },
+    {
+      "index": 106,
+      "text": "So I think we are, hopefully now, in full recognition that we are in really consequential competitions with authoritarian regimes who are hostile to us.",
+      "start": 613.564,
+      "end": 623.432,
+      "audio_length_seconds": 9.868,
+      "embedding_audio_seconds": 9.868,
+      "audio_file": "audio\\sentence_0106.wav",
+      "word_count": 25
+    },
+    {
+      "index": 107,
+      "text": "And we have to respond much more effectively than we responded in the past.",
+      "start": 623.432,
+      "end": 627.72,
+      "audio_length_seconds": 4.288,
+      "embedding_audio_seconds": 4.288,
+      "audio_file": "audio\\sentence_0107.wav",
+      "word_count": 14
+    },
+    {
+      "index": 108,
+      "text": "And that's a broad range of, I think, preparations for potential military conflict so we can deter a widening of the war.",
+      "start": 627.72,
+      "end": 633.93,
+      "audio_length_seconds": 6.21,
+      "embedding_audio_seconds": 6.21,
+      "audio_file": "audio\\sentence_0108.wav",
+      "word_count": 22
+    },
+    {
+      "index": 109,
+      "text": "But there's also very significant economic and diplomatic aspects of these interconnected problems.",
+      "start": 633.93,
+      "end": 639.52,
+      "audio_length_seconds": 5.59,
+      "embedding_audio_seconds": 5.33,
+      "audio_file": "audio\\sentence_0109.wav",
+      "word_count": 13
+    },
+    {
+      "index": 110,
+      "text": "Well, they are interconnected problems.",
+      "start": 640.66,
+      "end": 643.35,
+      "audio_length_seconds": 2.69,
+      "embedding_audio_seconds": 2.53,
+      "audio_file": "audio\\sentence_0110.wav",
+      "word_count": 5
+    },
+    {
+      "index": 111,
+      "text": "I'm guessing one of the things you're saying there is recognize that the attempt to broker a nuclear deal with Iran is dead.",
+      "start": 643.35,
+      "end": 652.34,
+      "audio_length_seconds": 8.99,
+      "embedding_audio_seconds": 8.98,
+      "audio_file": "audio\\sentence_0111.wav",
+      "word_count": 23
+    },
+    {
+      "index": 112,
+      "text": "It's a pipe dream, you know, it's trying to revive something that is completely dead.",
+      "start": 654.49,
+      "end": 658.534,
+      "audio_length_seconds": 4.044,
+      "embedding_audio_seconds": 3.874,
+      "audio_file": "audio\\sentence_0112.wav",
+      "word_count": 15
+    },
+    {
+      "index": 113,
+      "text": "And I couldn't believe it, Margaret, as we were supplicating to the Iranian regime as they're intensifying their proxy war in the region and attacking some of our long -standing partners there, Saudi Arabia and the UAE.",
+      "start": 658.534,
+      "end": 673.784,
+      "audio_length_seconds": 15.25,
+      "embedding_audio_seconds": 15.25,
+      "audio_file": "audio\\sentence_0113.wav",
+      "word_count": 37
+    },
+    {
+      "index": 114,
+      "text": "And I think we lost a lot of ground in the Middle East because we're chasing this pipe dream, trying to revive this nuclear agreement.",
+      "start": 673.784,
+      "end": 681.974,
+      "audio_length_seconds": 8.19,
+      "embedding_audio_seconds": 7.91,
+      "audio_file": "audio\\sentence_0114.wav",
+      "word_count": 25
+    },
+    {
+      "index": 115,
+      "text": "And if we didn't, Margaret, what would happen?",
+      "start": 681.974,
+      "end": 683.804,
+      "audio_length_seconds": 1.83,
+      "embedding_audio_seconds": 1.69,
+      "audio_file": "audio\\sentence_0115.wav",
+      "word_count": 8
+    },
+    {
+      "index": 116,
+      "text": "What would happen is, we'd give Iran a pass on the destructive effect the dictatorship has had on the Iranian economy.",
+      "start": 683.804,
+      "end": 691.374,
+      "audio_length_seconds": 7.57,
+      "embedding_audio_seconds": 7.39,
+      "audio_file": "audio\\sentence_0116.wav",
+      "word_count": 21
+    },
+    {
+      "index": 117,
+      "text": "And you know where that money would go?",
+      "start": 691.374,
+      "end": 692.914,
+      "audio_length_seconds": 1.54,
+      "embedding_audio_seconds": 1.32,
+      "audio_file": "audio\\sentence_0117.wav",
+      "word_count": 8
+    },
+    {
+      "index": 118,
+      "text": "That money would go into the bunyads, which are these collectives controlled by the theocratic dictatorship who extend their patronage, network, and control.",
+      "start": 692.914,
+      "end": 700.144,
+      "audio_length_seconds": 7.23,
+      "embedding_audio_seconds": 7.23,
+      "audio_file": "audio\\sentence_0118.wav",
+      "word_count": 23
+    },
+    {
+      "index": 119,
+      "text": "And that money would go to the Islamic Revolutionary Guards Corps, who would, as they did after the first Iran nuclear deal, intensify their proxy war against us, their Arab neighbors, and especially against Israel.",
+      "start": 700.144,
+      "end": 713.104,
+      "audio_length_seconds": 12.96,
+      "embedding_audio_seconds": 12.96,
+      "audio_file": "audio\\sentence_0119.wav",
+      "word_count": 35
+    },
+    {
+      "index": 120,
+      "text": "I think, Margaret, if we're going to be in the business of making predictions, I think the chances are quite high of a significant conflict in the Middle East, maybe entailing an Israeli strike on Iran's nuclear program.",
+      "start": 713.104,
+      "end": 725.634,
+      "audio_length_seconds": 12.53,
+      "embedding_audio_seconds": 12.47,
+      "audio_file": "audio\\sentence_0120.wav",
+      "word_count": 38
+    },
+    {
+      "index": 121,
+      "text": "But, Michelle Florey, do you agree with that assessment?",
+      "start": 725.634,
+      "end": 727.864,
+      "audio_length_seconds": 2.23,
+      "embedding_audio_seconds": 1.76,
+      "audio_file": "audio\\sentence_0121.wav",
+      "word_count": 9
+    },
+    {
+      "index": 122,
+      "text": "I think the risk is very real.",
+      "start": 727.864,
+      "end": 730.468,
+      "audio_length_seconds": 2.604,
+      "embedding_audio_seconds": 1.884,
+      "audio_file": "audio\\sentence_0122.wav",
+      "word_count": 7
+    },
+    {
+      "index": 123,
+      "text": "I would say the problem goes back to the Trump administration's abandonment of a good agreement that had actually placed real constraints and actually rolled back the Iranian nuclear program for a time.",
+      "start": 730.468,
+      "end": 743.158,
+      "audio_length_seconds": 12.69,
+      "embedding_audio_seconds": 12.69,
+      "audio_file": "audio\\sentence_0123.wav",
+      "word_count": 33
+    },
+    {
+      "index": 124,
+      "text": "But be that as it may, we are where we are.",
+      "start": 743.428,
+      "end": 745.492,
+      "audio_length_seconds": 2.064,
+      "embedding_audio_seconds": 2.064,
+      "audio_file": "audio\\sentence_0124.wav",
+      "word_count": 11
+    },
+    {
+      "index": 125,
+      "text": "The real risk is that in 2023, they will acquire enough material and highly enriched nuclear material to build a bomb.",
+      "start": 745.492,
+      "end": 754.002,
+      "audio_length_seconds": 8.51,
+      "embedding_audio_seconds": 8.51,
+      "audio_file": "audio\\sentence_0125.wav",
+      "word_count": 21
+    },
+    {
+      "index": 126,
+      "text": "And Israel has long articulated that as a red line, that that is an unacceptable condition for them to have, to coexist with.",
+      "start": 754.002,
+      "end": 762.932,
+      "audio_length_seconds": 8.93,
+      "embedding_audio_seconds": 8.73,
+      "audio_file": "audio\\sentence_0126.wav",
+      "word_count": 23
+    },
+    {
+      "index": 127,
+      "text": "And so, I agree with HR, the risk of an Israeli strike, and then the decision that places on the president, the U.S. president's desk.",
+      "start": 762.932,
+      "end": 771.382,
+      "audio_length_seconds": 8.45,
+      "embedding_audio_seconds": 8.22,
+      "audio_file": "audio\\sentence_0127.wav",
+      "word_count": 26
+    },
+    {
+      "index": 128,
+      "text": "Do we support them?",
+      "start": 771.492,
+      "end": 772.982,
+      "audio_length_seconds": 1.49,
+      "embedding_audio_seconds": 1.33,
+      "audio_file": "audio\\sentence_0128.wav",
+      "word_count": 4
+    },
+    {
+      "index": 129,
+      "text": "Do we stand back?",
+      "start": 772.982,
+      "end": 774.912,
+      "audio_length_seconds": 1.93,
+      "embedding_audio_seconds": 1.93,
+      "audio_file": "audio\\sentence_0129.wav",
+      "word_count": 4
+    },
+    {
+      "index": 130,
+      "text": "What happens?",
+      "start": 774.922,
+      "end": 775.852,
+      "audio_length_seconds": 0.93,
+      "embedding_audio_seconds": 0.93,
+      "audio_file": "audio\\sentence_0130.wav",
+      "word_count": 2
+    },
+    {
+      "index": 131,
+      "text": "And do we find ourselves in an escalating situation with Iran in the Middle East?",
+      "start": 775.852,
+      "end": 781.222,
+      "audio_length_seconds": 5.37,
+      "embedding_audio_seconds": 5.37,
+      "audio_file": "audio\\sentence_0131.wav",
+      "word_count": 15
+    },
+    {
+      "index": 132,
+      "text": "Ambassador Sullivan, the administration has been in this uncomfortable position with Iran because of, well, a few things, but one of them, there are a number of Americans being held in Iranian captivity that the United States would like to get back.",
+      "start": 782.102,
+      "end": 795.372,
+      "audio_length_seconds": 13.27,
+      "embedding_audio_seconds": 13.27,
+      "audio_file": "audio\\sentence_0132.wav",
+      "word_count": 42
+    },
+    {
+      "index": 133,
+      "text": "State Department talks about that.",
+      "start": 795.462,
+      "end": 797.112,
+      "audio_length_seconds": 1.65,
+      "embedding_audio_seconds": 1.65,
+      "audio_file": "audio\\sentence_0133.wav",
+      "word_count": 5
+    },
+    {
+      "index": 134,
+      "text": "But you also have these protests on the streets of Iran.",
+      "start": 797.112,
+      "end": 800.642,
+      "audio_length_seconds": 3.53,
+      "embedding_audio_seconds": 3.53,
+      "audio_file": "audio\\sentence_0134.wav",
+      "word_count": 11
+    },
+    {
+      "index": 135,
+      "text": "So, what is the feeling about the attempt to get anything diplomatically done in this circumstance?",
+      "start": 800.642,
+      "end": 806.752,
+      "audio_length_seconds": 6.11,
+      "embedding_audio_seconds": 5.46,
+      "audio_file": "audio\\sentence_0135.wav",
+      "word_count": 16
+    },
+    {
+      "index": 136,
+      "text": "Well, as you note, Margaret, we've had Americans detained in Iran through the tenure of my service over the last six years as deputy secretary and ambassador.",
+      "start": 806.752,
+      "end": 817.642,
+      "audio_length_seconds": 10.89,
+      "embedding_audio_seconds": 10.89,
+      "audio_file": "audio\\sentence_0136.wav",
+      "word_count": 27
+    },
+    {
+      "index": 137,
+      "text": "But it goes back to my family that lived in Tehran in the late 70s.",
+      "start": 817.732,
+      "end": 822.08,
+      "audio_length_seconds": 4.348,
+      "embedding_audio_seconds": 4.348,
+      "audio_file": "audio\\sentence_0137.wav",
+      "word_count": 15
+    },
+    {
+      "index": 138,
+      "text": "My uncle was the last U.S. ambassador to Iran.",
+      "start": 822.08,
+      "end": 825.062,
+      "audio_length_seconds": 2.982,
+      "embedding_audio_seconds": 2.982,
+      "audio_file": "audio\\sentence_0138.wav",
+      "word_count": 10
+    },
+    {
+      "index": 139,
+      "text": "And his staff was taken hostage on November 4, 1979, and stayed 444 days as guests of Ayatollah Khomeini.",
+      "start": 825.062,
+      "end": 835.472,
+      "audio_length_seconds": 10.41,
+      "embedding_audio_seconds": 10.16,
+      "audio_file": "audio\\sentence_0139.wav",
+      "word_count": 19
+    },
+    {
+      "index": 140,
+      "text": "So, this is not a new problem.",
+      "start": 835.472,
+      "end": 837.282,
+      "audio_length_seconds": 1.81,
+      "embedding_audio_seconds": 1.6,
+      "audio_file": "audio\\sentence_0140.wav",
+      "word_count": 7
+    },
+    {
+      "index": 141,
+      "text": "This is a significant problem, as HR has mentioned and as Michelle has mentioned.",
+      "start": 837.282,
+      "end": 842.512,
+      "audio_length_seconds": 5.23,
+      "embedding_audio_seconds": 5.23,
+      "audio_file": "audio\\sentence_0141.wav",
+      "word_count": 14
+    },
+    {
+      "index": 142,
+      "text": "But there's very, very little diplomatic engagement with—none, really, with Iran now.",
+      "start": 843.312,
+      "end": 850.302,
+      "audio_length_seconds": 6.99,
+      "embedding_audio_seconds": 6.62,
+      "audio_file": "audio\\sentence_0142.wav",
+      "word_count": 12
+    },
+    {
+      "index": 143,
+      "text": "I mean, our engagement, the State Department's engagement, on trying to reanimate the JCPOA, the so -called Iran deal, that's all been indirect.",
+      "start": 850.302,
+      "end": 860.872,
+      "audio_length_seconds": 10.57,
+      "embedding_audio_seconds": 10.39,
+      "audio_file": "audio\\sentence_0143.wav",
+      "word_count": 23
+    },
+    {
+      "index": 144,
+      "text": "In fact, I hosted in Moscow our special representative, Representative Malley, in Moscow last year for talks with the Russians.",
+      "start": 860.872,
+      "end": 870.064,
+      "audio_length_seconds": 9.192,
+      "embedding_audio_seconds": 8.992,
+      "audio_file": "audio\\sentence_0144.wav",
+      "word_count": 20
+    },
+    {
+      "index": 145,
+      "text": "We were actually trying to have the Russians help us engage with the Iranians, which shows how much of a struggle that relationship is.",
+      "start": 870.064,
+      "end": 880.314,
+      "audio_length_seconds": 10.25,
+      "embedding_audio_seconds": 10.25,
+      "audio_file": "audio\\sentence_0145.wav",
+      "word_count": 24
+    },
+    {
+      "index": 146,
+      "text": "And, Mike, the CIA has still—the intelligence community has not determined that Iran actually will make a nuclear weapon.",
+      "start": 880.314,
+      "end": 888.784,
+      "audio_length_seconds": 8.47,
+      "embedding_audio_seconds": 7.68,
+      "audio_file": "audio\\sentence_0146.wav",
+      "word_count": 19
+    },
+    {
+      "index": 147,
+      "text": "It's just that they're giving themselves the possibility to do so at a future date.",
+      "start": 888.784,
+      "end": 893.304,
+      "audio_length_seconds": 4.52,
+      "embedding_audio_seconds": 4.52,
+      "audio_file": "audio\\sentence_0147.wav",
+      "word_count": 15
+    },
+    {
+      "index": 148,
+      "text": "The judgment has always been that what the Iranians want is to get to the threshold, to have all the pieces and be able to put them together quickly.",
+      "start": 893.304,
+      "end": 902.554,
+      "audio_length_seconds": 9.25,
+      "embedding_audio_seconds": 9.25,
+      "audio_file": "audio\\sentence_0148.wav",
+      "word_count": 29
+    },
+    {
+      "index": 149,
+      "text": "Right now, they have enough fissile material enriched to 60 percent for four bombs, and they could get to 90 percent, which is what is required for a weapon, in a matter of weeks.",
+      "start": 903.214,
+      "end": 915.384,
+      "audio_length_seconds": 12.17,
+      "embedding_audio_seconds": 12.17,
+      "audio_file": "audio\\sentence_0149.wav",
+      "word_count": 34
+    },
+    {
+      "index": 150,
+      "text": "So, in terms of fissile material peace, they're very, very close.",
+      "start": 915.384,
+      "end": 918.914,
+      "audio_length_seconds": 3.53,
+      "embedding_audio_seconds": 3.41,
+      "audio_file": "audio\\sentence_0150.wav",
+      "word_count": 11
+    },
+    {
+      "index": 151,
+      "text": "Does the regime, which has withstood many popular protests, withstand what's happening in the streets?",
+      "start": 919.874,
+      "end": 926.946,
+      "audio_length_seconds": 7.072,
+      "embedding_audio_seconds": 6.712,
+      "audio_file": "audio\\sentence_0151.wav",
+      "word_count": 15
+    },
+    {
+      "index": 152,
+      "text": "which is unique with these protests that were started by young women.",
+      "start": 926.946,
+      "end": 931.156,
+      "audio_length_seconds": 4.21,
+      "embedding_audio_seconds": 4.21,
+      "audio_file": "audio\\sentence_0152.wav",
+      "word_count": 12
+    },
+    {
+      "index": 153,
+      "text": "I think you have to look at the current protest in the context of a series of protests that have occurred since 2017.",
+      "start": 931.156,
+      "end": 937.986,
+      "audio_length_seconds": 6.83,
+      "embedding_audio_seconds": 6.83,
+      "audio_file": "audio\\sentence_0153.wav",
+      "word_count": 23
+    },
+    {
+      "index": 154,
+      "text": "And they've all had different causes, right?",
+      "start": 938.746,
+      "end": 941.836,
+      "audio_length_seconds": 3.09,
+      "embedding_audio_seconds": 3.09,
+      "audio_file": "audio\\sentence_0154.wav",
+      "word_count": 7
+    },
+    {
+      "index": 155,
+      "text": "people are asking for different things, but the one thing they have in common is a growing alienation of the young people from the regime.",
+      "start": 941.836,
+      "end": 949.726,
+      "audio_length_seconds": 7.89,
+      "embedding_audio_seconds": 7.89,
+      "audio_file": "audio\\sentence_0155.wav",
+      "word_count": 25
+    },
+    {
+      "index": 156,
+      "text": "and a growing group of people who want a more normal life and a less rigid life.",
+      "start": 949.726,
+      "end": 955.816,
+      "audio_length_seconds": 6.09,
+      "embedding_audio_seconds": 5.63,
+      "audio_file": "audio\\sentence_0156.wav",
+      "word_count": 17
+    },
+    {
+      "index": 157,
+      "text": "But at the same time, there's a large number of Iranians who support the regime.",
+      "start": 956.296,
+      "end": 960.846,
+      "audio_length_seconds": 4.55,
+      "embedding_audio_seconds": 4.55,
+      "audio_file": "audio\\sentence_0157.wav",
+      "word_count": 15
+    },
+    {
+      "index": 158,
+      "text": "And 18 million people voted for the current president, who's a hard -liner.",
+      "start": 960.846,
+      "end": 964.376,
+      "audio_length_seconds": 3.53,
+      "embedding_audio_seconds": 3.53,
+      "audio_file": "audio\\sentence_0158.wav",
+      "word_count": 13
+    },
+    {
+      "index": 159,
+      "text": "So, I don't think that we're going to see regime change unless there's an incident that takes us in a different direction.",
+      "start": 964.376,
+      "end": 971.666,
+      "audio_length_seconds": 7.29,
+      "embedding_audio_seconds": 6.69,
+      "audio_file": "audio\\sentence_0159.wav",
+      "word_count": 22
+    },
+    {
+      "index": 160,
+      "text": "And we all remember, in 1978, the Shaws—the Shaws suffered a theater fire.",
+      "start": 971.666,
+      "end": 981.196,
+      "audio_length_seconds": 9.53,
+      "embedding_audio_seconds": 9.53,
+      "audio_file": "audio\\sentence_0160.wav",
+      "word_count": 13
+    },
+    {
+      "index": 161,
+      "text": "It killed 400 people, set on fire, doors blocked, and that changed the whole dynamic in the first Iranian revolution.",
+      "start": 981.196,
+      "end": 991.146,
+      "audio_length_seconds": 9.95,
+      "embedding_audio_seconds": 9.47,
+      "audio_file": "audio\\sentence_0161.wav",
+      "word_count": 20
+    },
+    {
+      "index": 162,
+      "text": "So, if something like that were to happen now, this could go somewhere.",
+      "start": 991.146,
+      "end": 995.97,
+      "audio_length_seconds": 4.824,
+      "embedding_audio_seconds": 4.824,
+      "audio_file": "audio\\sentence_0162.wav",
+      "word_count": 13
+    },
+    {
+      "index": 163,
+      "text": "But absent that, I think this is probably going to fizzle out.",
+      "start": 995.97,
+      "end": 998.52,
+      "audio_length_seconds": 2.55,
+      "embedding_audio_seconds": 2.55,
+      "audio_file": "audio\\sentence_0163.wav",
+      "word_count": 12
+    },
+    {
+      "index": 164,
+      "text": "It's—you know, it is so fascinating that the dynamic is there, that it's women who started this round of protests.",
+      "start": 1001.318,
+      "end": 1007.226,
+      "audio_length_seconds": 5.908,
+      "embedding_audio_seconds": 5.908,
+      "audio_file": "audio\\sentence_0164.wav",
+      "word_count": 20
+    },
+    {
+      "index": 165,
+      "text": "And it makes me think, Michelle, of time and again, as expected, it is the young women who are paying the price for what's happening in Afghanistan following the withdrawal of the United States and basically the abandonment of the international community following the end to military engagement there.",
+      "start": 1007.226,
+      "end": 1025.096,
+      "audio_length_seconds": 17.87,
+      "embedding_audio_seconds": 17.87,
+      "audio_file": "audio\\sentence_0165.wav",
+      "word_count": 49
+    },
+    {
+      "index": 166,
+      "text": "Do you buy the argument that that choice to withdraw factored in, in any way, to Russia and China's assessment that the U.S. was in decline?",
+      "start": 1025.096,
+      "end": 1036.346,
+      "audio_length_seconds": 11.25,
+      "embedding_audio_seconds": 11.11,
+      "audio_file": "audio\\sentence_0166.wav",
+      "word_count": 27
+    },
+    {
+      "index": 167,
+      "text": "Look, I think both Russia and China have had a narrative of U.S. decline, particularly China, for ever since the financial crisis.",
+      "start": 1036.986,
+      "end": 1047.136,
+      "audio_length_seconds": 10.15,
+      "embedding_audio_seconds": 10.15,
+      "audio_file": "audio\\sentence_0167.wav",
+      "word_count": 23
+    },
+    {
+      "index": 168,
+      "text": "In 2008 -2009.",
+      "start": 1048.616,
+      "end": 1049.768,
+      "audio_length_seconds": 1.152,
+      "embedding_audio_seconds": 1.152,
+      "audio_file": "audio\\sentence_0168.wav",
+      "word_count": 3
+    },
+    {
+      "index": 169,
+      "text": "And so they selectively add to this, you know, the protests on January 6th and that television coverage added to it.",
+      "start": 1049.768,
+      "end": 1057.338,
+      "audio_length_seconds": 7.57,
+      "embedding_audio_seconds": 7.57,
+      "audio_file": "audio\\sentence_0169.wav",
+      "word_count": 21
+    },
+    {
+      "index": 170,
+      "text": "I think the messiness of the withdrawal from Afghanistan, you know, is another contributor.",
+      "start": 1057.338,
+      "end": 1063.102,
+      "audio_length_seconds": 5.764,
+      "embedding_audio_seconds": 5.604,
+      "audio_file": "audio\\sentence_0170.wav",
+      "word_count": 14
+    },
+    {
+      "index": 171,
+      "text": "So, it's one brick in a wall that they've been building for quite some time that has many bricks, which is why it's so important that we need to invest in our alliances, invest in really demonstrate our credibility when we make foreign policy commitments and so forth.",
+      "start": 1063.102,
+      "end": 1082.572,
+      "audio_length_seconds": 19.47,
+      "embedding_audio_seconds": 19.47,
+      "audio_file": "audio\\sentence_0171.wav",
+      "word_count": 48
+    },
+    {
+      "index": 172,
+      "text": "I actually would give the administration some credit for that in terms of pulling NATO together after Russia's invasion of Ukraine, building stronger partnerships in Asia to try to deter and counterbalance China.",
+      "start": 1082.572,
+      "end": 1097.482,
+      "audio_length_seconds": 14.91,
+      "embedding_audio_seconds": 14.69,
+      "audio_file": "audio\\sentence_0172.wav",
+      "word_count": 33
+    },
+    {
+      "index": 173,
+      "text": "But it's—you know, this is a narrative that they will persist in, because it serves their interests.",
+      "start": 1098.222,
+      "end": 1104.772,
+      "audio_length_seconds": 6.55,
+      "embedding_audio_seconds": 6.55,
+      "audio_file": "audio\\sentence_0173.wav",
+      "word_count": 17
+    },
+    {
+      "index": 174,
+      "text": "Are you optimistic that those alliances in the West will actually remain solid?",
+      "start": 1104.772,
+      "end": 1111.162,
+      "audio_length_seconds": 6.39,
+      "embedding_audio_seconds": 6.39,
+      "audio_file": "audio\\sentence_0174.wav",
+      "word_count": 13
+    },
+    {
+      "index": 175,
+      "text": "Because there is an argument that if Vladimir Putin hadn't bombed Kiev and terrified European leaders, that they wouldn't be united, that it's not just diplomacy, it was actual fear.",
+      "start": 1111.162,
+      "end": 1122.712,
+      "audio_length_seconds": 11.55,
+      "embedding_audio_seconds": 11.4,
+      "audio_file": "audio\\sentence_0175.wav",
+      "word_count": 30
+    },
+    {
+      "index": 176,
+      "text": "But we are where we are.",
+      "start": 1122.712,
+      "end": 1124.282,
+      "audio_length_seconds": 1.57,
+      "embedding_audio_seconds": 1.57,
+      "audio_file": "audio\\sentence_0176.wav",
+      "word_count": 6
+    },
+    {
+      "index": 177,
+      "text": "war has come to this door—you know, come to Europe.",
+      "start": 1124.282,
+      "end": 1127.092,
+      "audio_length_seconds": 2.81,
+      "embedding_audio_seconds": 2.81,
+      "audio_file": "audio\\sentence_0177.wav",
+      "word_count": 10
+    },
+    {
+      "index": 178,
+      "text": "And I think the NATO alliance and the U.S.-EU relationship, they have found their purpose again.",
+      "start": 1127.092,
+      "end": 1134.322,
+      "audio_length_seconds": 7.23,
+      "embedding_audio_seconds": 7.23,
+      "audio_file": "audio\\sentence_0178.wav",
+      "word_count": 17
+    },
+    {
+      "index": 179,
+      "text": "There's a tremendous amount of transatlantic unity that I think is quite solid.",
+      "start": 1134.322,
+      "end": 1138.766,
+      "audio_length_seconds": 4.444,
+      "embedding_audio_seconds": 4.444,
+      "audio_file": "audio\\sentence_0179.wav",
+      "word_count": 13
+    },
+    {
+      "index": 180,
+      "text": "I also think as Beijing overplays their hand, that actually bolsters our alliances and our partnerships in the region.",
+      "start": 1138.766,
+      "end": 1148.276,
+      "audio_length_seconds": 9.51,
+      "embedding_audio_seconds": 9.51,
+      "audio_file": "audio\\sentence_0180.wav",
+      "word_count": 19
+    },
+    {
+      "index": 181,
+      "text": "But we have to play our cards well and seriously compete, not only diplomatically, but shoring up deterrence militarily, competing economically, technologically, keeping our edge, making the right investments at home.",
+      "start": 1148.276,
+      "end": 1162.066,
+      "audio_length_seconds": 13.79,
+      "embedding_audio_seconds": 13.65,
+      "audio_file": "audio\\sentence_0181.wav",
+      "word_count": 31
+    },
+    {
+      "index": 182,
+      "text": "So, how we play our cards in the next few years really, really matters.",
+      "start": 1162.066,
+      "end": 1166.176,
+      "audio_length_seconds": 4.11,
+      "embedding_audio_seconds": 3.88,
+      "audio_file": "audio\\sentence_0182.wav",
+      "word_count": 14
+    },
+    {
+      "index": 183,
+      "text": "I don't want to lose the Afghanistan threat.",
+      "start": 1166.176,
+      "end": 1168.476,
+      "audio_length_seconds": 2.3,
+      "embedding_audio_seconds": 2.3,
+      "audio_file": "audio\\sentence_0183.wav",
+      "word_count": 8
+    },
+    {
+      "index": 184,
+      "text": "I know I took you to Europe.",
+      "start": 1168.476,
+      "end": 1169.448,
+      "audio_length_seconds": 0.972,
+      "embedding_audio_seconds": 0.972,
+      "audio_file": "audio\\sentence_0184.wav",
+      "word_count": 7
+    },
+    {
+      "index": 185,
+      "text": "I want to come back to Afghanistan.",
+      "start": 1169.448,
+      "end": 1170.506,
+      "audio_length_seconds": 1.058,
+      "embedding_audio_seconds": 1.058,
+      "audio_file": "audio\\sentence_0185.wav",
+      "word_count": 7
+    },
+    {
+      "index": 186,
+      "text": "And, Ambassador Sullivan, you're not at the State Department anymore, so you can speak freely.",
+      "start": 1170.506,
+      "end": 1175.996,
+      "audio_length_seconds": 5.49,
+      "embedding_audio_seconds": 5.49,
+      "audio_file": "audio\\sentence_0186.wav",
+      "word_count": 15
+    },
+    {
+      "index": 187,
+      "text": "I know what H.R. thinks of the Trump deal with the Taliban and the flawed withdrawal.",
+      "start": 1175.996,
+      "end": 1182.326,
+      "audio_length_seconds": 6.33,
+      "embedding_audio_seconds": 6.33,
+      "audio_file": "audio\\sentence_0187.wav",
+      "word_count": 17
+    },
+    {
+      "index": 188,
+      "text": "He's made that very clear in this program in the past.",
+      "start": 1182.326,
+      "end": 1184.516,
+      "audio_length_seconds": 2.19,
+      "embedding_audio_seconds": 2.19,
+      "audio_file": "audio\\sentence_0188.wav",
+      "word_count": 11
+    },
+    {
+      "index": 189,
+      "text": "What do you think of the—same question I asked Michel Flournoy.",
+      "start": 1184.516,
+      "end": 1188.526,
+      "audio_length_seconds": 4.01,
+      "embedding_audio_seconds": 3.64,
+      "audio_file": "audio\\sentence_0189.wav",
+      "word_count": 11
+    },
+    {
+      "index": 190,
+      "text": "How much of the withdrawal, how it was executed, and the agreement with the Taliban is responsible for shaping the perception of weakness of the West?",
+      "start": 1188.756,
+      "end": 1197.156,
+      "audio_length_seconds": 8.4,
+      "embedding_audio_seconds": 8.26,
+      "audio_file": "audio\\sentence_0190.wav",
+      "word_count": 26
+    },
+    {
+      "index": 191,
+      "text": "Well, as Michel said, I completely agree with Michel that the Russians, Beijing, they will use any misstep by the United States, real or imagined, against us in their false narrative.",
+      "start": 1197.156,
+      "end": 1208.746,
+      "audio_length_seconds": 11.59,
+      "embedding_audio_seconds": 11.59,
+      "audio_file": "audio\\sentence_0191.wav",
+      "word_count": 31
+    },
+    {
+      "index": 192,
+      "text": "Unfortunately, in this case, we did make a major misstep, I think, particularly in how we implemented the withdrawal.",
+      "start": 1208.746,
+      "end": 1216.156,
+      "audio_length_seconds": 7.41,
+      "embedding_audio_seconds": 7.26,
+      "audio_file": "audio\\sentence_0192.wav",
+      "word_count": 19
+    },
+    {
+      "index": 193,
+      "text": "There's no doubt in my mind that it factored in, at least in some way, in the Russians' calculation about our strength, our ability to convince allies and partners to oppose what the Russians were doing, our credibility.",
+      "start": 1216.156,
+      "end": 1231.206,
+      "audio_length_seconds": 15.05,
+      "embedding_audio_seconds": 14.86,
+      "audio_file": "audio\\sentence_0193.wav",
+      "word_count": 38
+    },
+    {
+      "index": 194,
+      "text": "Did it ultimately turn out to be the case?",
+      "start": 1231.206,
+      "end": 1234.214,
+      "audio_length_seconds": 3.008,
+      "embedding_audio_seconds": 3.008,
+      "audio_file": "audio\\sentence_0194.wav",
+      "word_count": 9
+    },
+    {
+      "index": 195,
+      "text": "No.",
+      "start": 1234.214,
+      "end": 1234.536,
+      "audio_length_seconds": 0.322,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0195.wav",
+      "word_count": 1
+    },
+    {
+      "index": 196,
+      "text": "As with so many things, Putin was wrong about that, too.",
+      "start": 1234.536,
+      "end": 1237.626,
+      "audio_length_seconds": 3.09,
+      "embedding_audio_seconds": 2.88,
+      "audio_file": "audio\\sentence_0196.wav",
+      "word_count": 11
+    },
+    {
+      "index": 197,
+      "text": "This administration came through in a very strong way with allies and partners, not just in Europe, but in Asia as well.",
+      "start": 1237.626,
+      "end": 1245.176,
+      "audio_length_seconds": 7.55,
+      "embedding_audio_seconds": 7.39,
+      "audio_file": "audio\\sentence_0197.wav",
+      "word_count": 22
+    },
+    {
+      "index": 198,
+      "text": "So, yeah, they fought that, but they were wrong.",
+      "start": 1245.176,
+      "end": 1247.866,
+      "audio_length_seconds": 2.69,
+      "embedding_audio_seconds": 2.4,
+      "audio_file": "audio\\sentence_0198.wav",
+      "word_count": 9
+    },
+    {
+      "index": 199,
+      "text": "Mike, after the fall of Kabul, you were on this program, and you correctly forecast that the Taliban knew where al -Qaida's leader was inside Afghanistan.",
+      "start": 1248.346,
+      "end": 1258.176,
+      "audio_length_seconds": 9.83,
+      "embedding_audio_seconds": 9.6,
+      "audio_file": "audio\\sentence_0199.wav",
+      "word_count": 26
+    },
+    {
+      "index": 200,
+      "text": "Right.",
+      "start": 1258.176,
+      "end": 1258.686,
+      "audio_length_seconds": 0.51,
+      "embedding_audio_seconds": 0.51,
+      "audio_file": "audio\\sentence_0200.wav",
+      "word_count": 1
+    },
+    {
+      "index": 201,
+      "text": "So, I'm wondering what your thought is about where the emerging terror threat is now.",
+      "start": 1258.836,
+      "end": 1263.726,
+      "audio_length_seconds": 4.89,
+      "embedding_audio_seconds": 4.89,
+      "audio_file": "audio\\sentence_0201.wav",
+      "word_count": 15
+    },
+    {
+      "index": 202,
+      "text": "Right.",
+      "start": 1263.876,
+      "end": 1264.226,
+      "audio_length_seconds": 0.35,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0202.wav",
+      "word_count": 1
+    },
+    {
+      "index": 203,
+      "text": "So one of the major affiliates of al -Qaeda, it's called al -Qaeda in the Indian subcontinent, the leader of that group, the deputy of that group, and the top recruiter of that group are today in Afghanistan.",
+      "start": 1264.226,
+      "end": 1277.636,
+      "audio_length_seconds": 13.41,
+      "embedding_audio_seconds": 13.41,
+      "audio_file": "audio\\sentence_0203.wav",
+      "word_count": 38
+    },
+    {
+      "index": 204,
+      "text": "So, al -Qaeda is a problem that needs to be watched in Afghanistan.",
+      "start": 1277.636,
+      "end": 1282.646,
+      "audio_length_seconds": 5.01,
+      "embedding_audio_seconds": 5.01,
+      "audio_file": "audio\\sentence_0204.wav",
+      "word_count": 13
+    },
+    {
+      "index": 205,
+      "text": "The bigger problem in Afghanistan at the moment is ISIS, and ISIS, you know, almost weekly attacks inside Afghanistan.",
+      "start": 1282.646,
+      "end": 1291.216,
+      "audio_length_seconds": 8.57,
+      "embedding_audio_seconds": 8.57,
+      "audio_file": "audio\\sentence_0205.wav",
+      "word_count": 19
+    },
+    {
+      "index": 206,
+      "text": "And the biggest worry is that they are increasingly recruiting from neighboring countries.",
+      "start": 1291.216,
+      "end": 1296.306,
+      "audio_length_seconds": 5.09,
+      "embedding_audio_seconds": 4.61,
+      "audio_file": "audio\\sentence_0206.wav",
+      "word_count": 13
+    },
+    {
+      "index": 207,
+      "text": "And those individuals, particularly Tajikistan, those individuals are coming in where they're getting training from ISIS.",
+      "start": 1296.306,
+      "end": 1302.096,
+      "audio_length_seconds": 5.79,
+      "embedding_audio_seconds": 5.55,
+      "audio_file": "audio\\sentence_0207.wav",
+      "word_count": 16
+    },
+    {
+      "index": 208,
+      "text": "And the concern is that they might leave Afghanistan, go back to their home countries, and conduct attacks against Western interests, think embassies.",
+      "start": 1302.096,
+      "end": 1309.746,
+      "audio_length_seconds": 7.65,
+      "embedding_audio_seconds": 7.61,
+      "audio_file": "audio\\sentence_0208.wav",
+      "word_count": 23
+    },
+    {
+      "index": 209,
+      "text": "The bigger terrorism problem is actually in Africa, all the way from Somalia, all the way to West Africa, where you've got both Al -Qaeda affiliates and you've got ISIS affiliates.",
+      "start": 1309.746,
+      "end": 1321.336,
+      "audio_length_seconds": 11.59,
+      "embedding_audio_seconds": 11.36,
+      "audio_file": "audio\\sentence_0209.wav",
+      "word_count": 31
+    },
+    {
+      "index": 210,
+      "text": "They have control, huge swaths of territory.",
+      "start": 1321.336,
+      "end": 1324.006,
+      "audio_length_seconds": 2.67,
+      "embedding_audio_seconds": 2.53,
+      "audio_file": "audio\\sentence_0210.wav",
+      "word_count": 7
+    },
+    {
+      "index": 211,
+      "text": "They've conducted primarily local attacks so far.",
+      "start": 1324.006,
+      "end": 1327.416,
+      "audio_length_seconds": 3.41,
+      "embedding_audio_seconds": 3.41,
+      "audio_file": "audio\\sentence_0211.wav",
+      "word_count": 7
+    },
+    {
+      "index": 212,
+      "text": "But, at some point, Western embassies, Western military bases in both Africa and possibly in Europe could become targets.",
+      "start": 1327.416,
+      "end": 1334.728,
+      "audio_length_seconds": 7.312,
+      "embedding_audio_seconds": 7.122,
+      "audio_file": "audio\\sentence_0212.wav",
+      "word_count": 19
+    },
+    {
+      "index": 213,
+      "text": "And if we're going to make a prediction for 2023, I'd say we're going to see a terrorist attack against a Western interest somewhere in the world.",
+      "start": 1334.728,
+      "end": 1342.118,
+      "audio_length_seconds": 7.39,
+      "embedding_audio_seconds": 7.38,
+      "audio_file": "audio\\sentence_0213.wav",
+      "word_count": 27
+    },
+    {
+      "index": 214,
+      "text": "Well, that's terrifying.",
+      "start": 1343.058,
+      "end": 1344.768,
+      "audio_length_seconds": 1.71,
+      "embedding_audio_seconds": 1.71,
+      "audio_file": "audio\\sentence_0214.wav",
+      "word_count": 3
+    },
+    {
+      "index": 215,
+      "text": "So, it's sobering.",
+      "start": 1344.768,
+      "end": 1347.576,
+      "audio_length_seconds": 2.808,
+      "embedding_audio_seconds": 2.708,
+      "audio_file": "audio\\sentence_0215.wav",
+      "word_count": 3
+    },
+    {
+      "index": 216,
+      "text": "It's a reminder that declaring victory was too early.",
+      "start": 1347.576,
+      "end": 1351.806,
+      "audio_length_seconds": 4.23,
+      "embedding_audio_seconds": 4.23,
+      "audio_file": "audio\\sentence_0216.wav",
+      "word_count": 9
+    },
+    {
+      "index": 217,
+      "text": "Terrorism has always waxed and waned.",
+      "start": 1351.806,
+      "end": 1353.976,
+      "audio_length_seconds": 2.17,
+      "embedding_audio_seconds": 2.14,
+      "audio_file": "audio\\sentence_0217.wav",
+      "word_count": 6
+    },
+    {
+      "index": 218,
+      "text": "It has always gone up and down, and I think it's starting to bounce back again.",
+      "start": 1353.976,
+      "end": 1357.706,
+      "audio_length_seconds": 3.73,
+      "embedding_audio_seconds": 3.69,
+      "audio_file": "audio\\sentence_0218.wav",
+      "word_count": 16
+    },
+    {
+      "index": 219,
+      "text": "General McMaster, do you agree with that assessment that the emergent threat is coming out of Africa?",
+      "start": 1358.886,
+      "end": 1364.416,
+      "audio_length_seconds": 5.53,
+      "embedding_audio_seconds": 5.53,
+      "audio_file": "audio\\sentence_0219.wav",
+      "word_count": 17
+    },
+    {
+      "index": 220,
+      "text": "I do, but it's also coming out of Afghanistan and it's also coming out of the Middle East still.",
+      "start": 1366.786,
+      "end": 1373.896,
+      "audio_length_seconds": 7.11,
+      "embedding_audio_seconds": 6.59,
+      "audio_file": "audio\\sentence_0220.wav",
+      "word_count": 19
+    },
+    {
+      "index": 221,
+      "text": "And ISIS in Syria has not been defeated.",
+      "start": 1373.896,
+      "end": 1376.986,
+      "audio_length_seconds": 3.09,
+      "embedding_audio_seconds": 3.09,
+      "audio_file": "audio\\sentence_0221.wav",
+      "word_count": 8
+    },
+    {
+      "index": 222,
+      "text": "And there are internment camps of tens of thousands of people, terrorists and their families, that are just languishing there.",
+      "start": 1376.986,
+      "end": 1383.862,
+      "audio_length_seconds": 6.876,
+      "embedding_audio_seconds": 6.876,
+      "audio_file": "audio\\sentence_0222.wav",
+      "word_count": 20
+    },
+    {
+      "index": 223,
+      "text": "Now you have a Turkish incursion against the Kurds that is taking resources away from the fight against ISIS there.",
+      "start": 1383.862,
+      "end": 1391.952,
+      "audio_length_seconds": 8.09,
+      "embedding_audio_seconds": 8.09,
+      "audio_file": "audio\\sentence_0223.wav",
+      "word_count": 20
+    },
+    {
+      "index": 224,
+      "text": "You have French forces who have withdrawn from West Africa because Russia has tried to move into some of those areas and influenced African governments to oust French counter -terrorism support.",
+      "start": 1391.952,
+      "end": 1404.132,
+      "audio_length_seconds": 12.18,
+      "embedding_audio_seconds": 11.97,
+      "audio_file": "audio\\sentence_0224.wav",
+      "word_count": 31
+    },
+    {
+      "index": 225,
+      "text": "So, as we disengage from jihadist terrorists, they gain these havens, and the main lesson from 9 -11 is that jihadist threats that develop abroad can only be dealt with at an exorbitant cost once they reach our shores.",
+      "start": 1404.132,
+      "end": 1419.662,
+      "audio_length_seconds": 15.53,
+      "embedding_audio_seconds": 15.17,
+      "audio_file": "audio\\sentence_0225.wav",
+      "word_count": 39
+    },
+    {
+      "index": 226,
+      "text": "So, sustained engagement through partners, like the partners we abandoned in Afghanistan, is really critical to our own safety and security.",
+      "start": 1419.662,
+      "end": 1429.872,
+      "audio_length_seconds": 10.21,
+      "embedding_audio_seconds": 10.05,
+      "audio_file": "audio\\sentence_0226.wav",
+      "word_count": 21
+    },
+    {
+      "index": 227,
+      "text": "So, what does that look like?",
+      "start": 1431.286,
+      "end": 1434.276,
+      "audio_length_seconds": 2.99,
+      "embedding_audio_seconds": 2.63,
+      "audio_file": "audio\\sentence_0227.wav",
+      "word_count": 6
+    },
+    {
+      "index": 228,
+      "text": "Because the administration, Ambassador Sullivan, would argue you can do all of this from a distance.",
+      "start": 1434.276,
+      "end": 1440.246,
+      "audio_length_seconds": 5.97,
+      "embedding_audio_seconds": 5.97,
+      "audio_file": "audio\\sentence_0228.wav",
+      "word_count": 16
+    },
+    {
+      "index": 229,
+      "text": "Over the horizon, I tend to agree with HR.",
+      "start": 1440.246,
+      "end": 1444.316,
+      "audio_length_seconds": 4.07,
+      "embedding_audio_seconds": 3.34,
+      "audio_file": "audio\\sentence_0229.wav",
+      "word_count": 9
+    },
+    {
+      "index": 230,
+      "text": "think that is.",
+      "start": 1444.316,
+      "end": 1445.586,
+      "audio_length_seconds": 1.27,
+      "embedding_audio_seconds": 1.27,
+      "audio_file": "audio\\sentence_0230.wav",
+      "word_count": 3
+    },
+    {
+      "index": 231,
+      "text": "That's a talking point for when we are out of the region.",
+      "start": 1446.606,
+      "end": 1450.176,
+      "audio_length_seconds": 3.57,
+      "embedding_audio_seconds": 3.57,
+      "audio_file": "audio\\sentence_0231.wav",
+      "word_count": 12
+    },
+    {
+      "index": 232,
+      "text": "One of the issues that President Biden raised with President Putin in Geneva in June of 2021 was discussing potential basing in Central Asia for the U.S. counterterrorism mission, and Putin was having none of it.",
+      "start": 1450.176,
+      "end": 1465.106,
+      "audio_length_seconds": 14.93,
+      "embedding_audio_seconds": 14.88,
+      "audio_file": "audio\\sentence_0232.wav",
+      "word_count": 37
+    },
+    {
+      "index": 233,
+      "text": "But I think, I think that's a significant problem.",
+      "start": 1465.106,
+      "end": 1468.796,
+      "audio_length_seconds": 3.69,
+      "embedding_audio_seconds": 3.63,
+      "audio_file": "audio\\sentence_0233.wav",
+      "word_count": 9
+    },
+    {
+      "index": 234,
+      "text": "I want to transition to the other looming threat that you hear the administration saying it will turn its eye towards in the new year, and that is China.",
+      "start": 1470.356,
+      "end": 1481.086,
+      "audio_length_seconds": 10.73,
+      "embedding_audio_seconds": 10.49,
+      "audio_file": "audio\\sentence_0234.wav",
+      "word_count": 29
+    },
+    {
+      "index": 235,
+      "text": "The secretary of state will make his very first visit to Beijing in the months ahead.",
+      "start": 1481.086,
+      "end": 1487.136,
+      "audio_length_seconds": 6.05,
+      "embedding_audio_seconds": 6.05,
+      "audio_file": "audio\\sentence_0235.wav",
+      "word_count": 16
+    },
+    {
+      "index": 236,
+      "text": "I mean, the agenda is so big.",
+      "start": 1487.136,
+      "end": 1489.006,
+      "audio_length_seconds": 1.87,
+      "embedding_audio_seconds": 1.68,
+      "audio_file": "audio\\sentence_0236.wav",
+      "word_count": 7
+    },
+    {
+      "index": 237,
+      "text": "Michelle Flournoy, where do you begin to try to de -escalate?",
+      "start": 1489.256,
+      "end": 1492.526,
+      "audio_length_seconds": 3.27,
+      "embedding_audio_seconds": 3.26,
+      "audio_file": "audio\\sentence_0237.wav",
+      "word_count": 11
+    },
+    {
+      "index": 238,
+      "text": "Well, I think President Biden tried to sort of put a floor under the downward spiral of the relationship when he met with President Xi in late 2022.",
+      "start": 1492.526,
+      "end": 1503.556,
+      "audio_length_seconds": 11.03,
+      "embedding_audio_seconds": 10.35,
+      "audio_file": "audio\\sentence_0238.wav",
+      "word_count": 28
+    },
+    {
+      "index": 239,
+      "text": "And I think there is a desire to sort of write the apple cart.",
+      "start": 1504.516,
+      "end": 1508.56,
+      "audio_length_seconds": 4.044,
+      "embedding_audio_seconds": 4.044,
+      "audio_file": "audio\\sentence_0239.wav",
+      "word_count": 14
+    },
+    {
+      "index": 240,
+      "text": "That said, neither side is going to change its fundamental interests, and those interests are in many ways in conflict.",
+      "start": 1508.56,
+      "end": 1516.87,
+      "audio_length_seconds": 8.31,
+      "embedding_audio_seconds": 8.31,
+      "audio_file": "audio\\sentence_0240.wav",
+      "word_count": 20
+    },
+    {
+      "index": 241,
+      "text": "So, there is a competition ongoing, and it's economic, it's technological, it's informational, it's political, it's military.",
+      "start": 1516.87,
+      "end": 1525.16,
+      "audio_length_seconds": 8.29,
+      "embedding_audio_seconds": 8.29,
+      "audio_file": "audio\\sentence_0241.wav",
+      "word_count": 17
+    },
+    {
+      "index": 242,
+      "text": "I think the real name of the game in 2023 is shoring up deterrence I don't think President Xi wants to move on Taiwan.",
+      "start": 1525.16,
+      "end": 1533.69,
+      "audio_length_seconds": 8.53,
+      "embedding_audio_seconds": 8.53,
+      "audio_file": "audio\\sentence_0242.wav",
+      "word_count": 24
+    },
+    {
+      "index": 243,
+      "text": "He's got, you know, COVID to deal with.",
+      "start": 1533.69,
+      "end": 1536.418,
+      "audio_length_seconds": 2.728,
+      "embedding_audio_seconds": 2.728,
+      "audio_file": "audio\\sentence_0243.wav",
+      "word_count": 8
+    },
+    {
+      "index": 244,
+      "text": "He's got a youth unemployment problem to deal with.",
+      "start": 1536.418,
+      "end": 1539.082,
+      "audio_length_seconds": 2.664,
+      "embedding_audio_seconds": 2.664,
+      "audio_file": "audio\\sentence_0244.wav",
+      "word_count": 9
+    },
+    {
+      "index": 245,
+      "text": "He's got all kinds of domestic challenges.",
+      "start": 1539.082,
+      "end": 1542.032,
+      "audio_length_seconds": 2.95,
+      "embedding_audio_seconds": 2.95,
+      "audio_file": "audio\\sentence_0245.wav",
+      "word_count": 7
+    },
+    {
+      "index": 246,
+      "text": "And I think he'd prefer to take Taiwan using economic and political coercion, ultimately.",
+      "start": 1542.032,
+      "end": 1547.642,
+      "audio_length_seconds": 5.61,
+      "embedding_audio_seconds": 5.61,
+      "audio_file": "audio\\sentence_0246.wav",
+      "word_count": 14
+    },
+    {
+      "index": 247,
+      "text": "But he has instructed his military, be ready by 2027.",
+      "start": 1547.642,
+      "end": 1551.972,
+      "audio_length_seconds": 4.33,
+      "embedding_audio_seconds": 4.33,
+      "audio_file": "audio\\sentence_0247.wav",
+      "word_count": 10
+    },
+    {
+      "index": 248,
+      "text": "So, we've got the next few years to really make sure that he cannot have confidence in his ability to succeed militarily.",
+      "start": 1551.972,
+      "end": 1560.384,
+      "audio_length_seconds": 8.412,
+      "embedding_audio_seconds": 8.102,
+      "audio_file": "audio\\sentence_0248.wav",
+      "word_count": 22
+    },
+    {
+      "index": 249,
+      "text": "So that means we have a lot of investment to do, alongside investing in the drivers of our economic competitiveness, our technological competitiveness as well.",
+      "start": 1560.384,
+      "end": 1569.334,
+      "audio_length_seconds": 8.95,
+      "embedding_audio_seconds": 8.91,
+      "audio_file": "audio\\sentence_0249.wav",
+      "word_count": 25
+    },
+    {
+      "index": 250,
+      "text": "Ambassador Sullivan, how does Secretary Blinken approach this sort of trying to defrost this frozen relationship?",
+      "start": 1570.054,
+      "end": 1578.364,
+      "audio_length_seconds": 8.31,
+      "embedding_audio_seconds": 8.15,
+      "audio_file": "audio\\sentence_0250.wav",
+      "word_count": 16
+    },
+    {
+      "index": 251,
+      "text": "Well, one thing I'd say to add to what Michelle said is, as my former colleague, mentor, General Mattis, Secretary Mattis used to say, the United States is strong because we have allies, allies and partners, and we're not going to do this alone.",
+      "start": 1578.364,
+      "end": 1594.284,
+      "audio_length_seconds": 15.92,
+      "embedding_audio_seconds": 15.91,
+      "audio_file": "audio\\sentence_0251.wav",
+      "word_count": 44
+    },
+    {
+      "index": 252,
+      "text": "We just saw at the end of the calendar year, this year, last year, the Japanese government announcing its new national security and defence strategy, significantly increasing its defence budget.",
+      "start": 1594.284,
+      "end": 1608.554,
+      "audio_length_seconds": 14.27,
+      "embedding_audio_seconds": 14.23,
+      "audio_file": "audio\\sentence_0252.wav",
+      "word_count": 30
+    },
+    {
+      "index": 253,
+      "text": "Are European allies and partners becoming more forthright about the threat that they see, the challenges they see, from China?",
+      "start": 1609.094,
+      "end": 1617.664,
+      "audio_length_seconds": 8.57,
+      "embedding_audio_seconds": 8.57,
+      "audio_file": "audio\\sentence_0253.wav",
+      "word_count": 20
+    },
+    {
+      "index": 254,
+      "text": "In an odd way, Putin always talks about, makes references to World War II and the great patriotic war.",
+      "start": 1617.664,
+      "end": 1625.034,
+      "audio_length_seconds": 7.37,
+      "embedding_audio_seconds": 7.0,
+      "audio_file": "audio\\sentence_0254.wav",
+      "word_count": 19
+    },
+    {
+      "index": 255,
+      "text": "And what he's done in particular, and this has energized, been a catalyst for the re -emergence of the axis of Germany and Japan becoming more engaged militarily, spending more on the military, more engaged with us this time.",
+      "start": 1625.034,
+      "end": 1641.564,
+      "audio_length_seconds": 16.53,
+      "embedding_audio_seconds": 16.53,
+      "audio_file": "audio\\sentence_0255.wav",
+      "word_count": 39
+    },
+    {
+      "index": 256,
+      "text": "So, in an odd way, Putin and his counterpart, President Xi, in their unlimited partnership—which, in fact, we know is limited, no nukes—they've reinvigorated or compelled our allies in Tokyo and Berlin to take these actions, which they resisted for decades.",
+      "start": 1641.564,
+      "end": 1662.594,
+      "audio_length_seconds": 21.03,
+      "embedding_audio_seconds": 20.75,
+      "audio_file": "audio\\sentence_0256.wav",
+      "word_count": 41
+    },
+    {
+      "index": 257,
+      "text": "And I want to get to General McMaster, because I know you spend a lot of time on thinking about China.",
+      "start": 1663.074,
+      "end": 1668.184,
+      "audio_length_seconds": 5.11,
+      "embedding_audio_seconds": 5.11,
+      "audio_file": "audio\\sentence_0257.wav",
+      "word_count": 21
+    },
+    {
+      "index": 258,
+      "text": "What does this build -up in the Pacific mean?",
+      "start": 1668.944,
+      "end": 1672.154,
+      "audio_length_seconds": 3.21,
+      "embedding_audio_seconds": 2.95,
+      "audio_file": "audio\\sentence_0258.wav",
+      "word_count": 9
+    },
+    {
+      "index": 259,
+      "text": "And, you know, Michelle Flournoy was just saying she doesn't see military invasion as the most likely scenario for China to consume Taiwan.",
+      "start": 1672.154,
+      "end": 1682.844,
+      "audio_length_seconds": 10.69,
+      "embedding_audio_seconds": 10.69,
+      "audio_file": "audio\\sentence_0259.wav",
+      "word_count": 23
+    },
+    {
+      "index": 260,
+      "text": "How do you see it?",
+      "start": 1683.864,
+      "end": 1685.174,
+      "audio_length_seconds": 1.31,
+      "embedding_audio_seconds": 1.13,
+      "audio_file": "audio\\sentence_0260.wav",
+      "word_count": 5
+    },
+    {
+      "index": 261,
+      "text": "Well, I see that it's a very, it's a grave threat.",
+      "start": 1687.496,
+      "end": 1689.688,
+      "audio_length_seconds": 2.192,
+      "embedding_audio_seconds": 2.052,
+      "audio_file": "audio\\sentence_0261.wav",
+      "word_count": 11
+    },
+    {
+      "index": 262,
+      "text": "I think Xi Jinping means what he says, right?",
+      "start": 1689.688,
+      "end": 1691.876,
+      "audio_length_seconds": 2.188,
+      "embedding_audio_seconds": 2.188,
+      "audio_file": "audio\\sentence_0262.wav",
+      "word_count": 9
+    },
+    {
+      "index": 263,
+      "text": "And I think we have to be careful not to mirror image, not to fall into the same traps we did with Vladimir Putin of confirmation bias and optimism bias.",
+      "start": 1691.876,
+      "end": 1700.186,
+      "audio_length_seconds": 8.31,
+      "embedding_audio_seconds": 8.31,
+      "audio_file": "audio\\sentence_0263.wav",
+      "word_count": 30
+    },
+    {
+      "index": 264,
+      "text": "Xi Jinping has made quite clear in his statements that he's going to make from his perspective China whole again by subsuming Taiwan.",
+      "start": 1700.186,
+      "end": 1707.816,
+      "audio_length_seconds": 7.63,
+      "embedding_audio_seconds": 7.32,
+      "audio_file": "audio\\sentence_0264.wav",
+      "word_count": 23
+    },
+    {
+      "index": 265,
+      "text": "and the preparations are underway.",
+      "start": 1707.816,
+      "end": 1709.946,
+      "audio_length_seconds": 2.13,
+      "embedding_audio_seconds": 1.91,
+      "audio_file": "audio\\sentence_0265.wav",
+      "word_count": 5
+    },
+    {
+      "index": 266,
+      "text": "So I think what is important is what what Michelle said deterrence, but good old -fashioned deterrence by denial.",
+      "start": 1709.946,
+      "end": 1715.916,
+      "audio_length_seconds": 5.97,
+      "embedding_audio_seconds": 5.97,
+      "audio_file": "audio\\sentence_0266.wav",
+      "word_count": 19
+    },
+    {
+      "index": 267,
+      "text": "I mean, hard power matters.",
+      "start": 1715.916,
+      "end": 1718.446,
+      "audio_length_seconds": 2.53,
+      "embedding_audio_seconds": 2.53,
+      "audio_file": "audio\\sentence_0267.wav",
+      "word_count": 5
+    },
+    {
+      "index": 268,
+      "text": "And I think we are under -invested in defense in the United States.",
+      "start": 1718.446,
+      "end": 1721.698,
+      "audio_length_seconds": 3.252,
+      "embedding_audio_seconds": 3.252,
+      "audio_file": "audio\\sentence_0268.wav",
+      "word_count": 13
+    },
+    {
+      "index": 269,
+      "text": "I think, as John mentioned, Japan has made a bold move, really, to double their defense spending.",
+      "start": 1721.698,
+      "end": 1728.188,
+      "audio_length_seconds": 6.49,
+      "embedding_audio_seconds": 6.49,
+      "audio_file": "audio\\sentence_0269.wav",
+      "word_count": 17
+    },
+    {
+      "index": 270,
+      "text": "we need more investments because obviously it's much more costly to have to respond to a crisis and a war than to prevent it.",
+      "start": 1728.188,
+      "end": 1736.858,
+      "audio_length_seconds": 8.67,
+      "embedding_audio_seconds": 8.46,
+      "audio_file": "audio\\sentence_0270.wav",
+      "word_count": 24
+    },
+    {
+      "index": 271,
+      "text": "And I think the flashpoint is Taiwan, but it's really also the South China Sea.",
+      "start": 1736.858,
+      "end": 1741.708,
+      "audio_length_seconds": 4.85,
+      "embedding_audio_seconds": 4.85,
+      "audio_file": "audio\\sentence_0271.wav",
+      "word_count": 15
+    },
+    {
+      "index": 272,
+      "text": "It's also maybe even the Himalayan frontier.",
+      "start": 1741.708,
+      "end": 1744.598,
+      "audio_length_seconds": 2.89,
+      "embedding_audio_seconds": 2.65,
+      "audio_file": "audio\\sentence_0272.wav",
+      "word_count": 7
+    },
+    {
+      "index": 273,
+      "text": "China has become increasingly aggressive not only from an economic and financial perspective and a wolf -war diplomacy perspective, but physically with its military.",
+      "start": 1744.598,
+      "end": 1755.208,
+      "audio_length_seconds": 10.61,
+      "embedding_audio_seconds": 10.32,
+      "audio_file": "audio\\sentence_0273.wav",
+      "word_count": 24
+    },
+    {
+      "index": 274,
+      "text": "And what's really disturbing is I think Xi Jinping is preparing the Chinese people for war.",
+      "start": 1755.208,
+      "end": 1760.818,
+      "audio_length_seconds": 5.61,
+      "embedding_audio_seconds": 5.39,
+      "audio_file": "audio\\sentence_0274.wav",
+      "word_count": 16
+    },
+    {
+      "index": 275,
+      "text": "In some of his speeches, he said, well, for us to restore China to national greatness, it's going to take some sacrifices.",
+      "start": 1760.818,
+      "end": 1767.222,
+      "audio_length_seconds": 6.404,
+      "embedding_audio_seconds": 6.224,
+      "audio_file": "audio\\sentence_0275.wav",
+      "word_count": 22
+    },
+    {
+      "index": 276,
+      "text": "He's used the example of the Korean War, what they call the War of American Aggression, as an example of a preemptive war in which Mao Zedong delivered one blow to prevent 100 blows.",
+      "start": 1767.222,
+      "end": 1779.472,
+      "audio_length_seconds": 12.25,
+      "embedding_audio_seconds": 12.25,
+      "audio_file": "audio\\sentence_0276.wav",
+      "word_count": 34
+    },
+    {
+      "index": 277,
+      "text": "So, I think we have to take it very seriously and act to extend, really, our power.",
+      "start": 1779.472,
+      "end": 1786.062,
+      "audio_length_seconds": 6.59,
+      "embedding_audio_seconds": 6.47,
+      "audio_file": "audio\\sentence_0277.wav",
+      "word_count": 17
+    },
+    {
+      "index": 278,
+      "text": "You know, Margaret, we talk a lot about relying on our allies, and then maybe if we take a step back, the allies will do more.",
+      "start": 1786.062,
+      "end": 1793.112,
+      "audio_length_seconds": 7.05,
+      "embedding_audio_seconds": 7.01,
+      "audio_file": "audio\\sentence_0278.wav",
+      "word_count": 26
+    },
+    {
+      "index": 279,
+      "text": "I think actually the opposite is the case.",
+      "start": 1793.262,
+      "end": 1795.112,
+      "audio_length_seconds": 1.85,
+      "embedding_audio_seconds": 1.85,
+      "audio_file": "audio\\sentence_0279.wav",
+      "word_count": 8
+    },
+    {
+      "index": 280,
+      "text": "If Americans just do a little bit more, many of our allies will follow suit and bolster their defense capabilities and capacity as well.",
+      "start": 1795.112,
+      "end": 1803.442,
+      "audio_length_seconds": 8.33,
+      "embedding_audio_seconds": 8.04,
+      "audio_file": "audio\\sentence_0280.wav",
+      "word_count": 24
+    },
+    {
+      "index": 281,
+      "text": "H.R., I got the hardest question I have for you.",
+      "start": 1803.442,
+      "end": 1806.452,
+      "audio_length_seconds": 3.01,
+      "embedding_audio_seconds": 2.47,
+      "audio_file": "audio\\sentence_0281.wav",
+      "word_count": 11
+    },
+    {
+      "index": 282,
+      "text": "What was positive in 2022?",
+      "start": 1806.452,
+      "end": 1808.862,
+      "audio_length_seconds": 2.41,
+      "embedding_audio_seconds": 1.64,
+      "audio_file": "audio\\sentence_0282.wav",
+      "word_count": 5
+    },
+    {
+      "index": 283,
+      "text": "Do you have a good, good prediction, positive development?",
+      "start": 1808.862,
+      "end": 1813.882,
+      "audio_length_seconds": 5.02,
+      "embedding_audio_seconds": 5.02,
+      "audio_file": "audio\\sentence_0283.wav",
+      "word_count": 9
+    },
+    {
+      "index": 284,
+      "text": "Margaret.",
+      "start": 1813.882,
+      "end": 1814.832,
+      "audio_length_seconds": 0.95,
+      "embedding_audio_seconds": 0.8,
+      "audio_file": "audio\\sentence_0284.wav",
+      "word_count": 1
+    },
+    {
+      "index": 285,
+      "text": "It was a lot positive.",
+      "start": 1816.262,
+      "end": 1817.912,
+      "audio_length_seconds": 1.65,
+      "embedding_audio_seconds": 1.65,
+      "audio_file": "audio\\sentence_0285.wav",
+      "word_count": 5
+    },
+    {
+      "index": 286,
+      "text": "Hey, we live in democratic, free, and open societies.",
+      "start": 1817.912,
+      "end": 1820.902,
+      "audio_length_seconds": 2.99,
+      "embedding_audio_seconds": 2.99,
+      "audio_file": "audio\\sentence_0286.wav",
+      "word_count": 9
+    },
+    {
+      "index": 287,
+      "text": "We have freedom of the press and freedom of expression and freedom of religion.",
+      "start": 1820.902,
+      "end": 1825.372,
+      "audio_length_seconds": 4.47,
+      "embedding_audio_seconds": 4.3,
+      "audio_file": "audio\\sentence_0287.wav",
+      "word_count": 14
+    },
+    {
+      "index": 288,
+      "text": "And I think what we got in 2022 was a clear look at these authoritarian regimes, what Putin has done to destroy his country and to cause so much hardship and human suffering.",
+      "start": 1825.372,
+      "end": 1837.742,
+      "audio_length_seconds": 12.37,
+      "embedding_audio_seconds": 12.18,
+      "audio_file": "audio\\sentence_0288.wav",
+      "word_count": 33
+    },
+    {
+      "index": 289,
+      "text": "We've seen the protests in China and the self -destructive policies of Xi Jinping with zero COVID as he's raced to perfect his technologically -enabled police state.",
+      "start": 1837.742,
+      "end": 1849.972,
+      "audio_length_seconds": 12.23,
+      "embedding_audio_seconds": 12.02,
+      "audio_file": "audio\\sentence_0289.wav",
+      "word_count": 27
+    },
+    {
+      "index": 290,
+      "text": "We've seen Iran, which we talked about here, and the courage of Iranians to challenge the theocratic dictatorship.",
+      "start": 1849.972,
+      "end": 1858.402,
+      "audio_length_seconds": 8.43,
+      "embedding_audio_seconds": 8.31,
+      "audio_file": "audio\\sentence_0290.wav",
+      "word_count": 18
+    },
+    {
+      "index": 291,
+      "text": "So, I'm optimistic, Margaret, because, you know what, these authoritarian regimes look really strong.",
+      "start": 1858.402,
+      "end": 1864.092,
+      "audio_length_seconds": 5.69,
+      "embedding_audio_seconds": 5.69,
+      "audio_file": "audio\\sentence_0291.wav",
+      "word_count": 14
+    },
+    {
+      "index": 292,
+      "text": "I mean, I'm sure John Sullivan has seen some great May Day parades, you know, the Russian military was great on parade, but it turns out they can't fight worth a damn.",
+      "start": 1864.092,
+      "end": 1871.102,
+      "audio_length_seconds": 7.01,
+      "embedding_audio_seconds": 6.97,
+      "audio_file": "audio\\sentence_0292.wav",
+      "word_count": 32
+    },
+    {
+      "index": 293,
+      "text": "But, you know, and our democracies are ugly, you know, from the outside.",
+      "start": 1871.102,
+      "end": 1874.39,
+      "audio_length_seconds": 3.288,
+      "embedding_audio_seconds": 3.058,
+      "audio_file": "audio\\sentence_0293.wav",
+      "word_count": 13
+    },
+    {
+      "index": 294,
+      "text": "Everything's in the open.",
+      "start": 1874.39,
+      "end": 1875.192,
+      "audio_length_seconds": 0.802,
+      "embedding_audio_seconds": 0.802,
+      "audio_file": "audio\\sentence_0294.wav",
+      "word_count": 4
+    },
+    {
+      "index": 295,
+      "text": "But, actually, we're quite resilient.",
+      "start": 1875.342,
+      "end": 1876.872,
+      "audio_length_seconds": 1.53,
+      "embedding_audio_seconds": 1.46,
+      "audio_file": "audio\\sentence_0295.wav",
+      "word_count": 5
+    },
+    {
+      "index": 296,
+      "text": "So I think we ought to take a step toward restoring our confidence in who we are as Americans and confidence across the free world in our democratic processes and institutions.",
+      "start": 1876.872,
+      "end": 1886.102,
+      "audio_length_seconds": 9.23,
+      "embedding_audio_seconds": 9.17,
+      "audio_file": "audio\\sentence_0296.wav",
+      "word_count": 31
+    },
+    {
+      "index": 297,
+      "text": "Mike Morrell, Positive Development, 2022.",
+      "start": 1886.102,
+      "end": 1889.112,
+      "audio_length_seconds": 3.01,
+      "embedding_audio_seconds": 2.21,
+      "audio_file": "audio\\sentence_0297.wav",
+      "word_count": 5
+    },
+    {
+      "index": 298,
+      "text": "I think there's two that come to mind.",
+      "start": 1889.112,
+      "end": 1891.802,
+      "audio_length_seconds": 2.69,
+      "embedding_audio_seconds": 2.69,
+      "audio_file": "audio\\sentence_0298.wav",
+      "word_count": 8
+    },
+    {
+      "index": 299,
+      "text": "One is, the world did come together in the immediate aftermath of February 24th and the invasion of Ukraine and said no.",
+      "start": 1891.802,
+      "end": 1900.552,
+      "audio_length_seconds": 8.75,
+      "embedding_audio_seconds": 8.75,
+      "audio_file": "audio\\sentence_0299.wav",
+      "word_count": 22
+    },
+    {
+      "index": 300,
+      "text": "And it was the United States, and it was the EU that led the way.",
+      "start": 1901.112,
+      "end": 1904.602,
+      "audio_length_seconds": 3.49,
+      "embedding_audio_seconds": 3.31,
+      "audio_file": "audio\\sentence_0300.wav",
+      "word_count": 15
+    },
+    {
+      "index": 301,
+      "text": "And I think that's incredibly important development.",
+      "start": 1904.602,
+      "end": 1908.272,
+      "audio_length_seconds": 3.67,
+      "embedding_audio_seconds": 3.19,
+      "audio_file": "audio\\sentence_0301.wav",
+      "word_count": 7
+    },
+    {
+      "index": 302,
+      "text": "It gives life to American leadership in the world.",
+      "start": 1908.272,
+      "end": 1911.402,
+      "audio_length_seconds": 3.13,
+      "embedding_audio_seconds": 2.73,
+      "audio_file": "audio\\sentence_0302.wav",
+      "word_count": 9
+    },
+    {
+      "index": 303,
+      "text": "And we have to continue that.",
+      "start": 1911.402,
+      "end": 1913.092,
+      "audio_length_seconds": 1.69,
+      "embedding_audio_seconds": 1.26,
+      "audio_file": "audio\\sentence_0303.wav",
+      "word_count": 6
+    },
+    {
+      "index": 304,
+      "text": "At the same time, I'd say the world is starting to come together to say no to China.",
+      "start": 1913.812,
+      "end": 1918.742,
+      "audio_length_seconds": 4.93,
+      "embedding_audio_seconds": 4.93,
+      "audio_file": "audio\\sentence_0304.wav",
+      "word_count": 18
+    },
+    {
+      "index": 305,
+      "text": "If you think about the Quad, if you think about the U.S.-Australian -U.K. relationship, the world is starting to come together.",
+      "start": 1918.742,
+      "end": 1926.412,
+      "audio_length_seconds": 7.67,
+      "embedding_audio_seconds": 7.12,
+      "audio_file": "audio\\sentence_0305.wav",
+      "word_count": 23
+    },
+    {
+      "index": 306,
+      "text": "coalitions are starting to form to say no to China, I think that's a positive.",
+      "start": 1926.412,
+      "end": 1929.642,
+      "audio_length_seconds": 3.23,
+      "embedding_audio_seconds": 3.23,
+      "audio_file": "audio\\sentence_0306.wav",
+      "word_count": 15
+    },
+    {
+      "index": 307,
+      "text": "And, Pastor Sullivan?",
+      "start": 1930.382,
+      "end": 1931.492,
+      "audio_length_seconds": 1.11,
+      "embedding_audio_seconds": 0.84,
+      "audio_file": "audio\\sentence_0307.wav",
+      "word_count": 3
+    },
+    {
+      "index": 308,
+      "text": "Well, as HR mentioned, I just come from Moscow, having served there as ambassador, and we have something called the Moscow rules.",
+      "start": 1931.492,
+      "end": 1938.862,
+      "audio_length_seconds": 7.37,
+      "embedding_audio_seconds": 7.31,
+      "audio_file": "audio\\sentence_0308.wav",
+      "word_count": 22
+    },
+    {
+      "index": 309,
+      "text": "Some of them are written down, are operating procedures.",
+      "start": 1938.862,
+      "end": 1942.306,
+      "audio_length_seconds": 3.444,
+      "embedding_audio_seconds": 3.444,
+      "audio_file": "audio\\sentence_0309.wav",
+      "word_count": 9
+    },
+    {
+      "index": 310,
+      "text": "Others are more informal.",
+      "start": 1942.306,
+      "end": 1943.632,
+      "audio_length_seconds": 1.326,
+      "embedding_audio_seconds": 1.326,
+      "audio_file": "audio\\sentence_0310.wav",
+      "word_count": 4
+    },
+    {
+      "index": 311,
+      "text": "Well, one of the Moscow rules is there is no good news, comrade.",
+      "start": 1943.632,
+      "end": 1947.042,
+      "audio_length_seconds": 3.41,
+      "embedding_audio_seconds": 3.2,
+      "audio_file": "audio\\sentence_0311.wav",
+      "word_count": 13
+    },
+    {
+      "index": 312,
+      "text": "So, it's all a mirage.",
+      "start": 1948.282,
+      "end": 1949.872,
+      "audio_length_seconds": 1.59,
+      "embedding_audio_seconds": 1.59,
+      "audio_file": "audio\\sentence_0312.wav",
+      "word_count": 5
+    },
+    {
+      "index": 313,
+      "text": "But, again, picking up on what HR said, the Russians would like us to be pessimistic, to be down.",
+      "start": 1949.872,
+      "end": 1954.802,
+      "audio_length_seconds": 4.93,
+      "embedding_audio_seconds": 4.55,
+      "audio_file": "audio\\sentence_0313.wav",
+      "word_count": 19
+    },
+    {
+      "index": 314,
+      "text": "In fact, what we've seen in Iran, for example, the women who've been leading these protests, the germ of this idea that the legitimacy of government depends on the consent of the governed.",
+      "start": 1954.802,
+      "end": 1968.152,
+      "audio_length_seconds": 13.35,
+      "embedding_audio_seconds": 13.15,
+      "audio_file": "audio\\sentence_0314.wav",
+      "word_count": 33
+    },
+    {
+      "index": 315,
+      "text": "That there can't just be an autocracy or a theocracy that is going to crush people's ambitions and their desire for freedom.",
+      "start": 1968.152,
+      "end": 1977.442,
+      "audio_length_seconds": 9.29,
+      "embedding_audio_seconds": 9.07,
+      "audio_file": "audio\\sentence_0315.wav",
+      "word_count": 22
+    },
+    {
+      "index": 316,
+      "text": "I think that's a really positive story and something that my friends back in Moscow wouldn't like us to focus on.",
+      "start": 1977.442,
+      "end": 1985.412,
+      "audio_length_seconds": 7.97,
+      "embedding_audio_seconds": 7.56,
+      "audio_file": "audio\\sentence_0316.wav",
+      "word_count": 21
+    },
+    {
+      "index": 317,
+      "text": "Final word, Michele Flournoy.",
+      "start": 1986.046,
+      "end": 1988.216,
+      "audio_length_seconds": 2.17,
+      "embedding_audio_seconds": 1.68,
+      "audio_file": "audio\\sentence_0317.wav",
+      "word_count": 4
+    },
+    {
+      "index": 318,
+      "text": "Yeah.",
+      "start": 1988.386,
+      "end": 1988.736,
+      "audio_length_seconds": 0.35,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0318.wav",
+      "word_count": 1
+    },
+    {
+      "index": 319,
+      "text": "No, I think the reinvigoration of our alliances and partnerships in response to Russia and China is very important.",
+      "start": 1988.736,
+      "end": 1996.126,
+      "audio_length_seconds": 7.39,
+      "embedding_audio_seconds": 7.38,
+      "audio_file": "audio\\sentence_0319.wav",
+      "word_count": 19
+    },
+    {
+      "index": 320,
+      "text": "I also think, you know, glass half full, despite our intense political polarization, we managed to get a bill that invests huge amounts of money in our infrastructure, in building back semiconductor supply chain in the United States, you know, in various things that will really help U.S. competitiveness.",
+      "start": 1996.126,
+      "end": 2016.356,
+      "audio_length_seconds": 20.23,
+      "embedding_audio_seconds": 19.98,
+      "audio_file": "audio\\sentence_0320.wav",
+      "word_count": 50
+    },
+    {
+      "index": 321,
+      "text": "I want to see more of that, but that gives me hope.",
+      "start": 2016.426,
+      "end": 2019.516,
+      "audio_length_seconds": 3.09,
+      "embedding_audio_seconds": 3.08,
+      "audio_file": "audio\\sentence_0321.wav",
+      "word_count": 12
+    },
+    {
+      "index": 322,
+      "text": "And the last thing is young people.",
+      "start": 2019.526,
+      "end": 2021.326,
+      "audio_length_seconds": 1.8,
+      "embedding_audio_seconds": 1.8,
+      "audio_file": "audio\\sentence_0322.wav",
+      "word_count": 7
+    },
+    {
+      "index": 323,
+      "text": "I work with a lot of young people. the eye -watering talent and diversity of young people who want to come into this field and serve their country is really inspirational.",
+      "start": 2021.326,
+      "end": 2031.496,
+      "audio_length_seconds": 10.17,
+      "embedding_audio_seconds": 10.06,
+      "audio_file": "audio\\sentence_0323.wav",
+      "word_count": 31
+    },
+    {
+      "index": 324,
+      "text": "I like that.",
+      "start": 2031.686,
+      "end": 2032.696,
+      "audio_length_seconds": 1.01,
+      "embedding_audio_seconds": 0.72,
+      "audio_file": "audio\\sentence_0324.wav",
+      "word_count": 3
+    },
+    {
+      "index": 325,
+      "text": "Thank you and thanks to all of you.",
+      "start": 2032.706,
+      "end": 2035.116,
+      "audio_length_seconds": 2.41,
+      "embedding_audio_seconds": 2.41,
+      "audio_file": "audio\\sentence_0325.wav",
+      "word_count": 8
+    },
+    {
+      "index": 326,
+      "text": "We'll be right back.",
+      "start": 2035.406,
+      "end": 2036.396,
+      "audio_length_seconds": 0.99,
+      "embedding_audio_seconds": 0.79,
+      "audio_file": "audio\\sentence_0326.wav",
+      "word_count": 4
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,4.43,6.06,1.63,"Hello, I'm Margaret Jo McCullen."
+seg_0001,SPEAKER_2,speaker_1,6.6,8.36,1.76,And I'm Teri Rialto.
+seg_0002,SPEAKER_1,speaker_0,8.38,10.64,2.26,And you're listening to The Delicious Dish-
+seg_0003,SPEAKER_2,speaker_1,10.9,11.07,0.17,The Delicious Dish-
+seg_0004,SPEAKER_1,speaker_0,11.07,11.77,0.7,... on National Public Radio
+seg_0005,SPEAKER_2,speaker_1,11.77,12.68,0.91,... on National Public Radio.
+seg_0006,SPEAKER_1,speaker_0,15.72,18.91,3.19,"Now, Teri, it's Christmas season again, our favorite time of year."
+seg_0007,SPEAKER_2,speaker_1,19.63,28.9,9.27,"That's right, Margaret Jo. Holiday time is when the most wonderful culinary wishes can come true. Now, what's on your list this holiday season, Margaret Jo?"
+seg_0008,SPEAKER_1,speaker_0,29.49,38.12,8.63,"Well, Teri, I really got greedy this year. I'm asking Kris Kringle for a wooden bowl, some oversized index cards, and a funnel."
+seg_0009,SPEAKER_2,speaker_1,39.4,42.84,3.44,"Ooh, a funnel. That'll be great for funneling."
+seg_0010,SPEAKER_1,speaker_0,43.12,44.64,1.52,"I know. I, I feel like a glutton."
+seg_0011,SPEAKER_1,speaker_0,47.66,49.18,1.52,"What's on your list, Teri?"
+seg_0012,SPEAKER_2,speaker_1,49.28,58.22,8.94,"Well, I'm only asking Santa for one thing, a big box of glue traps to help me deal with my excessive rat problem. Now, tell me, um,"
+seg_0013,SPEAKER_2,speaker_1,59.76,63.1,3.34,"are you, Margaret Jo, going to leave any treats out for Santa this year?"
+seg_0014,SPEAKER_1,speaker_0,63.18,67.5,4.32,"Oh, absolutely. I always do. I like to leave Santa some tap water and rice."
+seg_0015,SPEAKER_1,speaker_0,70.82,74.679,3.859,"If Santa's anything like me, Christmas foods really wreak havoc on the old digestive system."
+seg_0016,SPEAKER_1,speaker_0,75.88,76.78,0.9,"What are you gonna leave, Teri?"
+seg_0017,SPEAKER_2,speaker_1,77.44,81.46,4.02,"Uh, I can't ever leave food out in my apartment because I have an excessive rat problem."
+seg_0018,SPEAKER_1,speaker_0,85.24,86.32,1.08,That's neat. Santa's fun.
+seg_0019,SPEAKER_2,speaker_1,86.38,86.65,0.27,Santa's fun.
+seg_0020,SPEAKER_1,speaker_0,86.66,87.28,0.62,He is fun.
+seg_0021,SPEAKER_2,speaker_1,87.31,87.66,0.35,Neat.
+seg_0022,SPEAKER_1,speaker_0,87.96,88.42,0.46,"Yeah, it's fun."
+seg_0023,SPEAKER_2,speaker_1,88.46,88.7,0.24,Fun.
+seg_0024,SPEAKER_1,speaker_0,88.85,89.03,0.18,I like Christmas.
+seg_0025,SPEAKER_2,speaker_1,89.04,90.34,1.3,Good times. Good times.
+seg_0026,SPEAKER_1,speaker_0,90.78,91.36,0.58,It's neat.
+seg_0027,SPEAKER_2,speaker_1,93.64,100.48,6.84,"Well, Christmas is a time for traditional foods and bite-sized treats, and we have a very special guest today."
+seg_0028,SPEAKER_1,speaker_0,100.78,105.54,4.76,"That's right, Teri. He's the owner of his own holiday bakery with a very, very clever name,"
+seg_0029,SPEAKER_1,speaker_0,107.04,108.06,1.02,Seasons Eatings.
+seg_0030,SPEAKER_2,speaker_1,111.74,112.7,0.96,That's really funny.
+seg_0031,SPEAKER_1,speaker_0,114.24,116.02,1.78,I know. It rhymes with seasons greetings.
+seg_0032,SPEAKER_2,speaker_1,119.34,124.55,5.21,"Uh, please welcome the owner of Seasons Eatings, Pete Schweddy."
+seg_0033,SPEAKER_1,speaker_0,126.4,126.41,0.01,"Hi, Pete."
+seg_0034,SPEAKER_1,speaker_0,128.36,129.109,0.749,Welcome. How are you?
+seg_0035,SPEAKER_2,speaker_1,129.12,129.759,0.639,"Welcome, Pete."
+seg_0036,SPEAKER_1,speaker_0,129.8,130.8,1.0,We like the name of your store.
+seg_0037,SPEAKER_3,speaker_2,131.76,132.84,1.08,Hi. Thanks for having me.
+seg_0038,SPEAKER_2,speaker_1,133.7,136.88,3.18,"Oh. Now, did I pronounce your name, uh, correctly?"
+seg_0039,SPEAKER_3,speaker_2,137.6,139.42,1.82,Y- you sure did. Pete Schweddy.
+seg_0040,SPEAKER_1,speaker_0,142.56,149.5,6.94,"Well, Pete, Teri and I have been looking forward to having you on the show'cause we know you're the master of all kinds of Christmas goodies. Tell us about them."
+seg_0041,SPEAKER_3,speaker_2,149.94,153.12,3.18,"Well, there are lots of great treats this time of year, zucchini bread-"
+seg_0042,SPEAKER_2,speaker_1,153.29,153.29,0.0,Mm
+seg_0043,SPEAKER_3,speaker_2,153.29,158.04,4.75,... fruitcake. But the thing that I most like to bring out at this time of the year are my balls.
+seg_0044,SPEAKER_2,speaker_1,165.1,167.32,2.22,"Mm. Mm, balls."
+seg_0045,SPEAKER_2,speaker_1,168.9,169.08,0.18,Mm.
+seg_0046,SPEAKER_2,speaker_1,170.32,172.04,1.72,"Tell us about your balls, Pete."
+seg_0047,SPEAKER_3,speaker_2,174.18,178.19,4.01,"Well, over at Seasons Eatings, we have balls for every taste, popcorn balls-"
+seg_0048,SPEAKER_2,speaker_1,178.28,178.329,0.049,Mm
+seg_0049,SPEAKER_3,speaker_2,178.329,179.84,1.511,"... cheese balls, rum balls, you name it."
+seg_0050,SPEAKER_1,speaker_0,179.88,179.98,0.1,Mm.
+seg_0051,SPEAKER_1,speaker_0,181.54,184.78,3.24,Wow. My mouth's watering just thinking about those balls.
+seg_0052,SPEAKER_2,speaker_1,188.38,190.94,2.56,It's been years since I've seen any balls.
+seg_0053,SPEAKER_3,speaker_2,193.769,195.19,1.421,Would you like to see my balls now?
+seg_0054,SPEAKER_1,speaker_0,196.44,196.7,0.26,Yeah.
+seg_0055,SPEAKER_2,speaker_1,196.76,197.16,0.4,Yeah.
+seg_0056,SPEAKER_1,speaker_0,197.22,197.66,0.44,Whip'em out.
+seg_0057,SPEAKER_2,speaker_1,198.2,199.079,0.879,"Whip'em, baby."
+seg_0058,SPEAKER_1,speaker_0,201.86,202.459,0.599,Ooh.
+seg_0059,SPEAKER_2,speaker_1,202.62,202.63,0.01,Wow.
+seg_0060,SPEAKER_1,speaker_0,202.68,203.34,0.66,Mm.
+seg_0061,SPEAKER_2,speaker_1,204.34,207.02,2.68,Wow. You have some beautiful balls.
+seg_0062,SPEAKER_1,speaker_0,209.15,210.36,1.21,They're bigger than I expected.
+seg_0063,SPEAKER_3,speaker_2,213.3,214.48,1.18,I know. A lot of people tell me that.
+seg_0064,SPEAKER_1,speaker_0,215.76,217.2,1.44,"Look at that, Teri, the way they glisten."
+seg_0065,SPEAKER_3,speaker_2,219.37,222.38,3.01,That's because I make sure that each one of my balls gets plenty of oil.
+seg_0066,SPEAKER_2,speaker_1,224.12,226.74,2.62,"I can't help but notice, Pete, your balls are a little misshapen."
+seg_0067,SPEAKER_3,speaker_2,229.52,232.36,2.84,That's because I rested them on a hot stove for too long.
+seg_0068,SPEAKER_2,speaker_1,235.52,236.62,1.1,Can I touch your balls?
+seg_0069,SPEAKER_3,speaker_2,238.84,240.66,1.82,"Go ahead, but be careful. They're very delicate."
+seg_0070,SPEAKER_2,speaker_1,241.87,241.87,0.0,Okay.
+seg_0071,SPEAKER_2,speaker_1,243.2,243.23,0.03,"With, with..."
+seg_0072,SPEAKER_1,speaker_0,243.23,243.4,0.17,Wow.
+seg_0073,SPEAKER_2,speaker_1,243.88,243.89,0.01,Oh.
+seg_0074,SPEAKER_1,speaker_0,243.94,245.62,1.68,I can't wait to get my mouth around this ball.
+seg_0075,SPEAKER_2,speaker_1,251.16,253.14,1.98,"Ooh, I like the way your balls smell."
+seg_0076,SPEAKER_3,speaker_2,262.76,264.1,1.34,"Do whatever you want to them, ladies."
+seg_0077,SPEAKER_3,speaker_2,265.56,266.98,1.42,My balls are here for your pleasure.
+seg_0078,SPEAKER_1,speaker_0,271.46,274.39,2.93,"Wow, Pete. I have to say, your balls are so tender."
+seg_0079,SPEAKER_3,speaker_2,276.4,277.76,1.36,"Well, there's no beating my balls."
+seg_0080,SPEAKER_3,speaker_2,280.03,282.58,2.55,They're made from a secret Schweddy family recipe.
+seg_0081,SPEAKER_3,speaker_2,284.28,286.12,1.84,No one can resist my Schweddy balls.
+seg_0082,SPEAKER_1,speaker_0,294.4,295.539,1.139,What's wrong?
+seg_0083,SPEAKER_2,speaker_1,295.6,296.18,0.58,Fun.
+seg_0084,SPEAKER_1,speaker_0,296.22,296.84,0.62,Schweddy balls.
+seg_0085,SPEAKER_2,speaker_1,296.9,297.38,0.48,Delicious.
+seg_0086,SPEAKER_1,speaker_0,297.62,298.8,1.18,Nothing like a Schweddy ball.
+seg_0087,SPEAKER_2,speaker_1,299.8,300.54,0.74,Schweddy balls.
+seg_0088,SPEAKER_1,speaker_0,300.74,301.42,0.68,These are good times.
+seg_0089,SPEAKER_2,speaker_1,301.48,302.16,0.68,Good times.
+seg_0090,SPEAKER_1,speaker_0,303.76,304.18,0.42,Mm.
+seg_0091,SPEAKER_2,speaker_1,304.56,305.14,0.58,Neat.
+seg_0092,SPEAKER_1,speaker_0,305.18,306.14,0.96,Mm-hmm.
+seg_0093,SPEAKER_2,speaker_1,306.15,306.15,0.0,Mm.
+seg_0094,SPEAKER_1,speaker_0,306.15,306.15,0.0,Mm.
+seg_0095,SPEAKER_2,speaker_1,306.22,308.17,1.95,"Oh. H- h- oh, our producer, um,"
+seg_0096,SPEAKER_2,speaker_1,309.48,316.9,7.42,"Glen is gesturing to us from the technicians' booth, and it looks like he, i- oh, very good. He's telling us to wrap it up."
+seg_0097,SPEAKER_1,speaker_0,317.72,324.99,7.27,"I guess that's all the time we have today, Teri. So join us next week when our topic will be that other holiday favorite, fragrant salty nuts."
+seg_0098,SPEAKER_2,speaker_1,324.99,325.66,0.67,Fragrant salty nuts.
+seg_0099,SPEAKER_3,speaker_2,327.58,334.78,7.2,"A quick plug. If you order from Seasons Eatings now, we can still send out a special Schweddy ball sack in time for Christmas."
+seg_0100,SPEAKER_1,speaker_0,334.94,339.4,4.46,"Ooh, great idea. My niece would love a sack of Schweddy balls."

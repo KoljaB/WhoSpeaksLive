@@ -1,0 +1,2684 @@
+{
+  "provider": "nemo_titanet_large",
+  "video": "L-CfFo5aQGU",
+  "folder": "L-CfFo5aQGU_livewindow_60_90_cuda",
+  "sentence_file": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\L-CfFo5aQGU_livewindow_60_90_cuda\\sentences.jsonl",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    267,
+    192
+  ],
+  "elapsed_seconds": 12.062152800150216,
+  "sentences": [
+    {
+      "index": 0,
+      "text": "Welcome back to Face the Nation, and we continue our conversation with Senator Tim Kaine of Virginia.",
+      "start": 0.0,
+      "end": 5.71,
+      "audio_length_seconds": 5.71,
+      "embedding_audio_seconds": 5.71,
+      "audio_file": "audio\\sentence_0000.wav",
+      "word_count": 17
+    },
+    {
+      "index": 1,
+      "text": "Senator, yesterday, for the fifth time, we learned about this other tranche of classified information being kept at the president's personal residence.",
+      "start": 5.71,
+      "end": 16.1,
+      "audio_length_seconds": 10.39,
+      "embedding_audio_seconds": 10.39,
+      "audio_file": "audio\\sentence_0001.wav",
+      "word_count": 22
+    },
+    {
+      "index": 2,
+      "text": "It—how does a senator accidentally take classified material home?",
+      "start": 16.1,
+      "end": 22.17,
+      "audio_length_seconds": 6.07,
+      "embedding_audio_seconds": 6.01,
+      "audio_file": "audio\\sentence_0002.wav",
+      "word_count": 9
+    },
+    {
+      "index": 3,
+      "text": "Margaret, I don't really know the answer to that question, because I review classified material as a senator on the Armed Services and Foreign Relations Committees, but when I do it, it's always in a classified facility where I don't have access to the materials other than to sit there and read them.",
+      "start": 23.78,
+      "end": 40.99,
+      "audio_length_seconds": 17.21,
+      "embedding_audio_seconds": 17.21,
+      "audio_file": "audio\\sentence_0003.wav",
+      "word_count": 53
+    },
+    {
+      "index": 4,
+      "text": "So, that's why there needs to be this independent investigation, an independent prosecutor.",
+      "start": 40.99,
+      "end": 45.96,
+      "audio_length_seconds": 4.97,
+      "embedding_audio_seconds": 4.65,
+      "audio_file": "audio\\sentence_0004.wav",
+      "word_count": 13
+    },
+    {
+      "index": 5,
+      "text": "How many documents are we talking about?",
+      "start": 45.96,
+      "end": 48.27,
+      "audio_length_seconds": 2.31,
+      "embedding_audio_seconds": 2.31,
+      "audio_file": "audio\\sentence_0005.wav",
+      "word_count": 7
+    },
+    {
+      "index": 6,
+      "text": "dozens, a handful, or hundreds?",
+      "start": 48.27,
+      "end": 50.84,
+      "audio_length_seconds": 2.57,
+      "embedding_audio_seconds": 2.51,
+      "audio_file": "audio\\sentence_0006.wav",
+      "word_count": 5
+    },
+    {
+      "index": 7,
+      "text": "How serious are they?",
+      "start": 50.84,
+      "end": 52.71,
+      "audio_length_seconds": 1.87,
+      "embedding_audio_seconds": 1.51,
+      "audio_file": "audio\\sentence_0007.wav",
+      "word_count": 4
+    },
+    {
+      "index": 8,
+      "text": "Why were they taken?",
+      "start": 52.71,
+      "end": 54.66,
+      "audio_length_seconds": 1.95,
+      "embedding_audio_seconds": 1.91,
+      "audio_file": "audio\\sentence_0008.wav",
+      "word_count": 4
+    },
+    {
+      "index": 9,
+      "text": "Did anyone have access to them?",
+      "start": 54.66,
+      "end": 56.33,
+      "audio_length_seconds": 1.67,
+      "embedding_audio_seconds": 1.67,
+      "audio_file": "audio\\sentence_0009.wav",
+      "word_count": 6
+    },
+    {
+      "index": 10,
+      "text": "And then, is the president being cooperative?",
+      "start": 56.33,
+      "end": 59.034,
+      "audio_length_seconds": 2.704,
+      "embedding_audio_seconds": 2.564,
+      "audio_file": "audio\\sentence_0010.wav",
+      "word_count": 7
+    },
+    {
+      "index": 11,
+      "text": "And I think by all accounts, it suggests that, yes, of course, he's being cooperative, as anyone should be.",
+      "start": 59.034,
+      "end": 64.544,
+      "audio_length_seconds": 5.51,
+      "embedding_audio_seconds": 5.51,
+      "audio_file": "audio\\sentence_0011.wav",
+      "word_count": 19
+    },
+    {
+      "index": 12,
+      "text": "But these are the reasons why this independent prosecutor and an investigation is necessary.",
+      "start": 64.544,
+      "end": 69.414,
+      "audio_length_seconds": 4.87,
+      "embedding_audio_seconds": 4.61,
+      "audio_file": "audio\\sentence_0012.wav",
+      "word_count": 14
+    },
+    {
+      "index": 13,
+      "text": "You're one of the few Senate Democrats who've said, you know, that you have concern about this issue.",
+      "start": 69.414,
+      "end": 76.304,
+      "audio_length_seconds": 6.89,
+      "embedding_audio_seconds": 6.56,
+      "audio_file": "audio\\sentence_0013.wav",
+      "word_count": 18
+    },
+    {
+      "index": 14,
+      "text": "I wonder how concerned you are, and politically, doesn't this damage the White House and the president in terms of trust and credibility?",
+      "start": 76.304,
+      "end": 86.774,
+      "audio_length_seconds": 10.47,
+      "embedding_audio_seconds": 10.19,
+      "audio_file": "audio\\sentence_0014.wav",
+      "word_count": 23
+    },
+    {
+      "index": 15,
+      "text": "Well, again, those questions do depend on the answer that we'll get in this investigation.",
+      "start": 87.692,
+      "end": 93.942,
+      "audio_length_seconds": 6.25,
+      "embedding_audio_seconds": 5.87,
+      "audio_file": "audio\\sentence_0015.wav",
+      "word_count": 15
+    },
+    {
+      "index": 16,
+      "text": "I mean, Margaret, you know this.",
+      "start": 93.942,
+      "end": 95.712,
+      "audio_length_seconds": 1.77,
+      "embedding_audio_seconds": 1.77,
+      "audio_file": "audio\\sentence_0016.wav",
+      "word_count": 6
+    },
+    {
+      "index": 17,
+      "text": "government has a tendency to over classify.",
+      "start": 95.712,
+      "end": 98.622,
+      "audio_length_seconds": 2.91,
+      "embedding_audio_seconds": 2.51,
+      "audio_file": "audio\\sentence_0017.wav",
+      "word_count": 7
+    },
+    {
+      "index": 18,
+      "text": "If they are looking at a document and they have to analyze to decide whether to classify, sometimes they just mark it classified.",
+      "start": 98.622,
+      "end": 105.132,
+      "audio_length_seconds": 6.51,
+      "embedding_audio_seconds": 6.51,
+      "audio_file": "audio\\sentence_0018.wav",
+      "word_count": 23
+    },
+    {
+      "index": 19,
+      "text": "and I'll read it in the skip and say, Margaret was reporting on that a month ago, or the Washington Post has been telling me this for the last six months.",
+      "start": 105.132,
+      "end": 112.622,
+      "audio_length_seconds": 7.49,
+      "embedding_audio_seconds": 7.49,
+      "audio_file": "audio\\sentence_0019.wav",
+      "word_count": 31
+    },
+    {
+      "index": 20,
+      "text": "So, you do have to see what's the scope, how serious, did anyone have access?",
+      "start": 112.622,
+      "end": 117.392,
+      "audio_length_seconds": 4.77,
+      "embedding_audio_seconds": 4.45,
+      "audio_file": "audio\\sentence_0020.wav",
+      "word_count": 15
+    },
+    {
+      "index": 21,
+      "text": "And those questions have to be answered before, you know, we decide, is this, how significant an issue is this?",
+      "start": 117.392,
+      "end": 123.922,
+      "audio_length_seconds": 6.53,
+      "embedding_audio_seconds": 6.53,
+      "audio_file": "audio\\sentence_0021.wav",
+      "word_count": 20
+    },
+    {
+      "index": 22,
+      "text": "Right.",
+      "start": 123.922,
+      "end": 124.472,
+      "audio_length_seconds": 0.55,
+      "embedding_audio_seconds": 0.54,
+      "audio_file": "audio\\sentence_0022.wav",
+      "word_count": 1
+    },
+    {
+      "index": 23,
+      "text": "And that may take some time.",
+      "start": 124.682,
+      "end": 126.192,
+      "audio_length_seconds": 1.51,
+      "embedding_audio_seconds": 1.51,
+      "audio_file": "audio\\sentence_0023.wav",
+      "word_count": 6
+    },
+    {
+      "index": 24,
+      "text": "I want to ask you about some of the business that Congress will have to get to soon.",
+      "start": 126.192,
+      "end": 131.802,
+      "audio_length_seconds": 5.61,
+      "embedding_audio_seconds": 5.61,
+      "audio_file": "audio\\sentence_0024.wav",
+      "word_count": 18
+    },
+    {
+      "index": 25,
+      "text": "As you know, the White House wants a clean lift to the debt limit, with no strings attached.",
+      "start": 131.802,
+      "end": 136.812,
+      "audio_length_seconds": 5.01,
+      "embedding_audio_seconds": 5.01,
+      "audio_file": "audio\\sentence_0025.wav",
+      "word_count": 18
+    },
+    {
+      "index": 26,
+      "text": "Senator Manchin said it's a mistake for the White House to refuse to negotiate with Republicans.",
+      "start": 136.812,
+      "end": 143.062,
+      "audio_length_seconds": 6.25,
+      "embedding_audio_seconds": 6.25,
+      "audio_file": "audio\\sentence_0026.wav",
+      "word_count": 16
+    },
+    {
+      "index": 27,
+      "text": "Do you think that position is changing?",
+      "start": 143.062,
+      "end": 144.972,
+      "audio_length_seconds": 1.91,
+      "embedding_audio_seconds": 1.91,
+      "audio_file": "audio\\sentence_0027.wav",
+      "word_count": 7
+    },
+    {
+      "index": 28,
+      "text": "Is it a mistake?",
+      "start": 144.972,
+      "end": 146.122,
+      "audio_length_seconds": 1.15,
+      "embedding_audio_seconds": 1.15,
+      "audio_file": "audio\\sentence_0028.wav",
+      "word_count": 4
+    },
+    {
+      "index": 29,
+      "text": "Well, first, we should have a clean lift of the debt ceiling, because the 14th Amendment to the Constitution says nobody should question the creditworthiness of the United States.",
+      "start": 147.016,
+      "end": 156.596,
+      "audio_length_seconds": 9.58,
+      "embedding_audio_seconds": 9.16,
+      "audio_file": "audio\\sentence_0029.wav",
+      "word_count": 29
+    },
+    {
+      "index": 30,
+      "text": "This is about whether the U.S. pays our credit card or not.",
+      "start": 156.596,
+      "end": 159.826,
+      "audio_length_seconds": 3.23,
+      "embedding_audio_seconds": 3.22,
+      "audio_file": "audio\\sentence_0030.wav",
+      "word_count": 13
+    },
+    {
+      "index": 31,
+      "text": "And I don't think anyone should flirt with not paying the U.S.'s credit card, which is what Republicans are doing.",
+      "start": 159.826,
+      "end": 165.966,
+      "audio_length_seconds": 6.14,
+      "embedding_audio_seconds": 5.94,
+      "audio_file": "audio\\sentence_0031.wav",
+      "word_count": 21
+    },
+    {
+      "index": 32,
+      "text": "And so the White House position is correct.",
+      "start": 165.966,
+      "end": 168.11,
+      "audio_length_seconds": 2.144,
+      "embedding_audio_seconds": 2.144,
+      "audio_file": "audio\\sentence_0032.wav",
+      "word_count": 8
+    },
+    {
+      "index": 33,
+      "text": "we should raise the debt ceiling.",
+      "start": 168.11,
+      "end": 169.5,
+      "audio_length_seconds": 1.39,
+      "embedding_audio_seconds": 1.39,
+      "audio_file": "audio\\sentence_0033.wav",
+      "word_count": 6
+    },
+    {
+      "index": 34,
+      "text": "But if Republicans are saying they won't do it and they're threatening our credit worthiness because they want cuts, let them put cuts on the table.",
+      "start": 169.5,
+      "end": 176.932,
+      "audio_length_seconds": 7.432,
+      "embedding_audio_seconds": 7.192,
+      "audio_file": "audio\\sentence_0034.wav",
+      "word_count": 26
+    },
+    {
+      "index": 35,
+      "text": "Is it the cutting Social Security and Medicare that Rick Scott wanted to do?",
+      "start": 176.932,
+      "end": 180.968,
+      "audio_length_seconds": 4.036,
+      "embedding_audio_seconds": 4.036,
+      "audio_file": "audio\\sentence_0035.wav",
+      "word_count": 14
+    },
+    {
+      "index": 36,
+      "text": "Is it cutting aid to Ukraine in the middle of a war between a democracy and an illegally invading dictator?",
+      "start": 180.968,
+      "end": 187.758,
+      "audio_length_seconds": 6.79,
+      "embedding_audio_seconds": 6.79,
+      "audio_file": "audio\\sentence_0036.wav",
+      "word_count": 20
+    },
+    {
+      "index": 37,
+      "text": "Let them put on the table what they want to cut so that the American public can see what their priorities are.",
+      "start": 187.758,
+      "end": 193.788,
+      "audio_length_seconds": 6.03,
+      "embedding_audio_seconds": 5.86,
+      "audio_file": "audio\\sentence_0037.wav",
+      "word_count": 22
+    },
+    {
+      "index": 38,
+      "text": "Speaker McCarthy has said the president has invited him to speak, to have a conversation, and discuss a responsible lift to the debt ceiling.",
+      "start": 193.788,
+      "end": 203.598,
+      "audio_length_seconds": 9.81,
+      "embedding_audio_seconds": 9.67,
+      "audio_file": "audio\\sentence_0038.wav",
+      "word_count": 24
+    },
+    {
+      "index": 39,
+      "text": "So, what does that mean?",
+      "start": 203.598,
+      "end": 205.658,
+      "audio_length_seconds": 2.06,
+      "embedding_audio_seconds": 1.96,
+      "audio_file": "audio\\sentence_0039.wav",
+      "word_count": 5
+    },
+    {
+      "index": 40,
+      "text": "How does this politically get dressed up so we avoid the cliff?",
+      "start": 205.658,
+      "end": 208.328,
+      "audio_length_seconds": 2.67,
+      "embedding_audio_seconds": 2.63,
+      "audio_file": "audio\\sentence_0040.wav",
+      "word_count": 12
+    },
+    {
+      "index": 41,
+      "text": "Well, at first, that's a good thing.",
+      "start": 209.386,
+      "end": 211.276,
+      "audio_length_seconds": 1.89,
+      "embedding_audio_seconds": 1.86,
+      "audio_file": "audio\\sentence_0041.wav",
+      "word_count": 7
+    },
+    {
+      "index": 42,
+      "text": "I'm very, very happy that the President and Speaker McCarthy are talking.",
+      "start": 211.276,
+      "end": 215.296,
+      "audio_length_seconds": 4.02,
+      "embedding_audio_seconds": 4.02,
+      "audio_file": "audio\\sentence_0042.wav",
+      "word_count": 12
+    },
+    {
+      "index": 43,
+      "text": "that's really positive.",
+      "start": 215.296,
+      "end": 216.346,
+      "audio_length_seconds": 1.05,
+      "embedding_audio_seconds": 1.05,
+      "audio_file": "audio\\sentence_0043.wav",
+      "word_count": 3
+    },
+    {
+      "index": 44,
+      "text": "How do we fix this?",
+      "start": 216.906,
+      "end": 218.336,
+      "audio_length_seconds": 1.43,
+      "embedding_audio_seconds": 1.43,
+      "audio_file": "audio\\sentence_0044.wav",
+      "word_count": 5
+    },
+    {
+      "index": 45,
+      "text": "Jeff Merkley and I have a bill that's based upon an earlier fix that Senator McConnell led during the Obama administration, when there was a similar brinksmanship around the debt ceiling.",
+      "start": 218.336,
+      "end": 229.646,
+      "audio_length_seconds": 11.31,
+      "embedding_audio_seconds": 11.31,
+      "audio_file": "audio\\sentence_0045.wav",
+      "word_count": 31
+    },
+    {
+      "index": 46,
+      "text": "and Senator McConnell said, look, we will allow the president to raise it, subject to a congressional disapproval.",
+      "start": 229.646,
+      "end": 236.376,
+      "audio_length_seconds": 6.73,
+      "embedding_audio_seconds": 6.73,
+      "audio_file": "audio\\sentence_0046.wav",
+      "word_count": 18
+    },
+    {
+      "index": 47,
+      "text": "And that was done.",
+      "start": 236.376,
+      "end": 237.632,
+      "audio_length_seconds": 1.256,
+      "embedding_audio_seconds": 0.946,
+      "audio_file": "audio\\sentence_0047.wav",
+      "word_count": 4
+    },
+    {
+      "index": 48,
+      "text": "And we think that should be the norm anyway.",
+      "start": 237.632,
+      "end": 239.416,
+      "audio_length_seconds": 1.784,
+      "embedding_audio_seconds": 1.784,
+      "audio_file": "audio\\sentence_0048.wav",
+      "word_count": 9
+    },
+    {
+      "index": 49,
+      "text": "So we have a bill called the Protect Our Credit Act that would basically say the president has got to cover the debts of the United States.",
+      "start": 239.416,
+      "end": 246.106,
+      "audio_length_seconds": 6.69,
+      "embedding_audio_seconds": 6.69,
+      "audio_file": "audio\\sentence_0049.wav",
+      "word_count": 27
+    },
+    {
+      "index": 50,
+      "text": "And if that includes raising the debt ceiling, the president can do that.",
+      "start": 246.106,
+      "end": 250.156,
+      "audio_length_seconds": 4.05,
+      "embedding_audio_seconds": 3.72,
+      "audio_file": "audio\\sentence_0050.wav",
+      "word_count": 13
+    },
+    {
+      "index": 51,
+      "text": "But if Congress disapproves, then you can have an expedited up or down vote in Congress.",
+      "start": 250.156,
+      "end": 255.196,
+      "audio_length_seconds": 5.04,
+      "embedding_audio_seconds": 4.87,
+      "audio_file": "audio\\sentence_0051.wav",
+      "word_count": 16
+    },
+    {
+      "index": 52,
+      "text": "And I think that's the right solution to this.",
+      "start": 255.196,
+      "end": 257.226,
+      "audio_length_seconds": 2.03,
+      "embedding_audio_seconds": 2.03,
+      "audio_file": "audio\\sentence_0052.wav",
+      "word_count": 9
+    },
+    {
+      "index": 53,
+      "text": "Before I let you go, you're on armed services.",
+      "start": 257.236,
+      "end": 259.708,
+      "audio_length_seconds": 2.472,
+      "embedding_audio_seconds": 2.472,
+      "audio_file": "audio\\sentence_0053.wav",
+      "word_count": 9
+    },
+    {
+      "index": 54,
+      "text": "How concerned are you that Secretary of Defense Austin left Germany with no agreement among Western allies to provide tanks to Ukraine?",
+      "start": 259.708,
+      "end": 266.558,
+      "audio_length_seconds": 6.85,
+      "embedding_audio_seconds": 6.85,
+      "audio_file": "audio\\sentence_0054.wav",
+      "word_count": 22
+    },
+    {
+      "index": 55,
+      "text": "Margaret, there are some differences about exactly what and what's the timing in terms of providing equipment.",
+      "start": 267.478,
+      "end": 273.948,
+      "audio_length_seconds": 6.47,
+      "embedding_audio_seconds": 6.01,
+      "audio_file": "audio\\sentence_0055.wav",
+      "word_count": 17
+    },
+    {
+      "index": 56,
+      "text": "but we have assembled a global coalition to support Ukraine.",
+      "start": 273.948,
+      "end": 278.078,
+      "audio_length_seconds": 4.13,
+      "embedding_audio_seconds": 4.13,
+      "audio_file": "audio\\sentence_0056.wav",
+      "word_count": 10
+    },
+    {
+      "index": 57,
+      "text": "The unity has been very strong and the support bipartisan and bicameral in Congress has been very strong.",
+      "start": 278.078,
+      "end": 284.868,
+      "audio_length_seconds": 6.79,
+      "embedding_audio_seconds": 6.52,
+      "audio_file": "audio\\sentence_0057.wav",
+      "word_count": 18
+    },
+    {
+      "index": 58,
+      "text": "And I think that will continue.",
+      "start": 285.038,
+      "end": 286.628,
+      "audio_length_seconds": 1.59,
+      "embedding_audio_seconds": 1.59,
+      "audio_file": "audio\\sentence_0058.wav",
+      "word_count": 6
+    },
+    {
+      "index": 59,
+      "text": "Senator Kaine, thank you for your time today.",
+      "start": 287.228,
+      "end": 289.658,
+      "audio_length_seconds": 2.43,
+      "embedding_audio_seconds": 2.31,
+      "audio_file": "audio\\sentence_0059.wav",
+      "word_count": 8
+    },
+    {
+      "index": 60,
+      "text": "Absolutely.",
+      "start": 290.408,
+      "end": 290.938,
+      "audio_length_seconds": 0.53,
+      "embedding_audio_seconds": 0.53,
+      "audio_file": "audio\\sentence_0060.wav",
+      "word_count": 1
+    },
+    {
+      "index": 61,
+      "text": "Thanks, Margaret.",
+      "start": 290.938,
+      "end": 291.488,
+      "audio_length_seconds": 0.55,
+      "embedding_audio_seconds": 0.55,
+      "audio_file": "audio\\sentence_0061.wav",
+      "word_count": 2
+    },
+    {
+      "index": 62,
+      "text": "And some of the nation's mayors are in town.",
+      "start": 291.488,
+      "end": 294.148,
+      "audio_length_seconds": 2.66,
+      "embedding_audio_seconds": 2.66,
+      "audio_file": "audio\\sentence_0062.wav",
+      "word_count": 9
+    },
+    {
+      "index": 63,
+      "text": "And they're the first line of defense in every city, as you all know.",
+      "start": 294.148,
+      "end": 297.258,
+      "audio_length_seconds": 3.11,
+      "embedding_audio_seconds": 3.11,
+      "audio_file": "audio\\sentence_0063.wav",
+      "word_count": 14
+    },
+    {
+      "index": 64,
+      "text": "So stay with us, we'll be right back.",
+      "start": 297.258,
+      "end": 298.908,
+      "audio_length_seconds": 1.65,
+      "embedding_audio_seconds": 1.59,
+      "audio_file": "audio\\sentence_0064.wav",
+      "word_count": 8
+    },
+    {
+      "index": 65,
+      "text": "We're back now with four of our nation's mayors.",
+      "start": 302.25,
+      "end": 305.08,
+      "audio_length_seconds": 2.83,
+      "embedding_audio_seconds": 2.5,
+      "audio_file": "audio\\sentence_0065.wav",
+      "word_count": 9
+    },
+    {
+      "index": 66,
+      "text": "Frances Suarez is the mayor of Miami and the head of the U.S. Conference of Mayors.",
+      "start": 305.08,
+      "end": 309.17,
+      "audio_length_seconds": 4.09,
+      "embedding_audio_seconds": 3.92,
+      "audio_file": "audio\\sentence_0066.wav",
+      "word_count": 17
+    },
+    {
+      "index": 67,
+      "text": "LaToya Cantrell is the mayor of New Orleans.",
+      "start": 309.17,
+      "end": 311.14,
+      "audio_length_seconds": 1.97,
+      "embedding_audio_seconds": 1.97,
+      "audio_file": "audio\\sentence_0067.wav",
+      "word_count": 8
+    },
+    {
+      "index": 68,
+      "text": "Plus, we have Atlanta Mayor Andre Dickens with us, along with John Giles, the mayor of Mesa, Arizona.",
+      "start": 311.14,
+      "end": 317.67,
+      "audio_length_seconds": 6.53,
+      "embedding_audio_seconds": 6.23,
+      "audio_file": "audio\\sentence_0068.wav",
+      "word_count": 18
+    },
+    {
+      "index": 69,
+      "text": "Good morning to all of you and thank you so much for being here in person.",
+      "start": 317.67,
+      "end": 321.118,
+      "audio_length_seconds": 3.448,
+      "embedding_audio_seconds": 3.368,
+      "audio_file": "audio\\sentence_0069.wav",
+      "word_count": 16
+    },
+    {
+      "index": 70,
+      "text": "Thanks for having us.",
+      "start": 321.118,
+      "end": 321.84,
+      "audio_length_seconds": 0.722,
+      "embedding_audio_seconds": 0.722,
+      "audio_file": "audio\\sentence_0070.wav",
+      "word_count": 4
+    },
+    {
+      "index": 71,
+      "text": "I want to talk about just what is developing in terms of the shooting in California.",
+      "start": 321.84,
+      "end": 328.87,
+      "audio_length_seconds": 7.03,
+      "embedding_audio_seconds": 6.85,
+      "audio_file": "audio\\sentence_0071.wav",
+      "word_count": 16
+    },
+    {
+      "index": 72,
+      "text": "Nationwide, we are seeing this spike in violent crime.",
+      "start": 329.31,
+      "end": 332.34,
+      "audio_length_seconds": 3.03,
+      "embedding_audio_seconds": 3.03,
+      "audio_file": "audio\\sentence_0072.wav",
+      "word_count": 9
+    },
+    {
+      "index": 73,
+      "text": "We're seeing reports of an uptick in anti -Semitism and hate crimes.",
+      "start": 332.34,
+      "end": 336.53,
+      "audio_length_seconds": 4.19,
+      "embedding_audio_seconds": 4.15,
+      "audio_file": "audio\\sentence_0073.wav",
+      "word_count": 12
+    },
+    {
+      "index": 74,
+      "text": "All of you are from states where there are fairly permissive gun laws.",
+      "start": 336.53,
+      "end": 341.58,
+      "audio_length_seconds": 5.05,
+      "embedding_audio_seconds": 5.05,
+      "audio_file": "audio\\sentence_0074.wav",
+      "word_count": 13
+    },
+    {
+      "index": 75,
+      "text": "And I wonder, Mayor Suárez, how you put those pieces together.",
+      "start": 341.58,
+      "end": 347.41,
+      "audio_length_seconds": 5.83,
+      "embedding_audio_seconds": 5.49,
+      "audio_file": "audio\\sentence_0075.wav",
+      "word_count": 11
+    },
+    {
+      "index": 76,
+      "text": "What is driving this?",
+      "start": 347.41,
+      "end": 349.02,
+      "audio_length_seconds": 1.61,
+      "embedding_audio_seconds": 1.45,
+      "audio_file": "audio\\sentence_0076.wav",
+      "word_count": 4
+    },
+    {
+      "index": 77,
+      "text": "Yeah, it's so many different factors that are driving this, but one of the things that we focused a lot on in this mayoral conference that we just ended was mental health.",
+      "start": 349.02,
+      "end": 357.81,
+      "audio_length_seconds": 8.79,
+      "embedding_audio_seconds": 8.79,
+      "audio_file": "audio\\sentence_0077.wav",
+      "word_count": 32
+    },
+    {
+      "index": 78,
+      "text": "Mental health is a huge component of what's driving a lot of these, when you look at the root cause, and you go back and you sort of peel back the layers of the onion.",
+      "start": 357.81,
+      "end": 366.28,
+      "audio_length_seconds": 8.47,
+      "embedding_audio_seconds": 8.32,
+      "audio_file": "audio\\sentence_0078.wav",
+      "word_count": 35
+    },
+    {
+      "index": 79,
+      "text": "Mayors are very concerned about it.",
+      "start": 366.28,
+      "end": 368.43,
+      "audio_length_seconds": 2.15,
+      "embedding_audio_seconds": 2.15,
+      "audio_file": "audio\\sentence_0079.wav",
+      "word_count": 6
+    },
+    {
+      "index": 80,
+      "text": "We obviously had a panel, obviously, on urban crime.",
+      "start": 368.43,
+      "end": 371.98,
+      "audio_length_seconds": 3.55,
+      "embedding_audio_seconds": 3.55,
+      "audio_file": "audio\\sentence_0080.wav",
+      "word_count": 9
+    },
+    {
+      "index": 81,
+      "text": "And certainly a lot of these mayors have talked about, you know, gun control in their cities.",
+      "start": 371.98,
+      "end": 377.15,
+      "audio_length_seconds": 5.17,
+      "embedding_audio_seconds": 5.17,
+      "audio_file": "audio\\sentence_0081.wav",
+      "word_count": 17
+    },
+    {
+      "index": 82,
+      "text": "In our city, you know, we have, we're very blessed.",
+      "start": 377.47,
+      "end": 380.11,
+      "audio_length_seconds": 2.64,
+      "embedding_audio_seconds": 2.64,
+      "audio_file": "audio\\sentence_0082.wav",
+      "word_count": 10
+    },
+    {
+      "index": 83,
+      "text": "We had a great year.",
+      "start": 380.11,
+      "end": 381.0,
+      "audio_length_seconds": 0.89,
+      "embedding_audio_seconds": 0.89,
+      "audio_file": "audio\\sentence_0083.wav",
+      "word_count": 5
+    },
+    {
+      "index": 84,
+      "text": "Our homicide level went down.",
+      "start": 381.0,
+      "end": 382.87,
+      "audio_length_seconds": 1.87,
+      "embedding_audio_seconds": 1.87,
+      "audio_file": "audio\\sentence_0084.wav",
+      "word_count": 5
+    },
+    {
+      "index": 85,
+      "text": "We've been able—and I knock on proverbial wood that we haven't had any of these mass shootings that we've seen across the country, which seem to be, you know, escalating in terms of frequency and in terms of, you know, the amount of times that we're seeing them.",
+      "start": 382.87,
+      "end": 396.594,
+      "audio_length_seconds": 13.724,
+      "embedding_audio_seconds": 13.724,
+      "audio_file": "audio\\sentence_0085.wav",
+      "word_count": 48
+    },
+    {
+      "index": 86,
+      "text": "It's almost every day it seems like we're having one.",
+      "start": 396.594,
+      "end": 398.22,
+      "audio_length_seconds": 1.626,
+      "embedding_audio_seconds": 1.626,
+      "audio_file": "audio\\sentence_0086.wav",
+      "word_count": 10
+    },
+    {
+      "index": 87,
+      "text": "So it's been tough.",
+      "start": 398.22,
+      "end": 400.856,
+      "audio_length_seconds": 2.636,
+      "embedding_audio_seconds": 2.636,
+      "audio_file": "audio\\sentence_0087.wav",
+      "word_count": 4
+    },
+    {
+      "index": 88,
+      "text": "It's something that mayors are grappling with across the country, and we're focusing it on in a very comprehensive way.",
+      "start": 400.856,
+      "end": 405.326,
+      "audio_length_seconds": 4.47,
+      "embedding_audio_seconds": 4.44,
+      "audio_file": "audio\\sentence_0088.wav",
+      "word_count": 20
+    },
+    {
+      "index": 89,
+      "text": "You, specifically, this week, told your fellow mayors that some of this is driven by no -cash -bail policies.",
+      "start": 405.326,
+      "end": 411.596,
+      "audio_length_seconds": 6.27,
+      "embedding_audio_seconds": 6.27,
+      "audio_file": "audio\\sentence_0089.wav",
+      "word_count": 19
+    },
+    {
+      "index": 90,
+      "text": "Why do you say that?",
+      "start": 411.596,
+      "end": 412.488,
+      "audio_length_seconds": 0.892,
+      "embedding_audio_seconds": 0.892,
+      "audio_file": "audio\\sentence_0090.wav",
+      "word_count": 5
+    },
+    {
+      "index": 91,
+      "text": "Are repeat offenders a problem?",
+      "start": 412.488,
+      "end": 413.766,
+      "audio_length_seconds": 1.278,
+      "embedding_audio_seconds": 1.278,
+      "audio_file": "audio\\sentence_0091.wav",
+      "word_count": 5
+    },
+    {
+      "index": 92,
+      "text": "Yeah, well, what I'm focusing on is the no cash bail is creating lawlessness in a lot of our cities.",
+      "start": 413.766,
+      "end": 418.736,
+      "audio_length_seconds": 4.97,
+      "embedding_audio_seconds": 4.85,
+      "audio_file": "audio\\sentence_0092.wav",
+      "word_count": 20
+    },
+    {
+      "index": 93,
+      "text": "So what's happening is, for example, people get out right away.",
+      "start": 418.736,
+      "end": 421.444,
+      "audio_length_seconds": 2.708,
+      "embedding_audio_seconds": 2.708,
+      "audio_file": "audio\\sentence_0093.wav",
+      "word_count": 11
+    },
+    {
+      "index": 94,
+      "text": "They're not even—you know, they don't even have to post bail, so they're able to get out right away.",
+      "start": 421.444,
+      "end": 426.172,
+      "audio_length_seconds": 4.728,
+      "embedding_audio_seconds": 4.728,
+      "audio_file": "audio\\sentence_0094.wav",
+      "word_count": 19
+    },
+    {
+      "index": 95,
+      "text": "And so, we're seeing someone go into, like, a CVS, for example, and take thousands of dollars' worth of merchandise, which is causing CVSs to close, which hurts, you know, the rest of the city.",
+      "start": 426.172,
+      "end": 436.776,
+      "audio_length_seconds": 10.604,
+      "embedding_audio_seconds": 10.604,
+      "audio_file": "audio\\sentence_0095.wav",
+      "word_count": 35
+    },
+    {
+      "index": 96,
+      "text": "But that's not particularly related to the gun violence issue.",
+      "start": 436.776,
+      "end": 440.224,
+      "audio_length_seconds": 3.448,
+      "embedding_audio_seconds": 3.448,
+      "audio_file": "audio\\sentence_0096.wav",
+      "word_count": 10
+    },
+    {
+      "index": 97,
+      "text": "that's related more to petty crime, which is creating lawlessness in some of our cities.",
+      "start": 440.224,
+      "end": 443.814,
+      "audio_length_seconds": 3.59,
+      "embedding_audio_seconds": 3.59,
+      "audio_file": "audio\\sentence_0097.wav",
+      "word_count": 15
+    },
+    {
+      "index": 98,
+      "text": "But what we are seeing in the city of Miami is, you know, we are upfunding our police.",
+      "start": 443.814,
+      "end": 449.264,
+      "audio_length_seconds": 5.45,
+      "embedding_audio_seconds": 5.45,
+      "audio_file": "audio\\sentence_0098.wav",
+      "word_count": 18
+    },
+    {
+      "index": 99,
+      "text": "You know, a lot of cities got into the defunding police movement, and we're seeing that as a bipartisan issue.",
+      "start": 449.264,
+      "end": 453.334,
+      "audio_length_seconds": 4.07,
+      "embedding_audio_seconds": 4.07,
+      "audio_file": "audio\\sentence_0099.wav",
+      "word_count": 20
+    },
+    {
+      "index": 100,
+      "text": "I said it at the White House, you know, just a couple days ago.",
+      "start": 453.334,
+      "end": 457.314,
+      "audio_length_seconds": 3.98,
+      "embedding_audio_seconds": 3.98,
+      "audio_file": "audio\\sentence_0100.wav",
+      "word_count": 14
+    },
+    {
+      "index": 101,
+      "text": "And the president echoed what I said about upfronting police and not defunding police.",
+      "start": 457.314,
+      "end": 461.306,
+      "audio_length_seconds": 3.992,
+      "embedding_audio_seconds": 3.992,
+      "audio_file": "audio\\sentence_0101.wav",
+      "word_count": 14
+    },
+    {
+      "index": 102,
+      "text": "So I think that is a bigger issue as we struggle with how we solve these issues on our cities.",
+      "start": 461.306,
+      "end": 467.376,
+      "audio_length_seconds": 6.07,
+      "embedding_audio_seconds": 6.07,
+      "audio_file": "audio\\sentence_0102.wav",
+      "word_count": 20
+    },
+    {
+      "index": 103,
+      "text": "And President Biden put in, what, $4 billion in grants that's available for local law enforcement use in cities around the country.",
+      "start": 467.376,
+      "end": 473.946,
+      "audio_length_seconds": 6.57,
+      "embedding_audio_seconds": 6.54,
+      "audio_file": "audio\\sentence_0103.wav",
+      "word_count": 22
+    },
+    {
+      "index": 104,
+      "text": "Yeah, you know, as you talked about this issue that's happening right now in California, yet another mass shooting in our country.",
+      "start": 473.946,
+      "end": 480.014,
+      "audio_length_seconds": 6.068,
+      "embedding_audio_seconds": 6.068,
+      "audio_file": "audio\\sentence_0104.wav",
+      "word_count": 22
+    },
+    {
+      "index": 105,
+      "text": "It continues to happen too frequently.",
+      "start": 480.014,
+      "end": 482.444,
+      "audio_length_seconds": 2.43,
+      "embedding_audio_seconds": 2.43,
+      "audio_file": "audio\\sentence_0105.wav",
+      "word_count": 6
+    },
+    {
+      "index": 106,
+      "text": "And so, there's just too many guns in America.",
+      "start": 482.444,
+      "end": 484.894,
+      "audio_length_seconds": 2.45,
+      "embedding_audio_seconds": 2.45,
+      "audio_file": "audio\\sentence_0106.wav",
+      "word_count": 9
+    },
+    {
+      "index": 107,
+      "text": "There's too many guns in the hands on our streets, and guns plus anger equals bad outcomes, equals violence.",
+      "start": 484.894,
+      "end": 491.644,
+      "audio_length_seconds": 6.75,
+      "embedding_audio_seconds": 6.75,
+      "audio_file": "audio\\sentence_0107.wav",
+      "word_count": 19
+    },
+    {
+      "index": 108,
+      "text": "And so, we have to bring back laws that are sensible, common -sense gun laws, to be able to reduce the amount of access that people have to guns.",
+      "start": 491.644,
+      "end": 499.432,
+      "audio_length_seconds": 7.788,
+      "embedding_audio_seconds": 7.788,
+      "audio_file": "audio\\sentence_0108.wav",
+      "word_count": 29
+    },
+    {
+      "index": 109,
+      "text": "And so, you see another mass shooting, and lives are lost, and my heart goes out to the people of California experiencing that.",
+      "start": 499.432,
+      "end": 505.56,
+      "audio_length_seconds": 6.128,
+      "embedding_audio_seconds": 6.128,
+      "audio_file": "audio\\sentence_0109.wav",
+      "word_count": 23
+    },
+    {
+      "index": 110,
+      "text": "And so, as Mayor Suarez mentioned, we're talking about mental health and how to make sure that we have anti -violence in our communities.",
+      "start": 505.56,
+      "end": 512.184,
+      "audio_length_seconds": 6.624,
+      "embedding_audio_seconds": 6.6239,
+      "audio_file": "audio\\sentence_0110.wav",
+      "word_count": 24
+    },
+    {
+      "index": 111,
+      "text": "utilizing the cure violence, you know, to bring down the retaliation and make sure we have healing in our communities, to try to use policing and non -policing tactics to bring down violence.",
+      "start": 512.184,
+      "end": 523.314,
+      "audio_length_seconds": 11.13,
+      "embedding_audio_seconds": 11.13,
+      "audio_file": "audio\\sentence_0111.wav",
+      "word_count": 33
+    },
+    {
+      "index": 112,
+      "text": "midnight basketball, things that are, you know, summer youth employment program to help our youth, but mental health and just getting people the quality care that they need so they make wise decisions.",
+      "start": 523.314,
+      "end": 533.87,
+      "audio_length_seconds": 10.556,
+      "embedding_audio_seconds": 10.5561,
+      "audio_file": "audio\\sentence_0112.wav",
+      "word_count": 33
+    },
+    {
+      "index": 113,
+      "text": "Because most of the violence that we're seeing in our communities is escalating disputes.",
+      "start": 533.87,
+      "end": 537.264,
+      "audio_length_seconds": 3.394,
+      "embedding_audio_seconds": 3.394,
+      "audio_file": "audio\\sentence_0113.wav",
+      "word_count": 14
+    },
+    {
+      "index": 114,
+      "text": "People that are unable to resolve a conflict that's just escalated too much, and people aren't fighting or arguing anymore, they're taking their hands to their pockets and pulling out a gun, and it gets too intense, and someone kills someone.",
+      "start": 537.264,
+      "end": 549.832,
+      "audio_length_seconds": 12.568,
+      "embedding_audio_seconds": 12.568,
+      "audio_file": "audio\\sentence_0114.wav",
+      "word_count": 41
+    },
+    {
+      "index": 115,
+      "text": "And that's the violence we're seeing in America.",
+      "start": 549.832,
+      "end": 551.988,
+      "audio_length_seconds": 2.156,
+      "embedding_audio_seconds": 2.156,
+      "audio_file": "audio\\sentence_0115.wav",
+      "word_count": 8
+    },
+    {
+      "index": 116,
+      "text": "So we have to take a whole -of -government approach to be able to bring down this violence, things that we can do to help our youth, help our communities, and that's some of the stuff that we're doing in Atlanta.",
+      "start": 551.988,
+      "end": 562.558,
+      "audio_length_seconds": 10.57,
+      "embedding_audio_seconds": 10.57,
+      "audio_file": "audio\\sentence_0116.wav",
+      "word_count": 41
+    },
+    {
+      "index": 117,
+      "text": "Mayor Jones, you, actually, I was surprised when I saw that Mesa has such a big population.",
+      "start": 562.558,
+      "end": 567.668,
+      "audio_length_seconds": 5.11,
+      "embedding_audio_seconds": 5.11,
+      "audio_file": "audio\\sentence_0117.wav",
+      "word_count": 17
+    },
+    {
+      "index": 118,
+      "text": "I think you're the biggest city at the table.",
+      "start": 567.668,
+      "end": 569.878,
+      "audio_length_seconds": 2.21,
+      "embedding_audio_seconds": 2.21,
+      "audio_file": "audio\\sentence_0118.wav",
+      "word_count": 9
+    },
+    {
+      "index": 119,
+      "text": "And, I looked at your police site, it says that you are one of America's safest large cities.",
+      "start": 570.738,
+      "end": 576.588,
+      "audio_length_seconds": 5.85,
+      "embedding_audio_seconds": 5.68,
+      "audio_file": "audio\\sentence_0119.wav",
+      "word_count": 18
+    },
+    {
+      "index": 120,
+      "text": "Right.",
+      "start": 576.588,
+      "end": 577.138,
+      "audio_length_seconds": 0.55,
+      "embedding_audio_seconds": 0.55,
+      "audio_file": "audio\\sentence_0120.wav",
+      "word_count": 1
+    },
+    {
+      "index": 121,
+      "text": "But how do you qualify that, and how are you doing that, if that is a fact?",
+      "start": 577.138,
+      "end": 581.768,
+      "audio_length_seconds": 4.63,
+      "embedding_audio_seconds": 4.44,
+      "audio_file": "audio\\sentence_0121.wav",
+      "word_count": 17
+    },
+    {
+      "index": 122,
+      "text": "Well, a lot of the things that these fellows have just mentioned.",
+      "start": 581.768,
+      "end": 585.198,
+      "audio_length_seconds": 3.43,
+      "embedding_audio_seconds": 3.4,
+      "audio_file": "audio\\sentence_0122.wav",
+      "word_count": 12
+    },
+    {
+      "index": 123,
+      "text": "We are doubling down on our investment in our police department, and we are shifting the paradigm.",
+      "start": 585.198,
+      "end": 590.648,
+      "audio_length_seconds": 5.45,
+      "embedding_audio_seconds": 5.45,
+      "audio_file": "audio\\sentence_0123.wav",
+      "word_count": 17
+    },
+    {
+      "index": 124,
+      "text": "A few years ago, we changed the name of our fire department.",
+      "start": 590.938,
+      "end": 593.508,
+      "audio_length_seconds": 2.57,
+      "embedding_audio_seconds": 2.57,
+      "audio_file": "audio\\sentence_0124.wav",
+      "word_count": 12
+    },
+    {
+      "index": 125,
+      "text": "It's no longer the Mesa Fire Department.",
+      "start": 593.558,
+      "end": 595.19,
+      "audio_length_seconds": 1.632,
+      "embedding_audio_seconds": 1.632,
+      "audio_file": "audio\\sentence_0125.wav",
+      "word_count": 7
+    },
+    {
+      "index": 126,
+      "text": "It's now Mesa Fire and Medical, to better reflect what we do.",
+      "start": 595.19,
+      "end": 598.528,
+      "audio_length_seconds": 3.338,
+      "embedding_audio_seconds": 3.338,
+      "audio_file": "audio\\sentence_0126.wav",
+      "word_count": 12
+    },
+    {
+      "index": 127,
+      "text": "We need to do the same when it comes to policing.",
+      "start": 598.718,
+      "end": 600.708,
+      "audio_length_seconds": 1.99,
+      "embedding_audio_seconds": 1.94,
+      "audio_file": "audio\\sentence_0127.wav",
+      "word_count": 11
+    },
+    {
+      "index": 128,
+      "text": "that needs to be the police and mental health department.",
+      "start": 600.708,
+      "end": 603.138,
+      "audio_length_seconds": 2.43,
+      "embedding_audio_seconds": 2.42,
+      "audio_file": "audio\\sentence_0128.wav",
+      "word_count": 10
+    },
+    {
+      "index": 129,
+      "text": "Last year, we diverted over 3,000 9 -1 -1 calls away from a police response to a mental health response.",
+      "start": 603.138,
+      "end": 609.728,
+      "audio_length_seconds": 6.59,
+      "embedding_audio_seconds": 6.31,
+      "audio_file": "audio\\sentence_0129.wav",
+      "word_count": 21
+    },
+    {
+      "index": 130,
+      "text": "So, again, the importance of mental health is ubiquitous in all that we do and that was discussed at the conference.",
+      "start": 609.728,
+      "end": 617.598,
+      "audio_length_seconds": 7.87,
+      "embedding_audio_seconds": 7.56,
+      "audio_file": "audio\\sentence_0130.wav",
+      "word_count": 21
+    },
+    {
+      "index": 131,
+      "text": "It has everything to do with how we address homelessness.",
+      "start": 617.598,
+      "end": 620.628,
+      "audio_length_seconds": 3.03,
+      "embedding_audio_seconds": 2.84,
+      "audio_file": "audio\\sentence_0131.wav",
+      "word_count": 10
+    },
+    {
+      "index": 132,
+      "text": "It has everything with how we do, how we address policing in our community.",
+      "start": 620.628,
+      "end": 624.738,
+      "audio_length_seconds": 4.11,
+      "embedding_audio_seconds": 4.11,
+      "audio_file": "audio\\sentence_0132.wav",
+      "word_count": 14
+    },
+    {
+      "index": 133,
+      "text": "Mayor Katyal, I want to get you on that, too, because President Biden said it's not about defunding the police, it's about restraining the police.",
+      "start": 624.738,
+      "end": 632.848,
+      "audio_length_seconds": 8.11,
+      "embedding_audio_seconds": 8.08,
+      "audio_file": "audio\\sentence_0133.wav",
+      "word_count": 25
+    },
+    {
+      "index": 134,
+      "text": "I wonder if you agree with that.",
+      "start": 632.848,
+      "end": 634.752,
+      "audio_length_seconds": 1.904,
+      "embedding_audio_seconds": 1.794,
+      "audio_file": "audio\\sentence_0134.wav",
+      "word_count": 7
+    },
+    {
+      "index": 135,
+      "text": "I know you have had a problem in New Orleans with not having enough police officers.",
+      "start": 634.752,
+      "end": 638.722,
+      "audio_length_seconds": 3.97,
+      "embedding_audio_seconds": 3.97,
+      "audio_file": "audio\\sentence_0135.wav",
+      "word_count": 16
+    },
+    {
+      "index": 136,
+      "text": "less than 1,000 for 300,000 people.",
+      "start": 638.722,
+      "end": 640.912,
+      "audio_length_seconds": 2.19,
+      "embedding_audio_seconds": 2.19,
+      "audio_file": "audio\\sentence_0136.wav",
+      "word_count": 8
+    },
+    {
+      "index": 137,
+      "text": "Sure.",
+      "start": 640.912,
+      "end": 641.542,
+      "audio_length_seconds": 0.63,
+      "embedding_audio_seconds": 0.53,
+      "audio_file": "audio\\sentence_0137.wav",
+      "word_count": 1
+    },
+    {
+      "index": 138,
+      "text": "And the thing is, is that it's about retention, and it is also about recruitment.",
+      "start": 641.542,
+      "end": 646.992,
+      "audio_length_seconds": 5.45,
+      "embedding_audio_seconds": 5.43,
+      "audio_file": "audio\\sentence_0138.wav",
+      "word_count": 15
+    },
+    {
+      "index": 139,
+      "text": "And because of this second tranche of the American Rescue Plan dollars coming our way with direct allocation, oh, it has really been a lifeline, where we're putting $80 million in public safety across the board, one of the biggest in terms of a retention and incentive package to retain.",
+      "start": 646.992,
+      "end": 663.322,
+      "audio_length_seconds": 16.33,
+      "embedding_audio_seconds": 15.98,
+      "audio_file": "audio\\sentence_0139.wav",
+      "word_count": 50
+    },
+    {
+      "index": 140,
+      "text": "We see it slowing down, meaning attrition is declining.",
+      "start": 663.322,
+      "end": 666.932,
+      "audio_length_seconds": 3.61,
+      "embedding_audio_seconds": 3.32,
+      "audio_file": "audio\\sentence_0140.wav",
+      "word_count": 9
+    },
+    {
+      "index": 141,
+      "text": "Our officers are staying.",
+      "start": 666.932,
+      "end": 668.522,
+      "audio_length_seconds": 1.59,
+      "embedding_audio_seconds": 1.34,
+      "audio_file": "audio\\sentence_0141.wav",
+      "word_count": 4
+    },
+    {
+      "index": 142,
+      "text": "And so, we just have to continue to give the tools and resources that our officers need to respond.",
+      "start": 668.522,
+      "end": 673.732,
+      "audio_length_seconds": 5.21,
+      "embedding_audio_seconds": 4.97,
+      "audio_file": "audio\\sentence_0142.wav",
+      "word_count": 19
+    },
+    {
+      "index": 143,
+      "text": "Also, in terms of the capacity issue you mentioned, you know, I've had to put all commissioned officers that were in special ops, over 75, back on the street, because my officers were saying, hey, we need help out here.",
+      "start": 673.732,
+      "end": 686.482,
+      "audio_length_seconds": 12.75,
+      "embedding_audio_seconds": 12.31,
+      "audio_file": "audio\\sentence_0143.wav",
+      "word_count": 40
+    },
+    {
+      "index": 144,
+      "text": "So, I have to protect my officers so they can protect my city.",
+      "start": 686.482,
+      "end": 689.812,
+      "audio_length_seconds": 3.33,
+      "embedding_audio_seconds": 3.12,
+      "audio_file": "audio\\sentence_0144.wav",
+      "word_count": 13
+    },
+    {
+      "index": 145,
+      "text": "And so, we're seeing real results in regards to our redeployment strategy on the ground.",
+      "start": 689.812,
+      "end": 695.822,
+      "audio_length_seconds": 6.01,
+      "embedding_audio_seconds": 5.77,
+      "audio_file": "audio\\sentence_0145.wav",
+      "word_count": 15
+    },
+    {
+      "index": 146,
+      "text": "New Orleans has the highest per capita murder rate of any major city.",
+      "start": 695.822,
+      "end": 701.692,
+      "audio_length_seconds": 5.87,
+      "embedding_audio_seconds": 5.69,
+      "audio_file": "audio\\sentence_0146.wav",
+      "word_count": 13
+    },
+    {
+      "index": 147,
+      "text": "Why?",
+      "start": 702.192,
+      "end": 702.802,
+      "audio_length_seconds": 0.61,
+      "embedding_audio_seconds": 0.52,
+      "audio_file": "audio\\sentence_0147.wav",
+      "word_count": 1
+    },
+    {
+      "index": 148,
+      "text": "Why?",
+      "start": 702.802,
+      "end": 703.832,
+      "audio_length_seconds": 1.03,
+      "embedding_audio_seconds": 0.9,
+      "audio_file": "audio\\sentence_0148.wav",
+      "word_count": 1
+    },
+    {
+      "index": 149,
+      "text": "is because, one, dealing with COVID -19, violence, everyone has guns, the ability or the lack of the ability to resolve a conflict without reaching and pulling a gun.",
+      "start": 703.832,
+      "end": 715.722,
+      "audio_length_seconds": 11.89,
+      "embedding_audio_seconds": 11.89,
+      "audio_file": "audio\\sentence_0149.wav",
+      "word_count": 29
+    },
+    {
+      "index": 150,
+      "text": "Also, as it relates to accountability, you know, low -lining offenses, you know, when they don't get bail or they're not restrained, then we're just seeing how these crimes escalate.",
+      "start": 715.722,
+      "end": 728.512,
+      "audio_length_seconds": 12.79,
+      "embedding_audio_seconds": 12.51,
+      "audio_file": "audio\\sentence_0150.wav",
+      "word_count": 30
+    },
+    {
+      "index": 151,
+      "text": "And people need to be held accountable across the board.",
+      "start": 728.512,
+      "end": 731.522,
+      "audio_length_seconds": 3.01,
+      "embedding_audio_seconds": 3.01,
+      "audio_file": "audio\\sentence_0151.wav",
+      "word_count": 10
+    },
+    {
+      "index": 152,
+      "text": "And we're seeing results, I would say.",
+      "start": 731.522,
+      "end": 734.606,
+      "audio_length_seconds": 3.084,
+      "embedding_audio_seconds": 2.924,
+      "audio_file": "audio\\sentence_0152.wav",
+      "word_count": 7
+    },
+    {
+      "index": 153,
+      "text": "We're moving in the right direction.",
+      "start": 734.606,
+      "end": 736.036,
+      "audio_length_seconds": 1.43,
+      "embedding_audio_seconds": 1.43,
+      "audio_file": "audio\\sentence_0153.wav",
+      "word_count": 6
+    },
+    {
+      "index": 154,
+      "text": "But I tell you, we definitely need to hold people accountable.",
+      "start": 736.036,
+      "end": 740.906,
+      "audio_length_seconds": 4.87,
+      "embedding_audio_seconds": 4.87,
+      "audio_file": "audio\\sentence_0154.wav",
+      "word_count": 11
+    },
+    {
+      "index": 155,
+      "text": "You can't fight crime just focusing on police.",
+      "start": 740.906,
+      "end": 744.496,
+      "audio_length_seconds": 3.59,
+      "embedding_audio_seconds": 3.59,
+      "audio_file": "audio\\sentence_0155.wav",
+      "word_count": 8
+    },
+    {
+      "index": 156,
+      "text": "It's about a system, a criminal justice system.",
+      "start": 744.496,
+      "end": 747.166,
+      "audio_length_seconds": 2.67,
+      "embedding_audio_seconds": 2.67,
+      "audio_file": "audio\\sentence_0156.wav",
+      "word_count": 8
+    },
+    {
+      "index": 157,
+      "text": "It's about the D.A., your judges, and it's about building in accountability.",
+      "start": 747.166,
+      "end": 752.196,
+      "audio_length_seconds": 5.03,
+      "embedding_audio_seconds": 4.77,
+      "audio_file": "audio\\sentence_0157.wav",
+      "word_count": 13
+    },
+    {
+      "index": 158,
+      "text": "Everybody needs to be held accountable.",
+      "start": 752.196,
+      "end": 754.546,
+      "audio_length_seconds": 2.35,
+      "embedding_audio_seconds": 2.35,
+      "audio_file": "audio\\sentence_0158.wav",
+      "word_count": 6
+    },
+    {
+      "index": 159,
+      "text": "And that's how we're focusing on it—a holistic approach—in the city of New Orleans.",
+      "start": 754.546,
+      "end": 759.056,
+      "audio_length_seconds": 4.51,
+      "embedding_audio_seconds": 4.51,
+      "audio_file": "audio\\sentence_0159.wav",
+      "word_count": 14
+    },
+    {
+      "index": 160,
+      "text": "It's definitely seeing a decline, moving in the right direction.",
+      "start": 759.056,
+      "end": 763.126,
+      "audio_length_seconds": 4.07,
+      "embedding_audio_seconds": 3.88,
+      "audio_file": "audio\\sentence_0160.wav",
+      "word_count": 10
+    },
+    {
+      "index": 161,
+      "text": "And this issue of crime in your city is causing a lot of political problems.",
+      "start": 763.126,
+      "end": 767.39,
+      "audio_length_seconds": 4.264,
+      "embedding_audio_seconds": 4.264,
+      "audio_file": "audio\\sentence_0161.wav",
+      "word_count": 15
+    },
+    {
+      "index": 162,
+      "text": "And you are the target of a recall drive that's underway right now, a number of allegations against you, as well, in regard to financial improprieties.",
+      "start": 767.39,
+      "end": 777.04,
+      "audio_length_seconds": 9.65,
+      "embedding_audio_seconds": 9.65,
+      "audio_file": "audio\\sentence_0162.wav",
+      "word_count": 26
+    },
+    {
+      "index": 163,
+      "text": "So, how much of the responsibility with the crime issue do you personally take?",
+      "start": 777.04,
+      "end": 780.99,
+      "audio_length_seconds": 3.95,
+      "embedding_audio_seconds": 3.88,
+      "audio_file": "audio\\sentence_0163.wav",
+      "word_count": 14
+    },
+    {
+      "index": 164,
+      "text": "Well, first of all, it is the New Orleans Police Department that is absolutely under my authority.",
+      "start": 780.99,
+      "end": 787.48,
+      "audio_length_seconds": 6.49,
+      "embedding_audio_seconds": 6.49,
+      "audio_file": "audio\\sentence_0164.wav",
+      "word_count": 17
+    },
+    {
+      "index": 165,
+      "text": "And with that, making sure that not only I'm listening to my officers, but getting them the resources that they need to fight crime.",
+      "start": 787.48,
+      "end": 795.13,
+      "audio_length_seconds": 7.65,
+      "embedding_audio_seconds": 7.65,
+      "audio_file": "audio\\sentence_0165.wav",
+      "word_count": 24
+    },
+    {
+      "index": 166,
+      "text": "And that is exactly what we're seeing on the ground, the incentive packages, retaining officers, as well as recruitment.",
+      "start": 795.13,
+      "end": 802.66,
+      "audio_length_seconds": 7.53,
+      "embedding_audio_seconds": 7.53,
+      "audio_file": "audio\\sentence_0166.wav",
+      "word_count": 19
+    },
+    {
+      "index": 167,
+      "text": "And that's the focus and you believe you'll survive this recall effort.",
+      "start": 802.66,
+      "end": 806.548,
+      "audio_length_seconds": 3.888,
+      "embedding_audio_seconds": 3.888,
+      "audio_file": "audio\\sentence_0167.wav",
+      "word_count": 12
+    },
+    {
+      "index": 168,
+      "text": "Well, based on what I see, is that the residents of my city definitely appreciate continuity in leadership.",
+      "start": 806.548,
+      "end": 813.758,
+      "audio_length_seconds": 7.21,
+      "embedding_audio_seconds": 7.08,
+      "audio_file": "audio\\sentence_0168.wav",
+      "word_count": 18
+    },
+    {
+      "index": 169,
+      "text": "And so, with that, that speaks to keeping progress moving and alive under my leadership, second elected twice in the city, 61 percent the first time, 65 percent the second time.",
+      "start": 813.758,
+      "end": 826.248,
+      "audio_length_seconds": 12.49,
+      "embedding_audio_seconds": 12.49,
+      "audio_file": "audio\\sentence_0169.wav",
+      "word_count": 31
+    },
+    {
+      "index": 170,
+      "text": "Continuity and leadership is what I'm seeing by my people.",
+      "start": 826.248,
+      "end": 829.318,
+      "audio_length_seconds": 3.07,
+      "embedding_audio_seconds": 3.0,
+      "audio_file": "audio\\sentence_0170.wav",
+      "word_count": 10
+    },
+    {
+      "index": 171,
+      "text": "I want to get to all of you on a number of issues, but I know something very intense has just happened in Atlanta, Mayor Dickens.",
+      "start": 829.388,
+      "end": 836.196,
+      "audio_length_seconds": 6.808,
+      "embedding_audio_seconds": 6.808,
+      "audio_file": "audio\\sentence_0171.wav",
+      "word_count": 26
+    },
+    {
+      "index": 172,
+      "text": "I watched a press conference you held last night following the death of a Georgia -based activist.",
+      "start": 836.196,
+      "end": 840.866,
+      "audio_length_seconds": 4.67,
+      "embedding_audio_seconds": 4.67,
+      "audio_file": "audio\\sentence_0172.wav",
+      "word_count": 17
+    },
+    {
+      "index": 173,
+      "text": "It turned into a riot.",
+      "start": 840.866,
+      "end": 842.096,
+      "audio_length_seconds": 1.23,
+      "embedding_audio_seconds": 1.23,
+      "audio_file": "audio\\sentence_0173.wav",
+      "word_count": 5
+    },
+    {
+      "index": 174,
+      "text": "And this stems, as I understand it, from the shooting death of an activist.",
+      "start": 842.096,
+      "end": 847.066,
+      "audio_length_seconds": 4.97,
+      "embedding_audio_seconds": 4.81,
+      "audio_file": "audio\\sentence_0174.wav",
+      "word_count": 14
+    },
+    {
+      "index": 175,
+      "text": "And the body camera from the policeman who's believed to shoot this individual doesn't exist.",
+      "start": 847.066,
+      "end": 854.936,
+      "audio_length_seconds": 7.87,
+      "embedding_audio_seconds": 7.87,
+      "audio_file": "audio\\sentence_0175.wav",
+      "word_count": 15
+    },
+    {
+      "index": 176,
+      "text": "What can you tell us in terms of who is behind the violence that happened yesterday?",
+      "start": 854.936,
+      "end": 861.206,
+      "audio_length_seconds": 6.27,
+      "embedding_audio_seconds": 5.76,
+      "audio_file": "audio\\sentence_0176.wav",
+      "word_count": 16
+    },
+    {
+      "index": 177,
+      "text": "Yeah.",
+      "start": 861.206,
+      "end": 861.936,
+      "audio_length_seconds": 0.73,
+      "embedding_audio_seconds": 0.73,
+      "audio_file": "audio\\sentence_0177.wav",
+      "word_count": 1
+    },
+    {
+      "index": 178,
+      "text": "And earlier this week, an individual that was protesting in the woods, a number of folks are in the woods trying to protest against the development of a public safety training center, which is for police and firefighters, a new state -of -the -art training center that's going to allow us to do 21st century policing, allow us to have an emergency vehicle obstacle course, and these things that police and fire will be able to work together to be able to bring about, you know, safety in our community.",
+      "start": 861.936,
+      "end": 886.608,
+      "audio_length_seconds": 24.672,
+      "embedding_audio_seconds": 24.672,
+      "audio_file": "audio\\sentence_0178.wav",
+      "word_count": 90
+    },
+    {
+      "index": 179,
+      "text": "And so, we're building it.",
+      "start": 886.608,
+      "end": 887.596,
+      "audio_length_seconds": 0.988,
+      "embedding_audio_seconds": 0.988,
+      "audio_file": "audio\\sentence_0179.wav",
+      "word_count": 5
+    },
+    {
+      "index": 180,
+      "text": "But some folks don't want to see anything built that supports police, so they call it Cop City.",
+      "start": 887.596,
+      "end": 892.066,
+      "audio_length_seconds": 4.47,
+      "embedding_audio_seconds": 4.47,
+      "audio_file": "audio\\sentence_0180.wav",
+      "word_count": 18
+    },
+    {
+      "index": 181,
+      "text": "And these individuals are in the woods protesting it.",
+      "start": 892.066,
+      "end": 894.756,
+      "audio_length_seconds": 2.69,
+      "embedding_audio_seconds": 2.69,
+      "audio_file": "audio\\sentence_0181.wav",
+      "word_count": 9
+    },
+    {
+      "index": 182,
+      "text": "And, unfortunately, they were engaged by Georgia State Patrol, asked them to be able to move out of the woods.",
+      "start": 894.756,
+      "end": 902.746,
+      "audio_length_seconds": 7.99,
+      "embedding_audio_seconds": 7.99,
+      "audio_file": "audio\\sentence_0182.wav",
+      "word_count": 20
+    },
+    {
+      "index": 183,
+      "text": "an individual shot at the Georgia State Patrol, and the Georgia State Patrol officer shot back.",
+      "start": 902.746,
+      "end": 907.136,
+      "audio_length_seconds": 4.39,
+      "embedding_audio_seconds": 4.39,
+      "audio_file": "audio\\sentence_0183.wav",
+      "word_count": 16
+    },
+    {
+      "index": 184,
+      "text": "And, unfortunately, that individual was killed, and a patrol officer, the state patrol officer, was shot in the abdomen.",
+      "start": 907.136,
+      "end": 913.62,
+      "audio_length_seconds": 6.484,
+      "embedding_audio_seconds": 6.484,
+      "audio_file": "audio\\sentence_0184.wav",
+      "word_count": 19
+    },
+    {
+      "index": 185,
+      "text": "And so, now, they had a protest last night, and it was peaceful.",
+      "start": 913.62,
+      "end": 918.95,
+      "audio_length_seconds": 5.33,
+      "embedding_audio_seconds": 5.33,
+      "audio_file": "audio\\sentence_0185.wav",
+      "word_count": 13
+    },
+    {
+      "index": 186,
+      "text": "But there were some individuals within that crowd that meant violence.",
+      "start": 918.95,
+      "end": 922.922,
+      "audio_length_seconds": 3.972,
+      "embedding_audio_seconds": 3.972,
+      "audio_file": "audio\\sentence_0186.wav",
+      "word_count": 11
+    },
+    {
+      "index": 187,
+      "text": "They had explosives.",
+      "start": 922.922,
+      "end": 923.852,
+      "audio_length_seconds": 0.93,
+      "embedding_audio_seconds": 0.93,
+      "audio_file": "audio\\sentence_0187.wav",
+      "word_count": 3
+    },
+    {
+      "index": 188,
+      "text": "They burned down a police car.",
+      "start": 923.852,
+      "end": 925.902,
+      "audio_length_seconds": 2.05,
+      "embedding_audio_seconds": 2.05,
+      "audio_file": "audio\\sentence_0188.wav",
+      "word_count": 6
+    },
+    {
+      "index": 189,
+      "text": "They broke windows at businesses.",
+      "start": 925.902,
+      "end": 927.832,
+      "audio_length_seconds": 1.93,
+      "embedding_audio_seconds": 1.93,
+      "audio_file": "audio\\sentence_0189.wav",
+      "word_count": 5
+    },
+    {
+      "index": 190,
+      "text": "And so our police department, along with our state and federal partners, took swift action within two blocks and brought that situation under control.",
+      "start": 927.832,
+      "end": 936.016,
+      "audio_length_seconds": 8.184,
+      "embedding_audio_seconds": 8.184,
+      "audio_file": "audio\\sentence_0190.wav",
+      "word_count": 24
+    },
+    {
+      "index": 191,
+      "text": "And the violence stopped, and those six individuals were arrested.",
+      "start": 936.016,
+      "end": 939.146,
+      "audio_length_seconds": 3.13,
+      "embedding_audio_seconds": 3.13,
+      "audio_file": "audio\\sentence_0191.wav",
+      "word_count": 10
+    },
+    {
+      "index": 192,
+      "text": "And it should be noted that these individuals were not Atlanta or Georgia residents.",
+      "start": 939.336,
+      "end": 944.14,
+      "audio_length_seconds": 4.804,
+      "embedding_audio_seconds": 4.804,
+      "audio_file": "audio\\sentence_0192.wav",
+      "word_count": 14
+    },
+    {
+      "index": 193,
+      "text": "Most of them traveled into our city to wreak havoc.",
+      "start": 944.14,
+      "end": 947.596,
+      "audio_length_seconds": 3.456,
+      "embedding_audio_seconds": 3.456,
+      "audio_file": "audio\\sentence_0193.wav",
+      "word_count": 10
+    },
+    {
+      "index": 194,
+      "text": "And so, we love to support people when they're doing right.",
+      "start": 947.596,
+      "end": 951.406,
+      "audio_length_seconds": 3.81,
+      "embedding_audio_seconds": 3.81,
+      "audio_file": "audio\\sentence_0194.wav",
+      "word_count": 11
+    },
+    {
+      "index": 195,
+      "text": "Peaceful protest is a part of the American freedoms, but when you are violent, we will make sure that you get held accountable.",
+      "start": 951.406,
+      "end": 959.078,
+      "audio_length_seconds": 7.672,
+      "embedding_audio_seconds": 7.642,
+      "audio_file": "audio\\sentence_0195.wav",
+      "word_count": 23
+    },
+    {
+      "index": 196,
+      "text": "I want to pick you up on that point.",
+      "start": 959.078,
+      "end": 960.938,
+      "audio_length_seconds": 1.86,
+      "embedding_audio_seconds": 1.86,
+      "audio_file": "audio\\sentence_0196.wav",
+      "word_count": 9
+    },
+    {
+      "index": 197,
+      "text": "And when you say people are from out of town, they're carrying explosives.",
+      "start": 960.938,
+      "end": 963.228,
+      "audio_length_seconds": 2.29,
+      "embedding_audio_seconds": 2.29,
+      "audio_file": "audio\\sentence_0197.wav",
+      "word_count": 13
+    },
+    {
+      "index": 198,
+      "text": "Is this an organized movement here?",
+      "start": 963.228,
+      "end": 967.02,
+      "audio_length_seconds": 3.792,
+      "embedding_audio_seconds": 3.792,
+      "audio_file": "audio\\sentence_0198.wav",
+      "word_count": 6
+    },
+    {
+      "index": 199,
+      "text": "Your local paper says this is having national reach with reaction from groups ranging from, quote, environmental activists, radical anarchists, and black revolutionaries.",
+      "start": 967.02,
+      "end": 977.56,
+      "audio_length_seconds": 10.54,
+      "embedding_audio_seconds": 10.54,
+      "audio_file": "audio\\sentence_0199.wav",
+      "word_count": 23
+    },
+    {
+      "index": 200,
+      "text": "Marjorie Taylor Greene, Georgia Congresswoman.",
+      "start": 977.56,
+      "end": 979.288,
+      "audio_length_seconds": 1.728,
+      "embedding_audio_seconds": 1.728,
+      "audio_file": "audio\\sentence_0200.wav",
+      "word_count": 5
+    },
+    {
+      "index": 201,
+      "text": "I'm sure you know her—blamed Black Lives Matter and Antifa, and that she blamed Democrats.",
+      "start": 979.288,
+      "end": 985.258,
+      "audio_length_seconds": 5.97,
+      "embedding_audio_seconds": 5.97,
+      "audio_file": "audio\\sentence_0201.wav",
+      "word_count": 15
+    },
+    {
+      "index": 202,
+      "text": "But, on the facts, 7 to 13 people have been charged with domestic terrorism.",
+      "start": 985.258,
+      "end": 990.308,
+      "audio_length_seconds": 5.05,
+      "embedding_audio_seconds": 4.16,
+      "audio_file": "audio\\sentence_0202.wav",
+      "word_count": 14
+    },
+    {
+      "index": 203,
+      "text": "Is this terrorism?",
+      "start": 990.308,
+      "end": 992.398,
+      "audio_length_seconds": 2.09,
+      "embedding_audio_seconds": 2.09,
+      "audio_file": "audio\\sentence_0203.wav",
+      "word_count": 3
+    },
+    {
+      "index": 204,
+      "text": "Is this crime?",
+      "start": 992.398,
+      "end": 993.688,
+      "audio_length_seconds": 1.29,
+      "embedding_audio_seconds": 1.29,
+      "audio_file": "audio\\sentence_0204.wav",
+      "word_count": 3
+    },
+    {
+      "index": 205,
+      "text": "What is this who's behind it?",
+      "start": 993.688,
+      "end": 995.578,
+      "audio_length_seconds": 1.89,
+      "embedding_audio_seconds": 1.79,
+      "audio_file": "audio\\sentence_0205.wav",
+      "word_count": 6
+    },
+    {
+      "index": 206,
+      "text": "Yeah, I won't go as far as whatever that representative said, but what I will say is that it is a crime and that's why they've been charged with the crime.",
+      "start": 995.578,
+      "end": 1003.948,
+      "audio_length_seconds": 8.37,
+      "embedding_audio_seconds": 8.37,
+      "audio_file": "audio\\sentence_0206.wav",
+      "word_count": 31
+    },
+    {
+      "index": 207,
+      "text": "And these crimes— Domestic terrorism.",
+      "start": 1003.948,
+      "end": 1005.578,
+      "audio_length_seconds": 1.63,
+      "embedding_audio_seconds": 1.63,
+      "audio_file": "audio\\sentence_0207.wav",
+      "word_count": 5
+    },
+    {
+      "index": 208,
+      "text": "And the crimes range from violence, to domestic terrorism, to assault and battery, and some other things.",
+      "start": 1005.578,
+      "end": 1010.708,
+      "audio_length_seconds": 5.13,
+      "embedding_audio_seconds": 5.13,
+      "audio_file": "audio\\sentence_0208.wav",
+      "word_count": 17
+    },
+    {
+      "index": 209,
+      "text": "But, yes, it is violent when someone turns to burn down a police car or break out windows or have explosives on them.",
+      "start": 1010.708,
+      "end": 1019.038,
+      "audio_length_seconds": 8.33,
+      "embedding_audio_seconds": 8.33,
+      "audio_file": "audio\\sentence_0209.wav",
+      "word_count": 23
+    },
+    {
+      "index": 210,
+      "text": "I don't get into the names.",
+      "start": 1019.038,
+      "end": 1020.49,
+      "audio_length_seconds": 1.452,
+      "embedding_audio_seconds": 1.352,
+      "audio_file": "audio\\sentence_0210.wav",
+      "word_count": 6
+    },
+    {
+      "index": 211,
+      "text": "I don't know all the organizations.",
+      "start": 1020.49,
+      "end": 1022.0,
+      "audio_length_seconds": 1.51,
+      "embedding_audio_seconds": 1.51,
+      "audio_file": "audio\\sentence_0211.wav",
+      "word_count": 6
+    },
+    {
+      "index": 212,
+      "text": "I'll let y 'all decide who did it.",
+      "start": 1022.0,
+      "end": 1023.572,
+      "audio_length_seconds": 1.572,
+      "embedding_audio_seconds": 1.56,
+      "audio_file": "audio\\sentence_0212.wav",
+      "word_count": 8
+    },
+    {
+      "index": 213,
+      "text": "I just know they're arrested, and if they come into Atlanta again to wreak havoc, they will be arrested again.",
+      "start": 1023.572,
+      "end": 1028.522,
+      "audio_length_seconds": 4.95,
+      "embedding_audio_seconds": 4.9499,
+      "audio_file": "audio\\sentence_0213.wav",
+      "word_count": 20
+    },
+    {
+      "index": 214,
+      "text": "But do you believe your city is being targeted by organized groups?",
+      "start": 1028.522,
+      "end": 1031.832,
+      "audio_length_seconds": 3.31,
+      "embedding_audio_seconds": 3.3101,
+      "audio_file": "audio\\sentence_0214.wav",
+      "word_count": 12
+    },
+    {
+      "index": 215,
+      "text": "In that regard, yes.",
+      "start": 1031.832,
+      "end": 1033.542,
+      "audio_length_seconds": 1.71,
+      "embedding_audio_seconds": 1.7099,
+      "audio_file": "audio\\sentence_0215.wav",
+      "word_count": 4
+    },
+    {
+      "index": 216,
+      "text": "Those individuals that are protesting against Cop City, as they call it—it's really a public safety training center—they don't want to see the very things that they asked for—more police training.",
+      "start": 1033.542,
+      "end": 1044.932,
+      "audio_length_seconds": 11.39,
+      "embedding_audio_seconds": 11.3901,
+      "audio_file": "audio\\sentence_0216.wav",
+      "word_count": 31
+    },
+    {
+      "index": 217,
+      "text": "We can't train imaginary.",
+      "start": 1044.932,
+      "end": 1047.522,
+      "audio_length_seconds": 2.59,
+      "embedding_audio_seconds": 2.5899,
+      "audio_file": "audio\\sentence_0217.wav",
+      "word_count": 4
+    },
+    {
+      "index": 218,
+      "text": "We have to do it in a facility that allows for police, firefighters and the community to train together.",
+      "start": 1047.522,
+      "end": 1053.292,
+      "audio_length_seconds": 5.77,
+      "embedding_audio_seconds": 5.7701,
+      "audio_file": "audio\\sentence_0218.wav",
+      "word_count": 19
+    },
+    {
+      "index": 219,
+      "text": "And so, this is bringing about the change that we wanted to see in 2020.",
+      "start": 1053.292,
+      "end": 1056.842,
+      "audio_length_seconds": 3.55,
+      "embedding_audio_seconds": 3.55,
+      "audio_file": "audio\\sentence_0219.wav",
+      "word_count": 15
+    },
+    {
+      "index": 220,
+      "text": "And now, while we're doing it, these individuals don't want to see any resources go towards that training.",
+      "start": 1056.842,
+      "end": 1062.146,
+      "audio_length_seconds": 5.304,
+      "embedding_audio_seconds": 5.304,
+      "audio_file": "audio\\sentence_0220.wav",
+      "word_count": 18
+    },
+    {
+      "index": 221,
+      "text": "And so, we're going to develop this training center, and those individuals will have to come to a halt.",
+      "start": 1062.146,
+      "end": 1066.796,
+      "audio_length_seconds": 4.65,
+      "embedding_audio_seconds": 4.61,
+      "audio_file": "audio\\sentence_0221.wav",
+      "word_count": 19
+    },
+    {
+      "index": 222,
+      "text": "Mary Giles, you are on the front line of the migration surge.",
+      "start": 1067.416,
+      "end": 1072.048,
+      "audio_length_seconds": 4.632,
+      "embedding_audio_seconds": 4.632,
+      "audio_file": "audio\\sentence_0222.wav",
+      "word_count": 12
+    },
+    {
+      "index": 223,
+      "text": "And I think it's so interesting that you're characterizing your city as very safe.",
+      "start": 1072.048,
+      "end": 1076.558,
+      "audio_length_seconds": 4.51,
+      "embedding_audio_seconds": 4.51,
+      "audio_file": "audio\\sentence_0223.wav",
+      "word_count": 14
+    },
+    {
+      "index": 224,
+      "text": "You know, these issues of migration surges being uncontrolled and crime are often conflated.",
+      "start": 1077.068,
+      "end": 1081.838,
+      "audio_length_seconds": 4.77,
+      "embedding_audio_seconds": 4.77,
+      "audio_file": "audio\\sentence_0224.wav",
+      "word_count": 14
+    },
+    {
+      "index": 225,
+      "text": "How are you doing that in terms of not having this overwhelm your local officials and law enforcement?",
+      "start": 1081.838,
+      "end": 1090.948,
+      "audio_length_seconds": 9.11,
+      "embedding_audio_seconds": 9.11,
+      "audio_file": "audio\\sentence_0225.wav",
+      "word_count": 18
+    },
+    {
+      "index": 226,
+      "text": "Well, I wish I could say it's not overwhelming.",
+      "start": 1090.948,
+      "end": 1093.032,
+      "audio_length_seconds": 2.084,
+      "embedding_audio_seconds": 1.934,
+      "audio_file": "audio\\sentence_0226.wav",
+      "word_count": 9
+    },
+    {
+      "index": 227,
+      "text": "It is, and it has been for decades.",
+      "start": 1093.032,
+      "end": 1095.462,
+      "audio_length_seconds": 2.43,
+      "embedding_audio_seconds": 2.43,
+      "audio_file": "audio\\sentence_0227.wav",
+      "word_count": 8
+    },
+    {
+      "index": 228,
+      "text": "And one of the things I've enjoyed about this conference over the last few days is you're starting to see more bipartisan frustration.",
+      "start": 1095.752,
+      "end": 1103.242,
+      "audio_length_seconds": 7.49,
+      "embedding_audio_seconds": 7.49,
+      "audio_file": "audio\\sentence_0228.wav",
+      "word_count": 23
+    },
+    {
+      "index": 229,
+      "text": "You're seeing the mayor of New York City, and Chicago, and Denver are all top of their agendas now, is talking about the problems that are being created in their communities as a result of the migration surge.",
+      "start": 1103.242,
+      "end": 1116.252,
+      "audio_length_seconds": 13.01,
+      "embedding_audio_seconds": 13.01,
+      "audio_file": "audio\\sentence_0229.wav",
+      "word_count": 38
+    },
+    {
+      "index": 230,
+      "text": "I in no way support or encourage the practice of some of our border state governors in sending migrants to these large northeastern cities, but I do have to admit that it has elevated this issue to a place that it has not been previously.",
+      "start": 1116.252,
+      "end": 1131.822,
+      "audio_length_seconds": 15.57,
+      "embedding_audio_seconds": 15.25,
+      "audio_file": "audio\\sentence_0230.wav",
+      "word_count": 45
+    },
+    {
+      "index": 231,
+      "text": "Border states have been complaining for decades about the need to address immigration reform, the need to dedicate additional resources to the border, and we're doing the best we can.",
+      "start": 1132.192,
+      "end": 1147.402,
+      "audio_length_seconds": 15.21,
+      "embedding_audio_seconds": 15.21,
+      "audio_file": "audio\\sentence_0231.wav",
+      "word_count": 30
+    },
+    {
+      "index": 232,
+      "text": "But in our city, the church groups, the non -profits that are being put upon by the federal government to come in and take up the slack, we are past our resources.",
+      "start": 1147.402,
+      "end": 1159.432,
+      "audio_length_seconds": 12.03,
+      "embedding_audio_seconds": 11.84,
+      "audio_file": "audio\\sentence_0232.wav",
+      "word_count": 32
+    },
+    {
+      "index": 233,
+      "text": "So, hopefully, this newfound bipartisan frustration and joining of northeastern cities to this issue will help elevate it.",
+      "start": 1159.432,
+      "end": 1167.882,
+      "audio_length_seconds": 8.45,
+      "embedding_audio_seconds": 8.38,
+      "audio_file": "audio\\sentence_0233.wav",
+      "word_count": 18
+    },
+    {
+      "index": 234,
+      "text": "And you have the Super Bowl coming out to Arizona soon.",
+      "start": 1167.882,
+      "end": 1170.892,
+      "audio_length_seconds": 3.01,
+      "embedding_audio_seconds": 2.87,
+      "audio_file": "audio\\sentence_0234.wav",
+      "word_count": 11
+    },
+    {
+      "index": 235,
+      "text": "I know, I read that you plan to take the Homeland Security Secretary around your city?",
+      "start": 1170.892,
+      "end": 1176.282,
+      "audio_length_seconds": 5.39,
+      "embedding_audio_seconds": 5.39,
+      "audio_file": "audio\\sentence_0235.wav",
+      "word_count": 16
+    },
+    {
+      "index": 236,
+      "text": "Absolutely.",
+      "start": 1176.282,
+      "end": 1176.912,
+      "audio_length_seconds": 0.63,
+      "embedding_audio_seconds": 0.58,
+      "audio_file": "audio\\sentence_0236.wav",
+      "word_count": 1
+    },
+    {
+      "index": 237,
+      "text": "The mayor, Gallego, and I met with the secretary of Mayorkas just a few days ago, extended that invitation.",
+      "start": 1176.912,
+      "end": 1183.342,
+      "audio_length_seconds": 6.43,
+      "embedding_audio_seconds": 6.43,
+      "audio_file": "audio\\sentence_0237.wav",
+      "word_count": 19
+    },
+    {
+      "index": 238,
+      "text": "And we have very limited resources as far as welcoming centers and facilities to process these migrants as they proceed in their journeys on sometimes to the northeastern cities.",
+      "start": 1183.342,
+      "end": 1194.052,
+      "audio_length_seconds": 10.71,
+      "embedding_audio_seconds": 10.71,
+      "audio_file": "audio\\sentence_0238.wav",
+      "word_count": 29
+    },
+    {
+      "index": 239,
+      "text": "We need the band -aids to keep coming from the federal government in terms of facilities, but we also need to address the underlying issue of immigration reform.",
+      "start": 1194.612,
+      "end": 1203.332,
+      "audio_length_seconds": 8.72,
+      "embedding_audio_seconds": 8.72,
+      "audio_file": "audio\\sentence_0239.wav",
+      "word_count": 28
+    },
+    {
+      "index": 240,
+      "text": "Mayor Suarez, I need to get to you on this as well, because South Florida has seen this influx by boat, Cubans in particular, Haitians.",
+      "start": 1203.332,
+      "end": 1210.502,
+      "audio_length_seconds": 7.17,
+      "embedding_audio_seconds": 7.17,
+      "audio_file": "audio\\sentence_0240.wav",
+      "word_count": 25
+    },
+    {
+      "index": 241,
+      "text": "Customs and Border Protection report a 400 percent increase in the month of October alone.",
+      "start": 1210.502,
+      "end": 1216.452,
+      "audio_length_seconds": 5.95,
+      "embedding_audio_seconds": 5.95,
+      "audio_file": "audio\\sentence_0241.wav",
+      "word_count": 15
+    },
+    {
+      "index": 242,
+      "text": "Are these new, tighter regulations from the Biden administration making any difference?",
+      "start": 1216.452,
+      "end": 1221.322,
+      "audio_length_seconds": 4.87,
+      "embedding_audio_seconds": 4.87,
+      "audio_file": "audio\\sentence_0242.wav",
+      "word_count": 12
+    },
+    {
+      "index": 243,
+      "text": "It's hard to say, they were just imposed.",
+      "start": 1221.762,
+      "end": 1224.212,
+      "audio_length_seconds": 2.45,
+      "embedding_audio_seconds": 2.45,
+      "audio_file": "audio\\sentence_0243.wav",
+      "word_count": 8
+    },
+    {
+      "index": 244,
+      "text": "But certainly, I think the failure of having an immigration solution, as Mayor Giles said, is creating sort of Miami and Florida becoming a border state and border city.",
+      "start": 1224.212,
+      "end": 1235.802,
+      "audio_length_seconds": 11.59,
+      "embedding_audio_seconds": 11.59,
+      "audio_file": "audio\\sentence_0244.wav",
+      "word_count": 29
+    },
+    {
+      "index": 245,
+      "text": "I mean, as you said, we had the single largest increase in public school enrollment year over year this year.",
+      "start": 1235.802,
+      "end": 1244.206,
+      "audio_length_seconds": 8.404,
+      "embedding_audio_seconds": 8.404,
+      "audio_file": "audio\\sentence_0245.wav",
+      "word_count": 20
+    },
+    {
+      "index": 246,
+      "text": "And so, that—just to put that in context, about 14,000 new children.",
+      "start": 1244.206,
+      "end": 1247.856,
+      "audio_length_seconds": 3.65,
+      "embedding_audio_seconds": 3.65,
+      "audio_file": "audio\\sentence_0246.wav",
+      "word_count": 13
+    },
+    {
+      "index": 247,
+      "text": "If a big school is 2,000 children, that's seven new schools that we have to create in the system.",
+      "start": 1247.856,
+      "end": 1253.686,
+      "audio_length_seconds": 5.83,
+      "embedding_audio_seconds": 5.83,
+      "audio_file": "audio\\sentence_0247.wav",
+      "word_count": 20
+    },
+    {
+      "index": 248,
+      "text": "It, obviously, as you said, puts a homeless—a strain on the homeless system in trying to take care of the least, the last and the lost in our cities.",
+      "start": 1254.066,
+      "end": 1261.396,
+      "audio_length_seconds": 7.33,
+      "embedding_audio_seconds": 7.33,
+      "audio_file": "audio\\sentence_0248.wav",
+      "word_count": 29
+    },
+    {
+      "index": 249,
+      "text": "It puts a strain on our public hospital system.",
+      "start": 1261.736,
+      "end": 1263.872,
+      "audio_length_seconds": 2.136,
+      "embedding_audio_seconds": 2.136,
+      "audio_file": "audio\\sentence_0249.wav",
+      "word_count": 9
+    },
+    {
+      "index": 250,
+      "text": "We have one of the largest public hospitals in the country that provides hundreds of millions of dollars of indigent care.",
+      "start": 1263.872,
+      "end": 1268.76,
+      "audio_length_seconds": 4.888,
+      "embedding_audio_seconds": 4.888,
+      "audio_file": "audio\\sentence_0250.wav",
+      "word_count": 21
+    },
+    {
+      "index": 251,
+      "text": "It puts a tremendous amount of strain on that system.",
+      "start": 1268.76,
+      "end": 1270.892,
+      "audio_length_seconds": 2.132,
+      "embedding_audio_seconds": 2.132,
+      "audio_file": "audio\\sentence_0251.wav",
+      "word_count": 10
+    },
+    {
+      "index": 252,
+      "text": "And so, I think cities across America, as Mayor Chao said, are coming together in a bipartisan fashion, and we're asking for a long -term solution.",
+      "start": 1270.892,
+      "end": 1280.262,
+      "audio_length_seconds": 9.37,
+      "embedding_audio_seconds": 9.37,
+      "audio_file": "audio\\sentence_0252.wav",
+      "word_count": 26
+    },
+    {
+      "index": 253,
+      "text": "And this problem has to be fixed.",
+      "start": 1280.262,
+      "end": 1281.852,
+      "audio_length_seconds": 1.59,
+      "embedding_audio_seconds": 1.59,
+      "audio_file": "audio\\sentence_0253.wav",
+      "word_count": 7
+    },
+    {
+      "index": 254,
+      "text": "There has to be an articulated strategy.",
+      "start": 1281.852,
+      "end": 1283.882,
+      "audio_length_seconds": 2.03,
+      "embedding_audio_seconds": 2.03,
+      "audio_file": "audio\\sentence_0254.wav",
+      "word_count": 7
+    },
+    {
+      "index": 255,
+      "text": "A lot of the immigration is coming from this hemisphere.",
+      "start": 1283.882,
+      "end": 1286.912,
+      "audio_length_seconds": 3.03,
+      "embedding_audio_seconds": 3.03,
+      "audio_file": "audio\\sentence_0255.wav",
+      "word_count": 10
+    },
+    {
+      "index": 256,
+      "text": "And it doesn't seem like—you know, either party really has focused on solving the problem, as opposed to, you know, demonizing the other side for their position.",
+      "start": 1286.912,
+      "end": 1296.904,
+      "audio_length_seconds": 9.992,
+      "embedding_audio_seconds": 9.992,
+      "audio_file": "audio\\sentence_0256.wav",
+      "word_count": 27
+    },
+    {
+      "index": 257,
+      "text": "And I think that's what mayors do, is we focus on solving problems, not blaming somebody else for it.",
+      "start": 1296.904,
+      "end": 1302.854,
+      "audio_length_seconds": 5.95,
+      "embedding_audio_seconds": 5.86,
+      "audio_file": "audio\\sentence_0257.wav",
+      "word_count": 19
+    },
+    {
+      "index": 258,
+      "text": "All right.",
+      "start": 1302.854,
+      "end": 1303.582,
+      "audio_length_seconds": 0.728,
+      "embedding_audio_seconds": 0.618,
+      "audio_file": "audio\\sentence_0258.wav",
+      "word_count": 2
+    },
+    {
+      "index": 259,
+      "text": "And you delivered that message here in Washington this week.",
+      "start": 1303.582,
+      "end": 1306.014,
+      "audio_length_seconds": 2.432,
+      "embedding_audio_seconds": 2.432,
+      "audio_file": "audio\\sentence_0259.wav",
+      "word_count": 10
+    },
+    {
+      "index": 260,
+      "text": "Maris, thank you very much for coming to the table.",
+      "start": 1306.014,
+      "end": 1308.286,
+      "audio_length_seconds": 2.272,
+      "embedding_audio_seconds": 2.272,
+      "audio_file": "audio\\sentence_0260.wav",
+      "word_count": 10
+    },
+    {
+      "index": 261,
+      "text": "Thank you.",
+      "start": 1308.286,
+      "end": 1308.904,
+      "audio_length_seconds": 0.618,
+      "embedding_audio_seconds": 0.618,
+      "audio_file": "audio\\sentence_0261.wav",
+      "word_count": 2
+    },
+    {
+      "index": 262,
+      "text": "We'll be right back",
+      "start": 1308.904,
+      "end": 1309.974,
+      "audio_length_seconds": 1.07,
+      "embedding_audio_seconds": 1.01,
+      "audio_file": "audio\\sentence_0262.wav",
+      "word_count": 4
+    },
+    {
+      "index": 263,
+      "text": "That's it for us today.",
+      "start": 1312.688,
+      "end": 1313.88,
+      "audio_length_seconds": 1.192,
+      "embedding_audio_seconds": 1.072,
+      "audio_file": "audio\\sentence_0263.wav",
+      "word_count": 5
+    },
+    {
+      "index": 264,
+      "text": "thank you for watching.",
+      "start": 1313.88,
+      "end": 1314.81,
+      "audio_length_seconds": 0.93,
+      "embedding_audio_seconds": 0.93,
+      "audio_file": "audio\\sentence_0264.wav",
+      "word_count": 4
+    },
+    {
+      "index": 265,
+      "text": "Until next week, for Face the Nation, I'm Margaret Brennan.",
+      "start": 1314.81,
+      "end": 1318.6,
+      "audio_length_seconds": 3.79,
+      "embedding_audio_seconds": 3.79,
+      "audio_file": "audio\\sentence_0265.wav",
+      "word_count": 10
+    },
+    {
+      "index": 266,
+      "text": "You You",
+      "start": 1319.35,
+      "end": 1350.1,
+      "audio_length_seconds": 30.75,
+      "embedding_audio_seconds": 30.75,
+      "audio_file": "audio\\sentence_0266.wav",
+      "word_count": 2
+    }
+  ]
+}

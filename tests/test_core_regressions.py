@@ -1405,6 +1405,22 @@ class EmbeddingSubprocessClientTests(unittest.TestCase):
 
 
 class KrokoPreviewStartupTests(unittest.TestCase):
+    def test_kroko_preview_reads_license_options_from_environment(self) -> None:
+        from window.window_preview import add_kroko_license_options
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                "REALTIMESTT_KROKO_ONNX_KEY": "test-key",
+                "KROKO_ONNX_REFERRALCODE": "test-referral",
+            },
+        ):
+            options: dict[str, object] = {}
+            add_kroko_license_options(options)
+
+        self.assertEqual(options["key"], "test-key")
+        self.assertEqual(options["referralcode"], "test-referral")
+
     def test_subprocess_preview_uses_worker_script_without_name_error(self) -> None:
         class FakeProcess:
             def __init__(self) -> None:
@@ -1449,6 +1465,8 @@ class KrokoPreviewStartupTests(unittest.TestCase):
         self.assertIn("-m", command)
         self.assertIn("workers.kroko_realtime_preview_worker", command)
         self.assertFalse(any(part.endswith("kroko_realtime_preview_worker.py") for part in command))
+        env = popen.call_args.kwargs["env"]
+        self.assertIn(str(SRC), str(env.get("PYTHONPATH", "")).split(os.pathsep))
 
 
 class RemoteEmbeddingClientTests(unittest.TestCase):
@@ -1595,6 +1613,9 @@ class RepositoryStructureTests(unittest.TestCase):
             "sentence_boundary_pre_padding_seconds": 0.06,
             "sentence_boundary_post_padding_seconds": 0.09,
             "sentence_boundary_gap_ratio": 0.6,
+            "realtime_preview_model_preset": "community-64l",
+            "realtime_preview_model": "Kroko-EN-Community-64-L-Streaming-001.data",
+            "realtime_preview_startup_timeout_seconds": 12.0,
             "realtime_preview_diarize_min_audio_seconds": 1.5,
             "realtime_preview_diarize_min_advance_seconds": 0.75,
             "realtime_preview_diarize_min_similarity": 0.45,
@@ -1643,6 +1664,43 @@ class RepositoryStructureTests(unittest.TestCase):
 
         for name, value in expected.items():
             self.assertEqual(getattr(args, name), value, name)
+
+    def test_window_gui_can_select_kroko_pro_16l_preview_preset(self) -> None:
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(
+            sys,
+            "argv",
+            [
+                "youtube_window_diarize_gui.py",
+                "--realtime-preview-model-preset",
+                "pro-16l",
+            ],
+        ):
+            args = parse_args()
+
+        self.assertEqual(args.realtime_preview_model_preset, "pro-16l")
+        self.assertEqual(args.realtime_preview_model, "Kroko-EN-Pro-16-L-Streaming-001.data")
+        if args.realtime_preview_model_path is not None:
+            self.assertEqual(args.realtime_preview_model_path.name, "Kroko-EN-Pro-16-L-Streaming-001.data")
+        self.assertEqual(args.realtime_preview_startup_timeout_seconds, 45.0)
+        self.assertEqual(args.realtime_preview_interval_seconds, 0.32)
+        self.assertEqual(args.realtime_preview_min_audio_seconds, 0.32)
+        self.assertEqual(args.realtime_preview_min_advance_seconds, 0.32)
+        self.assertEqual(args.realtime_preview_feed_chunk_seconds, 0.32)
+
+    def test_kroko_preview_model_path_searches_configured_model_dir(self) -> None:
+        from window.window_config import default_kroko_preview_model_path
+
+        model_name = "Kroko-EN-Pro-16-L-Streaming-001.data"
+        with tempfile.TemporaryDirectory() as directory:
+            model_path = Path(directory) / model_name
+            model_path.write_bytes(b"")
+
+            with mock.patch.dict(os.environ, {"WHOSPEAKS_KROKO_PREVIEW_MODEL_DIR": directory}):
+                resolved = default_kroko_preview_model_path(model_name, use_env=False)
+
+        self.assertEqual(resolved, model_path)
 
     def test_window_loop_restarts_interval_after_successful_split(self) -> None:
         source = inspect.getsource(WindowDiarizer._run)

@@ -1,0 +1,1551 @@
+﻿{
+    "generated_at":  "2026-07-05T15:25:54.1138942+02:00",
+    "destination_root":  "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe",
+    "source_roots":  [
+                         "D:\\Projekte\\WhoSpeaks",
+                         "generated from requested YouTube URLs with ElevenLabs Scribe"
+                     ],
+    "baseline_count":  27,
+    "baseline_file_count":  241,
+    "source_list_file_count":  5,
+    "requested_video_ids":  [
+                                "cLdy4P-XJPE",
+                                "L-CfFo5aQGU",
+                                "mBeT_AoCXvc",
+                                "onHUfyRP1BE",
+                                "pD4IdQTmneI",
+                                "PhofRoLXqhE",
+                                "S_o3y7CzDUY",
+                                "y_5WfLjvOK4"
+                            ],
+    "requested_video_missing_ids":  [
+
+                                    ],
+    "youtube_videos_to_test_ids":  [
+                                       "1NBVQB-Srpw",
+                                       "20v1OxUXcQY",
+                                       "acbnyagl8jo",
+                                       "aHGd6LqAVzw",
+                                       "DsyfYJ5Ou3g",
+                                       "F2-2RBi1qzY",
+                                       "JWS-qfR6K3w",
+                                       "KdOXM3I_5hk",
+                                       "oFBuCp19L7M",
+                                       "ZY0DG8rUnCA"
+                                   ],
+    "youtube_videos_to_test_missing_ids":  [
+                                               "JWS-qfR6K3w"
+                                           ],
+    "more_youtube_videos_to_test_ids":  [
+                                            "1_glHa8F7fA",
+                                            "AX7rliyPF48",
+                                            "blcKeLDDzSM",
+                                            "bPpcfH_HHH8",
+                                            "CkrpvCs-kfE",
+                                            "Dd7FixvoKBw",
+                                            "e3h6es6zh1c",
+                                            "eM28YFrMdfI",
+                                            "gj7BRMuB-n4",
+                                            "hzMzFGgmQOc",
+                                            "k1tsGGz-Qw0",
+                                            "lO9Fk2mjhbw",
+                                            "mWABb5Dy9BQ",
+                                            "O7VaXlMvAvk",
+                                            "PfPdYYsEfAE",
+                                            "rSTu1I5t700",
+                                            "uRBXlvgF7k0",
+                                            "vIfGgDnmBXg",
+                                            "VorxBhRxZGo",
+                                            "WNZn37Uc700"
+                                        ],
+    "more_youtube_videos_to_test_missing_ids":  [
+                                                    "1_glHa8F7fA",
+                                                    "AX7rliyPF48",
+                                                    "CkrpvCs-kfE",
+                                                    "eM28YFrMdfI",
+                                                    "hzMzFGgmQOc",
+                                                    "lO9Fk2mjhbw",
+                                                    "O7VaXlMvAvk",
+                                                    "PfPdYYsEfAE",
+                                                    "rSTu1I5t700",
+                                                    "uRBXlvgF7k0",
+                                                    "VorxBhRxZGo"
+                                                ],
+    "baselines":  [
+                      {
+                          "key":  "1NBVQB-Srpw",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_1NBVQB-Srpw",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "1NBVQB-Srpw.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  7535,
+                                            "sha256":  "1f086f1379ebeed5f92b338ff59baf22ba46ac13dd20b8dbced929bd1d3a2073"
+                                        },
+                                        {
+                                            "name":  "1NBVQB-Srpw.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  253427,
+                                            "sha256":  "7da7094a61469d7313d7e705c33d452298e1a42ff11dfdbbadc780299f30845d"
+                                        },
+                                        {
+                                            "name":  "1NBVQB-Srpw.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  5839,
+                                            "sha256":  "767b48a09bcbe68b8167009b312c7338ecff2c672486fa3b7e7dc24937a58b54"
+                                        },
+                                        {
+                                            "name":  "1NBVQB-Srpw.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  11836,
+                                            "sha256":  "c84e016ba2a372126da93028efa2711f0703ed765cbdb5866a36c80ffa5606f9"
+                                        },
+                                        {
+                                            "name":  "1NBVQB-Srpw.canonical_diarization.json",
+                                            "bytes":  243383,
+                                            "sha256":  "81ac6f8442066aabe6057726c5ecbb22c7ae1ef6a8b5002c44e4ecc6b48a51cd"
+                                        },
+                                        {
+                                            "name":  "1NBVQB-Srpw.elevenlabs_best_diarization.csv",
+                                            "bytes":  7938,
+                                            "sha256":  "07907add859747fe455ff92d4e0dbbafef4662522ef1692f5a7179f1caf61375"
+                                        },
+                                        {
+                                            "name":  "1NBVQB-Srpw.elevenlabs_best_diarization.json",
+                                            "bytes":  33301,
+                                            "sha256":  "cf39927e00ab35cf764a3fbf01600b1733e6534e908a39c5becde3b288d0a7bc"
+                                        },
+                                        {
+                                            "name":  "1NBVQB-Srpw.elevenlabs_best_diarization.md",
+                                            "bytes":  8390,
+                                            "sha256":  "aeb9e3012fd638f6694a7353adc46e342d7103439d8bf85807a3d2134b4dfcfa"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "20v1OxUXcQY",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_20v1OxUXcQY",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "20v1OxUXcQY.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  11186,
+                                            "sha256":  "ef8e397acea1939b233e4c04d37a3d02f3a8f374a04d8c3d64a51e794f34bd5a"
+                                        },
+                                        {
+                                            "name":  "20v1OxUXcQY.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  480706,
+                                            "sha256":  "295799816ca002356c5b81b0e2077c06b0779e742a0ece379679e9d5f9162a88"
+                                        },
+                                        {
+                                            "name":  "20v1OxUXcQY.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  9319,
+                                            "sha256":  "0aafec23efaef9f245c3153aaa957d919488da25c04cd9a6a3e765544801972a"
+                                        },
+                                        {
+                                            "name":  "20v1OxUXcQY.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  16258,
+                                            "sha256":  "379fa8fdb6c9ab0e84d7cded18bd4118b55f9e45a5d0e714e4e5f212e113a912"
+                                        },
+                                        {
+                                            "name":  "20v1OxUXcQY.canonical_diarization.json",
+                                            "bytes":  436116,
+                                            "sha256":  "a3c0a683e061de255ce59857ad941c36d14d6b75e2fb7f0db8d128443591103d"
+                                        },
+                                        {
+                                            "name":  "20v1OxUXcQY.elevenlabs_best_diarization.csv",
+                                            "bytes":  11724,
+                                            "sha256":  "634b16e827508caaf7d1380dd15ea5190cdff883260f1f8dbc11858792f6f2c1"
+                                        },
+                                        {
+                                            "name":  "20v1OxUXcQY.elevenlabs_best_diarization.json",
+                                            "bytes":  41087,
+                                            "sha256":  "0b5363e6d9535235d2af8da55f62d107b8d356373494edb70e35cc39c0163eed"
+                                        },
+                                        {
+                                            "name":  "20v1OxUXcQY.elevenlabs_best_diarization.md",
+                                            "bytes":  12197,
+                                            "sha256":  "0e919138ce152e0b67c3a949979423d5b613de50562427b2b7fe8664a942db21"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "acbnyagl8jo",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_acbnyagl8jo",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "acbnyagl8jo.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  8983,
+                                            "sha256":  "4df933ff41aa9fc618051f9f08c4dc41dab4ecb53b337582f34b070bd81dbf6f"
+                                        },
+                                        {
+                                            "name":  "acbnyagl8jo.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  329357,
+                                            "sha256":  "bf05ac3d5ba8a1f0e098841535e3993e7b4fd66391d7626f366f828d0507a216"
+                                        },
+                                        {
+                                            "name":  "acbnyagl8jo.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  7126,
+                                            "sha256":  "a7ffd6cca232049759840cd64039cddd2388eff199310de2f15b5db165c93e96"
+                                        },
+                                        {
+                                            "name":  "acbnyagl8jo.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  13787,
+                                            "sha256":  "72806560cf3da849378c3f47aa7a872af487dfb253554195685e4d16fe2069f9"
+                                        },
+                                        {
+                                            "name":  "acbnyagl8jo.canonical_diarization.json",
+                                            "bytes":  310612,
+                                            "sha256":  "db103073494c762ee4a8644d180eb615077c425d70fbcbf7e40719a313e734a6"
+                                        },
+                                        {
+                                            "name":  "acbnyagl8jo.elevenlabs_best_diarization.csv",
+                                            "bytes":  9436,
+                                            "sha256":  "8c158ad9823d3d46d3417b92ddcfa3667847c4d21505b595ba671ffad0ac433f"
+                                        },
+                                        {
+                                            "name":  "acbnyagl8jo.elevenlabs_best_diarization.json",
+                                            "bytes":  37543,
+                                            "sha256":  "f92b234d1f7fd4e4efd8657ed0a3ac954ab40dbee929ee697d246fc04924d1ee"
+                                        },
+                                        {
+                                            "name":  "acbnyagl8jo.elevenlabs_best_diarization.md",
+                                            "bytes":  9890,
+                                            "sha256":  "c69ad6b304badc993f7d810fcd80ccccc9282530825f07560b961123f539a481"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "aHGd6LqAVzw",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_aHGd6LqAVzw",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "aHGd6LqAVzw.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  7231,
+                                            "sha256":  "732c6e2acd0757e01c828372f72850cf37bff54d1446c4dcfb99a57b3f82a76d"
+                                        },
+                                        {
+                                            "name":  "aHGd6LqAVzw.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  301827,
+                                            "sha256":  "511d5287f16018999ed3eb5036e15d50d42b97159b6e10bf9a7e35895904fc83"
+                                        },
+                                        {
+                                            "name":  "aHGd6LqAVzw.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  6039,
+                                            "sha256":  "bfd3f6260548b2c6c20599a2a2ec8552b550f62008c1da6ea76e20651c24bc2b"
+                                        },
+                                        {
+                                            "name":  "aHGd6LqAVzw.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  10044,
+                                            "sha256":  "f80d8d7d68789115a6bf033e83e4f6a24fc719f4b2398af339f489f10d235a5c"
+                                        },
+                                        {
+                                            "name":  "aHGd6LqAVzw.canonical_diarization.json",
+                                            "bytes":  273703,
+                                            "sha256":  "12ba160276adf50e37ee02f143489d5c1d5cd7309d6bee2cfccb213e8f8f10ff"
+                                        },
+                                        {
+                                            "name":  "aHGd6LqAVzw.elevenlabs_best_diarization.csv",
+                                            "bytes":  7471,
+                                            "sha256":  "9f12ed871e21967df6b6883fae8fea8255495cc4e26ac971cfa8054991685aa9"
+                                        },
+                                        {
+                                            "name":  "aHGd6LqAVzw.elevenlabs_best_diarization.json",
+                                            "bytes":  24453,
+                                            "sha256":  "647f8ff9751ed2c0834dc65b6f6e12c773939b6ea2b173cf6e927f8b413d3cb4"
+                                        },
+                                        {
+                                            "name":  "aHGd6LqAVzw.elevenlabs_best_diarization.md",
+                                            "bytes":  7768,
+                                            "sha256":  "500da0b20682431fb8fb29d562cf97dd5e5bc861ce4e4e999dfad3f5570a5c75"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "blcKeLDDzSM",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_blcKeLDDzSM",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "blcKeLDDzSM.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  6945,
+                                            "sha256":  "f0b345c0a85589bc2d16081d79f4928c86eef5e9861edd4eedf1c0590a16749c"
+                                        },
+                                        {
+                                            "name":  "blcKeLDDzSM.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  270866,
+                                            "sha256":  "01657a86789e595e3254ad34a975073ad91b451a17e8ac0b0e333edbaa620f9a"
+                                        },
+                                        {
+                                            "name":  "blcKeLDDzSM.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  5651,
+                                            "sha256":  "483b3288f16189d6c1818887087f7fa985a1b0ddedb9080ab1b3a945fdb95924"
+                                        },
+                                        {
+                                            "name":  "blcKeLDDzSM.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  9950,
+                                            "sha256":  "2c1b03c24fa74f0f33585372ca7e552fb8eca854c76d2bdeb63960e6dee66c46"
+                                        },
+                                        {
+                                            "name":  "blcKeLDDzSM.canonical_diarization.json",
+                                            "bytes":  252765,
+                                            "sha256":  "7ebe3f63597955b7490ebb132876f6a26c31594d0771ad8b5489db0838ec887f"
+                                        },
+                                        {
+                                            "name":  "blcKeLDDzSM.elevenlabs_best_diarization.csv",
+                                            "bytes":  7173,
+                                            "sha256":  "83cb5a84e5b8b8b7e4abcdd6a005f0ff591f8c9b3f97e85144de7f66fcdf5f02"
+                                        },
+                                        {
+                                            "name":  "blcKeLDDzSM.elevenlabs_best_diarization.json",
+                                            "bytes":  25373,
+                                            "sha256":  "a29e7042e124eebf804f29123154adab4f004678ef46668263f7f25350ad91cd"
+                                        },
+                                        {
+                                            "name":  "blcKeLDDzSM.elevenlabs_best_diarization.md",
+                                            "bytes":  7464,
+                                            "sha256":  "2835b203132321cc49e41cbfe3aef1e9a1191b6e6b0a1ec6b3dea3f37d7a8800"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "bPpcfH_HHH8",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_bPpcfH_HHH8",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "bPpcfH_HHH8.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  8434,
+                                            "sha256":  "edf9b21c67244fb86dec1d3407f56e8beaba0afa7c92eab12287e07375b8a4b9"
+                                        },
+                                        {
+                                            "name":  "bPpcfH_HHH8.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  262414,
+                                            "sha256":  "4b08b6f81c1c31adc56d9680f02d3d5f851571027c3495bdc61865996008bfc0"
+                                        },
+                                        {
+                                            "name":  "bPpcfH_HHH8.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  6491,
+                                            "sha256":  "99a953e0762e2c1521237a32c5454d85b525a6a185add84c2b036b1b6885ef5b"
+                                        },
+                                        {
+                                            "name":  "bPpcfH_HHH8.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  13662,
+                                            "sha256":  "8f80ba6a1a736774989b3748be8649f091c705a9aa74d40e4fb2056fb352712c"
+                                        },
+                                        {
+                                            "name":  "bPpcfH_HHH8.canonical_diarization.json",
+                                            "bytes":  258060,
+                                            "sha256":  "2e5c69dff5d9e6954f6c2b89cf78ab0efc41426bf1e00198a368eeaa2b173a69"
+                                        },
+                                        {
+                                            "name":  "bPpcfH_HHH8.elevenlabs_best_diarization.csv",
+                                            "bytes":  8974,
+                                            "sha256":  "ee11c3a500ee292eeb36115dea7eed7c0f9ec39b13c5341a47a043578cfca5e9"
+                                        },
+                                        {
+                                            "name":  "bPpcfH_HHH8.elevenlabs_best_diarization.json",
+                                            "bytes":  39186,
+                                            "sha256":  "f3e909c2ed882805c933557efa54e6f4788b1873de4946e3fc400693295aef6e"
+                                        },
+                                        {
+                                            "name":  "bPpcfH_HHH8.elevenlabs_best_diarization.md",
+                                            "bytes":  9477,
+                                            "sha256":  "cd518f11f74aed096a181cbd3207cb6d44c99f298d39e43c9ccbfb2ecf860cbb"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "cLdy4P-XJPE",
+                          "origin":  "generated_for_requested_video",
+                          "source_directory":  null,
+                          "source_url":  "https://www.youtube.com/watch?v=cLdy4P-XJPE",
+                          "title":  "Brooks and Capehart on whether the Supreme Court has stood up to Trump",
+                          "file_count":  9,
+                          "files":  [
+                                        {
+                                            "name":  "cLdy4P-XJPE.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  14213,
+                                            "sha256":  "017e4cddb8dc06b2dc928108899c6c1fb80d5a1887756be7425fab1a46f61d3b"
+                                        },
+                                        {
+                                            "name":  "cLdy4P-XJPE.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  750428,
+                                            "sha256":  "bc46eba3399b9a3547f9cab3ef1acb9cb49001c8eff5e49dd4f575f6ab356cc9"
+                                        },
+                                        {
+                                            "name":  "cLdy4P-XJPE.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  13103,
+                                            "sha256":  "a23ac3cfb06b4edccbe3f5efda76fb11424cac569fefb99875d5ece8766b3b46"
+                                        },
+                                        {
+                                            "name":  "cLdy4P-XJPE.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  16766,
+                                            "sha256":  "5ff965008f0f30ca74e093da41930f7af428afd197c1978f9de14090867acfd3"
+                                        },
+                                        {
+                                            "name":  "cLdy4P-XJPE.canonical_diarization.json",
+                                            "bytes":  647640,
+                                            "sha256":  "8ac7c3342abc1f98587b028620a53f51582c2f91d72dbfd423488ac36a757728"
+                                        },
+                                        {
+                                            "name":  "cLdy4P-XJPE.elevenlabs_best_diarization.csv",
+                                            "bytes":  14424,
+                                            "sha256":  "3dc178c463246866ea401d621b5027763fdd2b9e43167ffcf0365ed203f486f3"
+                                        },
+                                        {
+                                            "name":  "cLdy4P-XJPE.elevenlabs_best_diarization.json",
+                                            "bytes":  29966,
+                                            "sha256":  "c5580fe86b3651f643763acc76490da9491476e5edd9209b278744f2d452f735"
+                                        },
+                                        {
+                                            "name":  "cLdy4P-XJPE.elevenlabs_best_diarization.md",
+                                            "bytes":  14667,
+                                            "sha256":  "22fffba2619751ea76d282fd123ca8a7a9fbbc5a7bc7fc1c99668bf030dd9da0"
+                                        },
+                                        {
+                                            "name":  "cLdy4P-XJPE.youtube_title.txt",
+                                            "bytes":  75,
+                                            "sha256":  "ea47a4308557240df38b148b8273853c8377d52595bb3480cc1948cb84b6fdde"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "cunk",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_cunk",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  25,
+                          "files":  [
+                                        {
+                                            "name":  "cunk_on_earth_clip.canonical_diarization.json",
+                                            "bytes":  261846,
+                                            "sha256":  "b9c60eabffe9d4d97a3f3272554c0409018fa430599fd9c30259ddca786e64b1"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_best_diarization.csv",
+                                            "bytes":  6284,
+                                            "sha256":  "b23e69c94e8b90b684013b6fcf37d95d4563fb1a66bee9e040db3ce3fe4ade32"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_best_diarization.json",
+                                            "bytes":  11238,
+                                            "sha256":  "95c65378d089fe72f33c79a330291510f0e70c00163ab172f6faa095f846af87"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_best_diarization.md",
+                                            "bytes":  7402,
+                                            "sha256":  "53bc403ab2f4ed7abed30f6f92ebc39e3350caf1c9dadf92ae1e6c14f78ab59e"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.7spk.md",
+                                            "bytes":  6381,
+                                            "sha256":  "8fe0345fe5f267922fa5b201541761a9d37a4e0f5abfe47224132ecea0c9af2d"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.7spk.raw.json",
+                                            "bytes":  281585,
+                                            "sha256":  "34ba3a088c393b7dae40d88ee117d779cec9bb26d19ad323863e9164218fc882"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.7spk.turns.csv",
+                                            "bytes":  5354,
+                                            "sha256":  "07c3494125b2acdfde8c3d92c53ceb9911b7376ea125adbf50c7fd32c6c9daf0"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.7spk.turns.json",
+                                            "bytes":  8443,
+                                            "sha256":  "eb51b01bac3191ec446a0d44b441f176b9c6071ba4e854f8cedce00f4bc91fc4"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.md",
+                                            "bytes":  6377,
+                                            "sha256":  "5a32062d0b33ba47a9dcd34cf9fbd23a27ad4eacd100d20e0a52f07122e373c6"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.raw.json",
+                                            "bytes":  283109,
+                                            "sha256":  "81186ec0163b06547ea61681071ace7fe424b56e9e13510c66135c74e87112b6"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.3.md",
+                                            "bytes":  6456,
+                                            "sha256":  "5521ddddb6453545684f383eafb46f6fc88b401617bdf0442240b8f44829d994"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.3.raw.json",
+                                            "bytes":  284993,
+                                            "sha256":  "30de2eaaf7f7b3c5e541a15ab9cdeaedbcf2faa10d535fa6d7cc2c82357e0f01"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.3.turns.csv",
+                                            "bytes":  5396,
+                                            "sha256":  "abd2a5034b2176e93a3c04d32fa84662ac6d7aad5c7978b04cf674775d19cb05"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.3.turns.json",
+                                            "bytes":  8563,
+                                            "sha256":  "d8eab33de8b082922abf09793c49c9fae24932dd3a08124d530dbad235ff38c9"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.4.csv",
+                                            "bytes":  6185,
+                                            "sha256":  "e4562a909b84f587b5e7e94dbb1366bba396b337bbd024ffa8f379d03475b28d"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.4.json",
+                                            "bytes":  11139,
+                                            "sha256":  "921dfb2e0ab7ce2d4133a4dd816b6a14cb5279f24590f57233cbaf0ba2a1249b"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  6449,
+                                            "sha256":  "3e2bd5168980b2330ad80d0d22fb7a0dbba01996867f4fe4dcefd9ec4a8c211c"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.4.named_sections.csv",
+                                            "bytes":  6284,
+                                            "sha256":  "b23e69c94e8b90b684013b6fcf37d95d4563fb1a66bee9e040db3ce3fe4ade32"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.4.named_sections.json",
+                                            "bytes":  11238,
+                                            "sha256":  "95c65378d089fe72f33c79a330291510f0e70c00163ab172f6faa095f846af87"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.4.named_sections.md",
+                                            "bytes":  7402,
+                                            "sha256":  "53bc403ab2f4ed7abed30f6f92ebc39e3350caf1c9dadf92ae1e6c14f78ab59e"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  283191,
+                                            "sha256":  "34a6e208bde1cdb89b66e713dfa00d4f72e8d74e9dda32d04490d37868b03e16"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  5386,
+                                            "sha256":  "b7a497dbbe74b06eddd525a4cb357c73f9ae29f91fcaa0a959364898187d79d9"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  8553,
+                                            "sha256":  "6afbc59401f035d5677384b085ce5a8bd36e1a91def394828ab86d3ad38b000e"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.turns.csv",
+                                            "bytes":  5366,
+                                            "sha256":  "6f0b92a6aa685fb12aeee3506614aa31202f629fd76b06fbd9efd3176bfd37b6"
+                                        },
+                                        {
+                                            "name":  "cunk_on_earth_clip.elevenlabs_scribe_v2.word.turns.json",
+                                            "bytes":  8461,
+                                            "sha256":  "9af7e309f3dcf44d626d200a8e8a3a5838cbe266a1cc6b90755a367b307ae5ce"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "Dd7FixvoKBw",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_Dd7FixvoKBw",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "Dd7FixvoKBw.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  4396,
+                                            "sha256":  "8c8d333368ae9ef52b4608413409a694c5a62f9ff049256a4eb57c8fc6a599bd"
+                                        },
+                                        {
+                                            "name":  "Dd7FixvoKBw.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  111723,
+                                            "sha256":  "edcd41d2a792a42170c93e4ceb7853594418f6b48024763125f8d6214523a098"
+                                        },
+                                        {
+                                            "name":  "Dd7FixvoKBw.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  3058,
+                                            "sha256":  "b8010a0b888b7697dad7289eb0ed0452912e565b837566c4295779239f2bd1cf"
+                                        },
+                                        {
+                                            "name":  "Dd7FixvoKBw.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  7105,
+                                            "sha256":  "1ab0e40802f14bcdd509f282d37da5d254272ded79adb294ccf3eb5e1487dacd"
+                                        },
+                                        {
+                                            "name":  "Dd7FixvoKBw.canonical_diarization.json",
+                                            "bytes":  117417,
+                                            "sha256":  "17e5dee066c15b8cbd5df2810247e41fab3181bb43c2d09839df965c696091a5"
+                                        },
+                                        {
+                                            "name":  "Dd7FixvoKBw.elevenlabs_best_diarization.csv",
+                                            "bytes":  4479,
+                                            "sha256":  "93afeb1177ea5f2d4495a1247520fa80a7f6b8c4081eed62698527f4154f026f"
+                                        },
+                                        {
+                                            "name":  "Dd7FixvoKBw.elevenlabs_best_diarization.json",
+                                            "bytes":  21481,
+                                            "sha256":  "56210fd6c32aa2a833c4ebcdcda703e1db179051e4310aa536ec008c6e19cb13"
+                                        },
+                                        {
+                                            "name":  "Dd7FixvoKBw.elevenlabs_best_diarization.md",
+                                            "bytes":  4855,
+                                            "sha256":  "59fb41c84f1e424245f14b565e76d990288c87548da2ceb843d8037e20fc3d1e"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "DsyfYJ5Ou3g",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_DsyfYJ5Ou3g",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "DsyfYJ5Ou3g.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  6577,
+                                            "sha256":  "6dec659142de1a7bb1de14d50f397559b5b90ff92bff7a738dbc7df166a38e05"
+                                        },
+                                        {
+                                            "name":  "DsyfYJ5Ou3g.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  230029,
+                                            "sha256":  "5cdf40e75f61ae1cf87056b6d716c49138d49a76b7db6c629ef60eccaa338123"
+                                        },
+                                        {
+                                            "name":  "DsyfYJ5Ou3g.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  5092,
+                                            "sha256":  "cb967a3a2feef41183dcd58b4791f811316ffc41d9c9bcedea62a7cab8df6d39"
+                                        },
+                                        {
+                                            "name":  "DsyfYJ5Ou3g.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  10057,
+                                            "sha256":  "9edf305f3ed7e75b1ecdeafe4ec5c4370c617805482033af587e88253465d6ca"
+                                        },
+                                        {
+                                            "name":  "DsyfYJ5Ou3g.canonical_diarization.json",
+                                            "bytes":  218317,
+                                            "sha256":  "e0f7823e11cf6d6338cda74f7871bc999a824470b14cb4d75d28a601b067ccb1"
+                                        },
+                                        {
+                                            "name":  "DsyfYJ5Ou3g.elevenlabs_best_diarization.csv",
+                                            "bytes":  6825,
+                                            "sha256":  "fca1e720c5948e10e04fbade2722da15f8d6aaa3d3080a1428ffeb393d53d6e3"
+                                        },
+                                        {
+                                            "name":  "DsyfYJ5Ou3g.elevenlabs_best_diarization.json",
+                                            "bytes":  27752,
+                                            "sha256":  "52e4f291659a47874e1cbcb9c53e1b903102989f3f881d9ac81e6291667fdf5a"
+                                        },
+                                        {
+                                            "name":  "DsyfYJ5Ou3g.elevenlabs_best_diarization.md",
+                                            "bytes":  7233,
+                                            "sha256":  "c6c6f8f322fdb7901a1655287cb57c0510975eda4b5122e2b8e3e55d8f68a0d4"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "e3h6es6zh1c",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_e3h6es6zh1c",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "e3h6es6zh1c.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  4909,
+                                            "sha256":  "591db734c346c993343e29a9bd4b907fd9330a26c866619d2cc7edf7f25c6611"
+                                        },
+                                        {
+                                            "name":  "e3h6es6zh1c.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  171402,
+                                            "sha256":  "2b3922ed9aeac557a8282f6c4741c2026e8a3913575efd36778a2a7b90da861d"
+                                        },
+                                        {
+                                            "name":  "e3h6es6zh1c.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  3775,
+                                            "sha256":  "3cc4c686853b71fb76bc009f40761fc4196f6e501a0787510e4af4ad1d653567"
+                                        },
+                                        {
+                                            "name":  "e3h6es6zh1c.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  7302,
+                                            "sha256":  "56b1a86ae0fab09ac43cc97b565c612c801442d81bbe59b75a9a551edf1e641f"
+                                        },
+                                        {
+                                            "name":  "e3h6es6zh1c.canonical_diarization.json",
+                                            "bytes":  164529,
+                                            "sha256":  "38e6ee0732851751aaf95221188b7f9f740340bde6c419dc15b650fadd9e61a5"
+                                        },
+                                        {
+                                            "name":  "e3h6es6zh1c.elevenlabs_best_diarization.csv",
+                                            "bytes":  5033,
+                                            "sha256":  "47cd45f06d6f23dcde4302ae40ed3bcf18589e871c9ccd60fb9fa11f7189cca2"
+                                        },
+                                        {
+                                            "name":  "e3h6es6zh1c.elevenlabs_best_diarization.json",
+                                            "bytes":  19924,
+                                            "sha256":  "4fc066219a91552e300672f155330e42f4831d185b7de9d2d206922b4048102d"
+                                        },
+                                        {
+                                            "name":  "e3h6es6zh1c.elevenlabs_best_diarization.md",
+                                            "bytes":  5315,
+                                            "sha256":  "59a60ba42c7336f22c8ee3eecbd89e6161571f614f4b74e46c20674a3857da11"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "F2-2RBi1qzY",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_F2-2RBi1qzY",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "F2-2RBi1qzY.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  9406,
+                                            "sha256":  "2d328742ef9f05c965bd86ddc22405d774ac66b54080c119b2484caedc6d40ba"
+                                        },
+                                        {
+                                            "name":  "F2-2RBi1qzY.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  336595,
+                                            "sha256":  "38851d31bc6283ba0aff2da62ced7d7d1f09fd113ceff24687c496afd3f0222e"
+                                        },
+                                        {
+                                            "name":  "F2-2RBi1qzY.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  7416,
+                                            "sha256":  "d5a87b365f5c348d43a04db65903a1475dc3487ddcf14d02a5facd085eeacc4a"
+                                        },
+                                        {
+                                            "name":  "F2-2RBi1qzY.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  14523,
+                                            "sha256":  "dc0a638a12a034d2d6fa79211c0fbe499655b93b2229de44015fbf46f356ca1e"
+                                        },
+                                        {
+                                            "name":  "F2-2RBi1qzY.canonical_diarization.json",
+                                            "bytes":  319127,
+                                            "sha256":  "d91165f54bb50ef5c47dc9ca10842575cfc9cfc9756975338fd57cd1f16ebe23"
+                                        },
+                                        {
+                                            "name":  "F2-2RBi1qzY.elevenlabs_best_diarization.csv",
+                                            "bytes":  9872,
+                                            "sha256":  "7af06a94e783b99851e2247b724708bbc242cb6dec550bc8f8c6ccaefcf170f8"
+                                        },
+                                        {
+                                            "name":  "F2-2RBi1qzY.elevenlabs_best_diarization.json",
+                                            "bytes":  39777,
+                                            "sha256":  "686cfa2d45b893d7a29c20beefa68b24c0038081761c90e0fb896e83872db766"
+                                        },
+                                        {
+                                            "name":  "F2-2RBi1qzY.elevenlabs_best_diarization.md",
+                                            "bytes":  10452,
+                                            "sha256":  "a122fec0a74af4527f287bb209b05710a9a0a1521cedc729d7a0f6a681419459"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "gj7BRMuB-n4",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_gj7BRMuB-n4",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "gj7BRMuB-n4.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  12765,
+                                            "sha256":  "417a089d5a234340ac316dc14910a08120663091baec67f069ac9e8e48fd065e"
+                                        },
+                                        {
+                                            "name":  "gj7BRMuB-n4.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  424282,
+                                            "sha256":  "06e721099d403597237678380651c8ca6a0cf1a521c05fb5223f2d2000c5d3b0"
+                                        },
+                                        {
+                                            "name":  "gj7BRMuB-n4.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  9987,
+                                            "sha256":  "cc5dbb319a762bda102134ef211454e401a779db09447d51bcb3e89f47fe753c"
+                                        },
+                                        {
+                                            "name":  "gj7BRMuB-n4.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  20998,
+                                            "sha256":  "e69fa9637c1bae765b92e081aaa7f2c86d5979607ccf6adcc685446387325335"
+                                        },
+                                        {
+                                            "name":  "gj7BRMuB-n4.canonical_diarization.json",
+                                            "bytes":  412801,
+                                            "sha256":  "75de609775c9365f683965338dd1188bd42a58e75975378e392ac7ba4c903710"
+                                        },
+                                        {
+                                            "name":  "gj7BRMuB-n4.elevenlabs_best_diarization.csv",
+                                            "bytes":  13747,
+                                            "sha256":  "0cc330cbc9e42a099255f661dda20006a34bbbbe958ba10efda3e32ce717f5b1"
+                                        },
+                                        {
+                                            "name":  "gj7BRMuB-n4.elevenlabs_best_diarization.json",
+                                            "bytes":  60223,
+                                            "sha256":  "aa85dd08751df11948561c1649aebc0417bbf19e218adafeb1f4cca13fe4adaf"
+                                        },
+                                        {
+                                            "name":  "gj7BRMuB-n4.elevenlabs_best_diarization.md",
+                                            "bytes":  14450,
+                                            "sha256":  "38fd3642be4044b14dc110ae9b42ab1e7db778ade3cd512aaca207bd749732d2"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "k1tsGGz-Qw0",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_k1tsGGz-Qw0",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "k1tsGGz-Qw0.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  7615,
+                                            "sha256":  "ea46749ee3247f83d4c4120453eddc6ddc70a8c91eec9d5654ecc92b7d830a46"
+                                        },
+                                        {
+                                            "name":  "k1tsGGz-Qw0.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  261272,
+                                            "sha256":  "9d2e9ac8c3913a28fef0564c8fcce74ed714bbb4c3a4cca3b9824484e5dcf579"
+                                        },
+                                        {
+                                            "name":  "k1tsGGz-Qw0.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  5907,
+                                            "sha256":  "eb71f24163cbb841747796bcd4572779352c5dee98e1b0cdafff4c3032ded71c"
+                                        },
+                                        {
+                                            "name":  "k1tsGGz-Qw0.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  11790,
+                                            "sha256":  "30c76ea73682ca2a84b530d747ffe41b067f838ac683abe74c45d2340f7fa1e8"
+                                        },
+                                        {
+                                            "name":  "k1tsGGz-Qw0.canonical_diarization.json",
+                                            "bytes":  252448,
+                                            "sha256":  "b6c0301cb1e52bc962178aadefe16dcce23a11baf61c8d6763d39cc9cddaac12"
+                                        },
+                                        {
+                                            "name":  "k1tsGGz-Qw0.elevenlabs_best_diarization.csv",
+                                            "bytes":  7952,
+                                            "sha256":  "4422ddc3ef38da6bed00dd8687e63412da0082a7f8fe93301c57b9eb445caac3"
+                                        },
+                                        {
+                                            "name":  "k1tsGGz-Qw0.elevenlabs_best_diarization.json",
+                                            "bytes":  32756,
+                                            "sha256":  "8d5d7e836ee201a52f7ec6d54e4281c785c7de83e946d84508224cccac14602d"
+                                        },
+                                        {
+                                            "name":  "k1tsGGz-Qw0.elevenlabs_best_diarization.md",
+                                            "bytes":  8373,
+                                            "sha256":  "98ca17e034a94a8b3f8c0d74b01319335445c5d399d4a86aaf50d084aa4222bd"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "KdOXM3I_5hk",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_KdOXM3I_5hk",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "KdOXM3I_5hk.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  16649,
+                                            "sha256":  "f1ad38ccf54f202bb11c23a28520f9ba77f1b05963774c3b718b97f5bddc9206"
+                                        },
+                                        {
+                                            "name":  "KdOXM3I_5hk.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  438810,
+                                            "sha256":  "b6a69b48078e5a372bfb10d9cb5b5dfe396d9e40e94bd17dfbc9b62cb77deba0"
+                                        },
+                                        {
+                                            "name":  "KdOXM3I_5hk.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  12352,
+                                            "sha256":  "5ab9a955ed216a219c7cf24d94ed70e13600b014902b092f1e6228ae885d9dca"
+                                        },
+                                        {
+                                            "name":  "KdOXM3I_5hk.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  29783,
+                                            "sha256":  "19041175b2cbab88d099261bf120a6eb00f120b3ae791e7548b21a4a3707c481"
+                                        },
+                                        {
+                                            "name":  "KdOXM3I_5hk.canonical_diarization.json",
+                                            "bytes":  457481,
+                                            "sha256":  "e61ec0154ed36ba8262a0262eb572b7447b85e65238646a99791c6e27daf5a94"
+                                        },
+                                        {
+                                            "name":  "KdOXM3I_5hk.elevenlabs_best_diarization.csv",
+                                            "bytes":  18278,
+                                            "sha256":  "990af1d3cf0a587082a3550569c286fbbc7f0fb8f061c9bb6516f3316d46f805"
+                                        },
+                                        {
+                                            "name":  "KdOXM3I_5hk.elevenlabs_best_diarization.json",
+                                            "bytes":  91811,
+                                            "sha256":  "a546f02e09fdfb418b67cbdfef51560c56c339fa2c29b1c5aae04240518913e8"
+                                        },
+                                        {
+                                            "name":  "KdOXM3I_5hk.elevenlabs_best_diarization.md",
+                                            "bytes":  19411,
+                                            "sha256":  "8406e0391a02633b245b0a16018e79a5fc7d8687508b44d7b20ae80ce0531990"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "L-CfFo5aQGU",
+                          "origin":  "generated_for_requested_video",
+                          "source_directory":  null,
+                          "source_url":  "https://www.youtube.com/watch?v=L-CfFo5aQGU",
+                          "title":  "Face The Nation: Kaine, Mayor Panel",
+                          "file_count":  9,
+                          "files":  [
+                                        {
+                                            "name":  "L-CfFo5aQGU.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  30163,
+                                            "sha256":  "7637e4ca2760fc359ec16dfb41ff45353a023c2a68bb9a4f1a212f07dc5156e3"
+                                        },
+                                        {
+                                            "name":  "L-CfFo5aQGU.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  1595052,
+                                            "sha256":  "11883cd638862fdd43b84fe45eba161431b57f6d201c841423b9d822110573a2"
+                                        },
+                                        {
+                                            "name":  "L-CfFo5aQGU.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  27944,
+                                            "sha256":  "a999970608a4a7759a46a8efe300fa63a49009cd4429a6461413b08ce8dc618a"
+                                        },
+                                        {
+                                            "name":  "L-CfFo5aQGU.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  37271,
+                                            "sha256":  "3ef4ce2955f61e5527b5b24637f8838205f5919feb25651c3f5f0f1280fca792"
+                                        },
+                                        {
+                                            "name":  "L-CfFo5aQGU.canonical_diarization.json",
+                                            "bytes":  1379000,
+                                            "sha256":  "b725a78bda50911fa7790bb5a1d1ea248d5185a631a82b90400a53f852ece6bd"
+                                        },
+                                        {
+                                            "name":  "L-CfFo5aQGU.elevenlabs_best_diarization.csv",
+                                            "bytes":  31206,
+                                            "sha256":  "6b88b983b3661b1d40dbf89a2275a147a3f42d623d3423d037808dc5223b4297"
+                                        },
+                                        {
+                                            "name":  "L-CfFo5aQGU.elevenlabs_best_diarization.json",
+                                            "bytes":  70908,
+                                            "sha256":  "5313b1189c8f9ce355682815bd183e23c311eae961d249391bab5f0db2161b1b"
+                                        },
+                                        {
+                                            "name":  "L-CfFo5aQGU.elevenlabs_best_diarization.md",
+                                            "bytes":  31509,
+                                            "sha256":  "5e03f7a60d5c2a542168fadef8043f7b4235304b3fef116dac94e0c804c275a2"
+                                        },
+                                        {
+                                            "name":  "L-CfFo5aQGU.youtube_title.txt",
+                                            "bytes":  40,
+                                            "sha256":  "3a78a8aad16bdddd2112f06a03e37b3aece3cbd3fba974f2a6a57ffd9f018bb5"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "mBeT_AoCXvc",
+                          "origin":  "generated_for_requested_video",
+                          "source_directory":  null,
+                          "source_url":  "https://www.youtube.com/watch?v=mBeT_AoCXvc",
+                          "title":  "America\u0027s mayors panel: 4 mayors on immigration, data centers and more issues in their cities",
+                          "file_count":  9,
+                          "files":  [
+                                        {
+                                            "name":  "mBeT_AoCXvc.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  18586,
+                                            "sha256":  "874fdf6eadcbfd626d303a3b834b9bbf344c966e38e4fc75142fc83366cd78c0"
+                                        },
+                                        {
+                                            "name":  "mBeT_AoCXvc.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  915299,
+                                            "sha256":  "67e65ab8909793ef5dffbb146412a21a41593b4cd7b901b7e530aefa0d6f1cd6"
+                                        },
+                                        {
+                                            "name":  "mBeT_AoCXvc.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  16889,
+                                            "sha256":  "0b70cb05de6f70672c6891985e8de1a52869667338f5c7ef52afde6209dce5b1"
+                                        },
+                                        {
+                                            "name":  "mBeT_AoCXvc.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  23678,
+                                            "sha256":  "bac9237c8299a758ba6643965d87531ff16815d973f18c4de2be26a20538b6ef"
+                                        },
+                                        {
+                                            "name":  "mBeT_AoCXvc.canonical_diarization.json",
+                                            "bytes":  797393,
+                                            "sha256":  "45ab706c93b6e9732f57b47f28ceda680396a9f0165085989cd2e3abffa4679e"
+                                        },
+                                        {
+                                            "name":  "mBeT_AoCXvc.elevenlabs_best_diarization.csv",
+                                            "bytes":  19270,
+                                            "sha256":  "f2f5deb405ab8dba8ce1134264db8c6cf71991d36e098cd5054bc8bc469e0d4e"
+                                        },
+                                        {
+                                            "name":  "mBeT_AoCXvc.elevenlabs_best_diarization.json",
+                                            "bytes":  48113,
+                                            "sha256":  "ff94d6b0cb275a543851943e94270fedf2889e729ce976fb611341b177183b71"
+                                        },
+                                        {
+                                            "name":  "mBeT_AoCXvc.elevenlabs_best_diarization.md",
+                                            "bytes":  19580,
+                                            "sha256":  "b025ee166b8d37747013af5c12f9fec332d7a4ba4abd51df00e01a3bf90f80cf"
+                                        },
+                                        {
+                                            "name":  "mBeT_AoCXvc.youtube_title.txt",
+                                            "bytes":  98,
+                                            "sha256":  "68a6291677bf7a9b28499f1e952da351bc19bafd5bfd7ce87758f33ff72cae71"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "mWABb5Dy9BQ",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_mWABb5Dy9BQ",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "mWABb5Dy9BQ.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  16637,
+                                            "sha256":  "2a8c354401ac8ad794cd0d760cccd88c2640c478edbb7e888de1f8d431add5c2"
+                                        },
+                                        {
+                                            "name":  "mWABb5Dy9BQ.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  519059,
+                                            "sha256":  "e697993f9b9494cab32e3da0795dc4e8f2c81f2687a0b1237e12fd7c99ffcb81"
+                                        },
+                                        {
+                                            "name":  "mWABb5Dy9BQ.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  12823,
+                                            "sha256":  "a8ff451fe58a108e8780f4c42081de1c7fa6d3e752e83b520884862797f52247"
+                                        },
+                                        {
+                                            "name":  "mWABb5Dy9BQ.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  28396,
+                                            "sha256":  "e335f4cad10335791612b0301dbcf8570b2a31de469317689584d2b44edd9592"
+                                        },
+                                        {
+                                            "name":  "mWABb5Dy9BQ.canonical_diarization.json",
+                                            "bytes":  515449,
+                                            "sha256":  "b672c24d639399516929f73e4a0dda472ad17493965c76589374f2983eacb3c5"
+                                        },
+                                        {
+                                            "name":  "mWABb5Dy9BQ.elevenlabs_best_diarization.csv",
+                                            "bytes":  18109,
+                                            "sha256":  "ca5ef8a66c0b4a9a543200a47e4dd7f87935865af1c6763350ddbc83bba7c7cd"
+                                        },
+                                        {
+                                            "name":  "mWABb5Dy9BQ.elevenlabs_best_diarization.json",
+                                            "bytes":  83871,
+                                            "sha256":  "c96c58c3c4a4a3994d8ce0758d6666f7020618e8dbe66921b8296802914ef018"
+                                        },
+                                        {
+                                            "name":  "mWABb5Dy9BQ.elevenlabs_best_diarization.md",
+                                            "bytes":  19092,
+                                            "sha256":  "acc3b57123181782b377ce99b0b1a50ea0ec21f8616599bc991d342e2c7caac1"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "oFBuCp19L7M",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_oFBuCp19L7M",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "oFBuCp19L7M.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  10468,
+                                            "sha256":  "02ef9169ba83a9114174e99bfe2d56084d651b751d6555226ee23b7d95ddae38"
+                                        },
+                                        {
+                                            "name":  "oFBuCp19L7M.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  435261,
+                                            "sha256":  "8cd7ef38a6f2267747b2e0a77cb70f16c6dc78da0f1f9cd271b8601cbf39b78b"
+                                        },
+                                        {
+                                            "name":  "oFBuCp19L7M.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  8646,
+                                            "sha256":  "9c9cbe9e74d1738073834ff83e98ed30a7b90a2d76d5c7a58bafb235cdc01fab"
+                                        },
+                                        {
+                                            "name":  "oFBuCp19L7M.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  15385,
+                                            "sha256":  "e129b8f6667f105ea962fee34f6e1eaf81592dac8e6a5831b08d5f3d1ab706d1"
+                                        },
+                                        {
+                                            "name":  "oFBuCp19L7M.canonical_diarization.json",
+                                            "bytes":  399710,
+                                            "sha256":  "c4d814e88408e07812bc89f41825ca4a7ba292d14c37f00df79eaa4a55e2ded2"
+                                        },
+                                        {
+                                            "name":  "oFBuCp19L7M.elevenlabs_best_diarization.csv",
+                                            "bytes":  10985,
+                                            "sha256":  "fcd543e7814e1ef7c62af2813cdbb5c448f8af06ab5cacc8d01ffbb4d77ce864"
+                                        },
+                                        {
+                                            "name":  "oFBuCp19L7M.elevenlabs_best_diarization.json",
+                                            "bytes":  39434,
+                                            "sha256":  "b1d1d1e1aeb4ae2b4c3b1f45283a7b25e03d611e4f8c15b640c1b42aa0045ca4"
+                                        },
+                                        {
+                                            "name":  "oFBuCp19L7M.elevenlabs_best_diarization.md",
+                                            "bytes":  11439,
+                                            "sha256":  "a51c1af43468fe1b6d36fbdb07fa47c91992ce2a61e8520128d72df671c8b2f9"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "onHUfyRP1BE",
+                          "origin":  "generated_for_requested_video",
+                          "source_directory":  null,
+                          "source_url":  "https://www.youtube.com/watch?v=onHUfyRP1BE",
+                          "title":  "Academic Panel COI/ Kyle Diorio pt. 2/3",
+                          "file_count":  9,
+                          "files":  [
+                                        {
+                                            "name":  "onHUfyRP1BE.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  8757,
+                                            "sha256":  "3e355a3a029c13c87c0ba9d8c3602d3a7170231d8442413393fa778256e585e6"
+                                        },
+                                        {
+                                            "name":  "onHUfyRP1BE.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  536753,
+                                            "sha256":  "adccac096a6c35ff72cee0c5f19e3bd0bcaef4329069e4e00a1ac1760a703c0b"
+                                        },
+                                        {
+                                            "name":  "onHUfyRP1BE.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  8285,
+                                            "sha256":  "361ee58d8d7e5dcca881701112d1fe8933d28a044a2d272a80cde68ae8f19439"
+                                        },
+                                        {
+                                            "name":  "onHUfyRP1BE.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  8896,
+                                            "sha256":  "c3e3315f11acfe2f1c8f6a0d913e2eabd48f07ecb04f274ec440a996a8445122"
+                                        },
+                                        {
+                                            "name":  "onHUfyRP1BE.canonical_diarization.json",
+                                            "bytes":  452367,
+                                            "sha256":  "f0552bc0aa7fb9fdc47ff005fa60c7e4369d183e1d3ebbcf3bf51e52f8146b23"
+                                        },
+                                        {
+                                            "name":  "onHUfyRP1BE.elevenlabs_best_diarization.csv",
+                                            "bytes":  8567,
+                                            "sha256":  "fb832263fb530d41349a1a0a07abf09c9b53188d6d2a47dfe0d9f6e08c461ca4"
+                                        },
+                                        {
+                                            "name":  "onHUfyRP1BE.elevenlabs_best_diarization.json",
+                                            "bytes":  11176,
+                                            "sha256":  "ffc8d550a4d11923b6447d54942d3e323a0c3e8c98e800633bde3ac39d96f8a1"
+                                        },
+                                        {
+                                            "name":  "onHUfyRP1BE.elevenlabs_best_diarization.md",
+                                            "bytes":  8686,
+                                            "sha256":  "915f751fd9e0a0368aa54f31af611ae93a72cde9d8cb92015fc6686819f6d7a5"
+                                        },
+                                        {
+                                            "name":  "onHUfyRP1BE.youtube_title.txt",
+                                            "bytes":  44,
+                                            "sha256":  "8b1e053c052ee1d9a3c1c9958f5964a0af4a8233b8455fc46ab9d6f90f18ea24"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "pD4IdQTmneI",
+                          "origin":  "generated_for_requested_video",
+                          "source_directory":  null,
+                          "source_url":  "https://www.youtube.com/watch?v=pD4IdQTmneI",
+                          "title":  "\u0027RIDICULOUS, ABSURD\u0027: Political analyst RIPS alleged fraudsters after DOJ crackdown",
+                          "file_count":  9,
+                          "files":  [
+                                        {
+                                            "name":  "pD4IdQTmneI.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  6591,
+                                            "sha256":  "ff2220896c3dd711336601a12920b4e2b71d2b9f5b8691f592d1a25358fabf1f"
+                                        },
+                                        {
+                                            "name":  "pD4IdQTmneI.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  367992,
+                                            "sha256":  "8c319c4c51957de9bd84cd5e316a78bb4aeff588f957df0c8fdfbb23356be173"
+                                        },
+                                        {
+                                            "name":  "pD4IdQTmneI.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  6003,
+                                            "sha256":  "b041dcc19853c9b1da9c2b2e8e41f8d1ca363c48ac8f0d5cdfd77e9799f6f65c"
+                                        },
+                                        {
+                                            "name":  "pD4IdQTmneI.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  7036,
+                                            "sha256":  "26060cb1130765667fbb3d5b65222a50295047b0517b752d23ec6285368ab761"
+                                        },
+                                        {
+                                            "name":  "pD4IdQTmneI.canonical_diarization.json",
+                                            "bytes":  311139,
+                                            "sha256":  "f7d724b7b06292fc307e83a2961789e9b0bae4b55fb952ed846fc368d0b69a10"
+                                        },
+                                        {
+                                            "name":  "pD4IdQTmneI.elevenlabs_best_diarization.csv",
+                                            "bytes":  6436,
+                                            "sha256":  "9d02e1d171072fe0ac6695a1aa79236146693c7d1fee87f41e45c7755132343a"
+                                        },
+                                        {
+                                            "name":  "pD4IdQTmneI.elevenlabs_best_diarization.json",
+                                            "bytes":  10839,
+                                            "sha256":  "d1f2c42ff62c1e2d77575aa45d43ef8bcdbc1f97c711a1a2b261d295e4afacc3"
+                                        },
+                                        {
+                                            "name":  "pD4IdQTmneI.elevenlabs_best_diarization.md",
+                                            "bytes":  6603,
+                                            "sha256":  "4f5e13ad7dbcadab3553bef3004eae8661e6ef3637a545717cc187414dbd982c"
+                                        },
+                                        {
+                                            "name":  "pD4IdQTmneI.youtube_title.txt",
+                                            "bytes":  88,
+                                            "sha256":  "5b0706274a864cfca84fa3cbfe2f842a514ec27a8709ac84774ec0fae9f57dab"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "PhofRoLXqhE",
+                          "origin":  "generated_for_requested_video",
+                          "source_directory":  null,
+                          "source_url":  "https://www.youtube.com/watch?v=PhofRoLXqhE",
+                          "title":  "Washington Week with The Atlantic full episode, July 3, 2026",
+                          "file_count":  9,
+                          "files":  [
+                                        {
+                                            "name":  "PhofRoLXqhE.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  32098,
+                                            "sha256":  "6480ff899b2bc32dbaa735a89d032cf3b6456b61b55d70fbe4795dc57fd68fa1"
+                                        },
+                                        {
+                                            "name":  "PhofRoLXqhE.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  1822711,
+                                            "sha256":  "7728430f8b697940be703ecc0641855cdfb8bc7a2f3448a4fdd22c47d59d585f"
+                                        },
+                                        {
+                                            "name":  "PhofRoLXqhE.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  30468,
+                                            "sha256":  "0f3ae79485ea2501b00ff1aff9a7816894cf4439c55058fce1c6d79c8487aab3"
+                                        },
+                                        {
+                                            "name":  "PhofRoLXqhE.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  37525,
+                                            "sha256":  "547b729a9f9a8c15b157dcb40af4658c03958bf01a121c911d9ca08e2fac21fa"
+                                        },
+                                        {
+                                            "name":  "PhofRoLXqhE.canonical_diarization.json",
+                                            "bytes":  1548915,
+                                            "sha256":  "2cbaf356e3466ba69ac8d45e79e59fc918ac65ab206e93f0ee8d7f90f2f2e6df"
+                                        },
+                                        {
+                                            "name":  "PhofRoLXqhE.elevenlabs_best_diarization.csv",
+                                            "bytes":  32964,
+                                            "sha256":  "d0296dcd7c3932060e6f6da99c06dab58eb4f1c2a569d6095343c28858bac89c"
+                                        },
+                                        {
+                                            "name":  "PhofRoLXqhE.elevenlabs_best_diarization.json",
+                                            "bytes":  63016,
+                                            "sha256":  "261903a52feea56fc4f395c6f683ef667d78a66aed08a53fc208db8817dd5dbc"
+                                        },
+                                        {
+                                            "name":  "PhofRoLXqhE.elevenlabs_best_diarization.md",
+                                            "bytes":  33063,
+                                            "sha256":  "7020db883a72f91b2e5e0516cc1604559ca05449cb05d9851327013399a1293b"
+                                        },
+                                        {
+                                            "name":  "PhofRoLXqhE.youtube_title.txt",
+                                            "bytes":  65,
+                                            "sha256":  "a0bc60988cef42e5bab46f2725987731fe2ad87f4af2208d72f8fd3c37f602c8"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "S_o3y7CzDUY",
+                          "origin":  "generated_for_requested_video",
+                          "source_directory":  null,
+                          "source_url":  "https://www.youtube.com/watch?v=S_o3y7CzDUY",
+                          "title":  "Why is Finland’s economy stuck in a rut?",
+                          "file_count":  9,
+                          "files":  [
+                                        {
+                                            "name":  "S_o3y7CzDUY.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  28431,
+                                            "sha256":  "adff2447790648e6d83a145b303e400e60a76cc3b59f10860e210cde365de9e6"
+                                        },
+                                        {
+                                            "name":  "S_o3y7CzDUY.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  1639549,
+                                            "sha256":  "05667a1c0a995694ba84bae4167b236c7839b0015a4d0e5cd22fe7b64e98611d"
+                                        },
+                                        {
+                                            "name":  "S_o3y7CzDUY.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  27070,
+                                            "sha256":  "0d834532019af680c0c74223627e0ecfb5c79cb8c626a7dcf9be44162ccc3f36"
+                                        },
+                                        {
+                                            "name":  "S_o3y7CzDUY.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  32393,
+                                            "sha256":  "132b176fd073ee6d5165485bf22d1351b06fa69c8749fa00a770781cfd6d11a3"
+                                        },
+                                        {
+                                            "name":  "S_o3y7CzDUY.canonical_diarization.json",
+                                            "bytes":  1386780,
+                                            "sha256":  "94ce865ea615917fe3d861ef28162234c12b1b784634046007b2063ef66ef3cb"
+                                        },
+                                        {
+                                            "name":  "S_o3y7CzDUY.elevenlabs_best_diarization.csv",
+                                            "bytes":  29001,
+                                            "sha256":  "f42a4ec4ac80b36b78a5392fc15711b9c37ef36256c8d9cb3e7729e83f4a110d"
+                                        },
+                                        {
+                                            "name":  "S_o3y7CzDUY.elevenlabs_best_diarization.json",
+                                            "bytes":  51781,
+                                            "sha256":  "880924c4d5bd795cd3a6b7c3db70b6b0f1509eedf0ba39e4210992bc1003f9a0"
+                                        },
+                                        {
+                                            "name":  "S_o3y7CzDUY.elevenlabs_best_diarization.md",
+                                            "bytes":  29130,
+                                            "sha256":  "c5842ab493443e5b8eb5abbfed2b8facd4001142f148faf6c9a1aa32870ebb52"
+                                        },
+                                        {
+                                            "name":  "S_o3y7CzDUY.youtube_title.txt",
+                                            "bytes":  49,
+                                            "sha256":  "29e5fbfaba16e30f5421b12a89c8b6af1ad1bde1b416791199a7491278d2ca68"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "vIfGgDnmBXg",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_vIfGgDnmBXg",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "vIfGgDnmBXg.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  11834,
+                                            "sha256":  "b957b3eb5488758268c82a41f8ce1a8232bbc5e88aa5f478def991d7f7fee488"
+                                        },
+                                        {
+                                            "name":  "vIfGgDnmBXg.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  375333,
+                                            "sha256":  "ef8ff78f558924e5077d1db19799012f8c90fe5d15e827999769f77218ed883b"
+                                        },
+                                        {
+                                            "name":  "vIfGgDnmBXg.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  9158,
+                                            "sha256":  "f74f5c7935ebb3f4b4c9e186fec12360e5e85da907321577811c56547d1745ee"
+                                        },
+                                        {
+                                            "name":  "vIfGgDnmBXg.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  19463,
+                                            "sha256":  "c96cb61737c24a1a6007d6b3d072df506585244399e437f8a536fe8840d1c850"
+                                        },
+                                        {
+                                            "name":  "vIfGgDnmBXg.canonical_diarization.json",
+                                            "bytes":  367281,
+                                            "sha256":  "f31da5b65075db403637591a602f8c1c80558956e2d4a8a9aa726e09a32dd6e4"
+                                        },
+                                        {
+                                            "name":  "vIfGgDnmBXg.elevenlabs_best_diarization.csv",
+                                            "bytes":  12696,
+                                            "sha256":  "de973ffeb3c76a2990cdf62fbb054b1b7d4d26ba546b4dd8b00cf5f9d251914a"
+                                        },
+                                        {
+                                            "name":  "vIfGgDnmBXg.elevenlabs_best_diarization.json",
+                                            "bytes":  56123,
+                                            "sha256":  "e13eb70dbcbfa890f25d153b123f22690eb951dd85986a5d453012c2aa937b9b"
+                                        },
+                                        {
+                                            "name":  "vIfGgDnmBXg.elevenlabs_best_diarization.md",
+                                            "bytes":  13442,
+                                            "sha256":  "edf7cf7b284ff2c4d22aba7a55472541c9c350d7bb4c26dbdecc7a2da9ef19e9"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "WNZn37Uc700",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_WNZn37Uc700",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "WNZn37Uc700.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  13752,
+                                            "sha256":  "831c700365689ed6be42a20f62bb8758b9660dd5cdd66e65a035a469ce296520"
+                                        },
+                                        {
+                                            "name":  "WNZn37Uc700.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  453416,
+                                            "sha256":  "7c2cee9b94843e08d89fd2108406ae75774b9f0bda093b91cbc2f4d231f4e20a"
+                                        },
+                                        {
+                                            "name":  "WNZn37Uc700.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  10641,
+                                            "sha256":  "889ef2539568f5b5cc045fc2778e1c571d8ad9a051f892a4cfe01d3425935b3a"
+                                        },
+                                        {
+                                            "name":  "WNZn37Uc700.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  23010,
+                                            "sha256":  "8117b64c9bb5f429b6a8bb271e340315a955b086497cd02fd9c8f19a425160d8"
+                                        },
+                                        {
+                                            "name":  "WNZn37Uc700.canonical_diarization.json",
+                                            "bytes":  444631,
+                                            "sha256":  "abf55452acc8e17b54b68b44de0e7c91d450c0b59cd6335dd762f31ae8b18ef5"
+                                        },
+                                        {
+                                            "name":  "WNZn37Uc700.elevenlabs_best_diarization.csv",
+                                            "bytes":  14867,
+                                            "sha256":  "f14ec4c8bac3221e3e76cab247f6cf7bd56be2c137e242117eb44c4e9a0e5bbe"
+                                        },
+                                        {
+                                            "name":  "WNZn37Uc700.elevenlabs_best_diarization.json",
+                                            "bytes":  67036,
+                                            "sha256":  "fda37ec12d0cb83c47a4b4ca36a42dee55e07f4794c7c24ef9c871b599deefd3"
+                                        },
+                                        {
+                                            "name":  "WNZn37Uc700.elevenlabs_best_diarization.md",
+                                            "bytes":  15672,
+                                            "sha256":  "90fbf87e84e5731d73f7f6161fd74fe37a5d0d19d35539a48182b62b344b0e01"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "y_5WfLjvOK4",
+                          "origin":  "generated_for_requested_video",
+                          "source_directory":  null,
+                          "source_url":  "https://www.youtube.com/watch?v=y_5WfLjvOK4",
+                          "title":  "Full discussion: \"Face the Nation\" foreign policy panel gives 2023 outlook",
+                          "file_count":  9,
+                          "files":  [
+                                        {
+                                            "name":  "y_5WfLjvOK4.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  37157,
+                                            "sha256":  "d8df337fef49398cef0c195186c95b35a67736e99c944c2268fb77fec1897116"
+                                        },
+                                        {
+                                            "name":  "y_5WfLjvOK4.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  2152192,
+                                            "sha256":  "39c6fda8ccc868b25da9d7d9b18991974ae264df6e788236e3dd27c6c0615a21"
+                                        },
+                                        {
+                                            "name":  "y_5WfLjvOK4.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  35732,
+                                            "sha256":  "24cfbaef14732bc1ff0359241123795c04c160f0177446e329fc3e6277e8dd28"
+                                        },
+                                        {
+                                            "name":  "y_5WfLjvOK4.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  42121,
+                                            "sha256":  "1e6ee64463c96cde928d8dff86b9971b9e0bae9c8f7868fb94434d7e2f71604f"
+                                        },
+                                        {
+                                            "name":  "y_5WfLjvOK4.canonical_diarization.json",
+                                            "bytes":  1811074,
+                                            "sha256":  "d82ff74e5e394894609d5f49f775fab06427b1c9432a227de7e118f3106d2e23"
+                                        },
+                                        {
+                                            "name":  "y_5WfLjvOK4.elevenlabs_best_diarization.csv",
+                                            "bytes":  38019,
+                                            "sha256":  "604f2e264873622b4d76e6b04e370dec6d803e67fb88f66fd4dd382ef6d9a58e"
+                                        },
+                                        {
+                                            "name":  "y_5WfLjvOK4.elevenlabs_best_diarization.json",
+                                            "bytes":  65343,
+                                            "sha256":  "2c5388ffb80ec6cd6f5e87d44d83491e3832d59456266d3de79543f61038749e"
+                                        },
+                                        {
+                                            "name":  "y_5WfLjvOK4.elevenlabs_best_diarization.md",
+                                            "bytes":  38070,
+                                            "sha256":  "29d55c16fb38c91a3ee36c5477a99a32b26ba4b5c8ffa3f59b81fd946271e0cd"
+                                        },
+                                        {
+                                            "name":  "y_5WfLjvOK4.youtube_title.txt",
+                                            "bytes":  79,
+                                            "sha256":  "5230a87e78f55039687066d51fd3a71799e449be4047a9daec510953e26837be"
+                                        }
+                                    ]
+                      },
+                      {
+                          "key":  "ZY0DG8rUnCA",
+                          "origin":  "imported_from_whospeaks",
+                          "source_directory":  "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_ZY0DG8rUnCA",
+                          "source_url":  null,
+                          "title":  null,
+                          "file_count":  8,
+                          "files":  [
+                                        {
+                                            "name":  "ZY0DG8rUnCA.audio.elevenlabs_scribe_v2.word.thr0.4.md",
+                                            "bytes":  6078,
+                                            "sha256":  "4ebd985f35a27a11fdc0ea01b2e54ff7044bd58136f537cdf10abe3f6a8ffce9"
+                                        },
+                                        {
+                                            "name":  "ZY0DG8rUnCA.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+                                            "bytes":  173784,
+                                            "sha256":  "c3221f1b3aeaa3de531ab59858ca11b3b113f5e21c6a7839ffce950fd6974ddc"
+                                        },
+                                        {
+                                            "name":  "ZY0DG8rUnCA.audio.elevenlabs_scribe_v2.word.thr0.4.turns.csv",
+                                            "bytes":  4408,
+                                            "sha256":  "847cd5b748981ad16db705446938d7e3d7282a1111873422af8017c57d0cccb9"
+                                        },
+                                        {
+                                            "name":  "ZY0DG8rUnCA.audio.elevenlabs_scribe_v2.word.thr0.4.turns.json",
+                                            "bytes":  10183,
+                                            "sha256":  "caaee07e6e01172a3d76a4ff9875b00d135eab8fd6f5ccf61dcfb48353ca4eba"
+                                        },
+                                        {
+                                            "name":  "ZY0DG8rUnCA.canonical_diarization.json",
+                                            "bytes":  181059,
+                                            "sha256":  "e04e6a3f2d6e5a94dad8d6fcca52691ba89c10a0af7043385d7c90a2ab828743"
+                                        },
+                                        {
+                                            "name":  "ZY0DG8rUnCA.elevenlabs_best_diarization.csv",
+                                            "bytes":  7070,
+                                            "sha256":  "22cca08143009e9677216ba1cc4d884f57b27d3a1eb40632bb417654eb22183f"
+                                        },
+                                        {
+                                            "name":  "ZY0DG8rUnCA.elevenlabs_best_diarization.json",
+                                            "bytes":  31286,
+                                            "sha256":  "b513a3ca0d02d03b60e50dab91668df9ec912898d8b26bc3994f2154316b9bae"
+                                        },
+                                        {
+                                            "name":  "ZY0DG8rUnCA.elevenlabs_best_diarization.md",
+                                            "bytes":  7558,
+                                            "sha256":  "4f99e768a14d5f55a0b87b047443b23930f562e90f34af0a1b62d79ebfc53814"
+                                        }
+                                    ]
+                      }
+                  ]
+}

@@ -1,0 +1,728 @@
+{
+  "name": "KdOXM3I_5hk_livewindow_60_90_cuda",
+  "source_validation_output": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_validation\\live_window_corpus_60_90_cuda\\KdOXM3I_5hk_livewindow_60_90_cuda.json",
+  "url": "https://www.youtube.com/watch?v=KdOXM3I_5hk",
+  "video_id": "KdOXM3I_5hk",
+  "audio_file": "D:\\Projekte\\WhoSpeaks\\tools\\.local_filefeed_media\\KdOXM3I_5hk.audio.mp3",
+  "canonical": "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_KdOXM3I_5hk\\KdOXM3I_5hk.canonical_diarization.json",
+  "sample_rate": 16000,
+  "sentence_count": 191,
+  "providers": [
+    "espnet_ecapa_wavlm_joint",
+    "espnet_rawnet3",
+    "jungjee_rawnet3",
+    "nemo_titanet_large",
+    "pyannote_embedding",
+    "pyannote_wespeaker_resnet34_lm",
+    "resemblyzer",
+    "speaker3d_campplus",
+    "speaker3d_eres2netv2",
+    "speechbrain_ecapa",
+    "speechbrain_resnet",
+    "speechbrain_xvector",
+    "wavlm_base_sv",
+    "wespeaker_campplus",
+    "wespeaker_resnet34_lm_onnx"
+  ],
+  "embedding_device": "cuda",
+  "embedding_python": "D:\\Projekte\\WhoSpeaks\\.venv-voice-embeddings\\Scripts\\python.exe",
+  "min_embed_seconds": 0.5,
+  "audio_files": "live_embedding_input",
+  "audio_preprocessing": "pad_audio(trim_silence(raw_sentence_audio), min_embed_seconds)",
+  "providers_requested": [
+    "espnet_ecapa_wavlm_joint",
+    "speaker3d_campplus",
+    "wespeaker_campplus",
+    "wespeaker_resnet34_lm_onnx",
+    "pyannote_wespeaker_resnet34_lm",
+    "espnet_rawnet3",
+    "speaker3d_eres2netv2",
+    "pyannote_embedding",
+    "speechbrain_ecapa",
+    "speechbrain_resnet",
+    "wavlm_base_sv",
+    "jungjee_rawnet3",
+    "nemo_titanet_large",
+    "resemblyzer",
+    "speechbrain_xvector"
+  ],
+  "providers_selected": [
+    "espnet_ecapa_wavlm_joint",
+    "speaker3d_campplus",
+    "wespeaker_campplus",
+    "wespeaker_resnet34_lm_onnx",
+    "pyannote_wespeaker_resnet34_lm",
+    "espnet_rawnet3",
+    "speaker3d_eres2netv2",
+    "pyannote_embedding",
+    "speechbrain_ecapa",
+    "speechbrain_resnet",
+    "wavlm_base_sv",
+    "jungjee_rawnet3",
+    "nemo_titanet_large",
+    "resemblyzer",
+    "speechbrain_xvector"
+  ],
+  "providers_skipped_for_latency": [],
+  "provider_latency_threshold_ms": 350.0,
+  "provider_latency_benchmark": {
+    "espnet_ecapa_wavlm_joint": {
+      "provider": "espnet_ecapa_wavlm_joint",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 94.02860002592206,
+      "median_ms": 106.681999983266,
+      "mean_ms": 107.60488002561033,
+      "max_ms": 118.32070001401007,
+      "timings_ms": [
+        105.03800003789365,
+        106.681999983266,
+        113.95510006695986,
+        118.32070001401007,
+        94.02860002592206
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 105.03800003789365
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 106.681999983266
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 113.95510006695986
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 118.32070001401007
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 94.02860002592206
+        }
+      ]
+    },
+    "speaker3d_campplus": {
+      "provider": "speaker3d_campplus",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 82.86490000318736,
+      "median_ms": 84.9211000604555,
+      "mean_ms": 91.23418000526726,
+      "max_ms": 117.30029992759228,
+      "timings_ms": [
+        84.82350001577288,
+        86.2611000193283,
+        82.86490000318736,
+        84.9211000604555,
+        117.30029992759228
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 84.82350001577288
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 86.2611000193283
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 82.86490000318736
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 84.9211000604555
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 117.30029992759228
+        }
+      ]
+    },
+    "wespeaker_campplus": {
+      "provider": "wespeaker_campplus",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 266.42090000677854,
+      "median_ms": 289.4505999283865,
+      "mean_ms": 294.59569996688515,
+      "max_ms": 325.95349999610335,
+      "timings_ms": [
+        289.4505999283865,
+        266.42090000677854,
+        276.48979995865375,
+        314.6636999445036,
+        325.95349999610335
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 289.4505999283865
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 266.42090000677854
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 276.48979995865375
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 314.6636999445036
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 325.95349999610335
+        }
+      ]
+    },
+    "wespeaker_resnet34_lm_onnx": {
+      "provider": "wespeaker_resnet34_lm_onnx",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 34.46260001510382,
+      "median_ms": 35.169800044968724,
+      "mean_ms": 37.01175998430699,
+      "max_ms": 40.64609995111823,
+      "timings_ms": [
+        40.64609995111823,
+        40.12809996493161,
+        34.652199945412576,
+        34.46260001510382,
+        35.169800044968724
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 40.64609995111823
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 40.12809996493161
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 34.652199945412576
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 34.46260001510382
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 35.169800044968724
+        }
+      ]
+    },
+    "pyannote_wespeaker_resnet34_lm": {
+      "provider": "pyannote_wespeaker_resnet34_lm",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 26.776499929837883,
+      "median_ms": 27.719999896362424,
+      "mean_ms": 27.620099973864853,
+      "max_ms": 28.288800036534667,
+      "timings_ms": [
+        27.505000005476177,
+        27.810200001113117,
+        27.719999896362424,
+        28.288800036534667,
+        26.776499929837883
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 27.505000005476177
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 27.810200001113117
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 27.719999896362424
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 28.288800036534667
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 26.776499929837883
+        }
+      ]
+    },
+    "espnet_rawnet3": {
+      "provider": "espnet_rawnet3",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 28.469600016251206,
+      "median_ms": 31.343399896286428,
+      "mean_ms": 60.72951997630298,
+      "max_ms": 109.99749996699393,
+      "timings_ms": [
+        109.99749996699393,
+        105.23999994620681,
+        28.469600016251206,
+        28.597100055776536,
+        31.343399896286428
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 109.99749996699393
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 105.23999994620681
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 28.469600016251206
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 28.597100055776536
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 31.343399896286428
+        }
+      ]
+    },
+    "speaker3d_eres2netv2": {
+      "provider": "speaker3d_eres2netv2",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 50.74159998912364,
+      "median_ms": 55.76590006239712,
+      "mean_ms": 55.70202001836151,
+      "max_ms": 59.48110006283969,
+      "timings_ms": [
+        56.942999945022166,
+        59.48110006283969,
+        50.74159998912364,
+        55.76590006239712,
+        55.57850003242493
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 56.942999945022166
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 59.48110006283969
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 50.74159998912364
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 55.76590006239712
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 55.57850003242493
+        }
+      ]
+    },
+    "pyannote_embedding": {
+      "provider": "pyannote_embedding",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 21.467400016263127,
+      "median_ms": 21.702099940739572,
+      "mean_ms": 23.250499996356666,
+      "max_ms": 29.040800058282912,
+      "timings_ms": [
+        21.467800019308925,
+        22.574399947188795,
+        21.467400016263127,
+        21.702099940739572,
+        29.040800058282912
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 21.467800019308925
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 22.574399947188795
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 21.467400016263127
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 21.702099940739572
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 29.040800058282912
+        }
+      ]
+    },
+    "speechbrain_ecapa": {
+      "provider": "speechbrain_ecapa",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 29.314099927432835,
+      "median_ms": 30.840600025840104,
+      "mean_ms": 31.407719990238547,
+      "max_ms": 33.87629997450858,
+      "timings_ms": [
+        33.87629997450858,
+        29.314099927432835,
+        33.13450003042817,
+        29.873099992983043,
+        30.840600025840104
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 33.87629997450858
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 29.314099927432835
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 33.13450003042817
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 29.873099992983043
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 30.840600025840104
+        }
+      ]
+    },
+    "speechbrain_resnet": {
+      "provider": "speechbrain_resnet",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 43.057900038547814,
+      "median_ms": 49.046200001612306,
+      "mean_ms": 49.589919997379184,
+      "max_ms": 58.38890001177788,
+      "timings_ms": [
+        49.046200001612306,
+        58.38890001177788,
+        49.29619992617518,
+        48.160400008782744,
+        43.057900038547814
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 49.046200001612306
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 58.38890001177788
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 49.29619992617518
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 48.160400008782744
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 43.057900038547814
+        }
+      ]
+    },
+    "wavlm_base_sv": {
+      "provider": "wavlm_base_sv",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 40.85969994775951,
+      "median_ms": 44.654599973000586,
+      "mean_ms": 44.518259982578456,
+      "max_ms": 47.70999995525926,
+      "timings_ms": [
+        43.604500009678304,
+        47.70999995525926,
+        44.654599973000586,
+        45.76250002719462,
+        40.85969994775951
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 43.604500009678304
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 47.70999995525926
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 44.654599973000586
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 45.76250002719462
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 40.85969994775951
+        }
+      ]
+    },
+    "jungjee_rawnet3": {
+      "provider": "jungjee_rawnet3",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 33.24850008357316,
+      "median_ms": 35.533999907784164,
+      "mean_ms": 35.54060000460595,
+      "max_ms": 38.632199983112514,
+      "timings_ms": [
+        33.24850008357316,
+        36.62410005927086,
+        33.664199989289045,
+        35.533999907784164,
+        38.632199983112514
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 33.24850008357316
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 36.62410005927086
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 33.664199989289045
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 35.533999907784164
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 38.632199983112514
+        }
+      ]
+    },
+    "nemo_titanet_large": {
+      "provider": "nemo_titanet_large",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 41.20969993527979,
+      "median_ms": 42.785100056789815,
+      "mean_ms": 42.94231999665499,
+      "max_ms": 44.685799977742136,
+      "timings_ms": [
+        41.3702999940142,
+        44.660700019448996,
+        41.20969993527979,
+        44.685799977742136,
+        42.785100056789815
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 41.3702999940142
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 44.660700019448996
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 41.20969993527979
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 44.685799977742136
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 42.785100056789815
+        }
+      ]
+    },
+    "resemblyzer": {
+      "provider": "resemblyzer",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 34.94909999426454,
+      "median_ms": 48.459700075909495,
+      "mean_ms": 50.36087997723371,
+      "max_ms": 69.82039997819811,
+      "timings_ms": [
+        62.73409991990775,
+        69.82039997819811,
+        35.84109991788864,
+        48.459700075909495,
+        34.94909999426454
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 62.73409991990775
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 69.82039997819811
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 35.84109991788864
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 48.459700075909495
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 34.94909999426454
+        }
+      ]
+    },
+    "speechbrain_xvector": {
+      "provider": "speechbrain_xvector",
+      "ok": true,
+      "device": "cuda",
+      "warmups": 2,
+      "runs": 5,
+      "best_ms": 19.730300060473382,
+      "median_ms": 19.92460002657026,
+      "mean_ms": 20.315419998951256,
+      "max_ms": 21.844999981112778,
+      "timings_ms": [
+        19.92460002657026,
+        19.83849995303899,
+        20.23869997356087,
+        21.844999981112778,
+        19.730300060473382
+      ],
+      "timing_rows": [
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\aHGd6LqAVzw_livewindow_60_90_cuda\\audio\\sentence_0004.wav",
+          "ms": 19.92460002657026
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\ZY0DG8rUnCA_livewindow_60_90_cuda\\audio\\sentence_0073.wav",
+          "ms": 19.83849995303899
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0062.wav",
+          "ms": 20.23869997356087
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\F2-2RBi1qzY_livewindow_60_90_cuda\\audio\\sentence_0039.wav",
+          "ms": 21.844999981112778
+        },
+        {
+          "path": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda\\20v1OxUXcQY_livewindow_60_90_cuda\\audio\\sentence_0069.wav",
+          "ms": 19.730300060473382
+        }
+      ]
+    }
+  },
+  "providers_cached": [
+    "espnet_ecapa_wavlm_joint",
+    "espnet_rawnet3",
+    "jungjee_rawnet3",
+    "nemo_titanet_large",
+    "pyannote_embedding",
+    "pyannote_wespeaker_resnet34_lm",
+    "resemblyzer",
+    "speaker3d_campplus",
+    "speaker3d_eres2netv2",
+    "speechbrain_ecapa",
+    "speechbrain_resnet",
+    "speechbrain_xvector",
+    "wavlm_base_sv",
+    "wespeaker_campplus",
+    "wespeaker_resnet34_lm_onnx"
+  ],
+  "providers_extra_cached": [],
+  "providers_succeeded": [
+    "espnet_ecapa_wavlm_joint",
+    "espnet_rawnet3",
+    "jungjee_rawnet3",
+    "nemo_titanet_large",
+    "pyannote_embedding",
+    "pyannote_wespeaker_resnet34_lm",
+    "resemblyzer",
+    "speaker3d_campplus",
+    "speaker3d_eres2netv2",
+    "speechbrain_ecapa",
+    "speechbrain_resnet",
+    "speechbrain_xvector",
+    "wavlm_base_sv",
+    "wespeaker_campplus",
+    "wespeaker_resnet34_lm_onnx"
+  ],
+  "providers_failed": [],
+  "embedding_cache_basis": "live_window_sentence_audio",
+  "centralized_from": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda_plus_selected5\\KdOXM3I_5hk_livewindow_60_90_cuda",
+  "centralized_source_kind": "whospeaks_live_window_cache",
+  "providers_required": [
+    "espnet_ecapa_wavlm_joint",
+    "espnet_rawnet3",
+    "jungjee_rawnet3",
+    "nemo_titanet_large",
+    "pyannote_embedding",
+    "pyannote_wespeaker_resnet34_lm",
+    "resemblyzer",
+    "speaker3d_campplus",
+    "speaker3d_eres2netv2",
+    "speechbrain_ecapa",
+    "speechbrain_resnet",
+    "speechbrain_xvector",
+    "wavlm_base_sv",
+    "wespeaker_campplus",
+    "wespeaker_resnet34_lm_onnx"
+  ],
+  "provider_count": 15,
+  "centralized_validation_issues": []
+}

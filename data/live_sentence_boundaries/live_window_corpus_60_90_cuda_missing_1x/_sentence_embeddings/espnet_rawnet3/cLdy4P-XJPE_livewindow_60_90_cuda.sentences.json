@@ -1,0 +1,1354 @@
+{
+  "provider": "espnet_rawnet3",
+  "video": "cLdy4P-XJPE",
+  "folder": "cLdy4P-XJPE_livewindow_60_90_cuda",
+  "sentence_file": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\cLdy4P-XJPE_livewindow_60_90_cuda\\sentences.jsonl",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    134,
+    192
+  ],
+  "elapsed_seconds": 17.055038999998942,
+  "sentences": [
+    {
+      "index": 0,
+      "text": "It's been a busy week leading up to the nation's 250th anniversary, with major Supreme Court decisions and more primary upsets.",
+      "start": 0.0,
+      "end": 7.67,
+      "audio_length_seconds": 7.67,
+      "embedding_audio_seconds": 7.53,
+      "audio_file": "audio\\sentence_0000.wav",
+      "word_count": 21
+    },
+    {
+      "index": 1,
+      "text": "To discuss all this further, we turn now to the analysis of Brooks and Capehart.",
+      "start": 7.67,
+      "end": 11.72,
+      "audio_length_seconds": 4.05,
+      "embedding_audio_seconds": 3.79,
+      "audio_file": "audio\\sentence_0001.wav",
+      "word_count": 15
+    },
+    {
+      "index": 2,
+      "text": "That's The Atlantic's David Brooks and Jonathan Capehart of MSNOW.",
+      "start": 11.72,
+      "end": 15.52,
+      "audio_length_seconds": 3.8,
+      "embedding_audio_seconds": 3.66,
+      "audio_file": "audio\\sentence_0002.wav",
+      "word_count": 10
+    },
+    {
+      "index": 3,
+      "text": "great to see you both.",
+      "start": 15.52,
+      "end": 16.45,
+      "audio_length_seconds": 0.93,
+      "embedding_audio_seconds": 0.93,
+      "audio_file": "audio\\sentence_0003.wav",
+      "word_count": 5
+    },
+    {
+      "index": 4,
+      "text": "Let's begin with the Supreme Court.",
+      "start": 16.45,
+      "end": 18.1,
+      "audio_length_seconds": 1.65,
+      "embedding_audio_seconds": 1.65,
+      "audio_file": "audio\\sentence_0004.wav",
+      "word_count": 6
+    },
+    {
+      "index": 5,
+      "text": "Closing out a term with some major decisions.",
+      "start": 18.41,
+      "end": 20.72,
+      "audio_length_seconds": 2.31,
+      "embedding_audio_seconds": 2.31,
+      "audio_file": "audio\\sentence_0005.wav",
+      "word_count": 8
+    },
+    {
+      "index": 6,
+      "text": "A quick recap for everyone following along.",
+      "start": 20.72,
+      "end": 22.92,
+      "audio_length_seconds": 2.2,
+      "embedding_audio_seconds": 2.2,
+      "audio_file": "audio\\sentence_0006.wav",
+      "word_count": 7
+    },
+    {
+      "index": 7,
+      "text": "over the term.",
+      "start": 22.92,
+      "end": 24.09,
+      "audio_length_seconds": 1.17,
+      "embedding_audio_seconds": 1.17,
+      "audio_file": "audio\\sentence_0007.wav",
+      "word_count": 3
+    },
+    {
+      "index": 8,
+      "text": "They handed the president some losses on signature issues like tariffs, birthright citizenship, mail -in ballots, that he couldn't fire a member of the Fed board.",
+      "start": 24.09,
+      "end": 31.32,
+      "audio_length_seconds": 7.23,
+      "embedding_audio_seconds": 7.02,
+      "audio_file": "audio\\sentence_0008.wav",
+      "word_count": 26
+    },
+    {
+      "index": 9,
+      "text": "But they also said he could fire members of independent agencies.",
+      "start": 31.32,
+      "end": 34.65,
+      "audio_length_seconds": 3.33,
+      "embedding_audio_seconds": 3.11,
+      "audio_file": "audio\\sentence_0009.wav",
+      "word_count": 11
+    },
+    {
+      "index": 10,
+      "text": "They upheld a state ban on trans women in sports.",
+      "start": 34.65,
+      "end": 37.54,
+      "audio_length_seconds": 2.89,
+      "embedding_audio_seconds": 2.89,
+      "audio_file": "audio\\sentence_0010.wav",
+      "word_count": 10
+    },
+    {
+      "index": 11,
+      "text": "They sided with him on immigration restrictions.",
+      "start": 37.54,
+      "end": 40.344,
+      "audio_length_seconds": 2.804,
+      "embedding_audio_seconds": 2.534,
+      "audio_file": "audio\\sentence_0011.wav",
+      "word_count": 7
+    },
+    {
+      "index": 12,
+      "text": "David, one common thread seems to be an expansion of executive authority given to President Trump.",
+      "start": 40.344,
+      "end": 46.12,
+      "audio_length_seconds": 5.776,
+      "embedding_audio_seconds": 5.776,
+      "audio_file": "audio\\sentence_0012.wav",
+      "word_count": 16
+    },
+    {
+      "index": 13,
+      "text": "Is that a good thing?",
+      "start": 46.12,
+      "end": 47.57,
+      "audio_length_seconds": 1.45,
+      "embedding_audio_seconds": 1.36,
+      "audio_file": "audio\\sentence_0013.wav",
+      "word_count": 5
+    },
+    {
+      "index": 14,
+      "text": "No, but I would have to say on the big authoritarian power grabs that Trump tried, whether it's the Federal Reserve, birthright citizenship, the tariffs, whether he could put National Guard troops in Chicago against the local officials' interests.",
+      "start": 48.31,
+      "end": 62.22,
+      "audio_length_seconds": 13.91,
+      "embedding_audio_seconds": 13.91,
+      "audio_file": "audio\\sentence_0014.wav",
+      "word_count": 39
+    },
+    {
+      "index": 15,
+      "text": "The court stood up to Trump and slapped him back down.",
+      "start": 62.22,
+      "end": 65.59,
+      "audio_length_seconds": 3.37,
+      "embedding_audio_seconds": 3.06,
+      "audio_file": "audio\\sentence_0015.wav",
+      "word_count": 11
+    },
+    {
+      "index": 16,
+      "text": "And the court hates to take on a sitting president because they don't want to take on an elected official.",
+      "start": 65.59,
+      "end": 70.52,
+      "audio_length_seconds": 4.93,
+      "embedding_audio_seconds": 4.64,
+      "audio_file": "audio\\sentence_0016.wav",
+      "word_count": 20
+    },
+    {
+      "index": 17,
+      "text": "Remember, the Roberts courts upheld Obamacare because they just didn't want to upset what democracy had brought to us.",
+      "start": 70.52,
+      "end": 75.89,
+      "audio_length_seconds": 5.37,
+      "embedding_audio_seconds": 5.11,
+      "audio_file": "audio\\sentence_0017.wav",
+      "word_count": 19
+    },
+    {
+      "index": 18,
+      "text": "And so I'd say on the big authoritarian paragraphs, the Supreme Court did pretty good.",
+      "start": 75.89,
+      "end": 80.36,
+      "audio_length_seconds": 4.47,
+      "embedding_audio_seconds": 4.04,
+      "audio_file": "audio\\sentence_0018.wav",
+      "word_count": 15
+    },
+    {
+      "index": 19,
+      "text": "And it is this is grading on a very low curve, but it's the most effective branch of government.",
+      "start": 80.7,
+      "end": 85.052,
+      "audio_length_seconds": 4.352,
+      "embedding_audio_seconds": 4.252,
+      "audio_file": "audio\\sentence_0019.wav",
+      "word_count": 19
+    },
+    {
+      "index": 20,
+      "text": "we have right now.",
+      "start": 85.052,
+      "end": 85.842,
+      "audio_length_seconds": 0.79,
+      "embedding_audio_seconds": 0.74,
+      "audio_file": "audio\\sentence_0020.wav",
+      "word_count": 4
+    },
+    {
+      "index": 21,
+      "text": "And so on the slaughter case, which was about the FTC and all those semi -independent agencies.",
+      "start": 86.182,
+      "end": 92.312,
+      "audio_length_seconds": 6.13,
+      "embedding_audio_seconds": 6.13,
+      "audio_file": "audio\\sentence_0021.wav",
+      "word_count": 17
+    },
+    {
+      "index": 22,
+      "text": "The firing of the commissioner.",
+      "start": 92.312,
+      "end": 93.272,
+      "audio_length_seconds": 0.96,
+      "embedding_audio_seconds": 0.96,
+      "audio_file": "audio\\sentence_0022.wav",
+      "word_count": 5
+    },
+    {
+      "index": 23,
+      "text": "The firing of the commissioner.",
+      "start": 93.272,
+      "end": 94.242,
+      "audio_length_seconds": 0.97,
+      "embedding_audio_seconds": 0.97,
+      "audio_file": "audio\\sentence_0023.wav",
+      "word_count": 5
+    },
+    {
+      "index": 24,
+      "text": "It's not my preference.",
+      "start": 94.242,
+      "end": 95.672,
+      "audio_length_seconds": 1.43,
+      "embedding_audio_seconds": 1.43,
+      "audio_file": "audio\\sentence_0024.wav",
+      "word_count": 4
+    },
+    {
+      "index": 25,
+      "text": "I like the idea that starting mostly in the 1930s, Federal Reserve was obviously earlier, that we set up some agencies that are protected from raw politics.",
+      "start": 95.672,
+      "end": 105.322,
+      "audio_length_seconds": 9.65,
+      "embedding_audio_seconds": 9.22,
+      "audio_file": "audio\\sentence_0025.wav",
+      "word_count": 27
+    },
+    {
+      "index": 26,
+      "text": "And I think that was a good thing to do.",
+      "start": 105.322,
+      "end": 107.972,
+      "audio_length_seconds": 2.65,
+      "embedding_audio_seconds": 2.6,
+      "audio_file": "audio\\sentence_0026.wav",
+      "word_count": 10
+    },
+    {
+      "index": 27,
+      "text": "But, a significant branch of legal thinkers have thought, no, the administration is elected by a president.",
+      "start": 107.972,
+      "end": 116.002,
+      "audio_length_seconds": 8.03,
+      "embedding_audio_seconds": 7.49,
+      "audio_file": "audio\\sentence_0027.wav",
+      "word_count": 17
+    },
+    {
+      "index": 28,
+      "text": "It should not be cushioned off from democracy.",
+      "start": 116.002,
+      "end": 118.832,
+      "audio_length_seconds": 2.83,
+      "embedding_audio_seconds": 2.66,
+      "audio_file": "audio\\sentence_0028.wav",
+      "word_count": 8
+    },
+    {
+      "index": 29,
+      "text": "I think that's the wrong decision, but it's a reasonable decision.",
+      "start": 118.832,
+      "end": 122.182,
+      "audio_length_seconds": 3.35,
+      "embedding_audio_seconds": 3.35,
+      "audio_file": "audio\\sentence_0029.wav",
+      "word_count": 11
+    },
+    {
+      "index": 30,
+      "text": "And so what the court did on this slaughter case with the FTC and all the other independent agencies was not my preference, but reasonable.",
+      "start": 122.182,
+      "end": 129.552,
+      "audio_length_seconds": 7.37,
+      "embedding_audio_seconds": 7.1699,
+      "audio_file": "audio\\sentence_0030.wav",
+      "word_count": 25
+    },
+    {
+      "index": 31,
+      "text": "and I'd have to say on the big issues of preserving our democracy the Supreme Court did okay this year.",
+      "start": 129.552,
+      "end": 133.722,
+      "audio_length_seconds": 4.17,
+      "embedding_audio_seconds": 4.17,
+      "audio_file": "audio\\sentence_0031.wav",
+      "word_count": 20
+    },
+    {
+      "index": 32,
+      "text": "In the slaughter case, we should also underscore overturned 100 -year -old precedent as well.",
+      "start": 133.722,
+      "end": 138.072,
+      "audio_length_seconds": 4.35,
+      "embedding_audio_seconds": 4.35,
+      "audio_file": "audio\\sentence_0032.wav",
+      "word_count": 15
+    },
+    {
+      "index": 33,
+      "text": "Jonathan, how did you look at this?",
+      "start": 138.072,
+      "end": 139.982,
+      "audio_length_seconds": 1.91,
+      "embedding_audio_seconds": 1.83,
+      "audio_file": "audio\\sentence_0033.wav",
+      "word_count": 7
+    },
+    {
+      "index": 34,
+      "text": "Well, I don't know if the Supreme Court did, you know, OK by democracy.",
+      "start": 139.982,
+      "end": 146.392,
+      "audio_length_seconds": 6.41,
+      "embedding_audio_seconds": 6.41,
+      "audio_file": "audio\\sentence_0034.wav",
+      "word_count": 14
+    },
+    {
+      "index": 35,
+      "text": "I mean, David said you thought that the court didn't want to upset what democracy brought to us.",
+      "start": 146.392,
+      "end": 151.642,
+      "audio_length_seconds": 5.25,
+      "embedding_audio_seconds": 5.25,
+      "audio_file": "audio\\sentence_0035.wav",
+      "word_count": 18
+    },
+    {
+      "index": 36,
+      "text": "Democracy brought to us the Voting Rights Act of 1965, and the Supreme Court just gutted it, decimated it.",
+      "start": 152.242,
+      "end": 160.032,
+      "audio_length_seconds": 7.79,
+      "embedding_audio_seconds": 7.46,
+      "audio_file": "audio\\sentence_0036.wav",
+      "word_count": 19
+    },
+    {
+      "index": 37,
+      "text": "And states around the country, particularly in the South, moved quickly, with the same speed, if not faster, than when the court took the first whack at it in Shelby v. Holder.",
+      "start": 160.032,
+      "end": 172.522,
+      "audio_length_seconds": 12.49,
+      "embedding_audio_seconds": 12.41,
+      "audio_file": "audio\\sentence_0037.wav",
+      "word_count": 32
+    },
+    {
+      "index": 38,
+      "text": "So, I'm not as cheerful when it comes to the court in terms of, you know, standing up to the president on the big authoritarian pieces.",
+      "start": 172.522,
+      "end": 182.312,
+      "audio_length_seconds": 9.79,
+      "embedding_audio_seconds": 9.56,
+      "audio_file": "audio\\sentence_0038.wav",
+      "word_count": 26
+    },
+    {
+      "index": 39,
+      "text": "But the VRA and particularly Chief Justice Roberts really wanting to do something to his mind, correct it, predates President Trump.",
+      "start": 182.312,
+      "end": 193.002,
+      "audio_length_seconds": 10.69,
+      "embedding_audio_seconds": 10.53,
+      "audio_file": "audio\\sentence_0039.wav",
+      "word_count": 21
+    },
+    {
+      "index": 40,
+      "text": "But the other thing about the Supreme Court's term is that, you know, a lot of the decisions that they made, you know, it would have been nice if Congress were functioning and had actually, you know, exercised its Article I branch of powers to do some of these things.",
+      "start": 193.002,
+      "end": 210.186,
+      "audio_length_seconds": 17.184,
+      "embedding_audio_seconds": 17.184,
+      "audio_file": "audio\\sentence_0040.wav",
+      "word_count": 50
+    },
+    {
+      "index": 41,
+      "text": "I mean, it's great that the judiciary is functioning, but it'd be really nice if the legislative branch started acting like a co -equal branch of government instead of the staffing arm of the executive.",
+      "start": 210.186,
+      "end": 219.516,
+      "audio_length_seconds": 9.33,
+      "embedding_audio_seconds": 9.33,
+      "audio_file": "audio\\sentence_0041.wav",
+      "word_count": 35
+    },
+    {
+      "index": 42,
+      "text": "Well, let's talk a little bit about what could happen in that legislative branch, some of those primary upsets we talked about earlier, because in the past few weeks, we have seen anti -establishment wins for Democratic candidates in particular, first to New York.",
+      "start": 219.516,
+      "end": 232.146,
+      "audio_length_seconds": 12.63,
+      "embedding_audio_seconds": 12.59,
+      "audio_file": "audio\\sentence_0042.wav",
+      "word_count": 44
+    },
+    {
+      "index": 43,
+      "text": "We saw the Democratic Socialist candidate there, Daria Liza Vila -Chevalier, unseat the five -term congressman, Adriano Espaillat.",
+      "start": 232.146,
+      "end": 239.616,
+      "audio_length_seconds": 7.47,
+      "embedding_audio_seconds": 7.28,
+      "audio_file": "audio\\sentence_0043.wav",
+      "word_count": 18
+    },
+    {
+      "index": 44,
+      "text": "We also saw former New York Comptroller Brad Lander unseat Representative Dan Goldman.",
+      "start": 239.616,
+      "end": 244.366,
+      "audio_length_seconds": 4.75,
+      "embedding_audio_seconds": 4.54,
+      "audio_file": "audio\\sentence_0044.wav",
+      "word_count": 13
+    },
+    {
+      "index": 45,
+      "text": "Then, in Colorado, we saw Democratic Socialist Milat Kiros oust a 30 -year incumbent in Diana DeGette.",
+      "start": 244.366,
+      "end": 251.236,
+      "audio_length_seconds": 6.87,
+      "embedding_audio_seconds": 6.81,
+      "audio_file": "audio\\sentence_0045.wav",
+      "word_count": 17
+    },
+    {
+      "index": 46,
+      "text": "And we saw the state A.G., Phil Weiser, there, who ran to the left of Senator Michael Bennett, beat him in the gubernatorial primary there.",
+      "start": 251.236,
+      "end": 259.076,
+      "audio_length_seconds": 7.84,
+      "embedding_audio_seconds": 7.57,
+      "audio_file": "audio\\sentence_0046.wav",
+      "word_count": 26
+    },
+    {
+      "index": 47,
+      "text": "So, David, you see New York and Colorado.",
+      "start": 259.076,
+      "end": 261.986,
+      "audio_length_seconds": 2.91,
+      "embedding_audio_seconds": 2.91,
+      "audio_file": "audio\\sentence_0047.wav",
+      "word_count": 8
+    },
+    {
+      "index": 48,
+      "text": "Does two make a trend?",
+      "start": 261.986,
+      "end": 263.356,
+      "audio_length_seconds": 1.37,
+      "embedding_audio_seconds": 1.37,
+      "audio_file": "audio\\sentence_0048.wav",
+      "word_count": 5
+    },
+    {
+      "index": 49,
+      "text": "I think so.",
+      "start": 263.806,
+      "end": 264.376,
+      "audio_length_seconds": 0.57,
+      "embedding_audio_seconds": 0.57,
+      "audio_file": "audio\\sentence_0049.wav",
+      "word_count": 3
+    },
+    {
+      "index": 50,
+      "text": "I think this is big.",
+      "start": 264.606,
+      "end": 265.674,
+      "audio_length_seconds": 1.068,
+      "embedding_audio_seconds": 1.068,
+      "audio_file": "audio\\sentence_0050.wav",
+      "word_count": 5
+    },
+    {
+      "index": 51,
+      "text": "The Colorado story is a bigger story than the New York story.",
+      "start": 265.674,
+      "end": 267.776,
+      "audio_length_seconds": 2.102,
+      "embedding_audio_seconds": 2.102,
+      "audio_file": "audio\\sentence_0051.wav",
+      "word_count": 12
+    },
+    {
+      "index": 52,
+      "text": "New York's my hometown.",
+      "start": 268.106,
+      "end": 268.858,
+      "audio_length_seconds": 0.752,
+      "embedding_audio_seconds": 0.752,
+      "audio_file": "audio\\sentence_0052.wav",
+      "word_count": 4
+    },
+    {
+      "index": 53,
+      "text": "I love it.",
+      "start": 268.858,
+      "end": 269.298,
+      "audio_length_seconds": 0.44,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0053.wav",
+      "word_count": 3
+    },
+    {
+      "index": 54,
+      "text": "But Brooklyn hipsters and Columbia University are not exactly normal America.",
+      "start": 269.298,
+      "end": 274.488,
+      "audio_length_seconds": 5.19,
+      "embedding_audio_seconds": 5.19,
+      "audio_file": "audio\\sentence_0054.wav",
+      "word_count": 11
+    },
+    {
+      "index": 55,
+      "text": "But Colorado is Colorado.",
+      "start": 274.488,
+      "end": 276.938,
+      "audio_length_seconds": 2.45,
+      "embedding_audio_seconds": 2.45,
+      "audio_file": "audio\\sentence_0055.wav",
+      "word_count": 4
+    },
+    {
+      "index": 56,
+      "text": "It's a semi -purplish state.",
+      "start": 276.938,
+      "end": 279.208,
+      "audio_length_seconds": 2.27,
+      "embedding_audio_seconds": 2.18,
+      "audio_file": "audio\\sentence_0056.wav",
+      "word_count": 5
+    },
+    {
+      "index": 57,
+      "text": "Michael Bennett was elected three times to the U.S. Senate statewide and he lost.",
+      "start": 279.208,
+      "end": 282.818,
+      "audio_length_seconds": 3.61,
+      "embedding_audio_seconds": 3.41,
+      "audio_file": "audio\\sentence_0057.wav",
+      "word_count": 15
+    },
+    {
+      "index": 58,
+      "text": "And then you had the Democratic Socialist candidate win.",
+      "start": 282.818,
+      "end": 286.448,
+      "audio_length_seconds": 3.63,
+      "embedding_audio_seconds": 3.45,
+      "audio_file": "audio\\sentence_0058.wav",
+      "word_count": 9
+    },
+    {
+      "index": 59,
+      "text": "and what you see it's been it's been compared I think accurately to when Dave Bratt beat Eric Cantor in the Republican primary and you saw a bunch of people said these aren't my party, screw them.",
+      "start": 286.448,
+      "end": 298.778,
+      "audio_length_seconds": 12.33,
+      "embedding_audio_seconds": 12.23,
+      "audio_file": "audio\\sentence_0059.wav",
+      "word_count": 37
+    },
+    {
+      "index": 60,
+      "text": "We're going to tear it all down.",
+      "start": 299.078,
+      "end": 300.548,
+      "audio_length_seconds": 1.47,
+      "embedding_audio_seconds": 1.38,
+      "audio_file": "audio\\sentence_0060.wav",
+      "word_count": 7
+    },
+    {
+      "index": 61,
+      "text": "And in that case, and I think in this case, Democrats are, they're just looking around for the most furious candidate because they're furious at what's happened.",
+      "start": 301.268,
+      "end": 307.798,
+      "audio_length_seconds": 6.53,
+      "embedding_audio_seconds": 6.41,
+      "audio_file": "audio\\sentence_0061.wav",
+      "word_count": 27
+    },
+    {
+      "index": 62,
+      "text": "And so they're doing that.",
+      "start": 307.798,
+      "end": 309.468,
+      "audio_length_seconds": 1.67,
+      "embedding_audio_seconds": 1.27,
+      "audio_file": "audio\\sentence_0062.wav",
+      "word_count": 5
+    },
+    {
+      "index": 63,
+      "text": "And I understand the fury.",
+      "start": 309.468,
+      "end": 310.858,
+      "audio_length_seconds": 1.39,
+      "embedding_audio_seconds": 1.2,
+      "audio_file": "audio\\sentence_0063.wav",
+      "word_count": 5
+    },
+    {
+      "index": 64,
+      "text": "My problem is the DSA, the Democratic Socialists of America, should not be where you go.",
+      "start": 310.858,
+      "end": 315.628,
+      "audio_length_seconds": 4.77,
+      "embedding_audio_seconds": 4.59,
+      "audio_file": "audio\\sentence_0064.wav",
+      "word_count": 16
+    },
+    {
+      "index": 65,
+      "text": "The Democratic Socialist Party was started in the 1980s by Michael Harrington, a very wonderful guy, a serious intellectual, and he wanted the DSA to, you know, move us toward Denmark, a perfectly good political position.",
+      "start": 315.628,
+      "end": 326.238,
+      "audio_length_seconds": 10.61,
+      "embedding_audio_seconds": 10.17,
+      "audio_file": "audio\\sentence_0065.wav",
+      "word_count": 36
+    },
+    {
+      "index": 66,
+      "text": "Over the last five years, that party has been hijacked and taken over by an authoritarian wing which supported Hamas on October 7th, who supports Cuba, who supports China, who supports Maduro's Venezuela, who supports pretty much every left -wing authoritarian regime in the country.",
+      "start": 326.238,
+      "end": 344.208,
+      "audio_length_seconds": 17.97,
+      "embedding_audio_seconds": 17.52,
+      "audio_file": "audio\\sentence_0066.wav",
+      "word_count": 45
+    },
+    {
+      "index": 67,
+      "text": "So I understand wanting to register a protest against Washington, but are the Democrats really going to take a position that we're going to become left -wing authoritarians just as the Republicans become right -wing authoritarians?",
+      "start": 344.208,
+      "end": 355.218,
+      "audio_length_seconds": 11.01,
+      "embedding_audio_seconds": 10.68,
+      "audio_file": "audio\\sentence_0067.wav",
+      "word_count": 36
+    },
+    {
+      "index": 68,
+      "text": "And the final thing to be said is, the Democratic Party became great, not by fighting the right, but by fighting the left.",
+      "start": 355.218,
+      "end": 361.588,
+      "audio_length_seconds": 6.37,
+      "embedding_audio_seconds": 6.06,
+      "audio_file": "audio\\sentence_0068.wav",
+      "word_count": 23
+    },
+    {
+      "index": 69,
+      "text": "It was Hubert Humphrey in 1946 who pushed the communists out of the Democratic, the DFL, the Democratic Firework Labor Party.",
+      "start": 361.588,
+      "end": 368.218,
+      "audio_length_seconds": 6.63,
+      "embedding_audio_seconds": 6.3,
+      "audio_file": "audio\\sentence_0069.wav",
+      "word_count": 21
+    },
+    {
+      "index": 70,
+      "text": "It was George Meany who pushed the communists out of the labor movement, basically.",
+      "start": 368.218,
+      "end": 373.268,
+      "audio_length_seconds": 5.05,
+      "embedding_audio_seconds": 4.77,
+      "audio_file": "audio\\sentence_0070.wav",
+      "word_count": 14
+    },
+    {
+      "index": 71,
+      "text": "and they defined who they were by pushing against the right, but also by pushing against the left.",
+      "start": 373.268,
+      "end": 377.978,
+      "audio_length_seconds": 4.71,
+      "embedding_audio_seconds": 4.62,
+      "audio_file": "audio\\sentence_0071.wav",
+      "word_count": 18
+    },
+    {
+      "index": 72,
+      "text": "we're gonna see if the Democratic mainstream has the guts, the conviction, or even the clarity of thought to push against what's happening.",
+      "start": 377.978,
+      "end": 385.028,
+      "audio_length_seconds": 7.05,
+      "embedding_audio_seconds": 6.72,
+      "audio_file": "audio\\sentence_0072.wav",
+      "word_count": 23
+    },
+    {
+      "index": 73,
+      "text": "And we'll see.",
+      "start": 385.028,
+      "end": 385.798,
+      "audio_length_seconds": 0.77,
+      "embedding_audio_seconds": 0.61,
+      "audio_file": "audio\\sentence_0073.wav",
+      "word_count": 3
+    },
+    {
+      "index": 74,
+      "text": "Jonathan.",
+      "start": 386.028,
+      "end": 386.678,
+      "audio_length_seconds": 0.65,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0074.wav",
+      "word_count": 1
+    },
+    {
+      "index": 75,
+      "text": "I'm not going to get, um...",
+      "start": 386.678,
+      "end": 391.508,
+      "audio_length_seconds": 4.83,
+      "embedding_audio_seconds": 4.57,
+      "audio_file": "audio\\sentence_0075.wav",
+      "word_count": 6
+    },
+    {
+      "index": 76,
+      "text": "Outrage.",
+      "start": 392.498,
+      "end": 392.926,
+      "audio_length_seconds": 0.428,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0076.wav",
+      "word_count": 1
+    },
+    {
+      "index": 77,
+      "text": "I'm not going to fall into the Democratic trap of, oh my god, the Democratic socialists are taking over the country, when we're talking about, one, wins in deep blue seats in congressional districts.",
+      "start": 392.926,
+      "end": 403.616,
+      "audio_length_seconds": 10.69,
+      "embedding_audio_seconds": 10.69,
+      "audio_file": "audio\\sentence_0077.wav",
+      "word_count": 34
+    },
+    {
+      "index": 78,
+      "text": "Two, when we're talking about what really to me is the big trend here is that the establishment, the incumbents are being thrown out.",
+      "start": 404.276,
+      "end": 413.486,
+      "audio_length_seconds": 9.21,
+      "embedding_audio_seconds": 9.21,
+      "audio_file": "audio\\sentence_0078.wav",
+      "word_count": 24
+    },
+    {
+      "index": 79,
+      "text": "And folks are angry.",
+      "start": 413.486,
+      "end": 415.616,
+      "audio_length_seconds": 2.13,
+      "embedding_audio_seconds": 1.78,
+      "audio_file": "audio\\sentence_0079.wav",
+      "word_count": 4
+    },
+    {
+      "index": 80,
+      "text": "They're angry because of affordability.",
+      "start": 415.616,
+      "end": 418.54,
+      "audio_length_seconds": 2.924,
+      "embedding_audio_seconds": 2.924,
+      "audio_file": "audio\\sentence_0080.wav",
+      "word_count": 5
+    },
+    {
+      "index": 81,
+      "text": "They're angry because the president is robbing the nation blind.",
+      "start": 418.54,
+      "end": 422.184,
+      "audio_length_seconds": 3.644,
+      "embedding_audio_seconds": 3.644,
+      "audio_file": "audio\\sentence_0081.wav",
+      "word_count": 10
+    },
+    {
+      "index": 82,
+      "text": "they're angry because it doesn't seem like any of these elected officials are doing anything to hold the president accountable for what's happened.",
+      "start": 422.184,
+      "end": 430.414,
+      "audio_length_seconds": 8.23,
+      "embedding_audio_seconds": 8.23,
+      "audio_file": "audio\\sentence_0082.wav",
+      "word_count": 23
+    },
+    {
+      "index": 83,
+      "text": "I mean, Diana DeGette is no conservative.",
+      "start": 430.414,
+      "end": 433.564,
+      "audio_length_seconds": 3.15,
+      "embedding_audio_seconds": 2.93,
+      "audio_file": "audio\\sentence_0083.wav",
+      "word_count": 7
+    },
+    {
+      "index": 84,
+      "text": "She was a progressive.",
+      "start": 433.564,
+      "end": 434.734,
+      "audio_length_seconds": 1.17,
+      "embedding_audio_seconds": 1.17,
+      "audio_file": "audio\\sentence_0084.wav",
+      "word_count": 4
+    },
+    {
+      "index": 85,
+      "text": "Congress and Dan Goldman, not a big capital P progressive, but he was, you know, left of center.",
+      "start": 434.734,
+      "end": 441.864,
+      "audio_length_seconds": 7.13,
+      "embedding_audio_seconds": 7.13,
+      "audio_file": "audio\\sentence_0085.wav",
+      "word_count": 18
+    },
+    {
+      "index": 86,
+      "text": "Brad Lander, who another person who beat Dan Goldman, he's no socialist.",
+      "start": 441.864,
+      "end": 447.454,
+      "audio_length_seconds": 5.59,
+      "embedding_audio_seconds": 5.43,
+      "audio_file": "audio\\sentence_0086.wav",
+      "word_count": 12
+    },
+    {
+      "index": 87,
+      "text": "He's basically like a mainstream Democrat in New York City.",
+      "start": 447.454,
+      "end": 451.784,
+      "audio_length_seconds": 4.33,
+      "embedding_audio_seconds": 4.33,
+      "audio_file": "audio\\sentence_0087.wav",
+      "word_count": 10
+    },
+    {
+      "index": 88,
+      "text": "And so, to my mind, I think we need to pay attention to what voters are saying.",
+      "start": 451.784,
+      "end": 457.814,
+      "audio_length_seconds": 6.03,
+      "embedding_audio_seconds": 5.85,
+      "audio_file": "audio\\sentence_0088.wav",
+      "word_count": 17
+    },
+    {
+      "index": 89,
+      "text": "If they're choosing the Democratic Socialist candidate, then Democrats need to pay attention to why did they choose the DSA candidate and not someone who's a little closer to the center.",
+      "start": 457.814,
+      "end": 471.704,
+      "audio_length_seconds": 13.89,
+      "embedding_audio_seconds": 13.68,
+      "audio_file": "audio\\sentence_0089.wav",
+      "word_count": 31
+    },
+    {
+      "index": 90,
+      "text": "Could it be that their message on the economy, their message on what they're going to do, is resonating?",
+      "start": 471.704,
+      "end": 477.554,
+      "audio_length_seconds": 5.85,
+      "embedding_audio_seconds": 5.85,
+      "audio_file": "audio\\sentence_0090.wav",
+      "word_count": 19
+    },
+    {
+      "index": 91,
+      "text": "And, you know, quite honestly, you know, Mayor Mamdani, who has put his weight behind a lot of these candidates, the thing he has going for him is New York City is doing fine.",
+      "start": 477.554,
+      "end": 487.544,
+      "audio_length_seconds": 9.99,
+      "embedding_audio_seconds": 9.73,
+      "audio_file": "audio\\sentence_0091.wav",
+      "word_count": 34
+    },
+    {
+      "index": 92,
+      "text": "A lot of people predicted that, oh, you elect a socialist and the city will go to pot.",
+      "start": 487.544,
+      "end": 492.708,
+      "audio_length_seconds": 5.164,
+      "embedding_audio_seconds": 5.164,
+      "audio_file": "audio\\sentence_0092.wav",
+      "word_count": 18
+    },
+    {
+      "index": 93,
+      "text": "And instead, it's, I'm not going to say it's the opposite, but the dire predictions haven't proven true.",
+      "start": 492.708,
+      "end": 498.598,
+      "audio_length_seconds": 5.89,
+      "embedding_audio_seconds": 5.78,
+      "audio_file": "audio\\sentence_0093.wav",
+      "word_count": 18
+    },
+    {
+      "index": 94,
+      "text": "And so I think there's still time to look at other races to see whether the DSA is actually a thing, and a thing in the way that the Tea Party had become for Republicans in the way back.",
+      "start": 498.598,
+      "end": 512.148,
+      "audio_length_seconds": 13.55,
+      "embedding_audio_seconds": 13.42,
+      "audio_file": "audio\\sentence_0094.wav",
+      "word_count": 39
+    },
+    {
+      "index": 95,
+      "text": "Lots more races ahead.",
+      "start": 512.148,
+      "end": 513.36,
+      "audio_length_seconds": 1.212,
+      "embedding_audio_seconds": 1.182,
+      "audio_file": "audio\\sentence_0095.wav",
+      "word_count": 4
+    },
+    {
+      "index": 96,
+      "text": "We'll talk about it some more.",
+      "start": 513.36,
+      "end": 514.508,
+      "audio_length_seconds": 1.148,
+      "embedding_audio_seconds": 1.148,
+      "audio_file": "audio\\sentence_0096.wav",
+      "word_count": 6
+    },
+    {
+      "index": 97,
+      "text": "But I'm not sure if you heard or not, in the meantime, America's turning 250.",
+      "start": 514.508,
+      "end": 518.71,
+      "audio_length_seconds": 4.202,
+      "embedding_audio_seconds": 4.202,
+      "audio_file": "audio\\sentence_0097.wav",
+      "word_count": 15
+    },
+    {
+      "index": 98,
+      "text": "tomorrow.",
+      "start": 519.17,
+      "end": 519.66,
+      "audio_length_seconds": 0.49,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0098.wav",
+      "word_count": 1
+    },
+    {
+      "index": 99,
+      "text": "We have been talking about it a little bit.",
+      "start": 519.66,
+      "end": 521.584,
+      "audio_length_seconds": 1.924,
+      "embedding_audio_seconds": 1.924,
+      "audio_file": "audio\\sentence_0099.wav",
+      "word_count": 9
+    },
+    {
+      "index": 100,
+      "text": "When we step back to see how Americans are looking at their own country right now, we have some insights from our latest PBS News NPR Marist poll.",
+      "start": 521.584,
+      "end": 527.894,
+      "audio_length_seconds": 6.31,
+      "embedding_audio_seconds": 6.2701,
+      "audio_file": "audio\\sentence_0100.wav",
+      "word_count": 28
+    },
+    {
+      "index": 101,
+      "text": "I found 65% of people say that they're proud to be American.",
+      "start": 527.894,
+      "end": 532.444,
+      "audio_length_seconds": 4.55,
+      "embedding_audio_seconds": 4.41,
+      "audio_file": "audio\\sentence_0101.wav",
+      "word_count": 13
+    },
+    {
+      "index": 102,
+      "text": "Eighty -three percent say the country has moved away from its founding principles and ideals.",
+      "start": 532.444,
+      "end": 538.154,
+      "audio_length_seconds": 5.71,
+      "embedding_audio_seconds": 5.71,
+      "audio_file": "audio\\sentence_0102.wav",
+      "word_count": 15
+    },
+    {
+      "index": 103,
+      "text": "And at the same time, some 53 percent of Americans say the country's best days are still ahead of us.",
+      "start": 538.684,
+      "end": 544.936,
+      "audio_length_seconds": 6.252,
+      "embedding_audio_seconds": 6.252,
+      "audio_file": "audio\\sentence_0103.wav",
+      "word_count": 20
+    },
+    {
+      "index": 104,
+      "text": "So David, you see more reason to be concerned and there are more reason to be hopeful.",
+      "start": 544.936,
+      "end": 549.926,
+      "audio_length_seconds": 4.99,
+      "embedding_audio_seconds": 4.99,
+      "audio_file": "audio\\sentence_0104.wav",
+      "word_count": 17
+    },
+    {
+      "index": 105,
+      "text": "I'm hopeful.",
+      "start": 549.926,
+      "end": 550.536,
+      "audio_length_seconds": 0.61,
+      "embedding_audio_seconds": 0.61,
+      "audio_file": "audio\\sentence_0105.wav",
+      "word_count": 2
+    },
+    {
+      "index": 106,
+      "text": "We go through this.",
+      "start": 550.806,
+      "end": 551.698,
+      "audio_length_seconds": 0.892,
+      "embedding_audio_seconds": 0.882,
+      "audio_file": "audio\\sentence_0106.wav",
+      "word_count": 4
+    },
+    {
+      "index": 107,
+      "text": "We go through periods every few decades where people just want to burn everything down.",
+      "start": 551.698,
+      "end": 555.628,
+      "audio_length_seconds": 3.93,
+      "embedding_audio_seconds": 3.91,
+      "audio_file": "audio\\sentence_0107.wav",
+      "word_count": 15
+    },
+    {
+      "index": 108,
+      "text": "And it was brutal to live through those periods, but we get through them.",
+      "start": 555.628,
+      "end": 559.478,
+      "audio_length_seconds": 3.85,
+      "embedding_audio_seconds": 3.42,
+      "audio_file": "audio\\sentence_0108.wav",
+      "word_count": 14
+    },
+    {
+      "index": 109,
+      "text": "And we get through them because we're a nation of awesome vitality.",
+      "start": 559.478,
+      "end": 563.648,
+      "audio_length_seconds": 4.17,
+      "embedding_audio_seconds": 3.97,
+      "audio_file": "audio\\sentence_0109.wav",
+      "word_count": 12
+    },
+    {
+      "index": 110,
+      "text": "We have the vitality to change and to fix things, and we've done it again and again.",
+      "start": 563.648,
+      "end": 567.748,
+      "audio_length_seconds": 4.1,
+      "embedding_audio_seconds": 3.89,
+      "audio_file": "audio\\sentence_0110.wav",
+      "word_count": 17
+    },
+    {
+      "index": 111,
+      "text": "the 1770s, the 1830s, the 1890s, the 1960s.",
+      "start": 567.748,
+      "end": 570.438,
+      "audio_length_seconds": 2.69,
+      "embedding_audio_seconds": 2.69,
+      "audio_file": "audio\\sentence_0111.wav",
+      "word_count": 8
+    },
+    {
+      "index": 112,
+      "text": "So we're going to do it again.",
+      "start": 570.438,
+      "end": 571.828,
+      "audio_length_seconds": 1.39,
+      "embedding_audio_seconds": 1.12,
+      "audio_file": "audio\\sentence_0112.wav",
+      "word_count": 7
+    },
+    {
+      "index": 113,
+      "text": "And I have tremendous love for the country, but also tremendous compassion for the country, for the evils we've done, for those who've suffered from those evils.",
+      "start": 571.828,
+      "end": 579.738,
+      "audio_length_seconds": 7.91,
+      "embedding_audio_seconds": 7.76,
+      "audio_file": "audio\\sentence_0113.wav",
+      "word_count": 27
+    },
+    {
+      "index": 114,
+      "text": "And you got to have love for your country and compassion for the country at the same time.",
+      "start": 579.738,
+      "end": 582.868,
+      "audio_length_seconds": 3.13,
+      "embedding_audio_seconds": 2.79,
+      "audio_file": "audio\\sentence_0114.wav",
+      "word_count": 18
+    },
+    {
+      "index": 115,
+      "text": "Jonathan, last word to you on this.",
+      "start": 582.868,
+      "end": 584.808,
+      "audio_length_seconds": 1.94,
+      "embedding_audio_seconds": 1.56,
+      "audio_file": "audio\\sentence_0115.wav",
+      "word_count": 7
+    },
+    {
+      "index": 116,
+      "text": "I should say your birthday weekend.",
+      "start": 584.808,
+      "end": 586.18,
+      "audio_length_seconds": 1.372,
+      "embedding_audio_seconds": 1.372,
+      "audio_file": "audio\\sentence_0116.wav",
+      "word_count": 6
+    },
+    {
+      "index": 117,
+      "text": "belated happy birthday.",
+      "start": 586.18,
+      "end": 587.11,
+      "audio_length_seconds": 0.93,
+      "embedding_audio_seconds": 0.93,
+      "audio_file": "audio\\sentence_0117.wav",
+      "word_count": 3
+    },
+    {
+      "index": 118,
+      "text": "Well, thank you very much.",
+      "start": 587.51,
+      "end": 588.83,
+      "audio_length_seconds": 1.32,
+      "embedding_audio_seconds": 1.32,
+      "audio_file": "audio\\sentence_0118.wav",
+      "word_count": 5
+    },
+    {
+      "index": 119,
+      "text": "I consider myself to be part of the 65% who are proud of their country.",
+      "start": 588.83,
+      "end": 592.46,
+      "audio_length_seconds": 3.63,
+      "embedding_audio_seconds": 3.63,
+      "audio_file": "audio\\sentence_0119.wav",
+      "word_count": 16
+    },
+    {
+      "index": 120,
+      "text": "You know, it's times like these when I feel most patriotic, because this is when I get to say, you know what?",
+      "start": 593.38,
+      "end": 599.504,
+      "audio_length_seconds": 6.124,
+      "embedding_audio_seconds": 6.054,
+      "audio_file": "audio\\sentence_0120.wav",
+      "word_count": 22
+    },
+    {
+      "index": 121,
+      "text": "This country's mine.",
+      "start": 599.504,
+      "end": 600.414,
+      "audio_length_seconds": 0.91,
+      "embedding_audio_seconds": 0.91,
+      "audio_file": "audio\\sentence_0121.wav",
+      "word_count": 3
+    },
+    {
+      "index": 122,
+      "text": "This country is mine, too.",
+      "start": 600.414,
+      "end": 602.444,
+      "audio_length_seconds": 2.03,
+      "embedding_audio_seconds": 1.61,
+      "audio_file": "audio\\sentence_0122.wav",
+      "word_count": 5
+    },
+    {
+      "index": 123,
+      "text": "My ancestors were brought here in chains and they helped build this country and to help to make it a great power.",
+      "start": 602.444,
+      "end": 607.934,
+      "audio_length_seconds": 5.49,
+      "embedding_audio_seconds": 5.33,
+      "audio_file": "audio\\sentence_0123.wav",
+      "word_count": 22
+    },
+    {
+      "index": 124,
+      "text": "My ancestors, meaning black community writ large, marched in the streets demanding that this country live up to its ideals in the 1950s and the 1960s, which made it possible for me to sit here right now.",
+      "start": 607.934,
+      "end": 624.004,
+      "audio_length_seconds": 16.07,
+      "embedding_audio_seconds": 15.85,
+      "audio_file": "audio\\sentence_0124.wav",
+      "word_count": 37
+    },
+    {
+      "index": 125,
+      "text": "There's backtracking.",
+      "start": 624.004,
+      "end": 625.828,
+      "audio_length_seconds": 1.824,
+      "embedding_audio_seconds": 1.624,
+      "audio_file": "audio\\sentence_0125.wav",
+      "word_count": 2
+    },
+    {
+      "index": 126,
+      "text": "There's regression.",
+      "start": 625.828,
+      "end": 626.994,
+      "audio_length_seconds": 1.166,
+      "embedding_audio_seconds": 1.166,
+      "audio_file": "audio\\sentence_0126.wav",
+      "word_count": 2
+    },
+    {
+      "index": 127,
+      "text": "Um, but I am optimistic because this is America.",
+      "start": 626.994,
+      "end": 631.544,
+      "audio_length_seconds": 4.55,
+      "embedding_audio_seconds": 4.55,
+      "audio_file": "audio\\sentence_0127.wav",
+      "word_count": 9
+    },
+    {
+      "index": 128,
+      "text": "How could I not be optimistic when the history that allowed me to be here is going to be the history that is going to keep us going forward?",
+      "start": 632.044,
+      "end": 640.634,
+      "audio_length_seconds": 8.59,
+      "embedding_audio_seconds": 8.28,
+      "audio_file": "audio\\sentence_0128.wav",
+      "word_count": 29
+    },
+    {
+      "index": 129,
+      "text": "Jonathan Capehart, David Brooks, thank you so much to you both.",
+      "start": 641.314,
+      "end": 644.544,
+      "audio_length_seconds": 3.23,
+      "embedding_audio_seconds": 3.23,
+      "audio_file": "audio\\sentence_0129.wav",
+      "word_count": 11
+    },
+    {
+      "index": 130,
+      "text": "Happy Fourth.",
+      "start": 644.544,
+      "end": 645.254,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.71,
+      "audio_file": "audio\\sentence_0130.wav",
+      "word_count": 2
+    },
+    {
+      "index": 131,
+      "text": "Same to you.",
+      "start": 645.254,
+      "end": 646.264,
+      "audio_length_seconds": 1.01,
+      "embedding_audio_seconds": 0.96,
+      "audio_file": "audio\\sentence_0131.wav",
+      "word_count": 3
+    },
+    {
+      "index": 132,
+      "text": "Thank you.",
+      "start": 664.682,
+      "end": 664.892,
+      "audio_length_seconds": 0.21,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0132.wav",
+      "word_count": 2
+    },
+    {
+      "index": 133,
+      "text": "You",
+      "start": 665.502,
+      "end": 665.832,
+      "audio_length_seconds": 0.33,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0133.wav",
+      "word_count": 1
+    }
+  ]
+}

@@ -1,0 +1,175 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,0.06,0.86,0.8,Here's how this works.
+seg_0001,SPEAKER_2,speaker_1,1.1,1.18,0.08,Whoo.
+seg_0002,SPEAKER_1,speaker_0,1.48,14.4,12.92,"We each have two envelopes containing confessions. One is true, the other is a lie. Once you read your confession, the other two players get to interrogate you, and then they have to come up with a unanimous decision: is it the truth or is it a lie?"
+seg_0003,SPEAKER_3,speaker_2,14.52,14.72,0.2,Ooh.
+seg_0004,SPEAKER_2,speaker_1,14.93,14.93,0.0,Ooh.
+seg_0005,SPEAKER_1,speaker_0,15.82,16.9,1.08,"Matthew, you'll go first."
+seg_0006,SPEAKER_3,speaker_2,17.12,17.4,0.28,Ooh. Ooh.
+seg_0007,SPEAKER_1,speaker_0,17.58,20.21,2.63,"Uh, what envelope should you open, number one or two?"
+seg_0008,SPEAKER_3,speaker_2,20.24,21.1,0.86,"Oh, which one?"
+seg_0009,SPEAKER_1,speaker_0,21.54,22.28,0.74,I think we should say-
+seg_0010,SPEAKER_3,speaker_2,22.8,23.12,0.32,Number two
+seg_0011,SPEAKER_1,speaker_0,23.2,23.58,0.38,... number two.
+seg_0012,SPEAKER_3,speaker_2,23.7,23.96,0.26,There you are.
+seg_0013,SPEAKER_2,speaker_1,23.98,24.22,0.24,Number-
+seg_0014,SPEAKER_1,speaker_0,24.4,24.79,0.39,Number two
+seg_0015,SPEAKER_3,speaker_2,25.12,28.97,3.85,... two. See what we've got here. I once ate
+seg_0016,SPEAKER_3,speaker_2,31.36,36.02,4.66,... I once ate peyote in a cage with a mountain lion.
+seg_0017,SPEAKER_3,speaker_2,39.48,40.02,0.54,Okay.
+seg_0018,SPEAKER_1,speaker_0,40.4,40.48,0.08,W- what?
+seg_0019,SPEAKER_3,speaker_2,40.52,41.29,0.77,Can I start with a question?
+seg_0020,SPEAKER_1,speaker_0,41.32,41.94,0.62,"Yes, of course."
+seg_0021,SPEAKER_3,speaker_2,42.38,44.12,1.74,What in God's name is peyote?
+seg_0022,SPEAKER_1,speaker_0,45.84,48.589,2.749,"Oh, I know. Peyote is, like, some type of hallucinogenic-"
+seg_0023,SPEAKER_3,speaker_2,48.61,49.75,1.14,"It's a, it's a spiritual, uh, uh-"
+seg_0024,SPEAKER_2,speaker_1,49.84,50.52,0.68,"Oh, it's a drug"
+seg_0025,SPEAKER_3,speaker_2,50.64,50.73,0.09,... thing
+seg_0026,SPEAKER_1,speaker_0,50.74,51.44,0.7,You were in a ca-
+seg_0027,SPEAKER_3,speaker_2,51.64,51.65,0.01,Please
+seg_0028,SPEAKER_1,speaker_0,51.66,52.28,0.62,What year was this?
+seg_0029,SPEAKER_3,speaker_2,52.96,53.55,0.59,What year was this?
+seg_0030,SPEAKER_1,speaker_0,53.62,54.2,0.58,"Yeah, when was it?"
+seg_0031,SPEAKER_3,speaker_2,54.8,56.62,1.82,"14, 14 years ago."
+seg_0032,SPEAKER_1,speaker_0,56.92,60.66,3.74,"F- yeah, and why would you, how could you, how could you be in a cage with a mountain lion?"
+seg_0033,SPEAKER_3,speaker_2,60.68,61.919,1.239,"Well, that was the easy part."
+seg_0034,SPEAKER_3,speaker_2,63.6,65.44,1.84,"Did, did the mountain lion take any peyote?"
+seg_0035,SPEAKER_3,speaker_2,67.32,71.44,4.12,"I will say this, four hours later, the mountain lion was cuddled up with me and purring."
+seg_0036,SPEAKER_1,speaker_0,74.52,79.4,4.88,"He's such a good actor, I'm freaking out. Uh, wait. W- why, what would make you do this, and was it a mistake?"
+seg_0037,SPEAKER_3,speaker_2,80.6,85.5,4.9,"No, it was one of the more thrilling, uh, uh, um, escapades of my life, actually."
+seg_0038,SPEAKER_1,speaker_0,86.72,88.25,1.53,"Do you, did you pay someone to do this?"
+seg_0039,SPEAKER_3,speaker_2,89.02,90.94,1.92,"No, no, this was just me and the mountain lion."
+seg_0040,SPEAKER_1,speaker_0,92.82,94.0,1.18,"Do you, do you take a lot of drugs?"
+seg_0041,SPEAKER_3,speaker_2,94.01,96.56,2.55,"So it was not filmed. No, I do not."
+seg_0042,SPEAKER_1,speaker_0,97.76,98.29,0.53,What do you think?
+seg_0043,SPEAKER_3,speaker_2,99.38,101.82,2.44,"Well, I think he is quite druggy, so I-"
+seg_0044,SPEAKER_1,speaker_0,106.62,110.76,4.14,"Right, but peyote with a mountain lion is dangerous. Well, he could be a little dangerous, too."
+seg_0045,SPEAKER_3,speaker_2,112.28,114.3,2.02,He may have thought he saw a lion.
+seg_0046,SPEAKER_3,speaker_2,116.72,118.0,1.28,I'm going to go with true.
+seg_0047,SPEAKER_1,speaker_0,120.74,121.82,1.08,"Okay, I'll say true as well."
+seg_0048,SPEAKER_3,speaker_2,121.98,122.44,0.46,That is true.
+seg_0049,SPEAKER_2,speaker_1,122.69,123.28,0.59,What?
+seg_0050,SPEAKER_1,speaker_0,123.31,124.66,1.35,What? What?
+seg_0051,SPEAKER_1,speaker_0,126.74,127.39,0.65,Are you kidding me?
+seg_0052,SPEAKER_3,speaker_2,127.72,130.94,3.22,"It was in Me- it was in Mexico, if that helps the believability of the story."
+seg_0053,SPEAKER_1,speaker_0,130.949,131.34,0.391,"Oh, in Mexico."
+seg_0054,SPEAKER_3,speaker_2,131.44,133.36,1.92,"Oh, well, yeah. Of course, anything happens."
+seg_0055,SPEAKER_1,speaker_0,133.4,134.72,1.32,Are you serious?
+seg_0056,SPEAKER_3,speaker_2,134.92,135.2,0.28,Yes.
+seg_0057,SPEAKER_1,speaker_0,135.22,136.06,0.84,Were you freaking out?
+seg_0058,SPEAKER_3,speaker_2,136.76,137.98,1.22,"No, that's why it worked out."
+seg_0059,SPEAKER_1,speaker_0,139.9,140.04,0.14,Matthew.
+seg_0060,SPEAKER_3,speaker_2,140.06,145.26,5.2,"If I would've freaked out, it probably wouldn't have worked out. Was the lion menacing at any stage?"
+seg_0061,SPEAKER_1,speaker_0,146.82,147.34,0.52,At the beginning.
+seg_0062,SPEAKER_1,speaker_0,149.22,149.72,0.5,But I-
+seg_0063,SPEAKER_3,speaker_2,149.78,151.63,1.85,You took- We got on the same frequency and-
+seg_0064,SPEAKER_1,speaker_0,152.13,152.13,0.0,There you are.
+seg_0065,SPEAKER_1,speaker_0,153.7,154.15,0.45,"All right, all right, all right."
+seg_0066,SPEAKER_3,speaker_2,154.26,155.26,1.0,"Oh, my gosh"
+seg_0067,SPEAKER_1,speaker_0,155.32,160.049,4.729,"We, we, we, we got on the mammalian frequency and things all-... they said. He ended up purring and-"
+seg_0068,SPEAKER_3,speaker_2,160.14,160.47,0.33,"Oh, my-"
+seg_0069,SPEAKER_1,speaker_0,160.62,164.23,3.61,... scratching him behind the ears four hours later. Everyone should try it at least once.
+seg_0070,SPEAKER_3,speaker_2,164.28,165.84,1.56,"All right, which one should I open, one or two?"
+seg_0071,SPEAKER_1,speaker_0,166.2,166.21,0.01,One.
+seg_0072,SPEAKER_3,speaker_2,166.22,167.3,1.08,"Two, two, two."
+seg_0073,SPEAKER_2,speaker_1,168.64,169.0,0.36,One.
+seg_0074,SPEAKER_3,speaker_2,170.36,170.679,0.319,One.
+seg_0075,SPEAKER_1,speaker_0,176.46,178.64,2.18,I got hit by a car at full speed and survived.
+seg_0076,SPEAKER_3,speaker_2,179.48,180.24,0.76,"No, you didn't."
+seg_0077,SPEAKER_2,speaker_1,181.35,181.35,0.0,True.
+seg_0078,SPEAKER_3,speaker_2,181.4,184.26,2.86,"No, you didn't. Full, what's full speed?"
+seg_0079,SPEAKER_3,speaker_2,185.88,187.2,1.32,Like a Matchbox car?
+seg_0080,SPEAKER_1,speaker_0,187.32,187.81,0.49,It wasn't a very... I'd say probably f-
+seg_0081,SPEAKER_3,speaker_2,188.64,189.18,0.54,Hot Wheels?
+seg_0082,SPEAKER_3,speaker_2,190.76,191.91,1.15,Is this a regular-sized automobile?
+seg_0083,SPEAKER_1,speaker_0,191.92,193.62,1.7,"Uh, yeah. Sure, regular size."
+seg_0084,SPEAKER_3,speaker_2,193.63,193.79,0.16,Like a passenger?
+seg_0085,SPEAKER_1,speaker_0,193.94,195.22,1.28,I'd say it's like an SUV maybe.
+seg_0086,SPEAKER_3,speaker_2,195.4,196.64,1.24,"Oh, SUV maybe."
+seg_0087,SPEAKER_2,speaker_1,197.14,197.15,0.01,Yeah.
+seg_0088,SPEAKER_1,speaker_0,197.16,198.19,1.03,"It was going very fast. I couldn't, like-"
+seg_0089,SPEAKER_3,speaker_2,198.2,198.92,0.72,What year was this?
+seg_0090,SPEAKER_1,speaker_0,200.6,201.66,1.06,I'd say it's probably
+seg_0091,SPEAKER_1,speaker_0,202.96,203.84,0.88,10 years ago maybe or-
+seg_0092,SPEAKER_3,speaker_2,203.89,204.96,1.07,Were you doing peyote?
+seg_0093,SPEAKER_1,speaker_0,207.16,209.12,1.96,"No, I was not doing peyote. I had a... No."
+seg_0094,SPEAKER_3,speaker_2,209.2,211.359,2.159,Did you go under the car or over the top?
+seg_0095,SPEAKER_3,speaker_2,213.16,213.93,0.77,"Oh, a minor detail you forgot."
+seg_0096,SPEAKER_1,speaker_0,213.93,218.13,4.2,"Are you picturing me f- flipping over it? No, you know what happened is I... No. I didn't go, I didn't-"
+seg_0097,SPEAKER_1,speaker_0,219.9,220.47,0.57,"The, the, the details of the taxi-"
+seg_0098,SPEAKER_3,speaker_2,220.47,224.549,4.079,"I, I kind of, I kind of grazed it. I, I grazed the mirror. The, the mirror."
+seg_0099,SPEAKER_1,speaker_0,224.609,225.25,0.641,"Oh, it didn't really hit you."
+seg_0100,SPEAKER_3,speaker_2,225.25,226.5,1.25,So it didn't really hit you at full speed.
+seg_0101,SPEAKER_1,speaker_0,226.8,229.4,2.6,I f- I spun around and my shoes came off.
+seg_0102,SPEAKER_1,speaker_0,231.26,231.29,0.03,It's all-
+seg_0103,SPEAKER_3,speaker_2,231.3,232.45,1.15,"And you were in flip-flops, though?"
+seg_0104,SPEAKER_1,speaker_0,232.86,235.06,2.2,"No, I was wear- I was into, like, clogs at this time of my life."
+seg_0105,SPEAKER_3,speaker_2,235.14,236.9,1.76,"Oh, and they were untied anyway, though."
+seg_0106,SPEAKER_1,speaker_0,236.92,237.68,0.76,They were tied up.
+seg_0107,SPEAKER_3,speaker_2,237.74,238.02,0.28,Mm.
+seg_0108,SPEAKER_2,speaker_1,238.82,240.8,1.98,What else were you wearing besides clogs?
+seg_0109,SPEAKER_1,speaker_0,241.84,242.68,0.84,I was wearing jeans.
+seg_0110,SPEAKER_3,speaker_2,242.86,244.62,1.76,Did you have underwear on under those jeans?
+seg_0111,SPEAKER_1,speaker_0,245.7,248.34,2.64,"Yeah, for a moment. No, I did, yeah."
+seg_0112,SPEAKER_3,speaker_2,248.5,252.27,3.77,"Were, were those underwear the- Were they still clean after the, after the clogs?"
+seg_0113,SPEAKER_1,speaker_0,252.28,253.92,1.64,"No. No, yeah, no. Questions are-"
+seg_0114,SPEAKER_3,speaker_2,254.34,255.78,1.44,"The story, the story is false. It's false."
+seg_0115,SPEAKER_1,speaker_0,255.8,256.01,0.21,It is false.
+seg_0116,SPEAKER_3,speaker_2,256.019,256.35,0.331,Because it-
+seg_0117,SPEAKER_1,speaker_0,256.63,256.67,0.04,Yeah
+seg_0118,SPEAKER_3,speaker_2,256.68,259.06,2.38,"... for a start, you weren't really hit. If anything, you were brushed."
+seg_0119,SPEAKER_1,speaker_0,259.089,259.8,0.711,Yeah. It just nicked you.
+seg_0120,SPEAKER_3,speaker_2,259.87,260.26,0.39,"Yeah, yeah."
+seg_0121,SPEAKER_1,speaker_0,261.519,278.82,17.301,"Uh, the story is true. I did get hit by an SUV going, like, 60 in Manhattan. We were leaving a bar with my friend who's, who works here. He can actually vouch for me. And I'm leaving and I was like, ""I'll get a cab,"" and I walk into the street and this car went, and it was just speeding down, and I ripped the mirror off the car-"
+seg_0122,SPEAKER_2,speaker_1,279.66,279.67,0.01,Oh
+seg_0123,SPEAKER_1,speaker_0,279.67,280.66,0.99,...'cause it was going that fast.
+seg_0124,SPEAKER_3,speaker_2,280.72,281.539,0.819,How was your arm?
+seg_0125,SPEAKER_1,speaker_0,281.62,282.55,0.93,I had a giant gash in my arm.
+seg_0126,SPEAKER_3,speaker_2,282.58,284.62,2.04,Could it have been deliberate? Was it Colbert?
+seg_0127,SPEAKER_1,speaker_0,285.94,286.44,0.5,It was not.
+seg_0128,SPEAKER_1,speaker_0,291.39,292.7,1.31,That's Stephen Colbert.
+seg_0129,SPEAKER_1,speaker_0,293.92,296.14,2.22,This is before we had shows on at the same time.
+seg_0130,SPEAKER_3,speaker_2,296.16,296.17,0.01,Oh.
+seg_0131,SPEAKER_1,speaker_0,296.17,297.78,1.61,He would never do that to me back then.
+seg_0132,SPEAKER_2,speaker_1,297.86,298.05,0.19,Uh-huh.
+seg_0133,SPEAKER_1,speaker_0,298.05,299.86,1.81,"All right, here we go. Hugh, it is your turn. Uh-"
+seg_0134,SPEAKER_3,speaker_2,299.98,300.78,0.8,"Oh, yeah, I would. One or two?"
+seg_0135,SPEAKER_1,speaker_0,301.02,301.04,0.02,Uh-
+seg_0136,SPEAKER_2,speaker_1,302.0,302.4,0.4,Two.
+seg_0137,SPEAKER_3,speaker_2,303.2,303.44,0.24,Two.
+seg_0138,SPEAKER_1,speaker_0,303.57,303.57,0.0,Two.
+seg_0139,SPEAKER_3,speaker_2,303.58,303.94,0.36,Two again.
+seg_0140,SPEAKER_3,speaker_2,305.88,306.18,0.3,All right.
+seg_0141,SPEAKER_3,speaker_2,308.1,308.56,0.46,"Um,"
+seg_0142,SPEAKER_3,speaker_2,310.14,319.34,9.2,"as a child, I had a compulsion to stick apple peel up my nose-... and I spent many happy hours having it removed by London's finest doctors."
+seg_0143,SPEAKER_1,speaker_0,321.53,321.53,0.0,Uh-
+seg_0144,SPEAKER_3,speaker_2,321.56,323.16,1.6,This already sounds very true.
+seg_0145,SPEAKER_1,speaker_0,323.26,325.8,2.54,It's fantas- But how old are you? How old are you?
+seg_0146,SPEAKER_3,speaker_2,326.32,327.04,0.72,I was 34.
+seg_0147,SPEAKER_3,speaker_2,330.86,332.37,1.51,"Oh, I guess I was five or something."
+seg_0148,SPEAKER_1,speaker_0,332.37,335.41,3.04,But why would you...'Cause you had no toys? Were you bored? Or you wanna see what happened?
+seg_0149,SPEAKER_3,speaker_2,335.54,353.54,18.0,"I think I know what it was. I had an uncle who used to do that thing where he, he wanted to pick his nose, but he was too polite, so he used to do it with a sort of hanky, you know? And I think I was impressed. Why I transferred from hanky to apple peel, I don't know. But I did, and I quite enjoyed the experience, and I repeated it."
+seg_0150,SPEAKER_1,speaker_0,353.78,357.02,3.24,"So wait, you kept shoving them up? Did any, did Mom or Dad know that you had them up your nose?"
+seg_0151,SPEAKER_3,speaker_2,357.52,364.55,7.03,"Yeah, I'd say, ""I've done it again."" And, uh, back we went to the ear, nose, and throat specialist and-... Charing Cross Hospital"
+seg_0152,SPEAKER_1,speaker_0,364.74,365.3,0.56,Done it again.
+seg_0153,SPEAKER_3,speaker_2,365.44,365.69,0.25,Done it again.
+seg_0154,SPEAKER_1,speaker_0,365.69,365.82,0.13,Done it again.
+seg_0155,SPEAKER_3,speaker_2,365.86,366.38,0.52,"Again, yeah."
+seg_0156,SPEAKER_1,speaker_0,366.48,368.26,1.78,"Uh, I think, I think it happened."
+seg_0157,SPEAKER_3,speaker_2,368.38,368.72,0.34,You do?
+seg_0158,SPEAKER_1,speaker_0,369.16,369.94,0.78,"I think it's true, right?"
+seg_0159,SPEAKER_2,speaker_1,370.32,370.48,0.16,Oh.
+seg_0160,SPEAKER_3,speaker_2,370.8,370.99,0.19,I think he-
+seg_0161,SPEAKER_1,speaker_0,370.99,371.58,0.59,I think it sounds kind of-
+seg_0162,SPEAKER_3,speaker_2,371.68,372.88,1.2,I think he's pulling our johnson.
+seg_0163,SPEAKER_1,speaker_0,372.94,377.2,4.26,"Well, all right. He's saying false. You say it didn't happen. I agree with Matthew. It did not happen."
+seg_0164,SPEAKER_3,speaker_2,377.96,379.53,1.57,But of course it happened. Of course it happened.
+seg_0165,SPEAKER_1,speaker_0,380.46,381.06,0.6,It did happen.
+seg_0166,SPEAKER_1,speaker_0,382.27,382.27,0.0,Yeah.
+seg_0167,SPEAKER_1,speaker_0,385.88,387.96,2.08,Bad kid. You're a bad child.
+seg_0168,SPEAKER_3,speaker_2,388.02,388.03,0.01,Yeah.
+seg_0169,SPEAKER_1,speaker_0,388.03,389.12,1.09,You're a bad child.
+seg_0170,SPEAKER_3,speaker_2,389.13,389.13,0.0,Yeah.
+seg_0171,SPEAKER_1,speaker_0,389.16,391.04,1.88,"All right, thanks to Matthew McConaughey, Hugh Grant."
+seg_0172,SPEAKER_4,speaker_3,392.8,396.68,3.88,"Uh, uh-huh. It's on and on and on. Uh, I said"
+seg_0173,SPEAKER_4,speaker_3,398.26,399.94,1.68,it. And it's on and on and on

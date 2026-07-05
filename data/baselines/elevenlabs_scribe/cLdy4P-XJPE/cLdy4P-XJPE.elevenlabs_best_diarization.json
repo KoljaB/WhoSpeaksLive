@@ -1,0 +1,782 @@
+[
+  {
+    "segment_id": "seg_0000",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 0.32,
+    "end_sec": 16.36,
+    "start_time": "00:00.320",
+    "end_time": "00:16.360",
+    "duration_sec": 16.04,
+    "text": "It's been a busy week leading up to the nation's 250th anniversary, with major Supreme Court decisions and more primary upsets. To discuss all this further, we turn now to the analysis of Brooks and Capehart. That's The Atlantic's David Brooks and Jonathan Capehart of MS Now. Great to see you both.",
+    "word_start_index": 0,
+    "word_end_index": 51
+  },
+  {
+    "segment_id": "seg_0001",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 16.44,
+    "end_sec": 16.86,
+    "start_time": "00:16.440",
+    "end_time": "00:16.860",
+    "duration_sec": 0.42,
+    "text": "Hi, Amna.",
+    "word_start_index": 52,
+    "word_end_index": 53
+  },
+  {
+    "segment_id": "seg_0002",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 16.9,
+    "end_sec": 47.5,
+    "start_time": "00:16.900",
+    "end_time": "00:47.500",
+    "duration_sec": 30.6,
+    "text": "Let's begin with the Supreme Court. Closing out a term with some major decisions. A quick recap for everyone following along. Over the term, they handed the president some losses on signature issues like tariffs, birthright citizenship, mail-in ballots, that he couldn't fire a member of the Fed board, but they also said he could fire members of independent agencies. They upheld a state ban on trans women in sports. They sided with him on immigration restrictions. David, one common thread seems to be an expansion of executive authority given to President Trump. Is that a good thing?",
+    "word_start_index": 54,
+    "word_end_index": 151
+  },
+  {
+    "segment_id": "seg_0003",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 48.5,
+    "end_sec": 53.48,
+    "start_time": "00:48.500",
+    "end_time": "00:53.480",
+    "duration_sec": 4.98,
+    "text": "Uh, no. But I, I would say, have to say on the big authoritarian power grabs Trump tried-",
+    "word_start_index": 152,
+    "word_end_index": 169
+  },
+  {
+    "segment_id": "seg_0004",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 53.52,
+    "end_sec": 53.62,
+    "start_time": "00:53.520",
+    "end_time": "00:53.620",
+    "duration_sec": 0.1,
+    "text": "Hm",
+    "word_start_index": 170,
+    "word_end_index": 170
+  },
+  {
+    "segment_id": "seg_0005",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 53.98,
+    "end_sec": 70.46,
+    "start_time": "00:53.980",
+    "end_time": "01:10.460",
+    "duration_sec": 16.48,
+    "text": "... whether it's the Fed Reserve, birthright citizenship, the tariffs, uh, whether he could put, uh, National Guard troops in Chicago against the local officials' interests, the Court, uh, stood up to Trump and slapped him back down. And the Court hates to take on a sitting president,'cause they don't wanna take on an elected official.",
+    "word_start_index": 171,
+    "word_end_index": 227
+  },
+  {
+    "segment_id": "seg_0006",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 70.75,
+    "end_sec": 70.8,
+    "start_time": "01:10.750",
+    "end_time": "01:10.800",
+    "duration_sec": 0.05,
+    "text": "Hm.",
+    "word_start_index": 228,
+    "word_end_index": 228
+  },
+  {
+    "segment_id": "seg_0007",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 70.88,
+    "end_sec": 92.42,
+    "start_time": "01:10.880",
+    "end_time": "01:32.420",
+    "duration_sec": 21.54,
+    "text": "Remember, the Roberts Courts upheld Obamacare'cause they just didn't wanna upset what democracy had brought to us. And so I'd say on the big authoritarian power grabs, the Supreme Court did pretty good. And it is, this is grading on a very low curve, but it's the most effective branch of government we have right now. Uh, and so-... on, on the, um, on the Slaughter case, which was about the FTC and all those semi-independent agency-",
+    "word_start_index": 229,
+    "word_end_index": 307
+  },
+  {
+    "segment_id": "seg_0008",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 92.44,
+    "end_sec": 93.43,
+    "start_time": "01:32.440",
+    "end_time": "01:33.430",
+    "duration_sec": 0.99,
+    "text": "The firing of the commissioner of the FTC",
+    "word_start_index": 308,
+    "word_end_index": 315
+  },
+  {
+    "segment_id": "seg_0009",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 93.43,
+    "end_sec": 94.179,
+    "start_time": "01:33.430",
+    "end_time": "01:34.179",
+    "duration_sec": 0.749,
+    "text": "... the, the firing of the commissioners.",
+    "word_start_index": 316,
+    "word_end_index": 322
+  },
+  {
+    "segment_id": "seg_0010",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 94.22,
+    "end_sec": 94.64,
+    "start_time": "01:34.220",
+    "end_time": "01:34.640",
+    "duration_sec": 0.42,
+    "text": "Yes.",
+    "word_start_index": 323,
+    "word_end_index": 323
+  },
+  {
+    "segment_id": "seg_0011",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 94.68,
+    "end_sec": 105.27,
+    "start_time": "01:34.680",
+    "end_time": "01:45.270",
+    "duration_sec": 10.59,
+    "text": "It's not my preference. I like the idea that starting mostly in the 1930s, uh, Federal Reserve was obviously earlier, that we set up some agencies that are protected from raw politics.",
+    "word_start_index": 324,
+    "word_end_index": 355
+  },
+  {
+    "segment_id": "seg_0012",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 105.32,
+    "end_sec": 105.96,
+    "start_time": "01:45.320",
+    "end_time": "01:45.960",
+    "duration_sec": 0.64,
+    "text": "Yeah.",
+    "word_start_index": 356,
+    "word_end_index": 356
+  },
+  {
+    "segment_id": "seg_0013",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 106.04,
+    "end_sec": 132.18,
+    "start_time": "01:46.040",
+    "end_time": "02:12.180",
+    "duration_sec": 26.14,
+    "text": "And I think that was a good thing to do. But the, a, a significant branch of legal thinkers have thought, \"No, they're, uh, the, the, the administration is elected by a president. It should not be c- uh, cushioned off from democracy.\" I think that's the wrong decision, but it's a reasonable decision. And so what the Court did on this Slaughter case with the FTC and all the other independent agencies was not my preference, but le- reasonable. And I'd have to say on the big issues of preserving our democracy-",
+    "word_start_index": 357,
+    "word_end_index": 449
+  },
+  {
+    "segment_id": "seg_0014",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 132.26,
+    "end_sec": 132.38,
+    "start_time": "02:12.260",
+    "end_time": "02:12.380",
+    "duration_sec": 0.12,
+    "text": "Mm",
+    "word_start_index": 450,
+    "word_end_index": 450
+  },
+  {
+    "segment_id": "seg_0015",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 132.42,
+    "end_sec": 133.58,
+    "start_time": "02:12.420",
+    "end_time": "02:13.580",
+    "duration_sec": 1.16,
+    "text": "... the Supreme Court did okay this year.",
+    "word_start_index": 451,
+    "word_end_index": 458
+  },
+  {
+    "segment_id": "seg_0016",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 133.82,
+    "end_sec": 137.42,
+    "start_time": "02:13.820",
+    "end_time": "02:17.420",
+    "duration_sec": 3.6,
+    "text": "And the Slaughter case, we should also underscore, overturned 100-year-old precedent as-",
+    "word_start_index": 459,
+    "word_end_index": 470
+  },
+  {
+    "segment_id": "seg_0017",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 137.46,
+    "end_sec": 137.549,
+    "start_time": "02:17.460",
+    "end_time": "02:17.549",
+    "duration_sec": 0.089,
+    "text": "Right",
+    "word_start_index": 471,
+    "word_end_index": 471
+  },
+  {
+    "segment_id": "seg_0018",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 137.56,
+    "end_sec": 139.9,
+    "start_time": "02:17.560",
+    "end_time": "02:19.900",
+    "duration_sec": 2.34,
+    "text": "... as well. Uh, Jonathan, how did, how did you look at this?",
+    "word_start_index": 472,
+    "word_end_index": 484
+  },
+  {
+    "segment_id": "seg_0019",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 140.1,
+    "end_sec": 151.6,
+    "start_time": "02:20.100",
+    "end_time": "02:31.600",
+    "duration_sec": 11.5,
+    "text": "Well, I don't know if the Supreme Court did, you know, okay by, um, democracy. I mean, David said, um, you thought that the Court didn't want to upset what democracy brought to us.",
+    "word_start_index": 485,
+    "word_end_index": 518
+  },
+  {
+    "segment_id": "seg_0020",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 152.57,
+    "end_sec": 152.57,
+    "start_time": "02:32.570",
+    "end_time": "02:32.570",
+    "duration_sec": 0.0,
+    "text": "Yeah.",
+    "word_start_index": 519,
+    "word_end_index": 519
+  },
+  {
+    "segment_id": "seg_0021",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 152.6,
+    "end_sec": 182.32,
+    "start_time": "02:32.600",
+    "end_time": "03:02.320",
+    "duration_sec": 29.72,
+    "text": "Democracy brought to us the Voting Rights Act of 1965, and the Supreme Court just gutted it, decimated it. And states around the country, particularly in the South, moved quickly with the same speed, if not faster, than when the, the Court took the first whack at it in Shelby v, in Shelby v Holder. So, um, I'm not as cheerful when it comes to the Court in terms of, you know, standing, uh, yes, standing up to the president on the big authoritarian pieces.",
+    "word_start_index": 520,
+    "word_end_index": 604
+  },
+  {
+    "segment_id": "seg_0022",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 182.4,
+    "end_sec": 182.52,
+    "start_time": "03:02.400",
+    "end_time": "03:02.520",
+    "duration_sec": 0.12,
+    "text": "Hm.",
+    "word_start_index": 605,
+    "word_end_index": 605
+  },
+  {
+    "segment_id": "seg_0023",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 182.74,
+    "end_sec": 190.98,
+    "start_time": "03:02.740",
+    "end_time": "03:10.980",
+    "duration_sec": 8.24,
+    "text": "But the VRA, um, and Chief, particularly Chief Justice Roberts really wanting to do, to do something to, to, to his mind correct it-",
+    "word_start_index": 606,
+    "word_end_index": 629
+  },
+  {
+    "segment_id": "seg_0024",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 191.24,
+    "end_sec": 191.38,
+    "start_time": "03:11.240",
+    "end_time": "03:11.380",
+    "duration_sec": 0.14,
+    "text": "Hm",
+    "word_start_index": 630,
+    "word_end_index": 630
+  },
+  {
+    "segment_id": "seg_0025",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 191.5,
+    "end_sec": 219.62,
+    "start_time": "03:11.500",
+    "end_time": "03:39.620",
+    "duration_sec": 28.12,
+    "text": "... predates President Trump. But the other thing about, about the Supreme Court's term is that, you know, a lot of the decisions that they made, you know, would've been nice if Congress were functioning and had actually, you know, exercised its Article 1 branch auth- powers to do some of these things. I mean, it's great that the judiciary is functioning, but it'd be really nice if, if the legislative branch started acting like a co-equal branch of government instead of the staffing arm of the executive.",
+    "word_start_index": 631,
+    "word_end_index": 718
+  },
+  {
+    "segment_id": "seg_0026",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 219.64,
+    "end_sec": 263.42,
+    "start_time": "03:39.640",
+    "end_time": "04:23.420",
+    "duration_sec": 43.78,
+    "text": "Well, let's talk a little bit about what could happen in the legislative branch, some of those primary upsets we talked about earlier.'Cause in the past few weeks, we have seen anti-establishment wins for Democratic candidates in particular. First to New York, we saw the Democratic Socialist candidate there, Daria Ilesa Vila Chevalier, unseat the five-term congressman, Adriano Espaillat. We also saw former New York Comptroller Brad Lander unseat representative Dan Goldman. Then in Colorado, we saw Democratic Socialist Milad Kirios oust a 30-year incumbent in Diana DeGette, and we saw the state AG, Phil Weiser there, who ran to the left of Senator Michael Bennett, beat him in the gubernatorial primary there. So David, you see New York and Colorado. Does two make a trend?",
+    "word_start_index": 719,
+    "word_end_index": 845
+  },
+  {
+    "segment_id": "seg_0027",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 263.9,
+    "end_sec": 267.7,
+    "start_time": "04:23.900",
+    "end_time": "04:27.700",
+    "duration_sec": 3.8,
+    "text": "I think so. Uh, I think this is a big, the Colorado story's a bigger story than the New York story.",
+    "word_start_index": 846,
+    "word_end_index": 866
+  },
+  {
+    "segment_id": "seg_0028",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 268.16,
+    "end_sec": 268.17,
+    "start_time": "04:28.160",
+    "end_time": "04:28.170",
+    "duration_sec": 0.01,
+    "text": "Hm.",
+    "word_start_index": 867,
+    "word_end_index": 867
+  },
+  {
+    "segment_id": "seg_0029",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 268.17,
+    "end_sec": 271.3,
+    "start_time": "04:28.170",
+    "end_time": "04:31.300",
+    "duration_sec": 3.13,
+    "text": "New York's my hometown. I love it, but Brooklyn hipsters and Columbia",
+    "word_start_index": 868,
+    "word_end_index": 879
+  },
+  {
+    "segment_id": "seg_0030",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 272.68,
+    "end_sec": 294.44,
+    "start_time": "04:32.680",
+    "end_time": "04:54.440",
+    "duration_sec": 21.76,
+    "text": "U- University are not exactly normal America. Uh, but Colorado is Colorado. It's j- it's a semi-purplish state. Michael Bennett was elected three times to the US Senate statewide, and he lost, and then you had the Democratic Socialist candidate, uh, win. And what you see, it's been re- re- it's been compared, I think accurately, to when Dave Brat beat Eric Cantor in the Republican primary-",
+    "word_start_index": 880,
+    "word_end_index": 946
+  },
+  {
+    "segment_id": "seg_0031",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 294.66,
+    "end_sec": 294.71,
+    "start_time": "04:54.660",
+    "end_time": "04:54.710",
+    "duration_sec": 0.05,
+    "text": "Hm",
+    "word_start_index": 947,
+    "word_end_index": 947
+  },
+  {
+    "segment_id": "seg_0032",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 294.76,
+    "end_sec": 385.768,
+    "start_time": "04:54.760",
+    "end_time": "06:25.768",
+    "duration_sec": 91.008,
+    "text": "... and you saw a bunch of people said, \"These aren't my party. Screw'em. We're gonna tear it all down.\" And, uh, in that case, and I think in this case, Democrats are, they're just looking around for the most furious candidate because they're furious at what's happened, and so they're doing that. And I understand the fury. My problem is the DSA, the Democratic Socialists of America, should not be where you go. The Democratic Socialist party was started in the 1980s by Michael Harrington, a very wonderful guy, a serious intellectual, and he wanted the, the DSA to s- to, you know, move us toward Da- Denmark, a perfectly good political position. Over the last five years, that party has been hijacked and taken over by an authoritarian wing which supported Hamas in s- uh, October 7th, who supports Cuba, who supports China, who supports Maduro's Venezuela, who supports pretty much every left-wing authoritarian regime in the country. So I, I understand wanting to register a protest against Washington, but are the Democrats really gonna take a position that we're gonna become left-wing authoritarians just as the Republicans become right-wing authoritarians? And the final thing to be said is the Democratic Party became great not by fighting the right. But by fighting the left. It was Hubert Humphrey in 1946 who pushed the communists out of the Democratic far, the DFL, the Democratic Farmer Labor Party. It was George Meany who pushed the communists out of the, uh, the labor movement, basically. And they defined who they were by pushing against the right, but also by pushing against the left. And we're gonna see if the Democratic mainstream has the guts, the conviction, or even the clarity of thought, to push against what's happening, and we'll see.",
+    "word_start_index": 948,
+    "word_end_index": 1247
+  },
+  {
+    "segment_id": "seg_0033",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 386.328,
+    "end_sec": 386.728,
+    "start_time": "06:26.328",
+    "end_time": "06:26.728",
+    "duration_sec": 0.4,
+    "text": "Jonathan.",
+    "word_start_index": 1248,
+    "word_end_index": 1248
+  },
+  {
+    "segment_id": "seg_0034",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 388.228,
+    "end_sec": 390.708,
+    "start_time": "06:28.228",
+    "end_time": "06:30.708",
+    "duration_sec": 2.48,
+    "text": "I'm not going to get, um,",
+    "word_start_index": 1249,
+    "word_end_index": 1254
+  },
+  {
+    "segment_id": "seg_0035",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 392.468,
+    "end_sec": 434.788,
+    "start_time": "06:32.468",
+    "end_time": "07:14.788",
+    "duration_sec": 42.32,
+    "text": "outraged. I'm not gonna, I'm not gonna fall into the Democratic trap of, \"Oh my God, the Democratic socialists are taking over the country,\" when we're talking about, one, wins in deep blue seats in congressional districts. Um, two, when we're talking about what really to me is the big trend here, is that the establishment, the incumbents are being thrown out. Um, and folks are angry. They're angry because of affordability. They're angry because the president is r- robbing the nation blind. They're angry because it doesn't seem like a- any of these elected officials are doing anything to hold the president accountable for what's happened. I mean, Diana DeGette is no conservative. She was a progressive.",
+    "word_start_index": 1255,
+    "word_end_index": 1372
+  },
+  {
+    "segment_id": "seg_0036",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 435.098,
+    "end_sec": 435.098,
+    "start_time": "07:15.098",
+    "end_time": "07:15.098",
+    "duration_sec": 0.0,
+    "text": "Yeah.",
+    "word_start_index": 1373,
+    "word_end_index": 1373
+  },
+  {
+    "segment_id": "seg_0037",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 435.148,
+    "end_sec": 471.668,
+    "start_time": "07:15.148",
+    "end_time": "07:51.668",
+    "duration_sec": 36.52,
+    "text": "Uh, Congressman Dan Goldman, not a per- big capital P progressive, but he was, you know, s- left of s- of center. Brad Lander, who, um, another person who beat, uh, in a se- who beat Dan Goldman, he's no socialist. He's basically like a mainstream Democrat in, in New York City. And so to my mind, um, I think we need to pay attention to what voters are saying. If they're choosing the Democratic Socialist, Socialist candidate, then Democrats need to pay attention to, well, why did they choose the DSA candidate and not, um, someone who's a little closer to the center?",
+    "word_start_index": 1374,
+    "word_end_index": 1477
+  },
+  {
+    "segment_id": "seg_0038",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 471.848,
+    "end_sec": 471.898,
+    "start_time": "07:51.848",
+    "end_time": "07:51.898",
+    "duration_sec": 0.05,
+    "text": "Mm-hmm.",
+    "word_start_index": 1478,
+    "word_end_index": 1478
+  },
+  {
+    "segment_id": "seg_0039",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 472.088,
+    "end_sec": 506.888,
+    "start_time": "07:52.088",
+    "end_time": "08:26.888",
+    "duration_sec": 34.8,
+    "text": "Could it be that their, their message on the economy, their message on what they're going to do is resonating? And, you know, quite honestly, you know, Mayor Mamdani, who has put his weight behind a lot of these candidates, the thing he has going for him is New York City is doing fine. A lot of people predicted that, \"Oh, you pr- you elect a socialist and the, the city will go to pot.\" And instead, it's... I'm not gonna say it's the opposite, but the dire predictions haven't proven true. And so I think it, there's still time to look at other races, um, to see whether the DSA is actually a thing.",
+    "word_start_index": 1479,
+    "word_end_index": 1593
+  },
+  {
+    "segment_id": "seg_0040",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 506.928,
+    "end_sec": 507.048,
+    "start_time": "08:26.928",
+    "end_time": "08:27.048",
+    "duration_sec": 0.12,
+    "text": "Mm-hmm.",
+    "word_start_index": 1594,
+    "word_end_index": 1594
+  },
+  {
+    "segment_id": "seg_0041",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 507.078,
+    "end_sec": 512.068,
+    "start_time": "08:27.078",
+    "end_time": "08:32.068",
+    "duration_sec": 4.99,
+    "text": "And a thing in the way that the Tea Party h- had become for Republicans in the way back.",
+    "word_start_index": 1595,
+    "word_end_index": 1613
+  },
+  {
+    "segment_id": "seg_0042",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 512.368,
+    "end_sec": 549.938,
+    "start_time": "08:32.368",
+    "end_time": "09:09.938",
+    "duration_sec": 37.57,
+    "text": "Lots more races ahead. We'll talk about it some more, but I'm not sure if you heard or not, in the meantime, America's turning 250 tomorrow. We've been talking about it a little bit. When we step back to see how Americans are looking at their own country right now, we have some insights from our latest PBS News NPR Marist poll. It found 65% of people say that they're proud to be American. 83% say the country has moved away from its founding principles and ideals. And at the same time, some 53% of Americans say the country's best days are still ahead of us. So David, do you see more reason to be concerned than there are more reason to be hopeful?",
+    "word_start_index": 1614,
+    "word_end_index": 1737
+  },
+  {
+    "segment_id": "seg_0043",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 550.068,
+    "end_sec": 582.748,
+    "start_time": "09:10.068",
+    "end_time": "09:42.748",
+    "duration_sec": 32.68,
+    "text": "I'm hopeful. We go through this, we go through periods every few decades where people just wanna burn everything down. And that was brutal to live through those periods, but we get through them. And we get through them because we're a nation of awesome vitality. We have the vitality to change and to fix things, and we've done it again and again, the 1770s, the 1830s, the 1890s, the 1960s. So we're gonna do it again. And I have tremendous love for the country, but also tremendous compassion for the country, for the evils we've done, for those who've suffered from those evils. And you gotta have love for your country and compassion for the country at the same time.",
+    "word_start_index": 1738,
+    "word_end_index": 1858
+  },
+  {
+    "segment_id": "seg_0044",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 583.348,
+    "end_sec": 587.628,
+    "start_time": "09:43.348",
+    "end_time": "09:47.628",
+    "duration_sec": 4.28,
+    "text": "Jonathan, last word to you. On this, I should say, your birthday weekend. Belated happy birthday to you.",
+    "word_start_index": 1859,
+    "word_end_index": 1876
+  },
+  {
+    "segment_id": "seg_0045",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 587.668,
+    "end_sec": 640.588,
+    "start_time": "09:47.668",
+    "end_time": "10:40.588",
+    "duration_sec": 52.92,
+    "text": "Well, well thank you very much. I consider myself to be part of the 65%-... who are proud of their country. Um, you know, it's times like these when I feel most patriotic, because this is when I get to say, \"You know what? This country's mine. This country is mine, too. My ancestors were brought here in chains, and they helped build this country and to help to make it a great power.\" My ancestors, meaning Black community writ large, marched in the streets demanding that this country live up to its ideals in the ni- in, in the 1950s and the 1960s. Um, which made it possible for me to sit here right now. There's backtracking, there's regression, um, but I am optimistic because this is America. How could I not be optimistic when the history that allowed me to be here is gonna be the history that is going to keep us going forward?",
+    "word_start_index": 1877,
+    "word_end_index": 2034
+  },
+  {
+    "segment_id": "seg_0046",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 641.428,
+    "end_sec": 644.098,
+    "start_time": "10:41.428",
+    "end_time": "10:44.098",
+    "duration_sec": 2.67,
+    "text": "Jonathan Capehart, David Brooks, thank you so much to you both.",
+    "word_start_index": 2035,
+    "word_end_index": 2045
+  },
+  {
+    "segment_id": "seg_0047",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 644.108,
+    "end_sec": 644.298,
+    "start_time": "10:44.108",
+    "end_time": "10:44.298",
+    "duration_sec": 0.19,
+    "text": "Thanks.",
+    "word_start_index": 2046,
+    "word_end_index": 2046
+  },
+  {
+    "segment_id": "seg_0048",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 644.298,
+    "end_sec": 644.298,
+    "start_time": "10:44.298",
+    "end_time": "10:44.298",
+    "duration_sec": 0.0,
+    "text": "Thanks.",
+    "word_start_index": 2047,
+    "word_end_index": 2047
+  },
+  {
+    "segment_id": "seg_0049",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 644.728,
+    "end_sec": 645.188,
+    "start_time": "10:44.728",
+    "end_time": "10:45.188",
+    "duration_sec": 0.46,
+    "text": "Happy Fourth.",
+    "word_start_index": 2048,
+    "word_end_index": 2049
+  },
+  {
+    "segment_id": "seg_0050",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 645.768,
+    "end_sec": 646.188,
+    "start_time": "10:45.768",
+    "end_time": "10:46.188",
+    "duration_sec": 0.42,
+    "text": "Same to you.",
+    "word_start_index": 2050,
+    "word_end_index": 2052
+  },
+  {
+    "segment_id": "seg_0051",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 657.028,
+    "end_sec": 664.758,
+    "start_time": "10:57.028",
+    "end_time": "11:04.758",
+    "duration_sec": 7.73,
+    "text": "Support journalism you trust. Support PBS News. Donate now, or even better, start a monthly contribution today.",
+    "word_start_index": 2053,
+    "word_end_index": 2069
+  }
+]

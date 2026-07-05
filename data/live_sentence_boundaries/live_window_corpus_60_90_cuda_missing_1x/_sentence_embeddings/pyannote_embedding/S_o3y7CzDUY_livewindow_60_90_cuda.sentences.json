@@ -1,0 +1,2754 @@
+{
+  "provider": "pyannote_embedding",
+  "video": "S_o3y7CzDUY",
+  "folder": "S_o3y7CzDUY_livewindow_60_90_cuda",
+  "sentence_file": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\S_o3y7CzDUY_livewindow_60_90_cuda\\sentences.jsonl",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    274,
+    512
+  ],
+  "elapsed_seconds": 9.755552900023758,
+  "sentences": [
+    {
+      "index": 0,
+      "text": "Finland's economy has been Scandinavia's worst performer in recent years.",
+      "start": 0.98,
+      "end": 5.516,
+      "audio_length_seconds": 4.536,
+      "embedding_audio_seconds": 4.396,
+      "audio_file": "audio\\sentence_0000.wav",
+      "word_count": 10
+    },
+    {
+      "index": 1,
+      "text": "It's been stagnating as it struggles with high unemployment, a housing slump, and rising public debt.",
+      "start": 5.516,
+      "end": 11.426,
+      "audio_length_seconds": 5.91,
+      "embedding_audio_seconds": 5.82,
+      "audio_file": "audio\\sentence_0001.wav",
+      "word_count": 16
+    },
+    {
+      "index": 2,
+      "text": "But could AI and the growth of its defence industry help lift its economy?",
+      "start": 11.426,
+      "end": 16.976,
+      "audio_length_seconds": 5.55,
+      "embedding_audio_seconds": 5.27,
+      "audio_file": "audio\\sentence_0002.wav",
+      "word_count": 14
+    },
+    {
+      "index": 3,
+      "text": "Hello, and welcome to Roundtable.",
+      "start": 32.482,
+      "end": 34.666,
+      "audio_length_seconds": 2.184,
+      "embedding_audio_seconds": 1.874,
+      "audio_file": "audio\\sentence_0003.wav",
+      "word_count": 5
+    },
+    {
+      "index": 4,
+      "text": "I'm Enter Brady.",
+      "start": 34.666,
+      "end": 35.352,
+      "audio_length_seconds": 0.686,
+      "embedding_audio_seconds": 0.686,
+      "audio_file": "audio\\sentence_0004.wav",
+      "word_count": 3
+    },
+    {
+      "index": 5,
+      "text": "Now, Finland's economy is finally showing some signs of life after almost two decades of poor growth.",
+      "start": 35.352,
+      "end": 41.482,
+      "audio_length_seconds": 6.13,
+      "embedding_audio_seconds": 6.06,
+      "audio_file": "audio\\sentence_0005.wav",
+      "word_count": 17
+    },
+    {
+      "index": 6,
+      "text": "The country's real -term GDP has failed to fully recover following the 2008 global financial crisis, and the economic fallout from the war in Ukraine hit Finland harder than other EU countries.",
+      "start": 41.482,
+      "end": 54.072,
+      "audio_length_seconds": 12.59,
+      "embedding_audio_seconds": 12.31,
+      "audio_file": "audio\\sentence_0006.wav",
+      "word_count": 32
+    },
+    {
+      "index": 7,
+      "text": "It's consistently ranked the happiest country in the world, but Finland has been one of Europe's weakest economic performers, weighed down by low growth, high unemployment and rising public debt.",
+      "start": 55.578,
+      "end": 68.608,
+      "audio_length_seconds": 13.03,
+      "embedding_audio_seconds": 12.53,
+      "audio_file": "audio\\sentence_0007.wav",
+      "word_count": 30
+    },
+    {
+      "index": 8,
+      "text": "It's real -term GDP has barely recovered from its pre -pandemic level in 2019, and it still hasn't bounced back from the 2008 global financial crisis.",
+      "start": 69.346,
+      "end": 81.176,
+      "audio_length_seconds": 11.83,
+      "embedding_audio_seconds": 11.03,
+      "audio_file": "audio\\sentence_0008.wav",
+      "word_count": 26
+    },
+    {
+      "index": 9,
+      "text": "And this consistently weak economic growth has sparked record levels of unemployment passing 11% in April this year.",
+      "start": 81.176,
+      "end": 89.986,
+      "audio_length_seconds": 8.81,
+      "embedding_audio_seconds": 8.39,
+      "audio_file": "audio\\sentence_0009.wav",
+      "word_count": 19
+    },
+    {
+      "index": 10,
+      "text": "A big part of the slowdown traces back to the decline of the country's telecoms giant Nokia after it failed to harness the new era of smartphones when Apple launched the iPhone in 2007.",
+      "start": 89.986,
+      "end": 103.806,
+      "audio_length_seconds": 13.82,
+      "embedding_audio_seconds": 13.21,
+      "audio_file": "audio\\sentence_0010.wav",
+      "word_count": 34
+    },
+    {
+      "index": 11,
+      "text": "The war in Ukraine disrupted both trade and energy ties with what was one of Finland's biggest trading partners, its neighbour, Russia.",
+      "start": 104.946,
+      "end": 114.256,
+      "audio_length_seconds": 9.31,
+      "embedding_audio_seconds": 9.31,
+      "audio_file": "audio\\sentence_0011.wav",
+      "word_count": 22
+    },
+    {
+      "index": 12,
+      "text": "There were almost 2 million border crossings yearly at the border crossing point at best, and now there are none.",
+      "start": 114.256,
+      "end": 120.966,
+      "audio_length_seconds": 6.71,
+      "embedding_audio_seconds": 6.48,
+      "audio_file": "audio\\sentence_0012.wav",
+      "word_count": 20
+    },
+    {
+      "index": 13,
+      "text": "This had an immediate impact on businesses.",
+      "start": 120.966,
+      "end": 123.596,
+      "audio_length_seconds": 2.63,
+      "embedding_audio_seconds": 2.63,
+      "audio_file": "audio\\sentence_0013.wav",
+      "word_count": 7
+    },
+    {
+      "index": 14,
+      "text": "Companies have found themselves in a very difficult position as they have had to adapt to this situation.",
+      "start": 123.596,
+      "end": 128.566,
+      "audio_length_seconds": 4.97,
+      "embedding_audio_seconds": 4.96,
+      "audio_file": "audio\\sentence_0014.wav",
+      "word_count": 18
+    },
+    {
+      "index": 15,
+      "text": "There are fresh signs the long slump may be easing.",
+      "start": 128.566,
+      "end": 132.276,
+      "audio_length_seconds": 3.71,
+      "embedding_audio_seconds": 3.33,
+      "audio_file": "audio\\sentence_0015.wav",
+      "word_count": 10
+    },
+    {
+      "index": 16,
+      "text": "GDP grew by almost 1% in the first quarter of 2026.",
+      "start": 132.276,
+      "end": 136.926,
+      "audio_length_seconds": 4.65,
+      "embedding_audio_seconds": 4.46,
+      "audio_file": "audio\\sentence_0016.wav",
+      "word_count": 12
+    },
+    {
+      "index": 17,
+      "text": "compared to the previous three months, the fastest pace since 2021.",
+      "start": 136.926,
+      "end": 141.216,
+      "audio_length_seconds": 4.29,
+      "embedding_audio_seconds": 4.07,
+      "audio_file": "audio\\sentence_0017.wav",
+      "word_count": 11
+    },
+    {
+      "index": 18,
+      "text": "The recovery is partly being driven by defence spending which is feeding through to the wider economy through investment, procurement and tax revenues.",
+      "start": 142.202,
+      "end": 151.932,
+      "audio_length_seconds": 9.73,
+      "embedding_audio_seconds": 9.6,
+      "audio_file": "audio\\sentence_0018.wav",
+      "word_count": 23
+    },
+    {
+      "index": 19,
+      "text": "That said, Finland's problems have not vanished, and while the latest data are encouraging, policy makers still face the challenge of making this recovery durable.",
+      "start": 151.932,
+      "end": 162.662,
+      "audio_length_seconds": 10.73,
+      "embedding_audio_seconds": 10.06,
+      "audio_file": "audio\\sentence_0019.wav",
+      "word_count": 25
+    },
+    {
+      "index": 20,
+      "text": "After years of under -performance, Finland's economy is finally perking up.",
+      "start": 162.662,
+      "end": 168.452,
+      "audio_length_seconds": 5.79,
+      "embedding_audio_seconds": 4.59,
+      "audio_file": "audio\\sentence_0020.wav",
+      "word_count": 11
+    },
+    {
+      "index": 21,
+      "text": "and the world's happiest country could get even happier.",
+      "start": 168.452,
+      "end": 172.602,
+      "audio_length_seconds": 4.15,
+      "embedding_audio_seconds": 3.6,
+      "audio_file": "audio\\sentence_0021.wav",
+      "word_count": 9
+    },
+    {
+      "index": 22,
+      "text": "Well, let's bring in our guests for this one.",
+      "start": 175.6,
+      "end": 177.4,
+      "audio_length_seconds": 1.8,
+      "embedding_audio_seconds": 1.55,
+      "audio_file": "audio\\sentence_0022.wav",
+      "word_count": 9
+    },
+    {
+      "index": 23,
+      "text": "I'm delighted to say, joining us from Helsinki, we have Teivo Teivainen.",
+      "start": 177.4,
+      "end": 181.27,
+      "audio_length_seconds": 3.87,
+      "embedding_audio_seconds": 3.87,
+      "audio_file": "audio\\sentence_0023.wav",
+      "word_count": 12
+    },
+    {
+      "index": 24,
+      "text": "He is chair of the Finnish National Commission for UNESCO.",
+      "start": 181.27,
+      "end": 184.62,
+      "audio_length_seconds": 3.35,
+      "embedding_audio_seconds": 3.35,
+      "audio_file": "audio\\sentence_0024.wav",
+      "word_count": 10
+    },
+    {
+      "index": 25,
+      "text": "Also in the Finnish capital we have Sakari Ladamäki.",
+      "start": 184.62,
+      "end": 188.47,
+      "audio_length_seconds": 3.85,
+      "embedding_audio_seconds": 3.55,
+      "audio_file": "audio\\sentence_0025.wav",
+      "word_count": 9
+    },
+    {
+      "index": 26,
+      "text": "He is Doctor of Economics at Aetla Economic Research.",
+      "start": 188.47,
+      "end": 192.6,
+      "audio_length_seconds": 4.13,
+      "embedding_audio_seconds": 3.97,
+      "audio_file": "audio\\sentence_0026.wav",
+      "word_count": 9
+    },
+    {
+      "index": 27,
+      "text": "And here with me in the studio, we have Daniel Crowell.",
+      "start": 192.6,
+      "end": 195.67,
+      "audio_length_seconds": 3.07,
+      "embedding_audio_seconds": 3.03,
+      "audio_file": "audio\\sentence_0027.wav",
+      "word_count": 11
+    },
+    {
+      "index": 28,
+      "text": "He is Lead Economist at Oxford Economics.",
+      "start": 195.67,
+      "end": 198.63,
+      "audio_length_seconds": 2.96,
+      "embedding_audio_seconds": 2.9,
+      "audio_file": "audio\\sentence_0028.wav",
+      "word_count": 7
+    },
+    {
+      "index": 29,
+      "text": "You're all very welcome to Roundtable.",
+      "start": 198.63,
+      "end": 200.48,
+      "audio_length_seconds": 1.85,
+      "embedding_audio_seconds": 1.85,
+      "audio_file": "audio\\sentence_0029.wav",
+      "word_count": 6
+    },
+    {
+      "index": 30,
+      "text": "Tevo, to you first of all, we always hear that Finland is such a happy place to live, the Finns are such happy people.",
+      "start": 200.48,
+      "end": 207.63,
+      "audio_length_seconds": 7.15,
+      "embedding_audio_seconds": 6.66,
+      "audio_file": "audio\\sentence_0030.wav",
+      "word_count": 24
+    },
+    {
+      "index": 31,
+      "text": "your economy has been quite unhappy for some long time now.",
+      "start": 207.63,
+      "end": 211.92,
+      "audio_length_seconds": 4.29,
+      "embedding_audio_seconds": 4.29,
+      "audio_file": "audio\\sentence_0031.wav",
+      "word_count": 11
+    },
+    {
+      "index": 32,
+      "text": "Well, there hasn't been much growth, but part of the Finnish secret to happiness is that we always tend to think it could be worse.",
+      "start": 214.07,
+      "end": 223.42,
+      "audio_length_seconds": 9.35,
+      "embedding_audio_seconds": 9.08,
+      "audio_file": "audio\\sentence_0032.wav",
+      "word_count": 25
+    },
+    {
+      "index": 33,
+      "text": "So that's one reason why we rank so high in the list of happiness, since we are pessimists.",
+      "start": 223.42,
+      "end": 229.48,
+      "audio_length_seconds": 6.06,
+      "embedding_audio_seconds": 5.54,
+      "audio_file": "audio\\sentence_0033.wav",
+      "word_count": 18
+    },
+    {
+      "index": 34,
+      "text": "I think it could be worse, so it is back.",
+      "start": 229.48,
+      "end": 231.97,
+      "audio_length_seconds": 2.49,
+      "embedding_audio_seconds": 2.46,
+      "audio_file": "audio\\sentence_0034.wav",
+      "word_count": 10
+    },
+    {
+      "index": 35,
+      "text": "But yes, there has been, the growth has been lagging for a long time.",
+      "start": 232.164,
+      "end": 236.394,
+      "audio_length_seconds": 4.23,
+      "embedding_audio_seconds": 2.59,
+      "audio_file": "audio\\sentence_0035.wav",
+      "word_count": 14
+    },
+    {
+      "index": 36,
+      "text": "Zachary, just come in on this.",
+      "start": 237.174,
+      "end": 238.764,
+      "audio_length_seconds": 1.59,
+      "embedding_audio_seconds": 1.55,
+      "audio_file": "audio\\sentence_0036.wav",
+      "word_count": 6
+    },
+    {
+      "index": 37,
+      "text": "How concerning is it that we're seeing little green shoots of recovery in Finland but for two decades a lot of stagnation?",
+      "start": 238.764,
+      "end": 246.474,
+      "audio_length_seconds": 7.71,
+      "embedding_audio_seconds": 7.71,
+      "audio_file": "audio\\sentence_0037.wav",
+      "word_count": 22
+    },
+    {
+      "index": 38,
+      "text": "Yeah, so I think it's a great thing to worry about, because at the same time our public finances have gone a lot worse.",
+      "start": 247.208,
+      "end": 259.288,
+      "audio_length_seconds": 12.08,
+      "embedding_audio_seconds": 11.61,
+      "audio_file": "audio\\sentence_0038.wav",
+      "word_count": 24
+    },
+    {
+      "index": 39,
+      "text": "One thing about the happiness I have to say, these measures, I think it's hard to believe them sometimes, and you know, you feel like they're somehow biased.",
+      "start": 261.108,
+      "end": 274.618,
+      "audio_length_seconds": 13.51,
+      "embedding_audio_seconds": 12.82,
+      "audio_file": "audio\\sentence_0039.wav",
+      "word_count": 28
+    },
+    {
+      "index": 40,
+      "text": "But then again you have to remember what they actually measure, and they measure satisfaction.",
+      "start": 274.618,
+      "end": 280.568,
+      "audio_length_seconds": 5.95,
+      "embedding_audio_seconds": 5.45,
+      "audio_file": "audio\\sentence_0040.wav",
+      "word_count": 15
+    },
+    {
+      "index": 41,
+      "text": "And I think that Finns may be quite easily satisfied with their life as we have been kind of taught to be satisfied with what we get and because maybe of the harsh nature we are used to live in.",
+      "start": 280.568,
+      "end": 298.078,
+      "audio_length_seconds": 17.51,
+      "embedding_audio_seconds": 17.46,
+      "audio_file": "audio\\sentence_0041.wav",
+      "word_count": 40
+    },
+    {
+      "index": 42,
+      "text": "Thank you, Zachary.",
+      "start": 299.358,
+      "end": 300.388,
+      "audio_length_seconds": 1.03,
+      "embedding_audio_seconds": 0.86,
+      "audio_file": "audio\\sentence_0042.wav",
+      "word_count": 3
+    },
+    {
+      "index": 43,
+      "text": "Let's bring Daniel in.",
+      "start": 300.388,
+      "end": 301.368,
+      "audio_length_seconds": 0.98,
+      "embedding_audio_seconds": 0.95,
+      "audio_file": "audio\\sentence_0043.wav",
+      "word_count": 4
+    },
+    {
+      "index": 44,
+      "text": "Daniel, you study Finnish economics, and you're across all the markets and everything.",
+      "start": 301.368,
+      "end": 306.078,
+      "audio_length_seconds": 4.71,
+      "embedding_audio_seconds": 4.54,
+      "audio_file": "audio\\sentence_0044.wav",
+      "word_count": 13
+    },
+    {
+      "index": 45,
+      "text": "What do you think is the key thing that has gone wrong for them?",
+      "start": 306.078,
+      "end": 308.608,
+      "audio_length_seconds": 2.53,
+      "embedding_audio_seconds": 2.28,
+      "audio_file": "audio\\sentence_0045.wav",
+      "word_count": 14
+    },
+    {
+      "index": 46,
+      "text": "Well, just to set the context, so the Finnish economy has been flat since 2019, there has been no growth over the last seven years, which is the worst performance in Europe.",
+      "start": 308.608,
+      "end": 317.218,
+      "audio_length_seconds": 8.61,
+      "embedding_audio_seconds": 8.01,
+      "audio_file": "audio\\sentence_0046.wav",
+      "word_count": 32
+    },
+    {
+      "index": 47,
+      "text": "Germany is sort of on a par, but essentially flat economy.",
+      "start": 317.638,
+      "end": 320.762,
+      "audio_length_seconds": 3.124,
+      "embedding_audio_seconds": 3.124,
+      "audio_file": "audio\\sentence_0047.wav",
+      "word_count": 11
+    },
+    {
+      "index": 48,
+      "text": "We've had population growth in the meantime, largely because of immigration.",
+      "start": 320.762,
+      "end": 323.246,
+      "audio_length_seconds": 2.484,
+      "embedding_audio_seconds": 2.484,
+      "audio_file": "audio\\sentence_0048.wav",
+      "word_count": 11
+    },
+    {
+      "index": 49,
+      "text": "And so on a per capita basis, on an individual basis, the Finns are now worse off than they were seven years ago.",
+      "start": 323.246,
+      "end": 328.836,
+      "audio_length_seconds": 5.59,
+      "embedding_audio_seconds": 5.59,
+      "audio_file": "audio\\sentence_0049.wav",
+      "word_count": 23
+    },
+    {
+      "index": 50,
+      "text": "A big one is the energy crisis, but also the invasion of Russia and Ukraine and the cutting off of trade.",
+      "start": 328.836,
+      "end": 334.206,
+      "audio_length_seconds": 5.37,
+      "embedding_audio_seconds": 4.93,
+      "audio_file": "audio\\sentence_0050.wav",
+      "word_count": 21
+    },
+    {
+      "index": 51,
+      "text": "Obviously Finland is right next to Russia, I was 10% of Finnish trade was with Russia.",
+      "start": 334.206,
+      "end": 337.496,
+      "audio_length_seconds": 3.29,
+      "embedding_audio_seconds": 3.26,
+      "audio_file": "audio\\sentence_0051.wav",
+      "word_count": 17
+    },
+    {
+      "index": 52,
+      "text": "That's now largely disappeared, at least officially.",
+      "start": 337.496,
+      "end": 340.686,
+      "audio_length_seconds": 3.19,
+      "embedding_audio_seconds": 2.94,
+      "audio_file": "audio\\sentence_0052.wav",
+      "word_count": 7
+    },
+    {
+      "index": 53,
+      "text": "there are some back channels and rerouting through third countries, but it was a big trade shock.",
+      "start": 340.686,
+      "end": 344.676,
+      "audio_length_seconds": 3.99,
+      "embedding_audio_seconds": 3.97,
+      "audio_file": "audio\\sentence_0053.wav",
+      "word_count": 17
+    },
+    {
+      "index": 54,
+      "text": "And of course Finland has also quite adverse sectoral exposures.",
+      "start": 345.366,
+      "end": 348.256,
+      "audio_length_seconds": 2.89,
+      "embedding_audio_seconds": 2.87,
+      "audio_file": "audio\\sentence_0054.wav",
+      "word_count": 10
+    },
+    {
+      "index": 55,
+      "text": "You look at Sweden.",
+      "start": 348.256,
+      "end": 349.248,
+      "audio_length_seconds": 0.992,
+      "embedding_audio_seconds": 0.992,
+      "audio_file": "audio\\sentence_0055.wav",
+      "word_count": 4
+    },
+    {
+      "index": 56,
+      "text": "Sweden has a big defense industry that's booming now.",
+      "start": 349.248,
+      "end": 351.538,
+      "audio_length_seconds": 2.29,
+      "embedding_audio_seconds": 2.27,
+      "audio_file": "audio\\sentence_0056.wav",
+      "word_count": 9
+    },
+    {
+      "index": 57,
+      "text": "Denmark is pharma, pharma is booming, or Norway has oil and gas.",
+      "start": 351.538,
+      "end": 355.708,
+      "audio_length_seconds": 4.17,
+      "embedding_audio_seconds": 3.7,
+      "audio_file": "audio\\sentence_0057.wav",
+      "word_count": 12
+    },
+    {
+      "index": 58,
+      "text": "What does Finland have?",
+      "start": 355.708,
+      "end": 356.938,
+      "audio_length_seconds": 1.23,
+      "embedding_audio_seconds": 0.98,
+      "audio_file": "audio\\sentence_0058.wav",
+      "word_count": 4
+    },
+    {
+      "index": 59,
+      "text": "nothing of the sort that would be, you know, having this strong tailwind.",
+      "start": 356.938,
+      "end": 359.788,
+      "audio_length_seconds": 2.85,
+      "embedding_audio_seconds": 2.73,
+      "audio_file": "audio\\sentence_0059.wav",
+      "word_count": 13
+    },
+    {
+      "index": 60,
+      "text": "So the export side of the Finnish economy has also been quite weak.",
+      "start": 359.788,
+      "end": 362.758,
+      "audio_length_seconds": 2.97,
+      "embedding_audio_seconds": 2.75,
+      "audio_file": "audio\\sentence_0060.wav",
+      "word_count": 13
+    },
+    {
+      "index": 61,
+      "text": "Add to that a large exposure to higher interest rates, which get passed on to consumers and businesses very quickly.",
+      "start": 362.758,
+      "end": 368.788,
+      "audio_length_seconds": 6.03,
+      "embedding_audio_seconds": 5.81,
+      "audio_file": "audio\\sentence_0061.wav",
+      "word_count": 20
+    },
+    {
+      "index": 62,
+      "text": "Almost all mortgages are on floating rates.",
+      "start": 368.788,
+      "end": 371.018,
+      "audio_length_seconds": 2.23,
+      "embedding_audio_seconds": 1.82,
+      "audio_file": "audio\\sentence_0062.wav",
+      "word_count": 7
+    },
+    {
+      "index": 63,
+      "text": "That means if it goes up, the central bank hikes rates.",
+      "start": 371.018,
+      "end": 373.046,
+      "audio_length_seconds": 2.028,
+      "embedding_audio_seconds": 2.018,
+      "audio_file": "audio\\sentence_0063.wav",
+      "word_count": 11
+    },
+    {
+      "index": 64,
+      "text": "You feel it immediately on your disposable income.",
+      "start": 373.046,
+      "end": 375.156,
+      "audio_length_seconds": 2.11,
+      "embedding_audio_seconds": 2.11,
+      "audio_file": "audio\\sentence_0064.wav",
+      "word_count": 8
+    },
+    {
+      "index": 65,
+      "text": "That's been bad for consumption.",
+      "start": 375.346,
+      "end": 376.936,
+      "audio_length_seconds": 1.59,
+      "embedding_audio_seconds": 1.59,
+      "audio_file": "audio\\sentence_0065.wav",
+      "word_count": 5
+    },
+    {
+      "index": 66,
+      "text": "So both on the demand side, on the export side, we haven't had some major growth driver, but also a lot of headwinds from external shocks and sort of the interest rate and inflation shocks in the recent years.",
+      "start": 376.936,
+      "end": 385.626,
+      "audio_length_seconds": 8.69,
+      "embedding_audio_seconds": 7.98,
+      "audio_file": "audio\\sentence_0066.wav",
+      "word_count": 39
+    },
+    {
+      "index": 67,
+      "text": "And that's why the Finnish economy has just stayed flat.",
+      "start": 385.626,
+      "end": 387.956,
+      "audio_length_seconds": 2.33,
+      "embedding_audio_seconds": 2.12,
+      "audio_file": "audio\\sentence_0067.wav",
+      "word_count": 10
+    },
+    {
+      "index": 68,
+      "text": "And yet the standard of living seems pretty good in Finland compared to many Eurozone countries.",
+      "start": 387.956,
+      "end": 393.726,
+      "audio_length_seconds": 5.77,
+      "embedding_audio_seconds": 4.86,
+      "audio_file": "audio\\sentence_0068.wav",
+      "word_count": 16
+    },
+    {
+      "index": 69,
+      "text": "Correct.",
+      "start": 393.726,
+      "end": 394.39,
+      "audio_length_seconds": 0.664,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0069.wav",
+      "word_count": 1
+    },
+    {
+      "index": 70,
+      "text": "I mean, Finland is still way above average in Europe, in the EU.",
+      "start": 394.39,
+      "end": 398.82,
+      "audio_length_seconds": 4.43,
+      "embedding_audio_seconds": 4.43,
+      "audio_file": "audio\\sentence_0070.wav",
+      "word_count": 13
+    },
+    {
+      "index": 71,
+      "text": "And so that it's why it's a net contributor to the EU budget from the pandemic era fund, which is supposed to help the recovery on pandemic recovery.",
+      "start": 398.82,
+      "end": 406.25,
+      "audio_length_seconds": 7.43,
+      "embedding_audio_seconds": 7.43,
+      "audio_file": "audio\\sentence_0071.wav",
+      "word_count": 28
+    },
+    {
+      "index": 72,
+      "text": "Finland is again a big net contributor to it.",
+      "start": 406.25,
+      "end": 408.506,
+      "audio_length_seconds": 2.256,
+      "embedding_audio_seconds": 2.056,
+      "audio_file": "audio\\sentence_0072.wav",
+      "word_count": 9
+    },
+    {
+      "index": 73,
+      "text": "It hasn't really benefited from any of the funds.",
+      "start": 408.506,
+      "end": 410.396,
+      "audio_length_seconds": 1.89,
+      "embedding_audio_seconds": 1.89,
+      "audio_file": "audio\\sentence_0073.wav",
+      "word_count": 9
+    },
+    {
+      "index": 74,
+      "text": "And, as the other guest said, the fiscal situation in Finland is pretty bad.",
+      "start": 410.396,
+      "end": 414.266,
+      "audio_length_seconds": 3.87,
+      "embedding_audio_seconds": 3.54,
+      "audio_file": "audio\\sentence_0074.wav",
+      "word_count": 14
+    },
+    {
+      "index": 75,
+      "text": "The deficit is very wide.",
+      "start": 414.266,
+      "end": 415.776,
+      "audio_length_seconds": 1.51,
+      "embedding_audio_seconds": 1.24,
+      "audio_file": "audio\\sentence_0075.wav",
+      "word_count": 5
+    },
+    {
+      "index": 76,
+      "text": "Finland is now in the Excessive Deficit Procedure, which the EU Commission opens on countries that have either very high excessive debts or deficits.",
+      "start": 415.776,
+      "end": 422.326,
+      "audio_length_seconds": 6.55,
+      "embedding_audio_seconds": 6.55,
+      "audio_file": "audio\\sentence_0076.wav",
+      "word_count": 24
+    },
+    {
+      "index": 77,
+      "text": "Finland is one of six or seven in there.",
+      "start": 422.576,
+      "end": 424.726,
+      "audio_length_seconds": 2.15,
+      "embedding_audio_seconds": 2.15,
+      "audio_file": "audio\\sentence_0077.wav",
+      "word_count": 9
+    },
+    {
+      "index": 78,
+      "text": "So it's under closed scrutiny and it has a specific adjustment plan it has to follow to close that deficit, otherwise it risks fines from the EU Commission.",
+      "start": 424.726,
+      "end": 432.056,
+      "audio_length_seconds": 7.33,
+      "embedding_audio_seconds": 7.21,
+      "audio_file": "audio\\sentence_0078.wav",
+      "word_count": 28
+    },
+    {
+      "index": 79,
+      "text": "So then again, it's not going to get much support from the fiscal side.",
+      "start": 432.056,
+      "end": 436.166,
+      "audio_length_seconds": 4.11,
+      "embedding_audio_seconds": 3.74,
+      "audio_file": "audio\\sentence_0079.wav",
+      "word_count": 14
+    },
+    {
+      "index": 80,
+      "text": "Like Germany is now opening up the purse string for a big fiscal stimulus.",
+      "start": 436.166,
+      "end": 440.156,
+      "audio_length_seconds": 3.99,
+      "embedding_audio_seconds": 3.99,
+      "audio_file": "audio\\sentence_0080.wav",
+      "word_count": 14
+    },
+    {
+      "index": 81,
+      "text": "other countries as well are loosening or spending big on defence.",
+      "start": 440.156,
+      "end": 443.146,
+      "audio_length_seconds": 2.99,
+      "embedding_audio_seconds": 2.8,
+      "audio_file": "audio\\sentence_0081.wav",
+      "word_count": 11
+    },
+    {
+      "index": 82,
+      "text": "Finland doesn't have that option.",
+      "start": 443.146,
+      "end": 444.696,
+      "audio_length_seconds": 1.55,
+      "embedding_audio_seconds": 1.39,
+      "audio_file": "audio\\sentence_0082.wav",
+      "word_count": 5
+    },
+    {
+      "index": 83,
+      "text": "Finland needs to go and cut more expenses, more welfare, which is gonna hurt growth even more.",
+      "start": 444.696,
+      "end": 450.086,
+      "audio_length_seconds": 5.39,
+      "embedding_audio_seconds": 5.36,
+      "audio_file": "audio\\sentence_0083.wav",
+      "word_count": 17
+    },
+    {
+      "index": 84,
+      "text": "Thanks, Daniel.",
+      "start": 450.086,
+      "end": 450.916,
+      "audio_length_seconds": 0.83,
+      "embedding_audio_seconds": 0.69,
+      "audio_file": "audio\\sentence_0084.wav",
+      "word_count": 2
+    },
+    {
+      "index": 85,
+      "text": "Tevo, to you.",
+      "start": 450.946,
+      "end": 451.756,
+      "audio_length_seconds": 0.81,
+      "embedding_audio_seconds": 0.81,
+      "audio_file": "audio\\sentence_0085.wav",
+      "word_count": 3
+    },
+    {
+      "index": 86,
+      "text": "Talk to me about welfare, then, because I'm reading that 11% unemployment in Finland, that's a huge welfare burden for the government and the state and the Finnish taxpayer to carry.",
+      "start": 451.756,
+      "end": 462.486,
+      "audio_length_seconds": 10.73,
+      "embedding_audio_seconds": 10.73,
+      "audio_file": "audio\\sentence_0086.wav",
+      "word_count": 32
+    },
+    {
+      "index": 87,
+      "text": "Most certainly, yes.",
+      "start": 463.272,
+      "end": 466.622,
+      "audio_length_seconds": 3.35,
+      "embedding_audio_seconds": 1.68,
+      "audio_file": "audio\\sentence_0087.wav",
+      "word_count": 3
+    },
+    {
+      "index": 88,
+      "text": "It's a very high number in terms of modern history.",
+      "start": 466.622,
+      "end": 472.052,
+      "audio_length_seconds": 5.43,
+      "embedding_audio_seconds": 5.43,
+      "audio_file": "audio\\sentence_0088.wav",
+      "word_count": 10
+    },
+    {
+      "index": 89,
+      "text": "And at the same time, this government, and it's quite possible the next government might do the same, has been cutting various kinds of welfare benefits.",
+      "start": 472.052,
+      "end": 482.802,
+      "audio_length_seconds": 10.75,
+      "embedding_audio_seconds": 10.27,
+      "audio_file": "audio\\sentence_0089.wav",
+      "word_count": 26
+    },
+    {
+      "index": 90,
+      "text": "they're not all gone but because of the deficit that's been used as the main reason for heavy cuts.",
+      "start": 482.802,
+      "end": 492.372,
+      "audio_length_seconds": 9.57,
+      "embedding_audio_seconds": 9.57,
+      "audio_file": "audio\\sentence_0090.wav",
+      "word_count": 19
+    },
+    {
+      "index": 91,
+      "text": "There isn't that much social unrest yet in Finland, so despite all the gloom of the numbers, the welfare system still works in a relatively okay way also to prevent people from getting really angry and going to the streets.",
+      "start": 492.372,
+      "end": 515.142,
+      "audio_length_seconds": 22.77,
+      "embedding_audio_seconds": 22.04,
+      "audio_file": "audio\\sentence_0091.wav",
+      "word_count": 40
+    },
+    {
+      "index": 92,
+      "text": "so that hasn't happened lately.",
+      "start": 515.142,
+      "end": 516.892,
+      "audio_length_seconds": 1.75,
+      "embedding_audio_seconds": 1.72,
+      "audio_file": "audio\\sentence_0092.wav",
+      "word_count": 5
+    },
+    {
+      "index": 93,
+      "text": "Thank you.",
+      "start": 517.342,
+      "end": 518.272,
+      "audio_length_seconds": 0.93,
+      "embedding_audio_seconds": 0.57,
+      "audio_file": "audio\\sentence_0093.wav",
+      "word_count": 2
+    },
+    {
+      "index": 94,
+      "text": "Sakari talk to me about how much political pressure there is in Finland to fix these problems.",
+      "start": 518.272,
+      "end": 524.062,
+      "audio_length_seconds": 5.79,
+      "embedding_audio_seconds": 5.46,
+      "audio_file": "audio\\sentence_0094.wav",
+      "word_count": 17
+    },
+    {
+      "index": 95,
+      "text": "You've got an election coming up next year.",
+      "start": 524.062,
+      "end": 526.152,
+      "audio_length_seconds": 2.09,
+      "embedding_audio_seconds": 2.09,
+      "audio_file": "audio\\sentence_0095.wav",
+      "word_count": 8
+    },
+    {
+      "index": 96,
+      "text": "The people clearly want answers and solutions.",
+      "start": 526.152,
+      "end": 529.582,
+      "audio_length_seconds": 3.43,
+      "embedding_audio_seconds": 3.06,
+      "audio_file": "audio\\sentence_0096.wav",
+      "word_count": 7
+    },
+    {
+      "index": 97,
+      "text": "Yes, yes, there is a lot of willingness to fix these problems.",
+      "start": 530.602,
+      "end": 534.832,
+      "audio_length_seconds": 4.23,
+      "embedding_audio_seconds": 4.02,
+      "audio_file": "audio\\sentence_0097.wav",
+      "word_count": 12
+    },
+    {
+      "index": 98,
+      "text": "the problem is maybe that there is a quite a lot of debate over the right medicine.",
+      "start": 534.832,
+      "end": 540.922,
+      "audio_length_seconds": 6.09,
+      "embedding_audio_seconds": 6.09,
+      "audio_file": "audio\\sentence_0098.wav",
+      "word_count": 17
+    },
+    {
+      "index": 99,
+      "text": "I mean, it's obvious that we have to do something for the public finances.",
+      "start": 540.922,
+      "end": 546.572,
+      "audio_length_seconds": 5.65,
+      "embedding_audio_seconds": 5.26,
+      "audio_file": "audio\\sentence_0099.wav",
+      "word_count": 14
+    },
+    {
+      "index": 100,
+      "text": "Our spending at the moment is too high compared to the revenue and even that this government has done some consolidation It's not enough yet.",
+      "start": 546.572,
+      "end": 557.562,
+      "audio_length_seconds": 10.99,
+      "embedding_audio_seconds": 10.66,
+      "audio_file": "audio\\sentence_0100.wav",
+      "word_count": 25
+    },
+    {
+      "index": 101,
+      "text": "It has to be continued for for at least two or three next governments.",
+      "start": 557.562,
+      "end": 562.472,
+      "audio_length_seconds": 4.91,
+      "embedding_audio_seconds": 4.91,
+      "audio_file": "audio\\sentence_0101.wav",
+      "word_count": 14
+    },
+    {
+      "index": 102,
+      "text": "I think there is the willingness but the problem is that the other side wants to maybe solve it increasing taxes and the other one would like to cut spending.",
+      "start": 562.472,
+      "end": 579.362,
+      "audio_length_seconds": 16.89,
+      "embedding_audio_seconds": 16.72,
+      "audio_file": "audio\\sentence_0102.wav",
+      "word_count": 30
+    },
+    {
+      "index": 103,
+      "text": "From my opinion, the overall tax rate is already quite high and it's cutting down our growth and there's not much leverage there to increase taxes anymore.",
+      "start": 579.362,
+      "end": 594.632,
+      "audio_length_seconds": 15.27,
+      "embedding_audio_seconds": 15.1,
+      "audio_file": "audio\\sentence_0103.wav",
+      "word_count": 27
+    },
+    {
+      "index": 104,
+      "text": "more.",
+      "start": 594.632,
+      "end": 594.942,
+      "audio_length_seconds": 0.31,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0104.wav",
+      "word_count": 1
+    },
+    {
+      "index": 105,
+      "text": "Thank you, Zachary.",
+      "start": 596.192,
+      "end": 597.262,
+      "audio_length_seconds": 1.07,
+      "embedding_audio_seconds": 0.83,
+      "audio_file": "audio\\sentence_0105.wav",
+      "word_count": 3
+    },
+    {
+      "index": 106,
+      "text": "Daniel, to you, we hear this phrase, fiscal headspace, how much money a government has or financial levers it can pull to make things better.",
+      "start": 597.262,
+      "end": 605.512,
+      "audio_length_seconds": 8.25,
+      "embedding_audio_seconds": 8.07,
+      "audio_file": "audio\\sentence_0106.wav",
+      "word_count": 25
+    },
+    {
+      "index": 107,
+      "text": "How much headspace, financially, then, has the Finnish government got?",
+      "start": 605.512,
+      "end": 610.122,
+      "audio_length_seconds": 4.61,
+      "embedding_audio_seconds": 4.16,
+      "audio_file": "audio\\sentence_0107.wav",
+      "word_count": 10
+    },
+    {
+      "index": 108,
+      "text": "Well, very little, if any at all.",
+      "start": 610.122,
+      "end": 612.612,
+      "audio_length_seconds": 2.49,
+      "embedding_audio_seconds": 2.04,
+      "audio_file": "audio\\sentence_0108.wav",
+      "word_count": 7
+    },
+    {
+      "index": 109,
+      "text": "And you can see it in the current crisis, which we're going through an oil crisis.",
+      "start": 612.612,
+      "end": 615.924,
+      "audio_length_seconds": 3.312,
+      "embedding_audio_seconds": 3.312,
+      "audio_file": "audio\\sentence_0109.wav",
+      "word_count": 16
+    },
+    {
+      "index": 110,
+      "text": "Transport fuels are going up a lot at the petrol pump.",
+      "start": 615.924,
+      "end": 618.188,
+      "audio_length_seconds": 2.264,
+      "embedding_audio_seconds": 2.264,
+      "audio_file": "audio\\sentence_0110.wav",
+      "word_count": 11
+    },
+    {
+      "index": 111,
+      "text": "Anybody who has a car can see that.",
+      "start": 618.188,
+      "end": 619.718,
+      "audio_length_seconds": 1.53,
+      "embedding_audio_seconds": 1.52,
+      "audio_file": "audio\\sentence_0111.wav",
+      "word_count": 8
+    },
+    {
+      "index": 112,
+      "text": "Most countries in Europe are cutting those taxes to some extent, fuel taxes.",
+      "start": 620.028,
+      "end": 623.998,
+      "audio_length_seconds": 3.97,
+      "embedding_audio_seconds": 3.9,
+      "audio_file": "audio\\sentence_0112.wav",
+      "word_count": 13
+    },
+    {
+      "index": 113,
+      "text": "Finland does not really have that space, so again it's another headwind for the Finnish consumer, which is going to be hurting on disposable incomes again.",
+      "start": 623.998,
+      "end": 631.048,
+      "audio_length_seconds": 7.05,
+      "embedding_audio_seconds": 6.96,
+      "audio_file": "audio\\sentence_0113.wav",
+      "word_count": 26
+    },
+    {
+      "index": 114,
+      "text": "But coming back to the unemployment point that you said, Finland does now have the highest headline unemployment rate in the EU, even higher than Spain or Greece.",
+      "start": 631.048,
+      "end": 638.698,
+      "audio_length_seconds": 7.65,
+      "embedding_audio_seconds": 7.38,
+      "audio_file": "audio\\sentence_0114.wav",
+      "word_count": 28
+    },
+    {
+      "index": 115,
+      "text": "These are, you know, the crisis countries of 2010s.",
+      "start": 638.748,
+      "end": 641.098,
+      "audio_length_seconds": 2.35,
+      "embedding_audio_seconds": 2.27,
+      "audio_file": "audio\\sentence_0115.wav",
+      "word_count": 9
+    },
+    {
+      "index": 116,
+      "text": "But Finland also has a much higher participation rate, so the labor force or the share of the population is much wider.",
+      "start": 641.098,
+      "end": 648.108,
+      "audio_length_seconds": 7.01,
+      "embedding_audio_seconds": 6.7,
+      "audio_file": "audio\\sentence_0116.wav",
+      "word_count": 22
+    },
+    {
+      "index": 117,
+      "text": "So if you adjust for that, Finland is not so bad on it.",
+      "start": 648.108,
+      "end": 651.118,
+      "audio_length_seconds": 3.01,
+      "embedding_audio_seconds": 2.74,
+      "audio_file": "audio\\sentence_0117.wav",
+      "word_count": 13
+    },
+    {
+      "index": 118,
+      "text": "And we're at the tail end of a cyclical weakness, you know, the shocks, the recurring shocks of the last few years and that those have pushed up unemployment, the job opportunities evaporated, and as a result, the public expenditures on unemployment benefits have gone up and that's why the deficit is wide.",
+      "start": 651.118,
+      "end": 664.528,
+      "audio_length_seconds": 13.41,
+      "embedding_audio_seconds": 13.2,
+      "audio_file": "audio\\sentence_0118.wav",
+      "word_count": 53
+    },
+    {
+      "index": 119,
+      "text": "As you said, we have seen this cyclical recovery building and we think it should continue unless there is an escalation in Hormuz or it stays closed for the rest of the year.",
+      "start": 664.528,
+      "end": 674.078,
+      "audio_length_seconds": 9.55,
+      "embedding_audio_seconds": 9.12,
+      "audio_file": "audio\\sentence_0119.wav",
+      "word_count": 33
+    },
+    {
+      "index": 120,
+      "text": "In which case, we should see the unemployment go down, which means, again, that should mechanically just close the government deficit and perhaps give some fiscal space to the government.",
+      "start": 674.738,
+      "end": 684.008,
+      "audio_length_seconds": 9.27,
+      "embedding_audio_seconds": 9.11,
+      "audio_file": "audio\\sentence_0120.wav",
+      "word_count": 30
+    },
+    {
+      "index": 121,
+      "text": "So Cary, you wanted to come in there again.",
+      "start": 684.008,
+      "end": 686.498,
+      "audio_length_seconds": 2.49,
+      "embedding_audio_seconds": 2.2,
+      "audio_file": "audio\\sentence_0121.wav",
+      "word_count": 9
+    },
+    {
+      "index": 122,
+      "text": "back to you.",
+      "start": 686.498,
+      "end": 687.668,
+      "audio_length_seconds": 1.17,
+      "embedding_audio_seconds": 0.66,
+      "audio_file": "audio\\sentence_0122.wav",
+      "word_count": 3
+    },
+    {
+      "index": 123,
+      "text": "One more point about unemployment.",
+      "start": 688.078,
+      "end": 690.248,
+      "audio_length_seconds": 2.17,
+      "embedding_audio_seconds": 1.97,
+      "audio_file": "audio\\sentence_0123.wav",
+      "word_count": 5
+    },
+    {
+      "index": 124,
+      "text": "so that official features are high, but if you look at how many kind of workers has lost their job during this downturn, it's roughly half of this unemployed.",
+      "start": 690.248,
+      "end": 704.098,
+      "audio_length_seconds": 13.85,
+      "embedding_audio_seconds": 13.67,
+      "audio_file": "audio\\sentence_0124.wav",
+      "word_count": 29
+    },
+    {
+      "index": 125,
+      "text": "The other half is coming from outside the labor force and this is a lot to thanks to also immigration.",
+      "start": 704.098,
+      "end": 713.388,
+      "audio_length_seconds": 9.29,
+      "embedding_audio_seconds": 8.3,
+      "audio_file": "audio\\sentence_0125.wav",
+      "word_count": 20
+    },
+    {
+      "index": 126,
+      "text": "And at this very weak economic situation, this new labor force has not been able to get jobs.",
+      "start": 714.488,
+      "end": 727.478,
+      "audio_length_seconds": 12.99,
+      "embedding_audio_seconds": 12.91,
+      "audio_file": "audio\\sentence_0126.wav",
+      "word_count": 18
+    },
+    {
+      "index": 127,
+      "text": "and this actually adds up another layer and that's why our unemployment rate is that high.",
+      "start": 727.478,
+      "end": 734.588,
+      "audio_length_seconds": 7.11,
+      "embedding_audio_seconds": 7.01,
+      "audio_file": "audio\\sentence_0127.wav",
+      "word_count": 16
+    },
+    {
+      "index": 128,
+      "text": "That's it, it is.",
+      "start": 734.588,
+      "end": 735.418,
+      "audio_length_seconds": 0.83,
+      "embedding_audio_seconds": 0.83,
+      "audio_file": "audio\\sentence_0128.wav",
+      "word_count": 4
+    },
+    {
+      "index": 129,
+      "text": "Thank you.",
+      "start": 735.788,
+      "end": 736.578,
+      "audio_length_seconds": 0.79,
+      "embedding_audio_seconds": 0.64,
+      "audio_file": "audio\\sentence_0129.wav",
+      "word_count": 2
+    },
+    {
+      "index": 130,
+      "text": "Teivoo, talk to me about the aging population.",
+      "start": 736.578,
+      "end": 739.688,
+      "audio_length_seconds": 3.11,
+      "embedding_audio_seconds": 2.94,
+      "audio_file": "audio\\sentence_0130.wav",
+      "word_count": 8
+    },
+    {
+      "index": 131,
+      "text": "How much of a concern is that Finland and its people, they're getting older?",
+      "start": 739.688,
+      "end": 744.118,
+      "audio_length_seconds": 4.43,
+      "embedding_audio_seconds": 4.43,
+      "audio_file": "audio\\sentence_0131.wav",
+      "word_count": 14
+    },
+    {
+      "index": 132,
+      "text": "Yes, demographics play a big role.",
+      "start": 745.818,
+      "end": 749.028,
+      "audio_length_seconds": 3.21,
+      "embedding_audio_seconds": 2.95,
+      "audio_file": "audio\\sentence_0132.wav",
+      "word_count": 6
+    },
+    {
+      "index": 133,
+      "text": "so we have elderly people that need all kinds of care and that's going to cost more and more money.",
+      "start": 749.028,
+      "end": 758.198,
+      "audio_length_seconds": 9.17,
+      "embedding_audio_seconds": 9.1,
+      "audio_file": "audio\\sentence_0133.wav",
+      "word_count": 20
+    },
+    {
+      "index": 134,
+      "text": "One of the debates about the elderly is right now also about whether the level of the pensions paid to old people will be cut.",
+      "start": 758.198,
+      "end": 768.908,
+      "audio_length_seconds": 10.71,
+      "embedding_audio_seconds": 10.25,
+      "audio_file": "audio\\sentence_0134.wav",
+      "word_count": 25
+    },
+    {
+      "index": 135,
+      "text": "and that's a huge political debate where different political parties have slightly different opinions.",
+      "start": 768.908,
+      "end": 775.398,
+      "audio_length_seconds": 6.49,
+      "embedding_audio_seconds": 6.42,
+      "audio_file": "audio\\sentence_0135.wav",
+      "word_count": 14
+    },
+    {
+      "index": 136,
+      "text": "but their needs of the elderly are growing because the numbers, relative numbers are growing and it's widely considered one of the biggest problems for the future Finnish economy.",
+      "start": 775.398,
+      "end": 788.788,
+      "audio_length_seconds": 13.39,
+      "embedding_audio_seconds": 13.22,
+      "audio_file": "audio\\sentence_0136.wav",
+      "word_count": 29
+    },
+    {
+      "index": 137,
+      "text": "And Tevo, you heard Zachary mention immigration.",
+      "start": 788.788,
+      "end": 792.838,
+      "audio_length_seconds": 4.05,
+      "embedding_audio_seconds": 3.74,
+      "audio_file": "audio\\sentence_0137.wav",
+      "word_count": 7
+    },
+    {
+      "index": 138,
+      "text": "I mean, that's one quick win in terms of bringing in young people.",
+      "start": 792.838,
+      "end": 797.05,
+      "audio_length_seconds": 4.212,
+      "embedding_audio_seconds": 4.212,
+      "audio_file": "audio\\sentence_0138.wav",
+      "word_count": 13
+    },
+    {
+      "index": 139,
+      "text": "How do Finns feel about more people who are not Finns coming into Finland?",
+      "start": 797.05,
+      "end": 801.26,
+      "audio_length_seconds": 4.21,
+      "embedding_audio_seconds": 4.21,
+      "audio_file": "audio\\sentence_0139.wav",
+      "word_count": 14
+    },
+    {
+      "index": 140,
+      "text": "Within the current government, there are differing opinions on that.",
+      "start": 802.882,
+      "end": 807.452,
+      "audio_length_seconds": 4.57,
+      "embedding_audio_seconds": 4.01,
+      "audio_file": "audio\\sentence_0140.wav",
+      "word_count": 10
+    },
+    {
+      "index": 141,
+      "text": "We have a fairly right -wing government, but one part, the Prime Minister's party, is emphasizing bringing in skilled labour and in general increasing migration, partially also because of the demographic factor we just talked about.",
+      "start": 807.502,
+      "end": 826.142,
+      "audio_length_seconds": 18.64,
+      "embedding_audio_seconds": 18.64,
+      "audio_file": "audio\\sentence_0141.wav",
+      "word_count": 36
+    },
+    {
+      "index": 142,
+      "text": "But the second biggest party in government, the Finnish party, is more openly against migration, especially non -white migration more generally, and not so willing to have mechanisms even to bring in skilled workers.",
+      "start": 826.142,
+      "end": 845.532,
+      "audio_length_seconds": 19.39,
+      "embedding_audio_seconds": 19.07,
+      "audio_file": "audio\\sentence_0142.wav",
+      "word_count": 34
+    },
+    {
+      "index": 143,
+      "text": "so people are afraid that measures against migration that one of the government parties is insisting on while they are not explicitly meant to sort of not let skilled workers come in Finland they still make life more difficult for foreigners in Finland and that creates disincentives for moving to Finland.",
+      "start": 845.532,
+      "end": 872.382,
+      "audio_length_seconds": 26.85,
+      "embedding_audio_seconds": 26.61,
+      "audio_file": "audio\\sentence_0143.wav",
+      "word_count": 51
+    },
+    {
+      "index": 144,
+      "text": "So it surely is a big debate.",
+      "start": 872.812,
+      "end": 875.682,
+      "audio_length_seconds": 2.87,
+      "embedding_audio_seconds": 2.87,
+      "audio_file": "audio\\sentence_0144.wav",
+      "word_count": 7
+    },
+    {
+      "index": 145,
+      "text": "on my visit in the next government, the ideological constellation will likely be different.",
+      "start": 875.682,
+      "end": 882.292,
+      "audio_length_seconds": 6.61,
+      "embedding_audio_seconds": 6.35,
+      "audio_file": "audio\\sentence_0145.wav",
+      "word_count": 14
+    },
+    {
+      "index": 146,
+      "text": "Thanks Teival.",
+      "start": 882.582,
+      "end": 883.272,
+      "audio_length_seconds": 0.69,
+      "embedding_audio_seconds": 0.69,
+      "audio_file": "audio\\sentence_0146.wav",
+      "word_count": 2
+    },
+    {
+      "index": 147,
+      "text": "Thank you.",
+      "start": 884.962,
+      "end": 886.072,
+      "audio_length_seconds": 1.11,
+      "embedding_audio_seconds": 0.89,
+      "audio_file": "audio\\sentence_0147.wav",
+      "word_count": 2
+    },
+    {
+      "index": 148,
+      "text": "Daniel, to you, Finland is now a member of NATO, spending a lot of money on defence.",
+      "start": 886.072,
+      "end": 890.842,
+      "audio_length_seconds": 4.77,
+      "embedding_audio_seconds": 4.68,
+      "audio_file": "audio\\sentence_0148.wav",
+      "word_count": 17
+    },
+    {
+      "index": 149,
+      "text": "Is that an area where they can kind of turbocharge their economy or somehow get some growth moving?",
+      "start": 890.842,
+      "end": 896.112,
+      "audio_length_seconds": 5.27,
+      "embedding_audio_seconds": 5.27,
+      "audio_file": "audio\\sentence_0149.wav",
+      "word_count": 18
+    },
+    {
+      "index": 150,
+      "text": "Finland does have some defense industry.",
+      "start": 896.632,
+      "end": 898.936,
+      "audio_length_seconds": 2.304,
+      "embedding_audio_seconds": 1.994,
+      "audio_file": "audio\\sentence_0150.wav",
+      "word_count": 6
+    },
+    {
+      "index": 151,
+      "text": "strong on artillery production and ammunitions, has a lot of stockpiles.",
+      "start": 898.936,
+      "end": 903.566,
+      "audio_length_seconds": 4.63,
+      "embedding_audio_seconds": 4.59,
+      "audio_file": "audio\\sentence_0151.wav",
+      "word_count": 11
+    },
+    {
+      "index": 152,
+      "text": "But on the big ticket items, for example, now the government is procuring 64 new fighter jets from the US.",
+      "start": 903.776,
+      "end": 910.946,
+      "audio_length_seconds": 7.17,
+      "embedding_audio_seconds": 7.11,
+      "audio_file": "audio\\sentence_0152.wav",
+      "word_count": 20
+    },
+    {
+      "index": 153,
+      "text": "And that's going to be money largely going to the U.S. For example, Sweden has their own grippens.",
+      "start": 910.946,
+      "end": 917.116,
+      "audio_length_seconds": 6.17,
+      "embedding_audio_seconds": 5.9,
+      "audio_file": "audio\\sentence_0153.wav",
+      "word_count": 19
+    },
+    {
+      "index": 154,
+      "text": "Finland doesn't have something of the sort.",
+      "start": 917.116,
+      "end": 919.086,
+      "audio_length_seconds": 1.97,
+      "embedding_audio_seconds": 1.65,
+      "audio_file": "audio\\sentence_0154.wav",
+      "word_count": 7
+    },
+    {
+      "index": 155,
+      "text": "of course as part of the agreement some of the manufacturing and the value -added and employment will take place in Finland.",
+      "start": 919.086,
+      "end": 924.536,
+      "audio_length_seconds": 5.45,
+      "embedding_audio_seconds": 5.45,
+      "audio_file": "audio\\sentence_0155.wav",
+      "word_count": 22
+    },
+    {
+      "index": 156,
+      "text": "But again, it's a very big -ticket item that could materially boost growth, except it's not going to be boosting Finnish growth, but mainly U.S. growth.",
+      "start": 924.536,
+      "end": 930.966,
+      "audio_length_seconds": 6.43,
+      "embedding_audio_seconds": 6.21,
+      "audio_file": "audio\\sentence_0156.wav",
+      "word_count": 27
+    },
+    {
+      "index": 157,
+      "text": "So, for defence, it's hard to see how that could be one of the big growth drivers for an economy like Finland, where very little is made domestically for what Finland is currently needing.",
+      "start": 930.966,
+      "end": 940.796,
+      "audio_length_seconds": 9.83,
+      "embedding_audio_seconds": 9.17,
+      "audio_file": "audio\\sentence_0157.wav",
+      "word_count": 34
+    },
+    {
+      "index": 158,
+      "text": "And they are very much neighbours with Russia, a long border.",
+      "start": 941.046,
+      "end": 944.716,
+      "audio_length_seconds": 3.67,
+      "embedding_audio_seconds": 3.67,
+      "audio_file": "audio\\sentence_0158.wav",
+      "word_count": 11
+    },
+    {
+      "index": 159,
+      "text": "that relationship.",
+      "start": 944.716,
+      "end": 945.886,
+      "audio_length_seconds": 1.17,
+      "embedding_audio_seconds": 1.17,
+      "audio_file": "audio\\sentence_0159.wav",
+      "word_count": 2
+    },
+    {
+      "index": 160,
+      "text": "talk to me about how that is kind of hindering the economy as well in terms of trade.",
+      "start": 945.886,
+      "end": 950.376,
+      "audio_length_seconds": 4.49,
+      "embedding_audio_seconds": 4.39,
+      "audio_file": "audio\\sentence_0160.wav",
+      "word_count": 18
+    },
+    {
+      "index": 161,
+      "text": "It can have some sort of investors may be a bit more reluctant to enter a country that shares such a more than 1,000 kilometre border with Russia.",
+      "start": 950.376,
+      "end": 958.986,
+      "audio_length_seconds": 8.61,
+      "embedding_audio_seconds": 7.86,
+      "audio_file": "audio\\sentence_0161.wav",
+      "word_count": 29
+    },
+    {
+      "index": 162,
+      "text": "But then again, Finland has historically had this very strong civilian defence component, very large stockpiles.",
+      "start": 958.986,
+      "end": 964.636,
+      "audio_length_seconds": 5.65,
+      "embedding_audio_seconds": 5.3,
+      "audio_file": "audio\\sentence_0162.wav",
+      "word_count": 16
+    },
+    {
+      "index": 163,
+      "text": "If you look at European NATO countries in terms of preparedness, who can actually defend their country, Finland is definitely at the top, but it also comes out to the historical experience where there have been wars with Russia and territory has been lost, substantial population centers.",
+      "start": 964.636,
+      "end": 979.426,
+      "audio_length_seconds": 14.79,
+      "embedding_audio_seconds": 14.79,
+      "audio_file": "audio\\sentence_0163.wav",
+      "word_count": 47
+    },
+    {
+      "index": 164,
+      "text": "So that's why it comes from history, and I'm sure the other guests will confirm that it's always ever -present in the Finnish thought that that big neighbor to your east, that you have to be vigilant and ready.",
+      "start": 979.426,
+      "end": 989.476,
+      "audio_length_seconds": 10.05,
+      "embedding_audio_seconds": 9.69,
+      "audio_file": "audio\\sentence_0164.wav",
+      "word_count": 39
+    },
+    {
+      "index": 165,
+      "text": "Thank you.",
+      "start": 989.476,
+      "end": 990.626,
+      "audio_length_seconds": 1.15,
+      "embedding_audio_seconds": 0.57,
+      "audio_file": "audio\\sentence_0165.wav",
+      "word_count": 2
+    },
+    {
+      "index": 166,
+      "text": "Sakari, to you.",
+      "start": 990.626,
+      "end": 992.356,
+      "audio_length_seconds": 1.73,
+      "embedding_audio_seconds": 1.2,
+      "audio_file": "audio\\sentence_0166.wav",
+      "word_count": 3
+    },
+    {
+      "index": 167,
+      "text": "Talk to me about your president, Alexander Stubb.",
+      "start": 992.356,
+      "end": 995.552,
+      "audio_length_seconds": 3.196,
+      "embedding_audio_seconds": 3.036,
+      "audio_file": "audio\\sentence_0167.wav",
+      "word_count": 8
+    },
+    {
+      "index": 168,
+      "text": "We see a Finnish president who has probably the biggest profile internationally of any Finnish leader that we've seen for a long time.",
+      "start": 995.552,
+      "end": 1003.862,
+      "audio_length_seconds": 8.31,
+      "embedding_audio_seconds": 8.29,
+      "audio_file": "audio\\sentence_0168.wav",
+      "word_count": 23
+    },
+    {
+      "index": 169,
+      "text": "How much potential has he got to try and fix Finland's problems?",
+      "start": 1003.862,
+      "end": 1008.212,
+      "audio_length_seconds": 4.35,
+      "embedding_audio_seconds": 4.08,
+      "audio_file": "audio\\sentence_0169.wav",
+      "word_count": 12
+    },
+    {
+      "index": 170,
+      "text": "Well, I think that most of Finns appreciate what he is doing, relating to international relationships and in that field.",
+      "start": 1009.106,
+      "end": 1024.676,
+      "audio_length_seconds": 15.57,
+      "embedding_audio_seconds": 14.6099,
+      "audio_file": "audio\\sentence_0170.wav",
+      "word_count": 20
+    },
+    {
+      "index": 171,
+      "text": "But I wouldn't put too much pressure on Aleksander Stup on fixing our economical problems.",
+      "start": 1024.676,
+      "end": 1033.246,
+      "audio_length_seconds": 8.57,
+      "embedding_audio_seconds": 8.1401,
+      "audio_file": "audio\\sentence_0171.wav",
+      "word_count": 15
+    },
+    {
+      "index": 172,
+      "text": "Our political system is such that the Prime Minister and the government, they are the ones doing decisions on that matter.",
+      "start": 1033.246,
+      "end": 1046.106,
+      "audio_length_seconds": 12.86,
+      "embedding_audio_seconds": 12.21,
+      "audio_file": "audio\\sentence_0172.wav",
+      "word_count": 21
+    },
+    {
+      "index": 173,
+      "text": "So, let's not put too much pressure on our president on that.",
+      "start": 1046.106,
+      "end": 1051.616,
+      "audio_length_seconds": 5.51,
+      "embedding_audio_seconds": 5.45,
+      "audio_file": "audio\\sentence_0173.wav",
+      "word_count": 12
+    },
+    {
+      "index": 174,
+      "text": "Well, let's bring Tevo in.",
+      "start": 1051.616,
+      "end": 1053.244,
+      "audio_length_seconds": 1.628,
+      "embedding_audio_seconds": 1.188,
+      "audio_file": "audio\\sentence_0174.wav",
+      "word_count": 5
+    },
+    {
+      "index": 175,
+      "text": "Teivo, an election next year.",
+      "start": 1053.244,
+      "end": 1055.434,
+      "audio_length_seconds": 2.19,
+      "embedding_audio_seconds": 2.19,
+      "audio_file": "audio\\sentence_0175.wav",
+      "word_count": 5
+    },
+    {
+      "index": 176,
+      "text": "Sir, for how long can this Finnish government get away with blaming external factors for long -running economic problems domestically?",
+      "start": 1055.434,
+      "end": 1063.224,
+      "audio_length_seconds": 7.79,
+      "embedding_audio_seconds": 7.37,
+      "audio_file": "audio\\sentence_0176.wav",
+      "word_count": 20
+    },
+    {
+      "index": 177,
+      "text": "Well, that's what governments do.",
+      "start": 1064.882,
+      "end": 1067.852,
+      "audio_length_seconds": 2.97,
+      "embedding_audio_seconds": 2.56,
+      "audio_file": "audio\\sentence_0177.wav",
+      "word_count": 5
+    },
+    {
+      "index": 178,
+      "text": "They blame bad things on external factors and good things on themselves.",
+      "start": 1067.852,
+      "end": 1072.442,
+      "audio_length_seconds": 4.59,
+      "embedding_audio_seconds": 4.59,
+      "audio_file": "audio\\sentence_0178.wav",
+      "word_count": 12
+    },
+    {
+      "index": 179,
+      "text": "So I think that tendency is not likely to go away.",
+      "start": 1072.442,
+      "end": 1077.612,
+      "audio_length_seconds": 5.17,
+      "embedding_audio_seconds": 4.78,
+      "audio_file": "audio\\sentence_0179.wav",
+      "word_count": 11
+    },
+    {
+      "index": 180,
+      "text": "The election is indeed coming.",
+      "start": 1077.612,
+      "end": 1080.342,
+      "audio_length_seconds": 2.73,
+      "embedding_audio_seconds": 2.59,
+      "audio_file": "audio\\sentence_0180.wav",
+      "word_count": 5
+    },
+    {
+      "index": 181,
+      "text": "There was a new opinion poll by the Finnish public broadcaster.",
+      "start": 1080.342,
+      "end": 1084.772,
+      "audio_length_seconds": 4.43,
+      "embedding_audio_seconds": 4.43,
+      "audio_file": "audio\\sentence_0181.wav",
+      "word_count": 11
+    },
+    {
+      "index": 182,
+      "text": "the social democrats have until now seemed to be leading so handsomely that they are very likely to be the next prime ministerial party.",
+      "start": 1084.772,
+      "end": 1095.082,
+      "audio_length_seconds": 10.31,
+      "embedding_audio_seconds": 10.28,
+      "audio_file": "audio\\sentence_0182.wav",
+      "word_count": 24
+    },
+    {
+      "index": 183,
+      "text": "But now they are actually going down a little bit, so things are a little bit less secure.",
+      "start": 1095.082,
+      "end": 1100.792,
+      "audio_length_seconds": 5.71,
+      "embedding_audio_seconds": 5.49,
+      "audio_file": "audio\\sentence_0183.wav",
+      "word_count": 18
+    },
+    {
+      "index": 184,
+      "text": "most people think the next government will be ideologically slightly less right -winging, still committed to cutting the deficit, committed to increasing defense spending.",
+      "start": 1100.792,
+      "end": 1115.822,
+      "audio_length_seconds": 15.03,
+      "embedding_audio_seconds": 15.03,
+      "audio_file": "audio\\sentence_0184.wav",
+      "word_count": 24
+    },
+    {
+      "index": 185,
+      "text": "One issue might be corporate taxes and the tax rates that the current government has lowered and their opposition is claiming that that's bad for the deficit and they might perhaps hike the corporate rate tax rate back again.",
+      "start": 1115.822,
+      "end": 1132.732,
+      "audio_length_seconds": 16.91,
+      "embedding_audio_seconds": 16.39,
+      "audio_file": "audio\\sentence_0185.wav",
+      "word_count": 39
+    },
+    {
+      "index": 186,
+      "text": "Thanks, Teval.",
+      "start": 1132.732,
+      "end": 1133.982,
+      "audio_length_seconds": 1.25,
+      "embedding_audio_seconds": 0.65,
+      "audio_file": "audio\\sentence_0186.wav",
+      "word_count": 2
+    },
+    {
+      "index": 187,
+      "text": "So, Daniel, to you, Nokia, they were kingpins in the mobile tech world for a long time, and then overnight, things changed.",
+      "start": 1133.982,
+      "end": 1143.212,
+      "audio_length_seconds": 9.23,
+      "embedding_audio_seconds": 8.97,
+      "audio_file": "audio\\sentence_0187.wav",
+      "word_count": 22
+    },
+    {
+      "index": 188,
+      "text": "this other device arrived from Apple which everyone uses.",
+      "start": 1143.212,
+      "end": 1147.036,
+      "audio_length_seconds": 3.824,
+      "embedding_audio_seconds": 3.764,
+      "audio_file": "audio\\sentence_0188.wav",
+      "word_count": 9
+    },
+    {
+      "index": 189,
+      "text": "Talk to me about the impact of that, because Nokia was a huge, huge Finnish success story.",
+      "start": 1147.036,
+      "end": 1152.226,
+      "audio_length_seconds": 5.19,
+      "embedding_audio_seconds": 5.19,
+      "audio_file": "audio\\sentence_0189.wav",
+      "word_count": 17
+    },
+    {
+      "index": 190,
+      "text": "Yeah.",
+      "start": 1152.226,
+      "end": 1153.058,
+      "audio_length_seconds": 0.832,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0190.wav",
+      "word_count": 1
+    },
+    {
+      "index": 191,
+      "text": "I think if you look at globally at economies Finland is kind of this sort of a warning story about the dangers of relying too much on one company on one industry on one growth driver.",
+      "start": 1153.058,
+      "end": 1163.948,
+      "audio_length_seconds": 10.89,
+      "embedding_audio_seconds": 10.89,
+      "audio_file": "audio\\sentence_0191.wav",
+      "word_count": 36
+    },
+    {
+      "index": 192,
+      "text": "and we've been so concentrated the economy around Nokia and so if you look at the falls in industrial production and economic output in 2008 and sort of that recovery has been very sluggish partly because Nokia has never recovered.",
+      "start": 1163.948,
+      "end": 1174.918,
+      "audio_length_seconds": 10.97,
+      "embedding_audio_seconds": 10.78,
+      "audio_file": "audio\\sentence_0192.wav",
+      "word_count": 40
+    },
+    {
+      "index": 193,
+      "text": "There are some echoes of that, if you look at Denmark now.",
+      "start": 1175.918,
+      "end": 1178.828,
+      "audio_length_seconds": 2.91,
+      "embedding_audio_seconds": 2.9,
+      "audio_file": "audio\\sentence_0193.wav",
+      "word_count": 12
+    },
+    {
+      "index": 194,
+      "text": "They've got Novonordisk, a big pharma company, Pioneers in the weight loss drugs, but they are losing ground.",
+      "start": 1178.828,
+      "end": 1183.676,
+      "audio_length_seconds": 4.848,
+      "embedding_audio_seconds": 4.848,
+      "audio_file": "audio\\sentence_0194.wav",
+      "word_count": 18
+    },
+    {
+      "index": 195,
+      "text": "And if you look at their share price, it's sort of given up of almost all the gains since they've invented the pill.",
+      "start": 1183.676,
+      "end": 1188.924,
+      "audio_length_seconds": 5.248,
+      "embedding_audio_seconds": 5.248,
+      "audio_file": "audio\\sentence_0195.wav",
+      "word_count": 23
+    },
+    {
+      "index": 196,
+      "text": "So again, it's sort of like a deja vu, potentially, where the economy is so structured around one company.",
+      "start": 1188.924,
+      "end": 1194.274,
+      "audio_length_seconds": 5.35,
+      "embedding_audio_seconds": 5.35,
+      "audio_file": "audio\\sentence_0196.wav",
+      "word_count": 19
+    },
+    {
+      "index": 197,
+      "text": "With Finland, Nokia is kind of finding second breath now in the AI race, and that's another sort of area where Finland can potentially lead or have some definite advantages with high levels of human capital.",
+      "start": 1194.754,
+      "end": 1207.444,
+      "audio_length_seconds": 12.69,
+      "embedding_audio_seconds": 12.69,
+      "audio_file": "audio\\sentence_0197.wav",
+      "word_count": 36
+    },
+    {
+      "index": 198,
+      "text": "But also still the knowledge and the know -how is there.",
+      "start": 1207.444,
+      "end": 1210.284,
+      "audio_length_seconds": 2.84,
+      "embedding_audio_seconds": 2.63,
+      "audio_file": "audio\\sentence_0198.wav",
+      "word_count": 11
+    },
+    {
+      "index": 199,
+      "text": "If you look at Nokia share price, it's about 150% year up to date.",
+      "start": 1210.284,
+      "end": 1213.794,
+      "audio_length_seconds": 3.51,
+      "embedding_audio_seconds": 3.51,
+      "audio_file": "audio\\sentence_0199.wav",
+      "word_count": 15
+    },
+    {
+      "index": 200,
+      "text": "It's a very good investment if you bought it at the end of last year, because it's riding the AI boom.",
+      "start": 1214.024,
+      "end": 1217.794,
+      "audio_length_seconds": 3.77,
+      "embedding_audio_seconds": 3.75,
+      "audio_file": "audio\\sentence_0200.wav",
+      "word_count": 21
+    },
+    {
+      "index": 201,
+      "text": "It's up.",
+      "start": 1217.864,
+      "end": 1218.314,
+      "audio_length_seconds": 0.45,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0201.wav",
+      "word_count": 2
+    },
+    {
+      "index": 202,
+      "text": "It's up.",
+      "start": 1218.424,
+      "end": 1218.988,
+      "audio_length_seconds": 0.564,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0202.wav",
+      "word_count": 2
+    },
+    {
+      "index": 203,
+      "text": "In a year, it's up 150%?",
+      "start": 1218.988,
+      "end": 1220.764,
+      "audio_length_seconds": 1.776,
+      "embedding_audio_seconds": 1.776,
+      "audio_file": "audio\\sentence_0203.wav",
+      "word_count": 7
+    },
+    {
+      "index": 204,
+      "text": "No, it's just year -to -date.",
+      "start": 1220.764,
+      "end": 1221.578,
+      "audio_length_seconds": 0.814,
+      "embedding_audio_seconds": 0.8,
+      "audio_file": "audio\\sentence_0204.wav",
+      "word_count": 6
+    },
+    {
+      "index": 205,
+      "text": "in the last five months, it's up 150%.",
+      "start": 1221.578,
+      "end": 1225.158,
+      "audio_length_seconds": 3.58,
+      "embedding_audio_seconds": 3.33,
+      "audio_file": "audio\\sentence_0205.wav",
+      "word_count": 8
+    },
+    {
+      "index": 206,
+      "text": "So there is potential, there is optimism.",
+      "start": 1225.158,
+      "end": 1227.308,
+      "audio_length_seconds": 2.15,
+      "embedding_audio_seconds": 1.93,
+      "audio_file": "audio\\sentence_0206.wav",
+      "word_count": 7
+    },
+    {
+      "index": 207,
+      "text": "Investors are looking at Nokia potentially playing a big role in the AI race.",
+      "start": 1227.308,
+      "end": 1230.738,
+      "audio_length_seconds": 3.43,
+      "embedding_audio_seconds": 3.36,
+      "audio_file": "audio\\sentence_0207.wav",
+      "word_count": 14
+    },
+    {
+      "index": 208,
+      "text": "And that's also reflecting well on the Finnish economy, because most of that is still based in Finland.",
+      "start": 1230.868,
+      "end": 1235.038,
+      "audio_length_seconds": 4.17,
+      "embedding_audio_seconds": 4.06,
+      "audio_file": "audio\\sentence_0208.wav",
+      "word_count": 18
+    },
+    {
+      "index": 209,
+      "text": "So, Zachary, does that excite you that there is potential for a comeback here in terms of AI and Nokia being heavily involved?",
+      "start": 1235.038,
+      "end": 1242.848,
+      "audio_length_seconds": 7.81,
+      "embedding_audio_seconds": 7.17,
+      "audio_file": "audio\\sentence_0209.wav",
+      "word_count": 23
+    },
+    {
+      "index": 210,
+      "text": "I think there is potential and I agree there.",
+      "start": 1243.578,
+      "end": 1250.328,
+      "audio_length_seconds": 6.75,
+      "embedding_audio_seconds": 5.73,
+      "audio_file": "audio\\sentence_0210.wav",
+      "word_count": 9
+    },
+    {
+      "index": 211,
+      "text": "Of course if we look backwards and think of the situation where we were with Nokia when it was at its largest, it posed a great risk for Finland in this sense that it was in a sense too large for Finland.",
+      "start": 1251.222,
+      "end": 1268.352,
+      "audio_length_seconds": 17.13,
+      "embedding_audio_seconds": 16.34,
+      "audio_file": "audio\\sentence_0211.wav",
+      "word_count": 42
+    },
+    {
+      "index": 212,
+      "text": "so I would like to see rather a couple of or maybe 10 large very good companies than that Nokia would rise again to be as large as it was.",
+      "start": 1268.352,
+      "end": 1284.502,
+      "audio_length_seconds": 16.15,
+      "embedding_audio_seconds": 15.36,
+      "audio_file": "audio\\sentence_0212.wav",
+      "word_count": 30
+    },
+    {
+      "index": 213,
+      "text": "I don't believe that that would happen.",
+      "start": 1284.502,
+      "end": 1287.782,
+      "audio_length_seconds": 3.28,
+      "embedding_audio_seconds": 2.7,
+      "audio_file": "audio\\sentence_0213.wav",
+      "word_count": 7
+    },
+    {
+      "index": 214,
+      "text": "But anyway, I think you understand the point.",
+      "start": 1287.782,
+      "end": 1290.534,
+      "audio_length_seconds": 2.752,
+      "embedding_audio_seconds": 2.6,
+      "audio_file": "audio\\sentence_0214.wav",
+      "word_count": 8
+    },
+    {
+      "index": 215,
+      "text": "We do.",
+      "start": 1290.534,
+      "end": 1290.954,
+      "audio_length_seconds": 0.42,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0215.wav",
+      "word_count": 2
+    },
+    {
+      "index": 216,
+      "text": "We do.",
+      "start": 1290.954,
+      "end": 1291.392,
+      "audio_length_seconds": 0.438,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0216.wav",
+      "word_count": 2
+    },
+    {
+      "index": 217,
+      "text": "Tevo, to you, if you were prime minister of Finland, what would you change?",
+      "start": 1291.392,
+      "end": 1295.824,
+      "audio_length_seconds": 4.432,
+      "embedding_audio_seconds": 4.43,
+      "audio_file": "audio\\sentence_0217.wav",
+      "word_count": 14
+    },
+    {
+      "index": 218,
+      "text": "What one policy would you bring in to give people hope and to start seeing these green shoots of recovery in the economy grow further?",
+      "start": 1295.824,
+      "end": 1303.334,
+      "audio_length_seconds": 7.51,
+      "embedding_audio_seconds": 7.51,
+      "audio_file": "audio\\sentence_0218.wav",
+      "word_count": 25
+    },
+    {
+      "index": 219,
+      "text": "Well, I think bringing in skilled labour and having good mechanisms for that and creating a reputation where Finland doesn't seem like a racist country, but rather a country welcoming to foreigners.",
+      "start": 1307.208,
+      "end": 1320.638,
+      "audio_length_seconds": 13.43,
+      "embedding_audio_seconds": 13.43,
+      "audio_file": "audio\\sentence_0219.wav",
+      "word_count": 32
+    },
+    {
+      "index": 220,
+      "text": "that would be one thing that may not bring immediate results, which is a problem with that measure, but on a long term is very necessary for because of demographic factors that we spoke about.",
+      "start": 1320.638,
+      "end": 1336.668,
+      "audio_length_seconds": 16.03,
+      "embedding_audio_seconds": 15.69,
+      "audio_file": "audio\\sentence_0220.wav",
+      "word_count": 35
+    },
+    {
+      "index": 221,
+      "text": "Thank you.",
+      "start": 1337.428,
+      "end": 1338.138,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.59,
+      "audio_file": "audio\\sentence_0221.wav",
+      "word_count": 2
+    },
+    {
+      "index": 222,
+      "text": "Daniel what do you think they should be doing looking in from the outside?",
+      "start": 1338.138,
+      "end": 1341.448,
+      "audio_length_seconds": 3.31,
+      "embedding_audio_seconds": 3.16,
+      "audio_file": "audio\\sentence_0222.wav",
+      "word_count": 14
+    },
+    {
+      "index": 223,
+      "text": "What can they do?",
+      "start": 1341.448,
+      "end": 1342.658,
+      "audio_length_seconds": 1.21,
+      "embedding_audio_seconds": 1.12,
+      "audio_file": "audio\\sentence_0223.wav",
+      "word_count": 4
+    },
+    {
+      "index": 224,
+      "text": "I think a core strength that Finland has is clean, abundant and cheap electricity, which is very important in this day and age.",
+      "start": 1342.658,
+      "end": 1349.248,
+      "audio_length_seconds": 6.59,
+      "embedding_audio_seconds": 6.39,
+      "audio_file": "audio\\sentence_0224.wav",
+      "word_count": 23
+    },
+    {
+      "index": 225,
+      "text": "We're in a race for energy.",
+      "start": 1349.248,
+      "end": 1350.498,
+      "audio_length_seconds": 1.25,
+      "embedding_audio_seconds": 1.25,
+      "audio_file": "audio\\sentence_0225.wav",
+      "word_count": 6
+    },
+    {
+      "index": 226,
+      "text": "If you look at the construction sector for last year, 20% of the permits granted in Finland were to data centers.",
+      "start": 1350.498,
+      "end": 1356.928,
+      "audio_length_seconds": 6.43,
+      "embedding_audio_seconds": 5.76,
+      "audio_file": "audio\\sentence_0226.wav",
+      "word_count": 22
+    },
+    {
+      "index": 227,
+      "text": "So it's clearly on the radar for these big companies looking to where to locate what you need.",
+      "start": 1356.928,
+      "end": 1361.5,
+      "audio_length_seconds": 4.572,
+      "embedding_audio_seconds": 4.15,
+      "audio_file": "audio\\sentence_0227.wav",
+      "word_count": 18
+    },
+    {
+      "index": 228,
+      "text": "You need cheap energy.",
+      "start": 1361.5,
+      "end": 1362.46,
+      "audio_length_seconds": 0.96,
+      "embedding_audio_seconds": 0.96,
+      "audio_file": "audio\\sentence_0228.wav",
+      "word_count": 4
+    },
+    {
+      "index": 229,
+      "text": "Abundant energy.",
+      "start": 1362.46,
+      "end": 1362.85,
+      "audio_length_seconds": 0.39,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0229.wav",
+      "word_count": 2
+    },
+    {
+      "index": 230,
+      "text": "Abundant.",
+      "start": 1363.12,
+      "end": 1363.69,
+      "audio_length_seconds": 0.57,
+      "embedding_audio_seconds": 0.52,
+      "audio_file": "audio\\sentence_0230.wav",
+      "word_count": 1
+    },
+    {
+      "index": 231,
+      "text": "Finland has it.",
+      "start": 1363.69,
+      "end": 1364.506,
+      "audio_length_seconds": 0.816,
+      "embedding_audio_seconds": 0.776,
+      "audio_file": "audio\\sentence_0231.wav",
+      "word_count": 3
+    },
+    {
+      "index": 232,
+      "text": "It has a backbone of nuclear services.",
+      "start": 1364.506,
+      "end": 1367.254,
+      "audio_length_seconds": 2.748,
+      "embedding_audio_seconds": 2.748,
+      "audio_file": "audio\\sentence_0232.wav",
+      "word_count": 7
+    },
+    {
+      "index": 233,
+      "text": "Since it opened the latest nuclear reactor a couple of years ago, it is self -sustainable.",
+      "start": 1367.254,
+      "end": 1371.834,
+      "audio_length_seconds": 4.58,
+      "embedding_audio_seconds": 4.58,
+      "audio_file": "audio\\sentence_0233.wav",
+      "word_count": 16
+    },
+    {
+      "index": 234,
+      "text": "It doesn't rely on imports anymore.",
+      "start": 1371.834,
+      "end": 1373.244,
+      "audio_length_seconds": 1.41,
+      "embedding_audio_seconds": 1.41,
+      "audio_file": "audio\\sentence_0234.wav",
+      "word_count": 6
+    },
+    {
+      "index": 235,
+      "text": "And it's relatively cheap.",
+      "start": 1373.624,
+      "end": 1374.72,
+      "audio_length_seconds": 1.096,
+      "embedding_audio_seconds": 1.096,
+      "audio_file": "audio\\sentence_0235.wav",
+      "word_count": 4
+    },
+    {
+      "index": 236,
+      "text": "The rest is made up by cheap renewables.",
+      "start": 1374.72,
+      "end": 1376.314,
+      "audio_length_seconds": 1.594,
+      "embedding_audio_seconds": 1.58,
+      "audio_file": "audio\\sentence_0236.wav",
+      "word_count": 8
+    },
+    {
+      "index": 237,
+      "text": "there's very little fossil fuels in the power mix.",
+      "start": 1376.314,
+      "end": 1378.684,
+      "audio_length_seconds": 2.37,
+      "embedding_audio_seconds": 2.29,
+      "audio_file": "audio\\sentence_0237.wav",
+      "word_count": 9
+    },
+    {
+      "index": 238,
+      "text": "So, that's a core strength that Finland has and that it can build on in this global race for AI, where energy is going to be very important.",
+      "start": 1378.684,
+      "end": 1385.134,
+      "audio_length_seconds": 6.45,
+      "embedding_audio_seconds": 6.05,
+      "audio_file": "audio\\sentence_0238.wav",
+      "word_count": 28
+    },
+    {
+      "index": 239,
+      "text": "So a lot of companies are looking at Finland as a location base for data centers.",
+      "start": 1385.134,
+      "end": 1390.366,
+      "audio_length_seconds": 5.232,
+      "embedding_audio_seconds": 5.152,
+      "audio_file": "audio\\sentence_0239.wav",
+      "word_count": 16
+    },
+    {
+      "index": 240,
+      "text": "It has the advantage of cheap, abundant electricity, and very skilled, clever labor force, and also very plentiful labor force with the unemployment rates that you have.",
+      "start": 1390.366,
+      "end": 1398.736,
+      "audio_length_seconds": 8.37,
+      "embedding_audio_seconds": 8.35,
+      "audio_file": "audio\\sentence_0240.wav",
+      "word_count": 27
+    },
+    {
+      "index": 241,
+      "text": "So when you combine the two, that's what you're looking out for with AI.",
+      "start": 1398.736,
+      "end": 1402.046,
+      "audio_length_seconds": 3.31,
+      "embedding_audio_seconds": 3.2,
+      "audio_file": "audio\\sentence_0241.wav",
+      "word_count": 14
+    },
+    {
+      "index": 242,
+      "text": "That's what you want.",
+      "start": 1402.216,
+      "end": 1402.84,
+      "audio_length_seconds": 0.624,
+      "embedding_audio_seconds": 0.624,
+      "audio_file": "audio\\sentence_0242.wav",
+      "word_count": 4
+    },
+    {
+      "index": 243,
+      "text": "Where do you think Finland is going in the next few years?",
+      "start": 1402.84,
+      "end": 1405.81,
+      "audio_length_seconds": 2.97,
+      "embedding_audio_seconds": 2.71,
+      "audio_file": "audio\\sentence_0243.wav",
+      "word_count": 12
+    },
+    {
+      "index": 244,
+      "text": "Oh, look, there's the macro, cyclical drivers, there are going to be ebbs and flows in that.",
+      "start": 1406.53,
+      "end": 1411.8,
+      "audio_length_seconds": 5.27,
+      "embedding_audio_seconds": 5.03,
+      "audio_file": "audio\\sentence_0244.wav",
+      "word_count": 17
+    },
+    {
+      "index": 245,
+      "text": "But I think a core strength that the government can focus on is really this AI boom and this future of, you know, technology, because that's not going away.",
+      "start": 1411.8,
+      "end": 1419.23,
+      "audio_length_seconds": 7.43,
+      "embedding_audio_seconds": 7.38,
+      "audio_file": "audio\\sentence_0245.wav",
+      "word_count": 29
+    },
+    {
+      "index": 246,
+      "text": "and Finland has some intrinsic strengths in that.",
+      "start": 1419.23,
+      "end": 1421.36,
+      "audio_length_seconds": 2.13,
+      "embedding_audio_seconds": 2.12,
+      "audio_file": "audio\\sentence_0246.wav",
+      "word_count": 8
+    },
+    {
+      "index": 247,
+      "text": "you can look at any index from the IMF to OECD in terms of how countries are positioned in the AI adoption but also AI development space and Finland has some definite advantages there.",
+      "start": 1421.36,
+      "end": 1430.368,
+      "audio_length_seconds": 9.008,
+      "embedding_audio_seconds": 8.808,
+      "audio_file": "audio\\sentence_0247.wav",
+      "word_count": 34
+    },
+    {
+      "index": 248,
+      "text": "It's always ranking towards the top.",
+      "start": 1430.368,
+      "end": 1431.818,
+      "audio_length_seconds": 1.45,
+      "embedding_audio_seconds": 1.39,
+      "audio_file": "audio\\sentence_0248.wav",
+      "word_count": 6
+    },
+    {
+      "index": 249,
+      "text": "educational system is extremely good and produces a lot of, you know, score very highly in the PISA test and so on.",
+      "start": 1431.818,
+      "end": 1439.388,
+      "audio_length_seconds": 7.57,
+      "embedding_audio_seconds": 7.35,
+      "audio_file": "audio\\sentence_0249.wav",
+      "word_count": 22
+    },
+    {
+      "index": 250,
+      "text": "So these are very strong core assets.",
+      "start": 1439.388,
+      "end": 1441.128,
+      "audio_length_seconds": 1.74,
+      "embedding_audio_seconds": 1.58,
+      "audio_file": "audio\\sentence_0250.wav",
+      "word_count": 7
+    },
+    {
+      "index": 251,
+      "text": "when you put all of that together, the energy, the human capital, and the AI boom, Finland has some core strengths for sure.",
+      "start": 1441.128,
+      "end": 1448.438,
+      "audio_length_seconds": 7.31,
+      "embedding_audio_seconds": 7.3,
+      "audio_file": "audio\\sentence_0251.wav",
+      "word_count": 23
+    },
+    {
+      "index": 252,
+      "text": "Sakkari, just come in on that.",
+      "start": 1448.758,
+      "end": 1450.178,
+      "audio_length_seconds": 1.42,
+      "embedding_audio_seconds": 1.42,
+      "audio_file": "audio\\sentence_0252.wav",
+      "word_count": 6
+    },
+    {
+      "index": 253,
+      "text": "The great Finnish comeback could be on its way.",
+      "start": 1450.178,
+      "end": 1452.448,
+      "audio_length_seconds": 2.27,
+      "embedding_audio_seconds": 2.25,
+      "audio_file": "audio\\sentence_0253.wav",
+      "word_count": 9
+    },
+    {
+      "index": 254,
+      "text": "We still have, or the public finances are still in a situation that something needs to be done.",
+      "start": 1452.448,
+      "end": 1459.418,
+      "audio_length_seconds": 6.97,
+      "embedding_audio_seconds": 6.12,
+      "audio_file": "audio\\sentence_0254.wav",
+      "word_count": 18
+    },
+    {
+      "index": 255,
+      "text": "Simply relying on economic growth is not enough and in my opinion it would have to be some some consolidation on the spending side.",
+      "start": 1459.418,
+      "end": 1473.628,
+      "audio_length_seconds": 14.21,
+      "embedding_audio_seconds": 13.36,
+      "audio_file": "audio\\sentence_0255.wav",
+      "word_count": 24
+    },
+    {
+      "index": 256,
+      "text": "I would be quite careful in increasing taxes anymore.",
+      "start": 1473.628,
+      "end": 1478.538,
+      "audio_length_seconds": 4.91,
+      "embedding_audio_seconds": 4.74,
+      "audio_file": "audio\\sentence_0256.wav",
+      "word_count": 9
+    },
+    {
+      "index": 257,
+      "text": "Tevo, final point to you.",
+      "start": 1479.168,
+      "end": 1480.878,
+      "audio_length_seconds": 1.71,
+      "embedding_audio_seconds": 1.64,
+      "audio_file": "audio\\sentence_0257.wav",
+      "word_count": 5
+    },
+    {
+      "index": 258,
+      "text": "As Finland heads into an election in 2027, the economy will surely dominate.",
+      "start": 1480.878,
+      "end": 1485.768,
+      "audio_length_seconds": 4.89,
+      "embedding_audio_seconds": 4.89,
+      "audio_file": "audio\\sentence_0258.wav",
+      "word_count": 13
+    },
+    {
+      "index": 259,
+      "text": "Yes, it sure will.",
+      "start": 1488.386,
+      "end": 1489.796,
+      "audio_length_seconds": 1.41,
+      "embedding_audio_seconds": 1.17,
+      "audio_file": "audio\\sentence_0259.wav",
+      "word_count": 4
+    },
+    {
+      "index": 260,
+      "text": "And now, when they are in the first quarter of this year, first three months, there's been, I think it was 0.9% GDP growth, which is many, especially people in the government does see it as a sign of hope.",
+      "start": 1489.796,
+      "end": 1505.626,
+      "audio_length_seconds": 15.83,
+      "embedding_audio_seconds": 15.74,
+      "audio_file": "audio\\sentence_0260.wav",
+      "word_count": 42
+    },
+    {
+      "index": 261,
+      "text": "and much depends on on the one hand what happens to the interest rates since inflation in in the eurozone is showing some signs that might mean hiking up interest rates.",
+      "start": 1505.626,
+      "end": 1516.876,
+      "audio_length_seconds": 11.25,
+      "embedding_audio_seconds": 11.13,
+      "audio_file": "audio\\sentence_0261.wav",
+      "word_count": 31
+    },
+    {
+      "index": 262,
+      "text": "We don't know yet.",
+      "start": 1516.886,
+      "end": 1517.936,
+      "audio_length_seconds": 1.05,
+      "embedding_audio_seconds": 1.05,
+      "audio_file": "audio\\sentence_0262.wav",
+      "word_count": 4
+    },
+    {
+      "index": 263,
+      "text": "And then of course what happens in Iran.",
+      "start": 1518.346,
+      "end": 1520.096,
+      "audio_length_seconds": 1.75,
+      "embedding_audio_seconds": 1.7,
+      "audio_file": "audio\\sentence_0263.wav",
+      "word_count": 8
+    },
+    {
+      "index": 264,
+      "text": "As was stated, Finland is not so dependent on fossil fuels as some other countries, which helps Finland in case of prolonged war in Iran and over Hormuz.",
+      "start": 1520.096,
+      "end": 1532.986,
+      "audio_length_seconds": 12.89,
+      "embedding_audio_seconds": 12.58,
+      "audio_file": "audio\\sentence_0264.wav",
+      "word_count": 28
+    },
+    {
+      "index": 265,
+      "text": "But still, it's having an impact directly on Finland and also when it has hit back on Finnish export markets.",
+      "start": 1532.986,
+      "end": 1540.65,
+      "audio_length_seconds": 7.664,
+      "embedding_audio_seconds": 7.414,
+      "audio_file": "audio\\sentence_0265.wav",
+      "word_count": 20
+    },
+    {
+      "index": 266,
+      "text": "exports are growing a little bit again, then that might kill the emerging signs of growth that we are seeing right now.",
+      "start": 1540.65,
+      "end": 1550.462,
+      "audio_length_seconds": 9.812,
+      "embedding_audio_seconds": 9.72,
+      "audio_file": "audio\\sentence_0266.wav",
+      "word_count": 22
+    },
+    {
+      "index": 267,
+      "text": "but we don't know.",
+      "start": 1550.462,
+      "end": 1551.792,
+      "audio_length_seconds": 1.33,
+      "embedding_audio_seconds": 1.3,
+      "audio_file": "audio\\sentence_0267.wav",
+      "word_count": 4
+    },
+    {
+      "index": 268,
+      "text": "Tevo, Zachary and Daniel Kral here in the studio.",
+      "start": 1552.992,
+      "end": 1555.824,
+      "audio_length_seconds": 2.832,
+      "embedding_audio_seconds": 2.732,
+      "audio_file": "audio\\sentence_0268.wav",
+      "word_count": 9
+    },
+    {
+      "index": 269,
+      "text": "Thank you all so much.",
+      "start": 1555.824,
+      "end": 1556.944,
+      "audio_length_seconds": 1.12,
+      "embedding_audio_seconds": 1.12,
+      "audio_file": "audio\\sentence_0269.wav",
+      "word_count": 5
+    },
+    {
+      "index": 270,
+      "text": "Remember, you can see more discussion and debate on our YouTube channel.",
+      "start": 1556.944,
+      "end": 1560.154,
+      "audio_length_seconds": 3.21,
+      "embedding_audio_seconds": 3.21,
+      "audio_file": "audio\\sentence_0270.wav",
+      "word_count": 12
+    },
+    {
+      "index": 271,
+      "text": "Search for Roundtable TRT World, but for now from me and the Brady and all the team here goodbye.",
+      "start": 1560.154,
+      "end": 1564.804,
+      "audio_length_seconds": 4.65,
+      "embedding_audio_seconds": 4.48,
+      "audio_file": "audio\\sentence_0271.wav",
+      "word_count": 19
+    },
+    {
+      "index": 272,
+      "text": "and thank you for watching.",
+      "start": 1564.804,
+      "end": 1565.994,
+      "audio_length_seconds": 1.19,
+      "embedding_audio_seconds": 0.96,
+      "audio_file": "audio\\sentence_0272.wav",
+      "word_count": 5
+    },
+    {
+      "index": 273,
+      "text": "♪",
+      "start": 1566.688,
+      "end": 1567.198,
+      "audio_length_seconds": 0.51,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0273.wav",
+      "word_count": 1
+    }
+  ]
+}

@@ -59,11 +59,61 @@ DEFAULT_KROKO_PREVIEW_PYTHON = Path(os.environ.get(
     "WHOSPEAKS_KROKO_PREVIEW_PYTHON",
     str(VENVS_DIR / "kroko-install-test" / "Scripts" / "python.exe"),
 ))
-DEFAULT_KROKO_PREVIEW_MODEL = "Kroko-EN-Community-64-L-Streaming-001.data"
+DEFAULT_KROKO_COMMUNITY_64L_PREVIEW_MODEL = "Kroko-EN-Community-64-L-Streaming-001.data"
+DEFAULT_KROKO_PRO_16L_PREVIEW_MODEL = "Kroko-EN-Pro-16-L-Streaming-001.data"
+KROKO_PREVIEW_MODEL_PRESETS = {
+    "community-64l": DEFAULT_KROKO_COMMUNITY_64L_PREVIEW_MODEL,
+    "pro-16l": DEFAULT_KROKO_PRO_16L_PREVIEW_MODEL,
+}
+KROKO_PREVIEW_MODEL_PRESET_ALIASES = {
+    "64l": "community-64l",
+    "64-l": "community-64l",
+    "community": "community-64l",
+    "community64": "community-64l",
+    "community64l": "community-64l",
+    "community-64": "community-64l",
+    "community-64-l": "community-64l",
+    "16": "pro-16l",
+    "16l": "pro-16l",
+    "16-l": "pro-16l",
+    "16pro": "pro-16l",
+    "pro": "pro-16l",
+    "pro16": "pro-16l",
+    "pro16l": "pro-16l",
+    "pro-16": "pro-16l",
+    "pro-16-l": "pro-16l",
+}
+_raw_default_kroko_preview_model_preset = (
+    os.environ.get("WHOSPEAKS_KROKO_PREVIEW_MODEL_PRESET", "community-64l")
+    .strip()
+    .lower()
+    .replace("_", "-")
+)
+DEFAULT_KROKO_PREVIEW_MODEL_PRESET = KROKO_PREVIEW_MODEL_PRESET_ALIASES.get(
+    _raw_default_kroko_preview_model_preset,
+    _raw_default_kroko_preview_model_preset,
+)
+if DEFAULT_KROKO_PREVIEW_MODEL_PRESET not in KROKO_PREVIEW_MODEL_PRESETS:
+    _console_print(
+        "Ignoring invalid WHOSPEAKS_KROKO_PREVIEW_MODEL_PRESET="
+        f"{os.environ.get('WHOSPEAKS_KROKO_PREVIEW_MODEL_PRESET')!r}; using community-64l."
+    )
+    DEFAULT_KROKO_PREVIEW_MODEL_PRESET = "community-64l"
+DEFAULT_KROKO_PREVIEW_MODEL = KROKO_PREVIEW_MODEL_PRESETS[DEFAULT_KROKO_PREVIEW_MODEL_PRESET]
+KROKO_PREVIEW_MODEL_STARTUP_TIMEOUT_SECONDS = {
+    "community-64l": 12.0,
+    "pro-16l": 45.0,
+}
 DEFAULT_KROKO_PREVIEW_MODEL_PATH = Path(os.environ.get(
     "WHOSPEAKS_KROKO_PREVIEW_MODEL_PATH",
     str(KROKO_MODEL_DIR / DEFAULT_KROKO_PREVIEW_MODEL),
 ))
+DEFAULT_KROKO_PREVIEW_MODEL_DIRS = (
+    KROKO_MODEL_DIR,
+    DEFAULT_REALTIMESTT_ROOT / "test-model-cache" / "kroko-onnx",
+    DEFAULT_REALTIMESTT_ROOT / "RealtimeSTT" / "test-model-cache" / "kroko-onnx",
+    PROJECT_ROOT.parent / "STT" / "RealtimeSTT" / "RealtimeSTT" / "test-model-cache" / "kroko-onnx",
+)
 DEFAULT_FAST_WHISPER_CACHE = CACHE_DIR / "faster-whisper"
 DEFAULT_EMBEDDING_HELPER_RESPONSE_TIMEOUT_SECONDS = _env_float(
     "WHOSPEAKS_EMBEDDING_HELPER_RESPONSE_TIMEOUT_SECONDS",
@@ -303,10 +353,49 @@ PRESET_YOUTUBE_VIDEOS = [
 ]
 
 
-def default_kroko_preview_model_path() -> Path | None:
-    if "WHOSPEAKS_KROKO_PREVIEW_MODEL_PATH" in os.environ:
+def normalize_kroko_preview_model_preset(value: Any) -> str:
+    normalized = str(value or "").strip().lower().replace("_", "-")
+    preset = KROKO_PREVIEW_MODEL_PRESET_ALIASES.get(normalized, normalized)
+    if preset not in KROKO_PREVIEW_MODEL_PRESETS:
+        allowed = ", ".join(KROKO_PREVIEW_MODEL_PRESETS)
+        raise argparse.ArgumentTypeError(f"invalid Kroko preview model preset {value!r}; choose one of: {allowed}")
+    return preset
+
+
+def default_kroko_preview_startup_timeout_seconds(preset: Any) -> float:
+    normalized = str(preset or "").strip().lower().replace("_", "-")
+    return KROKO_PREVIEW_MODEL_STARTUP_TIMEOUT_SECONDS.get(normalized, 12.0)
+
+
+def kroko_preview_model_search_dirs() -> list[Path]:
+    env_dirs = [
+        Path(value).expanduser()
+        for value in os.environ.get("WHOSPEAKS_KROKO_PREVIEW_MODEL_DIR", "").split(os.pathsep)
+        if value.strip()
+    ]
+    dirs: list[Path] = []
+    seen: set[str] = set()
+    for directory in [*env_dirs, *DEFAULT_KROKO_PREVIEW_MODEL_DIRS]:
+        key = str(directory).lower()
+        if key in seen:
+            continue
+        dirs.append(directory)
+        seen.add(key)
+    return dirs
+
+
+def default_kroko_preview_model_path(model: Any = None, *, use_env: bool = True) -> Path | None:
+    if use_env and "WHOSPEAKS_KROKO_PREVIEW_MODEL_PATH" in os.environ:
         return DEFAULT_KROKO_PREVIEW_MODEL_PATH.expanduser()
-    return DEFAULT_KROKO_PREVIEW_MODEL_PATH if DEFAULT_KROKO_PREVIEW_MODEL_PATH.is_file() else None
+    selected_model = str(model or DEFAULT_KROKO_PREVIEW_MODEL)
+    selected_path = Path(selected_model).expanduser()
+    if selected_path.is_file():
+        return selected_path
+    for model_dir in kroko_preview_model_search_dirs():
+        candidate = model_dir / Path(selected_model).name
+        if candidate.is_file():
+            return candidate
+    return None
 
 
 def default_faster_whisper_download_root() -> Path | None:

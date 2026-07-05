@@ -1,0 +1,654 @@
+{
+  "provider": "speechbrain_ecapa",
+  "video": "onHUfyRP1BE",
+  "folder": "onHUfyRP1BE_livewindow_60_90_cuda",
+  "sentence_file": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\onHUfyRP1BE_livewindow_60_90_cuda\\sentences.jsonl",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    64,
+    192
+  ],
+  "elapsed_seconds": 5.08532080007717,
+  "sentences": [
+    {
+      "index": 0,
+      "text": "The second phase actually begins with your arrival in your new host home country.",
+      "start": 0.0,
+      "end": 5.15,
+      "audio_length_seconds": 5.15,
+      "embedding_audio_seconds": 5.13,
+      "audio_file": "audio\\sentence_0000.wav",
+      "word_count": 14
+    },
+    {
+      "index": 1,
+      "text": "It's called the spectator phase, and it's called that because basically during this initial period in your new environment you tend to be rather passive.",
+      "start": 5.15,
+      "end": 14.58,
+      "audio_length_seconds": 9.43,
+      "embedding_audio_seconds": 9.41,
+      "audio_file": "audio\\sentence_0001.wav",
+      "word_count": 25
+    },
+    {
+      "index": 2,
+      "text": "You tend to watch, you want to learn, you're very much a spectator rather than an active participant in the culture.",
+      "start": 14.58,
+      "end": 21.53,
+      "audio_length_seconds": 6.95,
+      "embedding_audio_seconds": 6.95,
+      "audio_file": "audio\\sentence_0002.wav",
+      "word_count": 21
+    },
+    {
+      "index": 3,
+      "text": "And the spectator phase is considered ending when you're actually forced to have to navigate the new culture in some very participative ways.",
+      "start": 21.53,
+      "end": 31.22,
+      "audio_length_seconds": 9.69,
+      "embedding_audio_seconds": 9.58,
+      "audio_file": "audio\\sentence_0003.wav",
+      "word_count": 23
+    },
+    {
+      "index": 4,
+      "text": "The spectator phase is marked by intense alertness to the point where things often, in looking back at them, seem to be a blur in some ways.",
+      "start": 31.22,
+      "end": 42.09,
+      "audio_length_seconds": 10.87,
+      "embedding_audio_seconds": 10.87,
+      "audio_file": "audio\\sentence_0004.wav",
+      "word_count": 27
+    },
+    {
+      "index": 5,
+      "text": "and I'm going to let the students tell you a little bit more about the spectator phase.",
+      "start": 42.09,
+      "end": 45.38,
+      "audio_length_seconds": 3.29,
+      "embedding_audio_seconds": 3.24,
+      "audio_file": "audio\\sentence_0005.wav",
+      "word_count": 17
+    },
+    {
+      "index": 6,
+      "text": "So for me when I first got there it was August 25th and I don't think I could have stood out any any worse than I did.",
+      "start": 45.94,
+      "end": 53.47,
+      "audio_length_seconds": 7.53,
+      "embedding_audio_seconds": 7.53,
+      "audio_file": "audio\\sentence_0006.wav",
+      "word_count": 27
+    },
+    {
+      "index": 7,
+      "text": "I was really blonde from the summer and tan and I was wearing my sandals, which is a pretty big fashion faux pas that I found out in Italy, so.",
+      "start": 53.47,
+      "end": 61.94,
+      "audio_length_seconds": 8.47,
+      "embedding_audio_seconds": 8.47,
+      "audio_file": "audio\\sentence_0007.wav",
+      "word_count": 30
+    },
+    {
+      "index": 8,
+      "text": "Actually, all over Europe, that's a dead giveaway you're American, is if you're gay and you're wearing sandals or shorts.",
+      "start": 62.32,
+      "end": 66.89,
+      "audio_length_seconds": 4.57,
+      "embedding_audio_seconds": 4.57,
+      "audio_file": "audio\\sentence_0008.wav",
+      "word_count": 20
+    },
+    {
+      "index": 9,
+      "text": "Luckily, the Italians thought at first that I was German and not American, which is a good thing because you definitely don't want to go over there being spotted as an American instantly, but I remember that I was just participating in the drinking food culture, like I was leaving in a week.",
+      "start": 66.89,
+      "end": 81.7,
+      "audio_length_seconds": 14.81,
+      "embedding_audio_seconds": 14.81,
+      "audio_file": "audio\\sentence_0009.wav",
+      "word_count": 53
+    },
+    {
+      "index": 10,
+      "text": "Cappuccino, pizza, lasagna, gelato, bottle of wine every night for the first two weeks straight.",
+      "start": 82.2,
+      "end": 88.13,
+      "audio_length_seconds": 5.93,
+      "embedding_audio_seconds": 5.93,
+      "audio_file": "audio\\sentence_0010.wav",
+      "word_count": 15
+    },
+    {
+      "index": 11,
+      "text": "I can't even count the amount.",
+      "start": 88.13,
+      "end": 89.74,
+      "audio_length_seconds": 1.61,
+      "embedding_audio_seconds": 1.61,
+      "audio_file": "audio\\sentence_0011.wav",
+      "word_count": 6
+    },
+    {
+      "index": 12,
+      "text": "And actually, to mention, the wine costs only a euro fifty, which is a little under three dollars for a good bottle of wine.",
+      "start": 89.74,
+      "end": 97.27,
+      "audio_length_seconds": 7.53,
+      "embedding_audio_seconds": 7.53,
+      "audio_file": "audio\\sentence_0012.wav",
+      "word_count": 24
+    },
+    {
+      "index": 13,
+      "text": "So, and I sort of had this perception that the Italians were gonna be overly outgoing and boisterous and just kind of coming up to you.",
+      "start": 97.27,
+      "end": 105.982,
+      "audio_length_seconds": 8.712,
+      "embedding_audio_seconds": 8.712,
+      "audio_file": "audio\\sentence_0013.wav",
+      "word_count": 26
+    },
+    {
+      "index": 14,
+      "text": "Ciao, buongiorno, fa bello giorno, vieni qua, vieni qua.",
+      "start": 105.982,
+      "end": 109.072,
+      "audio_length_seconds": 3.09,
+      "embedding_audio_seconds": 3.09,
+      "audio_file": "audio\\sentence_0014.wav",
+      "word_count": 9
+    },
+    {
+      "index": 15,
+      "text": "they were pretty standoffish at first and especially the women but you have to understand that from their culture the women are forced to look down when they walk and not make eye contact with men because once they make eye contact with a man you're pretty much forced to go into conversation with them so that was a little bit difficult at first and yeah most of the people that I was with.",
+      "start": 109.072,
+      "end": 134.082,
+      "audio_length_seconds": 25.01,
+      "embedding_audio_seconds": 25.01,
+      "audio_file": "audio\\sentence_0015.wav",
+      "word_count": 74
+    },
+    {
+      "index": 16,
+      "text": "Um, you know when you get there, you run, you go to all the famous places, the Colosseum, the pantheon, and just all of Rome's famous monuments.",
+      "start": 134.082,
+      "end": 142.432,
+      "audio_length_seconds": 8.35,
+      "embedding_audio_seconds": 8.35,
+      "audio_file": "audio\\sentence_0016.wav",
+      "word_count": 27
+    },
+    {
+      "index": 17,
+      "text": "And for me, it was a little bit different.",
+      "start": 142.432,
+      "end": 144.342,
+      "audio_length_seconds": 1.91,
+      "embedding_audio_seconds": 1.91,
+      "audio_file": "audio\\sentence_0017.wav",
+      "word_count": 9
+    },
+    {
+      "index": 18,
+      "text": "The first weekend, we went to the beach.",
+      "start": 144.352,
+      "end": 146.432,
+      "audio_length_seconds": 2.08,
+      "embedding_audio_seconds": 2.08,
+      "audio_file": "audio\\sentence_0018.wav",
+      "word_count": 8
+    },
+    {
+      "index": 19,
+      "text": "We went to Ostia, which was great.",
+      "start": 146.432,
+      "end": 148.522,
+      "audio_length_seconds": 2.09,
+      "embedding_audio_seconds": 2.09,
+      "audio_file": "audio\\sentence_0019.wav",
+      "word_count": 7
+    },
+    {
+      "index": 20,
+      "text": "And I got to surf, which I got that out of my system, which was amazing, surfing in the Mediterranean.",
+      "start": 148.772,
+      "end": 154.002,
+      "audio_length_seconds": 5.23,
+      "embedding_audio_seconds": 5.23,
+      "audio_file": "audio\\sentence_0020.wav",
+      "word_count": 20
+    },
+    {
+      "index": 21,
+      "text": "And the second weekend, we went down to Amalfi and Positano and Capri and Sorrento.",
+      "start": 154.212,
+      "end": 160.202,
+      "audio_length_seconds": 5.99,
+      "embedding_audio_seconds": 5.99,
+      "audio_file": "audio\\sentence_0021.wav",
+      "word_count": 15
+    },
+    {
+      "index": 22,
+      "text": "And then the third weekend, we went out to Florence.",
+      "start": 160.972,
+      "end": 163.262,
+      "audio_length_seconds": 2.29,
+      "embedding_audio_seconds": 2.29,
+      "audio_file": "audio\\sentence_0022.wav",
+      "word_count": 10
+    },
+    {
+      "index": 23,
+      "text": "So for me, my spectator phase was a little bit different, because I went to all these different places in such a short period of time, which was good for forming my generalization about Italians, not just saying that Italians are like this or that because Romans were like this or that.",
+      "start": 163.712,
+      "end": 177.088,
+      "audio_length_seconds": 13.376,
+      "embedding_audio_seconds": 13.306,
+      "audio_file": "audio\\sentence_0023.wav",
+      "word_count": 52
+    },
+    {
+      "index": 24,
+      "text": "So I got to see all the different parts of Italy and kind of make my general impression on a broader scale.",
+      "start": 177.088,
+      "end": 182.402,
+      "audio_length_seconds": 5.314,
+      "embedding_audio_seconds": 5.314,
+      "audio_file": "audio\\sentence_0024.wav",
+      "word_count": 22
+    },
+    {
+      "index": 25,
+      "text": "Once you've gone through the spectator phase successfully, you should find yourself increasing your active participation in the culture.",
+      "start": 186.672,
+      "end": 195.042,
+      "audio_length_seconds": 8.37,
+      "embedding_audio_seconds": 8.29,
+      "audio_file": "audio\\sentence_0025.wav",
+      "word_count": 19
+    },
+    {
+      "index": 26,
+      "text": "You still are a little bit tentative.",
+      "start": 196.172,
+      "end": 198.292,
+      "audio_length_seconds": 2.12,
+      "embedding_audio_seconds": 2.12,
+      "audio_file": "audio\\sentence_0026.wav",
+      "word_count": 7
+    },
+    {
+      "index": 27,
+      "text": "You still are a little bit frustrated and yet generally you're becoming much more of a participant.",
+      "start": 198.292,
+      "end": 204.042,
+      "audio_length_seconds": 5.75,
+      "embedding_audio_seconds": 5.75,
+      "audio_file": "audio\\sentence_0027.wav",
+      "word_count": 17
+    },
+    {
+      "index": 28,
+      "text": "Like Layla said, you're using the language more.",
+      "start": 204.412,
+      "end": 206.742,
+      "audio_length_seconds": 2.33,
+      "embedding_audio_seconds": 2.33,
+      "audio_file": "audio\\sentence_0028.wav",
+      "word_count": 8
+    },
+    {
+      "index": 29,
+      "text": "You're interacting.",
+      "start": 206.952,
+      "end": 208.002,
+      "audio_length_seconds": 1.05,
+      "embedding_audio_seconds": 1.05,
+      "audio_file": "audio\\sentence_0029.wav",
+      "word_count": 2
+    },
+    {
+      "index": 30,
+      "text": "You're shopping.",
+      "start": 208.092,
+      "end": 208.802,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.71,
+      "audio_file": "audio\\sentence_0030.wav",
+      "word_count": 2
+    },
+    {
+      "index": 31,
+      "text": "You're exploring new places that you might not have sought out in the earlier phases.",
+      "start": 209.032,
+      "end": 213.742,
+      "audio_length_seconds": 4.71,
+      "embedding_audio_seconds": 4.71,
+      "audio_file": "audio\\sentence_0031.wav",
+      "word_count": 15
+    },
+    {
+      "index": 32,
+      "text": "You begin to start to feel like you belong.",
+      "start": 214.732,
+      "end": 220.342,
+      "audio_length_seconds": 5.61,
+      "embedding_audio_seconds": 5.61,
+      "audio_file": "audio\\sentence_0032.wav",
+      "word_count": 9
+    },
+    {
+      "index": 33,
+      "text": "And that's kind of a pivotal moment in this increasing participation phase.",
+      "start": 220.872,
+      "end": 226.542,
+      "audio_length_seconds": 5.67,
+      "embedding_audio_seconds": 5.53,
+      "audio_file": "audio\\sentence_0033.wav",
+      "word_count": 12
+    },
+    {
+      "index": 34,
+      "text": "Yeah, like how Dr. Walker was saying, this phase right here is incredibly pivotal.",
+      "start": 227.282,
+      "end": 231.252,
+      "audio_length_seconds": 3.97,
+      "embedding_audio_seconds": 3.74,
+      "audio_file": "audio\\sentence_0034.wav",
+      "word_count": 14
+    },
+    {
+      "index": 35,
+      "text": "This is where you can make or break your study abroad experiences, how much you're willing to dedicate yourself to pure assimilation.",
+      "start": 231.342,
+      "end": 237.332,
+      "audio_length_seconds": 5.99,
+      "embedding_audio_seconds": 5.99,
+      "audio_file": "audio\\sentence_0035.wav",
+      "word_count": 22
+    },
+    {
+      "index": 36,
+      "text": "And for me, that's something that I strive very high to do whenever I go to any new culture.",
+      "start": 237.362,
+      "end": 242.152,
+      "audio_length_seconds": 4.79,
+      "embedding_audio_seconds": 4.79,
+      "audio_file": "audio\\sentence_0036.wav",
+      "word_count": 19
+    },
+    {
+      "index": 37,
+      "text": "and for me in Italy the second I walked out of the door every morning I was speaking Italian to everybody that I saw practicing it all the time studying it and just becoming a student of the culture and that was really important for me and it was great because you go to these same places every day where I would get my cafe and you know make friends with all the people that work there and practice your Italian and talk with them and then you make all these friends and all these different all these different areas of Rome and for me it was important to not ever seek anything from America.",
+      "start": 242.152,
+      "end": 273.762,
+      "audio_length_seconds": 31.61,
+      "embedding_audio_seconds": 31.61,
+      "audio_file": "audio\\sentence_0037.wav",
+      "word_count": 115
+    },
+    {
+      "index": 38,
+      "text": "I didn't miss one thing from America ever.",
+      "start": 273.812,
+      "end": 275.642,
+      "audio_length_seconds": 1.83,
+      "embedding_audio_seconds": 1.83,
+      "audio_file": "audio\\sentence_0038.wav",
+      "word_count": 8
+    },
+    {
+      "index": 39,
+      "text": "If there was something that I wanted, I didn't desire it because I knew it wasn't gonna happen and I knew that what was in front of me at that time is all that I was going to do.",
+      "start": 275.752,
+      "end": 283.342,
+      "audio_length_seconds": 7.59,
+      "embedding_audio_seconds": 7.59,
+      "audio_file": "audio\\sentence_0039.wav",
+      "word_count": 39
+    },
+    {
+      "index": 40,
+      "text": "And my main goal was to separate myself from the Americans and make Italian friends.",
+      "start": 284.092,
+      "end": 288.76,
+      "audio_length_seconds": 4.668,
+      "embedding_audio_seconds": 4.668,
+      "audio_file": "audio\\sentence_0040.wav",
+      "word_count": 15
+    },
+    {
+      "index": 41,
+      "text": "But like Dr. Walker was saying, it's very important to have your American friends for when you travel on the weekends and go sightseeing.",
+      "start": 288.76,
+      "end": 295.602,
+      "audio_length_seconds": 6.842,
+      "embedding_audio_seconds": 6.842,
+      "audio_file": "audio\\sentence_0041.wav",
+      "word_count": 24
+    },
+    {
+      "index": 42,
+      "text": "But for me, I did not want to be the classic American student, and if you go abroad, you'll find those people everywhere.",
+      "start": 295.632,
+      "end": 303.302,
+      "audio_length_seconds": 7.67,
+      "embedding_audio_seconds": 7.67,
+      "audio_file": "audio\\sentence_0042.wav",
+      "word_count": 23
+    },
+    {
+      "index": 43,
+      "text": "The people that are out at the bars, getting drunk, acting just belligerent.",
+      "start": 303.612,
+      "end": 309.162,
+      "audio_length_seconds": 5.55,
+      "embedding_audio_seconds": 5.55,
+      "audio_file": "audio\\sentence_0043.wav",
+      "word_count": 13
+    },
+    {
+      "index": 44,
+      "text": "And I was on the other side of that.",
+      "start": 309.732,
+      "end": 311.16,
+      "audio_length_seconds": 1.428,
+      "embedding_audio_seconds": 1.428,
+      "audio_file": "audio\\sentence_0044.wav",
+      "word_count": 9
+    },
+    {
+      "index": 45,
+      "text": "I was with the Italians, kind of, I don't want to say pointing my finger at them, but kind of getting a good laugh out of what the Americans were doing.",
+      "start": 311.16,
+      "end": 319.002,
+      "audio_length_seconds": 7.842,
+      "embedding_audio_seconds": 7.842,
+      "audio_file": "audio\\sentence_0045.wav",
+      "word_count": 31
+    },
+    {
+      "index": 46,
+      "text": "And for me, one of the most important days, and a pivotal day for me, was November 14th.",
+      "start": 320.632,
+      "end": 325.792,
+      "audio_length_seconds": 5.16,
+      "embedding_audio_seconds": 4.49,
+      "audio_file": "audio\\sentence_0046.wav",
+      "word_count": 18
+    },
+    {
+      "index": 47,
+      "text": "I wrote in my journal, I was within 30 minutes walking distance to the Colosseum, the Foro Romano, the Pantheon, Trevi Fountain, and Circo Massimo.",
+      "start": 325.792,
+      "end": 334.742,
+      "audio_length_seconds": 8.95,
+      "embedding_audio_seconds": 8.95,
+      "audio_file": "audio\\sentence_0047.wav",
+      "word_count": 25
+    },
+    {
+      "index": 48,
+      "text": "It was a beautiful Sunday and I was walking around the Foro Romano area and my friend Virginia had given me a call and told me to meet her up in Campo di Fiori, which is an area with a lot of bars and restaurants.",
+      "start": 334.792,
+      "end": 348.102,
+      "audio_length_seconds": 13.31,
+      "embedding_audio_seconds": 13.31,
+      "audio_file": "audio\\sentence_0048.wav",
+      "word_count": 45
+    },
+    {
+      "index": 49,
+      "text": "And she had surprised me and brought an extra helmet and took me around on her Vespa and And it was absolutely incredible, a beautiful evening behind a beautiful girl, just zooming around Rome.",
+      "start": 348.952,
+      "end": 361.402,
+      "audio_length_seconds": 12.45,
+      "embedding_audio_seconds": 12.45,
+      "audio_file": "audio\\sentence_0049.wav",
+      "word_count": 34
+    },
+    {
+      "index": 50,
+      "text": "And at the end of our ride, we went up to this big hill called Giancola, which overlooks all of Rome.",
+      "start": 361.992,
+      "end": 368.042,
+      "audio_length_seconds": 6.05,
+      "embedding_audio_seconds": 6.05,
+      "audio_file": "audio\\sentence_0050.wav",
+      "word_count": 21
+    },
+    {
+      "index": 51,
+      "text": "And I kind of had this epiphany at that moment, where I was standing looking at the same mountains and breathing the same air as a city that shaped world history.",
+      "start": 368.132,
+      "end": 379.212,
+      "audio_length_seconds": 11.08,
+      "embedding_audio_seconds": 10.92,
+      "audio_file": "audio\\sentence_0051.wav",
+      "word_count": 31
+    },
+    {
+      "index": 52,
+      "text": "I was looking over the same land that, you know, the Caesars, Augustus, Mussolini, Fellini, all of these people that have shaped world history and it was, it was my city.",
+      "start": 379.212,
+      "end": 393.362,
+      "audio_length_seconds": 14.15,
+      "embedding_audio_seconds": 14.15,
+      "audio_file": "audio\\sentence_0052.wav",
+      "word_count": 31
+    },
+    {
+      "index": 53,
+      "text": "I've never felt any connection to any city in America like that.",
+      "start": 393.852,
+      "end": 396.688,
+      "audio_length_seconds": 2.836,
+      "embedding_audio_seconds": 2.836,
+      "audio_file": "audio\\sentence_0053.wav",
+      "word_count": 12
+    },
+    {
+      "index": 54,
+      "text": "This is a city that I know that I can come back to in 20 years from now and know my way around and just feel so close and so connected to a city was amazing.",
+      "start": 396.688,
+      "end": 405.122,
+      "audio_length_seconds": 8.434,
+      "embedding_audio_seconds": 8.434,
+      "audio_file": "audio\\sentence_0054.wav",
+      "word_count": 36
+    },
+    {
+      "index": 55,
+      "text": "And After the sun went down, we went to a cafe in the center of Rome, which is what I call the bougie section of Rome.",
+      "start": 405.572,
+      "end": 413.162,
+      "audio_length_seconds": 7.59,
+      "embedding_audio_seconds": 7.57,
+      "audio_file": "audio\\sentence_0055.wav",
+      "word_count": 26
+    },
+    {
+      "index": 56,
+      "text": "A lot of money in that section.",
+      "start": 413.532,
+      "end": 415.332,
+      "audio_length_seconds": 1.8,
+      "embedding_audio_seconds": 1.78,
+      "audio_file": "audio\\sentence_0056.wav",
+      "word_count": 7
+    },
+    {
+      "index": 57,
+      "text": "I went with Virginia, and within a couple hours, I must have met 20 of her friends.",
+      "start": 415.332,
+      "end": 420.282,
+      "audio_length_seconds": 4.95,
+      "embedding_audio_seconds": 4.95,
+      "audio_file": "audio\\sentence_0057.wav",
+      "word_count": 17
+    },
+    {
+      "index": 58,
+      "text": "And every person you meet, it's the kiss on both cheeks, which is something that I really, really miss.",
+      "start": 420.332,
+      "end": 425.442,
+      "audio_length_seconds": 5.11,
+      "embedding_audio_seconds": 5.11,
+      "audio_file": "audio\\sentence_0058.wav",
+      "word_count": 19
+    },
+    {
+      "index": 59,
+      "text": "And these weren't just normal people either.",
+      "start": 426.792,
+      "end": 428.84,
+      "audio_length_seconds": 2.048,
+      "embedding_audio_seconds": 2.048,
+      "audio_file": "audio\\sentence_0059.wav",
+      "word_count": 7
+    },
+    {
+      "index": 60,
+      "text": "These were the sons and daughters of aristocrats, of royalty of Italy, of politicians.",
+      "start": 428.84,
+      "end": 434.152,
+      "audio_length_seconds": 5.312,
+      "embedding_audio_seconds": 5.312,
+      "audio_file": "audio\\sentence_0060.wav",
+      "word_count": 14
+    },
+    {
+      "index": 61,
+      "text": "And these are people that I was meeting that are going to be the future of Italy and literally have shaped the entire history of the country.",
+      "start": 434.152,
+      "end": 442.602,
+      "audio_length_seconds": 8.45,
+      "embedding_audio_seconds": 8.45,
+      "audio_file": "audio\\sentence_0061.wav",
+      "word_count": 27
+    },
+    {
+      "index": 62,
+      "text": "And I just kind of realized how good my situation was and just going around every day, taking the most beautiful photos that I ever took of my life, just level of creativity and being involved in philosophy and theory and just having deep, meaningful conversations with people is something that I miss so much.",
+      "start": 442.772,
+      "end": 461.632,
+      "audio_length_seconds": 18.86,
+      "embedding_audio_seconds": 18.86,
+      "audio_file": "audio\\sentence_0062.wav",
+      "word_count": 55
+    },
+    {
+      "index": 63,
+      "text": "And that was something that I had at that moment, like in November 14th was a day that I completely realized that.",
+      "start": 461.632,
+      "end": 466.762,
+      "audio_length_seconds": 5.13,
+      "embedding_audio_seconds": 5.13,
+      "audio_file": "audio\\sentence_0063.wav",
+      "word_count": 22
+    }
+  ]
+}

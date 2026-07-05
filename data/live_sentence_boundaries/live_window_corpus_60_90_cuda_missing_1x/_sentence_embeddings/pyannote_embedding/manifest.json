@@ -1,0 +1,111 @@
+{
+  "status": "ok",
+  "provider": "pyannote_embedding",
+  "backend": "remote",
+  "remote_url": "http://192.168.178.22:8660",
+  "device": "cuda",
+  "load_result": {
+    "ok": true,
+    "requested_device": "cuda",
+    "resolved_device": "cuda",
+    "warmup_seconds": 2.0,
+    "loaded": [
+      {
+        "provider": "pyannote_embedding",
+        "weight": 1.0,
+        "device": "cuda",
+        "dim": 512
+      }
+    ],
+    "warmups": [
+      {
+        "provider": "pyannote_embedding",
+        "weight": 1.0,
+        "device": "cuda",
+        "elapsed_seconds": 0.011077815004682634,
+        "dim": 512,
+        "warmup_seconds": 2.0
+      }
+    ],
+    "elapsed_seconds": 0.013263501998153515
+  },
+  "video_count": 8,
+  "sentence_count": 1565,
+  "created_video_count": 8,
+  "skipped_video_count": 0,
+  "elapsed_seconds": 58.36041700001806,
+  "outputs": [
+    {
+      "video": "cLdy4P-XJPE",
+      "folder": "cLdy4P-XJPE_livewindow_60_90_cuda",
+      "sentences": 134,
+      "status": "created",
+      "elapsed_seconds": 5.184670600108802,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\cLdy4P-XJPE_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\cLdy4P-XJPE_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "L-CfFo5aQGU",
+      "folder": "L-CfFo5aQGU_livewindow_60_90_cuda",
+      "sentences": 267,
+      "status": "created",
+      "elapsed_seconds": 11.016390800010413,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\L-CfFo5aQGU_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\L-CfFo5aQGU_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "mBeT_AoCXvc",
+      "folder": "mBeT_AoCXvc_livewindow_60_90_cuda",
+      "sentences": 149,
+      "status": "created",
+      "elapsed_seconds": 5.605453100055456,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\mBeT_AoCXvc_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\mBeT_AoCXvc_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "onHUfyRP1BE",
+      "folder": "onHUfyRP1BE_livewindow_60_90_cuda",
+      "sentences": 64,
+      "status": "created",
+      "elapsed_seconds": 2.4544569000136107,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\onHUfyRP1BE_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\onHUfyRP1BE_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "pD4IdQTmneI",
+      "folder": "pD4IdQTmneI_livewindow_60_90_cuda",
+      "sentences": 64,
+      "status": "created",
+      "elapsed_seconds": 2.5543260001577437,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\pD4IdQTmneI_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\pD4IdQTmneI_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "PhofRoLXqhE",
+      "folder": "PhofRoLXqhE_livewindow_60_90_cuda",
+      "sentences": 286,
+      "status": "created",
+      "elapsed_seconds": 10.01720660016872,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\PhofRoLXqhE_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\PhofRoLXqhE_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "S_o3y7CzDUY",
+      "folder": "S_o3y7CzDUY_livewindow_60_90_cuda",
+      "sentences": 274,
+      "status": "created",
+      "elapsed_seconds": 9.755552900023758,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\S_o3y7CzDUY_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\S_o3y7CzDUY_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "y_5WfLjvOK4",
+      "folder": "y_5WfLjvOK4_livewindow_60_90_cuda",
+      "sentences": 327,
+      "status": "created",
+      "elapsed_seconds": 11.69659040006809,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\y_5WfLjvOK4_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\_sentence_embeddings\\pyannote_embedding\\y_5WfLjvOK4_livewindow_60_90_cuda.sentences.json"
+    }
+  ]
+}

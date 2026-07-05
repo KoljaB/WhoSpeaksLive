@@ -1,0 +1,2874 @@
+{
+  "provider": "wavlm_base_sv",
+  "video": "PhofRoLXqhE",
+  "folder": "PhofRoLXqhE_livewindow_60_90_cuda",
+  "sentence_file": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\PhofRoLXqhE_livewindow_60_90_cuda\\sentences.jsonl",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    286,
+    512
+  ],
+  "elapsed_seconds": 24.50352569995448,
+  "sentences": [
+    {
+      "index": 0,
+      "text": "As the United States approaches the 250th anniversary of the Declaration of Independence, our panel will look at the state of our democracy and discuss where we're headed.",
+      "start": 0.88,
+      "end": 9.81,
+      "audio_length_seconds": 8.93,
+      "embedding_audio_seconds": 8.93,
+      "audio_file": "audio\\sentence_0000.wav",
+      "word_count": 28
+    },
+    {
+      "index": 1,
+      "text": "That's tonight on a special birthday edition of Washington Week.",
+      "start": 9.81,
+      "end": 14.02,
+      "audio_length_seconds": 4.21,
+      "embedding_audio_seconds": 4.21,
+      "audio_file": "audio\\sentence_0001.wav",
+      "word_count": 10
+    },
+    {
+      "index": 2,
+      "text": "This is a special edition of Washington Week with the Atlantic.",
+      "start": 16.366,
+      "end": 20.436,
+      "audio_length_seconds": 4.07,
+      "embedding_audio_seconds": 4.07,
+      "audio_file": "audio\\sentence_0002.wav",
+      "word_count": 11
+    },
+    {
+      "index": 3,
+      "text": "America, the next 250.",
+      "start": 20.436,
+      "end": 23.346,
+      "audio_length_seconds": 2.91,
+      "embedding_audio_seconds": 2.91,
+      "audio_file": "audio\\sentence_0003.wav",
+      "word_count": 4
+    },
+    {
+      "index": 4,
+      "text": "CORPORATE FUNDING PROVIDED BY...",
+      "start": 23.346,
+      "end": 25.966,
+      "audio_length_seconds": 2.62,
+      "embedding_audio_seconds": 2.62,
+      "audio_file": "audio\\sentence_0004.wav",
+      "word_count": 4
+    },
+    {
+      "index": 5,
+      "text": "IN 1995, TWO FRIENDS SET OUT TO MAKE WIRELESS COVERAGE ACCESSIBLE TO ALL.",
+      "start": 26.546,
+      "end": 31.176,
+      "audio_length_seconds": 4.63,
+      "embedding_audio_seconds": 4.63,
+      "audio_file": "audio\\sentence_0005.wav",
+      "word_count": 13
+    },
+    {
+      "index": 6,
+      "text": "With no long -term contracts, nationwide coverage, and 100% U.S.-based customer support.",
+      "start": 31.176,
+      "end": 37.706,
+      "audio_length_seconds": 6.53,
+      "embedding_audio_seconds": 6.53,
+      "audio_file": "audio\\sentence_0006.wav",
+      "word_count": 14
+    },
+    {
+      "index": 7,
+      "text": "Consumer Cellular.",
+      "start": 37.706,
+      "end": 39.536,
+      "audio_length_seconds": 1.83,
+      "embedding_audio_seconds": 1.83,
+      "audio_file": "audio\\sentence_0007.wav",
+      "word_count": 2
+    },
+    {
+      "index": 8,
+      "text": "Freedom Calls.",
+      "start": 39.536,
+      "end": 40.906,
+      "audio_length_seconds": 1.37,
+      "embedding_audio_seconds": 1.37,
+      "audio_file": "audio\\sentence_0008.wav",
+      "word_count": 2
+    },
+    {
+      "index": 9,
+      "text": "Additional funding is provided by Kou and Patricia Ewan for the Ewan Foundation, committed to bridging cultural differences in our communities.",
+      "start": 40.906,
+      "end": 50.976,
+      "audio_length_seconds": 10.07,
+      "embedding_audio_seconds": 10.07,
+      "audio_file": "audio\\sentence_0009.wav",
+      "word_count": 21
+    },
+    {
+      "index": 10,
+      "text": "Sandra and Carl DeLay Magnuson.",
+      "start": 50.976,
+      "end": 54.126,
+      "audio_length_seconds": 3.15,
+      "embedding_audio_seconds": 3.15,
+      "audio_file": "audio\\sentence_0010.wav",
+      "word_count": 5
+    },
+    {
+      "index": 11,
+      "text": "Rose Herschel and Andy Shreves, Robert and Susan Rosenbaum, Jay and Sharon Rockefeller, Charles Hamowy, through the Charles Hamowy Fund.",
+      "start": 54.126,
+      "end": 65.176,
+      "audio_length_seconds": 11.05,
+      "embedding_audio_seconds": 11.05,
+      "audio_file": "audio\\sentence_0011.wav",
+      "word_count": 20
+    },
+    {
+      "index": 12,
+      "text": "And by contributions to your PBS station from viewers like you.",
+      "start": 69.676,
+      "end": 76.126,
+      "audio_length_seconds": 6.45,
+      "embedding_audio_seconds": 6.45,
+      "audio_file": "audio\\sentence_0012.wav",
+      "word_count": 11
+    },
+    {
+      "index": 13,
+      "text": "Thank you.",
+      "start": 76.126,
+      "end": 77.236,
+      "audio_length_seconds": 1.11,
+      "embedding_audio_seconds": 1.11,
+      "audio_file": "audio\\sentence_0013.wav",
+      "word_count": 2
+    },
+    {
+      "index": 14,
+      "text": "Once again, from the David M. Rubenstein Studio at WETA in Washington, Editor -in -Chief of The Atlantic and moderator Jeffrey Goldberg.",
+      "start": 77.996,
+      "end": 87.846,
+      "audio_length_seconds": 9.85,
+      "embedding_audio_seconds": 9.85,
+      "audio_file": "audio\\sentence_0014.wav",
+      "word_count": 22
+    },
+    {
+      "index": 15,
+      "text": "Good evening and welcome to Washington Week a couple of weeks ago.",
+      "start": 87.846,
+      "end": 91.714,
+      "audio_length_seconds": 3.868,
+      "embedding_audio_seconds": 3.518,
+      "audio_file": "audio\\sentence_0015.wav",
+      "word_count": 12
+    },
+    {
+      "index": 16,
+      "text": "held an hour -long discussion about the challenges facing the United States as it celebrates its 250th birthday.",
+      "start": 91.714,
+      "end": 97.444,
+      "audio_length_seconds": 5.73,
+      "embedding_audio_seconds": 5.73,
+      "audio_file": "audio\\sentence_0016.wav",
+      "word_count": 18
+    },
+    {
+      "index": 17,
+      "text": "We had with us some of our favorite panelists and since it's July 4th weekend We thought it would be a good idea to share some highlights from that conversation.",
+      "start": 97.444,
+      "end": 104.894,
+      "audio_length_seconds": 7.45,
+      "embedding_audio_seconds": 7.0,
+      "audio_file": "audio\\sentence_0017.wav",
+      "word_count": 30
+    },
+    {
+      "index": 18,
+      "text": "Happy Independence Day, everyone.",
+      "start": 104.894,
+      "end": 106.784,
+      "audio_length_seconds": 1.89,
+      "embedding_audio_seconds": 1.55,
+      "audio_file": "audio\\sentence_0018.wav",
+      "word_count": 4
+    },
+    {
+      "index": 19,
+      "text": "Our country is about to turn 250 years old and we wanted to do something a bit different in anticipation of this milestone.",
+      "start": 107.61,
+      "end": 113.8,
+      "audio_length_seconds": 6.19,
+      "embedding_audio_seconds": 6.19,
+      "audio_file": "audio\\sentence_0019.wav",
+      "word_count": 23
+    },
+    {
+      "index": 20,
+      "text": "We had been planning to host a cage match that would feature our favorite panelists duking it out in front of a live studio audience, but President Trump beat us to the punch quite literally.",
+      "start": 113.8,
+      "end": 123.11,
+      "audio_length_seconds": 9.31,
+      "embedding_audio_seconds": 9.31,
+      "audio_file": "audio\\sentence_0020.wav",
+      "word_count": 35
+    },
+    {
+      "index": 21,
+      "text": "So, we kept the live studio audience, and instead of gouging each other's eyes out in the shadow of the White House, we're going to talk about our history, the state of our democracy, and the successes, failures, and challenges of the American experiment.",
+      "start": 123.11,
+      "end": 134.7,
+      "audio_length_seconds": 11.59,
+      "embedding_audio_seconds": 11.59,
+      "audio_file": "audio\\sentence_0021.wav",
+      "word_count": 44
+    },
+    {
+      "index": 22,
+      "text": "Joining me tonight, Tim Alberta, a staff writer at The Atlantic and author of The Kingdom, The Power, and the Glory, American Evangelicals in an Age of Extremism.",
+      "start": 135.1,
+      "end": 143.39,
+      "audio_length_seconds": 8.29,
+      "embedding_audio_seconds": 7.92,
+      "audio_file": "audio\\sentence_0022.wav",
+      "word_count": 28
+    },
+    {
+      "index": 23,
+      "text": "Stephen Hayes is the editor and CEO of The Dispatch.",
+      "start": 143.74,
+      "end": 147.33,
+      "audio_length_seconds": 3.59,
+      "embedding_audio_seconds": 3.54,
+      "audio_file": "audio\\sentence_0023.wav",
+      "word_count": 10
+    },
+    {
+      "index": 24,
+      "text": "Peter Baker is the chief White House correspondent at The New York Times.",
+      "start": 147.33,
+      "end": 151.14,
+      "audio_length_seconds": 3.81,
+      "embedding_audio_seconds": 3.31,
+      "audio_file": "audio\\sentence_0024.wav",
+      "word_count": 13
+    },
+    {
+      "index": 25,
+      "text": "Adriesse Calhoun is a staff writer at The Atlantic.",
+      "start": 151.14,
+      "end": 154.27,
+      "audio_length_seconds": 3.13,
+      "embedding_audio_seconds": 2.74,
+      "audio_file": "audio\\sentence_0025.wav",
+      "word_count": 9
+    },
+    {
+      "index": 26,
+      "text": "Susan Glasser is a staff writer at The New Yorker and the author, with Peter Baker, of The Divider, Trump in the White House.",
+      "start": 154.27,
+      "end": 161.56,
+      "audio_length_seconds": 7.29,
+      "embedding_audio_seconds": 6.97,
+      "audio_file": "audio\\sentence_0026.wav",
+      "word_count": 24
+    },
+    {
+      "index": 27,
+      "text": "They're married, by the way.",
+      "start": 161.56,
+      "end": 163.23,
+      "audio_length_seconds": 1.67,
+      "embedding_audio_seconds": 1.4,
+      "audio_file": "audio\\sentence_0027.wav",
+      "word_count": 5
+    },
+    {
+      "index": 28,
+      "text": "And Ashley Parker is a White House correspondent at The Atlantic.",
+      "start": 163.23,
+      "end": 167.42,
+      "audio_length_seconds": 4.19,
+      "embedding_audio_seconds": 4.09,
+      "audio_file": "audio\\sentence_0028.wav",
+      "word_count": 11
+    },
+    {
+      "index": 29,
+      "text": "Thank you all.",
+      "start": 168.506,
+      "end": 169.69,
+      "audio_length_seconds": 1.184,
+      "embedding_audio_seconds": 1.184,
+      "audio_file": "audio\\sentence_0029.wav",
+      "word_count": 3
+    },
+    {
+      "index": 30,
+      "text": "Thank you.",
+      "start": 169.69,
+      "end": 170.186,
+      "audio_length_seconds": 0.496,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0030.wav",
+      "word_count": 2
+    },
+    {
+      "index": 31,
+      "text": "Thank you.",
+      "start": 170.186,
+      "end": 170.728,
+      "audio_length_seconds": 0.542,
+      "embedding_audio_seconds": 0.542,
+      "audio_file": "audio\\sentence_0031.wav",
+      "word_count": 2
+    },
+    {
+      "index": 32,
+      "text": "So, just make believe there's no audience, and it's just us talking.",
+      "start": 174.448,
+      "end": 177.798,
+      "audio_length_seconds": 3.35,
+      "embedding_audio_seconds": 3.35,
+      "audio_file": "audio\\sentence_0032.wav",
+      "word_count": 12
+    },
+    {
+      "index": 33,
+      "text": "We haven't done this before.",
+      "start": 178.088,
+      "end": 179.358,
+      "audio_length_seconds": 1.27,
+      "embedding_audio_seconds": 1.27,
+      "audio_file": "audio\\sentence_0033.wav",
+      "word_count": 5
+    },
+    {
+      "index": 34,
+      "text": "It's kind of fun.",
+      "start": 179.388,
+      "end": 180.198,
+      "audio_length_seconds": 0.81,
+      "embedding_audio_seconds": 0.81,
+      "audio_file": "audio\\sentence_0034.wav",
+      "word_count": 4
+    },
+    {
+      "index": 35,
+      "text": "I'm looking forward to this.",
+      "start": 180.508,
+      "end": 181.678,
+      "audio_length_seconds": 1.17,
+      "embedding_audio_seconds": 1.17,
+      "audio_file": "audio\\sentence_0035.wav",
+      "word_count": 5
+    },
+    {
+      "index": 36,
+      "text": "I want to start.",
+      "start": 182.088,
+      "end": 182.956,
+      "audio_length_seconds": 0.868,
+      "embedding_audio_seconds": 0.868,
+      "audio_file": "audio\\sentence_0036.wav",
+      "word_count": 4
+    },
+    {
+      "index": 37,
+      "text": "We have to cover 250 years of history, and then we have to predict American history 250 years into the future.",
+      "start": 182.956,
+      "end": 187.966,
+      "audio_length_seconds": 5.01,
+      "embedding_audio_seconds": 5.01,
+      "audio_file": "audio\\sentence_0037.wav",
+      "word_count": 21
+    },
+    {
+      "index": 38,
+      "text": "So we got to get going.",
+      "start": 188.216,
+      "end": 189.426,
+      "audio_length_seconds": 1.21,
+      "embedding_audio_seconds": 1.21,
+      "audio_file": "audio\\sentence_0038.wav",
+      "word_count": 6
+    },
+    {
+      "index": 39,
+      "text": "Peter, I'm going to start with you.",
+      "start": 189.906,
+      "end": 191.816,
+      "audio_length_seconds": 1.91,
+      "embedding_audio_seconds": 1.91,
+      "audio_file": "audio\\sentence_0039.wav",
+      "word_count": 7
+    },
+    {
+      "index": 40,
+      "text": "Let's talk about the importance of this moment.",
+      "start": 191.816,
+      "end": 194.548,
+      "audio_length_seconds": 2.732,
+      "embedding_audio_seconds": 2.732,
+      "audio_file": "audio\\sentence_0040.wav",
+      "word_count": 8
+    },
+    {
+      "index": 41,
+      "text": "250 years is a long time to maintain a representative democracy.",
+      "start": 194.548,
+      "end": 198.498,
+      "audio_length_seconds": 3.95,
+      "embedding_audio_seconds": 3.95,
+      "audio_file": "audio\\sentence_0041.wav",
+      "word_count": 11
+    },
+    {
+      "index": 42,
+      "text": "Is this a you know, it's kind of a signal achievement of the United States that it maintained this so long Obviously there were problems along the way but is Have we maintained fidelity to the to the principles that were the abstract principles that were formulated in Philadelphia 250 years ago?",
+      "start": 198.498,
+      "end": 216.268,
+      "audio_length_seconds": 17.77,
+      "embedding_audio_seconds": 17.77,
+      "audio_file": "audio\\sentence_0042.wav",
+      "word_count": 52
+    },
+    {
+      "index": 43,
+      "text": "Yeah.",
+      "start": 216.268,
+      "end": 216.638,
+      "audio_length_seconds": 0.37,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0043.wav",
+      "word_count": 1
+    },
+    {
+      "index": 44,
+      "text": "Jeff, thank you very much for asking and for talking about this important subject, because I think that this anniversary has become so politicized that we've lost sight of what it really is about, right?",
+      "start": 216.638,
+      "end": 227.102,
+      "audio_length_seconds": 10.464,
+      "embedding_audio_seconds": 10.464,
+      "audio_file": "audio\\sentence_0044.wav",
+      "word_count": 35
+    },
+    {
+      "index": 45,
+      "text": "But it is about the country, not about blue America or red America, but about 250 years of this great experiment.",
+      "start": 227.102,
+      "end": 232.912,
+      "audio_length_seconds": 5.81,
+      "embedding_audio_seconds": 5.81,
+      "audio_file": "audio\\sentence_0045.wav",
+      "word_count": 21
+    },
+    {
+      "index": 46,
+      "text": "And I think the thing that makes America so distinctive, people often say this, it's not a new thought, but that America, the United States, is not a country born out of an ethnicity or a religion or a tribe or a race.",
+      "start": 232.912,
+      "end": 246.762,
+      "audio_length_seconds": 13.85,
+      "embedding_audio_seconds": 13.67,
+      "audio_file": "audio\\sentence_0046.wav",
+      "word_count": 43
+    },
+    {
+      "index": 47,
+      "text": "It was born out of an idea, the idea that we could find a better place to live, that we could form a more perfect union, right?",
+      "start": 246.762,
+      "end": 253.63,
+      "audio_length_seconds": 6.868,
+      "embedding_audio_seconds": 6.788,
+      "audio_file": "audio\\sentence_0047.wav",
+      "word_count": 27
+    },
+    {
+      "index": 48,
+      "text": "phrase in the preamble of the constitution.",
+      "start": 253.63,
+      "end": 255.58,
+      "audio_length_seconds": 1.95,
+      "embedding_audio_seconds": 1.95,
+      "audio_file": "audio\\sentence_0048.wav",
+      "word_count": 7
+    },
+    {
+      "index": 49,
+      "text": "We're not perfect.",
+      "start": 255.69,
+      "end": 256.58,
+      "audio_length_seconds": 0.89,
+      "embedding_audio_seconds": 0.8,
+      "audio_file": "audio\\sentence_0049.wav",
+      "word_count": 3
+    },
+    {
+      "index": 50,
+      "text": "It's not perfect now.",
+      "start": 256.58,
+      "end": 257.964,
+      "audio_length_seconds": 1.384,
+      "embedding_audio_seconds": 1.0741,
+      "audio_file": "audio\\sentence_0050.wav",
+      "word_count": 4
+    },
+    {
+      "index": 51,
+      "text": "We're going to talk about all the ways our representative democracy tonight is not perfect and feels threatened as we speak.",
+      "start": 257.964,
+      "end": 263.834,
+      "audio_length_seconds": 5.87,
+      "embedding_audio_seconds": 5.87,
+      "audio_file": "audio\\sentence_0051.wav",
+      "word_count": 21
+    },
+    {
+      "index": 52,
+      "text": "And yet, it is still the aspiration toward a more perfect union that makes us distinctive.",
+      "start": 263.834,
+      "end": 269.064,
+      "audio_length_seconds": 5.23,
+      "embedding_audio_seconds": 5.04,
+      "audio_file": "audio\\sentence_0052.wav",
+      "word_count": 16
+    },
+    {
+      "index": 53,
+      "text": "I was reading de Tocqueville's take on America, and he actually has this, I think, remarkable quote.",
+      "start": 269.064,
+      "end": 275.092,
+      "audio_length_seconds": 6.028,
+      "embedding_audio_seconds": 6.028,
+      "audio_file": "audio\\sentence_0053.wav",
+      "word_count": 17
+    },
+    {
+      "index": 54,
+      "text": "He says, what makes America special, I'm paraphrasing.",
+      "start": 275.092,
+      "end": 277.528,
+      "audio_length_seconds": 2.436,
+      "embedding_audio_seconds": 2.436,
+      "audio_file": "audio\\sentence_0054.wav",
+      "word_count": 8
+    },
+    {
+      "index": 55,
+      "text": "This is exactly what he said.",
+      "start": 277.528,
+      "end": 278.664,
+      "audio_length_seconds": 1.136,
+      "embedding_audio_seconds": 1.136,
+      "audio_file": "audio\\sentence_0055.wav",
+      "word_count": 6
+    },
+    {
+      "index": 56,
+      "text": "But what makes America special is not that it's more enlightened than other countries, but that it has the capacity to repair itself.",
+      "start": 278.664,
+      "end": 284.034,
+      "audio_length_seconds": 5.37,
+      "embedding_audio_seconds": 5.37,
+      "audio_file": "audio\\sentence_0056.wav",
+      "word_count": 23
+    },
+    {
+      "index": 57,
+      "text": "And I think that's the story of our 250 years, is our effort to try to repair ourselves and get to a better place.",
+      "start": 284.034,
+      "end": 290.324,
+      "audio_length_seconds": 6.29,
+      "embedding_audio_seconds": 6.05,
+      "audio_file": "audio\\sentence_0057.wav",
+      "word_count": 24
+    },
+    {
+      "index": 58,
+      "text": "Did everybody read Tocqueville before they got here?",
+      "start": 290.324,
+      "end": 293.054,
+      "audio_length_seconds": 2.73,
+      "embedding_audio_seconds": 2.27,
+      "audio_file": "audio\\sentence_0058.wav",
+      "word_count": 8
+    },
+    {
+      "index": 59,
+      "text": "Did you put that in the assignment?",
+      "start": 293.054,
+      "end": 294.884,
+      "audio_length_seconds": 1.83,
+      "embedding_audio_seconds": 1.83,
+      "audio_file": "audio\\sentence_0059.wav",
+      "word_count": 7
+    },
+    {
+      "index": 60,
+      "text": "Yeah, that was in the assignment.",
+      "start": 294.884,
+      "end": 296.094,
+      "audio_length_seconds": 1.21,
+      "embedding_audio_seconds": 1.21,
+      "audio_file": "audio\\sentence_0060.wav",
+      "word_count": 6
+    },
+    {
+      "index": 61,
+      "text": "You never follow the assignments, but that's right, but you read it you read it organically.",
+      "start": 296.094,
+      "end": 300.186,
+      "audio_length_seconds": 4.092,
+      "embedding_audio_seconds": 4.092,
+      "audio_file": "audio\\sentence_0061.wav",
+      "word_count": 16
+    },
+    {
+      "index": 62,
+      "text": "It's great.",
+      "start": 300.186,
+      "end": 300.476,
+      "audio_length_seconds": 0.29,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0062.wav",
+      "word_count": 2
+    },
+    {
+      "index": 63,
+      "text": "But I have to ask you this.",
+      "start": 300.526,
+      "end": 301.876,
+      "audio_length_seconds": 1.35,
+      "embedding_audio_seconds": 1.35,
+      "audio_file": "audio\\sentence_0063.wav",
+      "word_count": 7
+    },
+    {
+      "index": 64,
+      "text": "You join yourself to America by accepting a group of principles.",
+      "start": 301.876,
+      "end": 306.776,
+      "audio_length_seconds": 4.9,
+      "embedding_audio_seconds": 4.71,
+      "audio_file": "audio\\sentence_0064.wav",
+      "word_count": 11
+    },
+    {
+      "index": 65,
+      "text": "You don't have to join by blood.",
+      "start": 306.776,
+      "end": 308.686,
+      "audio_length_seconds": 1.91,
+      "embedding_audio_seconds": 1.9,
+      "audio_file": "audio\\sentence_0065.wav",
+      "word_count": 7
+    },
+    {
+      "index": 66,
+      "text": "Now, it's an open discussion.",
+      "start": 309.346,
+      "end": 311.656,
+      "audio_length_seconds": 2.31,
+      "embedding_audio_seconds": 2.31,
+      "audio_file": "audio\\sentence_0066.wav",
+      "word_count": 5
+    },
+    {
+      "index": 67,
+      "text": "Were you surprised that it's become a kind of continuing discussion or a live discussion again?",
+      "start": 311.656,
+      "end": 316.506,
+      "audio_length_seconds": 4.85,
+      "embedding_audio_seconds": 4.85,
+      "audio_file": "audio\\sentence_0067.wav",
+      "word_count": 16
+    },
+    {
+      "index": 68,
+      "text": "Yeah, I would say I was surprised.",
+      "start": 316.506,
+      "end": 318.836,
+      "audio_length_seconds": 2.33,
+      "embedding_audio_seconds": 2.33,
+      "audio_file": "audio\\sentence_0068.wav",
+      "word_count": 7
+    },
+    {
+      "index": 69,
+      "text": "But maybe we shouldn't be, because history is cyclical, right?",
+      "start": 318.836,
+      "end": 321.972,
+      "audio_length_seconds": 3.136,
+      "embedding_audio_seconds": 3.136,
+      "audio_file": "audio\\sentence_0069.wav",
+      "word_count": 10
+    },
+    {
+      "index": 70,
+      "text": "We do go through these periods in our history where we question what our principles are and what our values are.",
+      "start": 321.972,
+      "end": 328.344,
+      "audio_length_seconds": 6.372,
+      "embedding_audio_seconds": 6.372,
+      "audio_file": "audio\\sentence_0070.wav",
+      "word_count": 21
+    },
+    {
+      "index": 71,
+      "text": "We have not always been perfect.",
+      "start": 328.344,
+      "end": 329.894,
+      "audio_length_seconds": 1.55,
+      "embedding_audio_seconds": 1.55,
+      "audio_file": "audio\\sentence_0071.wav",
+      "word_count": 6
+    },
+    {
+      "index": 72,
+      "text": "But it is a reminder that, as we go through a tough time right now, we are at least debating big things.",
+      "start": 329.894,
+      "end": 335.242,
+      "audio_length_seconds": 5.348,
+      "embedding_audio_seconds": 5.348,
+      "audio_file": "audio\\sentence_0072.wav",
+      "word_count": 22
+    },
+    {
+      "index": 73,
+      "text": "We're debating what our country should stand for.",
+      "start": 335.242,
+      "end": 337.924,
+      "audio_length_seconds": 2.682,
+      "embedding_audio_seconds": 2.682,
+      "audio_file": "audio\\sentence_0073.wav",
+      "word_count": 8
+    },
+    {
+      "index": 74,
+      "text": "And that's something that, in fact, we do every Friday night on Washington Week, in a way.",
+      "start": 337.954,
+      "end": 342.764,
+      "audio_length_seconds": 4.81,
+      "embedding_audio_seconds": 4.81,
+      "audio_file": "audio\\sentence_0074.wav",
+      "word_count": 17
+    },
+    {
+      "index": 75,
+      "text": "And I'm glad that we have the debate and that we can have this debate.",
+      "start": 342.764,
+      "end": 345.854,
+      "audio_length_seconds": 3.09,
+      "embedding_audio_seconds": 2.87,
+      "audio_file": "audio\\sentence_0075.wav",
+      "word_count": 15
+    },
+    {
+      "index": 76,
+      "text": "But Steve, I want to turn to you and talk a little bit about political practices and systems that have worked for the United States and made it a functioning democracy.",
+      "start": 345.854,
+      "end": 355.064,
+      "audio_length_seconds": 9.21,
+      "embedding_audio_seconds": 8.82,
+      "audio_file": "audio\\sentence_0076.wav",
+      "word_count": 31
+    },
+    {
+      "index": 77,
+      "text": "Talk about the ones that have worked.",
+      "start": 355.064,
+      "end": 357.054,
+      "audio_length_seconds": 1.99,
+      "embedding_audio_seconds": 1.95,
+      "audio_file": "audio\\sentence_0077.wav",
+      "word_count": 7
+    },
+    {
+      "index": 78,
+      "text": "talked about the ones that are under pressure right now.",
+      "start": 357.054,
+      "end": 359.464,
+      "audio_length_seconds": 2.41,
+      "embedding_audio_seconds": 2.26,
+      "audio_file": "audio\\sentence_0078.wav",
+      "word_count": 10
+    },
+    {
+      "index": 79,
+      "text": "I think in some senses they're all under pressure right now, and that's part of the challenge of the moment.",
+      "start": 360.244,
+      "end": 364.444,
+      "audio_length_seconds": 4.2,
+      "embedding_audio_seconds": 3.96,
+      "audio_file": "audio\\sentence_0079.wav",
+      "word_count": 20
+    },
+    {
+      "index": 80,
+      "text": "But I think if you look back—and, you know, this isn't a terribly original answer, but I don't think we spend enough time thinking about this—the way that the founders built the structures of the United States and its government were to constrain its powers.",
+      "start": 364.444,
+      "end": 379.094,
+      "audio_length_seconds": 14.65,
+      "embedding_audio_seconds": 14.65,
+      "audio_file": "audio\\sentence_0080.wav",
+      "word_count": 45
+    },
+    {
+      "index": 81,
+      "text": "And I think it's those structures, sort of at the core, that have allowed us to have the success that we've had.",
+      "start": 379.094,
+      "end": 385.064,
+      "audio_length_seconds": 5.97,
+      "embedding_audio_seconds": 5.94,
+      "audio_file": "audio\\sentence_0081.wav",
+      "word_count": 22
+    },
+    {
+      "index": 82,
+      "text": "We can all have different understandings of what the proper role of government, what the size and scope of government ought to be.",
+      "start": 385.064,
+      "end": 391.574,
+      "audio_length_seconds": 6.51,
+      "embedding_audio_seconds": 6.51,
+      "audio_file": "audio\\sentence_0082.wav",
+      "word_count": 23
+    },
+    {
+      "index": 83,
+      "text": "But I don't see or I don't hear many people making the argument today about size.",
+      "start": 392.034,
+      "end": 397.454,
+      "audio_length_seconds": 5.42,
+      "embedding_audio_seconds": 5.42,
+      "audio_file": "audio\\sentence_0083.wav",
+      "word_count": 16
+    },
+    {
+      "index": 84,
+      "text": "It's not really much of a discussion.",
+      "start": 397.454,
+      "end": 398.804,
+      "audio_length_seconds": 1.35,
+      "embedding_audio_seconds": 1.35,
+      "audio_file": "audio\\sentence_0084.wav",
+      "word_count": 7
+    },
+    {
+      "index": 85,
+      "text": "We don't really have, in my view, a political party devoted to limiting the size and scope of government anymore.",
+      "start": 398.804,
+      "end": 404.968,
+      "audio_length_seconds": 6.164,
+      "embedding_audio_seconds": 6.164,
+      "audio_file": "audio\\sentence_0085.wav",
+      "word_count": 20
+    },
+    {
+      "index": 86,
+      "text": "Republicans filled that role for a while.",
+      "start": 404.968,
+      "end": 407.058,
+      "audio_length_seconds": 2.09,
+      "embedding_audio_seconds": 2.09,
+      "audio_file": "audio\\sentence_0086.wav",
+      "word_count": 7
+    },
+    {
+      "index": 87,
+      "text": "They don't really much anymore.",
+      "start": 407.058,
+      "end": 409.03,
+      "audio_length_seconds": 1.972,
+      "embedding_audio_seconds": 1.532,
+      "audio_file": "audio\\sentence_0087.wav",
+      "word_count": 5
+    },
+    {
+      "index": 88,
+      "text": "You don't hear those arguments about the government, and I think it's one of the challenges that we face right now.",
+      "start": 409.03,
+      "end": 413.286,
+      "audio_length_seconds": 4.256,
+      "embedding_audio_seconds": 4.256,
+      "audio_file": "audio\\sentence_0088.wav",
+      "word_count": 21
+    },
+    {
+      "index": 89,
+      "text": "but worked for 250 years.",
+      "start": 413.286,
+      "end": 415.016,
+      "audio_length_seconds": 1.73,
+      "embedding_audio_seconds": 1.73,
+      "audio_file": "audio\\sentence_0089.wav",
+      "word_count": 5
+    },
+    {
+      "index": 90,
+      "text": "Right.",
+      "start": 415.086,
+      "end": 415.576,
+      "audio_length_seconds": 0.49,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0090.wav",
+      "word_count": 1
+    },
+    {
+      "index": 91,
+      "text": "Stay on this this point for a second.",
+      "start": 416.156,
+      "end": 418.606,
+      "audio_length_seconds": 2.45,
+      "embedding_audio_seconds": 2.45,
+      "audio_file": "audio\\sentence_0091.wav",
+      "word_count": 8
+    },
+    {
+      "index": 92,
+      "text": "What is different now in the American approach to constitutional norms and safeguards?",
+      "start": 418.606,
+      "end": 426.556,
+      "audio_length_seconds": 7.95,
+      "embedding_audio_seconds": 7.95,
+      "audio_file": "audio\\sentence_0092.wav",
+      "word_count": 13
+    },
+    {
+      "index": 93,
+      "text": "What is different in the Trump administration approach to the approaches of previous presidents, possibly going all the way back?",
+      "start": 426.556,
+      "end": 434.586,
+      "audio_length_seconds": 8.03,
+      "embedding_audio_seconds": 7.84,
+      "audio_file": "audio\\sentence_0093.wav",
+      "word_count": 20
+    },
+    {
+      "index": 94,
+      "text": "For a long time, there has been this sort of respect for the process, for the way things are done, for the way the government operates.",
+      "start": 434.586,
+      "end": 440.536,
+      "audio_length_seconds": 5.95,
+      "embedding_audio_seconds": 5.78,
+      "audio_file": "audio\\sentence_0094.wav",
+      "word_count": 26
+    },
+    {
+      "index": 95,
+      "text": "Again, largely built, at least initially, by the founders.",
+      "start": 440.536,
+      "end": 444.946,
+      "audio_length_seconds": 4.41,
+      "embedding_audio_seconds": 4.41,
+      "audio_file": "audio\\sentence_0095.wav",
+      "word_count": 9
+    },
+    {
+      "index": 96,
+      "text": "And what you're seeing increasingly today is sort of ends justify the means arguments and an abandonment of process where process really Matters and I think the process in some ways within those constraints was the genius of the founding, right?",
+      "start": 444.946,
+      "end": 458.71,
+      "audio_length_seconds": 13.764,
+      "embedding_audio_seconds": 13.764,
+      "audio_file": "audio\\sentence_0096.wav",
+      "word_count": 41
+    },
+    {
+      "index": 97,
+      "text": "I think everyone in America, I mean, it's very hard to find a unifying principle today, but everyone in America agrees that something's broken, something's off.",
+      "start": 458.71,
+      "end": 467.68,
+      "audio_length_seconds": 8.97,
+      "embedding_audio_seconds": 8.84,
+      "audio_file": "audio\\sentence_0097.wav",
+      "word_count": 26
+    },
+    {
+      "index": 98,
+      "text": "Susan, is Donald Trump, is the presidency or the double presidency of Donald Trump, is it a symptom of this dysfunction, this polarization?",
+      "start": 467.68,
+      "end": 477.73,
+      "audio_length_seconds": 10.05,
+      "embedding_audio_seconds": 9.99,
+      "audio_file": "audio\\sentence_0098.wav",
+      "word_count": 23
+    },
+    {
+      "index": 99,
+      "text": "Or has he been a cause of it?",
+      "start": 477.73,
+      "end": 480.85,
+      "audio_length_seconds": 3.12,
+      "embedding_audio_seconds": 3.12,
+      "audio_file": "audio\\sentence_0099.wav",
+      "word_count": 8
+    },
+    {
+      "index": 100,
+      "text": "or you obviously have a choice C, which is both.",
+      "start": 480.85,
+      "end": 485.0,
+      "audio_length_seconds": 4.15,
+      "embedding_audio_seconds": 4.13,
+      "audio_file": "audio\\sentence_0100.wav",
+      "word_count": 10
+    },
+    {
+      "index": 101,
+      "text": "Yeah, I mean, look, there's no question he's an accelerant and, you know, a divider, one might even say.",
+      "start": 485.0,
+      "end": 490.76,
+      "audio_length_seconds": 5.76,
+      "embedding_audio_seconds": 5.42,
+      "audio_file": "audio\\sentence_0101.wav",
+      "word_count": 19
+    },
+    {
+      "index": 102,
+      "text": "you know, by nature, but he wouldn't have been elected.",
+      "start": 490.76,
+      "end": 494.02,
+      "audio_length_seconds": 3.26,
+      "embedding_audio_seconds": 3.26,
+      "audio_file": "audio\\sentence_0102.wav",
+      "word_count": 10
+    },
+    {
+      "index": 103,
+      "text": "your book right now?",
+      "start": 494.02,
+      "end": 495.212,
+      "audio_length_seconds": 1.192,
+      "embedding_audio_seconds": 1.192,
+      "audio_file": "audio\\sentence_0103.wav",
+      "word_count": 4
+    },
+    {
+      "index": 104,
+      "text": "He wouldn't have been elected if he didn't play to what a large segment of our society has been asking for.",
+      "start": 495.212,
+      "end": 503.42,
+      "audio_length_seconds": 8.208,
+      "embedding_audio_seconds": 8.208,
+      "audio_file": "audio\\sentence_0104.wav",
+      "word_count": 21
+    },
+    {
+      "index": 105,
+      "text": "I think relevant to that, you have to look at the fact that a majority of the country has not said that the country is on the right track.",
+      "start": 503.42,
+      "end": 511.23,
+      "audio_length_seconds": 7.81,
+      "embedding_audio_seconds": 7.81,
+      "audio_file": "audio\\sentence_0105.wav",
+      "word_count": 29
+    },
+    {
+      "index": 106,
+      "text": "There's been a general diminution in support and belief and faith in all institutions.",
+      "start": 511.23,
+      "end": 517.254,
+      "audio_length_seconds": 6.024,
+      "embedding_audio_seconds": 6.024,
+      "audio_file": "audio\\sentence_0106.wav",
+      "word_count": 14
+    },
+    {
+      "index": 107,
+      "text": "So that includes religious institutions.",
+      "start": 517.254,
+      "end": 519.278,
+      "audio_length_seconds": 2.024,
+      "embedding_audio_seconds": 2.024,
+      "audio_file": "audio\\sentence_0107.wav",
+      "word_count": 5
+    },
+    {
+      "index": 108,
+      "text": "It includes institutions of the government, even the military, which until recently had been, you know, and still has higher, you know, ratings.",
+      "start": 519.278,
+      "end": 526.962,
+      "audio_length_seconds": 7.684,
+      "embedding_audio_seconds": 7.684,
+      "audio_file": "audio\\sentence_0108.wav",
+      "word_count": 23
+    },
+    {
+      "index": 109,
+      "text": "But that, to me, is one of the signal differences of Donald Trump, right?",
+      "start": 526.962,
+      "end": 531.69,
+      "audio_length_seconds": 4.728,
+      "embedding_audio_seconds": 4.728,
+      "audio_file": "audio\\sentence_0109.wav",
+      "word_count": 14
+    },
+    {
+      "index": 110,
+      "text": "is that he is going after the things that make our society work.",
+      "start": 531.69,
+      "end": 537.534,
+      "audio_length_seconds": 5.844,
+      "embedding_audio_seconds": 5.844,
+      "audio_file": "audio\\sentence_0110.wav",
+      "word_count": 13
+    },
+    {
+      "index": 111,
+      "text": "But one thing I would say that's so different and head -snapping right now is that we speak still of one America.",
+      "start": 537.534,
+      "end": 545.142,
+      "audio_length_seconds": 7.608,
+      "embedding_audio_seconds": 7.608,
+      "audio_file": "audio\\sentence_0111.wav",
+      "word_count": 22
+    },
+    {
+      "index": 112,
+      "text": "We say, well, America is in a tough place right now, or America is no longer promoting democracy abroad.",
+      "start": 545.142,
+      "end": 550.572,
+      "audio_length_seconds": 5.43,
+      "embedding_audio_seconds": 5.43,
+      "audio_file": "audio\\sentence_0112.wav",
+      "word_count": 19
+    },
+    {
+      "index": 113,
+      "text": "But it's actually not that.",
+      "start": 550.572,
+      "end": 551.982,
+      "audio_length_seconds": 1.41,
+      "embedding_audio_seconds": 1.19,
+      "audio_file": "audio\\sentence_0113.wav",
+      "word_count": 5
+    },
+    {
+      "index": 114,
+      "text": "I mean, it's that we have different, starkly competing visions of America right now that we can't say there's one American view at 250 years.",
+      "start": 551.982,
+      "end": 562.312,
+      "audio_length_seconds": 10.33,
+      "embedding_audio_seconds": 10.33,
+      "audio_file": "audio\\sentence_0114.wav",
+      "word_count": 25
+    },
+    {
+      "index": 115,
+      "text": "Right.",
+      "start": 562.402,
+      "end": 562.832,
+      "audio_length_seconds": 0.43,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0115.wav",
+      "word_count": 1
+    },
+    {
+      "index": 116,
+      "text": "We have a bit of geographic diversity on this panel and I want to ask Tim who lives in Michigan and Idrees is from Kentucky.",
+      "start": 563.432,
+      "end": 570.462,
+      "audio_length_seconds": 7.03,
+      "embedding_audio_seconds": 7.03,
+      "audio_file": "audio\\sentence_0116.wav",
+      "word_count": 25
+    },
+    {
+      "index": 117,
+      "text": "One of the things that makes them different from what we do in Washington is that they're not thinking about all this stuff all the time.",
+      "start": 570.712,
+      "end": 576.124,
+      "audio_length_seconds": 5.412,
+      "embedding_audio_seconds": 5.412,
+      "audio_file": "audio\\sentence_0117.wav",
+      "word_count": 26
+    },
+    {
+      "index": 118,
+      "text": "that actually have lives.",
+      "start": 576.124,
+      "end": 577.634,
+      "audio_length_seconds": 1.51,
+      "embedding_audio_seconds": 1.51,
+      "audio_file": "audio\\sentence_0118.wav",
+      "word_count": 4
+    },
+    {
+      "index": 119,
+      "text": "And so I'm wondering, from what you're picking up, is it the speed of information that's overwhelming people?",
+      "start": 578.874,
+      "end": 585.444,
+      "audio_length_seconds": 6.57,
+      "embedding_audio_seconds": 6.57,
+      "audio_file": "audio\\sentence_0119.wav",
+      "word_count": 18
+    },
+    {
+      "index": 120,
+      "text": "Is the information just worse than ever?",
+      "start": 585.444,
+      "end": 588.554,
+      "audio_length_seconds": 3.11,
+      "embedding_audio_seconds": 2.83,
+      "audio_file": "audio\\sentence_0120.wav",
+      "word_count": 7
+    },
+    {
+      "index": 121,
+      "text": "What is it, from your perspective?",
+      "start": 588.644,
+      "end": 590.256,
+      "audio_length_seconds": 1.612,
+      "embedding_audio_seconds": 1.612,
+      "audio_file": "audio\\sentence_0121.wav",
+      "word_count": 6
+    },
+    {
+      "index": 122,
+      "text": "So I would I would see the point that we are living through this epistemological crisis right now and it is It's really really really dangerous.",
+      "start": 590.256,
+      "end": 600.516,
+      "audio_length_seconds": 10.26,
+      "embedding_audio_seconds": 10.26,
+      "audio_file": "audio\\sentence_0122.wav",
+      "word_count": 26
+    },
+    {
+      "index": 123,
+      "text": "And the thing that is so striking to me, not only when I jump in my truck and do road trips for reporting, but just with friends, family in Southeast Michigan, in my backyard, people who I grew up with, these are people who, to the point about sort of institutional decline, these are people who have reached the conclusion that no one is looking out for them.",
+      "start": 600.516,
+      "end": 621.766,
+      "audio_length_seconds": 21.25,
+      "embedding_audio_seconds": 21.25,
+      "audio_file": "audio\\sentence_0123.wav",
+      "word_count": 68
+    },
+    {
+      "index": 124,
+      "text": "These are people who have become sort of deeply cynical deeply calloused and I think in that space of real wounding There is an opportunity for them to be preyed upon and to be manipulated and to be demagogued and that is where certain Actors in American life have been very successful Donald Trump chief among them Actually, you understand Donald Trump better than almost anyone What that's an actual serious observation And we thank you for your service.",
+      "start": 621.766,
+      "end": 655.556,
+      "audio_length_seconds": 33.79,
+      "embedding_audio_seconds": 33.59,
+      "audio_file": "audio\\sentence_0124.wav",
+      "word_count": 79
+    },
+    {
+      "index": 125,
+      "text": "You understand Donald Trump, you spent a lot of time with Donald Trump.",
+      "start": 655.556,
+      "end": 659.806,
+      "audio_length_seconds": 4.25,
+      "embedding_audio_seconds": 4.25,
+      "audio_file": "audio\\sentence_0125.wav",
+      "word_count": 13
+    },
+    {
+      "index": 126,
+      "text": "What does he understand about the American people that so -called elites didn't understand?",
+      "start": 660.586,
+      "end": 666.896,
+      "audio_length_seconds": 6.31,
+      "embedding_audio_seconds": 6.04,
+      "audio_file": "audio\\sentence_0126.wav",
+      "word_count": 14
+    },
+    {
+      "index": 127,
+      "text": "Well, I think it's a couple of things.",
+      "start": 667.736,
+      "end": 669.376,
+      "audio_length_seconds": 1.64,
+      "embedding_audio_seconds": 1.12,
+      "audio_file": "audio\\sentence_0127.wav",
+      "word_count": 8
+    },
+    {
+      "index": 128,
+      "text": "I think it's what Tim said, this sense of grievance, first of all, that people feel like no one is looking out for them.",
+      "start": 669.376,
+      "end": 676.396,
+      "audio_length_seconds": 7.02,
+      "embedding_audio_seconds": 7.02,
+      "audio_file": "audio\\sentence_0128.wav",
+      "word_count": 24
+    },
+    {
+      "index": 129,
+      "text": "And he is going to take that grievance and channel it and sort of cast himself as the martyr on their behalf.",
+      "start": 676.396,
+      "end": 684.066,
+      "audio_length_seconds": 7.67,
+      "embedding_audio_seconds": 7.67,
+      "audio_file": "audio\\sentence_0129.wav",
+      "word_count": 22
+    },
+    {
+      "index": 130,
+      "text": "He also benefits, what he understands is that just in a lot of these things I say understands is at a true sort of gut visceral level, but that shamelessness is a superpower.",
+      "start": 684.866,
+      "end": 695.916,
+      "audio_length_seconds": 11.05,
+      "embedding_audio_seconds": 11.05,
+      "audio_file": "audio\\sentence_0130.wav",
+      "word_count": 33
+    },
+    {
+      "index": 131,
+      "text": "and it's much easier frankly to be shameless in a world where trust in information sources and in reality is so polarized to begin with.",
+      "start": 695.916,
+      "end": 706.808,
+      "audio_length_seconds": 10.892,
+      "embedding_audio_seconds": 10.892,
+      "audio_file": "audio\\sentence_0131.wav",
+      "word_count": 25
+    },
+    {
+      "index": 132,
+      "text": "We have always made choices about our information, right?",
+      "start": 706.808,
+      "end": 709.7,
+      "audio_length_seconds": 2.892,
+      "embedding_audio_seconds": 2.862,
+      "audio_file": "audio\\sentence_0132.wav",
+      "word_count": 9
+    },
+    {
+      "index": 133,
+      "text": "Subscribing to The Wall Street Journal or The Washington Post, that's a choice.",
+      "start": 709.7,
+      "end": 712.908,
+      "audio_length_seconds": 3.208,
+      "embedding_audio_seconds": 3.208,
+      "audio_file": "audio\\sentence_0133.wav",
+      "word_count": 13
+    },
+    {
+      "index": 134,
+      "text": "You're going to get slightly different news sources, watching Fox News or MSNOW.",
+      "start": 712.908,
+      "end": 716.658,
+      "audio_length_seconds": 3.75,
+      "embedding_audio_seconds": 3.75,
+      "audio_file": "audio\\sentence_0134.wav",
+      "word_count": 13
+    },
+    {
+      "index": 135,
+      "text": "slightly different choices.",
+      "start": 716.658,
+      "end": 718.288,
+      "audio_length_seconds": 1.63,
+      "embedding_audio_seconds": 1.63,
+      "audio_file": "audio\\sentence_0135.wav",
+      "word_count": 3
+    },
+    {
+      "index": 136,
+      "text": "But I think what we have not accounted for is that social media, you're not, at this point you're not even making a choice.",
+      "start": 718.288,
+      "end": 725.138,
+      "audio_length_seconds": 6.85,
+      "embedding_audio_seconds": 6.85,
+      "audio_file": "audio\\sentence_0136.wav",
+      "word_count": 24
+    },
+    {
+      "index": 137,
+      "text": "When you open your phone, based on an algorithm that recognizes that you spent two and a half seconds looking at something, the algorithm is feeding you something it wants you to believe, something it reinforces, something that you may not even consciously know that you believe.",
+      "start": 725.138,
+      "end": 741.208,
+      "audio_length_seconds": 16.07,
+      "embedding_audio_seconds": 16.07,
+      "audio_file": "audio\\sentence_0137.wav",
+      "word_count": 47
+    },
+    {
+      "index": 138,
+      "text": "And so if you get fed a bunch of videos that cats commit crimes at an alarming level, right, that influences your thinking.",
+      "start": 741.208,
+      "end": 749.868,
+      "audio_length_seconds": 8.66,
+      "embedding_audio_seconds": 8.66,
+      "audio_file": "audio\\sentence_0138.wav",
+      "word_count": 23
+    },
+    {
+      "index": 139,
+      "text": "He understands all of that.",
+      "start": 749.868,
+      "end": 751.184,
+      "audio_length_seconds": 1.316,
+      "embedding_audio_seconds": 1.316,
+      "audio_file": "audio\\sentence_0139.wav",
+      "word_count": 5
+    },
+    {
+      "index": 140,
+      "text": "And he also understands that, for a lot of Americans, for these reasons we stated just now, facts are fungible.",
+      "start": 751.184,
+      "end": 760.614,
+      "audio_length_seconds": 9.43,
+      "embedding_audio_seconds": 9.43,
+      "audio_file": "audio\\sentence_0140.wav",
+      "word_count": 20
+    },
+    {
+      "index": 141,
+      "text": "So, I mean, I think it's worth stepping back and saying he didn't like the results of the 2020 election because he lost.",
+      "start": 760.614,
+      "end": 767.358,
+      "audio_length_seconds": 6.744,
+      "embedding_audio_seconds": 6.744,
+      "audio_file": "audio\\sentence_0141.wav",
+      "word_count": 23
+    },
+    {
+      "index": 142,
+      "text": "It was a free and fair election.",
+      "start": 767.358,
+      "end": 770.048,
+      "audio_length_seconds": 2.69,
+      "embedding_audio_seconds": 2.69,
+      "audio_file": "audio\\sentence_0142.wav",
+      "word_count": 7
+    },
+    {
+      "index": 143,
+      "text": "But the idea that he just intuitively understood that if he just said I won this election it was stolen and he said it shamelessly enough and frequently enough that he could get a huge portion of the population to believe that in their bones.",
+      "start": 770.048,
+      "end": 786.538,
+      "audio_length_seconds": 16.49,
+      "embedding_audio_seconds": 16.49,
+      "audio_file": "audio\\sentence_0143.wav",
+      "word_count": 45
+    },
+    {
+      "index": 144,
+      "text": "I mean, that is real understanding of something.",
+      "start": 786.538,
+      "end": 789.488,
+      "audio_length_seconds": 2.95,
+      "embedding_audio_seconds": 2.95,
+      "audio_file": "audio\\sentence_0144.wav",
+      "word_count": 8
+    },
+    {
+      "index": 145,
+      "text": "Right.",
+      "start": 789.538,
+      "end": 789.808,
+      "audio_length_seconds": 0.27,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0145.wav",
+      "word_count": 1
+    },
+    {
+      "index": 146,
+      "text": "Idris, why are cats committing crime in such a long period of time?",
+      "start": 790.348,
+      "end": 793.778,
+      "audio_length_seconds": 3.43,
+      "embedding_audio_seconds": 3.43,
+      "audio_file": "audio\\sentence_0146.wav",
+      "word_count": 13
+    },
+    {
+      "index": 147,
+      "text": "I want you to answer the same question I asked Tim about what people are thinking and using, how they're using social media in places that are not Washington, New York, Los Angeles and so on.",
+      "start": 795.738,
+      "end": 810.028,
+      "audio_length_seconds": 14.29,
+      "embedding_audio_seconds": 14.26,
+      "audio_file": "audio\\sentence_0147.wav",
+      "word_count": 36
+    },
+    {
+      "index": 148,
+      "text": "You're from Kentucky.",
+      "start": 810.028,
+      "end": 811.018,
+      "audio_length_seconds": 0.99,
+      "embedding_audio_seconds": 0.98,
+      "audio_file": "audio\\sentence_0148.wav",
+      "word_count": 3
+    },
+    {
+      "index": 149,
+      "text": "Talk about that.",
+      "start": 811.208,
+      "end": 811.748,
+      "audio_length_seconds": 0.54,
+      "embedding_audio_seconds": 0.54,
+      "audio_file": "audio\\sentence_0149.wav",
+      "word_count": 3
+    },
+    {
+      "index": 150,
+      "text": "Yeah, I think there can be a kind of, you know, in Washington people are very interested in politics, and people who are interested in politics tend to be the ones who sort themselves into these rival camps with these rival epistemologies, and they lob, you know, grenades at each other through vodkas and whatever else.",
+      "start": 811.748,
+      "end": 828.258,
+      "audio_length_seconds": 16.51,
+      "embedding_audio_seconds": 16.51,
+      "audio_file": "audio\\sentence_0150.wav",
+      "word_count": 56
+    },
+    {
+      "index": 151,
+      "text": "They're kind of fighting over a kind of mass of people who are, you know, not trusting of politicians, disinterested in politics.",
+      "start": 828.258,
+      "end": 837.398,
+      "audio_length_seconds": 9.14,
+      "embedding_audio_seconds": 8.97,
+      "audio_file": "audio\\sentence_0151.wav",
+      "word_count": 22
+    },
+    {
+      "index": 152,
+      "text": "If you look at their voting behavior, they're not terribly consistent from one year to another.",
+      "start": 837.398,
+      "end": 842.01,
+      "audio_length_seconds": 4.612,
+      "embedding_audio_seconds": 4.612,
+      "audio_file": "audio\\sentence_0152.wav",
+      "word_count": 16
+    },
+    {
+      "index": 153,
+      "text": "You know, from 2012 up until 2024, probably 2028, Americans have voted for a different presidential party every year.",
+      "start": 842.01,
+      "end": 849.65,
+      "audio_length_seconds": 7.64,
+      "embedding_audio_seconds": 7.64,
+      "audio_file": "audio\\sentence_0153.wav",
+      "word_count": 19
+    },
+    {
+      "index": 154,
+      "text": "For the midterm elections, they always cycle in and out.",
+      "start": 849.65,
+      "end": 851.5,
+      "audio_length_seconds": 1.85,
+      "embedding_audio_seconds": 1.84,
+      "audio_file": "audio\\sentence_0154.wav",
+      "word_count": 10
+    },
+    {
+      "index": 155,
+      "text": "And that's been a good model for how people are.",
+      "start": 851.5,
+      "end": 854.724,
+      "audio_length_seconds": 3.224,
+      "embedding_audio_seconds": 3.224,
+      "audio_file": "audio\\sentence_0155.wav",
+      "word_count": 10
+    },
+    {
+      "index": 156,
+      "text": "So in terms of what we're talking about, it's true and it's important.",
+      "start": 854.724,
+      "end": 858.134,
+      "audio_length_seconds": 3.41,
+      "embedding_audio_seconds": 3.41,
+      "audio_file": "audio\\sentence_0156.wav",
+      "word_count": 13
+    },
+    {
+      "index": 157,
+      "text": "But it's also important to see that that's a description of elite behavior and people who are interested in politics.",
+      "start": 858.134,
+      "end": 866.724,
+      "audio_length_seconds": 8.59,
+      "embedding_audio_seconds": 8.59,
+      "audio_file": "audio\\sentence_0157.wav",
+      "word_count": 20
+    },
+    {
+      "index": 158,
+      "text": "And that's important because elites, I think, matter for voting patterns.",
+      "start": 868.324,
+      "end": 872.234,
+      "audio_length_seconds": 3.91,
+      "embedding_audio_seconds": 3.31,
+      "audio_file": "audio\\sentence_0158.wav",
+      "word_count": 11
+    },
+    {
+      "index": 159,
+      "text": "They matter for all the things that we're talking about, respect for losers' consent, elections, et cetera.",
+      "start": 872.234,
+      "end": 879.924,
+      "audio_length_seconds": 7.69,
+      "embedding_audio_seconds": 7.69,
+      "audio_file": "audio\\sentence_0159.wav",
+      "word_count": 17
+    },
+    {
+      "index": 160,
+      "text": "All of that matters.",
+      "start": 879.924,
+      "end": 881.024,
+      "audio_length_seconds": 1.1,
+      "embedding_audio_seconds": 1.1,
+      "audio_file": "audio\\sentence_0160.wav",
+      "word_count": 4
+    },
+    {
+      "index": 161,
+      "text": "But I think that if you go outside of Washington or New York, a lot of people are getting on with their lives.",
+      "start": 881.024,
+      "end": 888.154,
+      "audio_length_seconds": 7.13,
+      "embedding_audio_seconds": 7.13,
+      "audio_file": "audio\\sentence_0161.wav",
+      "word_count": 23
+    },
+    {
+      "index": 162,
+      "text": "And a lot of people just enjoy having a nice life.",
+      "start": 888.344,
+      "end": 891.304,
+      "audio_length_seconds": 2.96,
+      "embedding_audio_seconds": 2.95,
+      "audio_file": "audio\\sentence_0162.wav",
+      "word_count": 11
+    },
+    {
+      "index": 163,
+      "text": "That does still happen here, which is sometimes harder to see for all that we're debating.",
+      "start": 891.304,
+      "end": 896.614,
+      "audio_length_seconds": 5.31,
+      "embedding_audio_seconds": 5.31,
+      "audio_file": "audio\\sentence_0163.wav",
+      "word_count": 16
+    },
+    {
+      "index": 164,
+      "text": "So it's not to say that what we're saying is not right.",
+      "start": 896.614,
+      "end": 900.03,
+      "audio_length_seconds": 3.416,
+      "embedding_audio_seconds": 3.416,
+      "audio_file": "audio\\sentence_0164.wav",
+      "word_count": 12
+    },
+    {
+      "index": 165,
+      "text": "It is right, but it's also, it's also, there's also a lot else that's going on.",
+      "start": 900.03,
+      "end": 903.742,
+      "audio_length_seconds": 3.712,
+      "embedding_audio_seconds": 3.712,
+      "audio_file": "audio\\sentence_0165.wav",
+      "word_count": 16
+    },
+    {
+      "index": 166,
+      "text": "But I would just add to that quickly, you know, I think we're separating ourselves in other ways.",
+      "start": 903.742,
+      "end": 908.194,
+      "audio_length_seconds": 4.452,
+      "embedding_audio_seconds": 4.452,
+      "audio_file": "audio\\sentence_0166.wav",
+      "word_count": 18
+    },
+    {
+      "index": 167,
+      "text": "It is the case that that's largely an elite phenomenon.",
+      "start": 908.194,
+      "end": 910.698,
+      "audio_length_seconds": 2.504,
+      "embedding_audio_seconds": 2.504,
+      "audio_file": "audio\\sentence_0167.wav",
+      "word_count": 10
+    },
+    {
+      "index": 168,
+      "text": "And you have conversations with partisans in Washington, D.C. that, like, literally don't even make sense to real people in the real world.",
+      "start": 910.698,
+      "end": 917.638,
+      "audio_length_seconds": 6.94,
+      "embedding_audio_seconds": 6.94,
+      "audio_file": "audio\\sentence_0168.wav",
+      "word_count": 24
+    },
+    {
+      "index": 169,
+      "text": "But we're also dividing ourselves, I think, into in another way.",
+      "start": 917.638,
+      "end": 921.308,
+      "audio_length_seconds": 3.67,
+      "embedding_audio_seconds": 3.67,
+      "audio_file": "audio\\sentence_0169.wav",
+      "word_count": 11
+    },
+    {
+      "index": 170,
+      "text": "You have this sort of massive middle of the country that is increasingly So turned off by our politics that they're checking out.",
+      "start": 921.308,
+      "end": 930.94,
+      "audio_length_seconds": 9.632,
+      "embedding_audio_seconds": 9.632,
+      "audio_file": "audio\\sentence_0170.wav",
+      "word_count": 23
+    },
+    {
+      "index": 171,
+      "text": "These are people who are news avoiders, these are people who maybe at one point paid attention and sort of out of civic obligation and are just saying I'm helpless to do anything here so I'm not going to do it.",
+      "start": 930.94,
+      "end": 942.01,
+      "audio_length_seconds": 11.07,
+      "embedding_audio_seconds": 11.07,
+      "audio_file": "audio\\sentence_0171.wav",
+      "word_count": 41
+    },
+    {
+      "index": 172,
+      "text": "And then I think that the corollary to that is that the partisanship you see in Washington, we've seen this for a long time in Washington, sort of bleeds out into the rest of the country where people are now increasingly building their identities around their partisan associations.",
+      "start": 942.01,
+      "end": 958.64,
+      "audio_length_seconds": 16.63,
+      "embedding_audio_seconds": 16.63,
+      "audio_file": "audio\\sentence_0172.wav",
+      "word_count": 48
+    },
+    {
+      "index": 173,
+      "text": "And that is, I think, growing at the same time that you have this group that is either apathetic or feels like they can't make a difference.",
+      "start": 958.64,
+      "end": 965.81,
+      "audio_length_seconds": 7.17,
+      "embedding_audio_seconds": 7.17,
+      "audio_file": "audio\\sentence_0173.wav",
+      "word_count": 27
+    },
+    {
+      "index": 174,
+      "text": "Peter, small question for you.",
+      "start": 966.69,
+      "end": 969.06,
+      "audio_length_seconds": 2.37,
+      "embedding_audio_seconds": 2.03,
+      "audio_file": "audio\\sentence_0174.wav",
+      "word_count": 5
+    },
+    {
+      "index": 175,
+      "text": "Is the post -World War II international liberal order created and maintained by the United States over?",
+      "start": 969.75,
+      "end": 976.4,
+      "audio_length_seconds": 6.65,
+      "embedding_audio_seconds": 6.65,
+      "audio_file": "audio\\sentence_0175.wav",
+      "word_count": 17
+    },
+    {
+      "index": 176,
+      "text": "Yes.",
+      "start": 977.57,
+      "end": 978.28,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.52,
+      "audio_file": "audio\\sentence_0176.wav",
+      "word_count": 1
+    },
+    {
+      "index": 177,
+      "text": "Okay, thanks.",
+      "start": 978.28,
+      "end": 979.76,
+      "audio_length_seconds": 1.48,
+      "embedding_audio_seconds": 1.2,
+      "audio_file": "audio\\sentence_0177.wav",
+      "word_count": 2
+    },
+    {
+      "index": 178,
+      "text": "That doesn't mean that the United States isn't still the most dominant actor on the stage.",
+      "start": 979.76,
+      "end": 985.4,
+      "audio_length_seconds": 5.64,
+      "embedding_audio_seconds": 5.64,
+      "audio_file": "audio\\sentence_0178.wav",
+      "word_count": 16
+    },
+    {
+      "index": 179,
+      "text": "It is, obviously.",
+      "start": 985.4,
+      "end": 986.53,
+      "audio_length_seconds": 1.13,
+      "embedding_audio_seconds": 1.13,
+      "audio_file": "audio\\sentence_0179.wav",
+      "word_count": 3
+    },
+    {
+      "index": 180,
+      "text": "But certainly, our understanding of what we thought the world order was for the last 80 years is over.",
+      "start": 986.53,
+      "end": 993.42,
+      "audio_length_seconds": 6.89,
+      "embedding_audio_seconds": 6.89,
+      "audio_file": "audio\\sentence_0180.wav",
+      "word_count": 19
+    },
+    {
+      "index": 181,
+      "text": "It just is.",
+      "start": 993.42,
+      "end": 994.488,
+      "audio_length_seconds": 1.068,
+      "embedding_audio_seconds": 1.068,
+      "audio_file": "audio\\sentence_0181.wav",
+      "word_count": 3
+    },
+    {
+      "index": 182,
+      "text": "Now, it doesn't mean it can't change again with another president.",
+      "start": 994.488,
+      "end": 996.996,
+      "audio_length_seconds": 2.508,
+      "embedding_audio_seconds": 2.508,
+      "audio_file": "audio\\sentence_0182.wav",
+      "word_count": 11
+    },
+    {
+      "index": 183,
+      "text": "But this president has made very clear that he does not see it as America's role to be friends with Europe, the way every president, Republican or Democrat, since World War II did.",
+      "start": 996.996,
+      "end": 1007.032,
+      "audio_length_seconds": 10.036,
+      "embedding_audio_seconds": 10.036,
+      "audio_file": "audio\\sentence_0183.wav",
+      "word_count": 33
+    },
+    {
+      "index": 184,
+      "text": "He does not come at it with this coherent ideology, other than, you know, in the first term, we used the word isolationist a lot.",
+      "start": 1007.032,
+      "end": 1014.392,
+      "audio_length_seconds": 7.36,
+      "embedding_audio_seconds": 7.36,
+      "audio_file": "audio\\sentence_0184.wav",
+      "word_count": 25
+    },
+    {
+      "index": 185,
+      "text": "today, we would not use that word.",
+      "start": 1014.392,
+      "end": 1016.16,
+      "audio_length_seconds": 1.768,
+      "embedding_audio_seconds": 1.768,
+      "audio_file": "audio\\sentence_0185.wav",
+      "word_count": 7
+    },
+    {
+      "index": 186,
+      "text": "we would use maybe imperialist.",
+      "start": 1016.16,
+      "end": 1017.448,
+      "audio_length_seconds": 1.288,
+      "embedding_audio_seconds": 1.288,
+      "audio_file": "audio\\sentence_0186.wav",
+      "word_count": 5
+    },
+    {
+      "index": 187,
+      "text": "I mean, he's kind of, himself, evolved over time as he's become more comfortable with power.",
+      "start": 1017.448,
+      "end": 1022.238,
+      "audio_length_seconds": 4.79,
+      "embedding_audio_seconds": 4.79,
+      "audio_file": "audio\\sentence_0187.wav",
+      "word_count": 16
+    },
+    {
+      "index": 188,
+      "text": "What strikes me is, how do people see us today?",
+      "start": 1022.238,
+      "end": 1026.228,
+      "audio_length_seconds": 3.99,
+      "embedding_audio_seconds": 3.9,
+      "audio_file": "audio\\sentence_0188.wav",
+      "word_count": 10
+    },
+    {
+      "index": 189,
+      "text": "Do they see us as, you know, a country that's led by Trump and we may or may not agree with Trump, or do they see America as being what Trump says we are?",
+      "start": 1026.228,
+      "end": 1034.498,
+      "audio_length_seconds": 8.27,
+      "embedding_audio_seconds": 7.91,
+      "audio_file": "audio\\sentence_0189.wav",
+      "word_count": 34
+    },
+    {
+      "index": 190,
+      "text": "And I think that when we have, at times, been alienated from our friends in Europe over the Iraq war or over, you know, Pershing missiles during the Cold War or whatever, people didn't lose faith in America.",
+      "start": 1034.498,
+      "end": 1046.728,
+      "audio_length_seconds": 12.23,
+      "embedding_audio_seconds": 11.99,
+      "audio_file": "audio\\sentence_0190.wav",
+      "word_count": 38
+    },
+    {
+      "index": 191,
+      "text": "They might have disagreed with America's leader at the time.",
+      "start": 1046.728,
+      "end": 1049.078,
+      "audio_length_seconds": 2.35,
+      "embedding_audio_seconds": 2.33,
+      "audio_file": "audio\\sentence_0191.wav",
+      "word_count": 10
+    },
+    {
+      "index": 192,
+      "text": "And the difference today, I wonder, and I'm not smart enough to know, is whether we are changing the way we present ourselves to the world and how they see us.",
+      "start": 1049.078,
+      "end": 1060.108,
+      "audio_length_seconds": 11.03,
+      "embedding_audio_seconds": 11.03,
+      "audio_file": "audio\\sentence_0192.wav",
+      "word_count": 31
+    },
+    {
+      "index": 193,
+      "text": "You know, it's interesting, whenever we do something morally dubious in the world, let's use the abandonment of Afghan allies as an example.",
+      "start": 1060.108,
+      "end": 1070.038,
+      "audio_length_seconds": 9.93,
+      "embedding_audio_seconds": 9.76,
+      "audio_file": "audio\\sentence_0193.wav",
+      "word_count": 23
+    },
+    {
+      "index": 194,
+      "text": "people, you hear people say, well, that's not who we are.",
+      "start": 1070.038,
+      "end": 1072.89,
+      "audio_length_seconds": 2.852,
+      "embedding_audio_seconds": 2.852,
+      "audio_file": "audio\\sentence_0194.wav",
+      "word_count": 11
+    },
+    {
+      "index": 195,
+      "text": "The critics will say, that's not who we are.",
+      "start": 1072.89,
+      "end": 1074.84,
+      "audio_length_seconds": 1.95,
+      "embedding_audio_seconds": 1.95,
+      "audio_file": "audio\\sentence_0195.wav",
+      "word_count": 9
+    },
+    {
+      "index": 196,
+      "text": "But if you asked Kurds, or Iranian dissidents right now, or a thousand – and this is the question.",
+      "start": 1075.14,
+      "end": 1083.192,
+      "audio_length_seconds": 8.052,
+      "embedding_audio_seconds": 7.862,
+      "audio_file": "audio\\sentence_0196.wav",
+      "word_count": 19
+    },
+    {
+      "index": 197,
+      "text": "I mean, I'll put it open to the panel.",
+      "start": 1083.192,
+      "end": 1085.042,
+      "audio_length_seconds": 1.85,
+      "embedding_audio_seconds": 1.84,
+      "audio_file": "audio\\sentence_0197.wav",
+      "word_count": 9
+    },
+    {
+      "index": 198,
+      "text": "I mean, is the nature of America right now transactionalist in the style of Donald Trump?",
+      "start": 1085.042,
+      "end": 1091.83,
+      "audio_length_seconds": 6.788,
+      "embedding_audio_seconds": 6.788,
+      "audio_file": "audio\\sentence_0198.wav",
+      "word_count": 16
+    },
+    {
+      "index": 199,
+      "text": "Or is that aberrational?",
+      "start": 1091.83,
+      "end": 1093.094,
+      "audio_length_seconds": 1.264,
+      "embedding_audio_seconds": 1.264,
+      "audio_file": "audio\\sentence_0199.wav",
+      "word_count": 4
+    },
+    {
+      "index": 200,
+      "text": "and are actually, is there idealism left at 250?",
+      "start": 1093.094,
+      "end": 1097.504,
+      "audio_length_seconds": 4.41,
+      "embedding_audio_seconds": 4.41,
+      "audio_file": "audio\\sentence_0200.wav",
+      "word_count": 9
+    },
+    {
+      "index": 201,
+      "text": "Well, I mean, I think the important point is that we are the most erratic and unstable force in the globe because of our disproportionate both economic and military power.",
+      "start": 1097.504,
+      "end": 1110.354,
+      "audio_length_seconds": 12.85,
+      "embedding_audio_seconds": 12.85,
+      "audio_file": "audio\\sentence_0201.wav",
+      "word_count": 30
+    },
+    {
+      "index": 202,
+      "text": "I think we tend to be pretty myopic here.",
+      "start": 1110.354,
+      "end": 1113.384,
+      "audio_length_seconds": 3.03,
+      "embedding_audio_seconds": 3.02,
+      "audio_file": "audio\\sentence_0202.wav",
+      "word_count": 9
+    },
+    {
+      "index": 203,
+      "text": "You know, we're a big inward looking country buffeted by two oceans.",
+      "start": 1113.384,
+      "end": 1116.574,
+      "audio_length_seconds": 3.19,
+      "embedding_audio_seconds": 3.19,
+      "audio_file": "audio\\sentence_0203.wav",
+      "word_count": 12
+    },
+    {
+      "index": 204,
+      "text": "That's been our great strength historically, not just in foreign policy, but in terms of our own ability to, you know, solve problems without reference to the outside world.",
+      "start": 1116.574,
+      "end": 1126.664,
+      "audio_length_seconds": 10.09,
+      "embedding_audio_seconds": 10.09,
+      "audio_file": "audio\\sentence_0204.wav",
+      "word_count": 29
+    },
+    {
+      "index": 205,
+      "text": "Right now, what's happening is the entire world is dependent upon a kind of uncertainty and a kind of superpower crisis of conscience that they don't get a vote in.",
+      "start": 1126.664,
+      "end": 1138.254,
+      "audio_length_seconds": 11.59,
+      "embedding_audio_seconds": 11.56,
+      "audio_file": "audio\\sentence_0205.wav",
+      "word_count": 30
+    },
+    {
+      "index": 206,
+      "text": "Can I just add briefly, I think after Trump's first term, when then Biden won, there was a sense from our allies around the world that Trump won was sort of like a fever dream, that they could PTSD blackout, right?",
+      "start": 1138.254,
+      "end": 1152.284,
+      "audio_length_seconds": 14.03,
+      "embedding_audio_seconds": 13.66,
+      "audio_file": "audio\\sentence_0206.wav",
+      "word_count": 41
+    },
+    {
+      "index": 207,
+      "text": "And we could go back to being the flawed, complicated, but, like, America that they had known for almost 250 years.",
+      "start": 1152.284,
+      "end": 1159.134,
+      "audio_length_seconds": 6.85,
+      "embedding_audio_seconds": 6.85,
+      "audio_file": "audio\\sentence_0207.wav",
+      "word_count": 21
+    },
+    {
+      "index": 208,
+      "text": "And Biden reinforced that, right?",
+      "start": 1159.134,
+      "end": 1161.604,
+      "audio_length_seconds": 2.47,
+      "embedding_audio_seconds": 2.47,
+      "audio_file": "audio\\sentence_0208.wav",
+      "word_count": 5
+    },
+    {
+      "index": 209,
+      "text": "And once Trump won again, I don't think that our country or our allies know what comes next.",
+      "start": 1161.604,
+      "end": 1168.488,
+      "audio_length_seconds": 6.884,
+      "embedding_audio_seconds": 6.864,
+      "audio_file": "audio\\sentence_0209.wav",
+      "word_count": 18
+    },
+    {
+      "index": 210,
+      "text": "But there is a very clear sense that this was not an aberration.",
+      "start": 1168.488,
+      "end": 1173.308,
+      "audio_length_seconds": 4.82,
+      "embedding_audio_seconds": 4.82,
+      "audio_file": "audio\\sentence_0210.wav",
+      "word_count": 13
+    },
+    {
+      "index": 211,
+      "text": "And perhaps that vitamin to regnum was the aberration.",
+      "start": 1173.308,
+      "end": 1176.34,
+      "audio_length_seconds": 3.032,
+      "embedding_audio_seconds": 3.032,
+      "audio_file": "audio\\sentence_0211.wav",
+      "word_count": 9
+    },
+    {
+      "index": 212,
+      "text": "And we have to prepare for where we don't know if the next leader is going to be a J.D. Vance or someone more far right or skewing to the socialist extreme of the Democratic Party.",
+      "start": 1176.34,
+      "end": 1185.12,
+      "audio_length_seconds": 8.78,
+      "embedding_audio_seconds": 8.78,
+      "audio_file": "audio\\sentence_0212.wav",
+      "word_count": 37
+    },
+    {
+      "index": 213,
+      "text": "But it's just all uncertain.",
+      "start": 1185.12,
+      "end": 1186.83,
+      "audio_length_seconds": 1.71,
+      "embedding_audio_seconds": 1.71,
+      "audio_file": "audio\\sentence_0213.wav",
+      "word_count": 5
+    },
+    {
+      "index": 214,
+      "text": "Well, and I would add to that, I think, that we are dealing with sort of a horseshoe populist phenomenon here.",
+      "start": 1186.83,
+      "end": 1195.1,
+      "audio_length_seconds": 8.27,
+      "embedding_audio_seconds": 8.27,
+      "audio_file": "audio\\sentence_0214.wav",
+      "word_count": 21
+    },
+    {
+      "index": 215,
+      "text": "You go back to 2016, and we of course focus so much on Donald Trump.",
+      "start": 1195.1,
+      "end": 1200.15,
+      "audio_length_seconds": 5.05,
+      "embedding_audio_seconds": 4.89,
+      "audio_file": "audio\\sentence_0215.wav",
+      "word_count": 15
+    },
+    {
+      "index": 216,
+      "text": "But you also think about Bernie Sanders in that 2016 election and the fact that the two candidates who did the most to energize young voters in this country in their respective party bases had one thing in common, which is that neither of them had ever belonged to those parties, right?",
+      "start": 1200.15,
+      "end": 1214.78,
+      "audio_length_seconds": 14.63,
+      "embedding_audio_seconds": 14.23,
+      "audio_file": "audio\\sentence_0216.wav",
+      "word_count": 52
+    },
+    {
+      "index": 217,
+      "text": "Both Donald Trump and Bernie Sanders were sort of introducing this idea that actually the problems here at home are far worse than that have been described to you by the governing class and by these institutions that you've lost trust in and we need to commence a massive rethink of our priorities geopolitically and economically and otherwise and I think that's ten years ago.",
+      "start": 1214.78,
+      "end": 1240.07,
+      "audio_length_seconds": 25.29,
+      "embedding_audio_seconds": 25.29,
+      "audio_file": "audio\\sentence_0217.wav",
+      "word_count": 65
+    },
+    {
+      "index": 218,
+      "text": "We're ten years removed from that.",
+      "start": 1240.2,
+      "end": 1241.59,
+      "audio_length_seconds": 1.39,
+      "embedding_audio_seconds": 1.39,
+      "audio_file": "audio\\sentence_0218.wav",
+      "word_count": 6
+    },
+    {
+      "index": 219,
+      "text": "The fascinating thing for me is when I talk with young people, go around the country, speak on college campuses, far left to far right, everywhere in between, the one great sort of generational point of unity is that these are folks who are quite comfortable with the transactional foreign policy.",
+      "start": 1241.59,
+      "end": 1259.88,
+      "audio_length_seconds": 18.29,
+      "embedding_audio_seconds": 17.82,
+      "audio_file": "audio\\sentence_0219.wav",
+      "word_count": 51
+    },
+    {
+      "index": 220,
+      "text": "These young people believe that we have been sort of cheated by previous generations that have paid too much attention to what's going on overseas.",
+      "start": 1259.88,
+      "end": 1268.45,
+      "audio_length_seconds": 8.57,
+      "embedding_audio_seconds": 8.57,
+      "audio_file": "audio\\sentence_0220.wav",
+      "word_count": 25
+    },
+    {
+      "index": 221,
+      "text": "And I think that the question you're posing, Jeff, we don't quite know the answer in this moment, but my suspicion is that 10, 15, 20 years into the future, when these young people, whose entire political consciousness has been shaped by these past 10 years of the Sanders -Trump phenomenon, this sort of horseshoe populism, my sense is that they're going to render a verdict on this that we're not going to like.",
+      "start": 1268.45,
+      "end": 1292.26,
+      "audio_length_seconds": 23.81,
+      "embedding_audio_seconds": 23.5,
+      "audio_file": "audio\\sentence_0221.wav",
+      "word_count": 74
+    },
+    {
+      "index": 222,
+      "text": "I just am reminded Kurt Vonnegut once wrote, you are who you pretend to be, So be careful who you pretend to be.",
+      "start": 1293.11,
+      "end": 1298.72,
+      "audio_length_seconds": 5.61,
+      "embedding_audio_seconds": 5.61,
+      "audio_file": "audio\\sentence_0222.wav",
+      "word_count": 23
+    },
+    {
+      "index": 223,
+      "text": "And I think that matters because America, as you pointed out, has made lots of mistakes over its period.",
+      "start": 1298.72,
+      "end": 1303.77,
+      "audio_length_seconds": 5.05,
+      "embedding_audio_seconds": 5.05,
+      "audio_file": "audio\\sentence_0223.wav",
+      "word_count": 19
+    },
+    {
+      "index": 224,
+      "text": "But the fact that it pretended to care about democracy, and sometimes did, I think mattered a lot.",
+      "start": 1303.77,
+      "end": 1309.52,
+      "audio_length_seconds": 5.75,
+      "embedding_audio_seconds": 5.71,
+      "audio_file": "audio\\sentence_0224.wav",
+      "word_count": 18
+    },
+    {
+      "index": 225,
+      "text": "The argument that China and Russia have made to the rest of the world is America's just as nakedly self -interested as everyone else It's wrong to trust them.",
+      "start": 1309.52,
+      "end": 1316.336,
+      "audio_length_seconds": 6.816,
+      "embedding_audio_seconds": 6.816,
+      "audio_file": "audio\\sentence_0225.wav",
+      "word_count": 29
+    },
+    {
+      "index": 226,
+      "text": "wrong to think of them as the kind of rightful hegemon.",
+      "start": 1316.336,
+      "end": 1320.406,
+      "audio_length_seconds": 4.07,
+      "embedding_audio_seconds": 4.07,
+      "audio_file": "audio\\sentence_0226.wav",
+      "word_count": 11
+    },
+    {
+      "index": 227,
+      "text": "And the fact that we have abandoned that, what's different is that we're not even saying that we care about those things.",
+      "start": 1320.406,
+      "end": 1324.662,
+      "audio_length_seconds": 4.256,
+      "embedding_audio_seconds": 4.066,
+      "audio_file": "audio\\sentence_0227.wav",
+      "word_count": 22
+    },
+    {
+      "index": 228,
+      "text": "And I think that that itself matters.",
+      "start": 1324.662,
+      "end": 1326.412,
+      "audio_length_seconds": 1.75,
+      "embedding_audio_seconds": 1.75,
+      "audio_file": "audio\\sentence_0228.wav",
+      "word_count": 7
+    },
+    {
+      "index": 229,
+      "text": "Right.",
+      "start": 1326.562,
+      "end": 1326.832,
+      "audio_length_seconds": 0.27,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0229.wav",
+      "word_count": 1
+    },
+    {
+      "index": 230,
+      "text": "I want to ask you all, we're going to run out of time soon, but I want to ask you all to go back in time and imagine that you could speak to the founders of the United States 250 years ago and give them a warning about something.",
+      "start": 1326.832,
+      "end": 1342.922,
+      "audio_length_seconds": 16.09,
+      "embedding_audio_seconds": 16.03,
+      "audio_file": "audio\\sentence_0230.wav",
+      "word_count": 49
+    },
+    {
+      "index": 231,
+      "text": "A warning in the way the Constitution is written, a warning in the way the government is constructed, a warning about a problem that they could not foresee.",
+      "start": 1342.922,
+      "end": 1351.772,
+      "audio_length_seconds": 8.85,
+      "embedding_audio_seconds": 8.74,
+      "audio_file": "audio\\sentence_0231.wav",
+      "word_count": 28
+    },
+    {
+      "index": 232,
+      "text": "What would it be hmm Steve?",
+      "start": 1351.772,
+      "end": 1353.932,
+      "audio_length_seconds": 2.16,
+      "embedding_audio_seconds": 1.91,
+      "audio_file": "audio\\sentence_0232.wav",
+      "word_count": 6
+    },
+    {
+      "index": 233,
+      "text": "Sorry, you're out of the hot seat.",
+      "start": 1353.932,
+      "end": 1355.304,
+      "audio_length_seconds": 1.372,
+      "embedding_audio_seconds": 1.372,
+      "audio_file": "audio\\sentence_0233.wav",
+      "word_count": 7
+    },
+    {
+      "index": 234,
+      "text": "No, no, I mean, I'm thinking very quickly.",
+      "start": 1355.304,
+      "end": 1357.694,
+      "audio_length_seconds": 2.39,
+      "embedding_audio_seconds": 2.39,
+      "audio_file": "audio\\sentence_0234.wav",
+      "word_count": 8
+    },
+    {
+      "index": 235,
+      "text": "This will sound maybe silly.",
+      "start": 1359.034,
+      "end": 1361.504,
+      "audio_length_seconds": 2.47,
+      "embedding_audio_seconds": 2.38,
+      "audio_file": "audio\\sentence_0235.wav",
+      "word_count": 5
+    },
+    {
+      "index": 236,
+      "text": "I don't know that I have a warning.",
+      "start": 1361.594,
+      "end": 1363.138,
+      "audio_length_seconds": 1.544,
+      "embedding_audio_seconds": 1.544,
+      "audio_file": "audio\\sentence_0236.wav",
+      "word_count": 8
+    },
+    {
+      "index": 237,
+      "text": "I mean, I think if you go back and you look at what they did in the Federalist Papers and what they anticipated about faction, about the potential of a demagogue, I think they saw a lot of this.",
+      "start": 1363.138,
+      "end": 1372.726,
+      "audio_length_seconds": 9.588,
+      "embedding_audio_seconds": 9.588,
+      "audio_file": "audio\\sentence_0237.wav",
+      "word_count": 39
+    },
+    {
+      "index": 238,
+      "text": "I mean, obviously, there's so much they couldn't have anticipated.",
+      "start": 1372.726,
+      "end": 1374.696,
+      "audio_length_seconds": 1.97,
+      "embedding_audio_seconds": 1.97,
+      "audio_file": "audio\\sentence_0238.wav",
+      "word_count": 10
+    },
+    {
+      "index": 239,
+      "text": "I think they anticipated a lot of this.",
+      "start": 1374.906,
+      "end": 1376.876,
+      "audio_length_seconds": 1.97,
+      "embedding_audio_seconds": 1.97,
+      "audio_file": "audio\\sentence_0239.wav",
+      "word_count": 8
+    },
+    {
+      "index": 240,
+      "text": "Let's whip through it, because we only have a couple of seconds, but Idriss?",
+      "start": 1376.876,
+      "end": 1379.844,
+      "audio_length_seconds": 2.968,
+      "embedding_audio_seconds": 2.858,
+      "audio_file": "audio\\sentence_0240.wav",
+      "word_count": 14
+    },
+    {
+      "index": 241,
+      "text": "You know, they wrote slavery into the Constitution three times and that sowed the seeds for the almost destruction of the Republic You know, there's right compromise, but right that's what that's pretty big one.",
+      "start": 1379.844,
+      "end": 1389.76,
+      "audio_length_seconds": 9.916,
+      "embedding_audio_seconds": 9.916,
+      "audio_file": "audio\\sentence_0241.wav",
+      "word_count": 35
+    },
+    {
+      "index": 242,
+      "text": "That's pretty good.",
+      "start": 1389.76,
+      "end": 1390.33,
+      "audio_length_seconds": 0.57,
+      "embedding_audio_seconds": 0.57,
+      "audio_file": "audio\\sentence_0242.wav",
+      "word_count": 3
+    },
+    {
+      "index": 243,
+      "text": "You're right, you're right, Ashley.",
+      "start": 1390.36,
+      "end": 1391.43,
+      "audio_length_seconds": 1.07,
+      "embedding_audio_seconds": 1.07,
+      "audio_file": "audio\\sentence_0243.wav",
+      "word_count": 5
+    },
+    {
+      "index": 244,
+      "text": "I guess I would just ask them to address what happens when you, and again they recognize some of this, but when people disregard norms and niceties and what about one of the branches of government doesn't want to be a check on another and they just abdicate that.",
+      "start": 1391.43,
+      "end": 1406.374,
+      "audio_length_seconds": 14.944,
+      "embedding_audio_seconds": 14.944,
+      "audio_file": "audio\\sentence_0244.wav",
+      "word_count": 49
+    },
+    {
+      "index": 245,
+      "text": "What then?",
+      "start": 1406.374,
+      "end": 1406.94,
+      "audio_length_seconds": 0.566,
+      "embedding_audio_seconds": 0.566,
+      "audio_file": "audio\\sentence_0245.wav",
+      "word_count": 2
+    },
+    {
+      "index": 246,
+      "text": "Right.",
+      "start": 1407.07,
+      "end": 1407.38,
+      "audio_length_seconds": 0.31,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0246.wav",
+      "word_count": 1
+    },
+    {
+      "index": 247,
+      "text": "Yeah, I mean, look, we are seeing the case study right now.",
+      "start": 1407.38,
+      "end": 1410.308,
+      "audio_length_seconds": 2.928,
+      "embedding_audio_seconds": 2.688,
+      "audio_file": "audio\\sentence_0247.wav",
+      "word_count": 12
+    },
+    {
+      "index": 248,
+      "text": "They may have anticipated and worried about a demagogue or a man who wanted to be king, but they gave us an impeachment process that doesn't work in an age of extreme partisanship.",
+      "start": 1410.308,
+      "end": 1420.838,
+      "audio_length_seconds": 10.53,
+      "embedding_audio_seconds": 10.53,
+      "audio_file": "audio\\sentence_0248.wav",
+      "word_count": 33
+    },
+    {
+      "index": 249,
+      "text": "How would you redesign that impeachment process in 10 seconds?",
+      "start": 1420.838,
+      "end": 1423.488,
+      "audio_length_seconds": 2.65,
+      "embedding_audio_seconds": 2.38,
+      "audio_file": "audio\\sentence_0249.wav",
+      "word_count": 10
+    },
+    {
+      "index": 250,
+      "text": "Well, I think we better acknowledge that Congress is not governed by its institutional interests as much as its party interests.",
+      "start": 1424.988,
+      "end": 1431.738,
+      "audio_length_seconds": 6.75,
+      "embedding_audio_seconds": 6.75,
+      "audio_file": "audio\\sentence_0250.wav",
+      "word_count": 21
+    },
+    {
+      "index": 251,
+      "text": "The question is, is it the bravery of the people who are actually elected to represent us, or are there systems, structures that could be fixed?",
+      "start": 1431.738,
+      "end": 1440.668,
+      "audio_length_seconds": 8.93,
+      "embedding_audio_seconds": 8.93,
+      "audio_file": "audio\\sentence_0251.wav",
+      "word_count": 26
+    },
+    {
+      "index": 252,
+      "text": "I think the biggest problem that wasn't anticipated then that is affecting our politics today aside from social media is money money in politics Because we've defined now money to be speech.",
+      "start": 1440.668,
+      "end": 1450.578,
+      "audio_length_seconds": 9.91,
+      "embedding_audio_seconds": 9.85,
+      "audio_file": "audio\\sentence_0252.wav",
+      "word_count": 32
+    },
+    {
+      "index": 253,
+      "text": "They want to protect speech, but money obviously drives parties, it drives politics in a way that I don't think they anticipate.",
+      "start": 1450.578,
+      "end": 1456.338,
+      "audio_length_seconds": 5.76,
+      "embedding_audio_seconds": 5.74,
+      "audio_file": "audio\\sentence_0253.wav",
+      "word_count": 22
+    },
+    {
+      "index": 254,
+      "text": "Right.",
+      "start": 1456.338,
+      "end": 1456.548,
+      "audio_length_seconds": 0.21,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0254.wav",
+      "word_count": 1
+    },
+    {
+      "index": 255,
+      "text": "Tim?",
+      "start": 1457.058,
+      "end": 1457.528,
+      "audio_length_seconds": 0.47,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0255.wav",
+      "word_count": 1
+    },
+    {
+      "index": 256,
+      "text": "I'm sort of with Steve.",
+      "start": 1457.528,
+      "end": 1458.538,
+      "audio_length_seconds": 1.01,
+      "embedding_audio_seconds": 1.01,
+      "audio_file": "audio\\sentence_0256.wav",
+      "word_count": 5
+    },
+    {
+      "index": 257,
+      "text": "But, you know, if men were angels, no government would be necessary.",
+      "start": 1458.538,
+      "end": 1462.948,
+      "audio_length_seconds": 4.41,
+      "embedding_audio_seconds": 4.41,
+      "audio_file": "audio\\sentence_0257.wav",
+      "word_count": 12
+    },
+    {
+      "index": 258,
+      "text": "These guys were pretty clear -eyed about the threats that we faced.",
+      "start": 1462.948,
+      "end": 1465.778,
+      "audio_length_seconds": 2.83,
+      "embedding_audio_seconds": 2.82,
+      "audio_file": "audio\\sentence_0258.wav",
+      "word_count": 12
+    },
+    {
+      "index": 259,
+      "text": "I don't know that any of this is necessarily new under the sun, but it is new to us.",
+      "start": 1466.458,
+      "end": 1471.298,
+      "audio_length_seconds": 4.84,
+      "embedding_audio_seconds": 4.84,
+      "audio_file": "audio\\sentence_0259.wav",
+      "word_count": 19
+    },
+    {
+      "index": 260,
+      "text": "And I think that's what's so disconcerting as we celebrate 250 years wondering how we got to this place and how we get out of it.",
+      "start": 1471.298,
+      "end": 1477.888,
+      "audio_length_seconds": 6.59,
+      "embedding_audio_seconds": 6.52,
+      "audio_file": "audio\\sentence_0260.wav",
+      "word_count": 26
+    },
+    {
+      "index": 261,
+      "text": "Well, this has been a great conversation.",
+      "start": 1479.048,
+      "end": 1480.898,
+      "audio_length_seconds": 1.85,
+      "embedding_audio_seconds": 1.38,
+      "audio_file": "audio\\sentence_0261.wav",
+      "word_count": 7
+    },
+    {
+      "index": 262,
+      "text": "I wish we could go on all day, but we can't.",
+      "start": 1480.898,
+      "end": 1482.758,
+      "audio_length_seconds": 1.86,
+      "embedding_audio_seconds": 1.86,
+      "audio_file": "audio\\sentence_0262.wav",
+      "word_count": 11
+    },
+    {
+      "index": 263,
+      "text": "I want to thank everyone on the panel, really, for your expertise and your analysis.",
+      "start": 1482.758,
+      "end": 1487.108,
+      "audio_length_seconds": 4.35,
+      "embedding_audio_seconds": 4.35,
+      "audio_file": "audio\\sentence_0263.wav",
+      "word_count": 15
+    },
+    {
+      "index": 264,
+      "text": "I want to thank everyone here in our studio and everyone at home for joining us.",
+      "start": 1487.108,
+      "end": 1492.298,
+      "audio_length_seconds": 5.19,
+      "embedding_audio_seconds": 5.19,
+      "audio_file": "audio\\sentence_0264.wav",
+      "word_count": 16
+    },
+    {
+      "index": 265,
+      "text": "And I want to leave you this evening with a thought from President Reagan, who said in his farewell address, because we're a great nation, our challenges seem complex.",
+      "start": 1492.298,
+      "end": 1502.208,
+      "audio_length_seconds": 9.91,
+      "embedding_audio_seconds": 9.85,
+      "audio_file": "audio\\sentence_0265.wav",
+      "word_count": 29
+    },
+    {
+      "index": 266,
+      "text": "It will always be this way, but as long as we remember our first principles and believe in ourselves, the future will always be ours.",
+      "start": 1502.208,
+      "end": 1508.038,
+      "audio_length_seconds": 5.83,
+      "embedding_audio_seconds": 5.74,
+      "audio_file": "audio\\sentence_0266.wav",
+      "word_count": 25
+    },
+    {
+      "index": 267,
+      "text": "I just want to say that we do indeed live in strange and unsettling times, but I take comfort in the fact that for 250 years, the United States has forged its way through great and terrible challenges.",
+      "start": 1508.598,
+      "end": 1518.988,
+      "audio_length_seconds": 10.39,
+      "embedding_audio_seconds": 9.96,
+      "audio_file": "audio\\sentence_0267.wav",
+      "word_count": 38
+    },
+    {
+      "index": 268,
+      "text": "And sometimes we merely muddle through, and sometimes everything seemed to hang in the balance.",
+      "start": 1518.988,
+      "end": 1523.372,
+      "audio_length_seconds": 4.384,
+      "embedding_audio_seconds": 4.384,
+      "audio_file": "audio\\sentence_0268.wav",
+      "word_count": 15
+    },
+    {
+      "index": 269,
+      "text": "but we've consistently made our way to the far side of crisis.",
+      "start": 1523.372,
+      "end": 1526.722,
+      "audio_length_seconds": 3.35,
+      "embedding_audio_seconds": 3.35,
+      "audio_file": "audio\\sentence_0269.wav",
+      "word_count": 12
+    },
+    {
+      "index": 270,
+      "text": "And I have faith that we will continue to do so into the future.",
+      "start": 1526.722,
+      "end": 1529.952,
+      "audio_length_seconds": 3.23,
+      "embedding_audio_seconds": 3.23,
+      "audio_file": "audio\\sentence_0270.wav",
+      "word_count": 14
+    },
+    {
+      "index": 271,
+      "text": "I'm Jeffrey Goldberg.",
+      "start": 1529.952,
+      "end": 1531.802,
+      "audio_length_seconds": 1.85,
+      "embedding_audio_seconds": 1.04,
+      "audio_file": "audio\\sentence_0271.wav",
+      "word_count": 3
+    },
+    {
+      "index": 272,
+      "text": "Good night from Washington.",
+      "start": 1531.932,
+      "end": 1533.382,
+      "audio_length_seconds": 1.45,
+      "embedding_audio_seconds": 1.36,
+      "audio_file": "audio\\sentence_0272.wav",
+      "word_count": 4
+    },
+    {
+      "index": 273,
+      "text": "Corporate funding for Washington Week with The Atlantic is provided by Consumer Cellular.",
+      "start": 1534.524,
+      "end": 1541.514,
+      "audio_length_seconds": 6.99,
+      "embedding_audio_seconds": 6.99,
+      "audio_file": "audio\\sentence_0273.wav",
+      "word_count": 13
+    },
+    {
+      "index": 274,
+      "text": "Additional funding is provided by Kou and Patricia Ewan for the Ewan Foundation, committed to bridging cultural differences in our communities.",
+      "start": 1542.296,
+      "end": 1551.826,
+      "audio_length_seconds": 9.53,
+      "embedding_audio_seconds": 9.53,
+      "audio_file": "audio\\sentence_0274.wav",
+      "word_count": 21
+    },
+    {
+      "index": 275,
+      "text": "Sandra and Carl DeLay Magnuson.",
+      "start": 1551.826,
+      "end": 1555.056,
+      "audio_length_seconds": 3.23,
+      "embedding_audio_seconds": 3.23,
+      "audio_file": "audio\\sentence_0275.wav",
+      "word_count": 5
+    },
+    {
+      "index": 276,
+      "text": "Rose Herschel and Andy Shreves.",
+      "start": 1555.056,
+      "end": 1557.786,
+      "audio_length_seconds": 2.73,
+      "embedding_audio_seconds": 2.73,
+      "audio_file": "audio\\sentence_0276.wav",
+      "word_count": 5
+    },
+    {
+      "index": 277,
+      "text": "Robert and Susan Rosenbaum.",
+      "start": 1558.156,
+      "end": 1560.146,
+      "audio_length_seconds": 1.99,
+      "embedding_audio_seconds": 1.99,
+      "audio_file": "audio\\sentence_0277.wav",
+      "word_count": 4
+    },
+    {
+      "index": 278,
+      "text": "Jay and Sharon Rockefeller.",
+      "start": 1560.296,
+      "end": 1562.506,
+      "audio_length_seconds": 2.21,
+      "embedding_audio_seconds": 2.21,
+      "audio_file": "audio\\sentence_0278.wav",
+      "word_count": 4
+    },
+    {
+      "index": 279,
+      "text": "Charles Hamawee through the Charles Hamawee Fund.",
+      "start": 1562.506,
+      "end": 1566.236,
+      "audio_length_seconds": 3.73,
+      "embedding_audio_seconds": 3.73,
+      "audio_file": "audio\\sentence_0279.wav",
+      "word_count": 7
+    },
+    {
+      "index": 280,
+      "text": "Steve and Marilyn Kerman.",
+      "start": 1566.236,
+      "end": 1568.946,
+      "audio_length_seconds": 2.71,
+      "embedding_audio_seconds": 2.71,
+      "audio_file": "audio\\sentence_0280.wav",
+      "word_count": 4
+    },
+    {
+      "index": 281,
+      "text": "Leonard and Norma Chlorfying.",
+      "start": 1569.776,
+      "end": 1571.886,
+      "audio_length_seconds": 2.11,
+      "embedding_audio_seconds": 2.11,
+      "audio_file": "audio\\sentence_0281.wav",
+      "word_count": 4
+    },
+    {
+      "index": 282,
+      "text": "And by contributions to your PBS station from viewers like you.",
+      "start": 1571.886,
+      "end": 1577.356,
+      "audio_length_seconds": 5.47,
+      "embedding_audio_seconds": 5.47,
+      "audio_file": "audio\\sentence_0282.wav",
+      "word_count": 11
+    },
+    {
+      "index": 283,
+      "text": "Thank you.",
+      "start": 1577.356,
+      "end": 1578.446,
+      "audio_length_seconds": 1.09,
+      "embedding_audio_seconds": 1.09,
+      "audio_file": "audio\\sentence_0283.wav",
+      "word_count": 2
+    },
+    {
+      "index": 284,
+      "text": "We'll see you next time.",
+      "start": 1579.176,
+      "end": 1579.326,
+      "audio_length_seconds": 0.15,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0284.wav",
+      "word_count": 5
+    },
+    {
+      "index": 285,
+      "text": "♪♪ ♪♪ ♪♪ ♪♪",
+      "start": 1581.536,
+      "end": 1601.766,
+      "audio_length_seconds": 20.23,
+      "embedding_audio_seconds": 20.23,
+      "audio_file": "audio\\sentence_0285.wav",
+      "word_count": 4
+    }
+  ]
+}

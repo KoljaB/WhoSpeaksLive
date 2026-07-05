@@ -1,0 +1,113 @@
+{
+  "provider": "wespeaker_resnet34_lm_onnx",
+  "video": "onHUfyRP1BE",
+  "canonical": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\onHUfyRP1BE\\onHUfyRP1BE.canonical_diarization.json",
+  "audio_file": "D:\\Projekte\\SpeakerDiarization\\runtime\\media\\elevenlabs_baselines\\onHUfyRP1BE.audio.mp3",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    9,
+    256
+  ],
+  "elapsed_seconds": 1.088640899863094,
+  "segments": [
+    {
+      "index": 0,
+      "segment_id": "seg_0000",
+      "speaker_id": "SPEAKER_1",
+      "start_sec": 0.54,
+      "end_sec": 45.38,
+      "duration_sec": 44.84,
+      "audio_start_sec": 0.54,
+      "audio_end_sec": 45.38,
+      "text": "The second phase actually begins with your arrival in your new host home country. Um, it's called the spectator phase, and it's called that because basically during this initial period in your new environment, you tend to be rather passive. You tend to watch, you wanna learn. You're very much a spectator rather than an active participant in the culture, and the spectator phase is considered ending when you're actually forced to have to navigate the new culture in some very participative ways. The spectator phase is, um, marked by, um, intense alertness to the point where things often, in looking back at them, seem to be a blur in some ways, and I'm gonna let the students tell you a little bit more about the spectator phase."
+    },
+    {
+      "index": 1,
+      "segment_id": "seg_0001",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 46.38,
+      "end_sec": 61.88,
+      "duration_sec": 15.5,
+      "audio_start_sec": 46.38,
+      "audio_end_sec": 61.88,
+      "text": "So for me, when I first got there, it was August 25th, and-... I don't think I could have stood out any, any worse than I did. I was, uh, really blonde from the summer, and tan, and I was wearing my sandals, which is a pretty big fashion faux pas that I found out in Italy, so-"
+    },
+    {
+      "index": 2,
+      "segment_id": "seg_0002",
+      "speaker_id": "SPEAKER_1",
+      "start_sec": 62.54,
+      "end_sec": 63.96,
+      "duration_sec": 1.42,
+      "audio_start_sec": 62.54,
+      "audio_end_sec": 63.96,
+      "text": "Actually, all over Europe, that's a dead-"
+    },
+    {
+      "index": 3,
+      "segment_id": "seg_0003",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 64.01,
+      "end_sec": 64.01,
+      "duration_sec": 0.0,
+      "audio_start_sec": 63.96000000000001,
+      "audio_end_sec": 64.06,
+      "text": "Yeah"
+    },
+    {
+      "index": 4,
+      "segment_id": "seg_0004",
+      "speaker_id": "SPEAKER_1",
+      "start_sec": 64.01,
+      "end_sec": 66.98,
+      "duration_sec": 2.97,
+      "audio_start_sec": 64.01,
+      "audio_end_sec": 66.98,
+      "text": "... giveaway you're American is if you're tan, you're wearing sandals or shorts."
+    },
+    {
+      "index": 5,
+      "segment_id": "seg_0005",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 67.0,
+      "end_sec": 130.0,
+      "duration_sec": 63.0,
+      "audio_start_sec": 67.0,
+      "audio_end_sec": 130.0,
+      "text": "Yeah. Luckily, the Italians thought at first that I was German and not American-... which is a good thing,'cause you definitely don't wanna go over there being, you know, spotted as an American instantly. But, um, I remember that I was just participating in the drink and food culture like I was living in a week. Cappuccino, pizza, lasagna-... um, gelato, bottle of wine every night for the first two weeks straight. I can't even count the amount, and actually, to mention, the wine cost only €4.50, which is, uh, a little under $3 for a good bottle of wine. So, um, and I sort of had this perception that the Italians were gonna be overly outgoing and boisterous and just kind of coming up to you, \"Ciao, buongiorno. Fabio, buongiorno. Vieni, vieni qua, vieni qua,\" and they were pretty standoffish at first, and, um, especially the women. But you have to understand that from their culture, the women are forced to look down when they walk and not make eye contact with men, because once they make eye contact with a man, you're pretty much forced to go into conversation with them. So that was a little bit difficult at first, and, um-"
+    },
+    {
+      "index": 6,
+      "segment_id": "seg_0006",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 131.56,
+      "end_sec": 182.54,
+      "duration_sec": 50.98,
+      "audio_start_sec": 131.56,
+      "audio_end_sec": 182.54,
+      "text": "Yeah. Most of the pe- most of the people that I was with, um, you know, when you get there, you run to go to all the famous places, the Colosseum, the Pantheon, and, um, just all of Rome's famous monuments. And for me, it was a little bit different. The first weekend, we went to the beach, went to Ostia, which was great, and, um, I got to surf, which I got that out of my system, which was amazing, surfing in the Mediterranean. And the second weekend, we went down to Amalfi and Positano and Capri and Sorrento, and then the third weekend, we went up to Florence. So for me, my spectator phase was a little bit different, because I went to all these different places in such a short period of time, which was good for forming, uh, my generalization about Italians, not just saying that Italians are like this or that because Romans were like this or that. So I got to see all the different parts of Italy and kind of make my general impression on a broader scale."
+    },
+    {
+      "index": 7,
+      "segment_id": "seg_0007",
+      "speaker_id": "SPEAKER_1",
+      "start_sec": 186.02,
+      "end_sec": 226.6,
+      "duration_sec": 40.58,
+      "audio_start_sec": 186.02,
+      "audio_end_sec": 226.6,
+      "text": "Um, once you've gone through the spectator phase successfully, you should find yourself increasing your active participation in the culture. Um, you still are a little bit tentative, uh, you still are a little bit frustrated, and yet generally, you're becoming much more of a participant. Like Leila said, you're using the language more. You're interacting, you're shopping, you're exploring new places that you might not have sought out in the earlier phases. Um, you begin to start to feel like you belong, and that's kind of a pivotal moment in this increasing participation phase."
+    },
+    {
+      "index": 8,
+      "segment_id": "seg_0008",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 227.7,
+      "end_sec": 466.63,
+      "duration_sec": 238.93,
+      "audio_start_sec": 227.7,
+      "audio_end_sec": 466.63,
+      "text": "Yeah, like how Dr. Walker was saying, this phase right here is incredibly pivotal. This is where you can make or break your study abroad experience. It's how much you're willing to dedicate yourself to pure assimilation, and for me, that's something that I strive very high to do whenever I go to any new culture. And for me, in Italy, the second I walked out of the door every morning, I was speaking Italian to everybody that I saw, practicing it all the time, studying it, and just becoming a student of the culture, and that was really important for me. And it was great, because you go to these same places every day where I would get my caffè, and, you know, make friends with all the people that work there, and you practice your Italian and talk with them, and then you make all these friends in all these different, all these different areas of Rome. And for me, it was important to not ever seek anything from America. I didn't miss one thing from America ever. If there was something that I wanted, I didn't desire it, because I knew it wasn't gonna happen, and I knew that what was in front of me at that time was all that I was gonna do. And my main goal was to separate myself from the Americans and make Italian friends, but like Dr. Walker was saying, it's very important to have your American friends for when you travel on the weekends and go s- go sightseeing. But for me, I did not wanna be the classic American student, and if you go abroad, you'll find those people everywhere, the people that are out at the bars, getting drunk, acting just belligerent, and I was on the other side of that. I was with the Italians, kind of, I don't wanna say pointing my finger at them, but kind of getting a good laugh out of, uh, what the Americans were doing. And, um, for me, one of the most important days, and a pivotal day for me, was November 14th. Um, I wrote in my journal, I was within 30 minutes walking distance to the Colosseum, the Foro Romano, the Pantheon, Trevi Fountain, and Circo Massimo. It was a beautiful Sunday, and I was walking around, uh, the Foro Romano area, and my friend Virginia had given me a call and told me to meet her up in Campo de' Fiori, which is, um, an area with a lot of bars and restaurants. And she had surprised me and brought an extra helmet and took me around on her Vespa, and it was absolutely incredible. A beautiful evening behind a beautiful girl, just zooming around Rome, and at the end of our ride, we went up to this big hill called Gianicolo, which overlooks all of Rome, and I kind of had this epiphany at that moment, where I was standing, looking at the same mountains and breathing the same air as a city that shaped world history. I was looking over the same land that, um, you know, the Caesars, Augustus, um, Mussolini, Fellini, all of these people that have shaped world history, and it was, it was my city. I've, I've never felt any connection to any city in America like that. This was a city that I know that I can come back to in 20 years from now and know my way around, and just feel so close and so connected to a city was amazing. And after the sun went down, we went, went to a café in the center of Rome, which is what I call the, the bougie section of Rome. Lot of, lot of money in that section. I went with Virginia, and within a couple hours, I must have met 20 of her friends, and every person you meet, it's the kiss on both cheeks, which is something that I really, really miss. And, um- And these weren't just normal people, either. These were the sons and daughters of, of aristocrats, of royalty of Italy, of politicians, and these are people that I was meeting that are gonna be the future of Italy, and literally have shaped the entire history of the country, and I just kind of realized how good my situation was, and-... just going around every day, taking the most beautiful photos I, that I ever took of my life. Just the level of creativity, and being involved in philosophy and theory, and just having deep, meaningful conversations with people is something that I miss so much, and that was something that I had at that moment, like, and November 14th was the day that I completely realized that."
+    }
+  ]
+}

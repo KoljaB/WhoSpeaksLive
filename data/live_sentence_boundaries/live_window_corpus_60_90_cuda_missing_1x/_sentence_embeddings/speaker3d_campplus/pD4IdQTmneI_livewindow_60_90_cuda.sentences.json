@@ -1,0 +1,654 @@
+{
+  "provider": "speaker3d_campplus",
+  "video": "pD4IdQTmneI",
+  "folder": "pD4IdQTmneI_livewindow_60_90_cuda",
+  "sentence_file": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_missing_1x\\pD4IdQTmneI_livewindow_60_90_cuda\\sentences.jsonl",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    64,
+    192
+  ],
+  "elapsed_seconds": 42.04257809999399,
+  "sentences": [
+    {
+      "index": 0,
+      "text": "you.",
+      "start": 0.98,
+      "end": 1.72,
+      "audio_length_seconds": 0.74,
+      "embedding_audio_seconds": 0.6,
+      "audio_file": "audio\\sentence_0000.wav",
+      "word_count": 1
+    },
+    {
+      "index": 1,
+      "text": "Fraudsters can no longer rip off American taxpayers.",
+      "start": 1.72,
+      "end": 5.01,
+      "audio_length_seconds": 3.29,
+      "embedding_audio_seconds": 3.29,
+      "audio_file": "audio\\sentence_0001.wav",
+      "word_count": 8
+    },
+    {
+      "index": 2,
+      "text": "If you seek to harm or cheat Americans, we will find you, seize any assets, and prosecute you to the fullest extent of the law.",
+      "start": 5.01,
+      "end": 14.24,
+      "audio_length_seconds": 9.23,
+      "embedding_audio_seconds": 9.23,
+      "audio_file": "audio\\sentence_0002.wav",
+      "word_count": 25
+    },
+    {
+      "index": 3,
+      "text": "I think attorney general Todd Blanchard, the warning as the Trump administration ramps up fraud investigations across the country back with our panel now.",
+      "start": 16.27,
+      "end": 23.38,
+      "audio_length_seconds": 7.11,
+      "embedding_audio_seconds": 6.99,
+      "audio_file": "audio\\sentence_0003.wav",
+      "word_count": 24
+    },
+    {
+      "index": 4,
+      "text": "And just to tell people a little about this, New York Post is, you know, reporting on this.",
+      "start": 23.38,
+      "end": 27.65,
+      "audio_length_seconds": 4.27,
+      "embedding_audio_seconds": 4.14,
+      "audio_file": "audio\\sentence_0004.wav",
+      "word_count": 18
+    },
+    {
+      "index": 5,
+      "text": "$6.5 billion in fake Medicare and Medicaid claims.",
+      "start": 27.65,
+      "end": 31.12,
+      "audio_length_seconds": 3.47,
+      "embedding_audio_seconds": 3.46,
+      "audio_file": "audio\\sentence_0005.wav",
+      "word_count": 9
+    },
+    {
+      "index": 6,
+      "text": "a bunch of doctors and medical professionals.",
+      "start": 31.12,
+      "end": 33.19,
+      "audio_length_seconds": 2.07,
+      "embedding_audio_seconds": 2.07,
+      "audio_file": "audio\\sentence_0006.wav",
+      "word_count": 7
+    },
+    {
+      "index": 7,
+      "text": "One nurse bought an $865,000 Bvlgari necklace, a $594,000 Ferrari, and $4.6 million beach resort in the Philippines, Juan.",
+      "start": 33.19,
+      "end": 43.58,
+      "audio_length_seconds": 10.39,
+      "embedding_audio_seconds": 10.14,
+      "audio_file": "audio\\sentence_0007.wav",
+      "word_count": 22
+    },
+    {
+      "index": 8,
+      "text": "That's our money.",
+      "start": 43.83,
+      "end": 44.54,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.69,
+      "audio_file": "audio\\sentence_0008.wav",
+      "word_count": 3
+    },
+    {
+      "index": 9,
+      "text": "Absolutely, and it's ridiculous, it's absurd, and it's contemptible.",
+      "start": 44.9,
+      "end": 48.732,
+      "audio_length_seconds": 3.832,
+      "embedding_audio_seconds": 3.832,
+      "audio_file": "audio\\sentence_0009.wav",
+      "word_count": 9
+    },
+    {
+      "index": 10,
+      "text": "But you know the thing that strikes me is I hope that people watching at home don't think that it's the little old lady next door who's engaged in this fraud.",
+      "start": 48.732,
+      "end": 56.212,
+      "audio_length_seconds": 7.48,
+      "embedding_audio_seconds": 7.48,
+      "audio_file": "audio\\sentence_0010.wav",
+      "word_count": 31
+    },
+    {
+      "index": 11,
+      "text": "as you just heard from the Attorney General.",
+      "start": 56.212,
+      "end": 58.702,
+      "audio_length_seconds": 2.49,
+      "embedding_audio_seconds": 2.49,
+      "audio_file": "audio\\sentence_0011.wav",
+      "word_count": 8
+    },
+    {
+      "index": 12,
+      "text": "A lot of this is done by the executives, big corporations.",
+      "start": 58.952,
+      "end": 62.472,
+      "audio_length_seconds": 3.52,
+      "embedding_audio_seconds": 3.52,
+      "audio_file": "audio\\sentence_0012.wav",
+      "word_count": 11
+    },
+    {
+      "index": 13,
+      "text": "It's done by people who are benefiting, even a nurse, by huge, large -scale claims that are unfounded.",
+      "start": 62.472,
+      "end": 70.552,
+      "audio_length_seconds": 8.08,
+      "embedding_audio_seconds": 8.08,
+      "audio_file": "audio\\sentence_0013.wav",
+      "word_count": 18
+    },
+    {
+      "index": 14,
+      "text": "but it's not individual people next door.",
+      "start": 70.552,
+      "end": 73.412,
+      "audio_length_seconds": 2.86,
+      "embedding_audio_seconds": 2.86,
+      "audio_file": "audio\\sentence_0014.wav",
+      "word_count": 7
+    },
+    {
+      "index": 15,
+      "text": "Well, and that's the thing is, those are the people who lose out.",
+      "start": 73.412,
+      "end": 75.782,
+      "audio_length_seconds": 2.37,
+      "embedding_audio_seconds": 2.34,
+      "audio_file": "audio\\sentence_0015.wav",
+      "word_count": 13
+    },
+    {
+      "index": 16,
+      "text": "And that's another point that the administration didn't try to make on fraud.",
+      "start": 75.782,
+      "end": 78.852,
+      "audio_length_seconds": 3.07,
+      "embedding_audio_seconds": 2.93,
+      "audio_file": "audio\\sentence_0016.wav",
+      "word_count": 13
+    },
+    {
+      "index": 17,
+      "text": "And the president has put Vice President J.D. Vance in charge of this fraud task force.",
+      "start": 78.852,
+      "end": 84.042,
+      "audio_length_seconds": 5.19,
+      "embedding_audio_seconds": 4.79,
+      "audio_file": "audio\\sentence_0017.wav",
+      "word_count": 17
+    },
+    {
+      "index": 18,
+      "text": "And Shannon, I was actually out here on the National Mall for the president's speech the other night talking to MAGA voters about the vice president, and they raised fraud as one of the things they think he's doing really well on.",
+      "start": 84.042,
+      "end": 93.638,
+      "audio_length_seconds": 9.596,
+      "embedding_audio_seconds": 9.596,
+      "audio_file": "audio\\sentence_0018.wav",
+      "word_count": 42
+    },
+    {
+      "index": 19,
+      "text": "it's helped to, you know, get him in front of those voters that he'll need in 2028.",
+      "start": 93.638,
+      "end": 97.058,
+      "audio_length_seconds": 3.42,
+      "embedding_audio_seconds": 3.42,
+      "audio_file": "audio\\sentence_0019.wav",
+      "word_count": 17
+    },
+    {
+      "index": 20,
+      "text": "He still has a lot of work to do to convince them that they should support him, but it's helping.",
+      "start": 97.058,
+      "end": 101.388,
+      "audio_length_seconds": 4.33,
+      "embedding_audio_seconds": 4.32,
+      "audio_file": "audio\\sentence_0020.wav",
+      "word_count": 20
+    },
+    {
+      "index": 21,
+      "text": "All right.",
+      "start": 101.388,
+      "end": 102.016,
+      "audio_length_seconds": 0.628,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0021.wav",
+      "word_count": 2
+    },
+    {
+      "index": 22,
+      "text": "Now, I want to talk about something that we all can agree is a positive thing in the news to talk about, which is the World Cup and just how much the rest of the world seems to enjoy the North American hosts and us especially, I would say, I would argue, in America.",
+      "start": 102.016,
+      "end": 113.366,
+      "audio_length_seconds": 11.35,
+      "embedding_audio_seconds": 11.35,
+      "audio_file": "audio\\sentence_0022.wav",
+      "word_count": 54
+    },
+    {
+      "index": 23,
+      "text": "But Politico has this headline, the Democrats grapple uncomfortably with World Cup success.",
+      "start": 113.366,
+      "end": 119.096,
+      "audio_length_seconds": 5.73,
+      "embedding_audio_seconds": 5.49,
+      "audio_file": "audio\\sentence_0023.wav",
+      "word_count": 13
+    },
+    {
+      "index": 24,
+      "text": "It says the triumph of the world comes first two weeks, boosting the U.S.'s global reputation with sold -out stadiums and few logistical complications has forced Democrats who had criticized President Donald Trump's role in preparations to grudgingly reconsider.",
+      "start": 119.096,
+      "end": 132.906,
+      "audio_length_seconds": 13.81,
+      "embedding_audio_seconds": 13.46,
+      "audio_file": "audio\\sentence_0024.wav",
+      "word_count": 40
+    },
+    {
+      "index": 25,
+      "text": "Roger.",
+      "start": 133.226,
+      "end": 133.756,
+      "audio_length_seconds": 0.53,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0025.wav",
+      "word_count": 1
+    },
+    {
+      "index": 26,
+      "text": "I think they should embrace this.",
+      "start": 134.096,
+      "end": 135.512,
+      "audio_length_seconds": 1.416,
+      "embedding_audio_seconds": 1.206,
+      "audio_file": "audio\\sentence_0026.wav",
+      "word_count": 6
+    },
+    {
+      "index": 27,
+      "text": "It's a great moment for the country.",
+      "start": 135.512,
+      "end": 136.952,
+      "audio_length_seconds": 1.44,
+      "embedding_audio_seconds": 1.44,
+      "audio_file": "audio\\sentence_0027.wav",
+      "word_count": 7
+    },
+    {
+      "index": 28,
+      "text": "People should read Peggy Noonan, the Wall Street Journal, over the weekend.",
+      "start": 136.952,
+      "end": 139.302,
+      "audio_length_seconds": 2.35,
+      "embedding_audio_seconds": 2.35,
+      "audio_file": "audio\\sentence_0028.wav",
+      "word_count": 12
+    },
+    {
+      "index": 29,
+      "text": "She was talking about how we can see the greatness of America reflected through the eyes of the millions of visitors from around the world They're like millions of de Tocquevilles who famously wrote about America and democracy back in the 1830s We're having that moment again And sometimes it takes a foreigner's eyes to appreciate how good we have in this country and how great the American people are we should All embrace it.",
+      "start": 139.302,
+      "end": 159.294,
+      "audio_length_seconds": 19.992,
+      "embedding_audio_seconds": 19.97,
+      "audio_file": "audio\\sentence_0029.wav",
+      "word_count": 75
+    },
+    {
+      "index": 30,
+      "text": "Yes, this piece in the Washington Post does say sometimes it takes outsiders seeing us with fresh eyes to remind us of who we are and what we have.",
+      "start": 159.294,
+      "end": 165.504,
+      "audio_length_seconds": 6.21,
+      "embedding_audio_seconds": 6.2,
+      "audio_file": "audio\\sentence_0030.wav",
+      "word_count": 29
+    },
+    {
+      "index": 31,
+      "text": "And they go on to say we're still this place where people will get onto a rickety raft and go through shark -infested waters to try to get here, Juan.",
+      "start": 165.834,
+      "end": 171.664,
+      "audio_length_seconds": 5.83,
+      "embedding_audio_seconds": 5.83,
+      "audio_file": "audio\\sentence_0031.wav",
+      "word_count": 30
+    },
+    {
+      "index": 32,
+      "text": "Well, you know, it's Huck Finn.",
+      "start": 171.734,
+      "end": 173.098,
+      "audio_length_seconds": 1.364,
+      "embedding_audio_seconds": 1.364,
+      "audio_file": "audio\\sentence_0032.wav",
+      "word_count": 6
+    },
+    {
+      "index": 33,
+      "text": "It's why we love America.",
+      "start": 173.098,
+      "end": 174.546,
+      "audio_length_seconds": 1.448,
+      "embedding_audio_seconds": 1.448,
+      "audio_file": "audio\\sentence_0033.wav",
+      "word_count": 5
+    },
+    {
+      "index": 34,
+      "text": "You can create yourself, have adventures in America.",
+      "start": 174.546,
+      "end": 177.704,
+      "audio_length_seconds": 3.158,
+      "embedding_audio_seconds": 3.158,
+      "audio_file": "audio\\sentence_0034.wav",
+      "word_count": 8
+    },
+    {
+      "index": 35,
+      "text": "World Cup has been a tremendous success because I think it's been a unifying event.",
+      "start": 178.034,
+      "end": 181.804,
+      "audio_length_seconds": 3.77,
+      "embedding_audio_seconds": 3.77,
+      "audio_file": "audio\\sentence_0035.wav",
+      "word_count": 15
+    },
+    {
+      "index": 36,
+      "text": "It's all over the country.",
+      "start": 181.954,
+      "end": 183.218,
+      "audio_length_seconds": 1.264,
+      "embedding_audio_seconds": 1.264,
+      "audio_file": "audio\\sentence_0036.wav",
+      "word_count": 5
+    },
+    {
+      "index": 37,
+      "text": "You know, you can go to a stadium in Kansas City and watch World Cup, and I think it brings the world home.",
+      "start": 183.218,
+      "end": 188.514,
+      "audio_length_seconds": 5.296,
+      "embedding_audio_seconds": 5.296,
+      "audio_file": "audio\\sentence_0037.wav",
+      "word_count": 23
+    },
+    {
+      "index": 38,
+      "text": "So, to me, it's about the fans picking up on Roger's statement.",
+      "start": 188.514,
+      "end": 191.884,
+      "audio_length_seconds": 3.37,
+      "embedding_audio_seconds": 3.37,
+      "audio_file": "audio\\sentence_0038.wav",
+      "word_count": 12
+    },
+    {
+      "index": 39,
+      "text": "It's about people coming here and reflecting the greatness of America.",
+      "start": 191.974,
+      "end": 195.664,
+      "audio_length_seconds": 3.69,
+      "embedding_audio_seconds": 3.69,
+      "audio_file": "audio\\sentence_0039.wav",
+      "word_count": 11
+    },
+    {
+      "index": 40,
+      "text": "I will say this.",
+      "start": 196.074,
+      "end": 197.13,
+      "audio_length_seconds": 1.056,
+      "embedding_audio_seconds": 1.056,
+      "audio_file": "audio\\sentence_0040.wav",
+      "word_count": 4
+    },
+    {
+      "index": 41,
+      "text": "It's not about Trump.",
+      "start": 197.13,
+      "end": 198.584,
+      "audio_length_seconds": 1.454,
+      "embedding_audio_seconds": 1.45,
+      "audio_file": "audio\\sentence_0041.wav",
+      "word_count": 4
+    },
+    {
+      "index": 42,
+      "text": "And I think people who are suggesting that it's Trump, Trump, Trump, no, no.",
+      "start": 198.654,
+      "end": 202.704,
+      "audio_length_seconds": 4.05,
+      "embedding_audio_seconds": 4.05,
+      "audio_file": "audio\\sentence_0042.wav",
+      "word_count": 14
+    },
+    {
+      "index": 43,
+      "text": "This is about America.",
+      "start": 202.774,
+      "end": 204.124,
+      "audio_length_seconds": 1.35,
+      "embedding_audio_seconds": 1.23,
+      "audio_file": "audio\\sentence_0043.wav",
+      "word_count": 4
+    },
+    {
+      "index": 44,
+      "text": "And, you know, it doesn't matter who the president is.",
+      "start": 204.134,
+      "end": 206.324,
+      "audio_length_seconds": 2.19,
+      "embedding_audio_seconds": 2.01,
+      "audio_file": "audio\\sentence_0044.wav",
+      "word_count": 10
+    },
+    {
+      "index": 45,
+      "text": "Well, it seems to be executing well.",
+      "start": 206.394,
+      "end": 207.922,
+      "audio_length_seconds": 1.528,
+      "embedding_audio_seconds": 1.528,
+      "audio_file": "audio\\sentence_0045.wav",
+      "word_count": 7
+    },
+    {
+      "index": 46,
+      "text": "People seem to be having a good time.",
+      "start": 207.922,
+      "end": 209.264,
+      "audio_length_seconds": 1.342,
+      "embedding_audio_seconds": 1.34,
+      "audio_file": "audio\\sentence_0046.wav",
+      "word_count": 8
+    },
+    {
+      "index": 47,
+      "text": "So as we're looking at the rest of the world looking at us and seeing America in a different light, the Reagan Institute has got a summer survey that asks these questions about U.S. leadership.",
+      "start": 209.274,
+      "end": 218.224,
+      "audio_length_seconds": 8.95,
+      "embedding_audio_seconds": 8.95,
+      "audio_file": "audio\\sentence_0047.wav",
+      "word_count": 36
+    },
+    {
+      "index": 48,
+      "text": "And one of them is about U.S. engagement and taking the lead in international events.",
+      "start": 218.694,
+      "end": 222.544,
+      "audio_length_seconds": 3.85,
+      "embedding_audio_seconds": 3.85,
+      "audio_file": "audio\\sentence_0048.wav",
+      "word_count": 16
+    },
+    {
+      "index": 49,
+      "text": "61 percent said that the U.S. should be more engaged in doing that.",
+      "start": 222.914,
+      "end": 226.604,
+      "audio_length_seconds": 3.69,
+      "embedding_audio_seconds": 3.69,
+      "audio_file": "audio\\sentence_0049.wav",
+      "word_count": 14
+    },
+    {
+      "index": 50,
+      "text": "27 percent said less engaged.",
+      "start": 226.614,
+      "end": 228.564,
+      "audio_length_seconds": 1.95,
+      "embedding_audio_seconds": 1.95,
+      "audio_file": "audio\\sentence_0050.wav",
+      "word_count": 5
+    },
+    {
+      "index": 51,
+      "text": "What do we take from that question, Roger?",
+      "start": 228.674,
+      "end": 230.364,
+      "audio_length_seconds": 1.69,
+      "embedding_audio_seconds": 1.54,
+      "audio_file": "audio\\sentence_0051.wav",
+      "word_count": 8
+    },
+    {
+      "index": 52,
+      "text": "Well, it shows that this notion of isolationism, which has pockets within the Republican Party and now we see on the socialist side or Democratic socialist side of the Democratic Party, is a marginal element in our national politics.",
+      "start": 230.394,
+      "end": 242.702,
+      "audio_length_seconds": 12.308,
+      "embedding_audio_seconds": 12.308,
+      "audio_file": "audio\\sentence_0052.wav",
+      "word_count": 39
+    },
+    {
+      "index": 53,
+      "text": "And if you take one level deeper than that, you look at what kind of engagement they want in the world, it's remarkable.",
+      "start": 242.702,
+      "end": 247.644,
+      "audio_length_seconds": 4.942,
+      "embedding_audio_seconds": 4.942,
+      "audio_file": "audio\\sentence_0053.wav",
+      "word_count": 23
+    },
+    {
+      "index": 54,
+      "text": "Republicans and Democrats agree that they want peace through strength.",
+      "start": 247.754,
+      "end": 250.704,
+      "audio_length_seconds": 2.95,
+      "embedding_audio_seconds": 2.9,
+      "audio_file": "audio\\sentence_0054.wav",
+      "word_count": 10
+    },
+    {
+      "index": 55,
+      "text": "They want to advance human rights and democracy in the world.",
+      "start": 250.814,
+      "end": 253.844,
+      "audio_length_seconds": 3.03,
+      "embedding_audio_seconds": 3.03,
+      "audio_file": "audio\\sentence_0055.wav",
+      "word_count": 11
+    },
+    {
+      "index": 56,
+      "text": "And they want to see us trading with the world.",
+      "start": 254.034,
+      "end": 256.006,
+      "audio_length_seconds": 1.972,
+      "embedding_audio_seconds": 1.9719,
+      "audio_file": "audio\\sentence_0056.wav",
+      "word_count": 10
+    },
+    {
+      "index": 57,
+      "text": "Those are the elements to the tune of 8 out of 10.",
+      "start": 256.006,
+      "end": 258.504,
+      "audio_length_seconds": 2.498,
+      "embedding_audio_seconds": 2.4981,
+      "audio_file": "audio\\sentence_0057.wav",
+      "word_count": 12
+    },
+    {
+      "index": 58,
+      "text": "So these factions on the far right and the far left are not representative of where the American people are.",
+      "start": 258.954,
+      "end": 263.844,
+      "audio_length_seconds": 4.89,
+      "embedding_audio_seconds": 4.89,
+      "audio_file": "audio\\sentence_0058.wav",
+      "word_count": 20
+    },
+    {
+      "index": 59,
+      "text": "That's what the survey shows.",
+      "start": 263.914,
+      "end": 264.984,
+      "audio_length_seconds": 1.07,
+      "embedding_audio_seconds": 1.04,
+      "audio_file": "audio\\sentence_0059.wav",
+      "word_count": 5
+    },
+    {
+      "index": 60,
+      "text": "Yeah, and it shows, like you said, a lot of coalescing around common goods and common ideas that we as Americans, regardless of party, should be able to support.",
+      "start": 265.014,
+      "end": 273.146,
+      "audio_length_seconds": 8.132,
+      "embedding_audio_seconds": 8.132,
+      "audio_file": "audio\\sentence_0060.wav",
+      "word_count": 29
+    },
+    {
+      "index": 61,
+      "text": "So, OK, panel, thank you very much.",
+      "start": 273.146,
+      "end": 274.974,
+      "audio_length_seconds": 1.828,
+      "embedding_audio_seconds": 1.828,
+      "audio_file": "audio\\sentence_0061.wav",
+      "word_count": 7
+    },
+    {
+      "index": 62,
+      "text": "We'll see you next Sunday.",
+      "start": 274.974,
+      "end": 275.824,
+      "audio_length_seconds": 0.85,
+      "embedding_audio_seconds": 0.85,
+      "audio_file": "audio\\sentence_0062.wav",
+      "word_count": 5
+    },
+    {
+      "index": 63,
+      "text": "Be sure to like and subscribe for all the Fox News latest on YouTube, and catch full shows streaming now on Fox 1.",
+      "start": 276.414,
+      "end": 283.444,
+      "audio_length_seconds": 7.03,
+      "embedding_audio_seconds": 6.77,
+      "audio_file": "audio\\sentence_0063.wav",
+      "word_count": 23
+    }
+  ]
+}

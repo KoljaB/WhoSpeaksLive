@@ -1,0 +1,179 @@
+{
+  "provider": "wespeaker_resnet34_lm_onnx",
+  "video": "pD4IdQTmneI",
+  "canonical": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\pD4IdQTmneI\\pD4IdQTmneI.canonical_diarization.json",
+  "audio_file": "D:\\Projekte\\SpeakerDiarization\\runtime\\media\\elevenlabs_baselines\\pD4IdQTmneI.audio.mp3",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    15,
+    256
+  ],
+  "elapsed_seconds": 1.0005801999941468,
+  "segments": [
+    {
+      "index": 0,
+      "segment_id": "seg_0000",
+      "speaker_id": "SPEAKER_1",
+      "start_sec": 1.74,
+      "end_sec": 14.22,
+      "duration_sec": 12.48,
+      "audio_start_sec": 1.74,
+      "audio_end_sec": 14.22,
+      "text": "Fraudsters can no longer rip off American taxpayers. If you seek to harm or cheat Americans, we will find you, seize any assets, and prosecute you to the fullest extent of the law."
+    },
+    {
+      "index": 1,
+      "segment_id": "seg_0001",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 16.66,
+      "end_sec": 44.86,
+      "duration_sec": 28.2,
+      "audio_start_sec": 16.66,
+      "audio_end_sec": 44.86,
+      "text": "Acting Attorney General Todd Blanche with a warning as the Trump administration ramps up fraud investigations across the country. Back with our panel now. And just to tell people a little about this, New York Post is, um, you know, reporting on this, $6.5 billion in fake Medicare and Medicaid claims. Bunch of doctors and medical professionals. One nurse bought an $865,000 Bulgari necklace, a $594,000 Ferrari, and $4.6 million, um, beach resort in the Philippines, Juan. That's our money."
+    },
+    {
+      "index": 2,
+      "segment_id": "seg_0002",
+      "speaker_id": "SPEAKER_3",
+      "start_sec": 44.98,
+      "end_sec": 54.589,
+      "duration_sec": 9.609,
+      "audio_start_sec": 44.98,
+      "audio_end_sec": 54.589,
+      "text": "Absolutely, and it's ridiculous, it's absurd, and it's contemptible. But you know the thing that strikes me is I hope that people watching at home don't think that it's the little old lady next door-"
+    },
+    {
+      "index": 3,
+      "segment_id": "seg_0003",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 54.98,
+      "end_sec": 54.99,
+      "duration_sec": 0.01,
+      "audio_start_sec": 54.935,
+      "audio_end_sec": 55.035000000000004,
+      "text": "Mm-hmm"
+    },
+    {
+      "index": 4,
+      "segment_id": "seg_0004",
+      "speaker_id": "SPEAKER_3",
+      "start_sec": 54.99,
+      "end_sec": 73.5,
+      "duration_sec": 18.51,
+      "audio_start_sec": 54.99,
+      "audio_end_sec": 73.5,
+      "text": "... who's engaged in this fraud. As you just heard from the attorney general, a lot of this is done by the executives, big corporations. It's done by people who are benefiting, even a nurse, by huge large scale claims that are unfounded. But it's not individual people next door."
+    },
+    {
+      "index": 5,
+      "segment_id": "seg_0005",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 73.52,
+      "end_sec": 78.8,
+      "duration_sec": 5.28,
+      "audio_start_sec": 73.52,
+      "audio_end_sec": 78.8,
+      "text": "Well, and that's the thing is those are the people who lose out, and that's another point that the administration's gonna try to make on fraud."
+    },
+    {
+      "index": 6,
+      "segment_id": "seg_0006",
+      "speaker_id": "SPEAKER_4",
+      "start_sec": 79.16,
+      "end_sec": 101.78,
+      "duration_sec": 22.62,
+      "audio_start_sec": 79.16,
+      "audio_end_sec": 101.78,
+      "text": "And the president has put, uh, Vice President JD Vance in charge of this fraud task force. And Shannon, I was actually out here on the National Mall for the president's speech the other night talking to MAGA voters about the vice president, and they raised fraud as one of the things they think he's doing really well on. It's helped to, you know, get him in front of those voters that he'll need in 2028. He still has a lot of work to do to convince them that they should support him, but it's helping."
+    },
+    {
+      "index": 7,
+      "segment_id": "seg_0007",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 101.82,
+      "end_sec": 133.78,
+      "duration_sec": 31.96,
+      "audio_start_sec": 101.82,
+      "audio_end_sec": 133.78,
+      "text": "All right. Now I wanna talk about something that we all can agree is a positive thing in the news to talk about which is the World Cup and just how much the, uh, rest of the world seems to enjoy the North American hosts and, and us especially I would say, I would argue in America. Uh, but Politico has this headline that Democrats grapple uncomfortably with World Cup success. Uh, it says the triumph of the World Cup's first two weeks boosting the US's global reputation with sold out stadiums and few logistical complications has forced Democrats who had criticized President Donald Trump's role in preparations to grudgingly reconsider. Roger."
+    },
+    {
+      "index": 8,
+      "segment_id": "seg_0008",
+      "speaker_id": "SPEAKER_5",
+      "start_sec": 134.489,
+      "end_sec": 159.22,
+      "duration_sec": 24.731,
+      "audio_start_sec": 134.489,
+      "audio_end_sec": 159.22,
+      "text": "I think they should embrace this. It's a great moment for the country. People should read Peggy Noonan in the Wall Street Journal over the weekend. She was talking about how we could see the greatness of America reflected through the eyes of the millions of visitors from around the world. They're like millions of de Tocqueville's who famously wrote about America and democracy back in the 1830s. We're having that moment again, and sometimes it takes a foreigner's eyes to appreciate how good we have it in this country and how great the American people are. We should all embrace it."
+    },
+    {
+      "index": 9,
+      "segment_id": "seg_0009",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 159.36,
+      "end_sec": 171.62,
+      "duration_sec": 12.26,
+      "audio_start_sec": 159.36,
+      "audio_end_sec": 171.62,
+      "text": "Yes. This piece in the Washington Post does say, \"Sometimes it takes outsiders seeing us with fresh eyes to remind us of who we are and what we have.\" And they go on to say, \"We're still this place where people will get onto a rickety raft and go through shark infested waters to try to get here,\" Juan."
+    },
+    {
+      "index": 10,
+      "segment_id": "seg_0010",
+      "speaker_id": "SPEAKER_3",
+      "start_sec": 171.86,
+      "end_sec": 206.22,
+      "duration_sec": 34.36,
+      "audio_start_sec": 171.86,
+      "audio_end_sec": 206.22,
+      "text": "Well, you know, it's Huck Finn. It's, it's why we love America. You can c- create yourself, have adventures in America. World Cup has been a tremendous success because I think it's been a unifying event. It's all over the country. You know, you can, you can go to a stadium in Kansas City and watch World Cup, and I think it brings the world home. To me, it's about the fans, picking up on Roger's statement. It's about people coming here and reflecting the greatness of America. I will say this, it's not about Trump, and I think people who are suggesting that it's Trump, Trump, Trump. No, no. This is about America. And you know, it doesn't matter who the president is."
+    },
+    {
+      "index": 11,
+      "segment_id": "seg_0011",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 206.52,
+      "end_sec": 230.34,
+      "duration_sec": 23.82,
+      "audio_start_sec": 206.52,
+      "audio_end_sec": 230.34,
+      "text": "Well, it seems to be executing well. People seem to be having a good time. So as we're looking at the rest of the world looking at us and seeing America in a different light, um, the Reagan Institute has got a summer survey that asks these questions about US leadership, and one of them is about US engagement and taking the lead in international events. 61% said, um, that the US should be more engaged in doing that. 27% said less engaged. What do we take from that question, Roger?"
+    },
+    {
+      "index": 12,
+      "segment_id": "seg_0012",
+      "speaker_id": "SPEAKER_5",
+      "start_sec": 230.44,
+      "end_sec": 265.04,
+      "duration_sec": 34.6,
+      "audio_start_sec": 230.44,
+      "audio_end_sec": 265.04,
+      "text": "Well, it shows that this notion of isolationism, which has pockets within the Republican Party, and now we see on the socialist side or Democratic socialist side of the Democratic Party, is a marginal element in our national politics. And if you take one level deeper than that and you look at what kind of engagement do they want in the world, it's remarkable. Republicans and Democrats agree that they want peace through strength, they wanna advance human rights and democracy in the world, and they wanna see us trading with the world. Those are the elements to the tune of eight out of 10. So these factions on the far right and far left are not representative of where the American people are. That's what the survey shows."
+    },
+    {
+      "index": 13,
+      "segment_id": "seg_0013",
+      "speaker_id": "SPEAKER_2",
+      "start_sec": 265.12,
+      "end_sec": 275.76,
+      "duration_sec": 10.64,
+      "audio_start_sec": 265.12,
+      "audio_end_sec": 275.76,
+      "text": "Yeah. And it shows, like you said, a lot of co- um, coalescing around common goods and common ideas, uh, that we as Americans, regardless of party, should be able to support. So okay, panel, thank you very much. We'll see you next Sunday."
+    },
+    {
+      "index": 14,
+      "segment_id": "seg_0014",
+      "speaker_id": "SPEAKER_1",
+      "start_sec": 276.8,
+      "end_sec": 283.42,
+      "duration_sec": 6.62,
+      "audio_start_sec": 276.8,
+      "audio_end_sec": 283.42,
+      "text": "Be sure to like and subscribe for all the Fox News latest on YouTube and catch full shows streaming now on Fox One."
+    }
+  ]
+}

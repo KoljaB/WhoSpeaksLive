@@ -1,0 +1,86 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,0.1,1.18,1.08,We've been riding with the police-
+seg_0001,SPEAKER_2,speaker_1,1.21,1.21,0.0,Yes
+seg_0002,SPEAKER_1,speaker_0,1.21,2.12,0.91,"... a little bit, you know that."
+seg_0003,SPEAKER_2,speaker_1,2.26,3.74,1.48,"They've been telling you about us, right?"
+seg_0004,SPEAKER_1,speaker_0,3.78,7.51,3.73,"They told me that you run things round here, and that you control the flow of drugs around here."
+seg_0005,SPEAKER_2,speaker_1,7.58,10.56,2.98,"No, no. That's, that's wrong, man. That's wrong."
+seg_0006,SPEAKER_1,speaker_0,11.24,14.7,3.46,"The, what's the story with your chain? Is that, are those, are those real diamonds?"
+seg_0007,SPEAKER_2,speaker_1,18.3,18.72,0.42,Yes.
+seg_0008,SPEAKER_3,speaker_2,19.1,19.63,0.53,They are.
+seg_0009,SPEAKER_1,speaker_0,19.63,20.84,1.21,Are they? How much for something like that?
+seg_0010,SPEAKER_2,speaker_1,21.86,23.52,1.66,"Like, couple, couple grand."
+seg_0011,SPEAKER_1,speaker_0,24.06,24.58,0.52,Couple of grand?
+seg_0012,SPEAKER_2,speaker_1,24.82,24.96,0.14,Yeah.
+seg_0013,SPEAKER_1,speaker_0,25.04,27.04,2.0,"If those are diamonds, that must be quite a bit more than that."
+seg_0014,SPEAKER_2,speaker_1,27.08,27.98,0.9,"Yes, it is."
+seg_0015,SPEAKER_1,speaker_0,28.2,28.74,0.54,How much?
+seg_0016,SPEAKER_2,speaker_1,29.34,30.32,0.98,Probably 24.
+seg_0017,SPEAKER_1,speaker_0,30.74,32.32,1.58,"24,000? Maybe a bit more?"
+seg_0018,SPEAKER_2,speaker_1,32.619,34.24,1.621,"Maybe a, the gold is higher now."
+seg_0019,SPEAKER_1,speaker_0,34.74,35.339,0.599,"How much, then?"
+seg_0020,SPEAKER_2,speaker_1,35.54,36.58,1.04,"Probably, like, 25."
+seg_0021,SPEAKER_1,speaker_0,37.44,38.32,0.88,How do you make your living?
+seg_0022,SPEAKER_2,speaker_1,38.76,49.24,10.48,"Well, look, I, look, s- real estate. We, we sell cars, and everything, you know. Look, this is my daughter right here. You know what I mean?"
+seg_0023,SPEAKER_1,speaker_0,49.3,49.58,0.28,Really?
+seg_0024,SPEAKER_2,speaker_1,49.74,54.32,4.58,"Yes. This is my daughter. She's seven years old. We're not doing nothing bad, man."
+seg_0025,SPEAKER_1,speaker_0,55.22,57.52,2.3,"If I asked one of those police what you do, what would he say?"
+seg_0026,SPEAKER_2,speaker_1,58.16,63.82,5.66,"That, that, that, that I'm a, that I, that I, whatever. I don't know. What, they got they own opinion."
+seg_0027,SPEAKER_1,speaker_0,64.22,66.34,2.12,"They'd say that, they'd say that you're a big time drug dealer."
+seg_0028,SPEAKER_2,speaker_1,67.14,72.679,5.539,"I'm not, man. For real, man. I, look, I, look, I pay rent."
+seg_0029,SPEAKER_1,speaker_0,72.94,74.75,1.81,"In your opinion, why do they have that view of you?"
+seg_0030,SPEAKER_2,speaker_1,74.8,76.52,1.72,Because they see me every day out here.
+seg_0031,SPEAKER_1,speaker_0,77.34,77.35,0.01,Yeah.
+seg_0032,SPEAKER_2,speaker_1,77.42,77.7,0.28,And-
+seg_0033,SPEAKER_1,speaker_0,77.78,78.86,1.08,"On the streets, on the corner?"
+seg_0034,SPEAKER_2,speaker_1,78.88,79.76,0.88,"O- on the corner, but-"
+seg_0035,SPEAKER_1,speaker_0,80.17,80.17,0.0,What-
+seg_0036,SPEAKER_2,speaker_1,80.22,81.6,1.38,I live right around the corner.
+seg_0037,SPEAKER_3,speaker_2,82.62,83.02,0.4,"Oh, milk."
+seg_0038,SPEAKER_2,speaker_1,84.24,91.6,7.36,"Yeah, man, look, we, look, these animals was gonna be butchered, and I think I did a good deed. I think God is seeing this."
+seg_0039,SPEAKER_1,speaker_0,92.18,93.88,1.7,"Joel, what's the story with your watch?"
+seg_0040,SPEAKER_3,speaker_2,94.4,95.12,0.72,Huh?
+seg_0041,SPEAKER_2,speaker_1,98.18,98.78,0.6,That watch?
+seg_0042,SPEAKER_1,speaker_0,98.86,101.44,2.58,"Let me see that. How much for something like that, Joel?"
+seg_0043,SPEAKER_3,speaker_2,101.78,103.07,1.29,"Uh, I only paid"
+seg_0044,SPEAKER_3,speaker_2,104.28,104.58,0.3,200.
+seg_0045,SPEAKER_2,speaker_1,104.59,104.59,0.0,Probably-
+seg_0046,SPEAKER_1,speaker_0,104.59,104.82,0.23,200 what?
+seg_0047,SPEAKER_3,speaker_2,105.12,105.38,0.26,Yeah.
+seg_0048,SPEAKER_2,speaker_1,105.44,105.89,0.45,$200.
+seg_0049,SPEAKER_1,speaker_0,106.3,106.94,0.64,$200?
+seg_0050,SPEAKER_3,speaker_2,107.02,107.38,0.36,Yes.
+seg_0051,SPEAKER_2,speaker_1,108.22,108.64,0.42,"You know, yeah."
+seg_0052,SPEAKER_1,speaker_0,108.66,111.1,2.44,"Did it cost more than two, did it cost more than $200?"
+seg_0053,SPEAKER_3,speaker_2,111.24,112.64,1.4,"Yeah, it cost more than 200."
+seg_0054,SPEAKER_1,speaker_0,112.88,113.32,0.44,How much?
+seg_0055,SPEAKER_2,speaker_1,114.46,115.26,0.8,A couple dollars.
+seg_0056,SPEAKER_3,speaker_2,115.87,115.88,0.01,Yeah.
+seg_0057,SPEAKER_1,speaker_0,115.9,118.68,2.78,"Like, maybe, what, more than, like, $20,000?"
+seg_0058,SPEAKER_2,speaker_1,118.84,119.06,0.22,No.
+seg_0059,SPEAKER_3,speaker_2,119.42,119.43,0.01,No.
+seg_0060,SPEAKER_2,speaker_1,119.46,120.3,0.84,"What, for the chain?"
+seg_0061,SPEAKER_3,speaker_2,120.34,120.93,0.59,"Oh, no. No."
+seg_0062,SPEAKER_1,speaker_0,120.94,121.96,1.02,"Yeah, but what about for the chain?"
+seg_0063,SPEAKER_3,speaker_2,122.04,123.38,1.34,"He paid the 100,000 for that."
+seg_0064,SPEAKER_2,speaker_1,123.44,124.24,0.8,"No, no."
+seg_0065,SPEAKER_1,speaker_0,132.5,133.56,1.06,Have you ever shot anyone?
+seg_0066,SPEAKER_2,speaker_1,134.42,140.2,5.78,"No. No, I never shot nobody. You know what I mean? I never shot nobody."
+seg_0067,SPEAKER_1,speaker_0,140.98,142.56,1.58,"Did you ever hurt anyone, physically?"
+seg_0068,SPEAKER_2,speaker_1,143.16,145.02,1.86,"Oh, always, yeah."
+seg_0069,SPEAKER_1,speaker_0,145.14,145.769,0.629,"You have been, mm-hmm."
+seg_0070,SPEAKER_2,speaker_1,145.78,156.94,11.16,"Yeah, we always beat people up. I'm not gonna lie to you. We always fight for family problems, you know. Sometimes you do what you gotta do to survive, man."
+seg_0071,SPEAKER_1,speaker_0,157.22,158.78,1.56,Did you stomp on that girl's head?
+seg_0072,SPEAKER_2,speaker_1,159.06,178.92,19.86,"No, I did not stomp on that girl's head. She'll tell you herself. I did not touch that girl. That's why I came out and they locked me up. But I ain't stomp on that girl head. They said I did,'cause everybody say stuff, but the detectives found out that I was telling the truth, and that's why they let me go."
+seg_0073,SPEAKER_1,speaker_0,179.32,186.58,7.26,"They'd probably say that the witnesses were scared because you, you command a lot of respect out here on the street, and that people would be afraid to testify."
+seg_0074,SPEAKER_2,speaker_1,187.0,194.66,7.66,"No. Honestly, nah. Honestly, nah.'Cause, look, look, I'm about to leave out of this shit hole soon."
+seg_0075,SPEAKER_2,speaker_1,195.88,206.74,10.86,"There's gonna be m- more worser people than me, all right? Once, once w- w- whatever they say, there's gonna be worser people a- and there's gonna be more problems."
+seg_0076,SPEAKER_1,speaker_0,206.88,207.6,0.72,More hitters.
+seg_0077,SPEAKER_2,speaker_1,207.7,209.16,1.46,"Yeah.'Cause, look,"
+seg_0078,SPEAKER_2,speaker_1,210.42,216.18,5.76,"everything is going good, man. Ain't nobody doing nothing wrong, man, look. You see somebody doing something wrong? No."
+seg_0079,SPEAKER_1,speaker_0,216.7,221.88,5.18,"You think it's good to have someone who's, who, who controls a bit of the area so that he can keep the peace a little?"
+seg_0080,SPEAKER_2,speaker_1,221.9,225.36,3.46,"Yes. I think that's, that's, that play a part in, in society."
+seg_0081,SPEAKER_1,speaker_0,225.4,227.24,1.84,"Rather than have smaller, little factions-"
+seg_0082,SPEAKER_2,speaker_1,227.25,228.86,1.61,"Yes. Yeah,'cause everybody wanna do what-"
+seg_0083,SPEAKER_1,speaker_0,228.97,229.049,0.079,... fighting each other out
+seg_0084,SPEAKER_2,speaker_1,229.049,237.78,8.731,"... exactly,'cause then everybody wanna do whatever, anything anybody wanna do, and that's when chaos come. Somebody gotta have control of something."

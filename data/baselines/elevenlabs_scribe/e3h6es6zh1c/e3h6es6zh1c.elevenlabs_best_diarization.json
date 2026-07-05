@@ -1,0 +1,752 @@
+[
+  {
+    "segment_id": "seg_0000",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 17.18,
+    "end_sec": 18.3,
+    "start_time": "00:17.180",
+    "end_time": "00:18.300",
+    "duration_sec": 1.12,
+    "text": "Latrell.",
+    "word_start_index": 0,
+    "word_end_index": 0
+  },
+  {
+    "segment_id": "seg_0001",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 19.08,
+    "end_sec": 20.12,
+    "start_time": "00:19.080",
+    "end_time": "00:20.120",
+    "duration_sec": 1.04,
+    "text": "What's up, baby girl?",
+    "word_start_index": 1,
+    "word_end_index": 4
+  },
+  {
+    "segment_id": "seg_0002",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 20.54,
+    "end_sec": 21.76,
+    "start_time": "00:20.540",
+    "end_time": "00:21.760",
+    "duration_sec": 1.22,
+    "text": "Can you please turn that off?",
+    "word_start_index": 5,
+    "word_end_index": 10
+  },
+  {
+    "segment_id": "seg_0003",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 22.26,
+    "end_sec": 23.6,
+    "start_time": "00:22.260",
+    "end_time": "00:23.600",
+    "duration_sec": 1.34,
+    "text": "Why? You don't like my music?",
+    "word_start_index": 11,
+    "word_end_index": 16
+  },
+  {
+    "segment_id": "seg_0004",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 24.34,
+    "end_sec": 29.24,
+    "start_time": "00:24.340",
+    "end_time": "00:29.240",
+    "duration_sec": 4.9,
+    "text": "Is it music? Because i- it sounds like a bunch of sex noises over a bass line.",
+    "word_start_index": 17,
+    "word_end_index": 33
+  },
+  {
+    "segment_id": "seg_0005",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 30.04,
+    "end_sec": 30.34,
+    "start_time": "00:30.040",
+    "end_time": "00:30.340",
+    "duration_sec": 0.3,
+    "text": "Oh,",
+    "word_start_index": 34,
+    "word_end_index": 34
+  },
+  {
+    "segment_id": "seg_0006",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 31.64,
+    "end_sec": 36.96,
+    "start_time": "00:31.640",
+    "end_time": "00:36.960",
+    "duration_sec": 5.32,
+    "text": "I get it. You don't like my music'cause I'm gay. You can't handle a gay man's music.",
+    "word_start_index": 35,
+    "word_end_index": 52
+  },
+  {
+    "segment_id": "seg_0007",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 37.14,
+    "end_sec": 41.28,
+    "start_time": "00:37.140",
+    "end_time": "00:41.280",
+    "duration_sec": 4.14,
+    "text": "No, no, no. It's... I'm trying to work here, and that music is weirdly sexual.",
+    "word_start_index": 53,
+    "word_end_index": 67
+  },
+  {
+    "segment_id": "seg_0008",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 41.7,
+    "end_sec": 51.84,
+    "start_time": "00:41.700",
+    "end_time": "00:51.840",
+    "duration_sec": 10.14,
+    "text": "Oh, I see. So my sexuality is weird. You just can't fathom a man being attracted to another man.",
+    "word_start_index": 68,
+    "word_end_index": 86
+  },
+  {
+    "segment_id": "seg_0009",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 52.8,
+    "end_sec": 58.44,
+    "start_time": "00:52.800",
+    "end_time": "00:58.440",
+    "duration_sec": 5.64,
+    "text": "I can fathom it. It's... Can you just please listen to some other gay music like Barbra Streisand or something? Anything that's-",
+    "word_start_index": 87,
+    "word_end_index": 108
+  },
+  {
+    "segment_id": "seg_0010",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 58.449,
+    "end_sec": 65.84,
+    "start_time": "00:58.449",
+    "end_time": "01:05.840",
+    "duration_sec": 7.391,
+    "text": "Oh, I see. I see. Okay, so listening to Barbra Streisand is gay. Stereotype much?",
+    "word_start_index": 109,
+    "word_end_index": 123
+  },
+  {
+    "segment_id": "seg_0011",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 70.88,
+    "end_sec": 72.12,
+    "start_time": "01:10.880",
+    "end_time": "01:12.120",
+    "duration_sec": 1.24,
+    "text": "So you seeing anybody lately?",
+    "word_start_index": 124,
+    "word_end_index": 128
+  },
+  {
+    "segment_id": "seg_0012",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 75.18,
+    "end_sec": 77.69,
+    "start_time": "01:15.180",
+    "end_time": "01:17.690",
+    "duration_sec": 2.51,
+    "text": "Yeah, I, I mean, kind of. I think that-",
+    "word_start_index": 129,
+    "word_end_index": 137
+  },
+  {
+    "segment_id": "seg_0013",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 77.7,
+    "end_sec": 86.44,
+    "start_time": "01:17.700",
+    "end_time": "01:26.440",
+    "duration_sec": 8.74,
+    "text": "'Cause I got it good last night. Ooh, it was like pow. I mean, my man was like blop, like he had a baby arm holding onto a apple.",
+    "word_start_index": 138,
+    "word_end_index": 166
+  },
+  {
+    "segment_id": "seg_0014",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 86.76,
+    "end_sec": 89.84,
+    "start_time": "01:26.760",
+    "end_time": "01:29.840",
+    "duration_sec": 3.08,
+    "text": "Ah, don't call it a baby arm.",
+    "word_start_index": 167,
+    "word_end_index": 173
+  },
+  {
+    "segment_id": "seg_0015",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 90.32,
+    "end_sec": 90.64,
+    "start_time": "01:30.320",
+    "end_time": "01:30.640",
+    "duration_sec": 0.32,
+    "text": "Oh,",
+    "word_start_index": 174,
+    "word_end_index": 174
+  },
+  {
+    "segment_id": "seg_0016",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 91.94,
+    "end_sec": 96.98,
+    "start_time": "01:31.940",
+    "end_time": "01:36.980",
+    "duration_sec": 5.04,
+    "text": "I see. So you can't handle hearing about how I'm gay. I'm sorry.",
+    "word_start_index": 175,
+    "word_end_index": 187
+  },
+  {
+    "segment_id": "seg_0017",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 97.46,
+    "end_sec": 102.84,
+    "start_time": "01:37.460",
+    "end_time": "01:42.840",
+    "duration_sec": 5.38,
+    "text": "You just referred to your boyfriend's penis as a baby's arm holding an apple.",
+    "word_start_index": 188,
+    "word_end_index": 201
+  },
+  {
+    "segment_id": "seg_0018",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 102.85,
+    "end_sec": 109.0,
+    "start_time": "01:42.850",
+    "end_time": "01:49.000",
+    "duration_sec": 6.15,
+    "text": "Well, that's what it looked like. And it's not my boyfriend, by the way. And anywhat, you're homophobic.",
+    "word_start_index": 202,
+    "word_end_index": 219
+  },
+  {
+    "segment_id": "seg_0019",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 110.7,
+    "end_sec": 117.84,
+    "start_time": "01:50.700",
+    "end_time": "01:57.840",
+    "duration_sec": 7.14,
+    "text": "No. No, no. That's not homophobic, okay? You're explicitly talking about sexual things in the workplace.",
+    "word_start_index": 220,
+    "word_end_index": 235
+  },
+  {
+    "segment_id": "seg_0020",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 118.7,
+    "end_sec": 124.42,
+    "start_time": "01:58.700",
+    "end_time": "02:04.420",
+    "duration_sec": 5.72,
+    "text": "Fine. There's plenty of stuff that we could talk about. You know, it's, uh, my, my penis cup,",
+    "word_start_index": 236,
+    "word_end_index": 253
+  },
+  {
+    "segment_id": "seg_0021",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 125.78,
+    "end_sec": 135.34,
+    "start_time": "02:05.780",
+    "end_time": "02:15.340",
+    "duration_sec": 9.56,
+    "text": "my scrotum cozies that I have been knitting recently. Oh, with these knitting needles that I have just noticed look like little skinny purple penises, et cetera and et cetera.",
+    "word_start_index": 254,
+    "word_end_index": 283
+  },
+  {
+    "segment_id": "seg_0022",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 135.58,
+    "end_sec": 136.3,
+    "start_time": "02:15.580",
+    "end_time": "02:16.300",
+    "duration_sec": 0.72,
+    "text": "Oh my God.",
+    "word_start_index": 284,
+    "word_end_index": 286
+  },
+  {
+    "segment_id": "seg_0023",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 137.4,
+    "end_sec": 140.06,
+    "start_time": "02:17.400",
+    "end_time": "02:20.060",
+    "duration_sec": 2.66,
+    "text": "Can I show you a picture, and then you tell me if it's good for Facebook?",
+    "word_start_index": 287,
+    "word_end_index": 302
+  },
+  {
+    "segment_id": "seg_0024",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 141.26,
+    "end_sec": 144.76,
+    "start_time": "02:21.260",
+    "end_time": "02:24.760",
+    "duration_sec": 3.5,
+    "text": "Okay. I'm fairly certain you're going to show me something overtly sexual.",
+    "word_start_index": 303,
+    "word_end_index": 314
+  },
+  {
+    "segment_id": "seg_0025",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 144.82,
+    "end_sec": 146.48,
+    "start_time": "02:24.820",
+    "end_time": "02:26.480",
+    "duration_sec": 1.66,
+    "text": "Don't you prejudge me. Here it is.",
+    "word_start_index": 315,
+    "word_end_index": 321
+  },
+  {
+    "segment_id": "seg_0026",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 146.74,
+    "end_sec": 147.1,
+    "start_time": "02:26.740",
+    "end_time": "02:27.100",
+    "duration_sec": 0.36,
+    "text": "Ah,",
+    "word_start_index": 322,
+    "word_end_index": 322
+  },
+  {
+    "segment_id": "seg_0027",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 148.34,
+    "end_sec": 150.66,
+    "start_time": "02:28.340",
+    "end_time": "02:30.660",
+    "duration_sec": 2.32,
+    "text": ". That's a close-up of an anus.",
+    "word_start_index": 323,
+    "word_end_index": 329
+  },
+  {
+    "segment_id": "seg_0028",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 150.72,
+    "end_sec": 152.16,
+    "start_time": "02:30.720",
+    "end_time": "02:32.160",
+    "duration_sec": 1.44,
+    "text": "Oh, no, that's not an anus.",
+    "word_start_index": 330,
+    "word_end_index": 335
+  },
+  {
+    "segment_id": "seg_0029",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 153.46,
+    "end_sec": 154.64,
+    "start_time": "02:33.460",
+    "end_time": "02:34.640",
+    "duration_sec": 1.18,
+    "text": "That's my anus, baby girl.",
+    "word_start_index": 336,
+    "word_end_index": 340
+  },
+  {
+    "segment_id": "seg_0030",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 156.02,
+    "end_sec": 157.16,
+    "start_time": "02:36.020",
+    "end_time": "02:37.160",
+    "duration_sec": 1.14,
+    "text": "That's disgusting.",
+    "word_start_index": 341,
+    "word_end_index": 342
+  },
+  {
+    "segment_id": "seg_0031",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 157.44,
+    "end_sec": 162.14,
+    "start_time": "02:37.440",
+    "end_time": "02:42.140",
+    "duration_sec": 4.7,
+    "text": "Oh, I see. So you don't wanna see a close-up picture of my anus'cause you hate gay men.",
+    "word_start_index": 343,
+    "word_end_index": 361
+  },
+  {
+    "segment_id": "seg_0032",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 162.34,
+    "end_sec": 166.1,
+    "start_time": "02:42.340",
+    "end_time": "02:46.100",
+    "duration_sec": 3.76,
+    "text": "No, I don't wanna look at a close-up picture of anyone's anus.",
+    "word_start_index": 362,
+    "word_end_index": 373
+  },
+  {
+    "segment_id": "seg_0033",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 167.06,
+    "end_sec": 170.68,
+    "start_time": "02:47.060",
+    "end_time": "02:50.680",
+    "duration_sec": 3.62,
+    "text": "Homophobe. Homophobe. This a homophobe right here. Ho-",
+    "word_start_index": 374,
+    "word_end_index": 381
+  },
+  {
+    "segment_id": "seg_0034",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 172.44,
+    "end_sec": 176.6,
+    "start_time": "02:52.440",
+    "end_time": "02:56.600",
+    "duration_sec": 4.16,
+    "text": "Homophobe alert. Homophobe. Woo, woo, woo, woo.",
+    "word_start_index": 382,
+    "word_end_index": 388
+  },
+  {
+    "segment_id": "seg_0035",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 178.58,
+    "end_sec": 178.78,
+    "start_time": "02:58.580",
+    "end_time": "02:58.780",
+    "duration_sec": 0.2,
+    "text": "Hey.",
+    "word_start_index": 389,
+    "word_end_index": 389
+  },
+  {
+    "segment_id": "seg_0036",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 180.4,
+    "end_sec": 181.109,
+    "start_time": "03:00.400",
+    "end_time": "03:01.109",
+    "duration_sec": 0.709,
+    "text": "Hey, baby. How's it going?",
+    "word_start_index": 390,
+    "word_end_index": 394
+  },
+  {
+    "segment_id": "seg_0037",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 182.54,
+    "end_sec": 183.16,
+    "start_time": "03:02.540",
+    "end_time": "03:03.160",
+    "duration_sec": 0.62,
+    "text": "Ready to go to lunch?",
+    "word_start_index": 395,
+    "word_end_index": 399
+  },
+  {
+    "segment_id": "seg_0038",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 183.78,
+    "end_sec": 188.64,
+    "start_time": "03:03.780",
+    "end_time": "03:08.640",
+    "duration_sec": 4.86,
+    "text": "Yeah. S- uh, Latrell, this is Gavin. Gavin, this is Latrell. This is my boyfriend.",
+    "word_start_index": 400,
+    "word_end_index": 414
+  },
+  {
+    "segment_id": "seg_0039",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 188.88,
+    "end_sec": 189.26,
+    "start_time": "03:08.880",
+    "end_time": "03:09.260",
+    "duration_sec": 0.38,
+    "text": "How you doing?",
+    "word_start_index": 415,
+    "word_end_index": 417
+  },
+  {
+    "segment_id": "seg_0040",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 190.08,
+    "end_sec": 193.82,
+    "start_time": "03:10.080",
+    "end_time": "03:13.820",
+    "duration_sec": 3.74,
+    "text": "I'm, I'm, I'm doing very well. How, how are you doing, Gavin, Gavin?",
+    "word_start_index": 418,
+    "word_end_index": 430
+  },
+  {
+    "segment_id": "seg_0041",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 194.38,
+    "end_sec": 195.9,
+    "start_time": "03:14.380",
+    "end_time": "03:15.900",
+    "duration_sec": 1.52,
+    "text": "Great. Wanna go?",
+    "word_start_index": 431,
+    "word_end_index": 433
+  },
+  {
+    "segment_id": "seg_0042",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 196.06,
+    "end_sec": 196.26,
+    "start_time": "03:16.060",
+    "end_time": "03:16.260",
+    "duration_sec": 0.2,
+    "text": "Yeah.",
+    "word_start_index": 434,
+    "word_end_index": 434
+  },
+  {
+    "segment_id": "seg_0043",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 196.48,
+    "end_sec": 196.98,
+    "start_time": "03:16.480",
+    "end_time": "03:16.980",
+    "duration_sec": 0.5,
+    "text": "Nice to meet you.",
+    "word_start_index": 435,
+    "word_end_index": 438
+  },
+  {
+    "segment_id": "seg_0044",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 197.32,
+    "end_sec": 198.56,
+    "start_time": "03:17.320",
+    "end_time": "03:18.560",
+    "duration_sec": 1.24,
+    "text": "No. Trust me, it's not.",
+    "word_start_index": 439,
+    "word_end_index": 443
+  },
+  {
+    "segment_id": "seg_0045",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 198.66,
+    "end_sec": 198.9,
+    "start_time": "03:18.660",
+    "end_time": "03:18.900",
+    "duration_sec": 0.24,
+    "text": "It's not?",
+    "word_start_index": 444,
+    "word_end_index": 445
+  },
+  {
+    "segment_id": "seg_0046",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 198.92,
+    "end_sec": 199.54,
+    "start_time": "03:18.920",
+    "end_time": "03:19.540",
+    "duration_sec": 0.62,
+    "text": "That's the guy.",
+    "word_start_index": 446,
+    "word_end_index": 448
+  },
+  {
+    "segment_id": "seg_0047",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 200.6,
+    "end_sec": 201.92,
+    "start_time": "03:20.600",
+    "end_time": "03:21.920",
+    "duration_sec": 1.32,
+    "text": "Oh.",
+    "word_start_index": 449,
+    "word_end_index": 449
+  },
+  {
+    "segment_id": "seg_0048",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 201.93,
+    "end_sec": 205.82,
+    "start_time": "03:21.930",
+    "end_time": "03:25.820",
+    "duration_sec": 3.89,
+    "text": "Oh, I get it. I'm not persecuted. I'm just a ass.",
+    "word_start_index": 450,
+    "word_end_index": 461
+  },
+  {
+    "segment_id": "seg_0049",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 212.66,
+    "end_sec": 221.95,
+    "start_time": "03:32.660",
+    "end_time": "03:41.950",
+    "duration_sec": 9.29,
+    "text": "I want you, but I don't need you. I want you, but I don't need you. I-",
+    "word_start_index": 462,
+    "word_end_index": 478
+  }
+]

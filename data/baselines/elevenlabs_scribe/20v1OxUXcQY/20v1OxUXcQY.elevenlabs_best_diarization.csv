@@ -1,0 +1,99 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,6.34,8.84,2.5,"You two, first of all, well done. Brilliant film."
+seg_0001,SPEAKER_2,speaker_1,9.02,9.12,0.1,Oh.
+seg_0002,SPEAKER_3,speaker_2,9.56,9.65,0.09,Thank you.
+seg_0003,SPEAKER_1,speaker_0,9.66,13.02,3.36,You were right in the mix in this one. Was it just like one giant workout?
+seg_0004,SPEAKER_2,speaker_1,13.48,14.4,0.92,It's exactly what it was.
+seg_0005,SPEAKER_3,speaker_2,14.44,16.96,2.52,"It kinda was. W- you know, we have to kind of-"
+seg_0006,SPEAKER_2,speaker_1,17.0,17.79,0.79,"We worked out a lot, didn't we?"
+seg_0007,SPEAKER_3,speaker_2,17.82,41.7,23.88,"We did work out together actually and, and, uh, it's kinda fun to have a reason to work out and, and get in shape. It's hard when you, you know, you're doing a job and there's no time to go to the gym. A lot of people find it hard to actually just fit it into their schedule. It's not'cause they're lazy or they don't wanna work out, it's just like, ""When do I do that? When do I dedicate that amount of time?"" But when it's part of your job, it's joyous. So yeah, we got in, uh, in good shape in the California sunshine, didn't we?"
+seg_0008,SPEAKER_2,speaker_1,41.9,42.54,0.64,Green juice.
+seg_0009,SPEAKER_3,speaker_2,42.64,44.52,1.88,"Green juice, running up and down stairs."
+seg_0010,SPEAKER_1,speaker_0,45.0,45.58,0.58,Good work.
+seg_0011,SPEAKER_2,speaker_1,45.62,46.2,0.58,Happy days.
+seg_0012,SPEAKER_3,speaker_2,46.28,46.88,0.6,Lifting weights.
+seg_0013,SPEAKER_2,speaker_1,47.38,49.519,2.139,"Now we're back to London, Guinness and pies."
+seg_0014,SPEAKER_1,speaker_0,51.36,55.69,4.33,"And everyone seems to describe so far a utopian set, where everyone's having the best time. Was it hard?"
+seg_0015,SPEAKER_2,speaker_1,55.8,58.01,2.21,"I know, it's nauseating. I feel like it's nauseating."
+seg_0016,SPEAKER_3,speaker_2,58.08,58.15,0.07,I know.
+seg_0017,SPEAKER_2,speaker_1,58.15,65.12,6.97,"I keep saying it, but it's not untrue. Sometimes Simon is a bit mean. Come on, what else happened that was bad? Um, someone hurt themselves."
+seg_0018,SPEAKER_3,speaker_2,65.56,66.44,0.88,There was an accident.
+seg_0019,SPEAKER_2,speaker_1,67.8,68.38,0.58,I fell on my bum.
+seg_0020,SPEAKER_3,speaker_2,68.46,72.06,3.6,"You fell on your bum, and I'm never really mean. I'm only mean to you'cause it makes you laugh."
+seg_0021,SPEAKER_2,speaker_1,72.27,72.55,0.28,It does make me laugh.
+seg_0022,SPEAKER_3,speaker_2,72.56,76.36,3.8,'Cause you're not u-'cause you're used to people sort of like worshiping at your feet'cause you're such a princess.
+seg_0023,SPEAKER_2,speaker_1,76.5,77.81,1.31,"Oh, that's great. That's great. That's gonna be-"
+seg_0024,SPEAKER_3,speaker_2,77.82,81.0,3.18,"You're used to, ""Oh, Alice, oh you're great,"" and I like, so I just try to keep it real."
+seg_0025,SPEAKER_2,speaker_1,81.06,83.44,2.38,"Yeah, all I do is all cry and then say people say I'm great. You're..."
+seg_0026,SPEAKER_2,speaker_1,86.2,87.42,1.22,"You, you s- you're not a-"
+seg_0027,SPEAKER_3,speaker_2,87.46,101.42,13.96,"Alice is being... A- but Alice was raised on a cushion basically of privilege, and she needs to be leveled immediately whenever I see her because she needs to know that she's just a, a normal person and not some beautiful..."
+seg_0028,SPEAKER_2,speaker_1,103.68,104.52,0.84,That was really bad.
+seg_0029,SPEAKER_3,speaker_2,104.59,104.59,0.0,Sorry. Sorry.
+seg_0030,SPEAKER_2,speaker_1,104.6,113.85,9.25,"That was really bad. I didn't buy that at all. The scene is cut. Do it again. That, that change from delivery of where I was raised to beautiful, I didn't believe it in your eyes at all. You were thinking-"
+seg_0031,SPEAKER_3,speaker_2,113.85,118.3,4.45,"'Cause I was just, I was trying to get across the idea that I, my meanness is entirely motivated by devotion."
+seg_0032,SPEAKER_2,speaker_1,118.38,119.1,0.72,You were thinking about green juice.
+seg_0033,SPEAKER_3,speaker_2,119.42,119.74,0.32,Exactly.
+seg_0034,SPEAKER_2,speaker_1,119.78,128.6,8.82,"This is how you play it. And Simon is just a beautiful, beautiful person. This is the best."
+seg_0035,SPEAKER_1,speaker_0,130.47,133.94,3.47,"Alice, you can get him back. Tell us one thing about Simon that might surprise us."
+seg_0036,SPEAKER_3,speaker_2,134.08,135.01,0.93,It's a bit hot in here all of a sudden.
+seg_0037,SPEAKER_2,speaker_1,135.02,139.86,4.84,"The thing about Simon is he wears it all on his sleeve, doesn't he? We know exactly what's wrong with him-"
+seg_0038,SPEAKER_2,speaker_1,141.14,142.44,1.3,"... just, just by looking at him."
+seg_0039,SPEAKER_3,speaker_2,142.48,144.6,2.12,All my psychosis are very plain to see.
+seg_0040,SPEAKER_2,speaker_1,144.72,150.52,5.8,"Um, that's, that's called being a comedian. Probably the most difficult predicament in the world, I would say."
+seg_0041,SPEAKER_3,speaker_2,150.56,151.39,0.83,It's not easy being easy.
+seg_0042,SPEAKER_2,speaker_1,151.42,152.34,0.92,Other than...
+seg_0043,SPEAKER_2,speaker_1,154.9,165.46,10.56,"You know, it's not easy. They have to go out and make people laugh. We had a discussion the other day about when Simon would do standup again. I suggested it would be better if he did it in his underwear and very fit."
+seg_0044,SPEAKER_3,speaker_2,165.76,166.06,0.3,Yes.
+seg_0045,SPEAKER_2,speaker_1,166.26,167.58,1.32,That usually gets a lot of attention.
+seg_0046,SPEAKER_3,speaker_2,167.6,168.299,0.699,Absolutely.
+seg_0047,SPEAKER_2,speaker_1,168.42,169.84,1.42,But what do you think about that?
+seg_0048,SPEAKER_3,speaker_2,170.28,180.489,10.209,"I think it w- the, the idea of doing standup again for me, I know you didn't ask this question, uh, it, you have to be very, you have to be very match fit to do standup. Like, you have to do a lot of gigs. That, it would take a lot of time. I don't think I can go into that again."
+seg_0049,SPEAKER_2,speaker_1,180.8,181.76,0.96,See? That's a weakness.
+seg_0050,SPEAKER_3,speaker_2,181.86,182.4,0.54,That's a weakness.
+seg_0051,SPEAKER_1,speaker_0,182.62,186.96,4.34,"Can you tell me, as a woman, what's it like being so close to Benedict Cumberbatch?"
+seg_0052,SPEAKER_2,speaker_1,187.26,189.36,2.1,"As a woman, would you like to share?"
+seg_0053,SPEAKER_1,speaker_0,189.42,189.54,0.12,Well-
+seg_0054,SPEAKER_3,speaker_2,189.549,190.16,0.611,"Well, as a woman"
+seg_0055,SPEAKER_1,speaker_0,190.26,190.829,0.569,... I'm a woman asking.
+seg_0056,SPEAKER_2,speaker_1,190.92,191.78,0.86,"Oh, you as a woman."
+seg_0057,SPEAKER_1,speaker_0,191.88,192.18,0.3,Yeah.
+seg_0058,SPEAKER_2,speaker_1,192.26,197.44,5.18,"Um, I, what's it like being so close to him, uh, you mean phys- when I'm physically close to him, do I get the shivers?"
+seg_0059,SPEAKER_3,speaker_2,197.48,198.56,1.08,The cumbers bumbers wumbers.
+seg_0060,SPEAKER_2,speaker_1,200.12,201.12,1.0,Do I want to lick him?
+seg_0061,SPEAKER_3,speaker_2,201.56,206.36,4.8,"The thing is, the Benedict that everyone kn- sees is a little different to the Benedict we know."
+seg_0062,SPEAKER_3,speaker_2,207.76,248.52,40.76,"I, the Benedict, the, the real Benedict is like, ""Oh, hello, I'm Benedict."" He talks like that, and he's, he's very ungainly and he's not, he's what I call dyspraxic, which means he can't dance and he can't sort of like physically, uh, um, move himself. But you switch a camera on the guy-... he becomes this super sexy, lithe, Sherlock, super intelligent... It's like, ""Cut,"" and it's like, ""Was that any good?"" And you're like, ""Oh, Benedict, for G- someone's gonna see that and they're gonna know."" So what, after a take, what, Benedict will be shepherded into a small room and he's just kept there. And we tell him he's there for, you know, ""Just stay there, Ben. We'll be out. We all go and have dinner and stuff."" And he just sits there like playing with his, like, you know, we got a little toy for him. It looks like a Rubik's Cube, but it's simpler. It's like a four, it's like four, not six."
+seg_0063,SPEAKER_2,speaker_1,249.22,250.42,1.2,"Oh, God, Simon."
+seg_0064,SPEAKER_3,speaker_2,251.12,255.12,4.0,"So the Benedict that you, that all the girls love and stuff, it's a, it's a myth."
+seg_0065,SPEAKER_2,speaker_1,255.24,258.14,2.9,I would've thought that girls would love Chris Pine as well. Do they not?
+seg_0066,SPEAKER_1,speaker_0,258.74,261.68,2.94,"I do love him. He's almost a bit obviously handsome, if that's a thing."
+seg_0067,SPEAKER_3,speaker_2,261.72,264.01,2.29,"I love that, that Chris is actually too handsome to be handsome."
+seg_0068,SPEAKER_2,speaker_1,264.22,266.12,1.9,"You're too handsome for your own good, Pine."
+seg_0069,SPEAKER_1,speaker_0,266.5,268.969,2.469,"He's like, oh, Benedict. With Benedict it's like if I tried really hard, maybe I could get him."
+seg_0070,SPEAKER_2,speaker_1,269.04,270.02,0.98,"Oh, he's attainable."
+seg_0071,SPEAKER_1,speaker_0,270.06,270.07,0.01,Mm-hmm.
+seg_0072,SPEAKER_2,speaker_1,270.14,276.24,6.1,"Is that what Benedict feels? You know what I think is with Benedict, I think it's'cause he wants to have a family. I think that's what gets women as well."
+seg_0073,SPEAKER_3,speaker_2,276.27,277.5,1.23,"Oh, he's giving off those pheromones."
+seg_0074,SPEAKER_2,speaker_1,277.56,279.68,2.12,I don't think Chris gives off those pheromones.
+seg_0075,SPEAKER_3,speaker_2,279.82,281.76,1.94,Chris wants to have lots of family.
+seg_0076,SPEAKER_3,speaker_2,284.46,285.5,1.04,And there's nothing wrong with that.
+seg_0077,SPEAKER_2,speaker_1,288.52,290.52,2.0,I'm literally gonna pee my pants.
+seg_0078,SPEAKER_2,speaker_1,292.74,307.34,14.6,"Chris, Benedict, Benedict l- Benedict wants to have... Oh, God. Benedict wants to have a family, and I think that's what women respond to is that he, I th- and I think the thing about him is he will actually be a good dad and a good husband. I think he'll be loyal and I think he'll be caring."
+seg_0079,SPEAKER_3,speaker_2,307.62,307.74,0.12,Yeah.
+seg_0080,SPEAKER_2,speaker_1,307.8,308.48,0.68,So I think women-
+seg_0081,SPEAKER_3,speaker_2,308.8,309.039,0.239,Like a dog.
+seg_0082,SPEAKER_2,speaker_1,309.76,311.2,1.44,Women respond to that.
+seg_0083,SPEAKER_3,speaker_2,311.88,316.45,4.57,"Benedict, Benedict, the thing about Benedict is that he is, uh, and in all seriousness, he's, he's such a delightful human being."
+seg_0084,SPEAKER_2,speaker_1,316.45,317.96,1.51,Let's not do that. Everybody knows it.
+seg_0085,SPEAKER_1,speaker_0,318.02,318.16,0.14,Mm.
+seg_0086,SPEAKER_3,speaker_2,318.38,320.38,2.0,"But that, he is a delightful human. Yeah, he's an idiot."
+seg_0087,SPEAKER_1,speaker_0,320.42,321.98,1.56,Can you set me up with him? Can you just be my nan?
+seg_0088,SPEAKER_2,speaker_1,322.04,323.46,1.42,"Well, haven't you gone in to meet him?"
+seg_0089,SPEAKER_1,speaker_0,323.84,325.72,1.88,"Yeah, but he didn't ask me out, which was a shame."
+seg_0090,SPEAKER_2,speaker_1,326.24,330.88,4.64,"I'm surprised about that, to be honest. Truth be told, I'm actually, with a face like yours, surprised he didn't ask you out."
+seg_0091,SPEAKER_3,speaker_2,330.92,331.13,0.21,"If you, uh-"
+seg_0092,SPEAKER_2,speaker_1,331.18,334.4,3.22,So maybe we could circle back and rearrange that meeting.
+seg_0093,SPEAKER_3,speaker_2,334.51,335.84,1.33,"Yeah. I think he's, is he, uh-"
+seg_0094,SPEAKER_2,speaker_1,336.46,337.06,0.6,Singulare?
+seg_0095,SPEAKER_3,speaker_2,337.18,337.84,0.66,Singularis?
+seg_0096,SPEAKER_2,speaker_1,338.8,341.03,2.23,He's... I wouldn't know. I think that might-
+seg_0097,SPEAKER_3,speaker_2,341.1,342.96,1.86,I know him sing- I know him and Martin Freeman were tight for a while.
