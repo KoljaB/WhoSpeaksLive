@@ -490,6 +490,15 @@ HTML = r"""<!doctype html>
             </svg>
           </div>
           <div class="transcript-right-tools">
+            <button id="clearTranscript" class="transcript-icon-button" type="button" title="Clear transcript" aria-label="Clear transcript">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18"></path>
+                <path d="M8 6V4h8v2"></path>
+                <path d="M19 6l-1 14H6L5 6"></path>
+                <path d="M10 11v5"></path>
+                <path d="M14 11v5"></path>
+              </svg>
+            </button>
             <button id="copyTranscript" class="transcript-icon-button" type="button" title="Copy transcript" aria-label="Copy transcript">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <rect x="9" y="9" width="11" height="11" rx="2"></rect>
@@ -643,6 +652,7 @@ const sentences = document.getElementById("sentences");
 const transcriptPanel = document.querySelector(".transcript-panel");
 const followLive = document.getElementById("followLive");
 const transcriptSearch = document.getElementById("transcriptSearch");
+const clearTranscriptButton = document.getElementById("clearTranscript");
 const copyTranscriptButton = document.getElementById("copyTranscript");
 const downloadTranscriptButton = document.getElementById("downloadTranscript");
 const transcriptSettingsButton = document.getElementById("transcriptSettings");
@@ -725,6 +735,7 @@ let soloSpeakerIds = new Set();
 let mutedSpeakerIds = new Set();
 let followLiveEnabled = true;
 let transcriptSearchText = "";
+let transcriptClearBeforeSeconds = 0;
 let currentLiveSpeakerId = "";
 let transcriptLiveSpeakerId = "";
 let fallbackLiveSpeakerId = "";
@@ -1658,6 +1669,7 @@ function resetTranscriptDisplay() {
   browserLiveObservationBuffer = [];
   sentences.textContent = "";
   statusBox.textContent = "";
+  transcriptClearBeforeSeconds = 0;
   currentRealtimeGeneration = 0;
   clearLiveSpeakerState();
   clearUnsavedDetectedSpeakerDisplay();
@@ -1666,6 +1678,36 @@ function resetTranscriptDisplay() {
   hasRenderedFinalSentenceRows = false;
   syncSpeakerSessionBaselines();
   refreshSpeakerPanelSentenceCounts();
+}
+function currentTranscriptClearBoundarySeconds() {
+  let boundary = transcriptClearBeforeSeconds;
+  Array.from(sentences.querySelectorAll(".row")).forEach(row => {
+    const end = finiteAudioSecond(row.dataset.end, NaN);
+    if (Number.isFinite(end)) boundary = Math.max(boundary, end);
+  });
+  return boundary;
+}
+function itemIsBeforeClearedTranscriptBoundary(item) {
+  if (!(transcriptClearBeforeSeconds > 0)) return false;
+  const start = finiteAudioSecond(item && item.start, NaN);
+  if (Number.isFinite(start)) return start < transcriptClearBeforeSeconds;
+  const end = finiteAudioSecond(item && item.end, NaN);
+  return Number.isFinite(end) && end <= transcriptClearBeforeSeconds;
+}
+function clearDisplayedTranscript() {
+  if (!sentences.querySelector(".row")) {
+    log("Transcript is already clear.");
+    return;
+  }
+  transcriptClearBeforeSeconds = currentTranscriptClearBoundarySeconds();
+  sentences.textContent = "";
+  renderedSpeakerSentenceCounts = {};
+  renderedSpeakerSpeakingSeconds = {};
+  hasRenderedFinalSentenceRows = false;
+  clearLiveSpeakerState();
+  refreshSpeakerPanelSentenceCounts();
+  refreshTranscriptVisibility();
+  log("Cleared transcript.");
 }
 function clearUnsavedDetectedSpeakerDisplay() {
   if (speakerLibraryState.group_name) return;
@@ -3314,6 +3356,9 @@ function renderSentence(item) {
   if (item.realtime && Number(item.realtime_generation || 0) < currentRealtimeGeneration) {
     return;
   }
+  if (itemIsBeforeClearedTranscriptBoundary(item)) {
+    return;
+  }
   if (item.realtime && findFinalSentenceRow(item.index)) {
     return;
   }
@@ -3513,6 +3558,7 @@ transcriptSearch.addEventListener("input", () => {
   transcriptSearchText = transcriptSearch.value || "";
   refreshTranscriptVisibility();
 });
+clearTranscriptButton.addEventListener("click", clearDisplayedTranscript);
 copyTranscriptButton.addEventListener("click", () => copyTranscript());
 downloadTranscriptButton.addEventListener("click", () => downloadTranscript());
 transcriptSettingsButton.addEventListener("click", event => {
