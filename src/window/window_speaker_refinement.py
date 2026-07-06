@@ -18,7 +18,6 @@ class SpeakerRefinementConfig:
     centroid_blend: float = 0.555
     unknown_min_similarity: float = 0.20
     unknown_min_margin: float = 0.0
-    unknown_min_later_rows: int = 5
     known_max_duration: float = 8.0
     known_min_similarity: float = -0.039
     known_min_delta: float = 0.108
@@ -150,27 +149,12 @@ def find_speaker_prototype_revisions(
         return []
 
     revisions: list[SpeakerPrototypeRevision] = []
-    row_indexes: list[int] = []
-    for item in rows:
-        try:
-            row_indexes.append(int(item["index"]))
-        except (KeyError, TypeError, ValueError):
-            continue
-    unknown_min_later_rows = max(0, int(config.unknown_min_later_rows))
     for row in rows:
         embedding = _row_embedding(row)
         if embedding is None:
             continue
         current = speaker_label(row)
         duration = _row_duration(row)
-        if current is None and unknown_min_later_rows > 0:
-            try:
-                row_index = int(row["index"])
-            except (KeyError, TypeError, ValueError):
-                continue
-            later_rows = sum(1 for index in row_indexes if index > row_index)
-            if later_rows < unknown_min_later_rows:
-                continue
         if current and not allow_known_reassignment:
             continue
         if current and duration > config.known_max_duration:

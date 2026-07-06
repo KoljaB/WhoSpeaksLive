@@ -245,6 +245,7 @@ HTML = r"""<!doctype html>
     .transcript-panel.hide-speech-rate .sentence-speech-rate { display:none; }
     .transcript-panel.hide-probabilities .prob { display:none; }
     .speaker-name, .speaker-row-title { font-weight:600; }
+    .row.provisional-assignment .speaker-name { opacity:.5; }
     .text { font-size:15px; line-height:1.34; }
     .row.realtime { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 10%, #0B1015); }
     .row.realtime.live-speaker-row { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, #0B1015); border-bottom-color:color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, var(--line)); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, transparent), inset 7px 0 14px color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, transparent); }
@@ -570,9 +571,17 @@ HTML = r"""<!doctype html>
               <strong id="newSpeakerSensitivityLabel"></strong>
             </span>
           </label>
-          <label class="speaker-setting-toggle" title="When enabled, later prototype evidence may revise an already labeled transcript row. Disabled still allows UNKNOWN rows to be filled later.">
+          <label class="speaker-setting-toggle" title="When enabled, prototype evidence may show a low-opacity speaker hint on UNKNOWN transcript rows without committing the label.">
+            <input id="speakerRefinementUnknownTentative" type="checkbox">
+            <span>Tentative UNKNOWN hints</span>
+          </label>
+          <label class="speaker-setting-toggle" title="When enabled, later evidence may commit UNKNOWN transcript rows to a known or newly confirmed speaker.">
+            <input id="speakerRefinementUnknownCommit" type="checkbox">
+            <span>Commit UNKNOWN later</span>
+          </label>
+          <label class="speaker-setting-toggle" title="When enabled, later prototype evidence may change an already committed speaker label.">
             <input id="allowSpeakerReassignment" type="checkbox">
-            <span>Allow later speaker reassignment</span>
+            <span>Reassign labeled speakers</span>
           </label>
           <div class="speaker-tools">
             <strong>Speaker groups</strong>
@@ -641,6 +650,8 @@ const showTranscriptProbabilities = document.getElementById("showTranscriptProba
 const inputMode = document.getElementById("inputMode");
 const newSpeakerSensitivity = document.getElementById("newSpeakerSensitivity");
 const newSpeakerSensitivityLabel = document.getElementById("newSpeakerSensitivityLabel");
+const speakerRefinementUnknownTentative = document.getElementById("speakerRefinementUnknownTentative");
+const speakerRefinementUnknownCommit = document.getElementById("speakerRefinementUnknownCommit");
 const allowSpeakerReassignment = document.getElementById("allowSpeakerReassignment");
 const loadSpeakerGroupButton = document.getElementById("loadSpeakerGroup");
 const saveSpeakerGroupButton = document.getElementById("saveSpeakerGroup");
@@ -983,26 +994,35 @@ async function applySpeakerSensitivityIfDirty() {
   if (!speakerSensitivityDirty) return null;
   return applySpeakerSensitivity();
 }
-function syncSpeakerReassignmentSetting(settings) {
+function syncSpeakerRefinementSettings(settings) {
   if (!settings || typeof settings !== "object") return;
+  speakerRefinementUnknownTentative.checked = settings.unknown_tentative !== false;
+  speakerRefinementUnknownCommit.checked = settings.unknown_commit !== false;
   allowSpeakerReassignment.checked = Boolean(settings.allow_reassignment);
 }
-async function applySpeakerReassignmentSetting() {
+function speakerRefinementPayload() {
+  return {
+    speaker_refinement_unknown_tentative: speakerRefinementUnknownTentative.checked,
+    speaker_refinement_unknown_commit: speakerRefinementUnknownCommit.checked,
+    allow_speaker_reassignment: allowSpeakerReassignment.checked,
+  };
+}
+async function applySpeakerRefinementSettings(changedControl) {
   await ensureSessionOwner("change speaker settings");
-  const requested = allowSpeakerReassignment.checked;
+  const requested = changedControl ? changedControl.checked : null;
   try {
-    const result = await post("/api/settings", {allow_speaker_reassignment: requested});
-    syncSpeakerReassignmentSetting(result.speaker_refinement);
+    const result = await post("/api/settings", speakerRefinementPayload());
+    syncSpeakerRefinementSettings(result.speaker_refinement);
     return result;
   } catch (error) {
-    allowSpeakerReassignment.checked = !requested;
-    log(`Speaker reassignment setting failed: ${error.message}`);
+    if (changedControl) changedControl.checked = !requested;
+    log(`Speaker refinement setting failed: ${error.message}`);
     throw error;
   }
 }
 newSpeakerSensitivity.value = speakerSensitivityConfig.selected || 3;
 updateSpeakerSensitivityLabel();
-syncSpeakerReassignmentSetting(speakerRefinementConfig);
+syncSpeakerRefinementSettings(speakerRefinementConfig);
 function extractYouTubeId(url) {
   const text = String(url || "");
   try {
@@ -1356,6 +1376,8 @@ function syncSessionControlLock() {
     inputMode,
     sourceModeButton,
     newSpeakerSensitivity,
+    speakerRefinementUnknownTentative,
+    speakerRefinementUnknownCommit,
     allowSpeakerReassignment,
     clearSpeakersButton,
     addReferenceSpeakerButton,
@@ -1695,8 +1717,8 @@ function revisionSpeakerId(label) {
 function revisionSpeakerBadge(label) {
   const speakerId = revisionSpeakerId(label);
   const index = speakerIndex(speakerId);
-  if (index !== null) return `[${index}]`;
-  return speakerId === "UNKNOWN" ? "[?]" : `[${speakerId}]`;
+  if (index !== null) return `S${index}`;
+  return speakerId === "UNKNOWN" ? "Unknown" : speakerId;
 }
 function parseRevisionChain(row) {
   if (!row || !row.dataset.revisionChain) return [];
@@ -1723,10 +1745,14 @@ function sentenceRevisionLabel(row, item, nextSpeakerId, previousSpeakerId) {
   }
   const chain = parseRevisionChain(row);
   const from = item.revision_from || item.prototype_reassigned_from || item.retro_reassigned_from || previousSpeakerId || "UNKNOWN";
-  pushRevisionSpeaker(chain, from);
+  const normalizedFrom = revisionSpeakerId(from);
+  if (!chain.length || normalizedFrom !== "UNKNOWN") {
+    pushRevisionSpeaker(chain, normalizedFrom);
+  }
   pushRevisionSpeaker(chain, nextSpeakerId || item.revision_to || item.assigned_speaker || "UNKNOWN");
   row.dataset.revisionChain = JSON.stringify(chain);
-  return `Revised ${chain.map(revisionSpeakerBadge).join(" -> ")}`;
+  const prefix = item.provisional_assignment ? "Tentative" : "Revised";
+  return `${prefix}: ${chain.map(revisionSpeakerBadge).join(" -> ")}`;
 }
 function speakerPanelName(speaker) {
   return speaker.name || speaker.display_name || speakerDisplayLabel(speaker.id);
@@ -2924,6 +2950,7 @@ function renderSentence(item) {
   row.dataset.rawSpeakerProbability = item.realtime ? String(rawSpeakerProbability) : "";
   row.dataset.rawSpeakerUnknownMargin = item.realtime ? String(rawSpeakerUnknownMargin) : "";
   row.dataset.speaker = displaySpeakerId || "UNKNOWN";
+  row.classList.toggle("provisional-assignment", Boolean(item.provisional_assignment));
   row.classList.toggle("live-speaker-row", item.realtime && Boolean(displaySpeakerId));
   const speakerLabel = speakerDisplayLabel(displaySpeakerId);
   const color = speakerColor(displaySpeakerId);
@@ -3193,13 +3220,22 @@ newSpeakerSensitivity.addEventListener("change", () => {
     })
     .catch(error => log(`Sensitivity update failed: ${error.message}`));
 });
-allowSpeakerReassignment.addEventListener("change", () => {
-  applySpeakerReassignmentSetting()
+[
+  speakerRefinementUnknownTentative,
+  speakerRefinementUnknownCommit,
+  allowSpeakerReassignment,
+].forEach(control => {
+  control.addEventListener("change", () => {
+    applySpeakerRefinementSettings(control)
     .then(result => {
-      const enabled = Boolean((result.speaker_refinement || {}).allow_reassignment);
-      log(enabled ? "Later speaker reassignment enabled." : "Later speaker reassignment disabled.");
+      const settings = result.speaker_refinement || {};
+      const tentative = settings.unknown_tentative !== false ? "on" : "off";
+      const commit = settings.unknown_commit !== false ? "on" : "off";
+      const reassignment = settings.allow_reassignment ? "on" : "off";
+      log(`Speaker refinement updated: tentative UNKNOWN ${tentative}, commit UNKNOWN ${commit}, speaker changes ${reassignment}.`);
     })
     .catch(() => {});
+  });
 });
 speakerTabButtons.forEach(button => {
   button.addEventListener("click", () => setSpeakerTab(button.dataset.speakerTab));
