@@ -28,7 +28,7 @@ from embeddings.embedding_providers import EmbeddingSubprocessClient, RemoteEmbe
 from speakers.realtime_speaker_memory import SpeakerMemory as RealtimeSpeakerMemory
 from speakers.speaker_embedding_cluster import SpeakerMemory as ClusterSpeakerMemory
 from window.window_diarizer import WindowDiarizer
-from window.window_domain import LiveSpeakerMemoryUpdateJob
+from window.window_domain import LiveSpeakerMemoryUpdateJob, TimedWord
 from window.window_events import RecordingEventBus
 from window.window_gui_html import HTML
 from window.browser_live_speaker_scoring import score_browser_live_speaker_samples
@@ -90,6 +90,512 @@ class WindowEventBusTests(unittest.TestCase):
         self.assertEqual(bus.records[0]["event"], "validation_replay_start")
         self.assertEqual(bus.records[0]["payload"], {"replay_speed": 1.0})
         self.assertIsInstance(bus.records[0]["time"], float)
+
+
+class WindowSentenceTextTests(unittest.TestCase):
+    def test_transcribe_window_capitalizes_after_previous_strong_sentence_boundary(self) -> None:
+        import window.window_text as window_text
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            unstable_tail_seconds=0.0,
+            sentence_boundary_pre_padding_seconds=0.06,
+            sentence_boundary_post_padding_seconds=0.09,
+            sentence_boundary_gap_ratio=0.6,
+        )
+        diarizer._audio_window_copy = mock.Mock(return_value=(np.zeros(160, dtype=np.float32), 16000))
+        diarizer._transcribe_audio_words = mock.Mock(return_value=(
+            [
+                TimedWord("was", 0.0, 0.2),
+                TimedWord("Beethoven", 0.25, 0.6),
+                TimedWord("good", 0.65, 0.85),
+                TimedWord("at", 0.9, 1.0),
+                TimedWord("music?", 1.05, 1.25),
+            ],
+            1,
+        ))
+
+        with mock.patch.object(window_text, "generate_sentences", return_value=["was Beethoven good at music?"]):
+            transcript = diarizer._transcribe_window(
+                object(),
+                160.2,
+                162.6,
+                final_flush=True,
+                previous_text_ended_sentence=True,
+            )
+
+        self.assertEqual(transcript.sentences[0].text, "Was Beethoven good at music?")
+
+
+class ScoreParityTests(unittest.TestCase):
+    def load_current_memory_optimizer(self) -> object:
+        module_path = ROOT / "runtime" / "optimization" / "optimize_current_memory_21.py"
+        if not module_path.is_file():
+            self.skipTest(f"Local optimizer harness is not present: {module_path}")
+        spec = importlib.util.spec_from_file_location("score_parity_current_memory_optimizer", module_path)
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"Could not load {module_path}")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        return module
+
+    def base_sentence_payload(self) -> dict[str, object]:
+        return {
+            "index": 1,
+            "start": 0.0,
+            "end": 3.0,
+            "text": "same speaker evidence",
+            "speech_audio_ratio": 1.0,
+        }
+
+    def unknown_sentence_payload(self) -> dict[str, object]:
+        return {
+            **self.base_sentence_payload(),
+            "pending": False,
+            "assigned_speaker": None,
+            "probabilities": {"unknown": 1.0},
+            "similarities": {},
+            "unknown_probability": 1.0,
+            "assignment_source": "embedding",
+        }
+
+    def confirmed_sentence_payload(self) -> dict[str, object]:
+        return {
+            **self.base_sentence_payload(),
+            "pending": False,
+            "revision": True,
+            "retro_reassigned": True,
+            "revision_from": "S3",
+            "revision_to": "S6",
+            "assigned_speaker": "S6",
+            "probabilities": {"unknown": 0.0, "speaker6": 1.0},
+            "similarities": {"S6": 0.82},
+            "unknown_probability": 0.0,
+            "assignment_source": "retro",
+        }
+
+    def canonical(self) -> list[dict[str, object]]:
+        return [
+            {
+                "speaker": "canonical_speaker",
+                "start": 0.0,
+                "end": 3.0,
+                "text": "same speaker evidence",
+            }
+        ]
+
+    def test_current_memory_optimizer_matches_live_memory_path_when_live_refinement_is_disabled(self) -> None:
+        optimizer = self.load_current_memory_optimizer()
+        from window.window_validation_replay import replay_cached_window_diarizer
+
+        config = dict(optimizer.BASE_CONFIG)
+        weights = {"espnet_ecapa_wavlm_joint": 1.0}
+        sentences = [
+            {
+                "index": 0,
+                "start": 0.0,
+                "end": 2.4,
+                "text": "alpha beta gamma delta",
+                "spoken_word_seconds": 2.4,
+                "speech_audio_ratio": 1.0,
+            },
+            {
+                "index": 1,
+                "start": 2.5,
+                "end": 4.7,
+                "text": "alpha beta gamma delta again",
+                "spoken_word_seconds": 2.2,
+                "speech_audio_ratio": 1.0,
+            },
+            {
+                "index": 2,
+                "start": 5.0,
+                "end": 5.8,
+                "text": "epsilon zeta eta theta",
+                "spoken_word_seconds": 0.8,
+                "speech_audio_ratio": 1.0,
+            },
+            {
+                "index": 3,
+                "start": 6.0,
+                "end": 8.7,
+                "text": "epsilon zeta eta theta longer",
+                "spoken_word_seconds": 2.7,
+                "speech_audio_ratio": 1.0,
+            },
+            {
+                "index": 4,
+                "start": 9.0,
+                "end": 11.1,
+                "text": "alpha beta gamma returns",
+                "spoken_word_seconds": 2.1,
+                "speech_audio_ratio": 1.0,
+            },
+        ]
+        embeddings = [
+            np.array([1.0, 0.0], dtype=np.float32),
+            np.array([0.99, 0.05], dtype=np.float32),
+            np.array([0.0, 1.0], dtype=np.float32),
+            np.array([0.0, 1.0], dtype=np.float32),
+            np.array([1.0, 0.02], dtype=np.float32),
+        ]
+        dataset = argparse.Namespace(
+            sentences=sentences,
+            embeddings={"espnet_ecapa_wavlm_joint": embeddings},
+        )
+
+        optimizer_rows = optimizer.replay_current_memory(dataset, weights, config)
+        live_args = argparse.Namespace(
+            **config,
+            min_embed_seconds=0.0,
+            section_gap_new_speaker=False,
+            unknown_pair_new_speaker=False,
+            speaker_refinement=False,
+        )
+        live_rows = replay_cached_window_diarizer(sentences, embeddings, live_args).final_payloads
+
+        self.assertEqual(len(live_rows), len(optimizer_rows))
+        for live, optimized in zip(live_rows, optimizer_rows):
+            self.assertEqual(live["index"], optimized["index"])
+            self.assertEqual(live.get("assigned_speaker"), optimized.get("assigned_speaker"))
+            self.assertEqual(live.get("created_speaker"), optimized.get("created_speaker"))
+            self.assertEqual(live.get("assignment_source"), optimized.get("assignment_source"))
+            self.assertEqual(live.get("probabilities"), optimized.get("probabilities"))
+            self.assertEqual(live.get("similarities"), optimized.get("similarities"))
+            self.assertEqual(live.get("unknown_probability"), optimized.get("unknown_probability"))
+            self.assertEqual(live.get("top_similarity"), optimized.get("top_similarity"))
+            self.assertEqual(live.get("margin"), optimized.get("margin"))
+
+        self.assertEqual([row.get("assigned_speaker") for row in live_rows], ["S1", "S1", "S2", "S2", "S1"])
+        self.assertTrue(live_rows[2].get("retro_reassigned"))
+
+    def test_current_memory_optimizer_uses_fast_cached_live_replay(self) -> None:
+        optimizer = self.load_current_memory_optimizer()
+        from window.window_validation_replay import replay_cached_window_diarizer
+
+        evaluate_source = inspect.getsource(optimizer.evaluate_candidate)
+        live_replay_source = inspect.getsource(optimizer.replay_current_live)
+        process_source = inspect.getsource(WindowDiarizer._process_sentence_embedding)
+        fast_replay_source = inspect.getsource(replay_cached_window_diarizer)
+
+        self.assertIn("replay_current_live", evaluate_source)
+        self.assertNotIn("replay_current_memory(prepared.dataset", evaluate_source)
+        self.assertIn("replay_cached_window_diarizer", live_replay_source)
+        self.assertIn("make_cached_replay_args", live_replay_source)
+        self.assertIn("_apply_sentence_embedding_decision", process_source)
+        self.assertIn("_apply_sentence_embedding_decision", fast_replay_source)
+
+    def test_cached_live_replay_scores_committed_prototype_reassignment(self) -> None:
+        from window.window_validation_replay import replay_cached_window_diarizer, replay_cached_window_score
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(sys, "argv", ["youtube_window_diarize_gui"]):
+            args = parse_args()
+        args.min_embed_seconds = 0.0
+        args.section_gap_new_speaker = False
+        args.unknown_pair_new_speaker = False
+        args.speaker_refinement = True
+        args.allow_speaker_reassignment = True
+        args.min_new_speaker_words = 3
+        args.known_speaker_gray_zone_min_unknown_probability = 1.1
+
+        sentences = [
+            {
+                "index": 0,
+                "start": 0.0,
+                "end": 3.0,
+                "text": "alpha beta anchor",
+                "spoken_word_seconds": 3.0,
+                "speech_audio_ratio": 1.0,
+            },
+            {
+                "index": 1,
+                "start": 3.2,
+                "end": 6.2,
+                "text": "gamma delta",
+                "spoken_word_seconds": 3.0,
+                "speech_audio_ratio": 1.0,
+            },
+            {
+                "index": 2,
+                "start": 6.4,
+                "end": 9.4,
+                "text": "gamma delta epsilon",
+                "spoken_word_seconds": 3.0,
+                "speech_audio_ratio": 1.0,
+            },
+        ]
+        embeddings = [
+            np.array([1.0, 0.0], dtype=np.float32),
+            np.array([0.0, 1.0], dtype=np.float32),
+            np.array([0.0, 1.0], dtype=np.float32),
+        ]
+
+        replay = replay_cached_window_diarizer(sentences, embeddings, args)
+        chronological_replay = replay_cached_window_diarizer(
+            sentences,
+            embeddings,
+            args,
+            defer_speaker_refinement=False,
+        )
+        final_by_index = {payload["index"]: payload for payload in replay.final_payloads}
+        chronological_final_by_index = {
+            payload["index"]: payload
+            for payload in chronological_replay.final_payloads
+        }
+
+        self.assertEqual(final_by_index[0]["assigned_speaker"], "S1")
+        self.assertEqual(final_by_index[1]["assigned_speaker"], "S2")
+        self.assertEqual(final_by_index[1]["assignment_source"], "prototype_reassign")
+        self.assertEqual(final_by_index[2]["assigned_speaker"], "S2")
+        self.assertEqual(
+            [chronological_final_by_index[index]["assigned_speaker"] for index in sorted(chronological_final_by_index)],
+            [final_by_index[index]["assigned_speaker"] for index in sorted(final_by_index)],
+        )
+        self.assertTrue(any(
+            record.get("event") == "sentence"
+            and (record.get("payload") or {}).get("index") == 1
+            and (record.get("payload") or {}).get("prototype_reassigned")
+            and not (record.get("payload") or {}).get("provisional_assignment")
+            for record in replay.records
+        ))
+
+        canonical = [
+            {"speaker": "speaker_a", "start": 0.0, "end": 3.0, "text": "alpha beta anchor"},
+            {"speaker": "speaker_b", "start": 3.2, "end": 6.2, "text": "gamma delta"},
+            {"speaker": "speaker_b", "start": 6.4, "end": 9.4, "text": "gamma delta epsilon"},
+        ]
+        score = replay_cached_window_score(sentences, embeddings, args, canonical, match_mode="timestamp")
+
+        self.assertEqual(score["rows"][1]["assigned_speaker"], "S2")
+        self.assertEqual(score["assigned_counts"], {"S1": 1, "S2": 2})
+        self.assertEqual(score["duration_accuracy"], 1.0)
+
+    def test_speaker_refinement_split_switches_default_on(self) -> None:
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(sys, "argv", ["youtube_window_diarize_gui"]):
+            args = parse_args()
+
+        self.assertTrue(args.speaker_refinement_unknown_tentative)
+        self.assertTrue(args.speaker_refinement_unknown_commit)
+        self.assertTrue(args.allow_speaker_reassignment)
+
+    def test_speaker_refinement_settings_update_split_switches(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            speaker_refinement=True,
+            speaker_refinement_unknown_tentative=True,
+            speaker_refinement_unknown_commit=True,
+            allow_speaker_reassignment=True,
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer._revisit_unknown_sentences = mock.Mock()
+        diarizer._refine_speaker_assignments = mock.Mock()
+
+        result = diarizer.set_speaker_refinement_settings({
+            "speaker_refinement_unknown_tentative": False,
+            "speaker_refinement_unknown_commit": False,
+            "allow_speaker_reassignment": False,
+        })
+
+        self.assertEqual(
+            result,
+            {
+                "enabled": True,
+                "unknown_tentative": False,
+                "unknown_commit": False,
+                "allow_reassignment": False,
+            },
+        )
+        diarizer._revisit_unknown_sentences.assert_not_called()
+        diarizer._refine_speaker_assignments.assert_not_called()
+
+        result = diarizer.set_speaker_refinement_settings({
+            "speaker_refinement_unknown_tentative": True,
+            "speaker_refinement_unknown_commit": True,
+            "allow_speaker_reassignment": False,
+        })
+
+        self.assertTrue(result["unknown_tentative"])
+        self.assertTrue(result["unknown_commit"])
+        diarizer._revisit_unknown_sentences.assert_called_once()
+        diarizer._refine_speaker_assignments.assert_called_once()
+
+    def test_unknown_commit_switch_blocks_retro_unknown_revisit(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(speaker_refinement_unknown_commit=False)
+        diarizer.memory = mock.Mock()
+
+        diarizer._revisit_unknown_sentences()
+
+        diarizer.memory.score_existing.assert_not_called()
+
+    def test_tentative_unknown_switch_blocks_prototype_unknown_hints_only(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            speaker_refinement=True,
+            speaker_refinement_unknown_tentative=False,
+            allow_speaker_reassignment=True,
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer._sentence_refinement_run_lock = threading.Lock()
+        diarizer._sentence_refinement_lock = threading.Lock()
+        diarizer._sentence_refinement_records = {
+            1: {"index": 1},
+            2: {"index": 2},
+        }
+        diarizer._apply_prototype_revision = mock.Mock(return_value=True)
+        unknown_revision = argparse.Namespace(
+            index=1,
+            previous_speaker=None,
+            assigned_speaker="S2",
+        )
+        known_revision = argparse.Namespace(
+            index=2,
+            previous_speaker="S1",
+            assigned_speaker="S2",
+        )
+
+        with mock.patch(
+            "window.window_diarizer.find_speaker_prototype_revisions",
+            return_value=[unknown_revision, known_revision],
+        ):
+            diarizer._refine_speaker_assignments()
+
+        diarizer._apply_prototype_revision.assert_called_once_with(known_revision)
+
+    def test_prototype_unknown_revision_is_tentative_not_committed(self) -> None:
+        from window.youtube_window_diarize_gui import build_window_validation_records
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.bus = RecordingEventBus()
+        diarizer._speaker_lock = threading.Lock()
+        diarizer._speaker_metadata = {}
+        diarizer._sentence_refinement_lock = threading.Lock()
+        diarizer._sentence_refinement_records = {
+            1: {
+                "index": 1,
+                "base_payload": self.base_sentence_payload(),
+                "embedding": np.array([1.0, 0.0], dtype=np.float32),
+                "duration_seconds": 3.0,
+                "assigned_speaker": None,
+                "created_speaker": False,
+                "probabilities": {"unknown": 1.0},
+                "similarities": {},
+                "unknown_probability": 1.0,
+                "top_similarity": None,
+                "margin": None,
+                "quality": 1.0,
+                "assignment_source": "embedding",
+            }
+        }
+        revision = argparse.Namespace(
+            index=1,
+            previous_speaker=None,
+            assigned_speaker="S3",
+            prototype_score=0.62,
+            prototype_margin=0.21,
+            prototype_delta=1.62,
+            prototype_scores={"S3": 0.62, "S1": 0.41},
+            assignment_source="prototype_unknown_assign",
+        )
+
+        self.assertTrue(diarizer._apply_prototype_revision(revision))
+
+        committed = diarizer._sentence_refinement_records[1]
+        self.assertIsNone(committed["assigned_speaker"])
+        self.assertEqual(committed["provisional_assigned_speaker"], "S3")
+
+        tentative_payload = diarizer.bus.records[-1]["payload"]
+        self.assertEqual(tentative_payload["assigned_speaker"], "S3")
+        self.assertTrue(tentative_payload["provisional_assignment"])
+
+        records = [
+            {"time": 1.0, "event": "sentence", "payload": self.unknown_sentence_payload()},
+            *diarizer.bus.records,
+        ]
+        _analysis_records, final_payloads = build_window_validation_records(records)
+
+        self.assertEqual(len(final_payloads), 1)
+        self.assertIsNone(final_payloads[0]["assigned_speaker"])
+
+    def test_score_reducers_follow_committed_live_state_not_tentative_ui_state(self) -> None:
+        from realtime.realtime_speakerdiarize import analyze_trace_against_canonical
+        from window.youtube_window_diarize_gui import build_window_validation_records
+
+        tentative_payload = {
+            **self.base_sentence_payload(),
+            "pending": False,
+            "revision": True,
+            "provisional_assignment": True,
+            "revision_from": "UNKNOWN",
+            "revision_to": "S3",
+            "assigned_speaker": "S3",
+            "probabilities": {"unknown": 0.45, "speaker3": 0.55},
+            "assignment_source": "prototype_unknown_tentative",
+        }
+        live_records = [
+            {"time": 1.0, "event": "sentence", "payload": self.unknown_sentence_payload()},
+            {"time": 2.0, "event": "sentence", "payload": tentative_payload},
+        ]
+
+        analysis_records, final_payloads = build_window_validation_records(live_records)
+        summary = analyze_trace_against_canonical(analysis_records, self.canonical(), match_mode="timestamp")
+
+        self.assertIsNone(final_payloads[0]["assigned_speaker"])
+        self.assertIsNone(summary["rows"][0]["assigned_speaker"])
+        self.assertEqual(summary["unknown_segments"], 1)
+        self.assertEqual(summary["assigned_counts"], {"UNKNOWN": 1})
+
+        confirmed_records = [
+            *live_records,
+            {"time": 3.0, "event": "sentence", "payload": self.confirmed_sentence_payload()},
+        ]
+        analysis_records, final_payloads = build_window_validation_records(confirmed_records)
+        summary = analyze_trace_against_canonical(analysis_records, self.canonical(), match_mode="timestamp")
+
+        self.assertEqual(final_payloads[0]["assigned_speaker"], "S6")
+        self.assertEqual(summary["rows"][0]["assigned_speaker"], "S6")
+        self.assertEqual(summary["assigned_counts"], {"S6": 1})
+        self.assertEqual(summary["duration_accuracy"], 1.0)
+
+    def test_raw_trace_analysis_ignores_tentative_sentence_events(self) -> None:
+        from realtime.realtime_speakerdiarize import analyze_trace_against_canonical
+
+        final_payload = {
+            **self.unknown_sentence_payload(),
+            "video_start_seconds": 0.0,
+            "video_end_seconds": 3.0,
+            "duration_seconds": 3.0,
+        }
+        tentative_payload = {
+            **self.base_sentence_payload(),
+            "pending": False,
+            "revision": True,
+            "provisional_assignment": True,
+            "assigned_speaker": "S3",
+        }
+        raw_records = [
+            {"time": 1.0, "event": "final", "payload": final_payload},
+            {"time": 1.1, "event": "sentence", "payload": self.unknown_sentence_payload()},
+            {"time": 1.2, "event": "sentence", "payload": tentative_payload},
+        ]
+
+        summary = analyze_trace_against_canonical(raw_records, self.canonical(), match_mode="timestamp")
+
+        self.assertIsNone(summary["rows"][0]["assigned_speaker"])
+        self.assertEqual(summary["unknown_segments"], 1)
+
+        summary = analyze_trace_against_canonical(
+            [*raw_records, {"time": 1.3, "event": "sentence", "payload": self.confirmed_sentence_payload()}],
+            self.canonical(),
+            match_mode="timestamp",
+        )
+
+        self.assertEqual(summary["rows"][0]["assigned_speaker"], "S6")
+        self.assertEqual(summary["duration_accuracy"], 1.0)
 
 
 class LiveSpeakerProbeScoringTests(unittest.TestCase):
@@ -1036,6 +1542,38 @@ class WindowStreamingAudioTests(unittest.TestCase):
         self.assertEqual(payload["assignment_source"], "final_sentence_live_hint")
         self.assertEqual(payload["live_hint_lag_seconds"], 0.5)
 
+    def test_live_speaker_assignment_master_switch_disables_sentence_hint(self) -> None:
+        class Bus:
+            def __init__(self) -> None:
+                self.events: list[tuple[str, dict[str, object]]] = []
+
+            def emit(self, event: str, payload: dict[str, object]) -> None:
+                self.events.append((event, payload))
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            live_speaker_assignment=False,
+            live_speaker_sentence_hint=True,
+        )
+        diarizer.bus = Bus()
+
+        diarizer._maybe_emit_sentence_live_speaker_hint({"assigned_speaker": "S2"}, 2.0)
+
+        self.assertEqual(diarizer.bus.events, [])
+
+    def test_live_speaker_assignment_off_reuses_main_embedding_provider(self) -> None:
+        main_embedding = object()
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.embedding = main_embedding
+        diarizer._new_embedding_client = mock.Mock(side_effect=AssertionError("live provider should not load"))
+        args = argparse.Namespace(
+            live_speaker_assignment=False,
+            embedding_provider="espnet_ecapa_wavlm_joint",
+            live_speaker_embedding_provider="pyannote_wespeaker_resnet34_lm",
+        )
+
+        self.assertIs(diarizer._new_live_embedding_client(args), main_embedding)
+
     def test_sentence_live_speaker_hint_skips_stale_assignment(self) -> None:
         class Bus:
             def __init__(self) -> None:
@@ -1405,6 +1943,22 @@ class EmbeddingSubprocessClientTests(unittest.TestCase):
 
 
 class KrokoPreviewStartupTests(unittest.TestCase):
+    def test_kroko_preview_reads_license_options_from_environment(self) -> None:
+        from window.window_preview import add_kroko_license_options
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                "REALTIMESTT_KROKO_ONNX_KEY": "test-key",
+                "KROKO_ONNX_REFERRALCODE": "test-referral",
+            },
+        ):
+            options: dict[str, object] = {}
+            add_kroko_license_options(options)
+
+        self.assertEqual(options["key"], "test-key")
+        self.assertEqual(options["referralcode"], "test-referral")
+
     def test_subprocess_preview_uses_worker_script_without_name_error(self) -> None:
         class FakeProcess:
             def __init__(self) -> None:
@@ -1449,6 +2003,8 @@ class KrokoPreviewStartupTests(unittest.TestCase):
         self.assertIn("-m", command)
         self.assertIn("workers.kroko_realtime_preview_worker", command)
         self.assertFalse(any(part.endswith("kroko_realtime_preview_worker.py") for part in command))
+        env = popen.call_args.kwargs["env"]
+        self.assertIn(str(SRC), str(env.get("PYTHONPATH", "")).split(os.pathsep))
 
 
 class RemoteEmbeddingClientTests(unittest.TestCase):
@@ -1595,11 +2151,15 @@ class RepositoryStructureTests(unittest.TestCase):
             "sentence_boundary_pre_padding_seconds": 0.06,
             "sentence_boundary_post_padding_seconds": 0.09,
             "sentence_boundary_gap_ratio": 0.6,
+            "realtime_preview_model_preset": "community-64l",
+            "realtime_preview_model": "Kroko-EN-Community-64-L-Streaming-001.data",
+            "realtime_preview_startup_timeout_seconds": 12.0,
             "realtime_preview_diarize_min_audio_seconds": 1.5,
             "realtime_preview_diarize_min_advance_seconds": 0.75,
             "realtime_preview_diarize_min_similarity": 0.45,
             "realtime_preview_diarize_min_margin": 0.08,
             "realtime_preview_diarize_min_known_probability": 0.5,
+            "live_speaker_assignment": True,
             "live_speaker_embedding_min_interval_seconds": 0.2,
             "live_speaker_embedding_target_utilization": 1.0,
             "live_speaker_verify_on_change": False,
@@ -1644,6 +2204,43 @@ class RepositoryStructureTests(unittest.TestCase):
         for name, value in expected.items():
             self.assertEqual(getattr(args, name), value, name)
 
+    def test_window_gui_can_select_kroko_pro_16l_preview_preset(self) -> None:
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(
+            sys,
+            "argv",
+            [
+                "youtube_window_diarize_gui.py",
+                "--realtime-preview-model-preset",
+                "pro-16l",
+            ],
+        ):
+            args = parse_args()
+
+        self.assertEqual(args.realtime_preview_model_preset, "pro-16l")
+        self.assertEqual(args.realtime_preview_model, "Kroko-EN-Pro-16-L-Streaming-001.data")
+        if args.realtime_preview_model_path is not None:
+            self.assertEqual(args.realtime_preview_model_path.name, "Kroko-EN-Pro-16-L-Streaming-001.data")
+        self.assertEqual(args.realtime_preview_startup_timeout_seconds, 45.0)
+        self.assertEqual(args.realtime_preview_interval_seconds, 0.32)
+        self.assertEqual(args.realtime_preview_min_audio_seconds, 0.32)
+        self.assertEqual(args.realtime_preview_min_advance_seconds, 0.32)
+        self.assertEqual(args.realtime_preview_feed_chunk_seconds, 0.32)
+
+    def test_kroko_preview_model_path_searches_configured_model_dir(self) -> None:
+        from window.window_config import default_kroko_preview_model_path
+
+        model_name = "Kroko-EN-Pro-16-L-Streaming-001.data"
+        with tempfile.TemporaryDirectory() as directory:
+            model_path = Path(directory) / model_name
+            model_path.write_bytes(b"")
+
+            with mock.patch.dict(os.environ, {"WHOSPEAKS_KROKO_PREVIEW_MODEL_DIR": directory}):
+                resolved = default_kroko_preview_model_path(model_name, use_env=False)
+
+        self.assertEqual(resolved, model_path)
+
     def test_window_loop_restarts_interval_after_successful_split(self) -> None:
         source = inspect.getsource(WindowDiarizer._run)
 
@@ -1675,6 +2272,28 @@ class RepositoryStructureTests(unittest.TestCase):
 
         self.assertEqual(args.embeddings_backend, "remote")
         self.assertEqual(args.remote_embeddings_url, "http://127.0.0.1:8660")
+
+    def test_window_gui_can_disable_live_speaker_assignment_with_master_switch(self) -> None:
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(
+            sys,
+            "argv",
+            [
+                "youtube_window_diarize_gui.py",
+                "--no-live-speaker-assignment",
+                "--live-speaker-embedding-provider",
+                "pyannote_wespeaker_resnet34_lm",
+            ],
+        ):
+            args = parse_args()
+
+        self.assertFalse(args.live_speaker_assignment)
+        self.assertFalse(args.live_speaker_probe)
+        self.assertFalse(args.live_speaker_sentence_hint)
+        self.assertFalse(args.live_speaker_highlight_transcript)
+        self.assertFalse(args.live_speaker_verify_on_change)
+        self.assertFalse(args.live_speaker_raw_change_snap)
 
     def test_cunk_canonical_is_a_small_fixture(self) -> None:
         from paths import CUNK_CANONICAL

@@ -68,6 +68,7 @@ from window.window_text import (
     round_optional,
     split_words_with_stream2sentence,
     text_content_words,
+    text_ends_sentence,
     word_attr,
 )
 from window.window_speaker_refinement import (
@@ -164,14 +165,21 @@ class WindowDiarizer:
         )
 
     def _new_live_embedding_client(self, args: argparse.Namespace) -> Any:
+        if not bool(getattr(args, "live_speaker_assignment", True)):
+            return self.embedding
         provider = str(getattr(args, "live_speaker_embedding_provider", "") or "").strip()
         if not provider or provider == str(args.embedding_provider):
             return self.embedding
         return self._new_embedding_client(args, provider=provider)
 
     def _current_live_embedding_provider(self) -> str:
+        if not bool(getattr(self.args, "live_speaker_assignment", True)):
+            return str(self.args.embedding_provider)
         provider = str(getattr(self.args, "live_speaker_embedding_provider", "") or "").strip()
         return provider or str(self.args.embedding_provider)
+
+    def _live_speaker_assignment_enabled(self) -> bool:
+        return bool(getattr(self.args, "live_speaker_assignment", True))
 
     def _serialized_live_speaker_profiles(
         self,
@@ -262,8 +270,9 @@ class WindowDiarizer:
         if self._preview_transcriber is not None:
             self._preview_thread = threading.Thread(target=self._run_realtime_preview, name="RealtimePreview", daemon=True)
             self._preview_thread.start()
-        self._live_probe_thread = threading.Thread(target=self._run_live_speaker_probe, name="LiveSpeakerProbe", daemon=True)
-        self._live_probe_thread.start()
+        if self._live_speaker_assignment_enabled() and bool(getattr(self.args, "live_speaker_probe", True)):
+            self._live_probe_thread = threading.Thread(target=self._run_live_speaker_probe, name="LiveSpeakerProbe", daemon=True)
+            self._live_probe_thread.start()
         return speaker_state
 
     def _prepare_model_dependencies(self, include_asr_probe: bool, force_runtime_warmup: bool = False) -> None:
@@ -333,6 +342,19 @@ class WindowDiarizer:
             new_speaker_confirmation_count=self.args.new_speaker_confirmation_count,
             new_speaker_confirmation_similarity=self.args.new_speaker_confirmation_similarity,
             max_pending_new_speakers=self.args.max_pending_new_speakers,
+            known_speaker_min_similarity=self.args.known_speaker_min_similarity,
+            known_speaker_gray_zone_min_unknown_probability=(
+                self.args.known_speaker_gray_zone_min_unknown_probability
+            ),
+            profile_update_min_similarity=self.args.profile_update_min_similarity,
+            profile_update_min_margin=self.args.profile_update_min_margin,
+            low_similarity_unknown_floor_similarity=self.args.low_similarity_unknown_floor_similarity,
+            low_similarity_unknown_floor_probability=self.args.low_similarity_unknown_floor_probability,
+            gray_zone_promote_max_similarity=getattr(
+                self.args,
+                "gray_zone_promote_max_similarity",
+                1.0,
+            ),
         )
 
     def _reset_live_speaker_memory(self) -> None:
@@ -923,8 +945,37 @@ class WindowDiarizer:
     def speaker_refinement_settings(self) -> dict[str, Any]:
         return {
             "enabled": bool(getattr(self.args, "speaker_refinement", True)),
+            "unknown_tentative": bool(getattr(self.args, "speaker_refinement_unknown_tentative", True)),
+            "unknown_commit": bool(getattr(self.args, "speaker_refinement_unknown_commit", True)),
             "allow_reassignment": bool(getattr(self.args, "allow_speaker_reassignment", False)),
         }
+
+    def set_speaker_refinement_settings(self, updates: dict[str, Any]) -> dict[str, Any]:
+        if "speaker_refinement_unknown_tentative" in updates:
+            setattr(
+                self.args,
+                "speaker_refinement_unknown_tentative",
+                bool(updates.get("speaker_refinement_unknown_tentative")),
+            )
+        if "speaker_refinement_unknown_commit" in updates:
+            setattr(
+                self.args,
+                "speaker_refinement_unknown_commit",
+                bool(updates.get("speaker_refinement_unknown_commit")),
+            )
+        if "allow_speaker_reassignment" in updates:
+            setattr(
+                self.args,
+                "allow_speaker_reassignment",
+                bool(updates.get("allow_speaker_reassignment")),
+            )
+        settings = self.speaker_refinement_settings()
+        self.bus.emit("status", {"message": "Speaker refinement settings updated."})
+        if settings["unknown_commit"]:
+            self._revisit_unknown_sentences()
+        if settings["unknown_tentative"] or settings["allow_reassignment"]:
+            self._refine_speaker_assignments()
+        return settings
 
     def set_allow_speaker_reassignment(self, enabled: Any) -> dict[str, Any]:
         value = bool(enabled)
@@ -1635,6 +1686,13 @@ class WindowDiarizer:
                 item for item in self._unknown_sentences
                 if item.index != index
             ]
+            recent_queue = self._recent_unknown_pair_queue()
+            if recent_queue:
+                recent_queue = deque(
+                    (item for item in recent_queue if item.index != index),
+                    maxlen=recent_queue.maxlen,
+                )
+                self._recent_unknown_pair_candidates = recent_queue
             return len(self._unknown_sentences) != old_count
 
     def _clear_sentence_refinement_records(self) -> None:
@@ -1789,8 +1847,10 @@ class WindowDiarizer:
         existing_decision: SpeakerDecision,
         *,
         allow_new_speaker: bool,
-    ) -> SpeakerDecision | None:
+    ) -> tuple[SpeakerDecision, PendingUnknownSentence, float] | None:
         if not allow_new_speaker or not bool(getattr(self.args, "unknown_pair_new_speaker", False)):
+            return None
+        if not bool(getattr(self.args, "speaker_refinement_unknown_commit", True)):
             return None
         if self.memory.profile_count() <= 0:
             return None
@@ -1886,20 +1946,71 @@ class WindowDiarizer:
         )
         self._remove_unknown_sentence(best_candidate.index)
         speaker_key = f"speaker{int(label[1:])}" if label.startswith("S") and label[1:].isdigit() else label
-        return SpeakerDecision(
-            assigned_speaker=label,
-            created_speaker=True,
-            probabilities={"unknown": 0.0, speaker_key: 1.0},
-            similarities={
-                **dict(existing_decision.similarities or {}),
-                label: round(float(best_similarity), 4),
-            },
-            unknown_probability=round(float(unknown_probability), 4),
-            top_similarity=round(float(top_similarity), 4),
-            margin=round(float(margin), 4),
-            quality=existing_decision.quality,
-            assignment_source="unknown_pair_new_speaker",
+        return (
+            SpeakerDecision(
+                assigned_speaker=label,
+                created_speaker=True,
+                probabilities={"unknown": 0.0, speaker_key: 1.0},
+                similarities={
+                    **dict(existing_decision.similarities or {}),
+                    label: round(float(best_similarity), 4),
+                },
+                unknown_probability=round(float(unknown_probability), 4),
+                top_similarity=round(float(top_similarity), 4),
+                margin=round(float(margin), 4),
+                quality=existing_decision.quality,
+                assignment_source="unknown_pair_new_speaker",
+            ),
+            best_candidate,
+            round(float(best_similarity), 4),
         )
+
+    def _emit_unknown_pair_revision(
+        self,
+        candidate: PendingUnknownSentence,
+        decision: SpeakerDecision,
+        pair_similarity: float,
+    ) -> None:
+        if not decision.assigned_speaker:
+            return
+        with self._sentence_refinement_lock:
+            record = self._sentence_refinement_records.get(int(candidate.index)) or {}
+            reassigned_from = str(record.get("provisional_assigned_speaker") or "UNKNOWN")
+            quality = record.get("quality", decision.quality)
+        speaker_key = (
+            f"speaker{int(decision.assigned_speaker[1:])}"
+            if decision.assigned_speaker.startswith("S") and decision.assigned_speaker[1:].isdigit()
+            else decision.assigned_speaker
+        )
+        similarities = dict(decision.similarities or {})
+        similarities[decision.assigned_speaker] = round(float(pair_similarity), 4)
+        payload = {
+            **candidate.base_payload,
+            "pending": False,
+            "revision": True,
+            "unknown_pair_reassigned": True,
+            "revision_from": reassigned_from,
+            "revision_to": decision.assigned_speaker,
+            "assigned_speaker": decision.assigned_speaker,
+            **self._speaker_info_for_payload(decision.assigned_speaker),
+            "created_speaker": False,
+            "probabilities": {"unknown": 0.0, speaker_key: 1.0},
+            "similarities": similarities,
+            "unknown_probability": 0.0,
+            "top_similarity": round(float(pair_similarity), 4),
+            "margin": decision.margin,
+            "quality": quality,
+            "assignment_source": "unknown_pair_new_speaker",
+            "pair_similarity": round(float(pair_similarity), 4),
+        }
+        self._record_sentence_assignment(
+            candidate.index,
+            candidate.base_payload,
+            candidate.embedding,
+            candidate.duration_seconds,
+            payload,
+        )
+        self.bus.emit("sentence", payload)
 
     @staticmethod
     def _prototype_probabilities(assigned_speaker: str, scores: dict[str, float]) -> dict[str, float]:
@@ -1922,47 +2033,63 @@ class WindowDiarizer:
         return probabilities
 
     def _apply_prototype_revision(self, revision: Any) -> bool:
+        is_provisional_unknown = revision.previous_speaker is None
         with self._sentence_refinement_lock:
             record = self._sentence_refinement_records.get(int(revision.index))
             if record is None:
                 return False
             if record.get("assigned_speaker") != revision.previous_speaker:
                 return False
-            record["assigned_speaker"] = revision.assigned_speaker
-            record["created_speaker"] = False
-            record["probabilities"] = self._prototype_probabilities(
+            previous_provisional = str(record.get("provisional_assigned_speaker") or "")
+            if is_provisional_unknown and previous_provisional == revision.assigned_speaker:
+                return False
+            original_unknown_probability = record.get("unknown_probability")
+            probabilities = self._prototype_probabilities(
                 revision.assigned_speaker,
                 revision.prototype_scores,
             )
-            record["similarities"] = dict(revision.prototype_scores)
-            record["unknown_probability"] = 0.0
-            record["top_similarity"] = revision.prototype_score
-            record["margin"] = revision.prototype_margin
-            record["assignment_source"] = revision.assignment_source
+            similarities = dict(revision.prototype_scores)
+            if is_provisional_unknown:
+                record["provisional_assigned_speaker"] = revision.assigned_speaker
+                record["provisional_probabilities"] = probabilities
+                record["provisional_similarities"] = similarities
+                record["provisional_top_similarity"] = revision.prototype_score
+                record["provisional_margin"] = revision.prototype_margin
+                record["provisional_assignment_source"] = "prototype_unknown_tentative"
+            else:
+                record["assigned_speaker"] = revision.assigned_speaker
+                record["created_speaker"] = False
+                record["probabilities"] = probabilities
+                record["similarities"] = similarities
+                record["unknown_probability"] = 0.0
+                record["top_similarity"] = revision.prototype_score
+                record["margin"] = revision.prototype_margin
+                record["assignment_source"] = revision.assignment_source
             base_payload = dict(record["base_payload"])
-            probabilities = dict(record["probabilities"])
-            similarities = dict(record["similarities"])
             quality = record.get("quality")
 
         self._ensure_speaker_metadata(revision.assigned_speaker)
-        if revision.previous_speaker is None:
-            self._remove_unknown_sentence(int(revision.index))
+        revision_from = previous_provisional or revision.previous_speaker or "UNKNOWN"
+        assignment_source = "prototype_unknown_tentative" if is_provisional_unknown else revision.assignment_source
         self.bus.emit("sentence", {
             **base_payload,
             "pending": False,
             "revision": True,
             "prototype_reassigned": True,
-            "prototype_reassigned_from": revision.previous_speaker or "UNKNOWN",
+            "provisional_assignment": is_provisional_unknown,
+            "prototype_reassigned_from": revision_from,
+            "revision_from": revision_from,
+            "revision_to": revision.assigned_speaker,
             "assigned_speaker": revision.assigned_speaker,
             **self._speaker_info_for_payload(revision.assigned_speaker),
             "created_speaker": False,
             "probabilities": probabilities,
             "similarities": similarities,
-            "unknown_probability": 0.0,
+            "unknown_probability": original_unknown_probability if is_provisional_unknown else 0.0,
             "top_similarity": revision.prototype_score,
             "margin": revision.prototype_margin,
             "quality": quality,
-            "assignment_source": revision.assignment_source,
+            "assignment_source": assignment_source,
             "prototype_score": revision.prototype_score,
             "prototype_margin": revision.prototype_margin,
             "prototype_delta": revision.prototype_delta,
@@ -1971,6 +2098,10 @@ class WindowDiarizer:
 
     def _refine_speaker_assignments(self) -> None:
         if not bool(getattr(self.args, "speaker_refinement", True)):
+            return
+        allow_unknown_tentative = bool(getattr(self.args, "speaker_refinement_unknown_tentative", True))
+        allow_known = bool(getattr(self.args, "allow_speaker_reassignment", False))
+        if not allow_unknown_tentative and not allow_known:
             return
         if not self._sentence_refinement_run_lock.acquire(blocking=False):
             return
@@ -1982,7 +2113,6 @@ class WindowDiarizer:
                 ]
             if len(records) < 2:
                 return
-            allow_known = bool(getattr(self.args, "allow_speaker_reassignment", False))
             revisions = find_speaker_prototype_revisions(
                 records,
                 self._speaker_refinement_config(),
@@ -1991,6 +2121,8 @@ class WindowDiarizer:
             applied = 0
             known_revisions = 0
             for revision in revisions:
+                if revision.previous_speaker is None and not allow_unknown_tentative:
+                    continue
                 if not allow_known and revision.previous_speaker is not None:
                     continue
                 if self._apply_prototype_revision(revision):
@@ -2011,6 +2143,8 @@ class WindowDiarizer:
             self._sentence_refinement_run_lock.release()
 
     def _revisit_unknown_sentences(self) -> None:
+        if not bool(getattr(self.args, "speaker_refinement_unknown_commit", True)):
+            return
         with self._unknown_lock:
             candidates = list(self._unknown_sentences)
 
@@ -2023,6 +2157,9 @@ class WindowDiarizer:
             )
             if not decision.assigned_speaker:
                 continue
+            with self._sentence_refinement_lock:
+                record = self._sentence_refinement_records.get(int(candidate.index)) or {}
+                reassigned_from = str(record.get("provisional_assigned_speaker") or "UNKNOWN")
             if not self._remove_unknown_sentence(candidate.index):
                 continue
             payload = {
@@ -2030,6 +2167,9 @@ class WindowDiarizer:
                 "pending": False,
                 "revision": True,
                 "retro_reassigned": True,
+                "retro_reassigned_from": reassigned_from,
+                "revision_from": reassigned_from,
+                "revision_to": decision.assigned_speaker,
                 "assigned_speaker": decision.assigned_speaker,
                 **self._speaker_info_for_payload(decision.assigned_speaker),
                 "created_speaker": False,
@@ -2651,6 +2791,8 @@ class WindowDiarizer:
         duration_seconds: float,
         min_audio_seconds: float | None = None,
     ) -> dict[str, Any]:
+        if not self._live_speaker_assignment_enabled():
+            return self._realtime_unknown_speaker_payload()
         if min_audio_seconds is None:
             min_audio_seconds = float(self.args.realtime_preview_diarize_min_audio_seconds)
         if duration_seconds < max(0.0, float(min_audio_seconds)):
@@ -2782,6 +2924,8 @@ class WindowDiarizer:
             )
 
     def _run_live_speaker_probe(self) -> None:
+        if not self._live_speaker_assignment_enabled():
+            return
         if not bool(getattr(self.args, "live_speaker_probe", True)):
             return
         interval_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_interval_seconds", 0.4)))
@@ -3125,7 +3269,7 @@ class WindowDiarizer:
             if not self._preview_generation_is_current(generation, left):
                 continue
             duration_seconds = max(0.0, preview_right - left)
-            if duration_seconds >= self.args.realtime_preview_diarize_min_audio_seconds and (
+            if self._live_speaker_assignment_enabled() and duration_seconds >= self.args.realtime_preview_diarize_min_audio_seconds and (
                 last_diarized_right < 0.0 or preview_right >= last_diarized_right + diarize_min_advance
             ):
                 if self.memory.profile_count() > 0 and self._try_reserve_live_speaker_embedding():
@@ -3157,6 +3301,7 @@ class WindowDiarizer:
             index = 0
             last_transcribed_right = -1.0
             last_vad_flush_right = -1.0
+            previous_emitted_sentence_ended_strong = False
             interval_seconds = max(0.0, float(self.args.interval_seconds))
             min_playback_advance = max(0.0, float(self.args.min_playback_advance_seconds))
             final_flush_epsilon = max(0.0, float(self.args.final_flush_epsilon_seconds))
@@ -3251,7 +3396,13 @@ class WindowDiarizer:
                         )
                 self.bus.emit("status", {"message": f"Transcribing{final_note} window left={left:.2f}s right={transcribe_right:.2f}s."})
                 transcribe_started = time.monotonic()
-                transcript = self._transcribe_window(model, left, transcribe_right, final_flush=transcript_final_flush)
+                transcript = self._transcribe_window(
+                    model,
+                    left,
+                    transcribe_right,
+                    final_flush=transcript_final_flush,
+                    previous_text_ended_sentence=previous_emitted_sentence_ended_strong,
+                )
                 transcribe_seconds = time.monotonic() - transcribe_started
                 if vad_flush:
                     last_vad_flush_right = right
@@ -3267,6 +3418,7 @@ class WindowDiarizer:
                 )
                 for sentence in transcript.sentences:
                     self._emit_sentence(index, sentence, left, transcribe_right)
+                    previous_emitted_sentence_ended_strong = text_ends_sentence(sentence.text)
                     index += 1
                     left = max(left, sentence.next_left)
                 if vad_next_left is not None:
@@ -3287,7 +3439,14 @@ class WindowDiarizer:
             self._drain_live_memory_update_jobs()
             self.bus.emit("done", {"message": "Window diarization stopped."})
 
-    def _transcribe_window(self, model: Any, left: float, right: float, final_flush: bool = False) -> WindowTranscript:
+    def _transcribe_window(
+        self,
+        model: Any,
+        left: float,
+        right: float,
+        final_flush: bool = False,
+        previous_text_ended_sentence: bool = False,
+    ) -> WindowTranscript:
         window, sample_rate = self._audio_window_copy(left, right)
         relative_words, segment_count = self._transcribe_audio_words(model, window, sample_rate)
         words = [
@@ -3301,14 +3460,21 @@ class WindowDiarizer:
             right=right,
             unstable_tail_seconds=self.args.unstable_tail_seconds,
             final_flush=final_flush,
+            previous_text_ended_sentence=previous_text_ended_sentence,
             boundary_pre_padding_seconds=self.args.sentence_boundary_pre_padding_seconds,
             boundary_post_padding_seconds=self.args.sentence_boundary_post_padding_seconds,
             boundary_gap_ratio=self.args.sentence_boundary_gap_ratio,
         )
         return WindowTranscript(parts, len(words), segment_count)
 
-    def _emit_sentence(self, index: int, sentence: SentencePart, window_left: float, window_right: float) -> None:
-        base_payload = {
+    @staticmethod
+    def _base_payload_from_sentence_part(
+        index: int,
+        sentence: SentencePart,
+        window_left: float,
+        window_right: float,
+    ) -> dict[str, Any]:
+        return {
             "index": index,
             "text": sentence.text,
             "start": round(sentence.start, 4),
@@ -3331,6 +3497,9 @@ class WindowDiarizer:
             "sentence_boundary_gap_ratio": round(float(sentence.sentence_boundary_gap_ratio), 4),
             "unknown_permanent": False,
         }
+
+    def _emit_sentence(self, index: int, sentence: SentencePart, window_left: float, window_right: float) -> None:
+        base_payload = self._base_payload_from_sentence_part(index, sentence, window_left, window_right)
         self.bus.emit("sentence", {
             **base_payload,
             "pending": True,
@@ -3408,6 +3577,8 @@ class WindowDiarizer:
         sentence_payload: dict[str, Any],
         duration_seconds: float,
     ) -> None:
+        if not self._live_speaker_assignment_enabled():
+            return
         if not bool(getattr(self.args, "live_speaker_sentence_hint", True)):
             return
         try:
@@ -3508,50 +3679,51 @@ class WindowDiarizer:
             },
         )
 
-    def _process_sentence_embedding(self, job: EmbeddingSentenceJob) -> None:
-        base_payload = job.base_payload
-        index = job.index
-        if job.speaker_generation != self._speaker_generation:
-            self.bus.emit("status", {"message": f"Skipped stale speaker embedding for sentence {index}."})
-            return
-        chunk = pad_audio(
-            trim_silence(job.audio, job.sample_rate),
-            self.args.min_embed_seconds,
-            job.sample_rate,
+    def _apply_sentence_embedding_decision(
+        self,
+        *,
+        index: int,
+        base_payload: dict[str, Any],
+        text: str,
+        embedding: np.ndarray,
+        duration_seconds: float,
+        live_memory_audio: np.ndarray | None = None,
+        live_memory_sample_rate: int | None = None,
+        live_memory_suffix: str = ".live-sentence.wav",
+        speaker_generation: int | None = None,
+        emit_status: bool = True,
+        elapsed_seconds: float | None = None,
+        run_speaker_refinement: bool = True,
+    ) -> dict[str, Any]:
+        paired_unknown_revision: tuple[PendingUnknownSentence, float] | None = None
+        allow_new_speaker = len(text_content_words(text)) >= self.args.min_new_speaker_words
+        decision = self._section_gap_new_speaker_decision(
+            embedding,
+            duration_seconds,
+            base_payload,
+            allow_new_speaker=allow_new_speaker,
         )
-        duration_seconds = job.duration_seconds
-        try:
-            self.bus.emit("status", {"message": f"Embedding sentence {index}: {job.text[:72]}"})
-            embed_started = time.monotonic()
-            embedding = self._embed_audio_chunk(chunk, job.sample_rate, ".sentence.wav")
-            if job.speaker_generation != self._speaker_generation:
-                self.bus.emit("status", {"message": f"Discarded stale speaker embedding for sentence {index}."})
-                return
-            allow_new_speaker = len(text_content_words(job.text)) >= self.args.min_new_speaker_words
-            decision = self._section_gap_new_speaker_decision(
+        if decision is None:
+            decision = self.memory.classify(
+                embedding,
+                duration_seconds,
+                allow_new_speaker=allow_new_speaker,
+            )
+            pair_decision = self._unknown_pair_new_speaker_decision(
                 embedding,
                 duration_seconds,
                 base_payload,
+                decision,
                 allow_new_speaker=allow_new_speaker,
             )
-            if decision is None:
-                decision = self.memory.classify(
-                    embedding,
-                    duration_seconds,
-                    allow_new_speaker=allow_new_speaker,
-                )
-                pair_decision = self._unknown_pair_new_speaker_decision(
-                    embedding,
-                    duration_seconds,
-                    base_payload,
-                    decision,
-                    allow_new_speaker=allow_new_speaker,
-                )
-                if pair_decision is not None:
-                    decision = pair_decision
+            if pair_decision is not None:
+                decision, paired_candidate, pair_similarity = pair_decision
+                paired_unknown_revision = (paired_candidate, pair_similarity)
+        if emit_status:
+            elapsed = 0.0 if elapsed_seconds is None else max(0.0, float(elapsed_seconds))
             self.bus.emit("status", {
                 "message": (
-                    f"Embedded sentence {index} in {time.monotonic() - embed_started:.2f}s; "
+                    f"Embedded sentence {index} in {elapsed:.2f}s; "
                     f"speaker={decision.assigned_speaker or 'UNKNOWN'} "
                     f"new={int(bool(decision.created_speaker))} "
                     f"unk={decision.unknown_probability} "
@@ -3559,22 +3731,6 @@ class WindowDiarizer:
                     f"margin={decision.margin}."
                 )
             })
-        except Exception as exc:
-            self.bus.emit("status", {"message": f"Embedding failed for sentence {index}: {type(exc).__name__}: {exc}"})
-            self.bus.emit("sentence", {
-                **base_payload,
-                "pending": False,
-                "error": f"{type(exc).__name__}: {exc}",
-                "assigned_speaker": None,
-                **self._speaker_info_for_payload(None),
-                "created_speaker": False,
-                "probabilities": {"unknown": 1.0},
-                "similarities": {},
-                "unknown_probability": 1.0,
-                "top_similarity": None,
-                "margin": None,
-            })
-            return
         self._ensure_speaker_metadata(decision.assigned_speaker)
         sentence_payload = {
             **base_payload,
@@ -3598,20 +3754,75 @@ class WindowDiarizer:
             sentence_payload,
         )
         self.bus.emit("sentence", sentence_payload)
+        if paired_unknown_revision is not None:
+            paired_candidate, pair_similarity = paired_unknown_revision
+            self._emit_unknown_pair_revision(paired_candidate, decision, pair_similarity)
         self._maybe_emit_sentence_live_speaker_hint(sentence_payload, duration_seconds)
-        self._update_live_speaker_memory(
-            decision.assigned_speaker,
-            chunk,
-            job.sample_rate,
-            duration_seconds,
-            ".live-sentence.wav",
-            speaker_generation=job.speaker_generation,
-        )
+        if live_memory_audio is not None and live_memory_sample_rate is not None:
+            self._update_live_speaker_memory(
+                decision.assigned_speaker,
+                live_memory_audio,
+                live_memory_sample_rate,
+                duration_seconds,
+                live_memory_suffix,
+                speaker_generation=self._speaker_generation if speaker_generation is None else speaker_generation,
+            )
         if decision.assigned_speaker is None:
             self._remember_unknown_sentence(index, base_payload, embedding, duration_seconds)
         elif decision.created_speaker:
             self.emit_speaker_state()
             self._revisit_unknown_sentences()
-        self._refine_speaker_assignments()
+        if run_speaker_refinement:
+            self._refine_speaker_assignments()
+        return sentence_payload
+
+    def _process_sentence_embedding(self, job: EmbeddingSentenceJob) -> None:
+        base_payload = job.base_payload
+        index = job.index
+        if job.speaker_generation != self._speaker_generation:
+            self.bus.emit("status", {"message": f"Skipped stale speaker embedding for sentence {index}."})
+            return
+        chunk = pad_audio(
+            trim_silence(job.audio, job.sample_rate),
+            self.args.min_embed_seconds,
+            job.sample_rate,
+        )
+        duration_seconds = job.duration_seconds
+        try:
+            self.bus.emit("status", {"message": f"Embedding sentence {index}: {job.text[:72]}"})
+            embed_started = time.monotonic()
+            embedding = self._embed_audio_chunk(chunk, job.sample_rate, ".sentence.wav")
+            if job.speaker_generation != self._speaker_generation:
+                self.bus.emit("status", {"message": f"Discarded stale speaker embedding for sentence {index}."})
+                return
+            self._apply_sentence_embedding_decision(
+                index=index,
+                base_payload=base_payload,
+                text=job.text,
+                embedding=embedding,
+                duration_seconds=duration_seconds,
+                live_memory_audio=chunk,
+                live_memory_sample_rate=job.sample_rate,
+                live_memory_suffix=".live-sentence.wav",
+                speaker_generation=job.speaker_generation,
+                emit_status=True,
+                elapsed_seconds=time.monotonic() - embed_started,
+            )
+        except Exception as exc:
+            self.bus.emit("status", {"message": f"Embedding failed for sentence {index}: {type(exc).__name__}: {exc}"})
+            self.bus.emit("sentence", {
+                **base_payload,
+                "pending": False,
+                "error": f"{type(exc).__name__}: {exc}",
+                "assigned_speaker": None,
+                **self._speaker_info_for_payload(None),
+                "created_speaker": False,
+                "probabilities": {"unknown": 1.0},
+                "similarities": {},
+                "unknown_probability": 1.0,
+                "top_similarity": None,
+                "margin": None,
+            })
+            return
 
 

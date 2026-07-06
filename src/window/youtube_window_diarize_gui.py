@@ -108,7 +108,7 @@ from window.window_config import (  # noqa: E402
     DEFAULT_CUNK_CANONICAL,
     DEFAULT_EMBEDDING_HELPER_RESPONSE_TIMEOUT_SECONDS,
     DEFAULT_FAST_WHISPER_CACHE,
-    DEFAULT_KROKO_PREVIEW_MODEL,
+    DEFAULT_KROKO_PREVIEW_MODEL_PRESET,
     DEFAULT_KROKO_PREVIEW_PYTHON,
     DEFAULT_OUTPUT_DIR,
     DEFAULT_REALTIMESTT_ROOT,
@@ -118,15 +118,18 @@ from window.window_config import (  # noqa: E402
     DEFAULT_SPEAKER_LIBRARY_DIR,
     DEFAULT_VALIDATION_OUTPUT,
     DEFAULT_WINDOW_EMBEDDING_PROVIDER,
+    KROKO_PREVIEW_MODEL_PRESETS,
     NEW_SPEAKER_SENSITIVITY_PRESETS,
     PRESET_YOUTUBE_VIDEOS,
     SPEAKER_COLORS,
     apply_new_speaker_sensitivity,
     default_faster_whisper_download_root,
     default_kroko_preview_model_path,
+    default_kroko_preview_startup_timeout_seconds,
     default_silero_vad_backend,
     default_silero_vad_model_path,
     new_speaker_sensitivity_config,
+    normalize_kroko_preview_model_preset,
 )
 from window.window_diarizer import WindowDiarizer  # noqa: E402
 from window.window_events import EventBus, RecordingEventBus  # noqa: E402
@@ -382,6 +385,7 @@ class Handler(BaseHTTPRequestHandler):
                 .replace(
                     "__LIVE_SPEAKER_JSON__",
                     json_dumps({
+                        "assignment_enabled": bool(getattr(self.server.args, "live_speaker_assignment", True)),
                         "unknown_clear_debounce_seconds": max(
                             0.0,
                             float(getattr(self.server.args, "live_speaker_probe_unknown_clear_debounce_seconds", 0.0)),
@@ -391,6 +395,19 @@ class Handler(BaseHTTPRequestHandler):
                             0.02,
                             float(getattr(self.server.args, "browser_live_observation_interval_seconds", DEFAULT_BROWSER_OBSERVATION_INTERVAL_SECONDS)),
                         ),
+                        "highlight_transcript": bool(
+                            getattr(self.server.args, "live_speaker_highlight_transcript", True)
+                        ),
+                        "transcript_highlight_max_lag_seconds": float(
+                            getattr(self.server.args, "live_speaker_highlight_transcript_max_lag_seconds", -1.0)
+                        ),
+                        "transcript_override_min_probability": float(
+                            getattr(self.server.args, "live_speaker_highlight_transcript_override_min_probability", 1.1)
+                        ),
+                        "transcript_override_min_margin": float(
+                            getattr(self.server.args, "live_speaker_highlight_transcript_override_min_margin", 0.0)
+                        ),
+                        "session_lease_enabled": self.server.session_lease_enabled,
                     }),
                 )
                 .replace("__SPEAKER_LIBRARY_JSON__", json_dumps(speaker_state))
@@ -510,9 +527,19 @@ class Handler(BaseHTTPRequestHandler):
                     response["new_speaker_sensitivity"] = self.server.controller.set_new_speaker_sensitivity(
                         payload.get("new_speaker_sensitivity", getattr(self.server.args, "new_speaker_sensitivity", 3))
                     )
-                if "allow_speaker_reassignment" in payload:
-                    response["speaker_refinement"] = self.server.controller.set_allow_speaker_reassignment(
-                        payload.get("allow_speaker_reassignment")
+                speaker_refinement_keys = {
+                    "speaker_refinement_unknown_tentative",
+                    "speaker_refinement_unknown_commit",
+                    "allow_speaker_reassignment",
+                }
+                speaker_refinement_updates = {
+                    key: payload.get(key)
+                    for key in speaker_refinement_keys
+                    if key in payload
+                }
+                if speaker_refinement_updates:
+                    response["speaker_refinement"] = self.server.controller.set_speaker_refinement_settings(
+                        speaker_refinement_updates
                     )
                 else:
                     response["speaker_refinement"] = self.server.controller.speaker_refinement_settings()
@@ -675,7 +702,23 @@ class WindowServer(ThreadingHTTPServer):
             else None
         )
 
+    @property
+    def session_lease_enabled(self) -> bool:
+        return bool(getattr(self.args, "demo_seat_lease", True))
+
+    def _disabled_session_state(self, client_id: str = "") -> dict[str, Any]:
+        return {
+            "enabled": False,
+            "active": False,
+            "is_owner": True,
+            "running": self.controller.is_running(),
+            "completed": False,
+            "client_id": str(client_id or "")[:120],
+        }
+
     def _enforce_session_timeouts(self) -> None:
+        if not self.session_lease_enabled:
+            return
         expired = self.session_lease.expire_if_needed()
         if not expired:
             return
@@ -685,10 +728,19 @@ class WindowServer(ThreadingHTTPServer):
             self.controller.stop()
 
     def session_status(self, client_id: str = "") -> dict[str, Any]:
+        if not self.session_lease_enabled:
+            return self._disabled_session_state(client_id)
         self._enforce_session_timeouts()
         return self.session_lease.status(client_id)
 
     def acquire_session(self, client_id: str) -> dict[str, Any]:
+        if not self.session_lease_enabled:
+            return {
+                "ok": True,
+                "acquired": True,
+                "session_token": "",
+                "session": self._disabled_session_state(client_id),
+            }
         self._enforce_session_timeouts()
         result = self.session_lease.acquire(client_id)
         if result.get("acquired"):
@@ -696,14 +748,20 @@ class WindowServer(ThreadingHTTPServer):
         return result
 
     def require_session(self, token: str, client_id: str = "") -> dict[str, Any]:
+        if not self.session_lease_enabled:
+            return self._disabled_session_state(client_id)
         self._enforce_session_timeouts()
         return self.session_lease.authorize(token, client_id)
 
     def heartbeat_session(self, token: str, client_id: str = "") -> dict[str, Any]:
+        if not self.session_lease_enabled:
+            return {"ok": True, "session": self._disabled_session_state(client_id)}
         self._enforce_session_timeouts()
         return self.session_lease.heartbeat(token, client_id)
 
     def release_session(self, token: str, reason: str = "released", client_id: str = "") -> dict[str, Any]:
+        if not self.session_lease_enabled:
+            return {"ok": True, "released": False, "session": self._disabled_session_state(client_id)}
         was_running = self.session_lease.is_active_token(token) and self.controller.is_running()
         result = self.session_lease.release(token, reason, client_id)
         if result.get("released"):
@@ -713,6 +771,8 @@ class WindowServer(ThreadingHTTPServer):
         return result
 
     def mark_session_running(self, token: str) -> None:
+        if not self.session_lease_enabled:
+            return
         self.session_lease.mark_running(token)
         self._start_session_completion_monitor(token)
 
@@ -851,7 +911,7 @@ def build_window_validation_records(records: list[dict[str, Any]]) -> tuple[list
         if record.get("event") != "sentence":
             continue
         payload = record.get("payload") or {}
-        if payload.get("pending") or payload.get("realtime"):
+        if payload.get("pending") or payload.get("realtime") or payload.get("provisional_assignment"):
             continue
         index = payload.get("index")
         if not isinstance(index, int):
@@ -914,7 +974,12 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
         while not bus.done.is_set():
             elapsed = time.monotonic() - replay_started
             playback_seconds = min(controller.duration, elapsed * max(0.01, args.validation_replay_speed))
-            controller.set_playback_time(playback_seconds)
+            # Validation replay owns the synthetic media clock; allow accelerated
+            # runs to advance faster than the browser/live wall-clock clamp.
+            controller.set_playback_time(
+                playback_seconds,
+                reset=bool(args.validation_replay_speed > 1.0),
+            )
             report_second = int(playback_seconds // 15) * 15
             if report_second != last_report and report_second > 0:
                 last_report = report_second
@@ -972,11 +1037,22 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "new_speaker_confirmation_count": args.new_speaker_confirmation_count,
             "new_speaker_confirmation_similarity": args.new_speaker_confirmation_similarity,
             "max_pending_new_speakers": args.max_pending_new_speakers,
+            "known_speaker_min_similarity": args.known_speaker_min_similarity,
+            "known_speaker_gray_zone_min_unknown_probability": (
+                args.known_speaker_gray_zone_min_unknown_probability
+            ),
+            "profile_update_min_similarity": args.profile_update_min_similarity,
+            "profile_update_min_margin": args.profile_update_min_margin,
+            "low_similarity_unknown_floor_similarity": args.low_similarity_unknown_floor_similarity,
+            "low_similarity_unknown_floor_probability": args.low_similarity_unknown_floor_probability,
+            "gray_zone_promote_max_similarity": args.gray_zone_promote_max_similarity,
             "min_new_speaker_words": args.min_new_speaker_words,
             "min_speech_audio_ratio": args.min_speech_audio_ratio,
             "retro_reassign_min_similarity": args.retro_reassign_min_similarity,
             "retro_reassign_min_margin": args.retro_reassign_min_margin,
             "speaker_refinement": args.speaker_refinement,
+            "speaker_refinement_unknown_tentative": args.speaker_refinement_unknown_tentative,
+            "speaker_refinement_unknown_commit": args.speaker_refinement_unknown_commit,
             "allow_speaker_reassignment": args.allow_speaker_reassignment,
             "speaker_refinement_max_per_profile": args.speaker_refinement_max_per_profile,
             "speaker_refinement_min_duration": args.speaker_refinement_min_duration,
@@ -1003,6 +1079,7 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "vad_frame_seconds": args.vad_frame_seconds,
             "vad_merge_gap_seconds": args.vad_merge_gap_seconds,
             "vad_min_speech_seconds": args.vad_min_speech_seconds,
+            "live_speaker_assignment": args.live_speaker_assignment,
             "live_speaker_embedding_provider": args.live_speaker_embedding_provider,
             "live_speaker_embedding_min_interval_seconds": args.live_speaker_embedding_min_interval_seconds,
             "live_speaker_embedding_target_utilization": args.live_speaker_embedding_target_utilization,
@@ -1105,7 +1182,16 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
     return 0
 
 
+def _argv_has_option(argv: list[str], option: str) -> bool:
+    option_prefix = f"{option}="
+    return any(item == option or item.startswith(option_prefix) for item in argv)
+
+
 def parse_args() -> argparse.Namespace:
+    raw_argv = sys.argv[1:]
+    preview_model_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model")
+    preview_model_path_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model-path")
+    preview_model_preset_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model-preset")
     default_vad_model_path = default_silero_vad_model_path()
     parser = argparse.ArgumentParser(description="Growing-window faster-whisper speaker diarization GUI.")
     parser.add_argument("--url", default=DEFAULT_URL)
@@ -1118,6 +1204,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8795)
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument(
+        "--demo-seat-lease",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Require one browser tab to take the public demo seat before controlling a shared run.",
+    )
     parser.add_argument(
         "--session-lease-idle-timeout-seconds",
         type=float,
@@ -1306,6 +1398,15 @@ def parse_args() -> argparse.Namespace:
         help="Single provider used only for fast live speaker assignment. Empty uses --embedding-provider.",
     )
     parser.add_argument(
+        "--live-speaker-assignment",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Enable live speaker highlighting/scoring during realtime preview. "
+            "Use --no-live-speaker-assignment to keep live text preview without live speaker scoring."
+        ),
+    )
+    parser.add_argument(
         "--embeddings-backend",
         "--embedding-backend",
         "-embeddings-backend",
@@ -1356,19 +1457,19 @@ def parse_args() -> argparse.Namespace:
         metavar="{1,2,3,4,5}",
         help="Optional five-step new-speaker spawning sensitivity preset. Position 3 matches the tuned defaults.",
     )
-    parser.add_argument("--same-speaker-similarity", type=float, default=0.37)
-    parser.add_argument("--similarity-temperature", type=float, default=0.0648)
-    parser.add_argument("--speaker-softmax-temperature", type=float, default=0.0443)
-    parser.add_argument("--new-speaker-threshold", type=float, default=0.38)
-    parser.add_argument("--duplicate-profile-similarity", type=float, default=0.4)
-    parser.add_argument("--unknown-short-threshold", type=float, default=0.3225)
-    parser.add_argument("--min-first-speaker-seconds", type=float, default=1.3098)
-    parser.add_argument("--min-new-speaker-seconds", type=float, default=1.6)
-    parser.add_argument("--late-new-speaker-min-seconds", type=float, default=3.4127)
+    parser.add_argument("--same-speaker-similarity", type=float, default=0.401)
+    parser.add_argument("--similarity-temperature", type=float, default=0.0617)
+    parser.add_argument("--speaker-softmax-temperature", type=float, default=0.0557)
+    parser.add_argument("--new-speaker-threshold", type=float, default=0.4309)
+    parser.add_argument("--duplicate-profile-similarity", type=float, default=0.4247)
+    parser.add_argument("--unknown-short-threshold", type=float, default=0.3115)
+    parser.add_argument("--min-first-speaker-seconds", type=float, default=1.8373)
+    parser.add_argument("--min-new-speaker-seconds", type=float, default=2.0358)
+    parser.add_argument("--late-new-speaker-min-seconds", type=float, default=3.1604)
     parser.add_argument("--max-speakers", type=int, default=12)
-    parser.add_argument("--min-margin", type=float, default=0.0386)
-    parser.add_argument("--margin-temperature", type=float, default=0.03)
-    parser.add_argument("--update-unknown-max", type=float, default=0.61)
+    parser.add_argument("--min-margin", type=float, default=0.0372)
+    parser.add_argument("--margin-temperature", type=float, default=0.0453)
+    parser.add_argument("--update-unknown-max", type=float, default=0.4289)
     parser.add_argument(
         "--new-speaker-confirmation-count",
         type=int,
@@ -1378,10 +1479,52 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--new-speaker-confirmation-similarity",
         type=float,
-        default=0.5149,
+        default=0.5801,
         help="Minimum cosine similarity between pending new-speaker candidates before creating a speaker.",
     )
     parser.add_argument("--max-pending-new-speakers", type=int, default=6)
+    parser.add_argument(
+        "--known-speaker-min-similarity",
+        type=float,
+        default=0.56,
+        help="When non-negative, existing speakers below this top similarity are treated as gray-zone UNKNOWN instead of confidently assigned.",
+    )
+    parser.add_argument(
+        "--known-speaker-gray-zone-min-unknown-probability",
+        type=float,
+        default=0.064,
+        help="Minimum unknown probability required before --known-speaker-min-similarity defers an assignment to UNKNOWN.",
+    )
+    parser.add_argument(
+        "--profile-update-min-similarity",
+        type=float,
+        default=0.5011,
+        help="When non-negative, update existing speaker centroids only if top similarity is at least this value.",
+    )
+    parser.add_argument(
+        "--profile-update-min-margin",
+        type=float,
+        default=0.0037,
+        help="When non-negative, update existing speaker centroids only if top-vs-runner-up margin is at least this value.",
+    )
+    parser.add_argument(
+        "--low-similarity-unknown-floor-similarity",
+        type=float,
+        default=0.56,
+        help="When non-negative, raise unknown probability for known-speaker comparisons below this top similarity.",
+    )
+    parser.add_argument(
+        "--low-similarity-unknown-floor-probability",
+        type=float,
+        default=0.1702,
+        help="Unknown probability floor used with --low-similarity-unknown-floor-similarity.",
+    )
+    parser.add_argument(
+        "--gray-zone-promote-max-similarity",
+        type=float,
+        default=0.55,
+        help="Maximum candidate-vs-known centroid similarity allowed before a gray-zone pending voice can become a new speaker.",
+    )
     parser.add_argument(
         "--min-new-speaker-words",
         type=int,
@@ -1391,7 +1534,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--retro-reassign-min-similarity",
         type=float,
-        default=0.05,
+        default=0.02,
         help="Minimum cosine similarity for assigning an earlier UNKNOWN sentence to an existing speaker.",
     )
     parser.add_argument(
@@ -1407,10 +1550,22 @@ def parse_args() -> argparse.Namespace:
         help="Enable prototype-based live refinement. Stable mode only fills UNKNOWN rows later.",
     )
     parser.add_argument(
+        "--speaker-refinement-unknown-tentative",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Allow prototype refinement to show tentative speaker hints on UNKNOWN transcript rows.",
+    )
+    parser.add_argument(
+        "--speaker-refinement-unknown-commit",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Allow later evidence to commit UNKNOWN transcript rows to a known or newly confirmed speaker.",
+    )
+    parser.add_argument(
         "--allow-speaker-reassignment",
         action=argparse.BooleanOptionalAction,
-        default=False,
-        help="Allow prototype refinement to change already assigned speaker labels.",
+        default=True,
+        help="Allow prototype refinement to change already committed non-UNKNOWN speaker labels.",
     )
     parser.add_argument("--speaker-refinement-max-per-profile", type=int, default=32)
     parser.add_argument("--speaker-refinement-min-duration", type=float, default=0.15)
@@ -1436,10 +1591,17 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--realtime-preview-model",
-        default=DEFAULT_KROKO_PREVIEW_MODEL,
-        help="Kroko/Banafo model name for replace-only realtime preview text.",
+        default=None,
+        help="Kroko/Banafo model name for replace-only realtime preview text. Overrides --realtime-preview-model-preset.",
     )
-    parser.add_argument("--realtime-preview-model-path", type=Path, default=default_kroko_preview_model_path())
+    parser.add_argument(
+        "--realtime-preview-model-preset",
+        type=normalize_kroko_preview_model_preset,
+        default=DEFAULT_KROKO_PREVIEW_MODEL_PRESET,
+        metavar="{community-64l,pro-16l}",
+        help="Named Kroko preview model preset. Use pro-16l for Kroko-EN-Pro-16-L-Streaming-001.data.",
+    )
+    parser.add_argument("--realtime-preview-model-path", type=Path, default=None)
     parser.add_argument("--realtime-preview-download-root", type=Path, default=None)
     parser.add_argument("--realtime-preview-python", type=Path, default=DEFAULT_KROKO_PREVIEW_PYTHON)
     parser.add_argument("--realtime-preview-realtimestt-root", type=Path, default=DEFAULT_REALTIMESTT_ROOT)
@@ -1448,8 +1610,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--realtime-preview-startup-timeout-seconds",
         type=float,
-        default=12.0,
-        help="Maximum time to wait for the realtime preview engine before disabling preview.",
+        default=None,
+        help="Maximum time to wait for the realtime preview engine before disabling preview. Defaults to 45s for pro-16l and 12s otherwise.",
     )
     parser.add_argument(
         "--realtime-preview-request-timeout-seconds",
@@ -1469,7 +1631,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--realtime-preview-reset-overlap-seconds",
         type=float,
-        default=0.25,
+        default=0.15,
         help="Audio pre-roll kept before the committed sentence boundary when resetting preview after final sentence commits.",
     )
     parser.add_argument(
@@ -1827,6 +1989,30 @@ def parse_args() -> argparse.Namespace:
         help="Let fresh final sentence assignments seed the visible live speaker when no stronger live tag is active.",
     )
     parser.add_argument(
+        "--live-speaker-highlight-transcript",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Allow realtime transcript rows to drive the speaker-list live highlight when no fallback live-speaker probe is active.",
+    )
+    parser.add_argument(
+        "--live-speaker-highlight-transcript-max-lag-seconds",
+        type=float,
+        default=-1.0,
+        help="Maximum playback lag after a realtime transcript row end for that row to drive the speaker-list live highlight; negative disables the limit.",
+    )
+    parser.add_argument(
+        "--live-speaker-highlight-transcript-override-min-probability",
+        type=float,
+        default=1.1,
+        help="Minimum raw realtime transcript speaker probability needed to override an active fallback live-speaker highlight; values above 1 disable override.",
+    )
+    parser.add_argument(
+        "--live-speaker-highlight-transcript-override-min-margin",
+        type=float,
+        default=0.0,
+        help="Minimum raw probability lead over UNKNOWN needed for transcript speaker highlight override.",
+    )
+    parser.add_argument(
         "--live-speaker-sentence-hint-override",
         action=argparse.BooleanOptionalAction,
         default=True,
@@ -1918,6 +2104,14 @@ def parse_args() -> argparse.Namespace:
         help="Keep realtime preview enabled during validation. Final sentence metrics usually do not need this.",
     )
     args = parser.parse_args()
+    if args.realtime_preview_model is None:
+        args.realtime_preview_model = KROKO_PREVIEW_MODEL_PRESETS[args.realtime_preview_model_preset]
+    else:
+        args.realtime_preview_model_preset = "custom"
+    if args.realtime_preview_startup_timeout_seconds is None:
+        args.realtime_preview_startup_timeout_seconds = default_kroko_preview_startup_timeout_seconds(
+            args.realtime_preview_model_preset
+        )
     args.work_dir = args.work_dir.resolve()
     args.output_dir = args.output_dir.resolve()
     args.embedding_python = args.embedding_python.resolve()
@@ -1930,6 +2124,16 @@ def parse_args() -> argparse.Namespace:
         args.browser_live_observation_output = args.browser_live_observation_output.resolve()
     if args.download_root is not None:
         args.download_root = args.download_root.resolve()
+    if args.realtime_preview_model_path is None:
+        use_env_model_path = not (
+            preview_model_was_explicit
+            or preview_model_path_was_explicit
+            or preview_model_preset_was_explicit
+        )
+        args.realtime_preview_model_path = default_kroko_preview_model_path(
+            args.realtime_preview_model,
+            use_env=use_env_model_path,
+        )
     if args.realtime_preview_model_path is not None:
         args.realtime_preview_model_path = args.realtime_preview_model_path.resolve()
     if args.realtime_preview_download_root is not None:
@@ -1954,19 +2158,33 @@ def parse_args() -> argparse.Namespace:
     else:
         args.new_speaker_sensitivity = 3
         args.new_speaker_sensitivity_label = NEW_SPEAKER_SENSITIVITY_PRESETS[3]["label"]
+    if not args.live_speaker_assignment:
+        args.live_speaker_probe = False
+        args.live_speaker_sentence_hint = False
+        args.live_speaker_highlight_transcript = False
+        args.live_speaker_verify_on_change = False
+        args.live_speaker_raw_change_snap = False
+        args.live_speaker_provisional_new_speaker = False
+        args.live_speaker_weak_profile_assist = False
     return args
 
 
 def main() -> int:
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Parsing command line.", flush=True)
     args = parse_args()
+    preview_model_display = (
+        args.realtime_preview_model_path.name
+        if args.realtime_preview_model_path is not None
+        else args.realtime_preview_model
+    )
     print(
         f"[{datetime.now().strftime('%H:%M:%S')}] Startup config: "
         f"url={args.url} port={args.port} asr_backend={args.asr_backend} "
         f"embeddings_backend={args.embeddings_backend} "
         f"embedding_provider={args.embedding_provider} "
         f"embedding_timeout={args.embedding_helper_response_timeout_seconds:.0f}s "
-        f"realtime_preview={args.realtime_preview_engine}.",
+        f"realtime_preview={args.realtime_preview_engine} "
+        f"preview_model={args.realtime_preview_model_preset}:{preview_model_display}.",
         flush=True,
     )
     if args.validate_window_replay:

@@ -13,8 +13,28 @@ from typing import Any
 import numpy as np
 
 
+KROKO_KEY_ENV_NAMES = (
+    "REALTIMESTT_KROKO_ONNX_KEY",
+    "KROKO_ONNX_KEY",
+    "KROKO_KEY",
+)
+KROKO_REFERRAL_ENV_NAMES = (
+    "REALTIMESTT_KROKO_ONNX_REFERRALCODE",
+    "KROKO_ONNX_REFERRALCODE",
+    "KROKO_REFERRALCODE",
+)
+
+
 def write_message(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), flush=True)
+
+
+def first_env_value(names: tuple[str, ...]) -> str:
+    for name in names:
+        value = os.environ.get(name)
+        if value:
+            return value
+    return ""
 
 
 def parse_args() -> argparse.Namespace:
@@ -49,6 +69,8 @@ def create_session(args: argparse.Namespace):
     }
     if args.model_path:
         options["model_path"] = args.model_path
+    options["key"] = first_env_value(KROKO_KEY_ENV_NAMES)
+    options["referralcode"] = first_env_value(KROKO_REFERRAL_ENV_NAMES)
     if args.engine_options_json:
         extra_options = json.loads(args.engine_options_json)
         if not isinstance(extra_options, dict):
