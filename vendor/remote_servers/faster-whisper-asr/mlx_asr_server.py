@@ -15,6 +15,7 @@ it separately into this venv: `uv pip install -p .venv mlx-whisper`.
 """
 from __future__ import annotations
 
+import math
 import os
 import time
 from typing import Any
@@ -85,6 +86,13 @@ def health() -> dict[str, Any]:
     }
 
 
+def finite_or_none(value: Any) -> float | None:
+    # Greedy decode on very short windows can yield -inf avg_logprob / NaN
+    # no_speech_prob; JSONResponse serializes with allow_nan=False and 500s.
+    number = float(value)
+    return number if math.isfinite(number) else None
+
+
 def pcm_bytes_to_float32(audio_bytes: bytes, sample_rate: int, encoding: str) -> np.ndarray:
     if sample_rate != TARGET_SAMPLE_RATE:
         raise HTTPException(status_code=400, detail="pcm_sample_rate_must_be_16000")
@@ -135,22 +143,22 @@ async def transcribe_window(request: Request) -> JSONResponse:
     for segment in result["segments"]:
         words = [
             {
-                "start": w["start"],
-                "end": w["end"],
+                "start": finite_or_none(w["start"]),
+                "end": finite_or_none(w["end"]),
                 "word": w["word"],
                 "text": w["word"],
-                "probability": w["probability"],
+                "probability": finite_or_none(w["probability"]),
             }
             for w in segment.get("words", [])
         ]
         all_words.extend(words)
         item = {
             "id": segment["id"],
-            "start": segment["start"],
-            "end": segment["end"],
+            "start": finite_or_none(segment["start"]),
+            "end": finite_or_none(segment["end"]),
             "text": segment["text"],
-            "avg_logprob": segment["avg_logprob"],
-            "no_speech_prob": segment["no_speech_prob"],
+            "avg_logprob": finite_or_none(segment["avg_logprob"]),
+            "no_speech_prob": finite_or_none(segment["no_speech_prob"]),
         }
         if words:
             item["words"] = words
