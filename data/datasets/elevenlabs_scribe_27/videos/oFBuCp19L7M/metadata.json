@@ -1,0 +1,58 @@
+{
+  "canonical_video_id": "oFBuCp19L7M",
+  "baseline_key": "oFBuCp19L7M",
+  "source_url": "https://www.youtube.com/watch?v=oFBuCp19L7M",
+  "title": "Mark Hamill talks about keeping I am your father secret",
+  "duration_sec": 371.345,
+  "baseline": {
+    "canonical_diarization": "baseline/canonical_diarization.json",
+    "source_files": "baseline/source_files",
+    "segment_count": 95,
+    "speaker_count": 4,
+    "embedding_provider_count": 15,
+    "embedding_providers": [
+      "espnet_ecapa_wavlm_joint",
+      "espnet_rawnet3",
+      "jungjee_rawnet3",
+      "nemo_titanet_large",
+      "pyannote_embedding",
+      "pyannote_wespeaker_resnet34_lm",
+      "resemblyzer",
+      "speaker3d_campplus",
+      "speaker3d_eres2netv2",
+      "speechbrain_ecapa",
+      "speechbrain_resnet",
+      "speechbrain_xvector",
+      "wavlm_base_sv",
+      "wespeaker_campplus",
+      "wespeaker_resnet34_lm_onnx"
+    ]
+  },
+  "live_window": {
+    "source_kind": "repo_complete_23",
+    "source_path": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_complete_23\\oFBuCp19L7M_livewindow_60_90_cuda",
+    "sentences": "live_window/sentences.jsonl",
+    "audio_dir": "live_window/audio",
+    "sentence_count": 114,
+    "audio_clip_count": 114,
+    "embedding_provider_count": 15,
+    "embedding_providers": [
+      "espnet_ecapa_wavlm_joint",
+      "espnet_rawnet3",
+      "jungjee_rawnet3",
+      "nemo_titanet_large",
+      "pyannote_embedding",
+      "pyannote_wespeaker_resnet34_lm",
+      "resemblyzer",
+      "speaker3d_campplus",
+      "speaker3d_eres2netv2",
+      "speechbrain_ecapa",
+      "speechbrain_resnet",
+      "speechbrain_xvector",
+      "wavlm_base_sv",
+      "wespeaker_campplus",
+      "wespeaker_resnet34_lm_onnx"
+    ],
+    "complete_provider_embeddings": true
+  }
+}

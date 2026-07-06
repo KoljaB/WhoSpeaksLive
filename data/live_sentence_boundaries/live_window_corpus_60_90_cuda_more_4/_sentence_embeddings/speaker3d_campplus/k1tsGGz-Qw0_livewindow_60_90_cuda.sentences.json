@@ -1,0 +1,1284 @@
+{
+  "provider": "speaker3d_campplus",
+  "video": "k1tsGGz-Qw0",
+  "folder": "k1tsGGz-Qw0_livewindow_60_90_cuda",
+  "sentence_file": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\k1tsGGz-Qw0_livewindow_60_90_cuda\\sentences.jsonl",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    127,
+    192
+  ],
+  "elapsed_seconds": 5.667265799827874,
+  "sentences": [
+    {
+      "index": 0,
+      "text": "♪♪ The right triangle's longest side is called the hypotenuse.",
+      "start": 2.34,
+      "end": 8.57,
+      "audio_length_seconds": 6.23,
+      "embedding_audio_seconds": 6.0,
+      "audio_file": "audio\\sentence_0000.wav",
+      "word_count": 10
+    },
+    {
+      "index": 1,
+      "text": "And it's this side here.",
+      "start": 8.88,
+      "end": 10.35,
+      "audio_length_seconds": 1.47,
+      "embedding_audio_seconds": 1.25,
+      "audio_file": "audio\\sentence_0001.wav",
+      "word_count": 5
+    },
+    {
+      "index": 2,
+      "text": "Hey.",
+      "start": 10.62,
+      "end": 11.01,
+      "audio_length_seconds": 0.39,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0002.wav",
+      "word_count": 1
+    },
+    {
+      "index": 3,
+      "text": "I wish I were high on pot -noose.",
+      "start": 11.86,
+      "end": 15.53,
+      "audio_length_seconds": 3.67,
+      "embedding_audio_seconds": 3.14,
+      "audio_file": "audio\\sentence_0003.wav",
+      "word_count": 8
+    },
+    {
+      "index": 4,
+      "text": "I wish I was high on pot -noose.",
+      "start": 16.44,
+      "end": 19.39,
+      "audio_length_seconds": 2.95,
+      "embedding_audio_seconds": 2.95,
+      "audio_file": "audio\\sentence_0004.wav",
+      "word_count": 8
+    },
+    {
+      "index": 5,
+      "text": "Okay, okay, okay.",
+      "start": 31.69,
+      "end": 33.04,
+      "audio_length_seconds": 1.35,
+      "embedding_audio_seconds": 1.35,
+      "audio_file": "audio\\sentence_0005.wav",
+      "word_count": 3
+    },
+    {
+      "index": 6,
+      "text": "Oh, Mr. Morris, it's very funny.",
+      "start": 33.4,
+      "end": 35.14,
+      "audio_length_seconds": 1.74,
+      "embedding_audio_seconds": 1.74,
+      "audio_file": "audio\\sentence_0006.wav",
+      "word_count": 6
+    },
+    {
+      "index": 7,
+      "text": "It's very funny, but let's get back to the lesson.",
+      "start": 35.14,
+      "end": 37.47,
+      "audio_length_seconds": 2.33,
+      "embedding_audio_seconds": 2.33,
+      "audio_file": "audio\\sentence_0007.wav",
+      "word_count": 10
+    },
+    {
+      "index": 8,
+      "text": "And we can see the longest one, where it goes from this point.",
+      "start": 38.77,
+      "end": 42.578,
+      "audio_length_seconds": 3.808,
+      "embedding_audio_seconds": 3.468,
+      "audio_file": "audio\\sentence_0008.wav",
+      "word_count": 13
+    },
+    {
+      "index": 9,
+      "text": "That was my joke.",
+      "start": 42.578,
+      "end": 43.55,
+      "audio_length_seconds": 0.972,
+      "embedding_audio_seconds": 0.972,
+      "audio_file": "audio\\sentence_0009.wav",
+      "word_count": 4
+    },
+    {
+      "index": 10,
+      "text": "This is wonderful.",
+      "start": 43.55,
+      "end": 44.13,
+      "audio_length_seconds": 0.58,
+      "embedding_audio_seconds": 0.58,
+      "audio_file": "audio\\sentence_0010.wav",
+      "word_count": 3
+    },
+    {
+      "index": 11,
+      "text": "I know, man.",
+      "start": 44.13,
+      "end": 44.594,
+      "audio_length_seconds": 0.464,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0011.wav",
+      "word_count": 3
+    },
+    {
+      "index": 12,
+      "text": "That was hilarious.",
+      "start": 44.594,
+      "end": 45.324,
+      "audio_length_seconds": 0.73,
+      "embedding_audio_seconds": 0.73,
+      "audio_file": "audio\\sentence_0012.wav",
+      "word_count": 3
+    },
+    {
+      "index": 13,
+      "text": "Of a triangle.",
+      "start": 45.474,
+      "end": 46.464,
+      "audio_length_seconds": 0.99,
+      "embedding_audio_seconds": 0.93,
+      "audio_file": "audio\\sentence_0013.wav",
+      "word_count": 3
+    },
+    {
+      "index": 14,
+      "text": "I've labeled them here A, B and C. No, but I mean, I said that.",
+      "start": 46.464,
+      "end": 49.594,
+      "audio_length_seconds": 3.13,
+      "embedding_audio_seconds": 2.76,
+      "audio_file": "audio\\sentence_0014.wav",
+      "word_count": 15
+    },
+    {
+      "index": 15,
+      "text": "I said it.",
+      "start": 50.404,
+      "end": 51.094,
+      "audio_length_seconds": 0.69,
+      "embedding_audio_seconds": 0.69,
+      "audio_file": "audio\\sentence_0015.wav",
+      "word_count": 3
+    },
+    {
+      "index": 16,
+      "text": "I said it.",
+      "start": 51.764,
+      "end": 52.354,
+      "audio_length_seconds": 0.59,
+      "embedding_audio_seconds": 0.59,
+      "audio_file": "audio\\sentence_0016.wav",
+      "word_count": 3
+    },
+    {
+      "index": 17,
+      "text": "I said that!",
+      "start": 52.744,
+      "end": 53.574,
+      "audio_length_seconds": 0.83,
+      "embedding_audio_seconds": 0.83,
+      "audio_file": "audio\\sentence_0017.wav",
+      "word_count": 3
+    },
+    {
+      "index": 18,
+      "text": "Please, please, Mr. Jackson, keep your comments to yourself.",
+      "start": 53.574,
+      "end": 57.044,
+      "audio_length_seconds": 3.47,
+      "embedding_audio_seconds": 3.44,
+      "audio_file": "audio\\sentence_0018.wav",
+      "word_count": 9
+    },
+    {
+      "index": 19,
+      "text": "Thank you.",
+      "start": 57.044,
+      "end": 58.354,
+      "audio_length_seconds": 1.31,
+      "embedding_audio_seconds": 1.22,
+      "audio_file": "audio\\sentence_0019.wav",
+      "word_count": 2
+    },
+    {
+      "index": 20,
+      "text": "Ah, now, the hypotenuse, it...",
+      "start": 59.234,
+      "end": 62.574,
+      "audio_length_seconds": 3.34,
+      "embedding_audio_seconds": 3.05,
+      "audio_file": "audio\\sentence_0020.wav",
+      "word_count": 5
+    },
+    {
+      "index": 21,
+      "text": "Mr. Morrison, you really got me on that one.",
+      "start": 68.314,
+      "end": 70.924,
+      "audio_length_seconds": 2.61,
+      "embedding_audio_seconds": 2.61,
+      "audio_file": "audio\\sentence_0021.wav",
+      "word_count": 9
+    },
+    {
+      "index": 22,
+      "text": "Oh, so great.",
+      "start": 70.934,
+      "end": 72.164,
+      "audio_length_seconds": 1.23,
+      "embedding_audio_seconds": 1.23,
+      "audio_file": "audio\\sentence_0022.wav",
+      "word_count": 3
+    },
+    {
+      "index": 23,
+      "text": "Oh!",
+      "start": 72.494,
+      "end": 72.798,
+      "audio_length_seconds": 0.304,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0023.wav",
+      "word_count": 1
+    },
+    {
+      "index": 24,
+      "text": "Oh!",
+      "start": 72.798,
+      "end": 73.014,
+      "audio_length_seconds": 0.216,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0024.wav",
+      "word_count": 1
+    },
+    {
+      "index": 25,
+      "text": "Principal Martel!",
+      "start": 73.014,
+      "end": 73.858,
+      "audio_length_seconds": 0.844,
+      "embedding_audio_seconds": 0.844,
+      "audio_file": "audio\\sentence_0025.wav",
+      "word_count": 2
+    },
+    {
+      "index": 26,
+      "text": "Principal Martel, come here, come here, come here.",
+      "start": 73.858,
+      "end": 75.508,
+      "audio_length_seconds": 1.65,
+      "embedding_audio_seconds": 1.65,
+      "audio_file": "audio\\sentence_0026.wav",
+      "word_count": 8
+    },
+    {
+      "index": 27,
+      "text": "Uh, tell Principal Martel what you said, Troy.",
+      "start": 75.508,
+      "end": 78.058,
+      "audio_length_seconds": 2.55,
+      "embedding_audio_seconds": 2.24,
+      "audio_file": "audio\\sentence_0027.wav",
+      "word_count": 8
+    },
+    {
+      "index": 28,
+      "text": "Oh, uh, um, she was talking about the high pot noose, and I said, I wish I was high on pot noose.",
+      "start": 78.058,
+      "end": 84.668,
+      "audio_length_seconds": 6.61,
+      "embedding_audio_seconds": 6.26,
+      "audio_file": "audio\\sentence_0028.wav",
+      "word_count": 22
+    },
+    {
+      "index": 29,
+      "text": "I'm lost!",
+      "start": 84.668,
+      "end": 85.358,
+      "audio_length_seconds": 0.69,
+      "embedding_audio_seconds": 0.69,
+      "audio_file": "audio\\sentence_0029.wav",
+      "word_count": 2
+    },
+    {
+      "index": 30,
+      "text": "I'm sorry.",
+      "start": 87.978,
+      "end": 89.228,
+      "audio_length_seconds": 1.25,
+      "embedding_audio_seconds": 1.25,
+      "audio_file": "audio\\sentence_0030.wav",
+      "word_count": 2
+    },
+    {
+      "index": 31,
+      "text": "Ha -ha!",
+      "start": 89.478,
+      "end": 90.128,
+      "audio_length_seconds": 0.65,
+      "embedding_audio_seconds": 0.65,
+      "audio_file": "audio\\sentence_0031.wav",
+      "word_count": 2
+    },
+    {
+      "index": 32,
+      "text": "Ha, ha, ha, ha, ha, ha, ha!",
+      "start": 90.128,
+      "end": 92.136,
+      "audio_length_seconds": 2.008,
+      "embedding_audio_seconds": 2.008,
+      "audio_file": "audio\\sentence_0032.wav",
+      "word_count": 7
+    },
+    {
+      "index": 33,
+      "text": "He likes it.",
+      "start": 92.136,
+      "end": 93.018,
+      "audio_length_seconds": 0.882,
+      "embedding_audio_seconds": 0.882,
+      "audio_file": "audio\\sentence_0033.wav",
+      "word_count": 3
+    },
+    {
+      "index": 34,
+      "text": "Principal Martel's cool.",
+      "start": 93.018,
+      "end": 95.848,
+      "audio_length_seconds": 2.83,
+      "embedding_audio_seconds": 2.83,
+      "audio_file": "audio\\sentence_0034.wav",
+      "word_count": 3
+    },
+    {
+      "index": 35,
+      "text": "Oh, that's very funny.",
+      "start": 95.848,
+      "end": 99.898,
+      "audio_length_seconds": 4.05,
+      "embedding_audio_seconds": 4.05,
+      "audio_file": "audio\\sentence_0035.wav",
+      "word_count": 4
+    },
+    {
+      "index": 36,
+      "text": "Principal Martel.",
+      "start": 99.898,
+      "end": 100.868,
+      "audio_length_seconds": 0.97,
+      "embedding_audio_seconds": 0.97,
+      "audio_file": "audio\\sentence_0036.wav",
+      "word_count": 2
+    },
+    {
+      "index": 37,
+      "text": "Principal Mortell, I -I said that.",
+      "start": 100.868,
+      "end": 102.998,
+      "audio_length_seconds": 2.13,
+      "embedding_audio_seconds": 2.13,
+      "audio_file": "audio\\sentence_0037.wav",
+      "word_count": 6
+    },
+    {
+      "index": 38,
+      "text": "Mr. Jackson, that is enough!",
+      "start": 102.998,
+      "end": 105.548,
+      "audio_length_seconds": 2.55,
+      "embedding_audio_seconds": 2.39,
+      "audio_file": "audio\\sentence_0038.wav",
+      "word_count": 5
+    },
+    {
+      "index": 39,
+      "text": "That's what I said at first.",
+      "start": 105.548,
+      "end": 106.658,
+      "audio_length_seconds": 1.11,
+      "embedding_audio_seconds": 1.11,
+      "audio_file": "audio\\sentence_0039.wav",
+      "word_count": 6
+    },
+    {
+      "index": 40,
+      "text": "Oh, uh, Mr. Iglesias!",
+      "start": 107.798,
+      "end": 109.248,
+      "audio_length_seconds": 1.45,
+      "embedding_audio_seconds": 1.38,
+      "audio_file": "audio\\sentence_0040.wav",
+      "word_count": 4
+    },
+    {
+      "index": 41,
+      "text": "Mr. Iglesias, yes, come in, come in.",
+      "start": 109.248,
+      "end": 111.078,
+      "audio_length_seconds": 1.83,
+      "embedding_audio_seconds": 1.83,
+      "audio_file": "audio\\sentence_0041.wav",
+      "word_count": 7
+    },
+    {
+      "index": 42,
+      "text": "Yeah.",
+      "start": 111.578,
+      "end": 112.128,
+      "audio_length_seconds": 0.55,
+      "embedding_audio_seconds": 0.55,
+      "audio_file": "audio\\sentence_0042.wav",
+      "word_count": 1
+    },
+    {
+      "index": 43,
+      "text": "What's up, peoples?",
+      "start": 112.128,
+      "end": 113.198,
+      "audio_length_seconds": 1.07,
+      "embedding_audio_seconds": 1.07,
+      "audio_file": "audio\\sentence_0043.wav",
+      "word_count": 3
+    },
+    {
+      "index": 44,
+      "text": "Stop it.",
+      "start": 113.198,
+      "end": 113.968,
+      "audio_length_seconds": 0.77,
+      "embedding_audio_seconds": 0.77,
+      "audio_file": "audio\\sentence_0044.wav",
+      "word_count": 2
+    },
+    {
+      "index": 45,
+      "text": "Comedian Gabriel Iglesias is touring the local schools today for a charity he's working on.",
+      "start": 113.968,
+      "end": 119.318,
+      "audio_length_seconds": 5.35,
+      "embedding_audio_seconds": 5.35,
+      "audio_file": "audio\\sentence_0045.wav",
+      "word_count": 15
+    },
+    {
+      "index": 46,
+      "text": "Tell him what you said!",
+      "start": 119.518,
+      "end": 120.422,
+      "audio_length_seconds": 0.904,
+      "embedding_audio_seconds": 0.904,
+      "audio_file": "audio\\sentence_0046.wav",
+      "word_count": 5
+    },
+    {
+      "index": 47,
+      "text": "Tell them what you said.",
+      "start": 120.422,
+      "end": 120.992,
+      "audio_length_seconds": 0.57,
+      "embedding_audio_seconds": 0.57,
+      "audio_file": "audio\\sentence_0047.wav",
+      "word_count": 5
+    },
+    {
+      "index": 48,
+      "text": "Oh, I wish I was high on pot noose I'm your biggest fan.",
+      "start": 121.792,
+      "end": 137.722,
+      "audio_length_seconds": 15.93,
+      "embedding_audio_seconds": 15.91,
+      "audio_file": "audio\\sentence_0048.wav",
+      "word_count": 13
+    },
+    {
+      "index": 49,
+      "text": "That was my joke.",
+      "start": 137.722,
+      "end": 138.772,
+      "audio_length_seconds": 1.05,
+      "embedding_audio_seconds": 1.05,
+      "audio_file": "audio\\sentence_0049.wav",
+      "word_count": 4
+    },
+    {
+      "index": 50,
+      "text": "Uh, you know, it's not really cool, buddy, to take credit for other people's jokes.",
+      "start": 138.772,
+      "end": 142.402,
+      "audio_length_seconds": 3.63,
+      "embedding_audio_seconds": 3.59,
+      "audio_file": "audio\\sentence_0050.wav",
+      "word_count": 15
+    },
+    {
+      "index": 51,
+      "text": "Hey, listen.",
+      "start": 142.962,
+      "end": 143.612,
+      "audio_length_seconds": 0.65,
+      "embedding_audio_seconds": 0.54,
+      "audio_file": "audio\\sentence_0051.wav",
+      "word_count": 2
+    },
+    {
+      "index": 52,
+      "text": "Funny stuff.",
+      "start": 144.032,
+      "end": 144.776,
+      "audio_length_seconds": 0.744,
+      "embedding_audio_seconds": 0.734,
+      "audio_file": "audio\\sentence_0052.wav",
+      "word_count": 2
+    },
+    {
+      "index": 53,
+      "text": "I'm doing this big tour right now.",
+      "start": 144.776,
+      "end": 146.046,
+      "audio_length_seconds": 1.27,
+      "embedding_audio_seconds": 1.27,
+      "audio_file": "audio\\sentence_0053.wav",
+      "word_count": 7
+    },
+    {
+      "index": 54,
+      "text": "You want to see about maybe we could talk about you opening?",
+      "start": 146.046,
+      "end": 147.976,
+      "audio_length_seconds": 1.93,
+      "embedding_audio_seconds": 1.93,
+      "audio_file": "audio\\sentence_0054.wav",
+      "word_count": 12
+    },
+    {
+      "index": 55,
+      "text": "I need an opener.",
+      "start": 147.976,
+      "end": 148.766,
+      "audio_length_seconds": 0.79,
+      "embedding_audio_seconds": 0.79,
+      "audio_file": "audio\\sentence_0055.wav",
+      "word_count": 4
+    },
+    {
+      "index": 56,
+      "text": "Oh.",
+      "start": 148.766,
+      "end": 149.902,
+      "audio_length_seconds": 1.136,
+      "embedding_audio_seconds": 0.926,
+      "audio_file": "audio\\sentence_0056.wav",
+      "word_count": 1
+    },
+    {
+      "index": 57,
+      "text": "Oh.",
+      "start": 149.902,
+      "end": 150.016,
+      "audio_length_seconds": 0.114,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0057.wav",
+      "word_count": 1
+    },
+    {
+      "index": 58,
+      "text": "Um, sure.",
+      "start": 150.016,
+      "end": 151.486,
+      "audio_length_seconds": 1.47,
+      "embedding_audio_seconds": 1.47,
+      "audio_file": "audio\\sentence_0058.wav",
+      "word_count": 2
+    },
+    {
+      "index": 59,
+      "text": "What do you think?",
+      "start": 152.266,
+      "end": 152.858,
+      "audio_length_seconds": 0.592,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0059.wav",
+      "word_count": 4
+    },
+    {
+      "index": 60,
+      "text": "Is that okay?",
+      "start": 152.858,
+      "end": 153.25,
+      "audio_length_seconds": 0.392,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0060.wav",
+      "word_count": 3
+    },
+    {
+      "index": 61,
+      "text": "Of course!",
+      "start": 153.25,
+      "end": 153.96,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.71,
+      "audio_file": "audio\\sentence_0061.wav",
+      "word_count": 2
+    },
+    {
+      "index": 62,
+      "text": "Yeah, of course.",
+      "start": 153.96,
+      "end": 154.59,
+      "audio_length_seconds": 0.63,
+      "embedding_audio_seconds": 0.63,
+      "audio_file": "audio\\sentence_0062.wav",
+      "word_count": 3
+    },
+    {
+      "index": 63,
+      "text": "Oh, what?",
+      "start": 154.59,
+      "end": 156.16,
+      "audio_length_seconds": 1.57,
+      "embedding_audio_seconds": 1.57,
+      "audio_file": "audio\\sentence_0063.wav",
+      "word_count": 2
+    },
+    {
+      "index": 64,
+      "text": "Oh, God.",
+      "start": 156.73,
+      "end": 157.42,
+      "audio_length_seconds": 0.69,
+      "embedding_audio_seconds": 0.69,
+      "audio_file": "audio\\sentence_0064.wav",
+      "word_count": 2
+    },
+    {
+      "index": 65,
+      "text": "It's nice to meet you.",
+      "start": 157.8,
+      "end": 158.89,
+      "audio_length_seconds": 1.09,
+      "embedding_audio_seconds": 1.09,
+      "audio_file": "audio\\sentence_0065.wav",
+      "word_count": 5
+    },
+    {
+      "index": 66,
+      "text": "Talent, man.",
+      "start": 160.08,
+      "end": 160.52,
+      "audio_length_seconds": 0.44,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0066.wav",
+      "word_count": 2
+    },
+    {
+      "index": 67,
+      "text": "It's nice to meet you.",
+      "start": 160.52,
+      "end": 161.208,
+      "audio_length_seconds": 0.688,
+      "embedding_audio_seconds": 0.688,
+      "audio_file": "audio\\sentence_0067.wav",
+      "word_count": 5
+    },
+    {
+      "index": 68,
+      "text": "Thanks so much.",
+      "start": 161.208,
+      "end": 161.9,
+      "audio_length_seconds": 0.692,
+      "embedding_audio_seconds": 0.692,
+      "audio_file": "audio\\sentence_0068.wav",
+      "word_count": 3
+    },
+    {
+      "index": 69,
+      "text": "That's like a Richard Pryor.",
+      "start": 161.9,
+      "end": 162.684,
+      "audio_length_seconds": 0.784,
+      "embedding_audio_seconds": 0.784,
+      "audio_file": "audio\\sentence_0069.wav",
+      "word_count": 5
+    },
+    {
+      "index": 70,
+      "text": "Get over here, man.",
+      "start": 162.684,
+      "end": 163.374,
+      "audio_length_seconds": 0.69,
+      "embedding_audio_seconds": 0.69,
+      "audio_file": "audio\\sentence_0070.wav",
+      "word_count": 4
+    },
+    {
+      "index": 71,
+      "text": "Come on.",
+      "start": 163.404,
+      "end": 163.744,
+      "audio_length_seconds": 0.34,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0071.wav",
+      "word_count": 2
+    },
+    {
+      "index": 72,
+      "text": "Richard Pryor!",
+      "start": 163.744,
+      "end": 164.614,
+      "audio_length_seconds": 0.87,
+      "embedding_audio_seconds": 0.87,
+      "audio_file": "audio\\sentence_0072.wav",
+      "word_count": 2
+    },
+    {
+      "index": 73,
+      "text": "Yeah, he deserved it.",
+      "start": 166.134,
+      "end": 167.504,
+      "audio_length_seconds": 1.37,
+      "embedding_audio_seconds": 1.31,
+      "audio_file": "audio\\sentence_0073.wav",
+      "word_count": 4
+    },
+    {
+      "index": 74,
+      "text": "All right, so across from the longest side is a 90 -degree angle.",
+      "start": 167.504,
+      "end": 172.314,
+      "audio_length_seconds": 4.81,
+      "embedding_audio_seconds": 4.28,
+      "audio_file": "audio\\sentence_0074.wav",
+      "word_count": 13
+    },
+    {
+      "index": 75,
+      "text": "Good thing I've got a 90 -degree dangle!",
+      "start": 173.454,
+      "end": 175.604,
+      "audio_length_seconds": 2.15,
+      "embedding_audio_seconds": 1.98,
+      "audio_file": "audio\\sentence_0075.wav",
+      "word_count": 8
+    },
+    {
+      "index": 76,
+      "text": "Joel, stop it!",
+      "start": 176.224,
+      "end": 177.674,
+      "audio_length_seconds": 1.45,
+      "embedding_audio_seconds": 1.45,
+      "audio_file": "audio\\sentence_0076.wav",
+      "word_count": 3
+    },
+    {
+      "index": 77,
+      "text": "You will never beat Troy!",
+      "start": 177.674,
+      "end": 179.624,
+      "audio_length_seconds": 1.95,
+      "embedding_audio_seconds": 1.95,
+      "audio_file": "audio\\sentence_0077.wav",
+      "word_count": 5
+    },
+    {
+      "index": 78,
+      "text": "Why are you trying to be like Troy?",
+      "start": 179.624,
+      "end": 181.914,
+      "audio_length_seconds": 2.29,
+      "embedding_audio_seconds": 2.29,
+      "audio_file": "audio\\sentence_0078.wav",
+      "word_count": 8
+    },
+    {
+      "index": 79,
+      "text": "Dick!",
+      "start": 181.914,
+      "end": 183.284,
+      "audio_length_seconds": 1.37,
+      "embedding_audio_seconds": 0.61,
+      "audio_file": "audio\\sentence_0079.wav",
+      "word_count": 1
+    },
+    {
+      "index": 80,
+      "text": "Add two, nerdy girl.",
+      "start": 184.324,
+      "end": 186.114,
+      "audio_length_seconds": 1.79,
+      "embedding_audio_seconds": 1.46,
+      "audio_file": "audio\\sentence_0080.wav",
+      "word_count": 4
+    },
+    {
+      "index": 81,
+      "text": "So, the hypotenu - What the f*** is going on?",
+      "start": 186.114,
+      "end": 196.824,
+      "audio_length_seconds": 10.71,
+      "embedding_audio_seconds": 9.67,
+      "audio_file": "audio\\sentence_0081.wav",
+      "word_count": 10
+    },
+    {
+      "index": 82,
+      "text": "I'm an abysmal dance!",
+      "start": 196.824,
+      "end": 199.114,
+      "audio_length_seconds": 2.29,
+      "embedding_audio_seconds": 2.29,
+      "audio_file": "audio\\sentence_0082.wav",
+      "word_count": 4
+    },
+    {
+      "index": 83,
+      "text": "I'm going to miss my fans right here.",
+      "start": 199.114,
+      "end": 201.564,
+      "audio_length_seconds": 2.45,
+      "embedding_audio_seconds": 2.45,
+      "audio_file": "audio\\sentence_0083.wav",
+      "word_count": 8
+    },
+    {
+      "index": 84,
+      "text": "Oh, my God!",
+      "start": 201.564,
+      "end": 203.074,
+      "audio_length_seconds": 1.51,
+      "embedding_audio_seconds": 1.51,
+      "audio_file": "audio\\sentence_0084.wav",
+      "word_count": 3
+    },
+    {
+      "index": 85,
+      "text": "Good evening, my fellow Americans.",
+      "start": 208.094,
+      "end": 209.964,
+      "audio_length_seconds": 1.87,
+      "embedding_audio_seconds": 1.71,
+      "audio_file": "audio\\sentence_0085.wav",
+      "word_count": 5
+    },
+    {
+      "index": 86,
+      "text": "Every day, our citizens improve the lives of those around them.",
+      "start": 210.234,
+      "end": 213.704,
+      "audio_length_seconds": 3.47,
+      "embedding_audio_seconds": 3.25,
+      "audio_file": "audio\\sentence_0086.wav",
+      "word_count": 11
+    },
+    {
+      "index": 87,
+      "text": "Today, we honor Troy Morrison.",
+      "start": 213.854,
+      "end": 215.964,
+      "audio_length_seconds": 2.11,
+      "embedding_audio_seconds": 2.0,
+      "audio_file": "audio\\sentence_0087.wav",
+      "word_count": 5
+    },
+    {
+      "index": 88,
+      "text": "Now, Troy was in geometry class when his teacher mentioned the hypotenuse of a triangle.",
+      "start": 216.054,
+      "end": 221.304,
+      "audio_length_seconds": 5.25,
+      "embedding_audio_seconds": 5.2,
+      "audio_file": "audio\\sentence_0088.wav",
+      "word_count": 15
+    },
+    {
+      "index": 89,
+      "text": "Troy said, I wish I was high on potenus.",
+      "start": 221.514,
+      "end": 224.024,
+      "audio_length_seconds": 2.51,
+      "embedding_audio_seconds": 2.2,
+      "audio_file": "audio\\sentence_0089.wav",
+      "word_count": 9
+    },
+    {
+      "index": 90,
+      "text": "That really cracked me up, and it cracked up the rest of America, too.",
+      "start": 224.424,
+      "end": 228.314,
+      "audio_length_seconds": 3.89,
+      "embedding_audio_seconds": 3.66,
+      "audio_file": "audio\\sentence_0090.wav",
+      "word_count": 14
+    },
+    {
+      "index": 91,
+      "text": "So today, I'm pleased to present Troy with the Congressional Comedy Medal of Honor.",
+      "start": 228.314,
+      "end": 233.824,
+      "audio_length_seconds": 5.51,
+      "embedding_audio_seconds": 5.45,
+      "audio_file": "audio\\sentence_0091.wav",
+      "word_count": 14
+    },
+    {
+      "index": 92,
+      "text": "Troy, on behalf of the entire country, I just want to, uh, thank you for your fantastic off -the -cuff line.",
+      "start": 233.824,
+      "end": 242.174,
+      "audio_length_seconds": 8.35,
+      "embedding_audio_seconds": 8.22,
+      "audio_file": "audio\\sentence_0092.wav",
+      "word_count": 21
+    },
+    {
+      "index": 93,
+      "text": "You are a true comedy hero.",
+      "start": 242.174,
+      "end": 244.824,
+      "audio_length_seconds": 2.65,
+      "embedding_audio_seconds": 1.98,
+      "audio_file": "audio\\sentence_0093.wav",
+      "word_count": 6
+    },
+    {
+      "index": 94,
+      "text": "Thank you, sir.",
+      "start": 244.824,
+      "end": 245.694,
+      "audio_length_seconds": 0.87,
+      "embedding_audio_seconds": 0.65,
+      "audio_file": "audio\\sentence_0094.wav",
+      "word_count": 3
+    },
+    {
+      "index": 95,
+      "text": "Thank you.",
+      "start": 246.114,
+      "end": 246.804,
+      "audio_length_seconds": 0.69,
+      "embedding_audio_seconds": 0.52,
+      "audio_file": "audio\\sentence_0095.wav",
+      "word_count": 2
+    },
+    {
+      "index": 96,
+      "text": "And also, Mr. President, I have something for you.",
+      "start": 246.804,
+      "end": 249.374,
+      "audio_length_seconds": 2.57,
+      "embedding_audio_seconds": 2.33,
+      "audio_file": "audio\\sentence_0096.wav",
+      "word_count": 9
+    },
+    {
+      "index": 97,
+      "text": "What's that?",
+      "start": 249.374,
+      "end": 250.004,
+      "audio_length_seconds": 0.63,
+      "embedding_audio_seconds": 0.59,
+      "audio_file": "audio\\sentence_0097.wav",
+      "word_count": 2
+    },
+    {
+      "index": 98,
+      "text": "Oh, he got one!",
+      "start": 250.004,
+      "end": 253.634,
+      "audio_length_seconds": 3.63,
+      "embedding_audio_seconds": 2.03,
+      "audio_file": "audio\\sentence_0098.wav",
+      "word_count": 4
+    },
+    {
+      "index": 99,
+      "text": "Yes!",
+      "start": 253.634,
+      "end": 254.864,
+      "audio_length_seconds": 1.23,
+      "embedding_audio_seconds": 1.23,
+      "audio_file": "audio\\sentence_0099.wav",
+      "word_count": 1
+    },
+    {
+      "index": 100,
+      "text": "These are sold out.",
+      "start": 254.864,
+      "end": 256.304,
+      "audio_length_seconds": 1.44,
+      "embedding_audio_seconds": 1.4399,
+      "audio_file": "audio\\sentence_0100.wav",
+      "word_count": 4
+    },
+    {
+      "index": 101,
+      "text": "I haven't been able to get my hands on one of these.",
+      "start": 256.304,
+      "end": 258.216,
+      "audio_length_seconds": 1.912,
+      "embedding_audio_seconds": 1.9121,
+      "audio_file": "audio\\sentence_0101.wav",
+      "word_count": 12
+    },
+    {
+      "index": 102,
+      "text": "Thanks, Troy.",
+      "start": 258.216,
+      "end": 259.126,
+      "audio_length_seconds": 0.91,
+      "embedding_audio_seconds": 0.9099,
+      "audio_file": "audio\\sentence_0102.wav",
+      "word_count": 2
+    },
+    {
+      "index": 103,
+      "text": "Oh, my God.",
+      "start": 259.126,
+      "end": 260.31,
+      "audio_length_seconds": 1.184,
+      "embedding_audio_seconds": 1.1841,
+      "audio_file": "audio\\sentence_0103.wav",
+      "word_count": 3
+    },
+    {
+      "index": 104,
+      "text": "I don't buy this.",
+      "start": 260.31,
+      "end": 261.98,
+      "audio_length_seconds": 1.67,
+      "embedding_audio_seconds": 1.67,
+      "audio_file": "audio\\sentence_0104.wav",
+      "word_count": 4
+    },
+    {
+      "index": 105,
+      "text": "Have you ever found yourself in High Point, North Carolina and not feeling safe?",
+      "start": 261.98,
+      "end": 266.35,
+      "audio_length_seconds": 4.37,
+      "embedding_audio_seconds": 4.37,
+      "audio_file": "audio\\sentence_0105.wav",
+      "word_count": 14
+    },
+    {
+      "index": 106,
+      "text": "It's going to be for you.",
+      "start": 266.35,
+      "end": 267.62,
+      "audio_length_seconds": 1.27,
+      "embedding_audio_seconds": 1.27,
+      "audio_file": "audio\\sentence_0106.wav",
+      "word_count": 6
+    },
+    {
+      "index": 107,
+      "text": "Heh.",
+      "start": 267.62,
+      "end": 267.83,
+      "audio_length_seconds": 0.21,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0107.wav",
+      "word_count": 1
+    },
+    {
+      "index": 108,
+      "text": "Aaaaah.",
+      "start": 270.84,
+      "end": 271.49,
+      "audio_length_seconds": 0.65,
+      "embedding_audio_seconds": 0.65,
+      "audio_file": "audio\\sentence_0108.wav",
+      "word_count": 1
+    },
+    {
+      "index": 109,
+      "text": "Because that's lunacy, okay, do you understand?",
+      "start": 272.93,
+      "end": 275.54,
+      "audio_length_seconds": 2.61,
+      "embedding_audio_seconds": 2.61,
+      "audio_file": "audio\\sentence_0109.wav",
+      "word_count": 7
+    },
+    {
+      "index": 110,
+      "text": "No!",
+      "start": 275.63,
+      "end": 275.94,
+      "audio_length_seconds": 0.31,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0110.wav",
+      "word_count": 1
+    },
+    {
+      "index": 111,
+      "text": "Make it rain!",
+      "start": 276.23,
+      "end": 277.16,
+      "audio_length_seconds": 0.93,
+      "embedding_audio_seconds": 0.93,
+      "audio_file": "audio\\sentence_0111.wav",
+      "word_count": 3
+    },
+    {
+      "index": 112,
+      "text": "I try to make it laugh.",
+      "start": 277.81,
+      "end": 279.24,
+      "audio_length_seconds": 1.43,
+      "embedding_audio_seconds": 1.43,
+      "audio_file": "audio\\sentence_0112.wav",
+      "word_count": 6
+    },
+    {
+      "index": 113,
+      "text": "Are you serious?",
+      "start": 279.91,
+      "end": 281.2,
+      "audio_length_seconds": 1.29,
+      "embedding_audio_seconds": 1.29,
+      "audio_file": "audio\\sentence_0113.wav",
+      "word_count": 3
+    },
+    {
+      "index": 114,
+      "text": "This is bulls**t. Do not cut my balls off on this one!",
+      "start": 281.2,
+      "end": 286.85,
+      "audio_length_seconds": 5.65,
+      "embedding_audio_seconds": 5.65,
+      "audio_file": "audio\\sentence_0114.wav",
+      "word_count": 12
+    },
+    {
+      "index": 115,
+      "text": "Okay.",
+      "start": 286.85,
+      "end": 287.56,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.71,
+      "audio_file": "audio\\sentence_0115.wav",
+      "word_count": 1
+    },
+    {
+      "index": 116,
+      "text": "Oh!",
+      "start": 287.56,
+      "end": 288.57,
+      "audio_length_seconds": 1.01,
+      "embedding_audio_seconds": 1.01,
+      "audio_file": "audio\\sentence_0116.wav",
+      "word_count": 1
+    },
+    {
+      "index": 117,
+      "text": "I totally love my nails right now.",
+      "start": 289.38,
+      "end": 292.17,
+      "audio_length_seconds": 2.79,
+      "embedding_audio_seconds": 2.79,
+      "audio_file": "audio\\sentence_0117.wav",
+      "word_count": 7
+    },
+    {
+      "index": 118,
+      "text": "That's what you call a booty investment.",
+      "start": 292.17,
+      "end": 293.96,
+      "audio_length_seconds": 1.79,
+      "embedding_audio_seconds": 1.79,
+      "audio_file": "audio\\sentence_0118.wav",
+      "word_count": 7
+    },
+    {
+      "index": 119,
+      "text": "Ha ha!",
+      "start": 294.13,
+      "end": 294.72,
+      "audio_length_seconds": 0.59,
+      "embedding_audio_seconds": 0.59,
+      "audio_file": "audio\\sentence_0119.wav",
+      "word_count": 2
+    },
+    {
+      "index": 120,
+      "text": "Brothers, brothers, brothers.",
+      "start": 294.72,
+      "end": 296.37,
+      "audio_length_seconds": 1.65,
+      "embedding_audio_seconds": 1.65,
+      "audio_file": "audio\\sentence_0120.wav",
+      "word_count": 3
+    },
+    {
+      "index": 121,
+      "text": "Tackle and grapple!",
+      "start": 296.91,
+      "end": 298.22,
+      "audio_length_seconds": 1.31,
+      "embedding_audio_seconds": 1.29,
+      "audio_file": "audio\\sentence_0121.wav",
+      "word_count": 3
+    },
+    {
+      "index": 122,
+      "text": "F**k you, Keegan.",
+      "start": 298.22,
+      "end": 300.124,
+      "audio_length_seconds": 1.904,
+      "embedding_audio_seconds": 1.904,
+      "audio_file": "audio\\sentence_0122.wav",
+      "word_count": 3
+    },
+    {
+      "index": 123,
+      "text": "There he is.",
+      "start": 300.124,
+      "end": 300.694,
+      "audio_length_seconds": 0.57,
+      "embedding_audio_seconds": 0.57,
+      "audio_file": "audio\\sentence_0123.wav",
+      "word_count": 3
+    },
+    {
+      "index": 124,
+      "text": "That who is?",
+      "start": 300.694,
+      "end": 301.534,
+      "audio_length_seconds": 0.84,
+      "embedding_audio_seconds": 0.84,
+      "audio_file": "audio\\sentence_0124.wav",
+      "word_count": 3
+    },
+    {
+      "index": 125,
+      "text": "For you, and y 'all, and your f***ing ears, y 'all.",
+      "start": 301.534,
+      "end": 305.024,
+      "audio_length_seconds": 3.49,
+      "embedding_audio_seconds": 3.49,
+      "audio_file": "audio\\sentence_0125.wav",
+      "word_count": 11
+    },
+    {
+      "index": 126,
+      "text": "Beacon, seriously, I'm done.",
+      "start": 305.024,
+      "end": 307.874,
+      "audio_length_seconds": 2.85,
+      "embedding_audio_seconds": 2.74,
+      "audio_file": "audio\\sentence_0126.wav",
+      "word_count": 4
+    }
+  ]
+}

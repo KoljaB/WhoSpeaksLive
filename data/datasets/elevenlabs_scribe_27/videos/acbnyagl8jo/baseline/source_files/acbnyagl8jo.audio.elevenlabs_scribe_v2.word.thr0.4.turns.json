@@ -1,0 +1,566 @@
+[
+  {
+    "speaker": "speaker_0",
+    "start": 4.72,
+    "end": 5.82,
+    "text": "So Sam, what do you have for us?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 7.04,
+    "end": 10.6,
+    "text": "Dale will be here in a minute. Finding somebody in the copy room at this hour was a little bit of a challenge."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 10.9,
+    "end": 19.98,
+    "text": "Okay, let's go right into the introductions. This is Sarah Robertson, who you know, Chief Risk Management Officer, Ramesh Shah from upstairs, and David Horn, one of the firm's in-house counsel."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 20.42,
+    "end": 23.24,
+    "text": "Nice to meet you all. This is my head of trading, Will Emerson, and this is-"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 23.92,
+    "end": 27.4,
+    "text": "Peter, uh, Sullivan, and Seth Bregman. They work in our risk department."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 27.58,
+    "end": 28.36,
+    "text": "Where's Eric Dale?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 29.48,
+    "end": 30.54,
+    "text": "He was let go today."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 33.52,
+    "end": 35.04,
+    "text": "Who do you have left in your risk department?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 36.48,
+    "end": 40.34,
+    "text": "As of today, that would be Peter and our junior analyst, Seth."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 42.98,
+    "end": 43.22,
+    "text": "Really?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 45.02,
+    "end": 45.96,
+    "text": "Uh, Will Emerson?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 46.54,
+    "end": 47.58,
+    "text": "Yes, please, just hand them out."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 49.58,
+    "end": 50.0,
+    "text": "Thank you."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 62.0,
+    "end": 75.04,
+    "text": "Apparently, Eric had been working on this for some time, but he wasn't able to finish it. This morning as he left the building, he handed the program to Peter here and asked him to take a look at it. Peter did. He put a few things in that Eric seemed to be missing, and this is what came out."
+  },
+  {
+    "speaker": "speaker_4",
+    "start": 78.08,
+    "end": 78.96,
+    "text": "Peter, is this your work?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 81.48,
+    "end": 82.32,
+    "text": "Mostly Mr. Dale's."
+  },
+  {
+    "speaker": "speaker_4",
+    "start": 83.48,
+    "end": 84.36,
+    "text": "But is this your draft?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 85.42,
+    "end": 86.34,
+    "text": "Yes, um,"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 87.64,
+    "end": 90.7,
+    "text": "again, expanded on the original work from Mr. Dale, but yes."
+  },
+  {
+    "speaker": "speaker_4",
+    "start": 91.34,
+    "end": 92.22,
+    "text": "What's your background?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 92.52,
+    "end": 93.1,
+    "text": "My background?"
+  },
+  {
+    "speaker": "speaker_4",
+    "start": 93.38,
+    "end": 93.82,
+    "text": "Your CV."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 94.1,
+    "end": 101.26,
+    "text": "I've been with the firm for two and a half years, working with Eric that whole time, but I hold a doctorate in engineering, specialty in propulsion from MIT with a bachelor's from Penn."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 101.72,
+    "end": 104.1,
+    "text": "What is a specialty in propulsion exactly?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 104.46,
+    "end": 110.0,
+    "text": "My thesis was a study in the ways that friction ratios affect steering outcomes in aeronautical use under reduced gravity loads."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 111.62,
+    "end": 112.7,
+    "text": "So you're a rocket scientist."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 114.26,
+    "end": 115.48,
+    "text": "I was, yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 116.84,
+    "end": 119.12,
+    "text": "Interesting. How did you end up here?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 119.58,
+    "end": 126.12,
+    "text": "Well, it's all just numbers really, just changing what you're adding up, and to speak freely, the money here is considerably more attractive."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 135.3,
+    "end": 135.92,
+    "text": "What time is it?"
+  },
+  {
+    "speaker": "speaker_5",
+    "start": 137.22,
+    "end": 137.76,
+    "text": "2:15."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 138.34,
+    "end": 145.38,
+    "text": "Fuck me. Fuck me. And I'm guessing by the fact that you two haven't said anything that the math checks out."
+  },
+  {
+    "speaker": "speaker_4",
+    "start": 146.18,
+    "end": 154.7,
+    "text": "Look, we'd need some time to go over this, but Mr. Sullivan here seems like he knows what he's doing, so it would appear we have a problem."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 154.98,
+    "end": 157.16,
+    "text": "Oh, thank you for that. What time is it?"
+  },
+  {
+    "speaker": "speaker_5",
+    "start": 157.78,
+    "end": 158.4,
+    "text": "2:16."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 158.66,
+    "end": 159.18,
+    "text": "Fuck me."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 161.06,
+    "end": 161.68,
+    "text": "Fuck me."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 170.68,
+    "end": 175.88,
+    "text": "Sam, how long under normal operations would it take your people to clear that from our books?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 179.82,
+    "end": 180.13,
+    "text": "What?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 182.02,
+    "end": 183.04,
+    "text": "All of it?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 183.12,
+    "end": 183.34,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 185.48,
+    "end": 186.66,
+    "text": "I don't know. Weeks."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 186.9,
+    "end": 187.16,
+    "text": "Weeks."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 187.5,
+    "end": 188.24,
+    "text": "Yeah, weeks."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 189.6,
+    "end": 205.6,
+    "text": "But you certainly know that our business is selling and buying. It doesn't work for very long without both components. We suddenly stop buying for a day or two, that's not something you can hide under the rug. That gets out, and when it does, this whole thing comes to an end, and right quick."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 206.96,
+    "end": 207.46,
+    "text": "I understand."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 207.98,
+    "end": 208.28,
+    "text": "Do you?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 212.6,
+    "end": 213.56,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 215.52,
+    "end": 218.88,
+    "text": "How many traders do we have left between your floor and Peterson's?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 219.14,
+    "end": 220.3,
+    "text": "I don't know, what, 60."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 220.52,
+    "end": 220.65,
+    "text": "60."
+  },
+  {
+    "speaker": "speaker_5",
+    "start": 221.14,
+    "end": 225.24,
+    "text": "Jared, as I look at this more closely, it is these VAR numbers that are setting this thing off."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 225.25,
+    "end": 225.7,
+    "text": "Excuse me."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 238.97,
+    "end": 241.7,
+    "text": "If you bought this last year, we would not be in this position."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 241.78,
+    "end": 241.89,
+    "text": "I know."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 241.89,
+    "end": 242.62,
+    "text": "If we had done what I-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 242.74,
+    "end": 243.02,
+    "text": "Please."
+  },
+  {
+    "speaker": "speaker_5",
+    "start": 243.64,
+    "end": 254.18,
+    "text": "As I was saying, and I speak completely off the record, it's only a matter of time before someone else starts putting these in and they come up with exactly the same results and look at exactly what we are looking at right now, if they haven't already."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 254.38,
+    "end": 260.94,
+    "text": "Understood. And Sarah, what value would you allow to be placed on those assets that might remain on the books if they had to?"
+  },
+  {
+    "speaker": "speaker_4",
+    "start": 261.84,
+    "end": 263.2,
+    "text": "Why would they still be on the books?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 263.53,
+    "end": 265.06,
+    "text": "'Cause suddenly nobody wants to fucking buy them."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 265.1,
+    "end": 266.75,
+    "text": "Fuck you, Sam. Will you give me a fucking break here?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 266.76,
+    "end": 267.28,
+    "text": "Excuse me, Jared-"
+  },
+  {
+    "speaker": "speaker_4",
+    "start": 267.3,
+    "end": 273.58,
+    "text": "Without an active market, it would take weeks or months for me to come up with an accurate value on them. You would have to go block by block."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 273.68,
+    "end": 276.68,
+    "text": "Yeah, look, Jared, it's a very simple business, right? We talked about this one-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 278.14,
+    "end": 281.56,
+    "text": "Sam. Uh, Will, Peter, and, uh, what the fuck is his name?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 281.62,
+    "end": 281.86,
+    "text": "Seth."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 282.04,
+    "end": 285.24,
+    "text": "Thank you. Seth, uh, could you please give us a few moments?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 287.62,
+    "end": 288.06,
+    "text": "And Peter,"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 289.4,
+    "end": 290.24,
+    "text": "has anyone else seen this?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 291.1,
+    "end": 292.12,
+    "text": "No, no one aside from us."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 292.82,
+    "end": 293.88,
+    "text": "And Eric Dale."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 293.96,
+    "end": 294.56,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 294.62,
+    "end": 298.07,
+    "text": "And can it really be possible that we don't know where Eric Dale is?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 298.69,
+    "end": 302.24,
+    "text": "I called his wife. He hasn't come home yet, and we turned off his phone today."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 303.82,
+    "end": 306.56,
+    "text": "Perfect. Well, I'd like to know where he is."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 313.92,
+    "end": 314.28,
+    "text": "Jared,"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 316.52,
+    "end": 319.2,
+    "text": "you cannot be doing what you're thinking of doing."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 319.42,
+    "end": 320.8,
+    "text": "Well, I don't see any other choice."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 321.12,
+    "end": 323.74,
+    "text": "What do you... What does that mean, we don't have a choice? Fuck you, you don't have a choice."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 323.78,
+    "end": 324.02,
+    "text": "Fuck me?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 325.34,
+    "end": 327.02,
+    "text": "Did you even look at the numbers, Sam?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 327.28,
+    "end": 328.22,
+    "text": "Yeah, but what do I know?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 328.68,
+    "end": 334.06,
+    "text": "Correct me if I'm wrong, Mr. Shah, but, uh, these numbers, they don't add up. One and one no longer makes two."
+  },
+  {
+    "speaker": "speaker_5",
+    "start": 334.38,
+    "end": 336.01,
+    "text": "Look, if I may, I would like a little bit more time-"
+  },
+  {
+    "speaker": "speaker_4",
+    "start": 336.01,
+    "end": 336.99,
+    "text": "Jared, we can't tell you yet."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 336.99,
+    "end": 339.31,
+    "text": "Are you fucking kidding me? We have talked about this."
+  },
+  {
+    "speaker": "speaker_4",
+    "start": 339.36,
+    "end": 342.22,
+    "text": "We need a little more time to give you our conclusion."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 343.29,
+    "end": 344.7,
+    "text": "Okay. We meet again in 45 minutes."
+  },
+  {
+    "speaker": "speaker_5",
+    "start": 345.4,
+    "end": 346.9,
+    "text": "Sam, do you have the file?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 347.12,
+    "end": 347.34,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 365.08,
+    "end": 365.68,
+    "text": "What are you gonna do?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 369.9,
+    "end": 370.62,
+    "text": "You gonna call him?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 376.44,
+    "end": 377.02,
+    "text": "I already have."
+  }
+]

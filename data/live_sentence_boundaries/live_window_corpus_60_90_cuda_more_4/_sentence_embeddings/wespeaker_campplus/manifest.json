@@ -1,0 +1,75 @@
+{
+  "status": "ok",
+  "provider": "wespeaker_campplus",
+  "backend": "remote",
+  "remote_url": "http://192.168.178.22:8660",
+  "device": "cuda",
+  "load_result": {
+    "ok": true,
+    "requested_device": "cuda",
+    "resolved_device": "cuda",
+    "warmup_seconds": 2.0,
+    "loaded": [
+      {
+        "provider": "wespeaker_campplus",
+        "weight": 1.0,
+        "device": "cuda",
+        "dim": 192
+      }
+    ],
+    "warmups": [
+      {
+        "provider": "wespeaker_campplus",
+        "weight": 1.0,
+        "device": "cuda",
+        "elapsed_seconds": 6.461196084004769,
+        "dim": 192,
+        "warmup_seconds": 2.0
+      }
+    ],
+    "elapsed_seconds": 6.462633972005278
+  },
+  "video_count": 4,
+  "sentence_count": 469,
+  "created_video_count": 4,
+  "skipped_video_count": 0,
+  "elapsed_seconds": 352.2436621999368,
+  "outputs": [
+    {
+      "video": "bPpcfH_HHH8",
+      "folder": "bPpcfH_HHH8_livewindow_60_90_cuda",
+      "sentences": 102,
+      "status": "created",
+      "elapsed_seconds": 157.71742359991185,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\wespeaker_campplus\\bPpcfH_HHH8_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\wespeaker_campplus\\bPpcfH_HHH8_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "e3h6es6zh1c",
+      "folder": "e3h6es6zh1c_livewindow_60_90_cuda",
+      "sentences": 85,
+      "status": "created",
+      "elapsed_seconds": 65.8620871999301,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\wespeaker_campplus\\e3h6es6zh1c_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\wespeaker_campplus\\e3h6es6zh1c_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "k1tsGGz-Qw0",
+      "folder": "k1tsGGz-Qw0_livewindow_60_90_cuda",
+      "sentences": 127,
+      "status": "created",
+      "elapsed_seconds": 89.53868280001916,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\wespeaker_campplus\\k1tsGGz-Qw0_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\wespeaker_campplus\\k1tsGGz-Qw0_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "vIfGgDnmBXg",
+      "folder": "vIfGgDnmBXg_livewindow_60_90_cuda",
+      "sentences": 155,
+      "status": "created",
+      "elapsed_seconds": 32.5902470999863,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\wespeaker_campplus\\vIfGgDnmBXg_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\wespeaker_campplus\\vIfGgDnmBXg_livewindow_60_90_cuda.sentences.json"
+    }
+  ]
+}

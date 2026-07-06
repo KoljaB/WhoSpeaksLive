@@ -1,0 +1,75 @@
+{
+  "status": "ok",
+  "provider": "speechbrain_resnet",
+  "backend": "remote",
+  "remote_url": "http://192.168.178.22:8660",
+  "device": "cuda",
+  "load_result": {
+    "ok": true,
+    "requested_device": "cuda",
+    "resolved_device": "cuda",
+    "warmup_seconds": 2.0,
+    "loaded": [
+      {
+        "provider": "speechbrain_resnet",
+        "weight": 1.0,
+        "device": "cuda",
+        "dim": 256
+      }
+    ],
+    "warmups": [
+      {
+        "provider": "speechbrain_resnet",
+        "weight": 1.0,
+        "device": "cuda",
+        "elapsed_seconds": 0.13082497200230137,
+        "dim": 256,
+        "warmup_seconds": 2.0
+      }
+    ],
+    "elapsed_seconds": 0.1319181610015221
+  },
+  "video_count": 4,
+  "sentence_count": 469,
+  "created_video_count": 4,
+  "skipped_video_count": 0,
+  "elapsed_seconds": 16.76952959992923,
+  "outputs": [
+    {
+      "video": "bPpcfH_HHH8",
+      "folder": "bPpcfH_HHH8_livewindow_60_90_cuda",
+      "sentences": 102,
+      "status": "created",
+      "elapsed_seconds": 3.873700900003314,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\speechbrain_resnet\\bPpcfH_HHH8_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\speechbrain_resnet\\bPpcfH_HHH8_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "e3h6es6zh1c",
+      "folder": "e3h6es6zh1c_livewindow_60_90_cuda",
+      "sentences": 85,
+      "status": "created",
+      "elapsed_seconds": 3.06334470002912,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\speechbrain_resnet\\e3h6es6zh1c_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\speechbrain_resnet\\e3h6es6zh1c_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "k1tsGGz-Qw0",
+      "folder": "k1tsGGz-Qw0_livewindow_60_90_cuda",
+      "sentences": 127,
+      "status": "created",
+      "elapsed_seconds": 4.562160199973732,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\speechbrain_resnet\\k1tsGGz-Qw0_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\speechbrain_resnet\\k1tsGGz-Qw0_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "vIfGgDnmBXg",
+      "folder": "vIfGgDnmBXg_livewindow_60_90_cuda",
+      "sentences": 155,
+      "status": "created",
+      "elapsed_seconds": 5.070979699958116,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\speechbrain_resnet\\vIfGgDnmBXg_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\speechbrain_resnet\\vIfGgDnmBXg_livewindow_60_90_cuda.sentences.json"
+    }
+  ]
+}

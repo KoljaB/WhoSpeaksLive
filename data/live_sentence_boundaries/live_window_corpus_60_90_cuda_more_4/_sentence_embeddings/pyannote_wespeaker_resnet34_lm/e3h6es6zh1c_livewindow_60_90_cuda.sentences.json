@@ -1,0 +1,864 @@
+{
+  "provider": "pyannote_wespeaker_resnet34_lm",
+  "video": "e3h6es6zh1c",
+  "folder": "e3h6es6zh1c_livewindow_60_90_cuda",
+  "sentence_file": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\e3h6es6zh1c_livewindow_60_90_cuda\\sentences.jsonl",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    85,
+    256
+  ],
+  "elapsed_seconds": 2.8871998998802155,
+  "sentences": [
+    {
+      "index": 0,
+      "text": "♪♪ -♪♪ -♪♪ -♪♪ -♪♪ -♪♪ Is it music?",
+      "start": 3.5,
+      "end": 25.13,
+      "audio_length_seconds": 21.63,
+      "embedding_audio_seconds": 21.63,
+      "audio_file": "audio\\sentence_0000.wav",
+      "word_count": 9
+    },
+    {
+      "index": 1,
+      "text": "because it sounds like a bunch of sex noises over a bass line.",
+      "start": 25.13,
+      "end": 29.32,
+      "audio_length_seconds": 4.19,
+      "embedding_audio_seconds": 4.19,
+      "audio_file": "audio\\sentence_0001.wav",
+      "word_count": 13
+    },
+    {
+      "index": 2,
+      "text": "Oh.",
+      "start": 29.63,
+      "end": 30.36,
+      "audio_length_seconds": 0.73,
+      "embedding_audio_seconds": 0.73,
+      "audio_file": "audio\\sentence_0002.wav",
+      "word_count": 1
+    },
+    {
+      "index": 3,
+      "text": "I get it.",
+      "start": 31.26,
+      "end": 32.21,
+      "audio_length_seconds": 0.95,
+      "embedding_audio_seconds": 0.76,
+      "audio_file": "audio\\sentence_0003.wav",
+      "word_count": 3
+    },
+    {
+      "index": 4,
+      "text": "You don't like my music because I'm gay.",
+      "start": 32.21,
+      "end": 33.88,
+      "audio_length_seconds": 1.67,
+      "embedding_audio_seconds": 1.67,
+      "audio_file": "audio\\sentence_0004.wav",
+      "word_count": 8
+    },
+    {
+      "index": 5,
+      "text": "You can't handle a gay man's music.",
+      "start": 33.88,
+      "end": 36.75,
+      "audio_length_seconds": 2.87,
+      "embedding_audio_seconds": 2.41,
+      "audio_file": "audio\\sentence_0005.wav",
+      "word_count": 7
+    },
+    {
+      "index": 6,
+      "text": "No, no, no.",
+      "start": 36.75,
+      "end": 37.822,
+      "audio_length_seconds": 1.072,
+      "embedding_audio_seconds": 1.072,
+      "audio_file": "audio\\sentence_0006.wav",
+      "word_count": 3
+    },
+    {
+      "index": 7,
+      "text": "It's, I'm trying to work here, and that music is weirdly sexual.",
+      "start": 37.822,
+      "end": 41.232,
+      "audio_length_seconds": 3.41,
+      "embedding_audio_seconds": 3.41,
+      "audio_file": "audio\\sentence_0007.wav",
+      "word_count": 12
+    },
+    {
+      "index": 8,
+      "text": "Oh, I see.",
+      "start": 41.232,
+      "end": 43.062,
+      "audio_length_seconds": 1.83,
+      "embedding_audio_seconds": 1.83,
+      "audio_file": "audio\\sentence_0008.wav",
+      "word_count": 3
+    },
+    {
+      "index": 9,
+      "text": "So, my sexuality is weird.",
+      "start": 43.062,
+      "end": 46.452,
+      "audio_length_seconds": 3.39,
+      "embedding_audio_seconds": 2.95,
+      "audio_file": "audio\\sentence_0009.wav",
+      "word_count": 5
+    },
+    {
+      "index": 10,
+      "text": "You just can't fathom a man being attracted to another man.",
+      "start": 46.452,
+      "end": 51.722,
+      "audio_length_seconds": 5.27,
+      "embedding_audio_seconds": 4.97,
+      "audio_file": "audio\\sentence_0010.wav",
+      "word_count": 11
+    },
+    {
+      "index": 11,
+      "text": "I can fathom it.",
+      "start": 52.282,
+      "end": 53.672,
+      "audio_length_seconds": 1.39,
+      "embedding_audio_seconds": 0.99,
+      "audio_file": "audio\\sentence_0011.wav",
+      "word_count": 4
+    },
+    {
+      "index": 12,
+      "text": "It's, can you just please listen to some other gay music, like Barbra Streisand or something?",
+      "start": 53.672,
+      "end": 58.004,
+      "audio_length_seconds": 4.332,
+      "embedding_audio_seconds": 4.332,
+      "audio_file": "audio\\sentence_0012.wav",
+      "word_count": 16
+    },
+    {
+      "index": 13,
+      "text": "Oh, I see.",
+      "start": 58.004,
+      "end": 58.974,
+      "audio_length_seconds": 0.97,
+      "embedding_audio_seconds": 0.97,
+      "audio_file": "audio\\sentence_0013.wav",
+      "word_count": 3
+    },
+    {
+      "index": 14,
+      "text": "I see.",
+      "start": 59.044,
+      "end": 59.476,
+      "audio_length_seconds": 0.432,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0014.wav",
+      "word_count": 2
+    },
+    {
+      "index": 15,
+      "text": "Okay, so listening to Barbra Streisand is gay.",
+      "start": 59.476,
+      "end": 63.846,
+      "audio_length_seconds": 4.37,
+      "embedding_audio_seconds": 4.34,
+      "audio_file": "audio\\sentence_0015.wav",
+      "word_count": 8
+    },
+    {
+      "index": 16,
+      "text": "Stereotype much?",
+      "start": 64.806,
+      "end": 65.876,
+      "audio_length_seconds": 1.07,
+      "embedding_audio_seconds": 1.07,
+      "audio_file": "audio\\sentence_0016.wav",
+      "word_count": 2
+    },
+    {
+      "index": 17,
+      "text": "So, you seen anybody lately?",
+      "start": 70.336,
+      "end": 72.046,
+      "audio_length_seconds": 1.71,
+      "embedding_audio_seconds": 1.23,
+      "audio_file": "audio\\sentence_0017.wav",
+      "word_count": 5
+    },
+    {
+      "index": 18,
+      "text": "Yeah, I mean, kind of.",
+      "start": 74.946,
+      "end": 77.196,
+      "audio_length_seconds": 2.25,
+      "embedding_audio_seconds": 2.19,
+      "audio_file": "audio\\sentence_0018.wav",
+      "word_count": 5
+    },
+    {
+      "index": 19,
+      "text": "Cuz I got a good last night.",
+      "start": 77.196,
+      "end": 79.386,
+      "audio_length_seconds": 2.19,
+      "embedding_audio_seconds": 2.19,
+      "audio_file": "audio\\sentence_0019.wav",
+      "word_count": 7
+    },
+    {
+      "index": 20,
+      "text": "Oh, it was like...",
+      "start": 79.846,
+      "end": 80.986,
+      "audio_length_seconds": 1.14,
+      "embedding_audio_seconds": 0.91,
+      "audio_file": "audio\\sentence_0020.wav",
+      "word_count": 4
+    },
+    {
+      "index": 21,
+      "text": "Bam!",
+      "start": 80.986,
+      "end": 81.276,
+      "audio_length_seconds": 0.29,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0021.wav",
+      "word_count": 1
+    },
+    {
+      "index": 22,
+      "text": "I mean, my man was like, blop!",
+      "start": 81.386,
+      "end": 83.376,
+      "audio_length_seconds": 1.99,
+      "embedding_audio_seconds": 1.93,
+      "audio_file": "audio\\sentence_0022.wav",
+      "word_count": 7
+    },
+    {
+      "index": 23,
+      "text": "Like he had a baby arm holding on to an apple.",
+      "start": 83.996,
+      "end": 86.426,
+      "audio_length_seconds": 2.43,
+      "embedding_audio_seconds": 2.43,
+      "audio_file": "audio\\sentence_0023.wav",
+      "word_count": 11
+    },
+    {
+      "index": 24,
+      "text": "Ah, don't call it a baby arm.",
+      "start": 86.426,
+      "end": 89.876,
+      "audio_length_seconds": 3.45,
+      "embedding_audio_seconds": 3.32,
+      "audio_file": "audio\\sentence_0024.wav",
+      "word_count": 7
+    },
+    {
+      "index": 25,
+      "text": "Oh, I see.",
+      "start": 89.876,
+      "end": 92.486,
+      "audio_length_seconds": 2.61,
+      "embedding_audio_seconds": 2.6,
+      "audio_file": "audio\\sentence_0025.wav",
+      "word_count": 3
+    },
+    {
+      "index": 26,
+      "text": "So you can't handle hearing about how I'm gay.",
+      "start": 92.486,
+      "end": 95.776,
+      "audio_length_seconds": 3.29,
+      "embedding_audio_seconds": 2.6,
+      "audio_file": "audio\\sentence_0026.wav",
+      "word_count": 9
+    },
+    {
+      "index": 27,
+      "text": "I'm sorry.",
+      "start": 95.776,
+      "end": 96.946,
+      "audio_length_seconds": 1.17,
+      "embedding_audio_seconds": 1.17,
+      "audio_file": "audio\\sentence_0027.wav",
+      "word_count": 2
+    },
+    {
+      "index": 28,
+      "text": "You just referred to your boyfriend's penis as a baby's arm holding an apple.",
+      "start": 96.946,
+      "end": 102.866,
+      "audio_length_seconds": 5.92,
+      "embedding_audio_seconds": 5.55,
+      "audio_file": "audio\\sentence_0028.wav",
+      "word_count": 14
+    },
+    {
+      "index": 29,
+      "text": "Well, that's what I look like.",
+      "start": 102.866,
+      "end": 103.916,
+      "audio_length_seconds": 1.05,
+      "embedding_audio_seconds": 1.05,
+      "audio_file": "audio\\sentence_0029.wav",
+      "word_count": 6
+    },
+    {
+      "index": 30,
+      "text": "And it's not my boyfriend, by the way.",
+      "start": 103.916,
+      "end": 106.246,
+      "audio_length_seconds": 2.33,
+      "embedding_audio_seconds": 2.21,
+      "audio_file": "audio\\sentence_0030.wav",
+      "word_count": 8
+    },
+    {
+      "index": 31,
+      "text": "And any what's, you're homophobic.",
+      "start": 106.246,
+      "end": 109.056,
+      "audio_length_seconds": 2.81,
+      "embedding_audio_seconds": 2.81,
+      "audio_file": "audio\\sentence_0031.wav",
+      "word_count": 5
+    },
+    {
+      "index": 32,
+      "text": "No, no, no, that's not homophobic, okay?",
+      "start": 110.396,
+      "end": 113.226,
+      "audio_length_seconds": 2.83,
+      "embedding_audio_seconds": 2.69,
+      "audio_file": "audio\\sentence_0032.wav",
+      "word_count": 7
+    },
+    {
+      "index": 33,
+      "text": "you're explicitly talking about sexual things in the workplace.",
+      "start": 113.226,
+      "end": 117.856,
+      "audio_length_seconds": 4.63,
+      "embedding_audio_seconds": 4.41,
+      "audio_file": "audio\\sentence_0033.wav",
+      "word_count": 9
+    },
+    {
+      "index": 34,
+      "text": "Fine.",
+      "start": 118.536,
+      "end": 119.026,
+      "audio_length_seconds": 0.49,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0034.wav",
+      "word_count": 1
+    },
+    {
+      "index": 35,
+      "text": "There's plenty of stuff that we could talk about.",
+      "start": 119.716,
+      "end": 121.466,
+      "audio_length_seconds": 1.75,
+      "embedding_audio_seconds": 1.67,
+      "audio_file": "audio\\sentence_0035.wav",
+      "word_count": 9
+    },
+    {
+      "index": 36,
+      "text": "You know what?",
+      "start": 121.986,
+      "end": 122.696,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.51,
+      "audio_file": "audio\\sentence_0036.wav",
+      "word_count": 3
+    },
+    {
+      "index": 37,
+      "text": "Uh, my penis cup, my scrotum cozies that I have been knitting recently.",
+      "start": 122.696,
+      "end": 128.506,
+      "audio_length_seconds": 5.81,
+      "embedding_audio_seconds": 5.81,
+      "audio_file": "audio\\sentence_0037.wav",
+      "word_count": 13
+    },
+    {
+      "index": 38,
+      "text": "Oh, with these knitting needles that I have just noticed look like little skinny purple penises.",
+      "start": 128.506,
+      "end": 133.056,
+      "audio_length_seconds": 4.55,
+      "embedding_audio_seconds": 4.31,
+      "audio_file": "audio\\sentence_0038.wav",
+      "word_count": 16
+    },
+    {
+      "index": 39,
+      "text": "Et cetera, and et cetera.",
+      "start": 133.056,
+      "end": 135.326,
+      "audio_length_seconds": 2.27,
+      "embedding_audio_seconds": 2.27,
+      "audio_file": "audio\\sentence_0039.wav",
+      "word_count": 5
+    },
+    {
+      "index": 40,
+      "text": "Oh, my God.",
+      "start": 135.326,
+      "end": 136.274,
+      "audio_length_seconds": 0.948,
+      "embedding_audio_seconds": 0.948,
+      "audio_file": "audio\\sentence_0040.wav",
+      "word_count": 3
+    },
+    {
+      "index": 41,
+      "text": "What's going on?",
+      "start": 136.274,
+      "end": 136.676,
+      "audio_length_seconds": 0.402,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0041.wav",
+      "word_count": 3
+    },
+    {
+      "index": 42,
+      "text": "Can I show you a picture and then you tell me if it's good for Facebook?",
+      "start": 137.056,
+      "end": 139.886,
+      "audio_length_seconds": 2.83,
+      "embedding_audio_seconds": 2.83,
+      "audio_file": "audio\\sentence_0042.wav",
+      "word_count": 16
+    },
+    {
+      "index": 43,
+      "text": "Okay, I'm fairly certain you're going to show me something overtly sexual.",
+      "start": 140.906,
+      "end": 144.77,
+      "audio_length_seconds": 3.864,
+      "embedding_audio_seconds": 3.664,
+      "audio_file": "audio\\sentence_0043.wav",
+      "word_count": 12
+    },
+    {
+      "index": 44,
+      "text": "Don't you prejudge me!",
+      "start": 144.77,
+      "end": 145.91,
+      "audio_length_seconds": 1.14,
+      "embedding_audio_seconds": 1.14,
+      "audio_file": "audio\\sentence_0044.wav",
+      "word_count": 4
+    },
+    {
+      "index": 45,
+      "text": "Here it is.",
+      "start": 145.91,
+      "end": 146.58,
+      "audio_length_seconds": 0.67,
+      "embedding_audio_seconds": 0.67,
+      "audio_file": "audio\\sentence_0045.wav",
+      "word_count": 3
+    },
+    {
+      "index": 46,
+      "text": "Ah!",
+      "start": 146.58,
+      "end": 147.184,
+      "audio_length_seconds": 0.604,
+      "embedding_audio_seconds": 0.604,
+      "audio_file": "audio\\sentence_0046.wav",
+      "word_count": 1
+    },
+    {
+      "index": 47,
+      "text": "That's a close -up of an anus.",
+      "start": 148.904,
+      "end": 150.668,
+      "audio_length_seconds": 1.764,
+      "embedding_audio_seconds": 1.264,
+      "audio_file": "audio\\sentence_0047.wav",
+      "word_count": 7
+    },
+    {
+      "index": 48,
+      "text": "Oh, no, that's not an anus.",
+      "start": 150.668,
+      "end": 152.214,
+      "audio_length_seconds": 1.546,
+      "embedding_audio_seconds": 1.546,
+      "audio_file": "audio\\sentence_0048.wav",
+      "word_count": 6
+    },
+    {
+      "index": 49,
+      "text": "That's my 8th, baby girl.",
+      "start": 153.054,
+      "end": 154.684,
+      "audio_length_seconds": 1.63,
+      "embedding_audio_seconds": 1.63,
+      "audio_file": "audio\\sentence_0049.wav",
+      "word_count": 5
+    },
+    {
+      "index": 50,
+      "text": "That's disgusting.",
+      "start": 155.984,
+      "end": 157.014,
+      "audio_length_seconds": 1.03,
+      "embedding_audio_seconds": 1.03,
+      "audio_file": "audio\\sentence_0050.wav",
+      "word_count": 2
+    },
+    {
+      "index": 51,
+      "text": "Oh, I see.",
+      "start": 157.014,
+      "end": 158.124,
+      "audio_length_seconds": 1.11,
+      "embedding_audio_seconds": 1.11,
+      "audio_file": "audio\\sentence_0051.wav",
+      "word_count": 3
+    },
+    {
+      "index": 52,
+      "text": "So you don't want to see a close -up picture of my anus because you hate gay men!",
+      "start": 158.564,
+      "end": 162.194,
+      "audio_length_seconds": 3.63,
+      "embedding_audio_seconds": 3.4,
+      "audio_file": "audio\\sentence_0052.wav",
+      "word_count": 18
+    },
+    {
+      "index": 53,
+      "text": "No!",
+      "start": 162.194,
+      "end": 162.664,
+      "audio_length_seconds": 0.47,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0053.wav",
+      "word_count": 1
+    },
+    {
+      "index": 54,
+      "text": "I don't want to look at a close -up picture of anyone's anus.",
+      "start": 162.664,
+      "end": 166.154,
+      "audio_length_seconds": 3.49,
+      "embedding_audio_seconds": 3.49,
+      "audio_file": "audio\\sentence_0054.wav",
+      "word_count": 13
+    },
+    {
+      "index": 55,
+      "text": "Homophobe.",
+      "start": 166.154,
+      "end": 167.864,
+      "audio_length_seconds": 1.71,
+      "embedding_audio_seconds": 0.86,
+      "audio_file": "audio\\sentence_0055.wav",
+      "word_count": 1
+    },
+    {
+      "index": 56,
+      "text": "Homophobe.",
+      "start": 168.684,
+      "end": 169.188,
+      "audio_length_seconds": 0.504,
+      "embedding_audio_seconds": 0.504,
+      "audio_file": "audio\\sentence_0056.wav",
+      "word_count": 1
+    },
+    {
+      "index": 57,
+      "text": "but it's a homophobe right here.",
+      "start": 169.188,
+      "end": 170.418,
+      "audio_length_seconds": 1.23,
+      "embedding_audio_seconds": 1.23,
+      "audio_file": "audio\\sentence_0057.wav",
+      "word_count": 6
+    },
+    {
+      "index": 58,
+      "text": "Hop.",
+      "start": 170.418,
+      "end": 170.828,
+      "audio_length_seconds": 0.41,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0058.wav",
+      "word_count": 1
+    },
+    {
+      "index": 59,
+      "text": "Whistle.",
+      "start": 171.098,
+      "end": 171.888,
+      "audio_length_seconds": 0.79,
+      "embedding_audio_seconds": 0.79,
+      "audio_file": "audio\\sentence_0059.wav",
+      "word_count": 1
+    },
+    {
+      "index": 60,
+      "text": "Homophobe alert!",
+      "start": 171.888,
+      "end": 173.538,
+      "audio_length_seconds": 1.65,
+      "embedding_audio_seconds": 1.65,
+      "audio_file": "audio\\sentence_0060.wav",
+      "word_count": 2
+    },
+    {
+      "index": 61,
+      "text": "Home -a -bob!",
+      "start": 173.538,
+      "end": 174.748,
+      "audio_length_seconds": 1.21,
+      "embedding_audio_seconds": 1.15,
+      "audio_file": "audio\\sentence_0061.wav",
+      "word_count": 3
+    },
+    {
+      "index": 62,
+      "text": "Whoo, whoo, whoo, whoo!",
+      "start": 174.748,
+      "end": 177.158,
+      "audio_length_seconds": 2.41,
+      "embedding_audio_seconds": 1.77,
+      "audio_file": "audio\\sentence_0062.wav",
+      "word_count": 4
+    },
+    {
+      "index": 63,
+      "text": "Hey.",
+      "start": 178.028,
+      "end": 178.798,
+      "audio_length_seconds": 0.77,
+      "embedding_audio_seconds": 0.72,
+      "audio_file": "audio\\sentence_0063.wav",
+      "word_count": 1
+    },
+    {
+      "index": 64,
+      "text": "I need baby hands now.",
+      "start": 179.898,
+      "end": 181.288,
+      "audio_length_seconds": 1.39,
+      "embedding_audio_seconds": 1.13,
+      "audio_file": "audio\\sentence_0064.wav",
+      "word_count": 5
+    },
+    {
+      "index": 65,
+      "text": "Ready to go to lunch?",
+      "start": 182.118,
+      "end": 183.228,
+      "audio_length_seconds": 1.11,
+      "embedding_audio_seconds": 0.77,
+      "audio_file": "audio\\sentence_0065.wav",
+      "word_count": 5
+    },
+    {
+      "index": 66,
+      "text": "Yeah.",
+      "start": 183.418,
+      "end": 184.048,
+      "audio_length_seconds": 0.63,
+      "embedding_audio_seconds": 0.51,
+      "audio_file": "audio\\sentence_0066.wav",
+      "word_count": 1
+    },
+    {
+      "index": 67,
+      "text": "Lettrell, this is Gavin.",
+      "start": 185.648,
+      "end": 186.738,
+      "audio_length_seconds": 1.09,
+      "embedding_audio_seconds": 1.09,
+      "audio_file": "audio\\sentence_0067.wav",
+      "word_count": 4
+    },
+    {
+      "index": 68,
+      "text": "Gavin, this is Latrell.",
+      "start": 186.738,
+      "end": 187.898,
+      "audio_length_seconds": 1.16,
+      "embedding_audio_seconds": 1.16,
+      "audio_file": "audio\\sentence_0068.wav",
+      "word_count": 4
+    },
+    {
+      "index": 69,
+      "text": "That's my boyfriend.",
+      "start": 187.898,
+      "end": 188.608,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.71,
+      "audio_file": "audio\\sentence_0069.wav",
+      "word_count": 3
+    },
+    {
+      "index": 70,
+      "text": "How you doing?",
+      "start": 188.608,
+      "end": 189.318,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.55,
+      "audio_file": "audio\\sentence_0070.wav",
+      "word_count": 3
+    },
+    {
+      "index": 71,
+      "text": "I'm doing very well.",
+      "start": 190.098,
+      "end": 191.802,
+      "audio_length_seconds": 1.704,
+      "embedding_audio_seconds": 1.704,
+      "audio_file": "audio\\sentence_0071.wav",
+      "word_count": 4
+    },
+    {
+      "index": 72,
+      "text": "How are you doing, Gavin?",
+      "start": 191.802,
+      "end": 193.152,
+      "audio_length_seconds": 1.35,
+      "embedding_audio_seconds": 1.35,
+      "audio_file": "audio\\sentence_0072.wav",
+      "word_count": 5
+    },
+    {
+      "index": 73,
+      "text": "Gavin?",
+      "start": 193.152,
+      "end": 193.882,
+      "audio_length_seconds": 0.73,
+      "embedding_audio_seconds": 0.73,
+      "audio_file": "audio\\sentence_0073.wav",
+      "word_count": 1
+    },
+    {
+      "index": 74,
+      "text": "Great.",
+      "start": 194.142,
+      "end": 194.612,
+      "audio_length_seconds": 0.47,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0074.wav",
+      "word_count": 1
+    },
+    {
+      "index": 75,
+      "text": "Want to go?",
+      "start": 195.412,
+      "end": 195.944,
+      "audio_length_seconds": 0.532,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0075.wav",
+      "word_count": 3
+    },
+    {
+      "index": 76,
+      "text": "Yeah.",
+      "start": 195.944,
+      "end": 196.294,
+      "audio_length_seconds": 0.35,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0076.wav",
+      "word_count": 1
+    },
+    {
+      "index": 77,
+      "text": "Nice to meet you.",
+      "start": 196.294,
+      "end": 197.104,
+      "audio_length_seconds": 0.81,
+      "embedding_audio_seconds": 0.81,
+      "audio_file": "audio\\sentence_0077.wav",
+      "word_count": 4
+    },
+    {
+      "index": 78,
+      "text": "No.",
+      "start": 197.214,
+      "end": 197.544,
+      "audio_length_seconds": 0.33,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0078.wav",
+      "word_count": 1
+    },
+    {
+      "index": 79,
+      "text": "Trust me, it's not.",
+      "start": 197.544,
+      "end": 198.654,
+      "audio_length_seconds": 1.11,
+      "embedding_audio_seconds": 1.11,
+      "audio_file": "audio\\sentence_0079.wav",
+      "word_count": 4
+    },
+    {
+      "index": 80,
+      "text": "That's the guy.",
+      "start": 198.654,
+      "end": 199.604,
+      "audio_length_seconds": 0.95,
+      "embedding_audio_seconds": 0.95,
+      "audio_file": "audio\\sentence_0080.wav",
+      "word_count": 3
+    },
+    {
+      "index": 81,
+      "text": "Oh.",
+      "start": 199.604,
+      "end": 200.534,
+      "audio_length_seconds": 0.93,
+      "embedding_audio_seconds": 0.93,
+      "audio_file": "audio\\sentence_0081.wav",
+      "word_count": 1
+    },
+    {
+      "index": 82,
+      "text": "Oh, I get it.",
+      "start": 200.534,
+      "end": 203.124,
+      "audio_length_seconds": 2.59,
+      "embedding_audio_seconds": 2.59,
+      "audio_file": "audio\\sentence_0082.wav",
+      "word_count": 4
+    },
+    {
+      "index": 83,
+      "text": "I'm not persecuted.",
+      "start": 203.124,
+      "end": 204.674,
+      "audio_length_seconds": 1.55,
+      "embedding_audio_seconds": 1.15,
+      "audio_file": "audio\\sentence_0083.wav",
+      "word_count": 3
+    },
+    {
+      "index": 84,
+      "text": "I'm just an a**hole.",
+      "start": 204.674,
+      "end": 205.884,
+      "audio_length_seconds": 1.21,
+      "embedding_audio_seconds": 1.21,
+      "audio_file": "audio\\sentence_0084.wav",
+      "word_count": 4
+    }
+  ]
+}

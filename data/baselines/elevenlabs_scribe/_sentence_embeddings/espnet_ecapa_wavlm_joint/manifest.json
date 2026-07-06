@@ -1,13 +1,233 @@
 {
-  "status": "failed",
+  "status": "ok",
   "provider": "espnet_ecapa_wavlm_joint",
   "backend": "remote",
   "remote_url": "http://192.168.178.22:8660",
   "device": "cuda",
-  "video_count": 0,
-  "segment_count": 0,
-  "created_video_count": 0,
-  "skipped_video_count": 0,
-  "error_type": "RuntimeError",
-  "error": "Remote embeddings HTTP 500: {\"detail\":\"espnet_ecapa_wavlm_joint_provider_failed: OutOfMemoryError: CUDA out of memory. Tried to allocate 8.51 GiB. GPU 0 has a total capacity of 23.50 GiB of which 7.07 GiB is free. Process 1782 has 1.53 GiB memory in use. Process 1776 has 4.08 GiB memory in use. Including non-PyTorch memory, th"
+  "load_result": {
+    "ok": true,
+    "requested_device": "cuda",
+    "resolved_device": "cuda",
+    "warmup_seconds": 2.0,
+    "loaded": [
+      {
+        "provider": "espnet_ecapa_wavlm_joint",
+        "weight": 1.0,
+        "device": "cuda",
+        "dim": 192
+      }
+    ],
+    "warmups": [
+      {
+        "provider": "espnet_ecapa_wavlm_joint",
+        "weight": 1.0,
+        "device": "cuda",
+        "elapsed_seconds": 9.06136835199868,
+        "dim": 192,
+        "warmup_seconds": 2.0
+      }
+    ],
+    "elapsed_seconds": 9.066506684997876
+  },
+  "video_count": 27,
+  "segment_count": 2586,
+  "created_video_count": 5,
+  "skipped_video_count": 22,
+  "elapsed_seconds": 64.93308759992942,
+  "outputs": [
+    {
+      "video": "1NBVQB-Srpw",
+      "segments": 85,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\1NBVQB-Srpw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\1NBVQB-Srpw.segments.json"
+    },
+    {
+      "video": "20v1OxUXcQY",
+      "segments": 98,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\20v1OxUXcQY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\20v1OxUXcQY.segments.json"
+    },
+    {
+      "video": "acbnyagl8jo",
+      "segments": 94,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\acbnyagl8jo.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\acbnyagl8jo.segments.json"
+    },
+    {
+      "video": "aHGd6LqAVzw",
+      "segments": 57,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\aHGd6LqAVzw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\aHGd6LqAVzw.segments.json"
+    },
+    {
+      "video": "blcKeLDDzSM",
+      "segments": 61,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\blcKeLDDzSM.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\blcKeLDDzSM.segments.json"
+    },
+    {
+      "video": "bPpcfH_HHH8",
+      "segments": 101,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\bPpcfH_HHH8.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\bPpcfH_HHH8.segments.json"
+    },
+    {
+      "video": "cLdy4P-XJPE",
+      "segments": 52,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\cLdy4P-XJPE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\cLdy4P-XJPE.segments.json"
+    },
+    {
+      "video": "cunk",
+      "segments": 45,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\cunk.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\cunk.segments.json"
+    },
+    {
+      "video": "Dd7FixvoKBw",
+      "segments": 57,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\Dd7FixvoKBw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\Dd7FixvoKBw.segments.json"
+    },
+    {
+      "video": "DsyfYJ5Ou3g",
+      "segments": 70,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\DsyfYJ5Ou3g.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\DsyfYJ5Ou3g.segments.json"
+    },
+    {
+      "video": "e3h6es6zh1c",
+      "segments": 50,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\e3h6es6zh1c.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\e3h6es6zh1c.segments.json"
+    },
+    {
+      "video": "F2-2RBi1qzY",
+      "segments": 100,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\F2-2RBi1qzY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\F2-2RBi1qzY.segments.json"
+    },
+    {
+      "video": "gj7BRMuB-n4",
+      "segments": 155,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\gj7BRMuB-n4.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\gj7BRMuB-n4.segments.json"
+    },
+    {
+      "video": "k1tsGGz-Qw0",
+      "segments": 83,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\k1tsGGz-Qw0.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\k1tsGGz-Qw0.segments.json"
+    },
+    {
+      "video": "KdOXM3I_5hk",
+      "segments": 245,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\KdOXM3I_5hk.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\KdOXM3I_5hk.segments.json"
+    },
+    {
+      "video": "L-CfFo5aQGU",
+      "segments": 132,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\L-CfFo5aQGU.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\L-CfFo5aQGU.segments.json"
+    },
+    {
+      "video": "mBeT_AoCXvc",
+      "segments": 96,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\mBeT_AoCXvc.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\mBeT_AoCXvc.segments.json"
+    },
+    {
+      "video": "mWABb5Dy9BQ",
+      "segments": 219,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\mWABb5Dy9BQ.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\mWABb5Dy9BQ.segments.json"
+    },
+    {
+      "video": "oFBuCp19L7M",
+      "segments": 95,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\oFBuCp19L7M.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\oFBuCp19L7M.segments.json"
+    },
+    {
+      "video": "onHUfyRP1BE",
+      "segments": 9,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\onHUfyRP1BE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\onHUfyRP1BE.segments.json"
+    },
+    {
+      "video": "pD4IdQTmneI",
+      "segments": 15,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\pD4IdQTmneI.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\pD4IdQTmneI.segments.json"
+    },
+    {
+      "video": "PhofRoLXqhE",
+      "segments": 100,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\PhofRoLXqhE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\PhofRoLXqhE.segments.json"
+    },
+    {
+      "video": "S_o3y7CzDUY",
+      "segments": 76,
+      "status": "created",
+      "elapsed_seconds": 12.302990699885413,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\S_o3y7CzDUY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\S_o3y7CzDUY.segments.json"
+    },
+    {
+      "video": "vIfGgDnmBXg",
+      "segments": 145,
+      "status": "created",
+      "elapsed_seconds": 5.5154504999518394,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\vIfGgDnmBXg.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\vIfGgDnmBXg.segments.json"
+    },
+    {
+      "video": "WNZn37Uc700",
+      "segments": 174,
+      "status": "created",
+      "elapsed_seconds": 5.80110379983671,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\WNZn37Uc700.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\WNZn37Uc700.segments.json"
+    },
+    {
+      "video": "y_5WfLjvOK4",
+      "segments": 91,
+      "status": "created",
+      "elapsed_seconds": 17.274465499911457,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\y_5WfLjvOK4.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\y_5WfLjvOK4.segments.json"
+    },
+    {
+      "video": "ZY0DG8rUnCA",
+      "segments": 81,
+      "status": "created",
+      "elapsed_seconds": 2.7098330000881106,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\ZY0DG8rUnCA.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\ZY0DG8rUnCA.segments.json"
+    }
+  ]
 }

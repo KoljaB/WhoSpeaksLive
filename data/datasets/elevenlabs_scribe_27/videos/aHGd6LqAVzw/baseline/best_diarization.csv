@@ -1,0 +1,58 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,0.16,7.26,7.1,"Yeah, AI, I, I hate the word AI, called artificial intelligence. I call it Alibaba intelligence."
+seg_0001,SPEAKER_2,speaker_1,7.86,8.1,0.24,Yeah.
+seg_0002,SPEAKER_2,speaker_1,9.64,12.46,2.82,"M- might, might end up being true. You never know. Um,"
+seg_0003,SPEAKER_2,speaker_1,14.54,16.64,2.1,"barely getting any information out, basically, with speech."
+seg_0004,SPEAKER_1,speaker_0,17.14,37.36,20.22,"Yeah. I'm always amazed by the, what you're vision about the technology. I'm not a tech guy. I think more about life. I think AI is going to open a new chapter of the society, of the world, that people try to understand ourself better, rather than the outside world."
+seg_0005,SPEAKER_1,speaker_0,38.92,42.56,3.64,"And, uh, it's so difficult to predict the future."
+seg_0006,SPEAKER_1,speaker_0,44.3,51.06,6.76,"99.99% of the predictions that human being had in the history about the future, all wrong."
+seg_0007,SPEAKER_2,speaker_1,52.14,52.76,0.62,Including that one?
+seg_0008,SPEAKER_1,speaker_0,53.06,62.16,9.1,"Oh, yeah. Only, you know, the, the 0.00%-... of the prediction are right. They're right because by accident."
+seg_0009,SPEAKER_2,speaker_1,63.2,65.6,2.4,"Y- yeah, but it's also true that 80% of statistics are false."
+seg_0010,SPEAKER_1,speaker_0,66.14,69.2,3.06,Yeah. So my meaning is that-
+seg_0011,SPEAKER_2,speaker_1,69.21,70.66,1.45,"It's a cold room. Come on, guys. It was a joke."
+seg_0012,SPEAKER_1,speaker_0,73.6,82.72,9.12,"But is, I'm happy about the, uh, artificial- People worry a lot about this today, are those people, I call them, called, um, uh,"
+seg_0013,SPEAKER_1,speaker_0,84.18,95.0,10.82,"called college smartness. People like us, street smart, we never scared of that. We, we think it's a great fun, and we want to change ourself to embrace it."
+seg_0014,SPEAKER_2,speaker_1,95.64,97.38,1.74,"I don't know, man. That's like famous last words."
+seg_0015,SPEAKER_2,speaker_1,98.86,107.58,8.72,"Is... Let me tell you. Like, you couldn't evolve silicon circuits. You need, they needed to be, uh, biology to get there."
+seg_0016,SPEAKER_1,speaker_0,110.08,110.32,0.24,Good.
+seg_0017,SPEAKER_2,speaker_1,110.92,112.12,1.2,Yeah.
+seg_0018,SPEAKER_1,speaker_0,112.18,119.64,7.46,"Well, let's talk about something fun. I... What do you think about that? I, I, actually, I'm not interested in, uh, Mars. I just came back from there, so."
+seg_0019,SPEAKER_2,speaker_1,122.02,133.12,11.1,"I'm more interested on the Earth, the things, what's going on happening here. So what, why you are so curious about the Mars? Just, uh, one step, you go to Mars, but you will never be able to come back. Yeah, that, that's-"
+seg_0020,SPEAKER_1,speaker_0,133.13,133.72,0.59,"Well, that's my view"
+seg_0021,SPEAKER_2,speaker_1,133.76,134.73,0.97,"... that's not how it works, though. Uh."
+seg_0022,SPEAKER_1,speaker_0,134.78,135.329,0.549,"And, uh,"
+seg_0023,SPEAKER_1,speaker_0,137.44,138.03,0.59,"also, also I-"
+seg_0024,SPEAKER_2,speaker_1,138.03,138.4,0.37,"No, don't do it."
+seg_0025,SPEAKER_1,speaker_0,139.769,147.44,7.671,"Yeah. I hate to go to Himalayas too. I mean, when you climb on the... I think someday I will go there. When the elevator's ready, I will go to have a look."
+seg_0026,SPEAKER_2,speaker_1,148.54,148.74,0.2,Wow. But I-
+seg_0027,SPEAKER_1,speaker_0,148.769,152.74,3.971,"So that's my view. About jobs, don't worry about it. We, you will have jobs."
+seg_0028,SPEAKER_2,speaker_1,155.96,156.98,1.02,Yeah.
+seg_0029,SPEAKER_2,speaker_1,158.56,158.87,0.31,"I, I,"
+seg_0030,SPEAKER_2,speaker_1,160.72,184.5,23.78,"I mean, I think... Man, you, you think of, like, technology, like, technology and technology awareness, there's like, it's like, if there was, like, a topological map of technology awareness, and it's mostly flat but with a few short buildings, and then some very tall spires. Very tall spires. And unless you're on that very tall spire, it's not obvious what the topology is."
+seg_0031,SPEAKER_1,speaker_0,186.84,193.5,6.66,Yeah. I never worry about the things that I cannot solve. I let other people to solve it.
+seg_0032,SPEAKER_2,speaker_1,193.549,193.549,0.0,Sure.
+seg_0033,SPEAKER_1,speaker_0,193.6,204.88,11.28,"If nobody can solve it, just let it be. That's my life. Oh, let's talk about education. I'm, uh, quite interesting about education. Computer only have chips. Men have the heart."
+seg_0034,SPEAKER_1,speaker_0,206.22,214.28,8.06,"It's the heart where the wisdom comes from. So I think that's my view, and don't worry about it. We will change it."
+seg_0035,SPEAKER_2,speaker_1,216.84,219.59,2.75,"Yeah. Yeah, that's cool. Yeah. Thanks. Um."
+seg_0036,SPEAKER_1,speaker_0,219.62,259.04,39.42,"So I never in my life, and e- especially last two years when people talk about, uh, AI, say, uh, human, human being will be controlled by machines, I never think about that. I think it's, it's, it's, it's impossible. Right? It's impossible'cause,'cause human beings, they are different. Machines are invented by human beings. And according to the science, right, humans can never create another animal that is smarter than humans. Especially when you have so many smart people, it's impossible to make another smart people."
+seg_0037,SPEAKER_2,speaker_1,259.34,260.6,1.26,"I, I very much disagree with that."
+seg_0038,SPEAKER_1,speaker_0,260.82,261.06,0.24,Okay.
+seg_0039,SPEAKER_2,speaker_1,261.28,261.399,0.119,Yeah.
+seg_0040,SPEAKER_1,speaker_0,261.74,262.2,0.46,That's good.
+seg_0041,SPEAKER_2,speaker_1,263.02,265.2,2.18,"Yeah. Um, but, um-"
+seg_0042,SPEAKER_1,speaker_0,265.28,273.28,8.0,"Okay. Yeah, my view is that, um, computer may be clever, but human being are much smarter."
+seg_0043,SPEAKER_2,speaker_1,274.2,274.74,0.54,"Yeah, definitely not."
+seg_0044,SPEAKER_1,speaker_0,274.88,290.76,15.88,"Clever is very academic. So I told those guys, they are very sad. Say, ""Ah, computer will be smarter than human beings because computer can play chess better."" Ah, I think you are stupid to compete with that. Don't do that."
+seg_0045,SPEAKER_1,speaker_0,292.54,294.29,1.75,"So this is, this is-"
+seg_0046,SPEAKER_2,speaker_1,294.32,294.33,0.01,Well-
+seg_0047,SPEAKER_1,speaker_0,294.33,296.02,1.69,We will always do things we are good at.
+seg_0048,SPEAKER_2,speaker_1,296.26,303.76,7.5,"Sure. Okay. Well, what would be an example of something that humans are better than a computer at, and, and then let's see if that happens."
+seg_0049,SPEAKER_1,speaker_0,305.08,325.56,20.48,"Well, humans... Computer is only one of the clever tools that human created. And hu- computers are s- are clever, but there will be more tools that human beings will created much clever than computers. That's my view."
+seg_0050,SPEAKER_2,speaker_1,328.24,328.92,0.68,Yeah. O- okay.
+seg_0051,SPEAKER_1,speaker_0,329.18,336.02,6.84,"Q, right? In the future, if you wanna survive in this world, you have to be the LQ, the Q of love."
+seg_0052,SPEAKER_1,speaker_0,337.66,342.08,4.42,"That's important too. Otherwise, you cannot survive in artificial intelligence time."
+seg_0053,SPEAKER_1,speaker_0,343.32,343.4,0.08,Uh.
+seg_0054,SPEAKER_2,speaker_1,343.42,344.96,1.54,"Well, I agree with love is the answer."
+seg_0055,SPEAKER_1,speaker_0,345.14,345.32,0.18,Yeah.
+seg_0056,SPEAKER_2,speaker_1,345.62,346.38,0.76,There's many songs about that.

@@ -26,6 +26,7 @@ benchmarks/
 youtube2transcripts/
 assets/
 *.wav
+data/live_sentence_boundaries/**/_logs/
 
 # Legacy generated tool outputs
 *.bak-*

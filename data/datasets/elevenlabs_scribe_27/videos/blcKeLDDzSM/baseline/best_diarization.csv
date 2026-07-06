@@ -1,0 +1,62 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,0.68,16.48,15.8,"Hi, guys. Welcome to your first day as interns at Mattel, the Barbie division. You're all here because of your interest in toy marketing or in Barbie herself. We take the Barbie brand very seriously here. I'll let the senior VP of Barbie social media elaborate more on that."
+seg_0001,SPEAKER_2,speaker_1,17.48,31.94,14.46,Who is Barbie? Barbie is fun. Barbie works hard and plays thoughtfully. She has one boyfriend. She is impossible. She is girl to the max. Barbie is current. You understand?
+seg_0002,SPEAKER_1,speaker_0,32.259,41.26,9.001,"Yes, exactly. And last year we launched her very popular Instagram account, which allows her to connect with her fans online. Now, you three will be helping out with the captions."
+seg_0003,SPEAKER_2,speaker_1,41.76,42.74,0.98,Why don't we give it a try?
+seg_0004,SPEAKER_1,speaker_0,44.34,47.2,2.86,What would be a fun caption for this post? Tamra?
+seg_0005,SPEAKER_3,speaker_3,48.16,51.24,3.08,"Mm, love my juice and my chocolate bar."
+seg_0006,SPEAKER_2,speaker_1,52.52,55.0,2.48,That's not a chocolate bar. It's a clutch.
+seg_0007,SPEAKER_1,speaker_0,55.04,57.62,2.58,"It's, it's fine. You, what would you write here?"
+seg_0008,SPEAKER_4,speaker_4,58.78,59.9,1.12,I'm holding a chocolate bar.
+seg_0009,SPEAKER_2,speaker_1,60.94,61.84,0.9,I swear to God.
+seg_0010,SPEAKER_1,speaker_0,61.92,63.9,1.98,"Michael, sweetie, he just told you it's a clutch."
+seg_0011,SPEAKER_4,speaker_4,64.519,67.04,2.521,"Oh, oh, then, ""Oh, no, I forgot my clutch."""
+seg_0012,SPEAKER_2,speaker_1,68.46,69.58,1.12,She's holding the clutch.
+seg_0013,SPEAKER_4,speaker_4,70.42,72.38,1.96,"Oh, then where's her chocolate bar?"
+seg_0014,SPEAKER_2,speaker_1,73.32,74.2,0.88,There never was one.
+seg_0015,SPEAKER_1,speaker_0,74.23,75.64,1.41,"All right, never mind. What about you?"
+seg_0016,SPEAKER_5,speaker_5,77.02,79.82,2.8,I can't shake the image of that girl getting hit by that car-
+seg_0017,SPEAKER_5,speaker_5,81.55,87.04,5.49,"... four years ago outside of my Dreamhouse. Anyway, I was holding a chocolate bar like this one."
+seg_0018,SPEAKER_2,speaker_1,89.7,96.35,6.65,"Listen to me, boy. Barbie never witnessed such a thing. That sort of thing does not happen outside of Barbie's house."
+seg_0019,SPEAKER_1,speaker_0,96.38,101.6,5.22,"Bernard, calm down. It's okay. Let's just, we'll do another picture, all right? Tamra, what's your caption?"
+seg_0020,SPEAKER_3,speaker_3,102.32,105.78,3.46,"Hi, it's Barbie. I can't find my dog."
+seg_0021,SPEAKER_2,speaker_1,110.78,114.1,3.32,The dog is right there-... at her feet.
+seg_0022,SPEAKER_3,speaker_3,115.02,117.08,2.06,"Yeah, but she's not seeing it."
+seg_0023,SPEAKER_1,speaker_0,117.54,119.54,2.0,"All right. Michael, what's your caption?"
+seg_0024,SPEAKER_4,speaker_4,120.1,120.72,0.62,"""I'm Barbie."""
+seg_0025,SPEAKER_1,speaker_0,121.9,124.12,2.22,"She's answering the phone saying, ""I'm Barbie""?"
+seg_0026,SPEAKER_4,speaker_4,124.82,126.46,1.64,"No, she's just thinking it."
+seg_0027,SPEAKER_2,speaker_1,127.78,132.95,5.17,"So she picked up the phone, held it to her face and mouth, and thought, ""I'm Barbie""?"
+seg_0028,SPEAKER_4,speaker_4,133.9,135.68,1.78,"Yes, exactly. She's practicing."
+seg_0029,SPEAKER_2,speaker_1,136.42,138.39,1.97,Practicing what? Thinking that she's Barbie?
+seg_0030,SPEAKER_1,speaker_0,138.56,140.72,2.16,"O- okay, l- let's move on. Jason, your caption?"
+seg_0031,SPEAKER_5,speaker_5,141.26,149.7,8.44,"Hey, I'm so sorry to do this, but I won't be able to come to the party. I just can't. I got all dressed up, but I just can't shake this funk I'm in."
+seg_0032,SPEAKER_5,speaker_5,151.38,152.2,0.82,I'm freaking out.
+seg_0033,SPEAKER_5,speaker_5,153.74,156.06,2.32,I'm back to thinking about that girl from four years ago.
+seg_0034,SPEAKER_5,speaker_5,158.23,165.38,7.15,"I know it sounds crazy, but I think she was trying to tell me something. I'm sorry. I'm stuck. Anyway, give me a call when you can."
+seg_0035,SPEAKER_5,speaker_5,167.56,173.38,5.82,"Oh, I'm sorry, this is Barbie. But you knew that, you have caller ID. I'm so stupid. Goodbye."
+seg_0036,SPEAKER_2,speaker_1,175.74,185.32,9.58,"So young man, you are suggesting that not only Barbie will miss a party, but that she's traumatized by something that I just told you never happened to her?"
+seg_0037,SPEAKER_5,speaker_5,185.94,189.06,3.12,I think addressing the trauma is important. It's a discussion that needs to be had.
+seg_0038,SPEAKER_2,speaker_1,189.72,192.62,2.9,Not by Barbie. Not by Barbie.
+seg_0039,SPEAKER_1,speaker_0,192.68,201.44,8.76,"Bernard, breathe. Remember your condition. Okay, let's just do another one, but I'll show you what we have in mind, okay? Beautiful sunset in Malibu. You see? Just like that."
+seg_0040,SPEAKER_4,speaker_4,201.8,201.96,0.16,Oh.
+seg_0041,SPEAKER_5,speaker_5,202.02,202.68,0.66,"Sure, I like it."
+seg_0042,SPEAKER_1,speaker_0,202.76,203.56,0.8,"Okay, go for it."
+seg_0043,SPEAKER_3,speaker_3,204.82,206.82,2.0,It's almost not night anymore.
+seg_0044,SPEAKER_1,speaker_0,206.88,207.38,0.5,Oh my God.
+seg_0045,SPEAKER_1,speaker_0,208.7,209.18,0.48,And you?
+seg_0046,SPEAKER_4,speaker_4,210.54,211.24,0.7,Is that Barbie?
+seg_0047,SPEAKER_1,speaker_0,212.06,214.16,2.1,Is that Barbie in the picture? Of course that's Barbie.
+seg_0048,SPEAKER_4,speaker_4,214.54,219.64,5.1,"Oh, I didn't recognize her back. In that case, I'm Barbie. This is just my back."
+seg_0049,SPEAKER_5,speaker_5,221.3,230.92,9.62,"Now me. I overheard a woman at the supermarket say the strangest thing. She said, ""There goes Barbie. Poor thing, she doesn't know she's a toy-"
+seg_0050,SPEAKER_5,speaker_5,232.25,245.76,13.51,"... created by a corporation. Silly thing has never wondered where the car or the house came from."" And the truth is, I'd never thought of those things until today. Today is the first and very last day of my life."
+seg_0051,SPEAKER_2,speaker_1,248.98,259.82,10.84,"Okay, I'm really trying to wrap my brain around this. You're suggesting that Barbie finds out that she's a toy in the supermarket, and then she has some sort of identity crisis that drives her to suicide?"
+seg_0052,SPEAKER_5,speaker_5,260.2,261.38,1.18,It's the only way she can be free.
+seg_0053,SPEAKER_2,speaker_1,263.38,268.32,4.94,"Okay, Deirdre, I'm gonna close my eyes, and when I open them, I want all three of them out of the building."
+seg_0054,SPEAKER_1,speaker_0,268.34,273.219,4.879,"Yes, yes, and I'm going to leave my eyes open and make sure that that happens for him. Well, leave."
+seg_0055,SPEAKER_3,speaker_3,273.64,273.75,0.11,Oh.
+seg_0056,SPEAKER_1,speaker_0,275.94,278.08,2.14,"All right, you can open your eyes. They're gone."
+seg_0057,SPEAKER_2,speaker_1,278.2,278.4,0.2,Thank God.
+seg_0058,SPEAKER_1,speaker_0,278.46,281.57,3.11,"All right, so we're gonna go with the, ""I'm Barbie, this is my back,"" right?"
+seg_0059,SPEAKER_2,speaker_1,281.72,282.84,1.12,"Oh, definitely. It gets to the point."
+seg_0060,SPEAKER_1,speaker_0,282.969,283.52,0.551,That's good.

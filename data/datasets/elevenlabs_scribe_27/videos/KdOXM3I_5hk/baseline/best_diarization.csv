@@ -1,0 +1,246 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,0.38,0.85,0.47,How are you?
+seg_0001,SPEAKER_2,speaker_1,0.85,1.44,0.59,"Good to see you, Gordon Ramsay."
+seg_0002,SPEAKER_3,speaker_2,1.52,2.24,0.72,"Welcome, Norm Macdonald."
+seg_0003,SPEAKER_1,speaker_0,2.25,3.01,0.76,"How you doing, man?"
+seg_0004,SPEAKER_2,speaker_1,3.04,3.9,0.86,"Okay, good. Now-"
+seg_0005,SPEAKER_3,speaker_2,3.949,6.979,3.03,"You're gonna show both of us, uh, how to cook something fantastic today. Is that correct?"
+seg_0006,SPEAKER_2,speaker_1,7.01,13.38,6.37,"Yes. We're gonna do an, the most amazing red mullet with some fennel, orange, and on the back of how bad you were last time, this is gonna be cooked in a bag."
+seg_0007,SPEAKER_3,speaker_2,13.66,14.78,1.12,"Uh, okay. We're gonna cook this in a bag."
+seg_0008,SPEAKER_2,speaker_1,14.82,15.04,0.22,Yes.
+seg_0009,SPEAKER_3,speaker_2,15.26,16.919,1.659,"You are known, you clap your hands a lot."
+seg_0010,SPEAKER_2,speaker_1,16.94,17.13,0.19,Yes.
+seg_0011,SPEAKER_3,speaker_2,17.14,19.16,2.02,You yell at people. You're intimidating.
+seg_0012,SPEAKER_2,speaker_1,19.17,19.17,0.0,Uh-
+seg_0013,SPEAKER_3,speaker_2,19.18,20.22,1.04,This is gonna go very badly.
+seg_0014,SPEAKER_2,speaker_1,20.26,21.16,0.9,As well as you two guys.
+seg_0015,SPEAKER_3,speaker_2,21.3,21.41,0.11,All right.
+seg_0016,SPEAKER_2,speaker_1,21.41,21.68,0.27,"No, come on."
+seg_0017,SPEAKER_3,speaker_2,21.8,22.14,0.34,Very good.
+seg_0018,SPEAKER_2,speaker_1,22.19,24.76,2.57,"Uh, right. First thing I want you to do is to segment an orange."
+seg_0019,SPEAKER_3,speaker_2,24.84,24.93,0.09,All right.
+seg_0020,SPEAKER_2,speaker_1,24.93,25.52,0.59,"Okay, Norm?"
+seg_0021,SPEAKER_1,speaker_0,25.9,26.16,0.26,Yeah?
+seg_0022,SPEAKER_2,speaker_1,26.4,27.8,1.4,Wakey-wakey. Okay.
+seg_0023,SPEAKER_1,speaker_0,28.1,30.9,2.8,"Well, no- no one else in the world says segment an orange."
+seg_0024,SPEAKER_3,speaker_2,31.57,31.57,0.0,Yeah.
+seg_0025,SPEAKER_2,speaker_1,31.62,31.78,0.16,Okay.
+seg_0026,SPEAKER_3,speaker_2,31.88,34.5,2.62,"You just cut the edges off. That's what you want, right? You want the-"
+seg_0027,SPEAKER_2,speaker_1,34.53,36.3,1.77,"No, no, you've already started the wrong end. Look, that's the bit there."
+seg_0028,SPEAKER_3,speaker_2,36.44,37.83,1.39,All right. All right. Okay.
+seg_0029,SPEAKER_2,speaker_1,37.92,41.19,3.27,So just top and tail it like that. Look. Come on. Wake up. Stay with me.
+seg_0030,SPEAKER_1,speaker_0,41.26,42.78,1.52,"I'm up, I'm up to four segments."
+seg_0031,SPEAKER_2,speaker_1,43.46,45.3,1.84,"So, so. Now-"
+seg_0032,SPEAKER_1,speaker_0,45.34,46.91,1.57,Why? You didn't tell me a number of segments.
+seg_0033,SPEAKER_2,speaker_1,47.0,48.05,1.05,"No, no, no, no, no."
+seg_0034,SPEAKER_3,speaker_2,48.06,50.24,2.18,"He wants the edges off, I think."
+seg_0035,SPEAKER_1,speaker_0,50.64,51.2,0.56,"One way or another, I'm gonna."
+seg_0036,SPEAKER_3,speaker_2,52.26,53.52,1.26,"Hey, hey, hey, hey, hey, hey! Hey!"
+seg_0037,SPEAKER_2,speaker_1,55.42,55.56,0.14,Right.
+seg_0038,SPEAKER_1,speaker_0,55.6,55.61,0.01,What?
+seg_0039,SPEAKER_2,speaker_1,55.64,56.1,0.46,Okay.
+seg_0040,SPEAKER_1,speaker_0,56.14,56.31,0.17,I got it.
+seg_0041,SPEAKER_2,speaker_1,56.36,58.38,2.02,"Norm, so you go from there. Look, all the way around."
+seg_0042,SPEAKER_1,speaker_0,58.48,58.58,0.1,Yeah.
+seg_0043,SPEAKER_2,speaker_1,58.84,58.92,0.08,Yes.
+seg_0044,SPEAKER_3,speaker_2,59.06,61.16,2.1,Seven minutes of audio will play for this whole hour.
+seg_0045,SPEAKER_2,speaker_1,61.22,63.37,2.15,"Now, all the way there. Once you've gone all the way around-"
+seg_0046,SPEAKER_3,speaker_2,63.37,63.96,0.59,Between you two guys.
+seg_0047,SPEAKER_1,speaker_0,63.98,64.03,0.05,Yeah.
+seg_0048,SPEAKER_3,speaker_2,64.03,64.72,0.69,"All right, here we go. Yeah."
+seg_0049,SPEAKER_2,speaker_1,64.92,66.17,1.25,"Uh, Conan, pay attention, please. Watch."
+seg_0050,SPEAKER_3,speaker_2,66.19,66.759,0.569,"Yeah, all right. I'm over here."
+seg_0051,SPEAKER_2,speaker_1,66.77,66.77,0.0,Okay.
+seg_0052,SPEAKER_3,speaker_2,66.96,67.94,0.98,I've got my own orange going. All right.
+seg_0053,SPEAKER_2,speaker_1,67.95,70.06,2.11,"Okay, watch. All the way around. So take off the skin."
+seg_0054,SPEAKER_3,speaker_2,70.44,70.45,0.01,"Uh, uh."
+seg_0055,SPEAKER_2,speaker_1,70.46,70.89,0.43,And then from there-
+seg_0056,SPEAKER_1,speaker_0,71.06,71.8,0.74,You're not teaching me
+seg_0057,SPEAKER_2,speaker_1,71.82,71.84,0.02,... now-
+seg_0058,SPEAKER_1,speaker_0,71.85,72.76,0.91,You're just showing up
+seg_0059,SPEAKER_2,speaker_1,73.64,76.3,2.66,"... yeah. And then, and then from there, that's a segment."
+seg_0060,SPEAKER_3,speaker_2,76.32,77.1,0.78,There you go. All right.
+seg_0061,SPEAKER_2,speaker_1,77.22,77.36,0.14,There you segment.
+seg_0062,SPEAKER_3,speaker_2,77.42,78.42,1.0,Cheerio and chop-chop.
+seg_0063,SPEAKER_2,speaker_1,78.49,78.49,0.0,Left and right.
+seg_0064,SPEAKER_3,speaker_2,78.49,78.91,0.42,There we go. All right.
+seg_0065,SPEAKER_2,speaker_1,78.94,79.26,0.32,Off you go.
+seg_0066,SPEAKER_1,speaker_0,79.34,79.39,0.05,I'll do that.
+seg_0067,SPEAKER_2,speaker_1,79.39,79.98,0.59,Now watch your fingers.
+seg_0068,SPEAKER_1,speaker_0,80.3,80.82,0.52,I'll do that.
+seg_0069,SPEAKER_2,speaker_1,81.0,81.02,0.02,Now.
+seg_0070,SPEAKER_3,speaker_2,81.06,81.22,0.16,All right.
+seg_0071,SPEAKER_2,speaker_1,81.28,81.86,0.58,And then after that...
+seg_0072,SPEAKER_3,speaker_2,82.2,82.37,0.17,All right
+seg_0073,SPEAKER_2,speaker_1,82.4,82.64,0.24,... okay.
+seg_0074,SPEAKER_3,speaker_2,82.78,83.22,0.44,Now look at this.
+seg_0075,SPEAKER_2,speaker_1,83.28,83.29,0.01,Sh-
+seg_0076,SPEAKER_3,speaker_2,83.3,84.43,1.13,Mine's pretty good over here
+seg_0077,SPEAKER_2,speaker_1,84.48,84.65,0.17,"... show, show."
+seg_0078,SPEAKER_3,speaker_2,84.65,86.84,2.19,"There's some sections of, uh, skin still, but what the hell."
+seg_0079,SPEAKER_2,speaker_1,86.92,87.66,0.74,"Where, where- where's the orange gone?"
+seg_0080,SPEAKER_3,speaker_2,87.7,90.899,3.199,"And it's, like, 1:00 in the morning. Who, you know? All right."
+seg_0081,SPEAKER_2,speaker_1,90.94,94.55,3.61,"Forget that one. Right. Fennel. Okay, here we go. Now with the fennel-"
+seg_0082,SPEAKER_3,speaker_2,94.7,95.45,0.75,"Oh, all right. Whoa, okay"
+seg_0083,SPEAKER_2,speaker_1,95.45,96.02,0.57,"... okay, so push it off."
+seg_0084,SPEAKER_3,speaker_2,96.11,96.11,0.0,Yep.
+seg_0085,SPEAKER_2,speaker_1,96.12,97.64,1.52,And just slice that down nice and thin.
+seg_0086,SPEAKER_3,speaker_2,97.66,98.38,0.72,Now that I can do.
+seg_0087,SPEAKER_2,speaker_1,98.52,98.8,0.28,Okay.
+seg_0088,SPEAKER_3,speaker_2,98.97,99.91,0.94,"That looks... See, that was explained clearly."
+seg_0089,SPEAKER_2,speaker_1,99.92,100.3,0.38,"Watch, watch your fingers."
+seg_0090,SPEAKER_1,speaker_0,100.36,101.759,1.399,I segmented another one.
+seg_0091,SPEAKER_2,speaker_1,101.92,103.76,1.84,Where's the s- where- where's the segment?
+seg_0092,SPEAKER_1,speaker_0,103.79,104.02,0.23,What?
+seg_0093,SPEAKER_2,speaker_1,104.28,105.34,1.06,Where is it? Where is it?
+seg_0094,SPEAKER_1,speaker_0,105.88,106.92,1.04,I threw it over there.
+seg_0095,SPEAKER_2,speaker_1,108.29,108.62,0.33,"Oh, jeez. Okay, look."
+seg_0096,SPEAKER_3,speaker_2,108.66,109.88,1.22,"All right. I'm, I'm doing well, Gordon."
+seg_0097,SPEAKER_2,speaker_1,109.93,109.93,0.0,"So, so-"
+seg_0098,SPEAKER_3,speaker_2,109.98,110.57,0.59,I will be the one-
+seg_0099,SPEAKER_1,speaker_0,110.64,112.14,1.5,That's the good part. That's the inside part.
+seg_0100,SPEAKER_2,speaker_1,112.28,112.63,0.35,"Right. Okay, okay."
+seg_0101,SPEAKER_3,speaker_2,112.63,113.24,0.61,"All right, stop yelling."
+seg_0102,SPEAKER_2,speaker_1,113.28,113.4,0.12,I...
+seg_0103,SPEAKER_1,speaker_0,115.18,115.19,0.01,I'm sorry.
+seg_0104,SPEAKER_2,speaker_1,115.2,115.5,0.3,Okay.
+seg_0105,SPEAKER_1,speaker_0,115.7,115.82,0.12,Cook.
+seg_0106,SPEAKER_2,speaker_1,115.88,116.96,1.08,Right. That's great.
+seg_0107,SPEAKER_3,speaker_2,117.06,117.19,0.13,All right.
+seg_0108,SPEAKER_2,speaker_1,117.24,118.38,1.14,"Now from there, take your bag."
+seg_0109,SPEAKER_3,speaker_2,118.56,118.84,0.28,All right.
+seg_0110,SPEAKER_2,speaker_1,119.14,121.11,1.97,"Okay. Now we'll do one each, okay? Here we go."
+seg_0111,SPEAKER_1,speaker_0,121.12,122.6,1.48,Why would you become a cook?
+seg_0112,SPEAKER_2,speaker_1,125.42,129.96,4.54,"Come on, Norm, keep it together. Okay. It's not that bad."
+seg_0113,SPEAKER_2,speaker_1,132.06,132.42,0.36,"Uh, big boy."
+seg_0114,SPEAKER_3,speaker_2,132.72,133.36,0.64,"Okay, all right."
+seg_0115,SPEAKER_2,speaker_1,133.64,134.109,0.469,"The word, the-"
+seg_0116,SPEAKER_3,speaker_2,134.2,134.209,0.009,So-
+seg_0117,SPEAKER_2,speaker_1,134.209,134.25,0.041,... the word's chef.
+seg_0118,SPEAKER_3,speaker_2,134.25,134.25,0.0,All right.
+seg_0119,SPEAKER_1,speaker_0,134.25,136.62,2.37,"Chef. I'm sorry, chef. You're right. I know."
+seg_0120,SPEAKER_2,speaker_1,136.66,138.12,1.46,"Lady, lady, ladies cook."
+seg_0121,SPEAKER_1,speaker_0,138.22,138.91,0.69,"I know, I know."
+seg_0122,SPEAKER_3,speaker_2,138.92,139.88,0.96,Okay. All right.
+seg_0123,SPEAKER_2,speaker_1,140.29,140.36,0.07,Right.
+seg_0124,SPEAKER_4,speaker_3,140.4,140.41,0.01,Oh.
+seg_0125,SPEAKER_2,speaker_1,140.42,144.14,3.72,"I think, Joe, think it's... Oh,. All right, all right."
+seg_0126,SPEAKER_3,speaker_2,144.18,144.66,0.48,"No, you okay?"
+seg_0127,SPEAKER_2,speaker_1,144.96,146.17,1.21,"Um, I, um-"
+seg_0128,SPEAKER_3,speaker_2,146.36,147.12,0.76,"Hey, hey, hey, hey!"
+seg_0129,SPEAKER_2,speaker_1,147.56,147.59,0.03,"Oh, God."
+seg_0130,SPEAKER_3,speaker_2,147.6,149.12,1.52,We can bleep out the swear-
+seg_0131,SPEAKER_2,speaker_1,149.24,149.35,0.11,"Oh, God"
+seg_0132,SPEAKER_3,speaker_2,149.35,151.59,2.24,"... when there's this going around, I can't do anything with that."
+seg_0133,SPEAKER_2,speaker_1,151.59,153.579,1.989,I was waving to the camera.
+seg_0134,SPEAKER_3,speaker_2,153.64,153.69,0.05,And this goes in.
+seg_0135,SPEAKER_2,speaker_1,153.7,154.54,0.84,I was waving.
+seg_0136,SPEAKER_3,speaker_2,154.7,155.74,1.04,All right. So we got the-
+seg_0137,SPEAKER_2,speaker_1,155.98,156.13,0.15,Right
+seg_0138,SPEAKER_3,speaker_2,156.13,157.04,0.91,... vegetables in the bag.
+seg_0139,SPEAKER_2,speaker_1,157.46,158.48,1.02,Okay. Right. Fennel.
+seg_0140,SPEAKER_3,speaker_2,158.54,158.84,0.3,Fennel.
+seg_0141,SPEAKER_2,speaker_1,158.93,158.93,0.0,Fennel.
+seg_0142,SPEAKER_3,speaker_2,158.98,160.18,1.2,The fennel goes in the bag.
+seg_0143,SPEAKER_2,speaker_1,160.19,161.3,1.11,"Uh, oh. Don't you-"
+seg_0144,SPEAKER_3,speaker_2,161.38,162.3,0.92,"Well, you need the bag"
+seg_0145,SPEAKER_2,speaker_1,162.34,163.8,1.46,... I need the bag.
+seg_0146,SPEAKER_3,speaker_2,163.92,165.89,1.97,Stop it! Stop it!
+seg_0147,SPEAKER_2,speaker_1,167.72,168.35,0.63,"Okay. Now, w-"
+seg_0148,SPEAKER_3,speaker_2,168.35,169.2,0.85,None of this will air
+seg_0149,SPEAKER_2,speaker_1,169.28,169.47,0.19,"... okay, okay."
+seg_0150,SPEAKER_3,speaker_2,169.47,171.72,2.25,We're gonna show an old F Troop in this section.
+seg_0151,SPEAKER_2,speaker_1,172.29,173.38,1.09,"S- right, right. Fennel on-"
+seg_0152,SPEAKER_3,speaker_2,173.44,174.23,0.79,"All right, fennel in here"
+seg_0153,SPEAKER_2,speaker_1,174.42,174.65,0.23,"... okay, on there."
+seg_0154,SPEAKER_1,speaker_0,174.65,176.36,1.71,"By the way, there's a bottle of booze."
+seg_0155,SPEAKER_3,speaker_2,176.58,177.06,0.48,"Oh, hey."
+seg_0156,SPEAKER_2,speaker_1,177.74,178.9,1.16,"Norm, you're supposed to be following me."
+seg_0157,SPEAKER_3,speaker_2,179.02,179.3,0.28,All right.
+seg_0158,SPEAKER_2,speaker_1,179.36,179.53,0.17,"All right, oranges."
+seg_0159,SPEAKER_3,speaker_2,179.53,180.88,1.35,"All right, so we put oranges in here."
+seg_0160,SPEAKER_2,speaker_1,180.93,181.45,0.52,Okay. And then from there-
+seg_0161,SPEAKER_3,speaker_2,181.51,181.76,0.25,This is a mess
+seg_0162,SPEAKER_2,speaker_1,181.84,182.94,1.1,... red mullet.
+seg_0163,SPEAKER_3,speaker_2,182.97,182.97,0.0,Okay. Red mullet.
+seg_0164,SPEAKER_2,speaker_1,182.97,182.97,0.0,Red mu-
+seg_0165,SPEAKER_3,speaker_2,182.98,183.39,0.41,Is that a kind of fish?
+seg_0166,SPEAKER_2,speaker_1,183.39,184.66,1.27,"No, no, no, knife doesn't go in the bag."
+seg_0167,SPEAKER_3,speaker_2,184.84,185.0,0.16,Yeah.
+seg_0168,SPEAKER_1,speaker_0,185.1,185.109,0.009,I gotcha.
+seg_0169,SPEAKER_2,speaker_1,185.12,186.88,1.76,"You'll sli- you'll slice someone's throat open, Norm."
+seg_0170,SPEAKER_3,speaker_2,186.92,186.96,0.04,Yeah.
+seg_0171,SPEAKER_2,speaker_1,187.18,190.46,3.28,"Okay, right. From there, a little bit of salt, a little bit of pepper, olive oil."
+seg_0172,SPEAKER_3,speaker_2,190.489,190.72,0.231,Okay.
+seg_0173,SPEAKER_2,speaker_1,190.73,190.73,0.0,Okay.
+seg_0174,SPEAKER_3,speaker_2,190.74,191.62,0.88,A little olive oil.
+seg_0175,SPEAKER_2,speaker_1,191.64,191.769,0.129,Now-
+seg_0176,SPEAKER_3,speaker_2,192.06,192.99,0.93,A little aglio e olio
+seg_0177,SPEAKER_2,speaker_1,193.02,195.44,2.42,"... now from there, now watch carefully, a bit of seasoning. Okay?"
+seg_0178,SPEAKER_3,speaker_2,195.94,196.46,0.52,"Uh. Whoa, okay."
+seg_0179,SPEAKER_2,speaker_1,196.64,199.1,2.46,"Norm, you're making me feel dizzy standing there looking busy. Right."
+seg_0180,SPEAKER_3,speaker_2,199.109,199.109,0.0,All right.
+seg_0181,SPEAKER_2,speaker_1,199.14,199.6,0.46,Here we go.
+seg_0182,SPEAKER_3,speaker_2,200.14,200.64,0.5,This is crazy.
+seg_0183,SPEAKER_1,speaker_0,200.86,207.48,6.62,"I'll tell you one thing, man, I'm not eating this of yours. That's all I can guarantee."
+seg_0184,SPEAKER_2,speaker_1,207.54,208.36,0.82,Don't... Oh.
+seg_0185,SPEAKER_3,speaker_2,208.54,208.65,0.11,This is-
+seg_0186,SPEAKER_2,speaker_1,208.7,210.59,1.89,Stop. You haven't even tasted it yet.
+seg_0187,SPEAKER_3,speaker_2,210.6,215.39,4.79,Why are we even having a cooking segment at this point? Why would there even be a cooking segment?
+seg_0188,SPEAKER_3,speaker_2,217.26,219.96,2.7,My fault for letting anybody even have a cooking segment with you people.
+seg_0189,SPEAKER_2,speaker_1,220.02,220.44,0.42,Right. Here we go.
+seg_0190,SPEAKER_3,speaker_2,220.58,221.18,0.6,Ridiculous.
+seg_0191,SPEAKER_2,speaker_1,221.35,223.18,1.83,"Right, no, right here. Right, fold the bag over."
+seg_0192,SPEAKER_1,speaker_0,223.24,223.46,0.22,Yeah.
+seg_0193,SPEAKER_3,speaker_2,223.66,223.81,0.15,"Oh, yeah."
+seg_0194,SPEAKER_2,speaker_1,223.81,224.82,1.01,Okay. Nice and tight.
+seg_0195,SPEAKER_3,speaker_2,224.9,225.12,0.22,All right.
+seg_0196,SPEAKER_2,speaker_1,225.18,228.579,3.399,"Okay? And then from there, twist the paper so we seal the ends."
+seg_0197,SPEAKER_3,speaker_2,228.59,228.92,0.33,Twist the paper. All right.
+seg_0198,SPEAKER_2,speaker_1,228.94,229.42,0.48,Nice and tight.
+seg_0199,SPEAKER_1,speaker_0,229.66,230.9,1.24,"Oh, God, I hope he's a magician."
+seg_0200,SPEAKER_2,speaker_1,232.38,233.01,0.63,Nice and... Nice and tight.
+seg_0201,SPEAKER_3,speaker_2,233.04,233.96,0.92,A bird's gonna come out.
+seg_0202,SPEAKER_2,speaker_1,234.049,234.049,0.0,Okay?
+seg_0203,SPEAKER_3,speaker_2,234.08,234.82,0.74,"Yeah. All right, here we go."
+seg_0204,SPEAKER_2,speaker_1,234.85,235.17,0.32,"Now, all the way-"
+seg_0205,SPEAKER_3,speaker_2,235.68,235.88,0.2,All right
+seg_0206,SPEAKER_2,speaker_1,235.9,236.549,0.649,... all the way around.
+seg_0207,SPEAKER_3,speaker_2,236.72,236.95,0.23,All right.
+seg_0208,SPEAKER_2,speaker_1,237.04,237.32,0.28,Okay?
+seg_0209,SPEAKER_3,speaker_2,237.38,238.049,0.669,Now chop-chop.
+seg_0210,SPEAKER_1,speaker_0,238.08,238.2,0.12,Yeah.
+seg_0211,SPEAKER_2,speaker_1,238.56,240.24,1.68,"Now from there, a little hole."
+seg_0212,SPEAKER_3,speaker_2,240.28,241.06,0.78,A little hole.
+seg_0213,SPEAKER_2,speaker_1,241.14,241.46,0.32,Okay.
+seg_0214,SPEAKER_3,speaker_2,241.49,241.49,0.0,Right there.
+seg_0215,SPEAKER_2,speaker_1,241.5,244.02,2.52,"And then from there, pour a little bit of wine in there."
+seg_0216,SPEAKER_3,speaker_2,244.04,246.1,2.06,"That's a big waste of wine right there, buddy boy."
+seg_0217,SPEAKER_2,speaker_1,246.109,246.109,0.0,Okay.
+seg_0218,SPEAKER_3,speaker_2,246.109,246.39,0.281,"All right, right in here."
+seg_0219,SPEAKER_2,speaker_1,246.4,251.12,4.72,"And then from there, turn it around. Okay. Oh,."
+seg_0220,SPEAKER_3,speaker_2,251.16,251.34,0.18,What?
+seg_0221,SPEAKER_2,speaker_1,251.42,252.07,0.65,"Come on, Norm."
+seg_0222,SPEAKER_1,speaker_0,252.15,253.92,1.77,What the is that?
+seg_0223,SPEAKER_2,speaker_1,254.22,256.0,1.78,You're gonna be tight. It's tight.
+seg_0224,SPEAKER_3,speaker_2,256.3,256.76,0.46,What have you done?
+seg_0225,SPEAKER_1,speaker_0,256.82,258.519,1.699,"Gordon then goes, ""Look what Norm did."""
+seg_0226,SPEAKER_2,speaker_1,260.22,261.81,1.59,We've got to turn the bag so it's tight.
+seg_0227,SPEAKER_1,speaker_0,262.1,263.23,1.13,This is Paul Simon's welfare.
+seg_0228,SPEAKER_3,speaker_2,263.23,264.2,0.97,This is not gonna air.
+seg_0229,SPEAKER_2,speaker_1,264.25,264.25,0.0,So-
+seg_0230,SPEAKER_3,speaker_2,264.26,265.94,1.68,This will never be seen by anybody.
+seg_0231,SPEAKER_2,speaker_1,266.39,266.4,0.01,Just-
+seg_0232,SPEAKER_3,speaker_2,266.409,268.44,2.031,This will never be seen by anybody
+seg_0233,SPEAKER_2,speaker_1,268.54,269.76,1.22,"... just, just concentrate."
+seg_0234,SPEAKER_3,speaker_2,269.82,270.45,0.63,We've learned.
+seg_0235,SPEAKER_2,speaker_1,271.4,271.64,0.24,Okay.
+seg_0236,SPEAKER_3,speaker_2,271.69,272.92,1.23,"Okay, what does it look like at the end?"
+seg_0237,SPEAKER_2,speaker_1,272.98,272.99,0.01,Okay. Right.
+seg_0238,SPEAKER_3,speaker_2,273.02,275.2,2.18,"Oh, look, it just came out magically from a pan."
+seg_0239,SPEAKER_2,speaker_1,275.78,277.36,1.58,This is how it's cooked. As it cooks-
+seg_0240,SPEAKER_1,speaker_0,277.39,277.69,0.3,"Oh, yeah, yeah"
+seg_0241,SPEAKER_2,speaker_1,277.72,279.22,1.5,... it steams inside the bag.
+seg_0242,SPEAKER_3,speaker_2,279.32,279.56,0.24,Okay.
+seg_0243,SPEAKER_2,speaker_1,279.87,280.9,1.03,Okay? So then you rip it open.
+seg_0244,SPEAKER_3,speaker_2,281.24,281.26,0.02,Wow.

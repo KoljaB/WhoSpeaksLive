@@ -2,6 +2,14 @@
 
 WhoSpeaksLive is a local-first speaker diarization app for turning live or replayed media into speaker-labeled transcripts, with a browser UI for fast live speaker feedback, final sentence assignment, speaker library management, and validation.
 
+## Important Notes
+
+WhoSpeaksLive performs best on clean recordings where one person speaks at a time into good microphones. Diarization accuracy can degrade with background noise, background music, echo, crosstalk, overlapping speech, or low-quality microphones, and it may become less reliable as the active speaker count grows. The system assumes complete utterances can be assigned to a single speaker, so cases where one speaker starts a sentence and another finishes it are not expected to score well.
+
+Language support is adaptable in principle, but the published project should be treated as English-first. The remote ASR language can be overridden with `WHOSPEAKS_ASR_LANGUAGE`, but full support for another language still needs explicit integration and validation of the transcription, sentence-boundary, and scoring behavior. If you need another language, ask your agent harness to integrate and validate that language explicitly.
+
+CPU-only operation is not the recommended path for the current stack. The system is GPU-heavy today; a CPU-only setup may be possible, but should be treated as a separate optimization target and will likely require engineering work, slower processing, and some accuracy or throughput tradeoffs.
+
 ## Start Here
 
 For a full working setup, follow these in order:

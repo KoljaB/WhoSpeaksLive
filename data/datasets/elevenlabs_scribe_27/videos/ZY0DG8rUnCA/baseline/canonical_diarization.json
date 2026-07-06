@@ -1,0 +1,6588 @@
+{
+  "schema": {
+    "name": "who_speaks_diarized_transcript",
+    "version": "1.0.0",
+    "time_unit": "seconds"
+  },
+  "media": {
+    "title": "The Coin Toss | No Country for Old Men | Max",
+    "source_url": "https://www.youtube.com/watch?v=ZY0DG8rUnCA",
+    "audio_file": "D:\\Projekte\\WhoSpeaks\\tools\\.local_filefeed_media\\ZY0DG8rUnCA.audio.mp3",
+    "duration_sec": 277.989
+  },
+  "provenance": {
+    "provider": "ElevenLabs",
+    "model_id": "scribe_v2",
+    "source_raw_json": "D:\\Projekte\\WhoSpeaks\\output_elevenlabs_ZY0DG8rUnCA\\ZY0DG8rUnCA.audio.elevenlabs_scribe_v2.word.thr0.4.raw.json",
+    "generated_at_utc": "2026-06-29T14:42:19.642035+00:00",
+    "language_code": "eng",
+    "language_probability": 1.0,
+    "transcription_id": "EPNfEjd9QdzLQWu9wSwN",
+    "diarization_threshold": 0.4,
+    "post_processing": [
+      "Grouped word-level ElevenLabs output into turns with max_same_speaker_gap=1.2 seconds.",
+      "Mapped raw ElevenLabs speaker clusters to stable canonical speaker labels.",
+      "Manual speaker identity labels were applied where --speaker-label was provided."
+    ]
+  },
+  "speakers": [
+    {
+      "speaker_id": "ANTON_CHIGURH",
+      "display_name": "Anton Chigurh",
+      "role": "customer",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "notes": "Mapped from ElevenLabs speaker_0 after transcript review."
+    },
+    {
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "display_name": "Gas station proprietor",
+      "role": "shopkeeper",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "notes": "Mapped from ElevenLabs speaker_1 after transcript review."
+    }
+  ],
+  "segments": [
+    {
+      "segment_id": "seg_0000",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 8.78,
+      "end_sec": 9.26,
+      "start_time": "00:08.780",
+      "end_time": "00:09.260",
+      "duration_sec": 0.48,
+      "text": "How much?",
+      "word_start_index": 0,
+      "word_end_index": 1
+    },
+    {
+      "segment_id": "seg_0001",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 10.3,
+      "end_sec": 12.08,
+      "start_time": "00:10.300",
+      "end_time": "00:12.080",
+      "duration_sec": 1.78,
+      "text": "69 cent.",
+      "word_start_index": 2,
+      "word_end_index": 3
+    },
+    {
+      "segment_id": "seg_0002",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 12.12,
+      "end_sec": 12.74,
+      "start_time": "00:12.120",
+      "end_time": "00:12.740",
+      "duration_sec": 0.62,
+      "text": "And the gas.",
+      "word_start_index": 4,
+      "word_end_index": 6
+    },
+    {
+      "segment_id": "seg_0003",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 13.84,
+      "end_sec": 15.8,
+      "start_time": "00:13.840",
+      "end_time": "00:15.800",
+      "duration_sec": 1.96,
+      "text": "Y'all getting any rain up your way?",
+      "word_start_index": 7,
+      "word_end_index": 13
+    },
+    {
+      "segment_id": "seg_0004",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 17.42,
+      "end_sec": 18.42,
+      "start_time": "00:17.420",
+      "end_time": "00:18.420",
+      "duration_sec": 1.0,
+      "text": "What way would that be?",
+      "word_start_index": 14,
+      "word_end_index": 18
+    },
+    {
+      "segment_id": "seg_0005",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 18.74,
+      "end_sec": 20.32,
+      "start_time": "00:18.740",
+      "end_time": "00:20.320",
+      "duration_sec": 1.58,
+      "text": "I seen you was from Dallas.",
+      "word_start_index": 19,
+      "word_end_index": 24
+    },
+    {
+      "segment_id": "seg_0006",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 22.94,
+      "end_sec": 25.78,
+      "start_time": "00:22.940",
+      "end_time": "00:25.780",
+      "duration_sec": 2.84,
+      "text": "What business is it of yours where I'm from,",
+      "word_start_index": 25,
+      "word_end_index": 33
+    },
+    {
+      "segment_id": "seg_0007",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 27.72,
+      "end_sec": 28.28,
+      "start_time": "00:27.720",
+      "end_time": "00:28.280",
+      "duration_sec": 0.56,
+      "text": "friendo?",
+      "word_start_index": 34,
+      "word_end_index": 34
+    },
+    {
+      "segment_id": "seg_0008",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 31.0,
+      "end_sec": 32.61,
+      "start_time": "00:31.000",
+      "end_time": "00:32.610",
+      "duration_sec": 1.61,
+      "text": "I didn't mean nothing by it.",
+      "word_start_index": 35,
+      "word_end_index": 40
+    },
+    {
+      "segment_id": "seg_0009",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 32.74,
+      "end_sec": 33.86,
+      "start_time": "00:32.740",
+      "end_time": "00:33.860",
+      "duration_sec": 1.12,
+      "text": "You didn't mean nothing.",
+      "word_start_index": 41,
+      "word_end_index": 44
+    },
+    {
+      "segment_id": "seg_0010",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 34.94,
+      "end_sec": 36.32,
+      "start_time": "00:34.940",
+      "end_time": "00:36.320",
+      "duration_sec": 1.38,
+      "text": "Just passing the time.",
+      "word_start_index": 45,
+      "word_end_index": 48
+    },
+    {
+      "segment_id": "seg_0011",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 38.66,
+      "end_sec": 41.98,
+      "start_time": "00:38.660",
+      "end_time": "00:41.980",
+      "duration_sec": 3.32,
+      "text": "If you don't wanna accept that, I don't know what else I can do for you.",
+      "word_start_index": 49,
+      "word_end_index": 64
+    },
+    {
+      "segment_id": "seg_0012",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 45.36,
+      "end_sec": 46.52,
+      "start_time": "00:45.360",
+      "end_time": "00:46.520",
+      "duration_sec": 1.16,
+      "text": "Will there be something else?",
+      "word_start_index": 65,
+      "word_end_index": 69
+    },
+    {
+      "segment_id": "seg_0013",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 46.94,
+      "end_sec": 48.54,
+      "start_time": "00:46.940",
+      "end_time": "00:48.540",
+      "duration_sec": 1.6,
+      "text": "I don't know. Will there?",
+      "word_start_index": 70,
+      "word_end_index": 74
+    },
+    {
+      "segment_id": "seg_0014",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 55.3,
+      "end_sec": 56.14,
+      "start_time": "00:55.300",
+      "end_time": "00:56.140",
+      "duration_sec": 0.84,
+      "text": "Is something wrong?",
+      "word_start_index": 75,
+      "word_end_index": 77
+    },
+    {
+      "segment_id": "seg_0015",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 56.62,
+      "end_sec": 57.0,
+      "start_time": "00:56.620",
+      "end_time": "00:57.000",
+      "duration_sec": 0.38,
+      "text": "With what?",
+      "word_start_index": 78,
+      "word_end_index": 79
+    },
+    {
+      "segment_id": "seg_0016",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 57.2,
+      "end_sec": 57.84,
+      "start_time": "00:57.200",
+      "end_time": "00:57.840",
+      "duration_sec": 0.64,
+      "text": "With anything.",
+      "word_start_index": 80,
+      "word_end_index": 81
+    },
+    {
+      "segment_id": "seg_0017",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 59.58,
+      "end_sec": 63.46,
+      "start_time": "00:59.580",
+      "end_time": "01:03.460",
+      "duration_sec": 3.88,
+      "text": "Is that what you're asking me? Is there something wrong with anything?",
+      "word_start_index": 82,
+      "word_end_index": 93
+    },
+    {
+      "segment_id": "seg_0018",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 64.28,
+      "end_sec": 65.36,
+      "start_time": "01:04.280",
+      "end_time": "01:05.360",
+      "duration_sec": 1.08,
+      "text": "Will there be anything else?",
+      "word_start_index": 94,
+      "word_end_index": 98
+    },
+    {
+      "segment_id": "seg_0019",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 65.62,
+      "end_sec": 66.58,
+      "start_time": "01:05.620",
+      "end_time": "01:06.580",
+      "duration_sec": 0.96,
+      "text": "You already asked me that.",
+      "word_start_index": 99,
+      "word_end_index": 103
+    },
+    {
+      "segment_id": "seg_0020",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 70.26,
+      "end_sec": 72.94,
+      "start_time": "01:10.260",
+      "end_time": "01:12.940",
+      "duration_sec": 2.68,
+      "text": "Oh, well, I need to see about closing now.",
+      "word_start_index": 104,
+      "word_end_index": 112
+    },
+    {
+      "segment_id": "seg_0021",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 73.48,
+      "end_sec": 74.3,
+      "start_time": "01:13.480",
+      "end_time": "01:14.300",
+      "duration_sec": 0.82,
+      "text": "See about closing.",
+      "word_start_index": 113,
+      "word_end_index": 115
+    },
+    {
+      "segment_id": "seg_0022",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 74.58,
+      "end_sec": 74.94,
+      "start_time": "01:14.580",
+      "end_time": "01:14.940",
+      "duration_sec": 0.36,
+      "text": "Yes, sir.",
+      "word_start_index": 116,
+      "word_end_index": 117
+    },
+    {
+      "segment_id": "seg_0023",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 75.14,
+      "end_sec": 76.14,
+      "start_time": "01:15.140",
+      "end_time": "01:16.140",
+      "duration_sec": 1.0,
+      "text": "What time do you close?",
+      "word_start_index": 118,
+      "word_end_index": 122
+    },
+    {
+      "segment_id": "seg_0024",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 76.4,
+      "end_sec": 77.6,
+      "start_time": "01:16.400",
+      "end_time": "01:17.600",
+      "duration_sec": 1.2,
+      "text": "Now. We close now.",
+      "word_start_index": 123,
+      "word_end_index": 126
+    },
+    {
+      "segment_id": "seg_0025",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 77.78,
+      "end_sec": 79.84,
+      "start_time": "01:17.780",
+      "end_time": "01:19.840",
+      "duration_sec": 2.06,
+      "text": "Now is not a time. What time do you close?",
+      "word_start_index": 127,
+      "word_end_index": 136
+    },
+    {
+      "segment_id": "seg_0026",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 79.94,
+      "end_sec": 81.64,
+      "start_time": "01:19.940",
+      "end_time": "01:21.640",
+      "duration_sec": 1.7,
+      "text": "Generally around dark. At dark.",
+      "word_start_index": 137,
+      "word_end_index": 141
+    },
+    {
+      "segment_id": "seg_0027",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 86.54,
+      "end_sec": 88.08,
+      "start_time": "01:26.540",
+      "end_time": "01:28.080",
+      "duration_sec": 1.54,
+      "text": "You don't know what you're talking about, do you?",
+      "word_start_index": 142,
+      "word_end_index": 150
+    },
+    {
+      "segment_id": "seg_0028",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 88.54,
+      "end_sec": 88.9,
+      "start_time": "01:28.540",
+      "end_time": "01:28.900",
+      "duration_sec": 0.36,
+      "text": "Sir?",
+      "word_start_index": 151,
+      "word_end_index": 151
+    },
+    {
+      "segment_id": "seg_0029",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 90.78,
+      "end_sec": 93.9,
+      "start_time": "01:30.780",
+      "end_time": "01:33.900",
+      "duration_sec": 3.12,
+      "text": "I said you don't know what you're talking about.",
+      "word_start_index": 152,
+      "word_end_index": 160
+    },
+    {
+      "segment_id": "seg_0030",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 97.04,
+      "end_sec": 98.26,
+      "start_time": "01:37.040",
+      "end_time": "01:38.260",
+      "duration_sec": 1.22,
+      "text": "What time do you go to bed?",
+      "word_start_index": 161,
+      "word_end_index": 167
+    },
+    {
+      "segment_id": "seg_0031",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 98.84,
+      "end_sec": 99.24,
+      "start_time": "01:38.840",
+      "end_time": "01:39.240",
+      "duration_sec": 0.4,
+      "text": "Sir?",
+      "word_start_index": 168,
+      "word_end_index": 168
+    },
+    {
+      "segment_id": "seg_0032",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 99.74,
+      "end_sec": 103.02,
+      "start_time": "01:39.740",
+      "end_time": "01:43.020",
+      "duration_sec": 3.28,
+      "text": "You're a bit, uh, fragile. I said what time do you go to bed?",
+      "word_start_index": 169,
+      "word_end_index": 182
+    },
+    {
+      "segment_id": "seg_0033",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 105.12,
+      "end_sec": 105.3,
+      "start_time": "01:45.120",
+      "end_time": "01:45.300",
+      "duration_sec": 0.18,
+      "text": "Oh,",
+      "word_start_index": 183,
+      "word_end_index": 183
+    },
+    {
+      "segment_id": "seg_0034",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 107.84,
+      "end_sec": 111.1,
+      "start_time": "01:47.840",
+      "end_time": "01:51.100",
+      "duration_sec": 3.26,
+      "text": "somewhere around 9:30. I'd, I'd say around 9:30.",
+      "word_start_index": 184,
+      "word_end_index": 191
+    },
+    {
+      "segment_id": "seg_0035",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 111.6,
+      "end_sec": 112.54,
+      "start_time": "01:51.600",
+      "end_time": "01:52.540",
+      "duration_sec": 0.94,
+      "text": "I could come back then.",
+      "word_start_index": 192,
+      "word_end_index": 196
+    },
+    {
+      "segment_id": "seg_0036",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 112.96,
+      "end_sec": 115.26,
+      "start_time": "01:52.960",
+      "end_time": "01:55.260",
+      "duration_sec": 2.3,
+      "text": "Why would you be coming back? We'll be closed.",
+      "word_start_index": 197,
+      "word_end_index": 205
+    },
+    {
+      "segment_id": "seg_0037",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 115.38,
+      "end_sec": 116.08,
+      "start_time": "01:55.380",
+      "end_time": "01:56.080",
+      "duration_sec": 0.7,
+      "text": "Yeah, you said that.",
+      "word_start_index": 206,
+      "word_end_index": 209
+    },
+    {
+      "segment_id": "seg_0038",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 118.52,
+      "end_sec": 120.0,
+      "start_time": "01:58.520",
+      "end_time": "02:00.000",
+      "duration_sec": 1.48,
+      "text": "Well, I got to close now.",
+      "word_start_index": 210,
+      "word_end_index": 215
+    },
+    {
+      "segment_id": "seg_0039",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 120.22,
+      "end_sec": 121.8,
+      "start_time": "02:00.220",
+      "end_time": "02:01.800",
+      "duration_sec": 1.58,
+      "text": "You live in that house out back?",
+      "word_start_index": 216,
+      "word_end_index": 222
+    },
+    {
+      "segment_id": "seg_0040",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 124.0,
+      "end_sec": 124.8,
+      "start_time": "02:04.000",
+      "end_time": "02:04.800",
+      "duration_sec": 0.8,
+      "text": "Yes, I do.",
+      "word_start_index": 223,
+      "word_end_index": 225
+    },
+    {
+      "segment_id": "seg_0041",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 125.86,
+      "end_sec": 126.98,
+      "start_time": "02:05.860",
+      "end_time": "02:06.980",
+      "duration_sec": 1.12,
+      "text": "You lived here all your life?",
+      "word_start_index": 226,
+      "word_end_index": 231
+    },
+    {
+      "segment_id": "seg_0042",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 128.72,
+      "end_sec": 132.36,
+      "start_time": "02:08.720",
+      "end_time": "02:12.360",
+      "duration_sec": 3.64,
+      "text": "This was my wife's father's place o- originally.",
+      "word_start_index": 232,
+      "word_end_index": 239
+    },
+    {
+      "segment_id": "seg_0043",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 135.3,
+      "end_sec": 136.12,
+      "start_time": "02:15.300",
+      "end_time": "02:16.120",
+      "duration_sec": 0.82,
+      "text": "You married into it.",
+      "word_start_index": 240,
+      "word_end_index": 243
+    },
+    {
+      "segment_id": "seg_0044",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 137.26,
+      "end_sec": 139.8,
+      "start_time": "02:17.260",
+      "end_time": "02:19.800",
+      "duration_sec": 2.54,
+      "text": "We lived in Temple, Texas for many years.",
+      "word_start_index": 244,
+      "word_end_index": 251
+    },
+    {
+      "segment_id": "seg_0045",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 141.44,
+      "end_sec": 146.88,
+      "start_time": "02:21.440",
+      "end_time": "02:26.880",
+      "duration_sec": 5.44,
+      "text": "Raised a family there in Temple. We come out here about four years ago.",
+      "word_start_index": 252,
+      "word_end_index": 265
+    },
+    {
+      "segment_id": "seg_0046",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 147.52,
+      "end_sec": 148.48,
+      "start_time": "02:27.520",
+      "end_time": "02:28.480",
+      "duration_sec": 0.96,
+      "text": "You married into it.",
+      "word_start_index": 266,
+      "word_end_index": 269
+    },
+    {
+      "segment_id": "seg_0047",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 149.45,
+      "end_sec": 150.74,
+      "start_time": "02:29.450",
+      "end_time": "02:30.740",
+      "duration_sec": 1.29,
+      "text": "If that's the way you wanna put it.",
+      "word_start_index": 270,
+      "word_end_index": 277
+    },
+    {
+      "segment_id": "seg_0048",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 151.06,
+      "end_sec": 152.88,
+      "start_time": "02:31.060",
+      "end_time": "02:32.880",
+      "duration_sec": 1.82,
+      "text": "Well, I don't have some way to put it.",
+      "word_start_index": 278,
+      "word_end_index": 286
+    },
+    {
+      "segment_id": "seg_0049",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 154.08,
+      "end_sec": 154.92,
+      "start_time": "02:34.080",
+      "end_time": "02:34.920",
+      "duration_sec": 0.84,
+      "text": "That's the way it is.",
+      "word_start_index": 287,
+      "word_end_index": 291
+    },
+    {
+      "segment_id": "seg_0050",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 163.38,
+      "end_sec": 165.72,
+      "start_time": "02:43.380",
+      "end_time": "02:45.720",
+      "duration_sec": 2.34,
+      "text": "What's the most you ever lost on a coin toss?",
+      "word_start_index": 292,
+      "word_end_index": 301
+    },
+    {
+      "segment_id": "seg_0051",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 167.14,
+      "end_sec": 167.42,
+      "start_time": "02:47.140",
+      "end_time": "02:47.420",
+      "duration_sec": 0.28,
+      "text": "Sir?",
+      "word_start_index": 302,
+      "word_end_index": 302
+    },
+    {
+      "segment_id": "seg_0052",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 167.8,
+      "end_sec": 170.78,
+      "start_time": "02:47.800",
+      "end_time": "02:50.780",
+      "duration_sec": 2.98,
+      "text": "The most you ever lost on a coin toss.",
+      "word_start_index": 303,
+      "word_end_index": 311
+    },
+    {
+      "segment_id": "seg_0053",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 172.92,
+      "end_sec": 174.84,
+      "start_time": "02:52.920",
+      "end_time": "02:54.840",
+      "duration_sec": 1.92,
+      "text": "I don't know. I couldn't say.",
+      "word_start_index": 312,
+      "word_end_index": 317
+    },
+    {
+      "segment_id": "seg_0054",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 178.23,
+      "end_sec": 178.6,
+      "start_time": "02:58.230",
+      "end_time": "02:58.600",
+      "duration_sec": 0.37,
+      "text": "Call it.",
+      "word_start_index": 318,
+      "word_end_index": 319
+    },
+    {
+      "segment_id": "seg_0055",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 179.46,
+      "end_sec": 179.88,
+      "start_time": "02:59.460",
+      "end_time": "02:59.880",
+      "duration_sec": 0.42,
+      "text": "Call it.",
+      "word_start_index": 320,
+      "word_end_index": 321
+    },
+    {
+      "segment_id": "seg_0056",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 179.92,
+      "end_sec": 180.14,
+      "start_time": "02:59.920",
+      "end_time": "03:00.140",
+      "duration_sec": 0.22,
+      "text": "Yes.",
+      "word_start_index": 322,
+      "word_end_index": 322
+    },
+    {
+      "segment_id": "seg_0057",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 181.26,
+      "end_sec": 181.9,
+      "start_time": "03:01.260",
+      "end_time": "03:01.900",
+      "duration_sec": 0.64,
+      "text": "For what?",
+      "word_start_index": 323,
+      "word_end_index": 324
+    },
+    {
+      "segment_id": "seg_0058",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 182.28,
+      "end_sec": 182.84,
+      "start_time": "03:02.280",
+      "end_time": "03:02.840",
+      "duration_sec": 0.56,
+      "text": "Just call it.",
+      "word_start_index": 325,
+      "word_end_index": 327
+    },
+    {
+      "segment_id": "seg_0059",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 185.9,
+      "end_sec": 189.58,
+      "start_time": "03:05.900",
+      "end_time": "03:09.580",
+      "duration_sec": 3.68,
+      "text": "Well, we need to know what we're calling it for here.",
+      "word_start_index": 328,
+      "word_end_index": 338
+    },
+    {
+      "segment_id": "seg_0060",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 189.74,
+      "end_sec": 194.28,
+      "start_time": "03:09.740",
+      "end_time": "03:14.280",
+      "duration_sec": 4.54,
+      "text": "You need to call it. I can't call it for you. Well, it wouldn't be fair.",
+      "word_start_index": 339,
+      "word_end_index": 354
+    },
+    {
+      "segment_id": "seg_0061",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 195.12,
+      "end_sec": 196.36,
+      "start_time": "03:15.120",
+      "end_time": "03:16.360",
+      "duration_sec": 1.24,
+      "text": "I didn't put nothing up.",
+      "word_start_index": 355,
+      "word_end_index": 359
+    },
+    {
+      "segment_id": "seg_0062",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 196.5,
+      "end_sec": 200.9,
+      "start_time": "03:16.500",
+      "end_time": "03:20.900",
+      "duration_sec": 4.4,
+      "text": "Yes, you did. You've been putting it up your whole life. You just didn't know it.",
+      "word_start_index": 360,
+      "word_end_index": 375
+    },
+    {
+      "segment_id": "seg_0063",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 202.58,
+      "end_sec": 204.1,
+      "start_time": "03:22.580",
+      "end_time": "03:24.100",
+      "duration_sec": 1.52,
+      "text": "You know what date is on this coin?",
+      "word_start_index": 376,
+      "word_end_index": 383
+    },
+    {
+      "segment_id": "seg_0064",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 204.88,
+      "end_sec": 205.08,
+      "start_time": "03:24.880",
+      "end_time": "03:25.080",
+      "duration_sec": 0.2,
+      "text": "No.",
+      "word_start_index": 384,
+      "word_end_index": 384
+    },
+    {
+      "segment_id": "seg_0065",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 205.42,
+      "end_sec": 213.44,
+      "start_time": "03:25.420",
+      "end_time": "03:33.440",
+      "duration_sec": 8.02,
+      "text": "1958. It's been traveling 22 years to get here, and now it's here, and it's either heads or tails,",
+      "word_start_index": 385,
+      "word_end_index": 403
+    },
+    {
+      "segment_id": "seg_0066",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 214.72,
+      "end_sec": 215.94,
+      "start_time": "03:34.720",
+      "end_time": "03:35.940",
+      "duration_sec": 1.22,
+      "text": "and you have to say call it.",
+      "word_start_index": 404,
+      "word_end_index": 410
+    },
+    {
+      "segment_id": "seg_0067",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 216.7,
+      "end_sec": 219.62,
+      "start_time": "03:36.700",
+      "end_time": "03:39.620",
+      "duration_sec": 2.92,
+      "text": "Look, I n- need to know what I stand to win.",
+      "word_start_index": 411,
+      "word_end_index": 421
+    },
+    {
+      "segment_id": "seg_0068",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 219.76,
+      "end_sec": 220.299,
+      "start_time": "03:39.760",
+      "end_time": "03:40.299",
+      "duration_sec": 0.539,
+      "text": "Everything.",
+      "word_start_index": 422,
+      "word_end_index": 422
+    },
+    {
+      "segment_id": "seg_0069",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 221.8,
+      "end_sec": 222.29,
+      "start_time": "03:41.800",
+      "end_time": "03:42.290",
+      "duration_sec": 0.49,
+      "text": "How's that?",
+      "word_start_index": 423,
+      "word_end_index": 424
+    },
+    {
+      "segment_id": "seg_0070",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 222.78,
+      "end_sec": 224.6,
+      "start_time": "03:42.780",
+      "end_time": "03:44.600",
+      "duration_sec": 1.82,
+      "text": "You stand to win everything. Call it.",
+      "word_start_index": 425,
+      "word_end_index": 431
+    },
+    {
+      "segment_id": "seg_0071",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 229.42,
+      "end_sec": 229.84,
+      "start_time": "03:49.420",
+      "end_time": "03:49.840",
+      "duration_sec": 0.42,
+      "text": "All right.",
+      "word_start_index": 432,
+      "word_end_index": 433
+    },
+    {
+      "segment_id": "seg_0072",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 231.68,
+      "end_sec": 232.46,
+      "start_time": "03:51.680",
+      "end_time": "03:52.460",
+      "duration_sec": 0.78,
+      "text": "Heads then.",
+      "word_start_index": 434,
+      "word_end_index": 435
+    },
+    {
+      "segment_id": "seg_0073",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 237.56,
+      "end_sec": 238.08,
+      "start_time": "03:57.560",
+      "end_time": "03:58.080",
+      "duration_sec": 0.52,
+      "text": "Well done.",
+      "word_start_index": 436,
+      "word_end_index": 437
+    },
+    {
+      "segment_id": "seg_0074",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 240.72,
+      "end_sec": 241.64,
+      "start_time": "04:00.720",
+      "end_time": "04:01.640",
+      "duration_sec": 0.92,
+      "text": "Don't put it in your pocket.",
+      "word_start_index": 438,
+      "word_end_index": 443
+    },
+    {
+      "segment_id": "seg_0075",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 241.76,
+      "end_sec": 241.98,
+      "start_time": "04:01.760",
+      "end_time": "04:01.980",
+      "duration_sec": 0.22,
+      "text": "Sir?",
+      "word_start_index": 444,
+      "word_end_index": 444
+    },
+    {
+      "segment_id": "seg_0076",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 242.74,
+      "end_sec": 244.6,
+      "start_time": "04:02.740",
+      "end_time": "04:04.600",
+      "duration_sec": 1.86,
+      "text": "Don't put it in your pocket. It's your lucky quarter.",
+      "word_start_index": 445,
+      "word_end_index": 454
+    },
+    {
+      "segment_id": "seg_0077",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_1"
+      ],
+      "start_sec": 246.64,
+      "end_sec": 247.94,
+      "start_time": "04:06.640",
+      "end_time": "04:07.940",
+      "duration_sec": 1.3,
+      "text": "Where you want me to put it?",
+      "word_start_index": 455,
+      "word_end_index": 461
+    },
+    {
+      "segment_id": "seg_0078",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 248.04,
+      "end_sec": 249.12,
+      "start_time": "04:08.040",
+      "end_time": "04:09.120",
+      "duration_sec": 1.08,
+      "text": "Anywhere not in your pocket",
+      "word_start_index": 462,
+      "word_end_index": 466
+    },
+    {
+      "segment_id": "seg_0079",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 250.38,
+      "end_sec": 253.22,
+      "start_time": "04:10.380",
+      "end_time": "04:13.220",
+      "duration_sec": 2.84,
+      "text": "or it'll get mixed in with the others and become just a coin.",
+      "word_start_index": 467,
+      "word_end_index": 479
+    },
+    {
+      "segment_id": "seg_0080",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_ids": [
+        "speaker_0"
+      ],
+      "start_sec": 257.84,
+      "end_sec": 258.399,
+      "start_time": "04:17.840",
+      "end_time": "04:18.399",
+      "duration_sec": 0.559,
+      "text": "Which it is.",
+      "word_start_index": 480,
+      "word_end_index": 482
+    }
+  ],
+  "words": [
+    {
+      "word_index": 0,
+      "text": "How",
+      "start_sec": 8.78,
+      "end_sec": 8.94,
+      "start_time": "00:08.780",
+      "end_time": "00:08.940",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.455423
+    },
+    {
+      "word_index": 1,
+      "text": "much?",
+      "start_sec": 8.98,
+      "end_sec": 9.26,
+      "start_time": "00:08.980",
+      "end_time": "00:09.260",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999992
+    },
+    {
+      "word_index": 2,
+      "text": "69",
+      "start_sec": 10.3,
+      "end_sec": 10.92,
+      "start_time": "00:10.300",
+      "end_time": "00:10.920",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999311
+    },
+    {
+      "word_index": 3,
+      "text": "cent.",
+      "start_sec": 11.04,
+      "end_sec": 12.08,
+      "start_time": "00:11.040",
+      "end_time": "00:12.080",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.623214
+    },
+    {
+      "word_index": 4,
+      "text": "And",
+      "start_sec": 12.12,
+      "end_sec": 12.22,
+      "start_time": "00:12.120",
+      "end_time": "00:12.220",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 5,
+      "text": "the",
+      "start_sec": 12.26,
+      "end_sec": 12.34,
+      "start_time": "00:12.260",
+      "end_time": "00:12.340",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 6,
+      "text": "gas.",
+      "start_sec": 12.38,
+      "end_sec": 12.74,
+      "start_time": "00:12.380",
+      "end_time": "00:12.740",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999949
+    },
+    {
+      "word_index": 7,
+      "text": "Y'all",
+      "start_sec": 13.84,
+      "end_sec": 14.1,
+      "start_time": "00:13.840",
+      "end_time": "00:14.100",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 8,
+      "text": "getting",
+      "start_sec": 14.16,
+      "end_sec": 14.36,
+      "start_time": "00:14.160",
+      "end_time": "00:14.360",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.939622
+    },
+    {
+      "word_index": 9,
+      "text": "any",
+      "start_sec": 14.4,
+      "end_sec": 14.64,
+      "start_time": "00:14.400",
+      "end_time": "00:14.640",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 10,
+      "text": "rain",
+      "start_sec": 14.72,
+      "end_sec": 15.02,
+      "start_time": "00:14.720",
+      "end_time": "00:15.020",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 11,
+      "text": "up",
+      "start_sec": 15.1,
+      "end_sec": 15.24,
+      "start_time": "00:15.100",
+      "end_time": "00:15.240",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 12,
+      "text": "your",
+      "start_sec": 15.28,
+      "end_sec": 15.47,
+      "start_time": "00:15.280",
+      "end_time": "00:15.470",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 13,
+      "text": "way?",
+      "start_sec": 15.56,
+      "end_sec": 15.8,
+      "start_time": "00:15.560",
+      "end_time": "00:15.800",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 14,
+      "text": "What",
+      "start_sec": 17.42,
+      "end_sec": 17.58,
+      "start_time": "00:17.420",
+      "end_time": "00:17.580",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 15,
+      "text": "way",
+      "start_sec": 17.64,
+      "end_sec": 17.78,
+      "start_time": "00:17.640",
+      "end_time": "00:17.780",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 16,
+      "text": "would",
+      "start_sec": 17.84,
+      "end_sec": 17.96,
+      "start_time": "00:17.840",
+      "end_time": "00:17.960",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 17,
+      "text": "that",
+      "start_sec": 18.0,
+      "end_sec": 18.2,
+      "start_time": "00:18.000",
+      "end_time": "00:18.200",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 18,
+      "text": "be?",
+      "start_sec": 18.22,
+      "end_sec": 18.42,
+      "start_time": "00:18.220",
+      "end_time": "00:18.420",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 19,
+      "text": "I",
+      "start_sec": 18.74,
+      "end_sec": 18.88,
+      "start_time": "00:18.740",
+      "end_time": "00:18.880",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 20,
+      "text": "seen",
+      "start_sec": 18.98,
+      "end_sec": 19.18,
+      "start_time": "00:18.980",
+      "end_time": "00:19.180",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.998799
+    },
+    {
+      "word_index": 21,
+      "text": "you",
+      "start_sec": 19.24,
+      "end_sec": 19.32,
+      "start_time": "00:19.240",
+      "end_time": "00:19.320",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 22,
+      "text": "was",
+      "start_sec": 19.36,
+      "end_sec": 19.52,
+      "start_time": "00:19.360",
+      "end_time": "00:19.520",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 23,
+      "text": "from",
+      "start_sec": 19.56,
+      "end_sec": 19.76,
+      "start_time": "00:19.560",
+      "end_time": "00:19.760",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 24,
+      "text": "Dallas.",
+      "start_sec": 19.8,
+      "end_sec": 20.32,
+      "start_time": "00:19.800",
+      "end_time": "00:20.320",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999949
+    },
+    {
+      "word_index": 25,
+      "text": "What",
+      "start_sec": 22.94,
+      "end_sec": 23.12,
+      "start_time": "00:22.940",
+      "end_time": "00:23.120",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.994082
+    },
+    {
+      "word_index": 26,
+      "text": "business",
+      "start_sec": 23.14,
+      "end_sec": 23.52,
+      "start_time": "00:23.140",
+      "end_time": "00:23.520",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 27,
+      "text": "is",
+      "start_sec": 23.58,
+      "end_sec": 23.64,
+      "start_time": "00:23.580",
+      "end_time": "00:23.640",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 28,
+      "text": "it",
+      "start_sec": 23.66,
+      "end_sec": 23.76,
+      "start_time": "00:23.660",
+      "end_time": "00:23.760",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 29,
+      "text": "of",
+      "start_sec": 23.8,
+      "end_sec": 23.92,
+      "start_time": "00:23.800",
+      "end_time": "00:23.920",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 30,
+      "text": "yours",
+      "start_sec": 23.96,
+      "end_sec": 24.28,
+      "start_time": "00:23.960",
+      "end_time": "00:24.280",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 31,
+      "text": "where",
+      "start_sec": 25.1,
+      "end_sec": 25.24,
+      "start_time": "00:25.100",
+      "end_time": "00:25.240",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 32,
+      "text": "I'm",
+      "start_sec": 25.28,
+      "end_sec": 25.42,
+      "start_time": "00:25.280",
+      "end_time": "00:25.420",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 33,
+      "text": "from,",
+      "start_sec": 25.48,
+      "end_sec": 25.78,
+      "start_time": "00:25.480",
+      "end_time": "00:25.780",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 34,
+      "text": "friendo?",
+      "start_sec": 27.72,
+      "end_sec": 28.28,
+      "start_time": "00:27.720",
+      "end_time": "00:28.280",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.8975
+    },
+    {
+      "word_index": 35,
+      "text": "I",
+      "start_sec": 31.0,
+      "end_sec": 31.04,
+      "start_time": "00:31.000",
+      "end_time": "00:31.040",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999992
+    },
+    {
+      "word_index": 36,
+      "text": "didn't",
+      "start_sec": 31.1,
+      "end_sec": 31.28,
+      "start_time": "00:31.100",
+      "end_time": "00:31.280",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 37,
+      "text": "mean",
+      "start_sec": 31.3,
+      "end_sec": 31.54,
+      "start_time": "00:31.300",
+      "end_time": "00:31.540",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999992
+    },
+    {
+      "word_index": 38,
+      "text": "nothing",
+      "start_sec": 31.58,
+      "end_sec": 31.82,
+      "start_time": "00:31.580",
+      "end_time": "00:31.820",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.99998
+    },
+    {
+      "word_index": 39,
+      "text": "by",
+      "start_sec": 31.88,
+      "end_sec": 32.22,
+      "start_time": "00:31.880",
+      "end_time": "00:32.220",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 40,
+      "text": "it.",
+      "start_sec": 32.6,
+      "end_sec": 32.61,
+      "start_time": "00:32.600",
+      "end_time": "00:32.610",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 41,
+      "text": "You",
+      "start_sec": 32.74,
+      "end_sec": 32.75,
+      "start_time": "00:32.740",
+      "end_time": "00:32.750",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.969643
+    },
+    {
+      "word_index": 42,
+      "text": "didn't",
+      "start_sec": 32.78,
+      "end_sec": 33.06,
+      "start_time": "00:32.780",
+      "end_time": "00:33.060",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999988
+    },
+    {
+      "word_index": 43,
+      "text": "mean",
+      "start_sec": 33.08,
+      "end_sec": 33.28,
+      "start_time": "00:33.080",
+      "end_time": "00:33.280",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 44,
+      "text": "nothing.",
+      "start_sec": 33.34,
+      "end_sec": 33.86,
+      "start_time": "00:33.340",
+      "end_time": "00:33.860",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999955
+    },
+    {
+      "word_index": 45,
+      "text": "Just",
+      "start_sec": 34.94,
+      "end_sec": 35.14,
+      "start_time": "00:34.940",
+      "end_time": "00:35.140",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.866755
+    },
+    {
+      "word_index": 46,
+      "text": "passing",
+      "start_sec": 35.18,
+      "end_sec": 35.62,
+      "start_time": "00:35.180",
+      "end_time": "00:35.620",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.99999
+    },
+    {
+      "word_index": 47,
+      "text": "the",
+      "start_sec": 35.64,
+      "end_sec": 35.73,
+      "start_time": "00:35.640",
+      "end_time": "00:35.730",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 48,
+      "text": "time.",
+      "start_sec": 35.84,
+      "end_sec": 36.32,
+      "start_time": "00:35.840",
+      "end_time": "00:36.320",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999994
+    },
+    {
+      "word_index": 49,
+      "text": "If",
+      "start_sec": 38.66,
+      "end_sec": 38.74,
+      "start_time": "00:38.660",
+      "end_time": "00:38.740",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 50,
+      "text": "you",
+      "start_sec": 38.82,
+      "end_sec": 38.9,
+      "start_time": "00:38.820",
+      "end_time": "00:38.900",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 51,
+      "text": "don't",
+      "start_sec": 38.96,
+      "end_sec": 39.07,
+      "start_time": "00:38.960",
+      "end_time": "00:39.070",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 52,
+      "text": "wanna",
+      "start_sec": 39.14,
+      "end_sec": 39.34,
+      "start_time": "00:39.140",
+      "end_time": "00:39.340",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.974031
+    },
+    {
+      "word_index": 53,
+      "text": "accept",
+      "start_sec": 39.36,
+      "end_sec": 39.74,
+      "start_time": "00:39.360",
+      "end_time": "00:39.740",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999994
+    },
+    {
+      "word_index": 54,
+      "text": "that,",
+      "start_sec": 39.8,
+      "end_sec": 39.98,
+      "start_time": "00:39.800",
+      "end_time": "00:39.980",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 55,
+      "text": "I",
+      "start_sec": 40.12,
+      "end_sec": 40.14,
+      "start_time": "00:40.120",
+      "end_time": "00:40.140",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 56,
+      "text": "don't",
+      "start_sec": 40.18,
+      "end_sec": 40.34,
+      "start_time": "00:40.180",
+      "end_time": "00:40.340",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 57,
+      "text": "know",
+      "start_sec": 40.36,
+      "end_sec": 40.47,
+      "start_time": "00:40.360",
+      "end_time": "00:40.470",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 58,
+      "text": "what",
+      "start_sec": 40.7,
+      "end_sec": 40.84,
+      "start_time": "00:40.700",
+      "end_time": "00:40.840",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 59,
+      "text": "else",
+      "start_sec": 40.86,
+      "end_sec": 41.06,
+      "start_time": "00:40.860",
+      "end_time": "00:41.060",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 60,
+      "text": "I",
+      "start_sec": 41.12,
+      "end_sec": 41.2,
+      "start_time": "00:41.120",
+      "end_time": "00:41.200",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 61,
+      "text": "can",
+      "start_sec": 41.26,
+      "end_sec": 41.34,
+      "start_time": "00:41.260",
+      "end_time": "00:41.340",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 62,
+      "text": "do",
+      "start_sec": 41.38,
+      "end_sec": 41.54,
+      "start_time": "00:41.380",
+      "end_time": "00:41.540",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 63,
+      "text": "for",
+      "start_sec": 41.6,
+      "end_sec": 41.7,
+      "start_time": "00:41.600",
+      "end_time": "00:41.700",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 64,
+      "text": "you.",
+      "start_sec": 41.84,
+      "end_sec": 41.98,
+      "start_time": "00:41.840",
+      "end_time": "00:41.980",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 65,
+      "text": "Will",
+      "start_sec": 45.36,
+      "end_sec": 45.449,
+      "start_time": "00:45.360",
+      "end_time": "00:45.449",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.974019
+    },
+    {
+      "word_index": 66,
+      "text": "there",
+      "start_sec": 45.54,
+      "end_sec": 45.66,
+      "start_time": "00:45.540",
+      "end_time": "00:45.660",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999993
+    },
+    {
+      "word_index": 67,
+      "text": "be",
+      "start_sec": 45.7,
+      "end_sec": 45.8,
+      "start_time": "00:45.700",
+      "end_time": "00:45.800",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 68,
+      "text": "something",
+      "start_sec": 45.9,
+      "end_sec": 46.22,
+      "start_time": "00:45.900",
+      "end_time": "00:46.220",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 69,
+      "text": "else?",
+      "start_sec": 46.26,
+      "end_sec": 46.52,
+      "start_time": "00:46.260",
+      "end_time": "00:46.520",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 70,
+      "text": "I",
+      "start_sec": 46.94,
+      "end_sec": 46.98,
+      "start_time": "00:46.940",
+      "end_time": "00:46.980",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 71,
+      "text": "don't",
+      "start_sec": 47.02,
+      "end_sec": 47.1,
+      "start_time": "00:47.020",
+      "end_time": "00:47.100",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999668
+    },
+    {
+      "word_index": 72,
+      "text": "know.",
+      "start_sec": 47.14,
+      "end_sec": 47.5,
+      "start_time": "00:47.140",
+      "end_time": "00:47.500",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999996
+    },
+    {
+      "word_index": 73,
+      "text": "Will",
+      "start_sec": 47.54,
+      "end_sec": 47.68,
+      "start_time": "00:47.540",
+      "end_time": "00:47.680",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 74,
+      "text": "there?",
+      "start_sec": 47.72,
+      "end_sec": 48.54,
+      "start_time": "00:47.720",
+      "end_time": "00:48.540",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 75,
+      "text": "Is",
+      "start_sec": 55.3,
+      "end_sec": 55.44,
+      "start_time": "00:55.300",
+      "end_time": "00:55.440",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 76,
+      "text": "something",
+      "start_sec": 55.48,
+      "end_sec": 55.76,
+      "start_time": "00:55.480",
+      "end_time": "00:55.760",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 77,
+      "text": "wrong?",
+      "start_sec": 55.84,
+      "end_sec": 56.14,
+      "start_time": "00:55.840",
+      "end_time": "00:56.140",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 78,
+      "text": "With",
+      "start_sec": 56.62,
+      "end_sec": 56.68,
+      "start_time": "00:56.620",
+      "end_time": "00:56.680",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.99999
+    },
+    {
+      "word_index": 79,
+      "text": "what?",
+      "start_sec": 56.78,
+      "end_sec": 57.0,
+      "start_time": "00:56.780",
+      "end_time": "00:57.000",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 80,
+      "text": "With",
+      "start_sec": 57.2,
+      "end_sec": 57.32,
+      "start_time": "00:57.200",
+      "end_time": "00:57.320",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999994
+    },
+    {
+      "word_index": 81,
+      "text": "anything.",
+      "start_sec": 57.4,
+      "end_sec": 57.84,
+      "start_time": "00:57.400",
+      "end_time": "00:57.840",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999939
+    },
+    {
+      "word_index": 82,
+      "text": "Is",
+      "start_sec": 59.58,
+      "end_sec": 59.8,
+      "start_time": "00:59.580",
+      "end_time": "00:59.800",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 83,
+      "text": "that",
+      "start_sec": 59.84,
+      "end_sec": 60.0,
+      "start_time": "00:59.840",
+      "end_time": "01:00.000",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 84,
+      "text": "what",
+      "start_sec": 60.04,
+      "end_sec": 60.16,
+      "start_time": "01:00.040",
+      "end_time": "01:00.160",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 85,
+      "text": "you're",
+      "start_sec": 60.22,
+      "end_sec": 60.34,
+      "start_time": "01:00.220",
+      "end_time": "01:00.340",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 86,
+      "text": "asking",
+      "start_sec": 60.4,
+      "end_sec": 60.68,
+      "start_time": "01:00.400",
+      "end_time": "01:00.680",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 87,
+      "text": "me?",
+      "start_sec": 60.72,
+      "end_sec": 61.68,
+      "start_time": "01:00.720",
+      "end_time": "01:01.680",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 88,
+      "text": "Is",
+      "start_sec": 61.88,
+      "end_sec": 61.98,
+      "start_time": "01:01.880",
+      "end_time": "01:01.980",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 89,
+      "text": "there",
+      "start_sec": 62.0,
+      "end_sec": 62.14,
+      "start_time": "01:02.000",
+      "end_time": "01:02.140",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 90,
+      "text": "something",
+      "start_sec": 62.18,
+      "end_sec": 62.54,
+      "start_time": "01:02.180",
+      "end_time": "01:02.540",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 91,
+      "text": "wrong",
+      "start_sec": 62.6,
+      "end_sec": 62.86,
+      "start_time": "01:02.600",
+      "end_time": "01:02.860",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 92,
+      "text": "with",
+      "start_sec": 62.92,
+      "end_sec": 63.04,
+      "start_time": "01:02.920",
+      "end_time": "01:03.040",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 93,
+      "text": "anything?",
+      "start_sec": 63.08,
+      "end_sec": 63.46,
+      "start_time": "01:03.080",
+      "end_time": "01:03.460",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 94,
+      "text": "Will",
+      "start_sec": 64.28,
+      "end_sec": 64.379,
+      "start_time": "01:04.280",
+      "end_time": "01:04.379",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.99998
+    },
+    {
+      "word_index": 95,
+      "text": "there",
+      "start_sec": 64.4,
+      "end_sec": 64.54,
+      "start_time": "01:04.400",
+      "end_time": "01:04.540",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999889
+    },
+    {
+      "word_index": 96,
+      "text": "be",
+      "start_sec": 64.56,
+      "end_sec": 64.68,
+      "start_time": "01:04.560",
+      "end_time": "01:04.680",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999991
+    },
+    {
+      "word_index": 97,
+      "text": "anything",
+      "start_sec": 64.7,
+      "end_sec": 65.019,
+      "start_time": "01:04.700",
+      "end_time": "01:05.019",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 98,
+      "text": "else?",
+      "start_sec": 65.08,
+      "end_sec": 65.36,
+      "start_time": "01:05.080",
+      "end_time": "01:05.360",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 99,
+      "text": "You",
+      "start_sec": 65.62,
+      "end_sec": 65.7,
+      "start_time": "01:05.620",
+      "end_time": "01:05.700",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 100,
+      "text": "already",
+      "start_sec": 65.74,
+      "end_sec": 65.98,
+      "start_time": "01:05.740",
+      "end_time": "01:05.980",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 101,
+      "text": "asked",
+      "start_sec": 66.02,
+      "end_sec": 66.2,
+      "start_time": "01:06.020",
+      "end_time": "01:06.200",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999879
+    },
+    {
+      "word_index": 102,
+      "text": "me",
+      "start_sec": 66.24,
+      "end_sec": 66.32,
+      "start_time": "01:06.240",
+      "end_time": "01:06.320",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 103,
+      "text": "that.",
+      "start_sec": 66.36,
+      "end_sec": 66.58,
+      "start_time": "01:06.360",
+      "end_time": "01:06.580",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.994752
+    },
+    {
+      "word_index": 104,
+      "text": "Oh,",
+      "start_sec": 70.26,
+      "end_sec": 70.38,
+      "start_time": "01:10.260",
+      "end_time": "01:10.380",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.973743
+    },
+    {
+      "word_index": 105,
+      "text": "well,",
+      "start_sec": 70.86,
+      "end_sec": 71.04,
+      "start_time": "01:10.860",
+      "end_time": "01:11.040",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 106,
+      "text": "I",
+      "start_sec": 71.12,
+      "end_sec": 71.24,
+      "start_time": "01:11.120",
+      "end_time": "01:11.240",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 107,
+      "text": "need",
+      "start_sec": 71.34,
+      "end_sec": 71.52,
+      "start_time": "01:11.340",
+      "end_time": "01:11.520",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 108,
+      "text": "to",
+      "start_sec": 71.54,
+      "end_sec": 71.82,
+      "start_time": "01:11.540",
+      "end_time": "01:11.820",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 109,
+      "text": "see",
+      "start_sec": 71.84,
+      "end_sec": 72.04,
+      "start_time": "01:11.840",
+      "end_time": "01:12.040",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 110,
+      "text": "about",
+      "start_sec": 72.06,
+      "end_sec": 72.26,
+      "start_time": "01:12.060",
+      "end_time": "01:12.260",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 111,
+      "text": "closing",
+      "start_sec": 72.3,
+      "end_sec": 72.72,
+      "start_time": "01:12.300",
+      "end_time": "01:12.720",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999975
+    },
+    {
+      "word_index": 112,
+      "text": "now.",
+      "start_sec": 72.76,
+      "end_sec": 72.94,
+      "start_time": "01:12.760",
+      "end_time": "01:12.940",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 113,
+      "text": "See",
+      "start_sec": 73.48,
+      "end_sec": 73.58,
+      "start_time": "01:13.480",
+      "end_time": "01:13.580",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999193
+    },
+    {
+      "word_index": 114,
+      "text": "about",
+      "start_sec": 73.64,
+      "end_sec": 73.88,
+      "start_time": "01:13.640",
+      "end_time": "01:13.880",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 115,
+      "text": "closing.",
+      "start_sec": 73.92,
+      "end_sec": 74.3,
+      "start_time": "01:13.920",
+      "end_time": "01:14.300",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.957333
+    },
+    {
+      "word_index": 116,
+      "text": "Yes,",
+      "start_sec": 74.58,
+      "end_sec": 74.78,
+      "start_time": "01:14.580",
+      "end_time": "01:14.780",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999991
+    },
+    {
+      "word_index": 117,
+      "text": "sir.",
+      "start_sec": 74.8,
+      "end_sec": 74.94,
+      "start_time": "01:14.800",
+      "end_time": "01:14.940",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999995
+    },
+    {
+      "word_index": 118,
+      "text": "What",
+      "start_sec": 75.14,
+      "end_sec": 75.26,
+      "start_time": "01:15.140",
+      "end_time": "01:15.260",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 119,
+      "text": "time",
+      "start_sec": 75.32,
+      "end_sec": 75.54,
+      "start_time": "01:15.320",
+      "end_time": "01:15.540",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 120,
+      "text": "do",
+      "start_sec": 75.56,
+      "end_sec": 75.64,
+      "start_time": "01:15.560",
+      "end_time": "01:15.640",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 121,
+      "text": "you",
+      "start_sec": 75.66,
+      "end_sec": 75.72,
+      "start_time": "01:15.660",
+      "end_time": "01:15.720",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 122,
+      "text": "close?",
+      "start_sec": 75.8,
+      "end_sec": 76.14,
+      "start_time": "01:15.800",
+      "end_time": "01:16.140",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999991
+    },
+    {
+      "word_index": 123,
+      "text": "Now.",
+      "start_sec": 76.4,
+      "end_sec": 76.72,
+      "start_time": "01:16.400",
+      "end_time": "01:16.720",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 124,
+      "text": "We",
+      "start_sec": 76.88,
+      "end_sec": 76.96,
+      "start_time": "01:16.880",
+      "end_time": "01:16.960",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 125,
+      "text": "close",
+      "start_sec": 77.04,
+      "end_sec": 77.32,
+      "start_time": "01:17.040",
+      "end_time": "01:17.320",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999927
+    },
+    {
+      "word_index": 126,
+      "text": "now.",
+      "start_sec": 77.38,
+      "end_sec": 77.6,
+      "start_time": "01:17.380",
+      "end_time": "01:17.600",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999994
+    },
+    {
+      "word_index": 127,
+      "text": "Now",
+      "start_sec": 77.78,
+      "end_sec": 77.94,
+      "start_time": "01:17.780",
+      "end_time": "01:17.940",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999977
+    },
+    {
+      "word_index": 128,
+      "text": "is",
+      "start_sec": 77.96,
+      "end_sec": 78.08,
+      "start_time": "01:17.960",
+      "end_time": "01:18.080",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 129,
+      "text": "not",
+      "start_sec": 78.12,
+      "end_sec": 78.27,
+      "start_time": "01:18.120",
+      "end_time": "01:18.270",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 130,
+      "text": "a",
+      "start_sec": 78.32,
+      "end_sec": 78.36,
+      "start_time": "01:18.320",
+      "end_time": "01:18.360",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 131,
+      "text": "time.",
+      "start_sec": 78.42,
+      "end_sec": 78.6,
+      "start_time": "01:18.420",
+      "end_time": "01:18.600",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 132,
+      "text": "What",
+      "start_sec": 78.64,
+      "end_sec": 78.74,
+      "start_time": "01:18.640",
+      "end_time": "01:18.740",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 133,
+      "text": "time",
+      "start_sec": 78.8,
+      "end_sec": 78.98,
+      "start_time": "01:18.800",
+      "end_time": "01:18.980",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 134,
+      "text": "do",
+      "start_sec": 79.02,
+      "end_sec": 79.06,
+      "start_time": "01:19.020",
+      "end_time": "01:19.060",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 135,
+      "text": "you",
+      "start_sec": 79.12,
+      "end_sec": 79.16,
+      "start_time": "01:19.120",
+      "end_time": "01:19.160",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999989
+    },
+    {
+      "word_index": 136,
+      "text": "close?",
+      "start_sec": 79.24,
+      "end_sec": 79.84,
+      "start_time": "01:19.240",
+      "end_time": "01:19.840",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 137,
+      "text": "Generally",
+      "start_sec": 79.94,
+      "end_sec": 80.22,
+      "start_time": "01:19.940",
+      "end_time": "01:20.220",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.998026
+    },
+    {
+      "word_index": 138,
+      "text": "around",
+      "start_sec": 80.24,
+      "end_sec": 80.46,
+      "start_time": "01:20.240",
+      "end_time": "01:20.460",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.730676
+    },
+    {
+      "word_index": 139,
+      "text": "dark.",
+      "start_sec": 80.52,
+      "end_sec": 80.92,
+      "start_time": "01:20.520",
+      "end_time": "01:20.920",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 140,
+      "text": "At",
+      "start_sec": 81.0,
+      "end_sec": 81.1,
+      "start_time": "01:21.000",
+      "end_time": "01:21.100",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 141,
+      "text": "dark.",
+      "start_sec": 81.16,
+      "end_sec": 81.64,
+      "start_time": "01:21.160",
+      "end_time": "01:21.640",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 142,
+      "text": "You",
+      "start_sec": 86.54,
+      "end_sec": 86.6,
+      "start_time": "01:26.540",
+      "end_time": "01:26.600",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.499998
+    },
+    {
+      "word_index": 143,
+      "text": "don't",
+      "start_sec": 86.62,
+      "end_sec": 86.74,
+      "start_time": "01:26.620",
+      "end_time": "01:26.740",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 144,
+      "text": "know",
+      "start_sec": 86.78,
+      "end_sec": 86.87,
+      "start_time": "01:26.780",
+      "end_time": "01:26.870",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 145,
+      "text": "what",
+      "start_sec": 86.94,
+      "end_sec": 87.06,
+      "start_time": "01:26.940",
+      "end_time": "01:27.060",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 146,
+      "text": "you're",
+      "start_sec": 87.1,
+      "end_sec": 87.22,
+      "start_time": "01:27.100",
+      "end_time": "01:27.220",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 147,
+      "text": "talking",
+      "start_sec": 87.26,
+      "end_sec": 87.55,
+      "start_time": "01:27.260",
+      "end_time": "01:27.550",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 148,
+      "text": "about,",
+      "start_sec": 87.62,
+      "end_sec": 87.79,
+      "start_time": "01:27.620",
+      "end_time": "01:27.790",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 149,
+      "text": "do",
+      "start_sec": 87.88,
+      "end_sec": 87.9,
+      "start_time": "01:27.880",
+      "end_time": "01:27.900",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 150,
+      "text": "you?",
+      "start_sec": 88.0,
+      "end_sec": 88.08,
+      "start_time": "01:28.000",
+      "end_time": "01:28.080",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 151,
+      "text": "Sir?",
+      "start_sec": 88.54,
+      "end_sec": 88.9,
+      "start_time": "01:28.540",
+      "end_time": "01:28.900",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999582
+    },
+    {
+      "word_index": 152,
+      "text": "I",
+      "start_sec": 90.78,
+      "end_sec": 91.1,
+      "start_time": "01:30.780",
+      "end_time": "01:31.100",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 153,
+      "text": "said",
+      "start_sec": 91.16,
+      "end_sec": 91.38,
+      "start_time": "01:31.160",
+      "end_time": "01:31.380",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 154,
+      "text": "you",
+      "start_sec": 92.34,
+      "end_sec": 92.4,
+      "start_time": "01:32.340",
+      "end_time": "01:32.400",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.952574
+    },
+    {
+      "word_index": 155,
+      "text": "don't",
+      "start_sec": 92.44,
+      "end_sec": 92.56,
+      "start_time": "01:32.440",
+      "end_time": "01:32.560",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999994
+    },
+    {
+      "word_index": 156,
+      "text": "know",
+      "start_sec": 92.6,
+      "end_sec": 92.74,
+      "start_time": "01:32.600",
+      "end_time": "01:32.740",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 157,
+      "text": "what",
+      "start_sec": 92.78,
+      "end_sec": 92.92,
+      "start_time": "01:32.780",
+      "end_time": "01:32.920",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 158,
+      "text": "you're",
+      "start_sec": 92.96,
+      "end_sec": 93.1,
+      "start_time": "01:32.960",
+      "end_time": "01:33.100",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 159,
+      "text": "talking",
+      "start_sec": 93.12,
+      "end_sec": 93.46,
+      "start_time": "01:33.120",
+      "end_time": "01:33.460",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 160,
+      "text": "about.",
+      "start_sec": 93.52,
+      "end_sec": 93.9,
+      "start_time": "01:33.520",
+      "end_time": "01:33.900",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 161,
+      "text": "What",
+      "start_sec": 97.04,
+      "end_sec": 97.18,
+      "start_time": "01:37.040",
+      "end_time": "01:37.180",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 162,
+      "text": "time",
+      "start_sec": 97.24,
+      "end_sec": 97.44,
+      "start_time": "01:37.240",
+      "end_time": "01:37.440",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 163,
+      "text": "do",
+      "start_sec": 97.48,
+      "end_sec": 97.56,
+      "start_time": "01:37.480",
+      "end_time": "01:37.560",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 164,
+      "text": "you",
+      "start_sec": 97.58,
+      "end_sec": 97.62,
+      "start_time": "01:37.580",
+      "end_time": "01:37.620",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 165,
+      "text": "go",
+      "start_sec": 97.7,
+      "end_sec": 97.8,
+      "start_time": "01:37.700",
+      "end_time": "01:37.800",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 166,
+      "text": "to",
+      "start_sec": 97.84,
+      "end_sec": 97.92,
+      "start_time": "01:37.840",
+      "end_time": "01:37.920",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 167,
+      "text": "bed?",
+      "start_sec": 98.0,
+      "end_sec": 98.26,
+      "start_time": "01:38.000",
+      "end_time": "01:38.260",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 168,
+      "text": "Sir?",
+      "start_sec": 98.84,
+      "end_sec": 99.24,
+      "start_time": "01:38.840",
+      "end_time": "01:39.240",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999887
+    },
+    {
+      "word_index": 169,
+      "text": "You're",
+      "start_sec": 99.74,
+      "end_sec": 99.84,
+      "start_time": "01:39.740",
+      "end_time": "01:39.840",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 170,
+      "text": "a",
+      "start_sec": 99.86,
+      "end_sec": 99.92,
+      "start_time": "01:39.860",
+      "end_time": "01:39.920",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 171,
+      "text": "bit,",
+      "start_sec": 100.0,
+      "end_sec": 100.22,
+      "start_time": "01:40.000",
+      "end_time": "01:40.220",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.92456
+    },
+    {
+      "word_index": 172,
+      "text": "uh,",
+      "start_sec": 100.28,
+      "end_sec": 100.4,
+      "start_time": "01:40.280",
+      "end_time": "01:40.400",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.99998
+    },
+    {
+      "word_index": 173,
+      "text": "fragile.",
+      "start_sec": 100.52,
+      "end_sec": 100.98,
+      "start_time": "01:40.520",
+      "end_time": "01:40.980",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.223959
+    },
+    {
+      "word_index": 174,
+      "text": "I",
+      "start_sec": 101.26,
+      "end_sec": 101.34,
+      "start_time": "01:41.260",
+      "end_time": "01:41.340",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 175,
+      "text": "said",
+      "start_sec": 101.42,
+      "end_sec": 101.54,
+      "start_time": "01:41.420",
+      "end_time": "01:41.540",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 176,
+      "text": "what",
+      "start_sec": 101.62,
+      "end_sec": 101.78,
+      "start_time": "01:41.620",
+      "end_time": "01:41.780",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.997189
+    },
+    {
+      "word_index": 177,
+      "text": "time",
+      "start_sec": 101.84,
+      "end_sec": 102.12,
+      "start_time": "01:41.840",
+      "end_time": "01:42.120",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 178,
+      "text": "do",
+      "start_sec": 102.18,
+      "end_sec": 102.26,
+      "start_time": "01:42.180",
+      "end_time": "01:42.260",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 179,
+      "text": "you",
+      "start_sec": 102.3,
+      "end_sec": 102.36,
+      "start_time": "01:42.300",
+      "end_time": "01:42.360",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 180,
+      "text": "go",
+      "start_sec": 102.4,
+      "end_sec": 102.52,
+      "start_time": "01:42.400",
+      "end_time": "01:42.520",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 181,
+      "text": "to",
+      "start_sec": 102.54,
+      "end_sec": 102.6,
+      "start_time": "01:42.540",
+      "end_time": "01:42.600",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999995
+    },
+    {
+      "word_index": 182,
+      "text": "bed?",
+      "start_sec": 102.68,
+      "end_sec": 103.02,
+      "start_time": "01:42.680",
+      "end_time": "01:43.020",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999983
+    },
+    {
+      "word_index": 183,
+      "text": "Oh,",
+      "start_sec": 105.12,
+      "end_sec": 105.3,
+      "start_time": "01:45.120",
+      "end_time": "01:45.300",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.982553
+    },
+    {
+      "word_index": 184,
+      "text": "somewhere",
+      "start_sec": 107.84,
+      "end_sec": 108.2,
+      "start_time": "01:47.840",
+      "end_time": "01:48.200",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.878376
+    },
+    {
+      "word_index": 185,
+      "text": "around",
+      "start_sec": 108.28,
+      "end_sec": 108.48,
+      "start_time": "01:48.280",
+      "end_time": "01:48.480",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 186,
+      "text": "9:30.",
+      "start_sec": 108.76,
+      "end_sec": 109.26,
+      "start_time": "01:48.760",
+      "end_time": "01:49.260",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 187,
+      "text": "I'd,",
+      "start_sec": 109.3,
+      "end_sec": 109.54,
+      "start_time": "01:49.300",
+      "end_time": "01:49.540",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.99159
+    },
+    {
+      "word_index": 188,
+      "text": "I'd",
+      "start_sec": 109.92,
+      "end_sec": 110.06,
+      "start_time": "01:49.920",
+      "end_time": "01:50.060",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.997882
+    },
+    {
+      "word_index": 189,
+      "text": "say",
+      "start_sec": 110.1,
+      "end_sec": 110.26,
+      "start_time": "01:50.100",
+      "end_time": "01:50.260",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 190,
+      "text": "around",
+      "start_sec": 110.28,
+      "end_sec": 110.46,
+      "start_time": "01:50.280",
+      "end_time": "01:50.460",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999972
+    },
+    {
+      "word_index": 191,
+      "text": "9:30.",
+      "start_sec": 110.64,
+      "end_sec": 111.1,
+      "start_time": "01:50.640",
+      "end_time": "01:51.100",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 192,
+      "text": "I",
+      "start_sec": 111.6,
+      "end_sec": 111.66,
+      "start_time": "01:51.600",
+      "end_time": "01:51.660",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 193,
+      "text": "could",
+      "start_sec": 111.74,
+      "end_sec": 111.84,
+      "start_time": "01:51.740",
+      "end_time": "01:51.840",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 194,
+      "text": "come",
+      "start_sec": 111.9,
+      "end_sec": 112.06,
+      "start_time": "01:51.900",
+      "end_time": "01:52.060",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 195,
+      "text": "back",
+      "start_sec": 112.1,
+      "end_sec": 112.2,
+      "start_time": "01:52.100",
+      "end_time": "01:52.200",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 196,
+      "text": "then.",
+      "start_sec": 112.3,
+      "end_sec": 112.54,
+      "start_time": "01:52.300",
+      "end_time": "01:52.540",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999994
+    },
+    {
+      "word_index": 197,
+      "text": "Why",
+      "start_sec": 112.96,
+      "end_sec": 113.1,
+      "start_time": "01:52.960",
+      "end_time": "01:53.100",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999993
+    },
+    {
+      "word_index": 198,
+      "text": "would",
+      "start_sec": 113.16,
+      "end_sec": 113.28,
+      "start_time": "01:53.160",
+      "end_time": "01:53.280",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 199,
+      "text": "you",
+      "start_sec": 113.36,
+      "end_sec": 113.44,
+      "start_time": "01:53.360",
+      "end_time": "01:53.440",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 200,
+      "text": "be",
+      "start_sec": 113.5,
+      "end_sec": 113.62,
+      "start_time": "01:53.500",
+      "end_time": "01:53.620",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 201,
+      "text": "coming",
+      "start_sec": 113.68,
+      "end_sec": 113.94,
+      "start_time": "01:53.680",
+      "end_time": "01:53.940",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 202,
+      "text": "back?",
+      "start_sec": 114.02,
+      "end_sec": 114.3,
+      "start_time": "01:54.020",
+      "end_time": "01:54.300",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 203,
+      "text": "We'll",
+      "start_sec": 114.38,
+      "end_sec": 114.53,
+      "start_time": "01:54.380",
+      "end_time": "01:54.530",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999678
+    },
+    {
+      "word_index": 204,
+      "text": "be",
+      "start_sec": 114.58,
+      "end_sec": 114.66,
+      "start_time": "01:54.580",
+      "end_time": "01:54.660",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 205,
+      "text": "closed.",
+      "start_sec": 114.74,
+      "end_sec": 115.26,
+      "start_time": "01:54.740",
+      "end_time": "01:55.260",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 206,
+      "text": "Yeah,",
+      "start_sec": 115.38,
+      "end_sec": 115.48,
+      "start_time": "01:55.380",
+      "end_time": "01:55.480",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999975
+    },
+    {
+      "word_index": 207,
+      "text": "you",
+      "start_sec": 115.52,
+      "end_sec": 115.56,
+      "start_time": "01:55.520",
+      "end_time": "01:55.560",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 208,
+      "text": "said",
+      "start_sec": 115.7,
+      "end_sec": 115.86,
+      "start_time": "01:55.700",
+      "end_time": "01:55.860",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 209,
+      "text": "that.",
+      "start_sec": 115.92,
+      "end_sec": 116.08,
+      "start_time": "01:55.920",
+      "end_time": "01:56.080",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 210,
+      "text": "Well,",
+      "start_sec": 118.52,
+      "end_sec": 118.66,
+      "start_time": "01:58.520",
+      "end_time": "01:58.660",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999975
+    },
+    {
+      "word_index": 211,
+      "text": "I",
+      "start_sec": 118.76,
+      "end_sec": 118.86,
+      "start_time": "01:58.760",
+      "end_time": "01:58.860",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 212,
+      "text": "got",
+      "start_sec": 118.91,
+      "end_sec": 119.02,
+      "start_time": "01:58.910",
+      "end_time": "01:59.020",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999989
+    },
+    {
+      "word_index": 213,
+      "text": "to",
+      "start_sec": 119.06,
+      "end_sec": 119.16,
+      "start_time": "01:59.060",
+      "end_time": "01:59.160",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 214,
+      "text": "close",
+      "start_sec": 119.38,
+      "end_sec": 119.72,
+      "start_time": "01:59.380",
+      "end_time": "01:59.720",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999818
+    },
+    {
+      "word_index": 215,
+      "text": "now.",
+      "start_sec": 119.76,
+      "end_sec": 120.0,
+      "start_time": "01:59.760",
+      "end_time": "02:00.000",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 216,
+      "text": "You",
+      "start_sec": 120.22,
+      "end_sec": 120.32,
+      "start_time": "02:00.220",
+      "end_time": "02:00.320",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999969
+    },
+    {
+      "word_index": 217,
+      "text": "live",
+      "start_sec": 120.38,
+      "end_sec": 120.56,
+      "start_time": "02:00.380",
+      "end_time": "02:00.560",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999995
+    },
+    {
+      "word_index": 218,
+      "text": "in",
+      "start_sec": 120.6,
+      "end_sec": 120.7,
+      "start_time": "02:00.600",
+      "end_time": "02:00.700",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999984
+    },
+    {
+      "word_index": 219,
+      "text": "that",
+      "start_sec": 120.76,
+      "end_sec": 120.9,
+      "start_time": "02:00.760",
+      "end_time": "02:00.900",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 220,
+      "text": "house",
+      "start_sec": 120.96,
+      "end_sec": 121.18,
+      "start_time": "02:00.960",
+      "end_time": "02:01.180",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 221,
+      "text": "out",
+      "start_sec": 121.24,
+      "end_sec": 121.4,
+      "start_time": "02:01.240",
+      "end_time": "02:01.400",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 222,
+      "text": "back?",
+      "start_sec": 121.46,
+      "end_sec": 121.8,
+      "start_time": "02:01.460",
+      "end_time": "02:01.800",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999977
+    },
+    {
+      "word_index": 223,
+      "text": "Yes,",
+      "start_sec": 124.0,
+      "end_sec": 124.27,
+      "start_time": "02:04.000",
+      "end_time": "02:04.270",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 224,
+      "text": "I",
+      "start_sec": 124.44,
+      "end_sec": 124.5,
+      "start_time": "02:04.440",
+      "end_time": "02:04.500",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 225,
+      "text": "do.",
+      "start_sec": 124.56,
+      "end_sec": 124.8,
+      "start_time": "02:04.560",
+      "end_time": "02:04.800",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 226,
+      "text": "You",
+      "start_sec": 125.86,
+      "end_sec": 125.92,
+      "start_time": "02:05.860",
+      "end_time": "02:05.920",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999921
+    },
+    {
+      "word_index": 227,
+      "text": "lived",
+      "start_sec": 125.96,
+      "end_sec": 126.16,
+      "start_time": "02:05.960",
+      "end_time": "02:06.160",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999978
+    },
+    {
+      "word_index": 228,
+      "text": "here",
+      "start_sec": 126.2,
+      "end_sec": 126.38,
+      "start_time": "02:06.200",
+      "end_time": "02:06.380",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 229,
+      "text": "all",
+      "start_sec": 126.39,
+      "end_sec": 126.52,
+      "start_time": "02:06.390",
+      "end_time": "02:06.520",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 230,
+      "text": "your",
+      "start_sec": 126.58,
+      "end_sec": 126.68,
+      "start_time": "02:06.580",
+      "end_time": "02:06.680",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 231,
+      "text": "life?",
+      "start_sec": 126.72,
+      "end_sec": 126.98,
+      "start_time": "02:06.720",
+      "end_time": "02:06.980",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 232,
+      "text": "This",
+      "start_sec": 128.72,
+      "end_sec": 129.009,
+      "start_time": "02:08.720",
+      "end_time": "02:09.009",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 233,
+      "text": "was",
+      "start_sec": 129.06,
+      "end_sec": 129.18,
+      "start_time": "02:09.060",
+      "end_time": "02:09.180",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.998499
+    },
+    {
+      "word_index": 234,
+      "text": "my",
+      "start_sec": 129.24,
+      "end_sec": 129.44,
+      "start_time": "02:09.240",
+      "end_time": "02:09.440",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 235,
+      "text": "wife's",
+      "start_sec": 129.5,
+      "end_sec": 129.9,
+      "start_time": "02:09.500",
+      "end_time": "02:09.900",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 236,
+      "text": "father's",
+      "start_sec": 130.1,
+      "end_sec": 130.6,
+      "start_time": "02:10.100",
+      "end_time": "02:10.600",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999993
+    },
+    {
+      "word_index": 237,
+      "text": "place",
+      "start_sec": 130.86,
+      "end_sec": 131.22,
+      "start_time": "02:10.860",
+      "end_time": "02:11.220",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 238,
+      "text": "o-",
+      "start_sec": 131.64,
+      "end_sec": 131.65,
+      "start_time": "02:11.640",
+      "end_time": "02:11.650",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.688309
+    },
+    {
+      "word_index": 239,
+      "text": "originally.",
+      "start_sec": 131.74,
+      "end_sec": 132.36,
+      "start_time": "02:11.740",
+      "end_time": "02:12.360",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999503
+    },
+    {
+      "word_index": 240,
+      "text": "You",
+      "start_sec": 135.3,
+      "end_sec": 135.34,
+      "start_time": "02:15.300",
+      "end_time": "02:15.340",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 241,
+      "text": "married",
+      "start_sec": 135.44,
+      "end_sec": 135.7,
+      "start_time": "02:15.440",
+      "end_time": "02:15.700",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999992
+    },
+    {
+      "word_index": 242,
+      "text": "into",
+      "start_sec": 135.74,
+      "end_sec": 135.94,
+      "start_time": "02:15.740",
+      "end_time": "02:15.940",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 243,
+      "text": "it.",
+      "start_sec": 136.0,
+      "end_sec": 136.12,
+      "start_time": "02:16.000",
+      "end_time": "02:16.120",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999837
+    },
+    {
+      "word_index": 244,
+      "text": "We",
+      "start_sec": 137.26,
+      "end_sec": 137.38,
+      "start_time": "02:17.260",
+      "end_time": "02:17.380",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 245,
+      "text": "lived",
+      "start_sec": 137.44,
+      "end_sec": 137.64,
+      "start_time": "02:17.440",
+      "end_time": "02:17.640",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 246,
+      "text": "in",
+      "start_sec": 137.7,
+      "end_sec": 137.82,
+      "start_time": "02:17.700",
+      "end_time": "02:17.820",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 247,
+      "text": "Temple,",
+      "start_sec": 137.86,
+      "end_sec": 138.22,
+      "start_time": "02:17.860",
+      "end_time": "02:18.220",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999972
+    },
+    {
+      "word_index": 248,
+      "text": "Texas",
+      "start_sec": 138.32,
+      "end_sec": 138.88,
+      "start_time": "02:18.320",
+      "end_time": "02:18.880",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999857
+    },
+    {
+      "word_index": 249,
+      "text": "for",
+      "start_sec": 138.92,
+      "end_sec": 139.04,
+      "start_time": "02:18.920",
+      "end_time": "02:19.040",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999569
+    },
+    {
+      "word_index": 250,
+      "text": "many",
+      "start_sec": 139.12,
+      "end_sec": 139.34,
+      "start_time": "02:19.120",
+      "end_time": "02:19.340",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 251,
+      "text": "years.",
+      "start_sec": 139.4,
+      "end_sec": 139.8,
+      "start_time": "02:19.400",
+      "end_time": "02:19.800",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999993
+    },
+    {
+      "word_index": 252,
+      "text": "Raised",
+      "start_sec": 141.44,
+      "end_sec": 141.68,
+      "start_time": "02:21.440",
+      "end_time": "02:21.680",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.99945
+    },
+    {
+      "word_index": 253,
+      "text": "a",
+      "start_sec": 141.74,
+      "end_sec": 141.8,
+      "start_time": "02:21.740",
+      "end_time": "02:21.800",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 254,
+      "text": "family",
+      "start_sec": 141.9,
+      "end_sec": 142.28,
+      "start_time": "02:21.900",
+      "end_time": "02:22.280",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 255,
+      "text": "there",
+      "start_sec": 142.36,
+      "end_sec": 142.56,
+      "start_time": "02:22.360",
+      "end_time": "02:22.560",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 256,
+      "text": "in",
+      "start_sec": 143.7,
+      "end_sec": 143.86,
+      "start_time": "02:23.700",
+      "end_time": "02:23.860",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 257,
+      "text": "Temple.",
+      "start_sec": 143.92,
+      "end_sec": 144.3,
+      "start_time": "02:23.920",
+      "end_time": "02:24.300",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999994
+    },
+    {
+      "word_index": 258,
+      "text": "We",
+      "start_sec": 144.9,
+      "end_sec": 145.0,
+      "start_time": "02:24.900",
+      "end_time": "02:25.000",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 259,
+      "text": "come",
+      "start_sec": 145.1,
+      "end_sec": 145.24,
+      "start_time": "02:25.100",
+      "end_time": "02:25.240",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999511
+    },
+    {
+      "word_index": 260,
+      "text": "out",
+      "start_sec": 145.3,
+      "end_sec": 145.44,
+      "start_time": "02:25.300",
+      "end_time": "02:25.440",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 261,
+      "text": "here",
+      "start_sec": 145.48,
+      "end_sec": 145.6,
+      "start_time": "02:25.480",
+      "end_time": "02:25.600",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 262,
+      "text": "about",
+      "start_sec": 145.66,
+      "end_sec": 145.87,
+      "start_time": "02:25.660",
+      "end_time": "02:25.870",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 263,
+      "text": "four",
+      "start_sec": 145.98,
+      "end_sec": 146.18,
+      "start_time": "02:25.980",
+      "end_time": "02:26.180",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 264,
+      "text": "years",
+      "start_sec": 146.22,
+      "end_sec": 146.44,
+      "start_time": "02:26.220",
+      "end_time": "02:26.440",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 265,
+      "text": "ago.",
+      "start_sec": 146.5,
+      "end_sec": 146.88,
+      "start_time": "02:26.500",
+      "end_time": "02:26.880",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 266,
+      "text": "You",
+      "start_sec": 147.52,
+      "end_sec": 147.56,
+      "start_time": "02:27.520",
+      "end_time": "02:27.560",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999994
+    },
+    {
+      "word_index": 267,
+      "text": "married",
+      "start_sec": 147.7,
+      "end_sec": 148.0,
+      "start_time": "02:27.700",
+      "end_time": "02:28.000",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 268,
+      "text": "into",
+      "start_sec": 148.04,
+      "end_sec": 148.24,
+      "start_time": "02:28.040",
+      "end_time": "02:28.240",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 269,
+      "text": "it.",
+      "start_sec": 148.34,
+      "end_sec": 148.48,
+      "start_time": "02:28.340",
+      "end_time": "02:28.480",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 270,
+      "text": "If",
+      "start_sec": 149.45,
+      "end_sec": 149.45,
+      "start_time": "02:29.450",
+      "end_time": "02:29.450",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.996822
+    },
+    {
+      "word_index": 271,
+      "text": "that's",
+      "start_sec": 149.5,
+      "end_sec": 149.7,
+      "start_time": "02:29.500",
+      "end_time": "02:29.700",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 272,
+      "text": "the",
+      "start_sec": 149.72,
+      "end_sec": 149.78,
+      "start_time": "02:29.720",
+      "end_time": "02:29.780",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 273,
+      "text": "way",
+      "start_sec": 149.82,
+      "end_sec": 149.98,
+      "start_time": "02:29.820",
+      "end_time": "02:29.980",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 274,
+      "text": "you",
+      "start_sec": 150.02,
+      "end_sec": 150.1,
+      "start_time": "02:30.020",
+      "end_time": "02:30.100",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 275,
+      "text": "wanna",
+      "start_sec": 150.16,
+      "end_sec": 150.38,
+      "start_time": "02:30.160",
+      "end_time": "02:30.380",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.992148
+    },
+    {
+      "word_index": 276,
+      "text": "put",
+      "start_sec": 150.42,
+      "end_sec": 150.62,
+      "start_time": "02:30.420",
+      "end_time": "02:30.620",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 277,
+      "text": "it.",
+      "start_sec": 150.66,
+      "end_sec": 150.74,
+      "start_time": "02:30.660",
+      "end_time": "02:30.740",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 278,
+      "text": "Well,",
+      "start_sec": 151.06,
+      "end_sec": 151.18,
+      "start_time": "02:31.060",
+      "end_time": "02:31.180",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.995627
+    },
+    {
+      "word_index": 279,
+      "text": "I",
+      "start_sec": 151.24,
+      "end_sec": 151.3,
+      "start_time": "02:31.240",
+      "end_time": "02:31.300",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.998073
+    },
+    {
+      "word_index": 280,
+      "text": "don't",
+      "start_sec": 151.58,
+      "end_sec": 151.74,
+      "start_time": "02:31.580",
+      "end_time": "02:31.740",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999917
+    },
+    {
+      "word_index": 281,
+      "text": "have",
+      "start_sec": 151.78,
+      "end_sec": 151.94,
+      "start_time": "02:31.780",
+      "end_time": "02:31.940",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 282,
+      "text": "some",
+      "start_sec": 152.0,
+      "end_sec": 152.16,
+      "start_time": "02:32.000",
+      "end_time": "02:32.160",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999984
+    },
+    {
+      "word_index": 283,
+      "text": "way",
+      "start_sec": 152.2,
+      "end_sec": 152.29,
+      "start_time": "02:32.200",
+      "end_time": "02:32.290",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999994
+    },
+    {
+      "word_index": 284,
+      "text": "to",
+      "start_sec": 152.32,
+      "end_sec": 152.48,
+      "start_time": "02:32.320",
+      "end_time": "02:32.480",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 285,
+      "text": "put",
+      "start_sec": 152.52,
+      "end_sec": 152.72,
+      "start_time": "02:32.520",
+      "end_time": "02:32.720",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 286,
+      "text": "it.",
+      "start_sec": 152.76,
+      "end_sec": 152.88,
+      "start_time": "02:32.760",
+      "end_time": "02:32.880",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 287,
+      "text": "That's",
+      "start_sec": 154.08,
+      "end_sec": 154.29,
+      "start_time": "02:34.080",
+      "end_time": "02:34.290",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999995
+    },
+    {
+      "word_index": 288,
+      "text": "the",
+      "start_sec": 154.32,
+      "end_sec": 154.42,
+      "start_time": "02:34.320",
+      "end_time": "02:34.420",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 289,
+      "text": "way",
+      "start_sec": 154.46,
+      "end_sec": 154.54,
+      "start_time": "02:34.460",
+      "end_time": "02:34.540",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 290,
+      "text": "it",
+      "start_sec": 154.58,
+      "end_sec": 154.64,
+      "start_time": "02:34.580",
+      "end_time": "02:34.640",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 291,
+      "text": "is.",
+      "start_sec": 154.74,
+      "end_sec": 154.92,
+      "start_time": "02:34.740",
+      "end_time": "02:34.920",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 292,
+      "text": "What's",
+      "start_sec": 163.38,
+      "end_sec": 163.58,
+      "start_time": "02:43.380",
+      "end_time": "02:43.580",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999907
+    },
+    {
+      "word_index": 293,
+      "text": "the",
+      "start_sec": 163.62,
+      "end_sec": 163.68,
+      "start_time": "02:43.620",
+      "end_time": "02:43.680",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 294,
+      "text": "most",
+      "start_sec": 163.76,
+      "end_sec": 164.08,
+      "start_time": "02:43.760",
+      "end_time": "02:44.080",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 295,
+      "text": "you",
+      "start_sec": 164.28,
+      "end_sec": 164.34,
+      "start_time": "02:44.280",
+      "end_time": "02:44.340",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 296,
+      "text": "ever",
+      "start_sec": 164.38,
+      "end_sec": 164.58,
+      "start_time": "02:44.380",
+      "end_time": "02:44.580",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 297,
+      "text": "lost",
+      "start_sec": 164.64,
+      "end_sec": 164.92,
+      "start_time": "02:44.640",
+      "end_time": "02:44.920",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 298,
+      "text": "on",
+      "start_sec": 164.94,
+      "end_sec": 165.04,
+      "start_time": "02:44.940",
+      "end_time": "02:45.040",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999989
+    },
+    {
+      "word_index": 299,
+      "text": "a",
+      "start_sec": 165.06,
+      "end_sec": 165.12,
+      "start_time": "02:45.060",
+      "end_time": "02:45.120",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 300,
+      "text": "coin",
+      "start_sec": 165.16,
+      "end_sec": 165.4,
+      "start_time": "02:45.160",
+      "end_time": "02:45.400",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999976
+    },
+    {
+      "word_index": 301,
+      "text": "toss?",
+      "start_sec": 165.44,
+      "end_sec": 165.72,
+      "start_time": "02:45.440",
+      "end_time": "02:45.720",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 302,
+      "text": "Sir?",
+      "start_sec": 167.14,
+      "end_sec": 167.42,
+      "start_time": "02:47.140",
+      "end_time": "02:47.420",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.99985
+    },
+    {
+      "word_index": 303,
+      "text": "The",
+      "start_sec": 167.8,
+      "end_sec": 167.86,
+      "start_time": "02:47.800",
+      "end_time": "02:47.860",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 304,
+      "text": "most",
+      "start_sec": 167.92,
+      "end_sec": 168.38,
+      "start_time": "02:47.920",
+      "end_time": "02:48.380",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 305,
+      "text": "you",
+      "start_sec": 168.74,
+      "end_sec": 168.88,
+      "start_time": "02:48.740",
+      "end_time": "02:48.880",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 306,
+      "text": "ever",
+      "start_sec": 168.92,
+      "end_sec": 169.16,
+      "start_time": "02:48.920",
+      "end_time": "02:49.160",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 307,
+      "text": "lost",
+      "start_sec": 169.2,
+      "end_sec": 169.54,
+      "start_time": "02:49.200",
+      "end_time": "02:49.540",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 308,
+      "text": "on",
+      "start_sec": 169.84,
+      "end_sec": 169.94,
+      "start_time": "02:49.840",
+      "end_time": "02:49.940",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999889
+    },
+    {
+      "word_index": 309,
+      "text": "a",
+      "start_sec": 169.96,
+      "end_sec": 170.04,
+      "start_time": "02:49.960",
+      "end_time": "02:50.040",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 310,
+      "text": "coin",
+      "start_sec": 170.06,
+      "end_sec": 170.38,
+      "start_time": "02:50.060",
+      "end_time": "02:50.380",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999992
+    },
+    {
+      "word_index": 311,
+      "text": "toss.",
+      "start_sec": 170.44,
+      "end_sec": 170.78,
+      "start_time": "02:50.440",
+      "end_time": "02:50.780",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.977685
+    },
+    {
+      "word_index": 312,
+      "text": "I",
+      "start_sec": 172.92,
+      "end_sec": 173.22,
+      "start_time": "02:52.920",
+      "end_time": "02:53.220",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 313,
+      "text": "don't",
+      "start_sec": 173.28,
+      "end_sec": 173.5,
+      "start_time": "02:53.280",
+      "end_time": "02:53.500",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 314,
+      "text": "know.",
+      "start_sec": 173.54,
+      "end_sec": 173.92,
+      "start_time": "02:53.540",
+      "end_time": "02:53.920",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 315,
+      "text": "I",
+      "start_sec": 174.02,
+      "end_sec": 174.08,
+      "start_time": "02:54.020",
+      "end_time": "02:54.080",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 316,
+      "text": "couldn't",
+      "start_sec": 174.14,
+      "end_sec": 174.36,
+      "start_time": "02:54.140",
+      "end_time": "02:54.360",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 317,
+      "text": "say.",
+      "start_sec": 174.42,
+      "end_sec": 174.84,
+      "start_time": "02:54.420",
+      "end_time": "02:54.840",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 318,
+      "text": "Call",
+      "start_sec": 178.23,
+      "end_sec": 178.36,
+      "start_time": "02:58.230",
+      "end_time": "02:58.360",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999974
+    },
+    {
+      "word_index": 319,
+      "text": "it.",
+      "start_sec": 178.4,
+      "end_sec": 178.6,
+      "start_time": "02:58.400",
+      "end_time": "02:58.600",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 320,
+      "text": "Call",
+      "start_sec": 179.46,
+      "end_sec": 179.68,
+      "start_time": "02:59.460",
+      "end_time": "02:59.680",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.973891
+    },
+    {
+      "word_index": 321,
+      "text": "it.",
+      "start_sec": 179.72,
+      "end_sec": 179.88,
+      "start_time": "02:59.720",
+      "end_time": "02:59.880",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999065
+    },
+    {
+      "word_index": 322,
+      "text": "Yes.",
+      "start_sec": 179.92,
+      "end_sec": 180.14,
+      "start_time": "02:59.920",
+      "end_time": "03:00.140",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999995
+    },
+    {
+      "word_index": 323,
+      "text": "For",
+      "start_sec": 181.26,
+      "end_sec": 181.38,
+      "start_time": "03:01.260",
+      "end_time": "03:01.380",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.880775
+    },
+    {
+      "word_index": 324,
+      "text": "what?",
+      "start_sec": 181.48,
+      "end_sec": 181.9,
+      "start_time": "03:01.480",
+      "end_time": "03:01.900",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 325,
+      "text": "Just",
+      "start_sec": 182.28,
+      "end_sec": 182.44,
+      "start_time": "03:02.280",
+      "end_time": "03:02.440",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 326,
+      "text": "call",
+      "start_sec": 182.48,
+      "end_sec": 182.74,
+      "start_time": "03:02.480",
+      "end_time": "03:02.740",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 327,
+      "text": "it.",
+      "start_sec": 182.75,
+      "end_sec": 182.84,
+      "start_time": "03:02.750",
+      "end_time": "03:02.840",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 328,
+      "text": "Well,",
+      "start_sec": 185.9,
+      "end_sec": 186.32,
+      "start_time": "03:05.900",
+      "end_time": "03:06.320",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 329,
+      "text": "we",
+      "start_sec": 186.9,
+      "end_sec": 187.0,
+      "start_time": "03:06.900",
+      "end_time": "03:07.000",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999738
+    },
+    {
+      "word_index": 330,
+      "text": "need",
+      "start_sec": 187.04,
+      "end_sec": 187.2,
+      "start_time": "03:07.040",
+      "end_time": "03:07.200",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 331,
+      "text": "to",
+      "start_sec": 187.24,
+      "end_sec": 187.32,
+      "start_time": "03:07.240",
+      "end_time": "03:07.320",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 332,
+      "text": "know",
+      "start_sec": 187.36,
+      "end_sec": 187.53,
+      "start_time": "03:07.360",
+      "end_time": "03:07.530",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 333,
+      "text": "what",
+      "start_sec": 187.9,
+      "end_sec": 188.08,
+      "start_time": "03:07.900",
+      "end_time": "03:08.080",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999975
+    },
+    {
+      "word_index": 334,
+      "text": "we're",
+      "start_sec": 188.16,
+      "end_sec": 188.36,
+      "start_time": "03:08.160",
+      "end_time": "03:08.360",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 335,
+      "text": "calling",
+      "start_sec": 188.44,
+      "end_sec": 188.8,
+      "start_time": "03:08.440",
+      "end_time": "03:08.800",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 336,
+      "text": "it",
+      "start_sec": 188.86,
+      "end_sec": 188.98,
+      "start_time": "03:08.860",
+      "end_time": "03:08.980",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 337,
+      "text": "for",
+      "start_sec": 189.02,
+      "end_sec": 189.28,
+      "start_time": "03:09.020",
+      "end_time": "03:09.280",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 338,
+      "text": "here.",
+      "start_sec": 189.32,
+      "end_sec": 189.58,
+      "start_time": "03:09.320",
+      "end_time": "03:09.580",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 339,
+      "text": "You",
+      "start_sec": 189.74,
+      "end_sec": 189.8,
+      "start_time": "03:09.740",
+      "end_time": "03:09.800",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 340,
+      "text": "need",
+      "start_sec": 189.86,
+      "end_sec": 190.02,
+      "start_time": "03:09.860",
+      "end_time": "03:10.020",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 341,
+      "text": "to",
+      "start_sec": 190.06,
+      "end_sec": 190.14,
+      "start_time": "03:10.060",
+      "end_time": "03:10.140",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 342,
+      "text": "call",
+      "start_sec": 190.18,
+      "end_sec": 190.36,
+      "start_time": "03:10.180",
+      "end_time": "03:10.360",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 343,
+      "text": "it.",
+      "start_sec": 190.42,
+      "end_sec": 190.56,
+      "start_time": "03:10.420",
+      "end_time": "03:10.560",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 344,
+      "text": "I",
+      "start_sec": 191.36,
+      "end_sec": 191.42,
+      "start_time": "03:11.360",
+      "end_time": "03:11.420",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 345,
+      "text": "can't",
+      "start_sec": 191.48,
+      "end_sec": 191.7,
+      "start_time": "03:11.480",
+      "end_time": "03:11.700",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 346,
+      "text": "call",
+      "start_sec": 191.76,
+      "end_sec": 191.88,
+      "start_time": "03:11.760",
+      "end_time": "03:11.880",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 347,
+      "text": "it",
+      "start_sec": 191.94,
+      "end_sec": 192.0,
+      "start_time": "03:11.940",
+      "end_time": "03:12.000",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999987
+    },
+    {
+      "word_index": 348,
+      "text": "for",
+      "start_sec": 192.06,
+      "end_sec": 192.2,
+      "start_time": "03:12.060",
+      "end_time": "03:12.200",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 349,
+      "text": "you.",
+      "start_sec": 192.24,
+      "end_sec": 192.38,
+      "start_time": "03:12.240",
+      "end_time": "03:12.380",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 350,
+      "text": "Well,",
+      "start_sec": 193.2,
+      "end_sec": 193.3,
+      "start_time": "03:13.200",
+      "end_time": "03:13.300",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.968175
+    },
+    {
+      "word_index": 351,
+      "text": "it",
+      "start_sec": 193.4,
+      "end_sec": 193.47,
+      "start_time": "03:13.400",
+      "end_time": "03:13.470",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 352,
+      "text": "wouldn't",
+      "start_sec": 193.54,
+      "end_sec": 193.74,
+      "start_time": "03:13.540",
+      "end_time": "03:13.740",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999989
+    },
+    {
+      "word_index": 353,
+      "text": "be",
+      "start_sec": 193.78,
+      "end_sec": 193.84,
+      "start_time": "03:13.780",
+      "end_time": "03:13.840",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 354,
+      "text": "fair.",
+      "start_sec": 193.94,
+      "end_sec": 194.28,
+      "start_time": "03:13.940",
+      "end_time": "03:14.280",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999992
+    },
+    {
+      "word_index": 355,
+      "text": "I",
+      "start_sec": 195.12,
+      "end_sec": 195.16,
+      "start_time": "03:15.120",
+      "end_time": "03:15.160",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 356,
+      "text": "didn't",
+      "start_sec": 195.24,
+      "end_sec": 195.46,
+      "start_time": "03:15.240",
+      "end_time": "03:15.460",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 357,
+      "text": "put",
+      "start_sec": 195.48,
+      "end_sec": 195.66,
+      "start_time": "03:15.480",
+      "end_time": "03:15.660",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999995
+    },
+    {
+      "word_index": 358,
+      "text": "nothing",
+      "start_sec": 195.72,
+      "end_sec": 196.06,
+      "start_time": "03:15.720",
+      "end_time": "03:16.060",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999994
+    },
+    {
+      "word_index": 359,
+      "text": "up.",
+      "start_sec": 196.18,
+      "end_sec": 196.36,
+      "start_time": "03:16.180",
+      "end_time": "03:16.360",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 360,
+      "text": "Yes,",
+      "start_sec": 196.5,
+      "end_sec": 196.82,
+      "start_time": "03:16.500",
+      "end_time": "03:16.820",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 361,
+      "text": "you",
+      "start_sec": 197.06,
+      "end_sec": 197.12,
+      "start_time": "03:17.060",
+      "end_time": "03:17.120",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999982
+    },
+    {
+      "word_index": 362,
+      "text": "did.",
+      "start_sec": 197.22,
+      "end_sec": 197.6,
+      "start_time": "03:17.220",
+      "end_time": "03:17.600",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 363,
+      "text": "You've",
+      "start_sec": 198.32,
+      "end_sec": 198.48,
+      "start_time": "03:18.320",
+      "end_time": "03:18.480",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 364,
+      "text": "been",
+      "start_sec": 198.5,
+      "end_sec": 198.64,
+      "start_time": "03:18.500",
+      "end_time": "03:18.640",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 365,
+      "text": "putting",
+      "start_sec": 198.78,
+      "end_sec": 199.02,
+      "start_time": "03:18.780",
+      "end_time": "03:19.020",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 366,
+      "text": "it",
+      "start_sec": 199.04,
+      "end_sec": 199.12,
+      "start_time": "03:19.040",
+      "end_time": "03:19.120",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 367,
+      "text": "up",
+      "start_sec": 199.18,
+      "end_sec": 199.3,
+      "start_time": "03:19.180",
+      "end_time": "03:19.300",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 368,
+      "text": "your",
+      "start_sec": 199.32,
+      "end_sec": 199.44,
+      "start_time": "03:19.320",
+      "end_time": "03:19.440",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 369,
+      "text": "whole",
+      "start_sec": 199.48,
+      "end_sec": 199.62,
+      "start_time": "03:19.480",
+      "end_time": "03:19.620",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 370,
+      "text": "life.",
+      "start_sec": 199.68,
+      "end_sec": 199.88,
+      "start_time": "03:19.680",
+      "end_time": "03:19.880",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999735
+    },
+    {
+      "word_index": 371,
+      "text": "You",
+      "start_sec": 199.96,
+      "end_sec": 200.02,
+      "start_time": "03:19.960",
+      "end_time": "03:20.020",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 372,
+      "text": "just",
+      "start_sec": 200.1,
+      "end_sec": 200.28,
+      "start_time": "03:20.100",
+      "end_time": "03:20.280",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 373,
+      "text": "didn't",
+      "start_sec": 200.34,
+      "end_sec": 200.56,
+      "start_time": "03:20.340",
+      "end_time": "03:20.560",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 374,
+      "text": "know",
+      "start_sec": 200.58,
+      "end_sec": 200.72,
+      "start_time": "03:20.580",
+      "end_time": "03:20.720",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999996
+    },
+    {
+      "word_index": 375,
+      "text": "it.",
+      "start_sec": 200.78,
+      "end_sec": 200.9,
+      "start_time": "03:20.780",
+      "end_time": "03:20.900",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 376,
+      "text": "You",
+      "start_sec": 202.58,
+      "end_sec": 202.64,
+      "start_time": "03:22.580",
+      "end_time": "03:22.640",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999891
+    },
+    {
+      "word_index": 377,
+      "text": "know",
+      "start_sec": 202.68,
+      "end_sec": 202.8,
+      "start_time": "03:22.680",
+      "end_time": "03:22.800",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 378,
+      "text": "what",
+      "start_sec": 202.86,
+      "end_sec": 202.98,
+      "start_time": "03:22.860",
+      "end_time": "03:22.980",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999996
+    },
+    {
+      "word_index": 379,
+      "text": "date",
+      "start_sec": 203.08,
+      "end_sec": 203.24,
+      "start_time": "03:23.080",
+      "end_time": "03:23.240",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999982
+    },
+    {
+      "word_index": 380,
+      "text": "is",
+      "start_sec": 203.28,
+      "end_sec": 203.38,
+      "start_time": "03:23.280",
+      "end_time": "03:23.380",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 381,
+      "text": "on",
+      "start_sec": 203.44,
+      "end_sec": 203.54,
+      "start_time": "03:23.440",
+      "end_time": "03:23.540",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 382,
+      "text": "this",
+      "start_sec": 203.58,
+      "end_sec": 203.68,
+      "start_time": "03:23.580",
+      "end_time": "03:23.680",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 383,
+      "text": "coin?",
+      "start_sec": 203.76,
+      "end_sec": 204.1,
+      "start_time": "03:23.760",
+      "end_time": "03:24.100",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999996
+    },
+    {
+      "word_index": 384,
+      "text": "No.",
+      "start_sec": 204.88,
+      "end_sec": 205.08,
+      "start_time": "03:24.880",
+      "end_time": "03:25.080",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 385,
+      "text": "1958.",
+      "start_sec": 205.42,
+      "end_sec": 206.52,
+      "start_time": "03:25.420",
+      "end_time": "03:26.520",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 386,
+      "text": "It's",
+      "start_sec": 207.32,
+      "end_sec": 207.42,
+      "start_time": "03:27.320",
+      "end_time": "03:27.420",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999984
+    },
+    {
+      "word_index": 387,
+      "text": "been",
+      "start_sec": 207.46,
+      "end_sec": 207.6,
+      "start_time": "03:27.460",
+      "end_time": "03:27.600",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 388,
+      "text": "traveling",
+      "start_sec": 207.66,
+      "end_sec": 208.12,
+      "start_time": "03:27.660",
+      "end_time": "03:28.120",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.99956
+    },
+    {
+      "word_index": 389,
+      "text": "22",
+      "start_sec": 208.26,
+      "end_sec": 208.54,
+      "start_time": "03:28.260",
+      "end_time": "03:28.540",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 390,
+      "text": "years",
+      "start_sec": 208.6,
+      "end_sec": 208.9,
+      "start_time": "03:28.600",
+      "end_time": "03:28.900",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 391,
+      "text": "to",
+      "start_sec": 208.92,
+      "end_sec": 209.02,
+      "start_time": "03:28.920",
+      "end_time": "03:29.020",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 392,
+      "text": "get",
+      "start_sec": 209.04,
+      "end_sec": 209.18,
+      "start_time": "03:29.040",
+      "end_time": "03:29.180",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 393,
+      "text": "here,",
+      "start_sec": 209.22,
+      "end_sec": 209.44,
+      "start_time": "03:29.220",
+      "end_time": "03:29.440",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 394,
+      "text": "and",
+      "start_sec": 210.02,
+      "end_sec": 210.16,
+      "start_time": "03:30.020",
+      "end_time": "03:30.160",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 395,
+      "text": "now",
+      "start_sec": 210.22,
+      "end_sec": 210.4,
+      "start_time": "03:30.220",
+      "end_time": "03:30.400",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 396,
+      "text": "it's",
+      "start_sec": 210.48,
+      "end_sec": 210.7,
+      "start_time": "03:30.480",
+      "end_time": "03:30.700",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 397,
+      "text": "here,",
+      "start_sec": 210.78,
+      "end_sec": 211.1,
+      "start_time": "03:30.780",
+      "end_time": "03:31.100",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999505
+    },
+    {
+      "word_index": 398,
+      "text": "and",
+      "start_sec": 211.92,
+      "end_sec": 212.03,
+      "start_time": "03:31.920",
+      "end_time": "03:32.030",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 399,
+      "text": "it's",
+      "start_sec": 212.06,
+      "end_sec": 212.17,
+      "start_time": "03:32.060",
+      "end_time": "03:32.170",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 400,
+      "text": "either",
+      "start_sec": 212.2,
+      "end_sec": 212.42,
+      "start_time": "03:32.200",
+      "end_time": "03:32.420",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999996
+    },
+    {
+      "word_index": 401,
+      "text": "heads",
+      "start_sec": 212.48,
+      "end_sec": 212.75,
+      "start_time": "03:32.480",
+      "end_time": "03:32.750",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999983
+    },
+    {
+      "word_index": 402,
+      "text": "or",
+      "start_sec": 212.8,
+      "end_sec": 212.89,
+      "start_time": "03:32.800",
+      "end_time": "03:32.890",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 403,
+      "text": "tails,",
+      "start_sec": 213.0,
+      "end_sec": 213.44,
+      "start_time": "03:33.000",
+      "end_time": "03:33.440",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999847
+    },
+    {
+      "word_index": 404,
+      "text": "and",
+      "start_sec": 214.72,
+      "end_sec": 214.82,
+      "start_time": "03:34.720",
+      "end_time": "03:34.820",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 405,
+      "text": "you",
+      "start_sec": 214.86,
+      "end_sec": 214.94,
+      "start_time": "03:34.860",
+      "end_time": "03:34.940",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 406,
+      "text": "have",
+      "start_sec": 215.0,
+      "end_sec": 215.1,
+      "start_time": "03:35.000",
+      "end_time": "03:35.100",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 407,
+      "text": "to",
+      "start_sec": 215.14,
+      "end_sec": 215.22,
+      "start_time": "03:35.140",
+      "end_time": "03:35.220",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999286
+    },
+    {
+      "word_index": 408,
+      "text": "say",
+      "start_sec": 215.28,
+      "end_sec": 215.48,
+      "start_time": "03:35.280",
+      "end_time": "03:35.480",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999969
+    },
+    {
+      "word_index": 409,
+      "text": "call",
+      "start_sec": 215.54,
+      "end_sec": 215.68,
+      "start_time": "03:35.540",
+      "end_time": "03:35.680",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.844985
+    },
+    {
+      "word_index": 410,
+      "text": "it.",
+      "start_sec": 215.72,
+      "end_sec": 215.94,
+      "start_time": "03:35.720",
+      "end_time": "03:35.940",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 411,
+      "text": "Look,",
+      "start_sec": 216.7,
+      "end_sec": 216.96,
+      "start_time": "03:36.700",
+      "end_time": "03:36.960",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.987234
+    },
+    {
+      "word_index": 412,
+      "text": "I",
+      "start_sec": 217.36,
+      "end_sec": 217.42,
+      "start_time": "03:37.360",
+      "end_time": "03:37.420",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 413,
+      "text": "n-",
+      "start_sec": 217.98,
+      "end_sec": 217.99,
+      "start_time": "03:37.980",
+      "end_time": "03:37.990",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999994
+    },
+    {
+      "word_index": 414,
+      "text": "need",
+      "start_sec": 217.99,
+      "end_sec": 218.14,
+      "start_time": "03:37.990",
+      "end_time": "03:38.140",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999968
+    },
+    {
+      "word_index": 415,
+      "text": "to",
+      "start_sec": 218.18,
+      "end_sec": 218.26,
+      "start_time": "03:38.180",
+      "end_time": "03:38.260",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 416,
+      "text": "know",
+      "start_sec": 218.3,
+      "end_sec": 218.47,
+      "start_time": "03:38.300",
+      "end_time": "03:38.470",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 417,
+      "text": "what",
+      "start_sec": 218.5,
+      "end_sec": 218.62,
+      "start_time": "03:38.500",
+      "end_time": "03:38.620",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 418,
+      "text": "I",
+      "start_sec": 218.7,
+      "end_sec": 218.76,
+      "start_time": "03:38.700",
+      "end_time": "03:38.760",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 419,
+      "text": "stand",
+      "start_sec": 218.86,
+      "end_sec": 219.08,
+      "start_time": "03:38.860",
+      "end_time": "03:39.080",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 420,
+      "text": "to",
+      "start_sec": 219.12,
+      "end_sec": 219.22,
+      "start_time": "03:39.120",
+      "end_time": "03:39.220",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 421,
+      "text": "win.",
+      "start_sec": 219.28,
+      "end_sec": 219.62,
+      "start_time": "03:39.280",
+      "end_time": "03:39.620",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 422,
+      "text": "Everything.",
+      "start_sec": 219.76,
+      "end_sec": 220.299,
+      "start_time": "03:39.760",
+      "end_time": "03:40.299",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.99999
+    },
+    {
+      "word_index": 423,
+      "text": "How's",
+      "start_sec": 221.8,
+      "end_sec": 222.04,
+      "start_time": "03:41.800",
+      "end_time": "03:42.040",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 424,
+      "text": "that?",
+      "start_sec": 222.1,
+      "end_sec": 222.29,
+      "start_time": "03:42.100",
+      "end_time": "03:42.290",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 425,
+      "text": "You",
+      "start_sec": 222.78,
+      "end_sec": 222.9,
+      "start_time": "03:42.780",
+      "end_time": "03:42.900",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999954
+    },
+    {
+      "word_index": 426,
+      "text": "stand",
+      "start_sec": 223.0,
+      "end_sec": 223.24,
+      "start_time": "03:43.000",
+      "end_time": "03:43.240",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 427,
+      "text": "to",
+      "start_sec": 223.28,
+      "end_sec": 223.38,
+      "start_time": "03:43.280",
+      "end_time": "03:43.380",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 428,
+      "text": "win",
+      "start_sec": 223.42,
+      "end_sec": 223.6,
+      "start_time": "03:43.420",
+      "end_time": "03:43.600",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999995
+    },
+    {
+      "word_index": 429,
+      "text": "everything.",
+      "start_sec": 223.64,
+      "end_sec": 224.14,
+      "start_time": "03:43.640",
+      "end_time": "03:44.140",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999992
+    },
+    {
+      "word_index": 430,
+      "text": "Call",
+      "start_sec": 224.2,
+      "end_sec": 224.4,
+      "start_time": "03:44.200",
+      "end_time": "03:44.400",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 431,
+      "text": "it.",
+      "start_sec": 224.46,
+      "end_sec": 224.6,
+      "start_time": "03:44.460",
+      "end_time": "03:44.600",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 432,
+      "text": "All",
+      "start_sec": 229.42,
+      "end_sec": 229.56,
+      "start_time": "03:49.420",
+      "end_time": "03:49.560",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999993
+    },
+    {
+      "word_index": 433,
+      "text": "right.",
+      "start_sec": 229.6,
+      "end_sec": 229.84,
+      "start_time": "03:49.600",
+      "end_time": "03:49.840",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 434,
+      "text": "Heads",
+      "start_sec": 231.68,
+      "end_sec": 232.04,
+      "start_time": "03:51.680",
+      "end_time": "03:52.040",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999961
+    },
+    {
+      "word_index": 435,
+      "text": "then.",
+      "start_sec": 232.06,
+      "end_sec": 232.46,
+      "start_time": "03:52.060",
+      "end_time": "03:52.460",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.985573
+    },
+    {
+      "word_index": 436,
+      "text": "Well",
+      "start_sec": 237.56,
+      "end_sec": 237.74,
+      "start_time": "03:57.560",
+      "end_time": "03:57.740",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999373
+    },
+    {
+      "word_index": 437,
+      "text": "done.",
+      "start_sec": 237.8,
+      "end_sec": 238.08,
+      "start_time": "03:57.800",
+      "end_time": "03:58.080",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 438,
+      "text": "Don't",
+      "start_sec": 240.72,
+      "end_sec": 240.84,
+      "start_time": "04:00.720",
+      "end_time": "04:00.840",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999969
+    },
+    {
+      "word_index": 439,
+      "text": "put",
+      "start_sec": 240.9,
+      "end_sec": 241.0,
+      "start_time": "04:00.900",
+      "end_time": "04:01.000",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 440,
+      "text": "it",
+      "start_sec": 241.04,
+      "end_sec": 241.08,
+      "start_time": "04:01.040",
+      "end_time": "04:01.080",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 441,
+      "text": "in",
+      "start_sec": 241.1,
+      "end_sec": 241.12,
+      "start_time": "04:01.100",
+      "end_time": "04:01.120",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 442,
+      "text": "your",
+      "start_sec": 241.14,
+      "end_sec": 241.22,
+      "start_time": "04:01.140",
+      "end_time": "04:01.220",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 443,
+      "text": "pocket.",
+      "start_sec": 241.3,
+      "end_sec": 241.64,
+      "start_time": "04:01.300",
+      "end_time": "04:01.640",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 444,
+      "text": "Sir?",
+      "start_sec": 241.76,
+      "end_sec": 241.98,
+      "start_time": "04:01.760",
+      "end_time": "04:01.980",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999852
+    },
+    {
+      "word_index": 445,
+      "text": "Don't",
+      "start_sec": 242.74,
+      "end_sec": 242.9,
+      "start_time": "04:02.740",
+      "end_time": "04:02.900",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 446,
+      "text": "put",
+      "start_sec": 242.94,
+      "end_sec": 243.04,
+      "start_time": "04:02.940",
+      "end_time": "04:03.040",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 447,
+      "text": "it",
+      "start_sec": 243.08,
+      "end_sec": 243.109,
+      "start_time": "04:03.080",
+      "end_time": "04:03.109",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 448,
+      "text": "in",
+      "start_sec": 243.12,
+      "end_sec": 243.18,
+      "start_time": "04:03.120",
+      "end_time": "04:03.180",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999995
+    },
+    {
+      "word_index": 449,
+      "text": "your",
+      "start_sec": 243.2,
+      "end_sec": 243.3,
+      "start_time": "04:03.200",
+      "end_time": "04:03.300",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 450,
+      "text": "pocket.",
+      "start_sec": 243.36,
+      "end_sec": 243.68,
+      "start_time": "04:03.360",
+      "end_time": "04:03.680",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 451,
+      "text": "It's",
+      "start_sec": 243.7,
+      "end_sec": 243.82,
+      "start_time": "04:03.700",
+      "end_time": "04:03.820",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 452,
+      "text": "your",
+      "start_sec": 243.86,
+      "end_sec": 243.97,
+      "start_time": "04:03.860",
+      "end_time": "04:03.970",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 453,
+      "text": "lucky",
+      "start_sec": 244.0,
+      "end_sec": 244.18,
+      "start_time": "04:04.000",
+      "end_time": "04:04.180",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.9976
+    },
+    {
+      "word_index": 454,
+      "text": "quarter.",
+      "start_sec": 244.24,
+      "end_sec": 244.6,
+      "start_time": "04:04.240",
+      "end_time": "04:04.600",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999962
+    },
+    {
+      "word_index": 455,
+      "text": "Where",
+      "start_sec": 246.64,
+      "end_sec": 247.0,
+      "start_time": "04:06.640",
+      "end_time": "04:07.000",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999907
+    },
+    {
+      "word_index": 456,
+      "text": "you",
+      "start_sec": 247.04,
+      "end_sec": 247.16,
+      "start_time": "04:07.040",
+      "end_time": "04:07.160",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.99986
+    },
+    {
+      "word_index": 457,
+      "text": "want",
+      "start_sec": 247.22,
+      "end_sec": 247.38,
+      "start_time": "04:07.220",
+      "end_time": "04:07.380",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 458,
+      "text": "me",
+      "start_sec": 247.42,
+      "end_sec": 247.5,
+      "start_time": "04:07.420",
+      "end_time": "04:07.500",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 459,
+      "text": "to",
+      "start_sec": 247.52,
+      "end_sec": 247.62,
+      "start_time": "04:07.520",
+      "end_time": "04:07.620",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 460,
+      "text": "put",
+      "start_sec": 247.68,
+      "end_sec": 247.84,
+      "start_time": "04:07.680",
+      "end_time": "04:07.840",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 461,
+      "text": "it?",
+      "start_sec": 247.88,
+      "end_sec": 247.94,
+      "start_time": "04:07.880",
+      "end_time": "04:07.940",
+      "speaker_id": "GAS_STATION_PROPRIETOR",
+      "raw_elevenlabs_speaker_id": "speaker_1",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 462,
+      "text": "Anywhere",
+      "start_sec": 248.04,
+      "end_sec": 248.32,
+      "start_time": "04:08.040",
+      "end_time": "04:08.320",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999065
+    },
+    {
+      "word_index": 463,
+      "text": "not",
+      "start_sec": 248.4,
+      "end_sec": 248.52,
+      "start_time": "04:08.400",
+      "end_time": "04:08.520",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999953
+    },
+    {
+      "word_index": 464,
+      "text": "in",
+      "start_sec": 248.54,
+      "end_sec": 248.6,
+      "start_time": "04:08.540",
+      "end_time": "04:08.600",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 465,
+      "text": "your",
+      "start_sec": 248.64,
+      "end_sec": 248.76,
+      "start_time": "04:08.640",
+      "end_time": "04:08.760",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999992
+    },
+    {
+      "word_index": 466,
+      "text": "pocket",
+      "start_sec": 248.8,
+      "end_sec": 249.12,
+      "start_time": "04:08.800",
+      "end_time": "04:09.120",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999998
+    },
+    {
+      "word_index": 467,
+      "text": "or",
+      "start_sec": 250.38,
+      "end_sec": 250.48,
+      "start_time": "04:10.380",
+      "end_time": "04:10.480",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.878341
+    },
+    {
+      "word_index": 468,
+      "text": "it'll",
+      "start_sec": 250.58,
+      "end_sec": 250.67,
+      "start_time": "04:10.580",
+      "end_time": "04:10.670",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999817
+    },
+    {
+      "word_index": 469,
+      "text": "get",
+      "start_sec": 250.72,
+      "end_sec": 250.79,
+      "start_time": "04:10.720",
+      "end_time": "04:10.790",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 470,
+      "text": "mixed",
+      "start_sec": 250.88,
+      "end_sec": 251.12,
+      "start_time": "04:10.880",
+      "end_time": "04:11.120",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.9998
+    },
+    {
+      "word_index": 471,
+      "text": "in",
+      "start_sec": 251.14,
+      "end_sec": 251.26,
+      "start_time": "04:11.140",
+      "end_time": "04:11.260",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 472,
+      "text": "with",
+      "start_sec": 251.3,
+      "end_sec": 251.38,
+      "start_time": "04:11.300",
+      "end_time": "04:11.380",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 473,
+      "text": "the",
+      "start_sec": 251.4,
+      "end_sec": 251.48,
+      "start_time": "04:11.400",
+      "end_time": "04:11.480",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999999
+    },
+    {
+      "word_index": 474,
+      "text": "others",
+      "start_sec": 251.58,
+      "end_sec": 251.86,
+      "start_time": "04:11.580",
+      "end_time": "04:11.860",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 475,
+      "text": "and",
+      "start_sec": 251.9,
+      "end_sec": 252.04,
+      "start_time": "04:11.900",
+      "end_time": "04:12.040",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.99999
+    },
+    {
+      "word_index": 476,
+      "text": "become",
+      "start_sec": 252.1,
+      "end_sec": 252.38,
+      "start_time": "04:12.100",
+      "end_time": "04:12.380",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.998818
+    },
+    {
+      "word_index": 477,
+      "text": "just",
+      "start_sec": 252.56,
+      "end_sec": 252.76,
+      "start_time": "04:12.560",
+      "end_time": "04:12.760",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999997
+    },
+    {
+      "word_index": 478,
+      "text": "a",
+      "start_sec": 252.8,
+      "end_sec": 252.88,
+      "start_time": "04:12.800",
+      "end_time": "04:12.880",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999857
+    },
+    {
+      "word_index": 479,
+      "text": "coin.",
+      "start_sec": 252.92,
+      "end_sec": 253.22,
+      "start_time": "04:12.920",
+      "end_time": "04:13.220",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.997775
+    },
+    {
+      "word_index": 480,
+      "text": "Which",
+      "start_sec": 257.84,
+      "end_sec": 257.959,
+      "start_time": "04:17.840",
+      "end_time": "04:17.959",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 1.0
+    },
+    {
+      "word_index": 481,
+      "text": "it",
+      "start_sec": 258.019,
+      "end_sec": 258.06,
+      "start_time": "04:18.019",
+      "end_time": "04:18.060",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999954
+    },
+    {
+      "word_index": 482,
+      "text": "is.",
+      "start_sec": 258.14,
+      "end_sec": 258.399,
+      "start_time": "04:18.140",
+      "end_time": "04:18.399",
+      "speaker_id": "ANTON_CHIGURH",
+      "raw_elevenlabs_speaker_id": "speaker_0",
+      "confidence": 0.999973
+    }
+  ],
+  "raw_elevenlabs_speaker_map": {
+    "speaker_0": [
+      "ANTON_CHIGURH"
+    ],
+    "speaker_1": [
+      "GAS_STATION_PROPRIETOR"
+    ]
+  }
+}

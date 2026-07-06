@@ -1,0 +1,512 @@
+[
+  {
+    "speaker": "speaker_0",
+    "start": 0.1,
+    "end": 1.18,
+    "text": "We've been riding with the police-"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 1.21,
+    "end": 1.21,
+    "text": "Yes"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 1.21,
+    "end": 2.12,
+    "text": "... a little bit, you know that."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 2.26,
+    "end": 3.74,
+    "text": "They've been telling you about us, right?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 3.78,
+    "end": 7.51,
+    "text": "They told me that you run things round here, and that you control the flow of drugs around here."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 7.58,
+    "end": 10.56,
+    "text": "No, no. That's, that's wrong, man. That's wrong."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 11.24,
+    "end": 14.7,
+    "text": "The, what's the story with your chain? Is that, are those, are those real diamonds?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 18.3,
+    "end": 18.72,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 19.1,
+    "end": 19.63,
+    "text": "They are."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 19.63,
+    "end": 20.84,
+    "text": "Are they? How much for something like that?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 21.86,
+    "end": 23.52,
+    "text": "Like, couple, couple grand."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 24.06,
+    "end": 24.58,
+    "text": "Couple of grand?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 24.82,
+    "end": 24.96,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 25.04,
+    "end": 27.04,
+    "text": "If those are diamonds, that must be quite a bit more than that."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 27.08,
+    "end": 27.98,
+    "text": "Yes, it is."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 28.2,
+    "end": 28.74,
+    "text": "How much?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 29.34,
+    "end": 30.32,
+    "text": "Probably 24."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 30.74,
+    "end": 32.32,
+    "text": "24,000? Maybe a bit more?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 32.619,
+    "end": 34.24,
+    "text": "Maybe a, the gold is higher now."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 34.74,
+    "end": 35.339,
+    "text": "How much, then?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 35.54,
+    "end": 36.58,
+    "text": "Probably, like, 25."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 37.44,
+    "end": 38.32,
+    "text": "How do you make your living?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 38.76,
+    "end": 49.24,
+    "text": "Well, look, I, look, s- real estate. We, we sell cars, and everything, you know. Look, this is my daughter right here. You know what I mean?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 49.3,
+    "end": 49.58,
+    "text": "Really?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 49.74,
+    "end": 54.32,
+    "text": "Yes. This is my daughter. She's seven years old. We're not doing nothing bad, man."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 55.22,
+    "end": 57.52,
+    "text": "If I asked one of those police what you do, what would he say?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 58.16,
+    "end": 63.82,
+    "text": "That, that, that, that I'm a, that I, that I, whatever. I don't know. What, they got they own opinion."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 64.22,
+    "end": 66.34,
+    "text": "They'd say that, they'd say that you're a big time drug dealer."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 67.14,
+    "end": 72.679,
+    "text": "I'm not, man. For real, man. I, look, I, look, I pay rent."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 72.94,
+    "end": 74.75,
+    "text": "In your opinion, why do they have that view of you?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 74.8,
+    "end": 76.52,
+    "text": "Because they see me every day out here."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 77.34,
+    "end": 77.35,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 77.42,
+    "end": 77.7,
+    "text": "And-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 77.78,
+    "end": 78.86,
+    "text": "On the streets, on the corner?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 78.88,
+    "end": 79.76,
+    "text": "O- on the corner, but-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 80.17,
+    "end": 80.17,
+    "text": "What-"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 80.22,
+    "end": 81.6,
+    "text": "I live right around the corner."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 82.62,
+    "end": 83.02,
+    "text": "Oh, milk."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 84.24,
+    "end": 91.6,
+    "text": "Yeah, man, look, we, look, these animals was gonna be butchered, and I think I did a good deed. I think God is seeing this."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 92.18,
+    "end": 93.88,
+    "text": "Joel, what's the story with your watch?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 94.4,
+    "end": 95.12,
+    "text": "Huh?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 98.18,
+    "end": 98.78,
+    "text": "That watch?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 98.86,
+    "end": 101.44,
+    "text": "Let me see that. How much for something like that, Joel?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 101.78,
+    "end": 103.07,
+    "text": "Uh, I only paid"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 104.28,
+    "end": 104.58,
+    "text": "200."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 104.59,
+    "end": 104.59,
+    "text": "Probably-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 104.59,
+    "end": 104.82,
+    "text": "200 what?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 105.12,
+    "end": 105.38,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 105.44,
+    "end": 105.89,
+    "text": "$200."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 106.3,
+    "end": 106.94,
+    "text": "$200?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 107.02,
+    "end": 107.38,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 108.22,
+    "end": 108.64,
+    "text": "You know, yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 108.66,
+    "end": 111.1,
+    "text": "Did it cost more than two, did it cost more than $200?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 111.24,
+    "end": 112.64,
+    "text": "Yeah, it cost more than 200."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 112.88,
+    "end": 113.32,
+    "text": "How much?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 114.46,
+    "end": 115.26,
+    "text": "A couple dollars."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 115.87,
+    "end": 115.88,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 115.9,
+    "end": 118.68,
+    "text": "Like, maybe, what, more than, like, $20,000?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 118.84,
+    "end": 119.06,
+    "text": "No."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 119.42,
+    "end": 119.43,
+    "text": "No."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 119.46,
+    "end": 120.3,
+    "text": "What, for the chain?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 120.34,
+    "end": 120.93,
+    "text": "Oh, no. No."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 120.94,
+    "end": 121.96,
+    "text": "Yeah, but what about for the chain?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 122.04,
+    "end": 123.38,
+    "text": "He paid the 100,000 for that."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 123.44,
+    "end": 124.24,
+    "text": "No, no."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 132.5,
+    "end": 133.56,
+    "text": "Have you ever shot anyone?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 134.42,
+    "end": 140.2,
+    "text": "No. No, I never shot nobody. You know what I mean? I never shot nobody."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 140.98,
+    "end": 142.56,
+    "text": "Did you ever hurt anyone, physically?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 143.16,
+    "end": 145.02,
+    "text": "Oh, always, yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 145.14,
+    "end": 145.769,
+    "text": "You have been, mm-hmm."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 145.78,
+    "end": 156.94,
+    "text": "Yeah, we always beat people up. I'm not gonna lie to you. We always fight for family problems, you know. Sometimes you do what you gotta do to survive, man."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 157.22,
+    "end": 158.78,
+    "text": "Did you stomp on that girl's head?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 159.06,
+    "end": 178.92,
+    "text": "No, I did not stomp on that girl's head. She'll tell you herself. I did not touch that girl. That's why I came out and they locked me up. But I ain't stomp on that girl head. They said I did,'cause everybody say stuff, but the detectives found out that I was telling the truth, and that's why they let me go."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 179.32,
+    "end": 186.58,
+    "text": "They'd probably say that the witnesses were scared because you, you command a lot of respect out here on the street, and that people would be afraid to testify."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 187.0,
+    "end": 194.66,
+    "text": "No. Honestly, nah. Honestly, nah.'Cause, look, look, I'm about to leave out of this shit hole soon."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 195.88,
+    "end": 206.74,
+    "text": "There's gonna be m- more worser people than me, all right? Once, once w- w- whatever they say, there's gonna be worser people a- and there's gonna be more problems."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 206.88,
+    "end": 207.6,
+    "text": "More hitters."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 207.7,
+    "end": 209.16,
+    "text": "Yeah.'Cause, look,"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 210.42,
+    "end": 216.18,
+    "text": "everything is going good, man. Ain't nobody doing nothing wrong, man, look. You see somebody doing something wrong? No."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 216.7,
+    "end": 221.88,
+    "text": "You think it's good to have someone who's, who, who controls a bit of the area so that he can keep the peace a little?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 221.9,
+    "end": 225.36,
+    "text": "Yes. I think that's, that's, that play a part in, in society."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 225.4,
+    "end": 227.24,
+    "text": "Rather than have smaller, little factions-"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 227.25,
+    "end": 228.86,
+    "text": "Yes. Yeah,'cause everybody wanna do what-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 228.97,
+    "end": 229.049,
+    "text": "... fighting each other out"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 229.049,
+    "end": 237.78,
+    "text": "... exactly,'cause then everybody wanna do whatever, anything anybody wanna do, and that's when chaos come. Somebody gotta have control of something."
+  }
+]

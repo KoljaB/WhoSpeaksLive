@@ -1,0 +1,146 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,2.829,22.98,20.151,"Welcome back to The Morty Jepson Show. I'm Morty Jepson. We're here today continuing our conversation with unbelievable mega superstar, Young Bidness. Now, Young Bidness, I gotta tell you, we've been tiptoeing around a particular subject all day, and I think it's time to broach it. You've separated recently with your, your actress girlfriend, Tina Bouquet."
+seg_0001,SPEAKER_2,speaker_1,23.1,23.51,0.41,No. Mort.
+seg_0002,SPEAKER_1,speaker_0,23.52,24.7,1.18,And everybody wants to know-
+seg_0003,SPEAKER_2,speaker_1,24.84,25.06,0.22,Mort
+seg_0004,SPEAKER_1,speaker_0,25.18,25.58,0.4,Yeah?
+seg_0005,SPEAKER_2,speaker_1,25.64,26.8,1.16,"We, we ain't gonna talk about that."
+seg_0006,SPEAKER_1,speaker_0,27.16,27.18,0.02,Oh.
+seg_0007,SPEAKER_2,speaker_1,27.24,28.39,1.15,I'm not here to talk about that.
+seg_0008,SPEAKER_1,speaker_0,28.39,29.92,1.53,I understand. I just wanna hear your side of the story.
+seg_0009,SPEAKER_2,speaker_1,30.0,30.599,0.599,You don't wanna hear-
+seg_0010,SPEAKER_1,speaker_0,30.63,30.79,0.16,I just wanna-
+seg_0011,SPEAKER_2,speaker_1,30.88,32.02,1.14,I told y'all motherfuckers-
+seg_0012,SPEAKER_1,speaker_0,32.08,33.53,1.45,"Listen, in your music, Young Bidness-"
+seg_0013,SPEAKER_2,speaker_1,33.57,33.71,0.14,"... we weren't gonna talk about that, Mort"
+seg_0014,SPEAKER_1,speaker_0,33.71,34.949,1.239,... you do a lot of autobiographical songs.
+seg_0015,SPEAKER_2,speaker_1,34.949,35.72,0.771,I'm trying to talk about the music.
+seg_0016,SPEAKER_1,speaker_0,36.16,39.98,3.82,And lots of people understand that you're talking about your own personal experiences.
+seg_0017,SPEAKER_2,speaker_1,39.99,40.21,0.22,"See, Mort. Mort."
+seg_0018,SPEAKER_1,speaker_0,40.22,40.78,0.56,Your fans-
+seg_0019,SPEAKER_2,speaker_1,40.92,41.449,0.529,I ain't gonna-
+seg_0020,SPEAKER_1,speaker_0,41.49,42.21,0.72,... would like to know-
+seg_0021,SPEAKER_2,speaker_1,42.28,43.44,1.16,"How much, how many times I need-"
+seg_0022,SPEAKER_1,speaker_0,43.49,44.04,0.55,... what's going on with you and Tina
+seg_0023,SPEAKER_2,speaker_1,44.1,44.81,0.71,"What, what... No, you, the fans-"
+seg_0024,SPEAKER_1,speaker_0,44.81,45.11,0.3,That's all
+seg_0025,SPEAKER_2,speaker_1,45.12,45.8,0.68,... don't wanna know.
+seg_0026,SPEAKER_1,speaker_0,45.82,45.94,0.12,We-
+seg_0027,SPEAKER_2,speaker_1,46.16,46.68,0.52,You wanna know
+seg_0028,SPEAKER_1,speaker_0,46.7,47.37,0.67,... we just wanna clarify.
+seg_0029,SPEAKER_2,speaker_1,47.38,47.96,0.58,You wanna know.
+seg_0030,SPEAKER_1,speaker_0,48.04,48.76,0.72,All I wanna do-
+seg_0031,SPEAKER_2,speaker_1,48.769,49.16,0.391,You don't wanna clarify.
+seg_0032,SPEAKER_1,speaker_0,49.28,50.02,0.74,All I wanna do is-
+seg_0033,SPEAKER_2,speaker_1,50.36,50.49,0.13,You want clarification
+seg_0034,SPEAKER_1,speaker_0,50.49,51.58,1.09,... I wanna hear your side of the story.
+seg_0035,SPEAKER_2,speaker_1,51.68,52.15,0.47,"You wanna, I'll give you my side of the story."
+seg_0036,SPEAKER_1,speaker_0,52.18,53.88,1.7,I wanna hear your side of the story.
+seg_0037,SPEAKER_2,speaker_1,53.9,54.46,0.56,Interview's over. How about that?
+seg_0038,SPEAKER_1,speaker_0,54.6,54.78,0.18,Young-
+seg_0039,SPEAKER_2,speaker_1,54.79,55.36,0.57,Interview's over.
+seg_0040,SPEAKER_1,speaker_0,55.52,56.21,0.69,"Please, Young Bidness."
+seg_0041,SPEAKER_2,speaker_1,56.26,56.52,0.26,Done.
+seg_0042,SPEAKER_1,speaker_0,56.82,58.21,1.39,"There's no need for the interview to be over, Young Bidness."
+seg_0043,SPEAKER_2,speaker_1,58.22,58.94,0.72,Interview's over.
+seg_0044,SPEAKER_1,speaker_0,59.36,59.74,0.38,Young Bidness.
+seg_0045,SPEAKER_2,speaker_1,59.78,61.02,1.24,"Y'all, all y'all motherfuckers."
+seg_0046,SPEAKER_1,speaker_0,61.14,64.16,3.02,"Young Bidness, there's no need for the language or any of this. We can just sit down and talk."
+seg_0047,SPEAKER_2,speaker_1,64.17,66.2,2.03,"All y'all, I told y'all motherfuckers I wasn't gonna talk about that."
+seg_0048,SPEAKER_1,speaker_0,66.21,70.34,4.13,Do you wanna talk about the album?'Cause I'd be more than happy to talk about the album. This is The C Word.
+seg_0049,SPEAKER_2,speaker_1,70.48,70.68,0.2,Mort.
+seg_0050,SPEAKER_1,speaker_0,70.8,73.94,3.14,"It looks like it's well on its way to going platinum. Or CD, as it were."
+seg_0051,SPEAKER_2,speaker_1,74.29,75.11,0.82,"Get the fuck, get the fuck away from me."
+seg_0052,SPEAKER_1,speaker_0,75.18,76.72,1.54,"Louis, Louis. Louis, Louis."
+seg_0053,SPEAKER_1,speaker_0,78.66,82.24,3.58,Go- well on its way to going platinum. We can talk about this. It's kind of a double album.
+seg_0054,SPEAKER_2,speaker_1,82.25,82.25,0.0,This shit is tucked in here.
+seg_0055,SPEAKER_1,speaker_0,82.26,94.02,11.76,"Would you say? It's fine with me. You wanna talk about the album, we can talk about the album. How about, uh, Tanks of Truth? Tanks of Truth. Is that a, a treatise on the, uh, the conflict with ISIS? I mean, what, what... Talk to me about this. What..."
+seg_0056,SPEAKER_1,speaker_0,95.22,96.24,1.02,"Young Bidness, please, I beg you."
+seg_0057,SPEAKER_2,speaker_1,96.26,96.56,0.3,All y'all-
+seg_0058,SPEAKER_1,speaker_0,96.65,98.32,1.67,"Just sit down, take a deep breath."
+seg_0059,SPEAKER_2,speaker_1,98.52,98.6,0.08,Oh.
+seg_0060,SPEAKER_1,speaker_0,98.63,99.42,0.79,And let's discuss-
+seg_0061,SPEAKER_2,speaker_1,99.8,100.04,0.24,No
+seg_0062,SPEAKER_1,speaker_0,100.1,101.1,1.0,... let's discuss the album.
+seg_0063,SPEAKER_2,speaker_1,101.18,103.1,1.92,"It's done, Mort. It's done."
+seg_0064,SPEAKER_1,speaker_0,105.2,106.97,1.77,"Okay. Okay, Young Bidness."
+seg_0065,SPEAKER_2,speaker_1,106.98,107.119,0.139,"So,"
+seg_0066,SPEAKER_2,speaker_1,108.5,109.78,1.28,"you brought this on yourself, Mort."
+seg_0067,SPEAKER_1,speaker_0,109.84,110.63,0.79,"Young Bidness, I would really love it-"
+seg_0068,SPEAKER_2,speaker_1,110.63,111.72,1.09,"You brought it on yourself, though"
+seg_0069,SPEAKER_1,speaker_0,111.74,120.57,8.83,"... Young Bidness, Young Bidness, I would really love it if you had a seat, and we could just talk together about anything, anything you want. We don't, I won't mention Tina's name again. Young Bidness."
+seg_0070,SPEAKER_2,speaker_1,121.18,121.74,0.56,How the fuck...
+seg_0071,SPEAKER_1,speaker_0,123.1,123.98,0.88,Youthful Commerce.
+seg_0072,SPEAKER_2,speaker_1,124.48,125.46,0.98,"How does, where does it go to?"
+seg_0073,SPEAKER_1,speaker_0,125.62,126.24,0.62,"Louis, help him."
+seg_0074,SPEAKER_2,speaker_1,127.26,129.66,2.4,"No, get the fuck, get the fuck off me, Louis."
+seg_0075,SPEAKER_1,speaker_0,129.88,133.34,3.46,"Louis, go. Leave it be. You're, you're exacerbating the situation."
+seg_0076,SPEAKER_2,speaker_1,133.76,134.84,1.08,This shit attached to.
+seg_0077,SPEAKER_1,speaker_0,136.02,136.88,0.86,It's probably coming over-
+seg_0078,SPEAKER_2,speaker_1,136.96,137.78,0.82,This is a lot of slack
+seg_0079,SPEAKER_1,speaker_0,137.79,140.02,2.23,... the cord is blending in with the color of the carpet.
+seg_0080,SPEAKER_2,speaker_1,140.3,140.57,0.27,"So what, what-"
+seg_0081,SPEAKER_1,speaker_0,140.86,142.52,1.66,"Okay. I just think that, Young Bidness-"
+seg_0082,SPEAKER_2,speaker_1,142.54,142.97,0.43,"No, this is-"
+seg_0083,SPEAKER_1,speaker_0,143.01,144.34,1.33,... why don't you drop the mic cable-
+seg_0084,SPEAKER_2,speaker_1,144.44,144.6,0.16,This goes there
+seg_0085,SPEAKER_1,speaker_0,144.82,147.8,2.98,... and have a seat. This is what we used to call back in the Army a FUBAR.
+seg_0086,SPEAKER_2,speaker_1,147.98,148.8,0.82,"See, now I got this."
+seg_0087,SPEAKER_1,speaker_0,148.85,149.829,0.979,"Let me just, okay, let me just tell you what's going-"
+seg_0088,SPEAKER_2,speaker_1,149.84,151.8,1.96,"No, get, don't, don't get involved. You see?"
+seg_0089,SPEAKER_1,speaker_0,151.81,152.62,0.81,I have stuff to get you out of here.
+seg_0090,SPEAKER_2,speaker_1,152.66,152.769,0.109,Any-
+seg_0091,SPEAKER_1,speaker_0,152.8,154.02,1.22,"Amy, please, can we just get-"
+seg_0092,SPEAKER_2,speaker_1,154.06,154.44,0.38,Why is it...
+seg_0093,SPEAKER_1,speaker_0,155.54,155.88,0.34,Listen here.
+seg_0094,SPEAKER_2,speaker_1,155.92,156.82,0.9,"Okay, no, don't-"
+seg_0095,SPEAKER_1,speaker_0,156.84,159.02,2.18,"If you let go of it... Here, let me get in the-"
+seg_0096,SPEAKER_2,speaker_1,159.32,160.76,1.44,Don't get in it. Don't... See?
+seg_0097,SPEAKER_1,speaker_0,160.8,161.97,1.17,I'm trying to get around the back-
+seg_0098,SPEAKER_2,speaker_1,161.97,165.26,3.29,"Why y'all... Don't step on my jacket. $1,500 jacket, bitch."
+seg_0099,SPEAKER_1,speaker_0,165.9,169.2,3.3,"Where is... Get... You know, why do we have black cords and a black carpet?"
+seg_0100,SPEAKER_2,speaker_1,169.9,173.96,4.06,"All right, well, you motherfu... I told y'all I wasn't gonna... Louis."
+seg_0101,SPEAKER_1,speaker_0,174.2,174.44,0.24,Just let me think.
+seg_0102,SPEAKER_2,speaker_1,174.5,175.94,1.44,I swear to fucking God.
+seg_0103,SPEAKER_1,speaker_0,176.03,176.98,0.95,"Yes, Louis. We're gonna take care of it."
+seg_0104,SPEAKER_1,speaker_0,178.18,178.82,0.64,Just stay put.
+seg_0105,SPEAKER_2,speaker_1,178.91,180.14,1.23,Just get... Now you got-
+seg_0106,SPEAKER_1,speaker_0,180.74,182.5,1.76,Now I seem to have gotten myself tangled in it
+seg_0107,SPEAKER_2,speaker_1,182.51,185.53,3.02,"... this... Don't, you ain't... Get off me."
+seg_0108,SPEAKER_1,speaker_0,188.04,188.94,0.9,"Can I, may I help you?"
+seg_0109,SPEAKER_2,speaker_1,189.08,190.18,1.1,Don't touch the jacket.
+seg_0110,SPEAKER_1,speaker_0,190.42,190.989,0.569,I'm sorry. I'm trying-
+seg_0111,SPEAKER_2,speaker_1,191.01,191.35,0.34,"Bouncing, no."
+seg_0112,SPEAKER_1,speaker_0,191.36,193.92,2.56,"Look, okay, here's... Raise your, raise your knees. There's one end right here."
+seg_0113,SPEAKER_2,speaker_1,193.96,194.75,0.79,"You gotta get, now-"
+seg_0114,SPEAKER_1,speaker_0,194.98,196.0,1.02,"Hold on, I got bursitis"
+seg_0115,SPEAKER_2,speaker_1,196.12,197.06,0.94,... get the seat.
+seg_0116,SPEAKER_1,speaker_0,197.1,198.36,1.26,You know what? Here. Here's what we're gonna do.
+seg_0117,SPEAKER_2,speaker_1,198.39,198.62,0.23,No. Okay.
+seg_0118,SPEAKER_1,speaker_0,198.86,200.28,1.42,"Have a seat. Here, put your fanny right here."
+seg_0119,SPEAKER_2,speaker_1,200.44,201.62,1.18,I'm not... Don't say fanny.
+seg_0120,SPEAKER_1,speaker_0,201.64,202.02,0.38,Right there.
+seg_0121,SPEAKER_2,speaker_1,202.18,202.36,0.18,Don't.
+seg_0122,SPEAKER_1,speaker_0,203.16,203.29,0.13,There you go.
+seg_0123,SPEAKER_2,speaker_1,203.3,208.24,4.94,"All right. How you do... You do it, what do... You do this every... Don't, you ain't taking the pants off. Damn."
+seg_0124,SPEAKER_1,speaker_0,208.26,210.2,1.94,"Nicole, goddammit. Where is Jerry?"
+seg_0125,SPEAKER_2,speaker_1,210.36,211.88,1.52,This is some shit right here.
+seg_0126,SPEAKER_1,speaker_0,212.26,213.86,1.6,Same sound guy for 27 years.
+seg_0127,SPEAKER_2,speaker_1,213.88,214.14,0.26,What's wrong with y'all?
+seg_0128,SPEAKER_1,speaker_0,214.5,214.85,0.35,Vanishes like a friend.
+seg_0129,SPEAKER_2,speaker_1,214.85,216.02,1.17,"All right, all right, all right, all right. No."
+seg_0130,SPEAKER_1,speaker_0,216.04,217.26,1.22,"Nicole, for God's sake."
+seg_0131,SPEAKER_2,speaker_1,217.53,218.48,0.95,"It's fine. Take... All right. Louis, Louis."
+seg_0132,SPEAKER_1,speaker_0,220.48,220.9,0.42,Hold that.
+seg_0133,SPEAKER_2,speaker_1,221.14,221.24,0.1,Louis.
+seg_0134,SPEAKER_1,speaker_0,221.28,222.5,1.22,Don't do anything but hold that.
+seg_0135,SPEAKER_2,speaker_1,223.98,233.68,9.7,"Okay. No, no, you gotta put... No, nigga, you gotta take the... No. You can't take the pants off over the shoes. You can't take the pants off over the shoes. Louis, Louis, get your white ass out the motherfucker. You ain't helping nobody."
+seg_0136,SPEAKER_1,speaker_0,233.88,233.89,0.01,Yes.
+seg_0137,SPEAKER_2,speaker_1,233.89,234.6,0.71,What's wrong with y'all?
+seg_0138,SPEAKER_1,speaker_0,234.74,235.049,0.309,Vanishes like a friend.
+seg_0139,SPEAKER_2,speaker_1,235.08,235.69,0.61,All right. All right. All right. All right.
+seg_0140,SPEAKER_1,speaker_0,235.7,236.76,1.06,I'm taking the shoes off.
+seg_0141,SPEAKER_2,speaker_1,236.84,237.04,0.2,Okay.
+seg_0142,SPEAKER_1,speaker_0,237.3,237.58,0.28,Right?
+seg_0143,SPEAKER_2,speaker_1,237.62,247.6,9.98,"Left one, left one first. All right, well, fuck, do whatever you fuck you want then, nigga, but fine. Thank you. One, two. Thank you. I told y'all I wasn't gonna talk about that shit."
+seg_0144,SPEAKER_1,speaker_0,255.26,257.06,1.8,We'll be right back with Alec Baldwin

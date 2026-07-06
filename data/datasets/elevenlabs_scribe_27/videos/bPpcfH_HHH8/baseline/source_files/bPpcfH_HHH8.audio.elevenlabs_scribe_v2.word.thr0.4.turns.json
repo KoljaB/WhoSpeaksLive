@@ -1,0 +1,608 @@
+[
+  {
+    "speaker": "speaker_0",
+    "start": 4.43,
+    "end": 6.06,
+    "text": "Hello, I'm Margaret Jo McCullen."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 6.6,
+    "end": 8.36,
+    "text": "And I'm Teri Rialto."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 8.38,
+    "end": 10.64,
+    "text": "And you're listening to The Delicious Dish-"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 10.9,
+    "end": 11.07,
+    "text": "The Delicious Dish-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 11.07,
+    "end": 11.77,
+    "text": "... on National Public Radio"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 11.77,
+    "end": 12.68,
+    "text": "... on National Public Radio."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 15.72,
+    "end": 18.91,
+    "text": "Now, Teri, it's Christmas season again, our favorite time of year."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 19.63,
+    "end": 28.9,
+    "text": "That's right, Margaret Jo. Holiday time is when the most wonderful culinary wishes can come true. Now, what's on your list this holiday season, Margaret Jo?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 29.49,
+    "end": 38.12,
+    "text": "Well, Teri, I really got greedy this year. I'm asking Kris Kringle for a wooden bowl, some oversized index cards, and a funnel."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 39.4,
+    "end": 42.84,
+    "text": "Ooh, a funnel. That'll be great for funneling."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 43.12,
+    "end": 44.64,
+    "text": "I know. I, I feel like a glutton."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 47.66,
+    "end": 49.18,
+    "text": "What's on your list, Teri?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 49.28,
+    "end": 58.22,
+    "text": "Well, I'm only asking Santa for one thing, a big box of glue traps to help me deal with my excessive rat problem. Now, tell me, um,"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 59.76,
+    "end": 63.1,
+    "text": "are you, Margaret Jo, going to leave any treats out for Santa this year?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 63.18,
+    "end": 67.5,
+    "text": "Oh, absolutely. I always do. I like to leave Santa some tap water and rice."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 70.82,
+    "end": 74.679,
+    "text": "If Santa's anything like me, Christmas foods really wreak havoc on the old digestive system."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 75.88,
+    "end": 76.78,
+    "text": "What are you gonna leave, Teri?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 77.44,
+    "end": 81.46,
+    "text": "Uh, I can't ever leave food out in my apartment because I have an excessive rat problem."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 85.24,
+    "end": 86.32,
+    "text": "That's neat. Santa's fun."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 86.38,
+    "end": 86.65,
+    "text": "Santa's fun."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 86.66,
+    "end": 87.28,
+    "text": "He is fun."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 87.31,
+    "end": 87.66,
+    "text": "Neat."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 87.96,
+    "end": 88.42,
+    "text": "Yeah, it's fun."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 88.46,
+    "end": 88.7,
+    "text": "Fun."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 88.85,
+    "end": 89.03,
+    "text": "I like Christmas."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 89.04,
+    "end": 90.34,
+    "text": "Good times. Good times."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 90.78,
+    "end": 91.36,
+    "text": "It's neat."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 93.64,
+    "end": 100.48,
+    "text": "Well, Christmas is a time for traditional foods and bite-sized treats, and we have a very special guest today."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 100.78,
+    "end": 105.54,
+    "text": "That's right, Teri. He's the owner of his own holiday bakery with a very, very clever name,"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 107.04,
+    "end": 108.06,
+    "text": "Seasons Eatings."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 111.74,
+    "end": 112.7,
+    "text": "That's really funny."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 114.24,
+    "end": 116.02,
+    "text": "I know. It rhymes with seasons greetings."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 119.34,
+    "end": 124.55,
+    "text": "Uh, please welcome the owner of Seasons Eatings, Pete Schweddy."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 126.4,
+    "end": 126.41,
+    "text": "Hi, Pete."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 128.36,
+    "end": 129.109,
+    "text": "Welcome. How are you?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 129.12,
+    "end": 129.759,
+    "text": "Welcome, Pete."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 129.8,
+    "end": 130.8,
+    "text": "We like the name of your store."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 131.76,
+    "end": 132.84,
+    "text": "Hi. Thanks for having me."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 133.7,
+    "end": 136.88,
+    "text": "Oh. Now, did I pronounce your name, uh, correctly?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 137.6,
+    "end": 139.42,
+    "text": "Y- you sure did. Pete Schweddy."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 142.56,
+    "end": 149.5,
+    "text": "Well, Pete, Teri and I have been looking forward to having you on the show'cause we know you're the master of all kinds of Christmas goodies. Tell us about them."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 149.94,
+    "end": 153.12,
+    "text": "Well, there are lots of great treats this time of year, zucchini bread-"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 153.29,
+    "end": 153.29,
+    "text": "Mm"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 153.29,
+    "end": 158.04,
+    "text": "... fruitcake. But the thing that I most like to bring out at this time of the year are my balls."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 165.1,
+    "end": 167.32,
+    "text": "Mm. Mm, balls."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 168.9,
+    "end": 169.08,
+    "text": "Mm."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 170.32,
+    "end": 172.04,
+    "text": "Tell us about your balls, Pete."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 174.18,
+    "end": 178.19,
+    "text": "Well, over at Seasons Eatings, we have balls for every taste, popcorn balls-"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 178.28,
+    "end": 178.329,
+    "text": "Mm"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 178.329,
+    "end": 179.84,
+    "text": "... cheese balls, rum balls, you name it."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 179.88,
+    "end": 179.98,
+    "text": "Mm."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 181.54,
+    "end": 184.78,
+    "text": "Wow. My mouth's watering just thinking about those balls."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 188.38,
+    "end": 190.94,
+    "text": "It's been years since I've seen any balls."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 193.769,
+    "end": 195.19,
+    "text": "Would you like to see my balls now?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 196.44,
+    "end": 196.7,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 196.76,
+    "end": 197.16,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 197.22,
+    "end": 197.66,
+    "text": "Whip'em out."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 198.2,
+    "end": 199.079,
+    "text": "Whip'em, baby."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 201.86,
+    "end": 202.459,
+    "text": "Ooh."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 202.62,
+    "end": 202.63,
+    "text": "Wow."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 202.68,
+    "end": 203.34,
+    "text": "Mm."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 204.34,
+    "end": 207.02,
+    "text": "Wow. You have some beautiful balls."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 209.15,
+    "end": 210.36,
+    "text": "They're bigger than I expected."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 213.3,
+    "end": 214.48,
+    "text": "I know. A lot of people tell me that."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 215.76,
+    "end": 217.2,
+    "text": "Look at that, Teri, the way they glisten."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 219.37,
+    "end": 222.38,
+    "text": "That's because I make sure that each one of my balls gets plenty of oil."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 224.12,
+    "end": 226.74,
+    "text": "I can't help but notice, Pete, your balls are a little misshapen."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 229.52,
+    "end": 232.36,
+    "text": "That's because I rested them on a hot stove for too long."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 235.52,
+    "end": 236.62,
+    "text": "Can I touch your balls?"
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 238.84,
+    "end": 240.66,
+    "text": "Go ahead, but be careful. They're very delicate."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 241.87,
+    "end": 241.87,
+    "text": "Okay."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 243.2,
+    "end": 243.23,
+    "text": "With, with..."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 243.23,
+    "end": 243.4,
+    "text": "Wow."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 243.88,
+    "end": 243.89,
+    "text": "Oh."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 243.94,
+    "end": 245.62,
+    "text": "I can't wait to get my mouth around this ball."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 251.16,
+    "end": 253.14,
+    "text": "Ooh, I like the way your balls smell."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 262.76,
+    "end": 264.1,
+    "text": "Do whatever you want to them, ladies."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 265.56,
+    "end": 266.98,
+    "text": "My balls are here for your pleasure."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 271.46,
+    "end": 274.39,
+    "text": "Wow, Pete. I have to say, your balls are so tender."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 276.4,
+    "end": 277.76,
+    "text": "Well, there's no beating my balls."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 280.03,
+    "end": 282.58,
+    "text": "They're made from a secret Schweddy family recipe."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 284.28,
+    "end": 286.12,
+    "text": "No one can resist my Schweddy balls."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 294.4,
+    "end": 295.539,
+    "text": "What's wrong?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 295.6,
+    "end": 296.18,
+    "text": "Fun."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 296.22,
+    "end": 296.84,
+    "text": "Schweddy balls."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 296.9,
+    "end": 297.38,
+    "text": "Delicious."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 297.62,
+    "end": 298.8,
+    "text": "Nothing like a Schweddy ball."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 299.8,
+    "end": 300.54,
+    "text": "Schweddy balls."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 300.74,
+    "end": 301.42,
+    "text": "These are good times."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 301.48,
+    "end": 302.16,
+    "text": "Good times."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 303.76,
+    "end": 304.18,
+    "text": "Mm."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 304.56,
+    "end": 305.14,
+    "text": "Neat."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 305.18,
+    "end": 306.14,
+    "text": "Mm-hmm."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 306.15,
+    "end": 306.15,
+    "text": "Mm."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 306.15,
+    "end": 306.15,
+    "text": "Mm."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 306.22,
+    "end": 308.17,
+    "text": "Oh. H- h- oh, our producer, um,"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 309.48,
+    "end": 316.9,
+    "text": "Glen is gesturing to us from the technicians' booth, and it looks like he, i- oh, very good. He's telling us to wrap it up."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 317.72,
+    "end": 324.99,
+    "text": "I guess that's all the time we have today, Teri. So join us next week when our topic will be that other holiday favorite, fragrant salty nuts."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 324.99,
+    "end": 325.66,
+    "text": "Fragrant salty nuts."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 327.58,
+    "end": 334.78,
+    "text": "A quick plug. If you order from Seasons Eatings now, we can still send out a special Schweddy ball sack in time for Christmas."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 334.94,
+    "end": 339.4,
+    "text": "Ooh, great idea. My niece would love a sack of Schweddy balls."
+  }
+]

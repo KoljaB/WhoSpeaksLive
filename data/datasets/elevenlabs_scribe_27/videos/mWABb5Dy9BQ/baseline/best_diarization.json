@@ -1,0 +1,3287 @@
+[
+  {
+    "segment_id": "seg_0000",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 0.1,
+    "end_sec": 17.0,
+    "start_time": "00:00.100",
+    "end_time": "00:17.000",
+    "duration_sec": 16.9,
+    "text": "Here's how it works. In front of each of us are two envelopes containing confessions. One is true, and the other is a lie. Once you read the confession, the two other players get to interrogate you. They have to come to a unanimous decision. Is it the truth, or is it the lie? Uh, Billie, you'll go first. Colin, which envelope should she open?",
+    "word_start_index": 0,
+    "word_end_index": 64
+  },
+  {
+    "segment_id": "seg_0001",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 17.36,
+    "end_sec": 18.7,
+    "start_time": "00:17.360",
+    "end_time": "00:18.700",
+    "duration_sec": 1.34,
+    "text": "Mm, uh, two.",
+    "word_start_index": 65,
+    "word_end_index": 67
+  },
+  {
+    "segment_id": "seg_0002",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 19.94,
+    "end_sec": 20.66,
+    "start_time": "00:19.940",
+    "end_time": "00:20.660",
+    "duration_sec": 0.72,
+    "text": "Mm. Mm-hmm.",
+    "word_start_index": 68,
+    "word_end_index": 69
+  },
+  {
+    "segment_id": "seg_0003",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 20.78,
+    "end_sec": 21.16,
+    "start_time": "00:20.780",
+    "end_time": "00:21.160",
+    "duration_sec": 0.38,
+    "text": "This?",
+    "word_start_index": 70,
+    "word_end_index": 70
+  },
+  {
+    "segment_id": "seg_0004",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 21.36,
+    "end_sec": 22.86,
+    "start_time": "00:21.360",
+    "end_time": "00:22.860",
+    "duration_sec": 1.5,
+    "text": "Mm. Numero dos.",
+    "word_start_index": 71,
+    "word_end_index": 73
+  },
+  {
+    "segment_id": "seg_0005",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 24.76,
+    "end_sec": 25.06,
+    "start_time": "00:24.760",
+    "end_time": "00:25.060",
+    "duration_sec": 0.3,
+    "text": "Wait.",
+    "word_start_index": 74,
+    "word_end_index": 74
+  },
+  {
+    "segment_id": "seg_0006",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 26.55,
+    "end_sec": 27.64,
+    "start_time": "00:26.550",
+    "end_time": "00:27.640",
+    "duration_sec": 1.09,
+    "text": "That's how you open an envelope?",
+    "word_start_index": 75,
+    "word_end_index": 80
+  },
+  {
+    "segment_id": "seg_0007",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 27.86,
+    "end_sec": 28.24,
+    "start_time": "00:27.860",
+    "end_time": "00:28.240",
+    "duration_sec": 0.38,
+    "text": "Shut up.",
+    "word_start_index": 81,
+    "word_end_index": 82
+  },
+  {
+    "segment_id": "seg_0008",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 29.58,
+    "end_sec": 30.94,
+    "start_time": "00:29.580",
+    "end_time": "00:30.940",
+    "duration_sec": 1.36,
+    "text": "Oh, it's open on the bottom.",
+    "word_start_index": 83,
+    "word_end_index": 88
+  },
+  {
+    "segment_id": "seg_0009",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 31.0,
+    "end_sec": 31.16,
+    "start_time": "00:31.000",
+    "end_time": "00:31.160",
+    "duration_sec": 0.16,
+    "text": "Yeah.",
+    "word_start_index": 89,
+    "word_end_index": 89
+  },
+  {
+    "segment_id": "seg_0010",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 32.9,
+    "end_sec": 33.91,
+    "start_time": "00:32.900",
+    "end_time": "00:33.910",
+    "duration_sec": 1.01,
+    "text": "Okay, are you ready for this?",
+    "word_start_index": 90,
+    "word_end_index": 95
+  },
+  {
+    "segment_id": "seg_0011",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 34.36,
+    "end_sec": 35.12,
+    "start_time": "00:34.360",
+    "end_time": "00:35.120",
+    "duration_sec": 0.76,
+    "text": "Okay. Wow.",
+    "word_start_index": 96,
+    "word_end_index": 97
+  },
+  {
+    "segment_id": "seg_0012",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 35.62,
+    "end_sec": 37.41,
+    "start_time": "00:35.620",
+    "end_time": "00:37.410",
+    "duration_sec": 1.79,
+    "text": "That is a strong case.",
+    "word_start_index": 98,
+    "word_end_index": 102
+  },
+  {
+    "segment_id": "seg_0013",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 37.46,
+    "end_sec": 38.25,
+    "start_time": "00:37.460",
+    "end_time": "00:38.250",
+    "duration_sec": 0.79,
+    "text": "Strong fake cigarette, yeah.",
+    "word_start_index": 103,
+    "word_end_index": 106
+  },
+  {
+    "segment_id": "seg_0014",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 38.34,
+    "end_sec": 38.74,
+    "start_time": "00:38.340",
+    "end_time": "00:38.740",
+    "duration_sec": 0.4,
+    "text": "Um-",
+    "word_start_index": 107,
+    "word_end_index": 107
+  },
+  {
+    "segment_id": "seg_0015",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 40.0,
+    "end_sec": 45.7,
+    "start_time": "00:40.000",
+    "end_time": "00:45.700",
+    "duration_sec": 5.7,
+    "text": "So, I once farted in my friend's mouth while she was yawning, and she threw up.",
+    "word_start_index": 108,
+    "word_end_index": 123
+  },
+  {
+    "segment_id": "seg_0016",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 48.52,
+    "end_sec": 49.44,
+    "start_time": "00:48.520",
+    "end_time": "00:49.440",
+    "duration_sec": 0.92,
+    "text": "All right, what year was this?",
+    "word_start_index": 124,
+    "word_end_index": 129
+  },
+  {
+    "segment_id": "seg_0017",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 53.68,
+    "end_sec": 58.86,
+    "start_time": "00:53.680",
+    "end_time": "00:58.860",
+    "duration_sec": 5.18,
+    "text": "Um, it was, um, I was 12, so I, it was-",
+    "word_start_index": 130,
+    "word_end_index": 140
+  },
+  {
+    "segment_id": "seg_0018",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 59.0,
+    "end_sec": 59.38,
+    "start_time": "00:59.000",
+    "end_time": "00:59.380",
+    "duration_sec": 0.38,
+    "text": "Last year",
+    "word_start_index": 141,
+    "word_end_index": 142
+  },
+  {
+    "segment_id": "seg_0019",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 59.84,
+    "end_sec": 60.49,
+    "start_time": "00:59.840",
+    "end_time": "01:00.490",
+    "duration_sec": 0.65,
+    "text": "... eight.",
+    "word_start_index": 143,
+    "word_end_index": 144
+  },
+  {
+    "segment_id": "seg_0020",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 60.949,
+    "end_sec": 60.949,
+    "start_time": "01:00.949",
+    "end_time": "01:00.949",
+    "duration_sec": 0.0,
+    "text": "Yeah.",
+    "word_start_index": 145,
+    "word_end_index": 145
+  },
+  {
+    "segment_id": "seg_0021",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 60.949,
+    "end_sec": 60.949,
+    "start_time": "01:00.949",
+    "end_time": "01:00.949",
+    "duration_sec": 0.0,
+    "text": "But, uh-",
+    "word_start_index": 146,
+    "word_end_index": 147
+  },
+  {
+    "segment_id": "seg_0022",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 60.98,
+    "end_sec": 62.04,
+    "start_time": "01:00.980",
+    "end_time": "01:02.040",
+    "duration_sec": 1.06,
+    "text": "So it was last year. Okay, great",
+    "word_start_index": 148,
+    "word_end_index": 154
+  },
+  {
+    "segment_id": "seg_0023",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 62.14,
+    "end_sec": 64.06,
+    "start_time": "01:02.140",
+    "end_time": "01:04.060",
+    "duration_sec": 1.92,
+    "text": "... it was 2014.",
+    "word_start_index": 155,
+    "word_end_index": 158
+  },
+  {
+    "segment_id": "seg_0024",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 64.099,
+    "end_sec": 64.29,
+    "start_time": "01:04.099",
+    "end_time": "01:04.290",
+    "duration_sec": 0.191,
+    "text": "Okay, okay.",
+    "word_start_index": 159,
+    "word_end_index": 160
+  },
+  {
+    "segment_id": "seg_0025",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 64.3,
+    "end_sec": 64.31,
+    "start_time": "01:04.300",
+    "end_time": "01:04.310",
+    "duration_sec": 0.01,
+    "text": "I was 12.",
+    "word_start_index": 161,
+    "word_end_index": 163
+  },
+  {
+    "segment_id": "seg_0026",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 64.31,
+    "end_sec": 65.26,
+    "start_time": "01:04.310",
+    "end_time": "01:05.260",
+    "duration_sec": 0.95,
+    "text": "And where, where were you?",
+    "word_start_index": 164,
+    "word_end_index": 168
+  },
+  {
+    "segment_id": "seg_0027",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 65.74,
+    "end_sec": 66.4,
+    "start_time": "01:05.740",
+    "end_time": "01:06.400",
+    "duration_sec": 0.66,
+    "text": "I was in my yard.",
+    "word_start_index": 169,
+    "word_end_index": 173
+  },
+  {
+    "segment_id": "seg_0028",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 66.96,
+    "end_sec": 67.88,
+    "start_time": "01:06.960",
+    "end_time": "01:07.880",
+    "duration_sec": 0.92,
+    "text": "Out back, in your backyard?",
+    "word_start_index": 174,
+    "word_end_index": 178
+  },
+  {
+    "segment_id": "seg_0029",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 67.92,
+    "end_sec": 69.62,
+    "start_time": "01:07.920",
+    "end_time": "01:09.620",
+    "duration_sec": 1.7,
+    "text": "Yeah, in my backyard. In my backyard.",
+    "word_start_index": 179,
+    "word_end_index": 185
+  },
+  {
+    "segment_id": "seg_0030",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 70.08,
+    "end_sec": 70.58,
+    "start_time": "01:10.080",
+    "end_time": "01:10.580",
+    "duration_sec": 0.5,
+    "text": "Daytime?",
+    "word_start_index": 186,
+    "word_end_index": 186
+  },
+  {
+    "segment_id": "seg_0031",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 70.86,
+    "end_sec": 71.02,
+    "start_time": "01:10.860",
+    "end_time": "01:11.020",
+    "duration_sec": 0.16,
+    "text": "Yeah.",
+    "word_start_index": 187,
+    "word_end_index": 187
+  },
+  {
+    "segment_id": "seg_0032",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 71.92,
+    "end_sec": 73.76,
+    "start_time": "01:11.920",
+    "end_time": "01:13.760",
+    "duration_sec": 1.84,
+    "text": "No, they were at nighttime in the backyard. What are you-",
+    "word_start_index": 188,
+    "word_end_index": 198
+  },
+  {
+    "segment_id": "seg_0033",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 75.56,
+    "end_sec": 76.23,
+    "start_time": "01:15.560",
+    "end_time": "01:16.230",
+    "duration_sec": 0.67,
+    "text": "Camping, you think they were camping?",
+    "word_start_index": 199,
+    "word_end_index": 204
+  },
+  {
+    "segment_id": "seg_0034",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 76.24,
+    "end_sec": 76.85,
+    "start_time": "01:16.240",
+    "end_time": "01:16.850",
+    "duration_sec": 0.61,
+    "text": "Well, yeah, he-",
+    "word_start_index": 205,
+    "word_end_index": 207
+  },
+  {
+    "segment_id": "seg_0035",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 76.88,
+    "end_sec": 79.65,
+    "start_time": "01:16.880",
+    "end_time": "01:19.650",
+    "duration_sec": 2.77,
+    "text": "What were you doing, like wrestling or fooling around or doing gymnastics?",
+    "word_start_index": 208,
+    "word_end_index": 219
+  },
+  {
+    "segment_id": "seg_0036",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 80.11,
+    "end_sec": 80.11,
+    "start_time": "01:20.110",
+    "end_time": "01:20.110",
+    "duration_sec": 0.0,
+    "text": "Um-",
+    "word_start_index": 220,
+    "word_end_index": 220
+  },
+  {
+    "segment_id": "seg_0037",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 80.13,
+    "end_sec": 80.3,
+    "start_time": "01:20.130",
+    "end_time": "01:20.300",
+    "duration_sec": 0.17,
+    "text": "Whoa",
+    "word_start_index": 221,
+    "word_end_index": 221
+  },
+  {
+    "segment_id": "seg_0038",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 80.36,
+    "end_sec": 84.6,
+    "start_time": "01:20.360",
+    "end_time": "01:24.600",
+    "duration_sec": 4.24,
+    "text": "... I was, so I was, it was like, there was a, there was a, a table, and she was sitting.",
+    "word_start_index": 222,
+    "word_end_index": 242
+  },
+  {
+    "segment_id": "seg_0039",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 85.0,
+    "end_sec": 85.26,
+    "start_time": "01:25.000",
+    "end_time": "01:25.260",
+    "duration_sec": 0.26,
+    "text": "Oh, please.",
+    "word_start_index": 243,
+    "word_end_index": 244
+  },
+  {
+    "segment_id": "seg_0040",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 85.32,
+    "end_sec": 88.94,
+    "start_time": "01:25.320",
+    "end_time": "01:28.940",
+    "duration_sec": 3.62,
+    "text": "I was standing here. So she was sitting, like facing this way. I was standing here facing that way.",
+    "word_start_index": 245,
+    "word_end_index": 263
+  },
+  {
+    "segment_id": "seg_0041",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 89.3,
+    "end_sec": 89.56,
+    "start_time": "01:29.300",
+    "end_time": "01:29.560",
+    "duration_sec": 0.26,
+    "text": "Okay.",
+    "word_start_index": 264,
+    "word_end_index": 264
+  },
+  {
+    "segment_id": "seg_0042",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 89.9,
+    "end_sec": 90.5,
+    "start_time": "01:29.900",
+    "end_time": "01:30.500",
+    "duration_sec": 0.6,
+    "text": "She was eating.",
+    "word_start_index": 265,
+    "word_end_index": 267
+  },
+  {
+    "segment_id": "seg_0043",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 90.64,
+    "end_sec": 91.66,
+    "start_time": "01:30.640",
+    "end_time": "01:31.660",
+    "duration_sec": 1.02,
+    "text": "And where's the table? Say I'm the table.",
+    "word_start_index": 268,
+    "word_end_index": 275
+  },
+  {
+    "segment_id": "seg_0044",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 91.7,
+    "end_sec": 92.84,
+    "start_time": "01:31.700",
+    "end_time": "01:32.840",
+    "duration_sec": 1.14,
+    "text": "The table's here.",
+    "word_start_index": 276,
+    "word_end_index": 278
+  },
+  {
+    "segment_id": "seg_0045",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 92.87,
+    "end_sec": 92.87,
+    "start_time": "01:32.870",
+    "end_time": "01:32.870",
+    "duration_sec": 0.0,
+    "text": "Yeah.",
+    "word_start_index": 279,
+    "word_end_index": 279
+  },
+  {
+    "segment_id": "seg_0046",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 92.92,
+    "end_sec": 94.4,
+    "start_time": "01:32.920",
+    "end_time": "01:34.400",
+    "duration_sec": 1.48,
+    "text": "So she was facing the other way.",
+    "word_start_index": 280,
+    "word_end_index": 286
+  },
+  {
+    "segment_id": "seg_0047",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 94.48,
+    "end_sec": 94.78,
+    "start_time": "01:34.480",
+    "end_time": "01:34.780",
+    "duration_sec": 0.3,
+    "text": "Okay.",
+    "word_start_index": 287,
+    "word_end_index": 287
+  },
+  {
+    "segment_id": "seg_0048",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 94.83,
+    "end_sec": 95.1,
+    "start_time": "01:34.830",
+    "end_time": "01:35.100",
+    "duration_sec": 0.27,
+    "text": "What was she eating?",
+    "word_start_index": 288,
+    "word_end_index": 291
+  },
+  {
+    "segment_id": "seg_0049",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 95.52,
+    "end_sec": 95.92,
+    "start_time": "01:35.520",
+    "end_time": "01:35.920",
+    "duration_sec": 0.4,
+    "text": "Pizza.",
+    "word_start_index": 292,
+    "word_end_index": 292
+  },
+  {
+    "segment_id": "seg_0050",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 96.36,
+    "end_sec": 96.74,
+    "start_time": "01:36.360",
+    "end_time": "01:36.740",
+    "duration_sec": 0.38,
+    "text": "Pizza.",
+    "word_start_index": 293,
+    "word_end_index": 293
+  },
+  {
+    "segment_id": "seg_0051",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 96.78,
+    "end_sec": 97.7,
+    "start_time": "01:36.780",
+    "end_time": "01:37.700",
+    "duration_sec": 0.92,
+    "text": "Daytime pizza.",
+    "word_start_index": 294,
+    "word_end_index": 295
+  },
+  {
+    "segment_id": "seg_0052",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 99.26,
+    "end_sec": 100.6,
+    "start_time": "01:39.260",
+    "end_time": "01:40.600",
+    "duration_sec": 1.34,
+    "text": "You want some nighttime pizza? Like...",
+    "word_start_index": 296,
+    "word_end_index": 301
+  },
+  {
+    "segment_id": "seg_0053",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 100.64,
+    "end_sec": 105.34,
+    "start_time": "01:40.640",
+    "end_time": "01:45.340",
+    "duration_sec": 4.7,
+    "text": "That's kind of nighttime. All right. Kind of running out of time here. I don't know. We didn't even ask enough questions.",
+    "word_start_index": 302,
+    "word_end_index": 323
+  },
+  {
+    "segment_id": "seg_0054",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 105.4,
+    "end_sec": 105.41,
+    "start_time": "01:45.400",
+    "end_time": "01:45.410",
+    "duration_sec": 0.01,
+    "text": "Okay.",
+    "word_start_index": 324,
+    "word_end_index": 324
+  },
+  {
+    "segment_id": "seg_0055",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 105.41,
+    "end_sec": 107.15,
+    "start_time": "01:45.410",
+    "end_time": "01:47.150",
+    "duration_sec": 1.74,
+    "text": "Wait, so, and are you friends with her today?",
+    "word_start_index": 325,
+    "word_end_index": 333
+  },
+  {
+    "segment_id": "seg_0056",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 108.24,
+    "end_sec": 109.46,
+    "start_time": "01:48.240",
+    "end_time": "01:49.460",
+    "duration_sec": 1.22,
+    "text": "Yeah, sorta.",
+    "word_start_index": 334,
+    "word_end_index": 335
+  },
+  {
+    "segment_id": "seg_0057",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 110.74,
+    "end_sec": 111.72,
+    "start_time": "01:50.740",
+    "end_time": "01:51.720",
+    "duration_sec": 0.98,
+    "text": "Was it weird after that?",
+    "word_start_index": 336,
+    "word_end_index": 340
+  },
+  {
+    "segment_id": "seg_0058",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 111.73,
+    "end_sec": 111.87,
+    "start_time": "01:51.730",
+    "end_time": "01:51.870",
+    "duration_sec": 0.14,
+    "text": "That is-",
+    "word_start_index": 341,
+    "word_end_index": 342
+  },
+  {
+    "segment_id": "seg_0059",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 112.46,
+    "end_sec": 113.53,
+    "start_time": "01:52.460",
+    "end_time": "01:53.530",
+    "duration_sec": 1.07,
+    "text": "It was so funny.",
+    "word_start_index": 343,
+    "word_end_index": 346
+  },
+  {
+    "segment_id": "seg_0060",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 115.19,
+    "end_sec": 115.7,
+    "start_time": "01:55.190",
+    "end_time": "01:55.700",
+    "duration_sec": 0.51,
+    "text": "So funny.",
+    "word_start_index": 347,
+    "word_end_index": 348
+  },
+  {
+    "segment_id": "seg_0061",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 115.78,
+    "end_sec": 116.68,
+    "start_time": "01:55.780",
+    "end_time": "01:56.680",
+    "duration_sec": 0.9,
+    "text": "What do we think? I think-",
+    "word_start_index": 349,
+    "word_end_index": 354
+  },
+  {
+    "segment_id": "seg_0062",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 117.64,
+    "end_sec": 117.73,
+    "start_time": "01:57.640",
+    "end_time": "01:57.730",
+    "duration_sec": 0.09,
+    "text": "I think-",
+    "word_start_index": 355,
+    "word_end_index": 356
+  },
+  {
+    "segment_id": "seg_0063",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 117.73,
+    "end_sec": 118.0,
+    "start_time": "01:57.730",
+    "end_time": "01:58.000",
+    "duration_sec": 0.27,
+    "text": "I think",
+    "word_start_index": 357,
+    "word_end_index": 358
+  },
+  {
+    "segment_id": "seg_0064",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 118.72,
+    "end_sec": 119.33,
+    "start_time": "01:58.720",
+    "end_time": "01:59.330",
+    "duration_sec": 0.61,
+    "text": "... true.",
+    "word_start_index": 359,
+    "word_end_index": 360
+  },
+  {
+    "segment_id": "seg_0065",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 119.6,
+    "end_sec": 120.07,
+    "start_time": "01:59.600",
+    "end_time": "02:00.070",
+    "duration_sec": 0.47,
+    "text": "Yeah, I think true.",
+    "word_start_index": 361,
+    "word_end_index": 364
+  },
+  {
+    "segment_id": "seg_0066",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 120.29,
+    "end_sec": 120.29,
+    "start_time": "02:00.290",
+    "end_time": "02:00.290",
+    "duration_sec": 0.0,
+    "text": "Oh.",
+    "word_start_index": 365,
+    "word_end_index": 365
+  },
+  {
+    "segment_id": "seg_0067",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 120.34,
+    "end_sec": 121.69,
+    "start_time": "02:00.340",
+    "end_time": "02:01.690",
+    "duration_sec": 1.35,
+    "text": "I think it sounds like something that weirdly-",
+    "word_start_index": 366,
+    "word_end_index": 373
+  },
+  {
+    "segment_id": "seg_0068",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 121.76,
+    "end_sec": 122.34,
+    "start_time": "02:01.760",
+    "end_time": "02:02.340",
+    "duration_sec": 0.58,
+    "text": "Yeah.",
+    "word_start_index": 374,
+    "word_end_index": 374
+  },
+  {
+    "segment_id": "seg_0069",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 123.26,
+    "end_sec": 123.69,
+    "start_time": "02:03.260",
+    "end_time": "02:03.690",
+    "duration_sec": 0.43,
+    "text": "Is it true?",
+    "word_start_index": 375,
+    "word_end_index": 377
+  },
+  {
+    "segment_id": "seg_0070",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 124.34,
+    "end_sec": 125.36,
+    "start_time": "02:04.340",
+    "end_time": "02:05.360",
+    "duration_sec": 1.02,
+    "text": "Uh, yes.",
+    "word_start_index": 378,
+    "word_end_index": 379
+  },
+  {
+    "segment_id": "seg_0071",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 128.8,
+    "end_sec": 134.609,
+    "start_time": "02:08.800",
+    "end_time": "02:14.609",
+    "duration_sec": 5.809,
+    "text": "Whoa. Oh, man. Oh my God. That just, but why did you do that? Did you do that on- What, why did you do that? Was that on purpose?",
+    "word_start_index": 380,
+    "word_end_index": 408
+  },
+  {
+    "segment_id": "seg_0072",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 134.7,
+    "end_sec": 139.92,
+    "start_time": "02:14.700",
+    "end_time": "02:19.920",
+    "duration_sec": 5.22,
+    "text": "It was silent. Listen, it was silent. I did not think it would be bad, but you know those are always the worst ones, you know?",
+    "word_start_index": 409,
+    "word_end_index": 434
+  },
+  {
+    "segment_id": "seg_0073",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 139.98,
+    "end_sec": 140.24,
+    "start_time": "02:19.980",
+    "end_time": "02:20.240",
+    "duration_sec": 0.26,
+    "text": "That's right.",
+    "word_start_index": 435,
+    "word_end_index": 436
+  },
+  {
+    "segment_id": "seg_0074",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 140.36,
+    "end_sec": 141.62,
+    "start_time": "02:20.360",
+    "end_time": "02:21.620",
+    "duration_sec": 1.26,
+    "text": "See, you got it. Alright, here we go.",
+    "word_start_index": 437,
+    "word_end_index": 444
+  },
+  {
+    "segment_id": "seg_0075",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 141.72,
+    "end_sec": 142.299,
+    "start_time": "02:21.720",
+    "end_time": "02:22.299",
+    "duration_sec": 0.579,
+    "text": "That's the problem.",
+    "word_start_index": 445,
+    "word_end_index": 447
+  },
+  {
+    "segment_id": "seg_0076",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 142.36,
+    "end_sec": 145.36,
+    "start_time": "02:22.360",
+    "end_time": "02:25.360",
+    "duration_sec": 3.0,
+    "text": "Which envelope should I open? Which, uh- Truth or lie, what do you think?",
+    "word_start_index": 448,
+    "word_end_index": 461
+  },
+  {
+    "segment_id": "seg_0077",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 145.54,
+    "end_sec": 145.62,
+    "start_time": "02:25.540",
+    "end_time": "02:25.620",
+    "duration_sec": 0.08,
+    "text": "Uh-",
+    "word_start_index": 462,
+    "word_end_index": 462
+  },
+  {
+    "segment_id": "seg_0078",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 145.64,
+    "end_sec": 146.76,
+    "start_time": "02:25.640",
+    "end_time": "02:26.760",
+    "duration_sec": 1.12,
+    "text": "Billie? Colin?",
+    "word_start_index": 463,
+    "word_end_index": 464
+  },
+  {
+    "segment_id": "seg_0079",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 148.62,
+    "end_sec": 149.9,
+    "start_time": "02:28.620",
+    "end_time": "02:29.900",
+    "duration_sec": 1.28,
+    "text": "Uh, uh, one.",
+    "word_start_index": 465,
+    "word_end_index": 467
+  },
+  {
+    "segment_id": "seg_0080",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 150.2,
+    "end_sec": 150.3,
+    "start_time": "02:30.200",
+    "end_time": "02:30.300",
+    "duration_sec": 0.1,
+    "text": "Yeah.",
+    "word_start_index": 468,
+    "word_end_index": 468
+  },
+  {
+    "segment_id": "seg_0081",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 150.54,
+    "end_sec": 150.59,
+    "start_time": "02:30.540",
+    "end_time": "02:30.590",
+    "duration_sec": 0.05,
+    "text": "One.",
+    "word_start_index": 469,
+    "word_end_index": 469
+  },
+  {
+    "segment_id": "seg_0082",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 150.62,
+    "end_sec": 152.4,
+    "start_time": "02:30.620",
+    "end_time": "02:32.400",
+    "duration_sec": 1.78,
+    "text": "Doesn't really matter,'cause I'm such a good actor.",
+    "word_start_index": 470,
+    "word_end_index": 478
+  },
+  {
+    "segment_id": "seg_0083",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 152.54,
+    "end_sec": 153.769,
+    "start_time": "02:32.540",
+    "end_time": "02:33.769",
+    "duration_sec": 1.229,
+    "text": "Whoa. Whoa, whoa.",
+    "word_start_index": 479,
+    "word_end_index": 481
+  },
+  {
+    "segment_id": "seg_0084",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 156.46,
+    "end_sec": 156.9,
+    "start_time": "02:36.460",
+    "end_time": "02:36.900",
+    "duration_sec": 0.44,
+    "text": "Shut up.",
+    "word_start_index": 482,
+    "word_end_index": 483
+  },
+  {
+    "segment_id": "seg_0085",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 157.02,
+    "end_sec": 158.28,
+    "start_time": "02:37.020",
+    "end_time": "02:38.280",
+    "duration_sec": 1.26,
+    "text": "Ever see a little movie called Taxi?",
+    "word_start_index": 484,
+    "word_end_index": 490
+  },
+  {
+    "segment_id": "seg_0086",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 161.24,
+    "end_sec": 166.44,
+    "start_time": "02:41.240",
+    "end_time": "02:46.440",
+    "duration_sec": 5.2,
+    "text": "Okay, here we go. Uh, oh, I got fired from my job at the supermarket for pretending to be French.",
+    "word_start_index": 491,
+    "word_end_index": 510
+  },
+  {
+    "segment_id": "seg_0087",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 170.18,
+    "end_sec": 170.46,
+    "start_time": "02:50.180",
+    "end_time": "02:50.460",
+    "duration_sec": 0.28,
+    "text": "When?",
+    "word_start_index": 511,
+    "word_end_index": 511
+  },
+  {
+    "segment_id": "seg_0088",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 171.02,
+    "end_sec": 173.67,
+    "start_time": "02:51.020",
+    "end_time": "02:53.670",
+    "duration_sec": 2.65,
+    "text": "Uh, this is, I was 15, so I'd probably say this is, yeah, 30 years ago.",
+    "word_start_index": 512,
+    "word_end_index": 527
+  },
+  {
+    "segment_id": "seg_0089",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 173.7,
+    "end_sec": 175.2,
+    "start_time": "02:53.700",
+    "end_time": "02:55.200",
+    "duration_sec": 1.5,
+    "text": "What, what was the name of the supermarket?",
+    "word_start_index": 528,
+    "word_end_index": 535
+  },
+  {
+    "segment_id": "seg_0090",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 175.72,
+    "end_sec": 177.96,
+    "start_time": "02:55.720",
+    "end_time": "02:57.960",
+    "duration_sec": 2.24,
+    "text": "Oddly, it was Great American, was the name of the supermarket.",
+    "word_start_index": 536,
+    "word_end_index": 546
+  },
+  {
+    "segment_id": "seg_0091",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 178.02,
+    "end_sec": 179.64,
+    "start_time": "02:58.020",
+    "end_time": "02:59.640",
+    "duration_sec": 1.62,
+    "text": "Can you repeat what happened?",
+    "word_start_index": 547,
+    "word_end_index": 551
+  },
+  {
+    "segment_id": "seg_0092",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 179.7,
+    "end_sec": 182.02,
+    "start_time": "02:59.700",
+    "end_time": "03:02.020",
+    "duration_sec": 2.32,
+    "text": "I got fired from my job for pretending to be French.",
+    "word_start_index": 552,
+    "word_end_index": 562
+  },
+  {
+    "segment_id": "seg_0093",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 183.5,
+    "end_sec": 184.72,
+    "start_time": "03:03.500",
+    "end_time": "03:04.720",
+    "duration_sec": 1.22,
+    "text": "Why were you pretending to be French?",
+    "word_start_index": 563,
+    "word_end_index": 569
+  },
+  {
+    "segment_id": "seg_0094",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 184.84,
+    "end_sec": 185.86,
+    "start_time": "03:04.840",
+    "end_time": "03:05.860",
+    "duration_sec": 1.02,
+    "text": "I was bored.",
+    "word_start_index": 570,
+    "word_end_index": 572
+  },
+  {
+    "segment_id": "seg_0095",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 185.92,
+    "end_sec": 186.24,
+    "start_time": "03:05.920",
+    "end_time": "03:06.240",
+    "duration_sec": 0.32,
+    "text": "You were bored.",
+    "word_start_index": 573,
+    "word_end_index": 575
+  },
+  {
+    "segment_id": "seg_0096",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 186.36,
+    "end_sec": 189.78,
+    "start_time": "03:06.360",
+    "end_time": "03:09.780",
+    "duration_sec": 3.42,
+    "text": "I was bored. I was putting stickers on canned, canned foods.",
+    "word_start_index": 576,
+    "word_end_index": 586
+  },
+  {
+    "segment_id": "seg_0097",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 190.03,
+    "end_sec": 190.03,
+    "start_time": "03:10.030",
+    "end_time": "03:10.030",
+    "duration_sec": 0.0,
+    "text": "Putting stickers on cans.",
+    "word_start_index": 587,
+    "word_end_index": 590
+  },
+  {
+    "segment_id": "seg_0098",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 190.04,
+    "end_sec": 193.16,
+    "start_time": "03:10.040",
+    "end_time": "03:13.160",
+    "duration_sec": 3.12,
+    "text": "I was bored, and people would ask me questions, and I'd be like, \"No.\"",
+    "word_start_index": 591,
+    "word_end_index": 604
+  },
+  {
+    "segment_id": "seg_0099",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 195.28,
+    "end_sec": 200.64,
+    "start_time": "03:15.280",
+    "end_time": "03:20.640",
+    "duration_sec": 5.36,
+    "text": "No. And then some, sometimes people would ask me for something, I'd go, \"Uh, you want,\" and I would point to French dressing.",
+    "word_start_index": 605,
+    "word_end_index": 627
+  },
+  {
+    "segment_id": "seg_0100",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 202.52,
+    "end_sec": 210.49,
+    "start_time": "03:22.520",
+    "end_time": "03:30.490",
+    "duration_sec": 7.97,
+    "text": "Or if it was around the mustard, I'd be, \"French's Mustard.\" But that was at my, and I think someone ratted on me. Someone complained, and then they said, \"Who did it?\" And then one of my friends ratted on me.",
+    "word_start_index": 628,
+    "word_end_index": 668
+  },
+  {
+    "segment_id": "seg_0101",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 210.5,
+    "end_sec": 211.12,
+    "start_time": "03:30.500",
+    "end_time": "03:31.120",
+    "duration_sec": 0.62,
+    "text": "Some French guy, yeah?",
+    "word_start_index": 669,
+    "word_end_index": 672
+  },
+  {
+    "segment_id": "seg_0102",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 211.42,
+    "end_sec": 215.76,
+    "start_time": "03:31.420",
+    "end_time": "03:35.760",
+    "duration_sec": 4.34,
+    "text": "Yeah, yeah. \"Who was, who's pretending to be French and not helping people?\" And then I was like, \"I don't know who did it.\"",
+    "word_start_index": 673,
+    "word_end_index": 696
+  },
+  {
+    "segment_id": "seg_0103",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 215.78,
+    "end_sec": 217.72,
+    "start_time": "03:35.780",
+    "end_time": "03:37.720",
+    "duration_sec": 1.94,
+    "text": "Sound like a very pretentious 15-year-old, by the way.",
+    "word_start_index": 697,
+    "word_end_index": 705
+  },
+  {
+    "segment_id": "seg_0104",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 219.3,
+    "end_sec": 219.31,
+    "start_time": "03:39.300",
+    "end_time": "03:39.310",
+    "duration_sec": 0.01,
+    "text": "Eh.",
+    "word_start_index": 706,
+    "word_end_index": 706
+  },
+  {
+    "segment_id": "seg_0105",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 219.34,
+    "end_sec": 220.92,
+    "start_time": "03:39.340",
+    "end_time": "03:40.920",
+    "duration_sec": 1.58,
+    "text": "So you were pretending to not understand them.",
+    "word_start_index": 707,
+    "word_end_index": 714
+  },
+  {
+    "segment_id": "seg_0106",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 221.18,
+    "end_sec": 222.08,
+    "start_time": "03:41.180",
+    "end_time": "03:42.080",
+    "duration_sec": 0.9,
+    "text": "Uh, no.",
+    "word_start_index": 715,
+    "word_end_index": 716
+  },
+  {
+    "segment_id": "seg_0107",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 222.18,
+    "end_sec": 222.5,
+    "start_time": "03:42.180",
+    "end_time": "03:42.500",
+    "duration_sec": 0.32,
+    "text": "Okay.",
+    "word_start_index": 717,
+    "word_end_index": 717
+  },
+  {
+    "segment_id": "seg_0108",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 222.6,
+    "end_sec": 224.38,
+    "start_time": "03:42.600",
+    "end_time": "03:44.380",
+    "duration_sec": 1.78,
+    "text": "I don't know.",
+    "word_start_index": 718,
+    "word_end_index": 720
+  },
+  {
+    "segment_id": "seg_0109",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 225.2,
+    "end_sec": 225.9,
+    "start_time": "03:45.200",
+    "end_time": "03:45.900",
+    "duration_sec": 0.7,
+    "text": "You were 15.",
+    "word_start_index": 721,
+    "word_end_index": 723
+  },
+  {
+    "segment_id": "seg_0110",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 225.94,
+    "end_sec": 226.24,
+    "start_time": "03:45.940",
+    "end_time": "03:46.240",
+    "duration_sec": 0.3,
+    "text": "Yeah.",
+    "word_start_index": 724,
+    "word_end_index": 724
+  },
+  {
+    "segment_id": "seg_0111",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 227.5,
+    "end_sec": 228.72,
+    "start_time": "03:47.500",
+    "end_time": "03:48.720",
+    "duration_sec": 1.22,
+    "text": "All right, what do you guys think?",
+    "word_start_index": 725,
+    "word_end_index": 731
+  },
+  {
+    "segment_id": "seg_0112",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 229.92,
+    "end_sec": 230.66,
+    "start_time": "03:49.920",
+    "end_time": "03:50.660",
+    "duration_sec": 0.74,
+    "text": "Uh...",
+    "word_start_index": 732,
+    "word_end_index": 732
+  },
+  {
+    "segment_id": "seg_0113",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 234.32,
+    "end_sec": 235.42,
+    "start_time": "03:54.320",
+    "end_time": "03:55.420",
+    "duration_sec": 1.1,
+    "text": "I, I don't think so.",
+    "word_start_index": 733,
+    "word_end_index": 737
+  },
+  {
+    "segment_id": "seg_0114",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 237.12,
+    "end_sec": 238.8,
+    "start_time": "03:57.120",
+    "end_time": "03:58.800",
+    "duration_sec": 1.68,
+    "text": "Mm-mm. I wanna say",
+    "word_start_index": 738,
+    "word_end_index": 741
+  },
+  {
+    "segment_id": "seg_0115",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 240.52,
+    "end_sec": 242.46,
+    "start_time": "04:00.520",
+    "end_time": "04:02.460",
+    "duration_sec": 1.94,
+    "text": "it's almost, like, not funny enough to be true.",
+    "word_start_index": 742,
+    "word_end_index": 750
+  },
+  {
+    "segment_id": "seg_0116",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 244.46,
+    "end_sec": 246.9,
+    "start_time": "04:04.460",
+    "end_time": "04:06.900",
+    "duration_sec": 2.44,
+    "text": "But you know what I'm saying? Like, you agree?",
+    "word_start_index": 751,
+    "word_end_index": 759
+  },
+  {
+    "segment_id": "seg_0117",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 247.02,
+    "end_sec": 248.34,
+    "start_time": "04:07.020",
+    "end_time": "04:08.340",
+    "duration_sec": 1.32,
+    "text": "Now I'm thinking, now I'm thinking it did happen.",
+    "word_start_index": 760,
+    "word_end_index": 768
+  },
+  {
+    "segment_id": "seg_0118",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 248.4,
+    "end_sec": 250.4,
+    "start_time": "04:08.400",
+    "end_time": "04:10.400",
+    "duration_sec": 2.0,
+    "text": "You know what I'm saying? Oh.",
+    "word_start_index": 769,
+    "word_end_index": 774
+  },
+  {
+    "segment_id": "seg_0119",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 250.84,
+    "end_sec": 251.78,
+    "start_time": "04:10.840",
+    "end_time": "04:11.780",
+    "duration_sec": 0.94,
+    "text": "Now you're thinking it did happen?",
+    "word_start_index": 775,
+    "word_end_index": 780
+  },
+  {
+    "segment_id": "seg_0120",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 251.82,
+    "end_sec": 252.42,
+    "start_time": "04:11.820",
+    "end_time": "04:12.420",
+    "duration_sec": 0.6,
+    "text": "Now I'm thinking it did happen.",
+    "word_start_index": 781,
+    "word_end_index": 786
+  },
+  {
+    "segment_id": "seg_0121",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 252.44,
+    "end_sec": 255.73,
+    "start_time": "04:12.440",
+    "end_time": "04:15.730",
+    "duration_sec": 3.29,
+    "text": "So I'm just gonna say it happened. You can say it didn't, so we can just one-up each other way.",
+    "word_start_index": 787,
+    "word_end_index": 806
+  },
+  {
+    "segment_id": "seg_0122",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 255.78,
+    "end_sec": 256.38,
+    "start_time": "04:15.780",
+    "end_time": "04:16.380",
+    "duration_sec": 0.6,
+    "text": "Okay, good.",
+    "word_start_index": 807,
+    "word_end_index": 808
+  },
+  {
+    "segment_id": "seg_0123",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 256.57,
+    "end_sec": 256.7,
+    "start_time": "04:16.570",
+    "end_time": "04:16.700",
+    "duration_sec": 0.13,
+    "text": "Okay?",
+    "word_start_index": 809,
+    "word_end_index": 809
+  },
+  {
+    "segment_id": "seg_0124",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 257.24,
+    "end_sec": 258.399,
+    "start_time": "04:17.240",
+    "end_time": "04:18.399",
+    "duration_sec": 1.159,
+    "text": "No, I think you have to be unanimous.",
+    "word_start_index": 810,
+    "word_end_index": 817
+  },
+  {
+    "segment_id": "seg_0125",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 258.459,
+    "end_sec": 258.579,
+    "start_time": "04:18.459",
+    "end_time": "04:18.579",
+    "duration_sec": 0.12,
+    "text": "No.",
+    "word_start_index": 818,
+    "word_end_index": 818
+  },
+  {
+    "segment_id": "seg_0126",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 258.589,
+    "end_sec": 258.959,
+    "start_time": "04:18.589",
+    "end_time": "04:18.959",
+    "duration_sec": 0.37,
+    "text": "Oh, we do?",
+    "word_start_index": 819,
+    "word_end_index": 821
+  },
+  {
+    "segment_id": "seg_0127",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 259.14,
+    "end_sec": 260.209,
+    "start_time": "04:19.140",
+    "end_time": "04:20.209",
+    "duration_sec": 1.069,
+    "text": "No. Okay, sure.",
+    "word_start_index": 822,
+    "word_end_index": 824
+  },
+  {
+    "segment_id": "seg_0128",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 260.22,
+    "end_sec": 265.06,
+    "start_time": "04:20.220",
+    "end_time": "04:25.060",
+    "duration_sec": 4.84,
+    "text": "I like it how you, I like it how he's played this game. He goes, \"No, I think you have to be unani-\" You don't even know the rules of the game.",
+    "word_start_index": 825,
+    "word_end_index": 856
+  },
+  {
+    "segment_id": "seg_0129",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 266.18,
+    "end_sec": 269.14,
+    "start_time": "04:26.180",
+    "end_time": "04:29.140",
+    "duration_sec": 2.96,
+    "text": "All right, uh, you have to be unanimous. Ready? One, two, three, yay or nay.",
+    "word_start_index": 857,
+    "word_end_index": 871
+  },
+  {
+    "segment_id": "seg_0130",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 269.64,
+    "end_sec": 269.65,
+    "start_time": "04:29.640",
+    "end_time": "04:29.650",
+    "duration_sec": 0.01,
+    "text": "Y-",
+    "word_start_index": 872,
+    "word_end_index": 872
+  },
+  {
+    "segment_id": "seg_0131",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 270.02,
+    "end_sec": 270.23,
+    "start_time": "04:30.020",
+    "end_time": "04:30.230",
+    "duration_sec": 0.21,
+    "text": "Yay.",
+    "word_start_index": 873,
+    "word_end_index": 873
+  },
+  {
+    "segment_id": "seg_0132",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 270.23,
+    "end_sec": 270.26,
+    "start_time": "04:30.230",
+    "end_time": "04:30.260",
+    "duration_sec": 0.03,
+    "text": "Yay.",
+    "word_start_index": 874,
+    "word_end_index": 874
+  },
+  {
+    "segment_id": "seg_0133",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 270.6,
+    "end_sec": 270.63,
+    "start_time": "04:30.600",
+    "end_time": "04:30.630",
+    "duration_sec": 0.03,
+    "text": "Yay.",
+    "word_start_index": 875,
+    "word_end_index": 875
+  },
+  {
+    "segment_id": "seg_0134",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 270.63,
+    "end_sec": 271.64,
+    "start_time": "04:30.630",
+    "end_time": "04:31.640",
+    "duration_sec": 1.01,
+    "text": "You think yay, it did happen.",
+    "word_start_index": 876,
+    "word_end_index": 881
+  },
+  {
+    "segment_id": "seg_0135",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 271.7,
+    "end_sec": 272.54,
+    "start_time": "04:31.700",
+    "end_time": "04:32.540",
+    "duration_sec": 0.84,
+    "text": "I think it did happen.",
+    "word_start_index": 882,
+    "word_end_index": 886
+  },
+  {
+    "segment_id": "seg_0136",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 272.6,
+    "end_sec": 274.04,
+    "start_time": "04:32.600",
+    "end_time": "04:34.040",
+    "duration_sec": 1.44,
+    "text": "Yeah. It did not happen.",
+    "word_start_index": 887,
+    "word_end_index": 891
+  },
+  {
+    "segment_id": "seg_0137",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 274.13,
+    "end_sec": 274.13,
+    "start_time": "04:34.130",
+    "end_time": "04:34.130",
+    "duration_sec": 0.0,
+    "text": "Oh.",
+    "word_start_index": 892,
+    "word_end_index": 892
+  },
+  {
+    "segment_id": "seg_0138",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 275.06,
+    "end_sec": 275.27,
+    "start_time": "04:35.060",
+    "end_time": "04:35.270",
+    "duration_sec": 0.21,
+    "text": "Okay, good.",
+    "word_start_index": 893,
+    "word_end_index": 894
+  },
+  {
+    "segment_id": "seg_0139",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 275.32,
+    "end_sec": 275.8,
+    "start_time": "04:35.320",
+    "end_time": "04:35.800",
+    "duration_sec": 0.48,
+    "text": "You were right.",
+    "word_start_index": 895,
+    "word_end_index": 897
+  },
+  {
+    "segment_id": "seg_0140",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 276.04,
+    "end_sec": 276.19,
+    "start_time": "04:36.040",
+    "end_time": "04:36.190",
+    "duration_sec": 0.15,
+    "text": "No, good.",
+    "word_start_index": 898,
+    "word_end_index": 899
+  },
+  {
+    "segment_id": "seg_0141",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 276.19,
+    "end_sec": 277.099,
+    "start_time": "04:36.190",
+    "end_time": "04:37.099",
+    "duration_sec": 0.909,
+    "text": "You should've stuck to your gut.",
+    "word_start_index": 900,
+    "word_end_index": 905
+  },
+  {
+    "segment_id": "seg_0142",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 277.54,
+    "end_sec": 277.79,
+    "start_time": "04:37.540",
+    "end_time": "04:37.790",
+    "duration_sec": 0.25,
+    "text": "That's good.",
+    "word_start_index": 906,
+    "word_end_index": 907
+  },
+  {
+    "segment_id": "seg_0143",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 277.79,
+    "end_sec": 280.62,
+    "start_time": "04:37.790",
+    "end_time": "04:40.620",
+    "duration_sec": 2.83,
+    "text": "That's the lesson learned. Stick to your gut. No.",
+    "word_start_index": 908,
+    "word_end_index": 916
+  },
+  {
+    "segment_id": "seg_0144",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 280.98,
+    "end_sec": 281.32,
+    "start_time": "04:40.980",
+    "end_time": "04:41.320",
+    "duration_sec": 0.34,
+    "text": "Oh.",
+    "word_start_index": 917,
+    "word_end_index": 917
+  },
+  {
+    "segment_id": "seg_0145",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 281.38,
+    "end_sec": 287.31,
+    "start_time": "04:41.380",
+    "end_time": "04:47.310",
+    "duration_sec": 5.93,
+    "text": "I did get fired, but it was for doing, uh, it was for doing whip-its. All right, Colin, I think you should, you should, uh, I think you should-",
+    "word_start_index": 918,
+    "word_end_index": 946
+  },
+  {
+    "segment_id": "seg_0146",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 287.34,
+    "end_sec": 287.84,
+    "start_time": "04:47.340",
+    "end_time": "04:47.840",
+    "duration_sec": 0.5,
+    "text": "Come on, baby",
+    "word_start_index": 947,
+    "word_end_index": 949
+  },
+  {
+    "segment_id": "seg_0147",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 288.06,
+    "end_sec": 290.16,
+    "start_time": "04:48.060",
+    "end_time": "04:50.160",
+    "duration_sec": 2.1,
+    "text": "... I think number one,'cause you know why? You're number one to me, man.",
+    "word_start_index": 950,
+    "word_end_index": 964
+  },
+  {
+    "segment_id": "seg_0148",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 290.28,
+    "end_sec": 291.3,
+    "start_time": "04:50.280",
+    "end_time": "04:51.300",
+    "duration_sec": 1.02,
+    "text": "Oh, thanks.",
+    "word_start_index": 965,
+    "word_end_index": 966
+  },
+  {
+    "segment_id": "seg_0149",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 291.49,
+    "end_sec": 291.5,
+    "start_time": "04:51.490",
+    "end_time": "04:51.500",
+    "duration_sec": 0.01,
+    "text": "Oh.",
+    "word_start_index": 967,
+    "word_end_index": 967
+  },
+  {
+    "segment_id": "seg_0150",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 291.54,
+    "end_sec": 292.92,
+    "start_time": "04:51.540",
+    "end_time": "04:52.920",
+    "duration_sec": 1.38,
+    "text": "Yeah. Here we go.",
+    "word_start_index": 968,
+    "word_end_index": 971
+  },
+  {
+    "segment_id": "seg_0151",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 293.14,
+    "end_sec": 293.78,
+    "start_time": "04:53.140",
+    "end_time": "04:53.780",
+    "duration_sec": 0.64,
+    "text": "Okay, ready?",
+    "word_start_index": 972,
+    "word_end_index": 973
+  },
+  {
+    "segment_id": "seg_0152",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 294.24,
+    "end_sec": 294.38,
+    "start_time": "04:54.240",
+    "end_time": "04:54.380",
+    "duration_sec": 0.14,
+    "text": "Yeah.",
+    "word_start_index": 974,
+    "word_end_index": 974
+  },
+  {
+    "segment_id": "seg_0153",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 295.54,
+    "end_sec": 299.06,
+    "start_time": "04:55.540",
+    "end_time": "04:59.060",
+    "duration_sec": 3.52,
+    "text": "My first stand-up set was in a police station while I was under arrest.",
+    "word_start_index": 975,
+    "word_end_index": 988
+  },
+  {
+    "segment_id": "seg_0154",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 299.94,
+    "end_sec": 300.51,
+    "start_time": "04:59.940",
+    "end_time": "05:00.510",
+    "duration_sec": 0.57,
+    "text": "That's so good.",
+    "word_start_index": 989,
+    "word_end_index": 991
+  },
+  {
+    "segment_id": "seg_0155",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 300.56,
+    "end_sec": 302.84,
+    "start_time": "05:00.560",
+    "end_time": "05:02.840",
+    "duration_sec": 2.28,
+    "text": "This is absolutely true. This is so true.",
+    "word_start_index": 992,
+    "word_end_index": 999
+  },
+  {
+    "segment_id": "seg_0156",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 303.06,
+    "end_sec": 303.76,
+    "start_time": "05:03.060",
+    "end_time": "05:03.760",
+    "duration_sec": 0.7,
+    "text": "I, I love-",
+    "word_start_index": 1000,
+    "word_end_index": 1002
+  },
+  {
+    "segment_id": "seg_0157",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 303.82,
+    "end_sec": 304.44,
+    "start_time": "05:03.820",
+    "end_time": "05:04.440",
+    "duration_sec": 0.62,
+    "text": "He's Colin Quinn.",
+    "word_start_index": 1003,
+    "word_end_index": 1005
+  },
+  {
+    "segment_id": "seg_0158",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 304.48,
+    "end_sec": 304.55,
+    "start_time": "05:04.480",
+    "end_time": "05:04.550",
+    "duration_sec": 0.07,
+    "text": "I just love hearing this",
+    "word_start_index": 1006,
+    "word_end_index": 1010
+  },
+  {
+    "segment_id": "seg_0159",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 304.55,
+    "end_sec": 313.88,
+    "start_time": "05:04.550",
+    "end_time": "05:13.880",
+    "duration_sec": 9.33,
+    "text": "... he's the most Irish guy I know. This is the perfect for his one-man show, for his book. This is so him. He did stand-up in a police station. I, I... Why were you arrested?",
+    "word_start_index": 1011,
+    "word_end_index": 1046
+  },
+  {
+    "segment_id": "seg_0160",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 314.64,
+    "end_sec": 316.42,
+    "start_time": "05:14.640",
+    "end_time": "05:16.420",
+    "duration_sec": 1.78,
+    "text": "Possession of a controlled substance.",
+    "word_start_index": 1047,
+    "word_end_index": 1051
+  },
+  {
+    "segment_id": "seg_0161",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 318.56,
+    "end_sec": 320.33,
+    "start_time": "05:18.560",
+    "end_time": "05:20.330",
+    "duration_sec": 1.77,
+    "text": "Do you had weed on you, or is it something else?",
+    "word_start_index": 1052,
+    "word_end_index": 1062
+  },
+  {
+    "segment_id": "seg_0162",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 320.88,
+    "end_sec": 320.98,
+    "start_time": "05:20.880",
+    "end_time": "05:20.980",
+    "duration_sec": 0.1,
+    "text": "Yeah.",
+    "word_start_index": 1063,
+    "word_end_index": 1063
+  },
+  {
+    "segment_id": "seg_0163",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 321.02,
+    "end_sec": 321.96,
+    "start_time": "05:21.020",
+    "end_time": "05:21.960",
+    "duration_sec": 0.94,
+    "text": "Yeah, you wanna say what it was?",
+    "word_start_index": 1064,
+    "word_end_index": 1070
+  },
+  {
+    "segment_id": "seg_0164",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 323.39,
+    "end_sec": 325.5,
+    "start_time": "05:23.390",
+    "end_time": "05:25.500",
+    "duration_sec": 2.11,
+    "text": "Go on, say what... Wait, but how old were you?",
+    "word_start_index": 1071,
+    "word_end_index": 1080
+  },
+  {
+    "segment_id": "seg_0165",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 325.54,
+    "end_sec": 327.14,
+    "start_time": "05:25.540",
+    "end_time": "05:27.140",
+    "duration_sec": 1.6,
+    "text": "You think I'd get arrested for weed? Come on.",
+    "word_start_index": 1081,
+    "word_end_index": 1089
+  },
+  {
+    "segment_id": "seg_0166",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 328.76,
+    "end_sec": 329.5,
+    "start_time": "05:28.760",
+    "end_time": "05:29.500",
+    "duration_sec": 0.74,
+    "text": "How old were you?",
+    "word_start_index": 1090,
+    "word_end_index": 1093
+  },
+  {
+    "segment_id": "seg_0167",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 329.94,
+    "end_sec": 331.09,
+    "start_time": "05:29.940",
+    "end_time": "05:31.090",
+    "duration_sec": 1.15,
+    "text": "Uh, 22.",
+    "word_start_index": 1094,
+    "word_end_index": 1095
+  },
+  {
+    "segment_id": "seg_0168",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 331.32,
+    "end_sec": 338.02,
+    "start_time": "05:31.320",
+    "end_time": "05:38.020",
+    "duration_sec": 6.7,
+    "text": "Oh my gosh, he totally did this. It was, it was, it was you-know-what in a thing-... and he got busted. Were you in a car or something, driving?",
+    "word_start_index": 1096,
+    "word_end_index": 1125
+  },
+  {
+    "segment_id": "seg_0169",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 338.04,
+    "end_sec": 338.86,
+    "start_time": "05:38.040",
+    "end_time": "05:38.860",
+    "duration_sec": 0.82,
+    "text": "You said you know what.",
+    "word_start_index": 1126,
+    "word_end_index": 1130
+  },
+  {
+    "segment_id": "seg_0170",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 338.91,
+    "end_sec": 338.91,
+    "start_time": "05:38.910",
+    "end_time": "05:38.910",
+    "duration_sec": 0.0,
+    "text": "No.",
+    "word_start_index": 1131,
+    "word_end_index": 1131
+  },
+  {
+    "segment_id": "seg_0171",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 338.94,
+    "end_sec": 344.28,
+    "start_time": "05:38.940",
+    "end_time": "05:44.280",
+    "duration_sec": 5.34,
+    "text": "Oh, that's right,'cause you grew up in the streets of Brooklyn. And that's how you have your accent. So you're walking around, and you started some trouble.",
+    "word_start_index": 1132,
+    "word_end_index": 1159
+  },
+  {
+    "segment_id": "seg_0172",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 344.32,
+    "end_sec": 345.87,
+    "start_time": "05:44.320",
+    "end_time": "05:45.870",
+    "duration_sec": 1.55,
+    "text": "I just like picturing it, so I'm gonna say it's true.",
+    "word_start_index": 1160,
+    "word_end_index": 1170
+  },
+  {
+    "segment_id": "seg_0173",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 345.9,
+    "end_sec": 347.2,
+    "start_time": "05:45.900",
+    "end_time": "05:47.200",
+    "duration_sec": 1.3,
+    "text": "You got in a fight. You got in a fight with somebody?",
+    "word_start_index": 1171,
+    "word_end_index": 1182
+  },
+  {
+    "segment_id": "seg_0174",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 347.52,
+    "end_sec": 348.63,
+    "start_time": "05:47.520",
+    "end_time": "05:48.630",
+    "duration_sec": 1.11,
+    "text": "I think I like it.",
+    "word_start_index": 1183,
+    "word_end_index": 1187
+  },
+  {
+    "segment_id": "seg_0175",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 348.63,
+    "end_sec": 348.64,
+    "start_time": "05:48.630",
+    "end_time": "05:48.640",
+    "duration_sec": 0.01,
+    "text": "No.",
+    "word_start_index": 1188,
+    "word_end_index": 1188
+  },
+  {
+    "segment_id": "seg_0176",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 348.76,
+    "end_sec": 350.16,
+    "start_time": "05:48.760",
+    "end_time": "05:50.160",
+    "duration_sec": 1.4,
+    "text": "Uh, how did you get arrested?",
+    "word_start_index": 1189,
+    "word_end_index": 1194
+  },
+  {
+    "segment_id": "seg_0177",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 350.24,
+    "end_sec": 350.31,
+    "start_time": "05:50.240",
+    "end_time": "05:50.310",
+    "duration_sec": 0.07,
+    "text": "Well, you do know-",
+    "word_start_index": 1195,
+    "word_end_index": 1198
+  },
+  {
+    "segment_id": "seg_0178",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 350.31,
+    "end_sec": 350.56,
+    "start_time": "05:50.310",
+    "end_time": "05:50.560",
+    "duration_sec": 0.25,
+    "text": "What's that?",
+    "word_start_index": 1199,
+    "word_end_index": 1200
+  },
+  {
+    "segment_id": "seg_0179",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 350.6,
+    "end_sec": 351.66,
+    "start_time": "05:50.600",
+    "end_time": "05:51.660",
+    "duration_sec": 1.06,
+    "text": "How did you get arrested? You were buying?",
+    "word_start_index": 1201,
+    "word_end_index": 1208
+  },
+  {
+    "segment_id": "seg_0180",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 351.86,
+    "end_sec": 353.28,
+    "start_time": "05:51.860",
+    "end_time": "05:53.280",
+    "duration_sec": 1.42,
+    "text": "Possession of a controlled sub- well, yeah.",
+    "word_start_index": 1209,
+    "word_end_index": 1215
+  },
+  {
+    "segment_id": "seg_0181",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 353.36,
+    "end_sec": 353.89,
+    "start_time": "05:53.360",
+    "end_time": "05:53.890",
+    "duration_sec": 0.53,
+    "text": "But what, in a joint?",
+    "word_start_index": 1216,
+    "word_end_index": 1220
+  },
+  {
+    "segment_id": "seg_0182",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 353.89,
+    "end_sec": 354.42,
+    "start_time": "05:53.890",
+    "end_time": "05:54.420",
+    "duration_sec": 0.53,
+    "text": "In a rollie-",
+    "word_start_index": 1221,
+    "word_end_index": 1223
+  },
+  {
+    "segment_id": "seg_0183",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 354.84,
+    "end_sec": 355.61,
+    "start_time": "05:54.840",
+    "end_time": "05:55.610",
+    "duration_sec": 0.77,
+    "text": "So it was on some Andre jeans?",
+    "word_start_index": 1224,
+    "word_end_index": 1230
+  },
+  {
+    "segment_id": "seg_0184",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 355.66,
+    "end_sec": 356.23,
+    "start_time": "05:55.660",
+    "end_time": "05:56.230",
+    "duration_sec": 0.57,
+    "text": "... on 43rd Street.",
+    "word_start_index": 1231,
+    "word_end_index": 1234
+  },
+  {
+    "segment_id": "seg_0185",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 356.24,
+    "end_sec": 357.27,
+    "start_time": "05:56.240",
+    "end_time": "05:57.270",
+    "duration_sec": 1.03,
+    "text": "How much cocaine did you have?",
+    "word_start_index": 1235,
+    "word_end_index": 1240
+  },
+  {
+    "segment_id": "seg_0186",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 357.31,
+    "end_sec": 357.57,
+    "start_time": "05:57.310",
+    "end_time": "05:57.570",
+    "duration_sec": 0.26,
+    "text": "In a rollie.",
+    "word_start_index": 1241,
+    "word_end_index": 1243
+  },
+  {
+    "segment_id": "seg_0187",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 357.76,
+    "end_sec": 358.04,
+    "start_time": "05:57.760",
+    "end_time": "05:58.040",
+    "duration_sec": 0.28,
+    "text": "Yeah.",
+    "word_start_index": 1244,
+    "word_end_index": 1244
+  },
+  {
+    "segment_id": "seg_0188",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 358.18,
+    "end_sec": 358.94,
+    "start_time": "05:58.180",
+    "end_time": "05:58.940",
+    "duration_sec": 0.76,
+    "text": "It was fake.",
+    "word_start_index": 1245,
+    "word_end_index": 1247
+  },
+  {
+    "segment_id": "seg_0189",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 359.8,
+    "end_sec": 360.42,
+    "start_time": "05:59.800",
+    "end_time": "06:00.420",
+    "duration_sec": 0.62,
+    "text": "It was fake cocaine?",
+    "word_start_index": 1248,
+    "word_end_index": 1251
+  },
+  {
+    "segment_id": "seg_0190",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 360.54,
+    "end_sec": 361.02,
+    "start_time": "06:00.540",
+    "end_time": "06:01.020",
+    "duration_sec": 0.48,
+    "text": "It was fake.",
+    "word_start_index": 1252,
+    "word_end_index": 1254
+  },
+  {
+    "segment_id": "seg_0191",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 361.34,
+    "end_sec": 361.51,
+    "start_time": "06:01.340",
+    "end_time": "06:01.510",
+    "duration_sec": 0.17,
+    "text": "Like, what?",
+    "word_start_index": 1255,
+    "word_end_index": 1256
+  },
+  {
+    "segment_id": "seg_0192",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 361.51,
+    "end_sec": 362.54,
+    "start_time": "06:01.510",
+    "end_time": "06:02.540",
+    "duration_sec": 1.03,
+    "text": "Don't do fake cocaine.",
+    "word_start_index": 1257,
+    "word_end_index": 1260
+  },
+  {
+    "segment_id": "seg_0193",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 363.96,
+    "end_sec": 364.38,
+    "start_time": "06:03.960",
+    "end_time": "06:04.380",
+    "duration_sec": 0.42,
+    "text": "I love it.",
+    "word_start_index": 1261,
+    "word_end_index": 1263
+  },
+  {
+    "segment_id": "seg_0194",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 364.46,
+    "end_sec": 364.91,
+    "start_time": "06:04.460",
+    "end_time": "06:04.910",
+    "duration_sec": 0.45,
+    "text": "Don't, don't be a-",
+    "word_start_index": 1264,
+    "word_end_index": 1267
+  },
+  {
+    "segment_id": "seg_0195",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 364.91,
+    "end_sec": 365.13,
+    "start_time": "06:04.910",
+    "end_time": "06:05.130",
+    "duration_sec": 0.22,
+    "text": "There's certainly not fake cocaine",
+    "word_start_index": 1268,
+    "word_end_index": 1272
+  },
+  {
+    "segment_id": "seg_0196",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 365.13,
+    "end_sec": 371.62,
+    "start_time": "06:05.130",
+    "end_time": "06:11.620",
+    "duration_sec": 6.49,
+    "text": "... you're not a role model to children. Don't do fake cocaine. Don't do cocaine at all. Don't do it, real or fake.",
+    "word_start_index": 1273,
+    "word_end_index": 1295
+  },
+  {
+    "segment_id": "seg_0197",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 373.16,
+    "end_sec": 373.95,
+    "start_time": "06:13.160",
+    "end_time": "06:13.950",
+    "duration_sec": 0.79,
+    "text": "What's fake cocaine made out of?",
+    "word_start_index": 1296,
+    "word_end_index": 1301
+  },
+  {
+    "segment_id": "seg_0198",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 373.98,
+    "end_sec": 374.34,
+    "start_time": "06:13.980",
+    "end_time": "06:14.340",
+    "duration_sec": 0.36,
+    "text": "I don't know.",
+    "word_start_index": 1302,
+    "word_end_index": 1304
+  },
+  {
+    "segment_id": "seg_0199",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 374.4,
+    "end_sec": 374.51,
+    "start_time": "06:14.400",
+    "end_time": "06:14.510",
+    "duration_sec": 0.11,
+    "text": "Salt? Like-",
+    "word_start_index": 1305,
+    "word_end_index": 1306
+  },
+  {
+    "segment_id": "seg_0200",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 374.51,
+    "end_sec": 376.32,
+    "start_time": "06:14.510",
+    "end_time": "06:16.320",
+    "duration_sec": 1.81,
+    "text": "I, I really, I, I know him pretty well.",
+    "word_start_index": 1307,
+    "word_end_index": 1315
+  },
+  {
+    "segment_id": "seg_0201",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 376.44,
+    "end_sec": 376.5,
+    "start_time": "06:16.440",
+    "end_time": "06:16.500",
+    "duration_sec": 0.06,
+    "text": "It's called procaine.",
+    "word_start_index": 1316,
+    "word_end_index": 1318
+  },
+  {
+    "segment_id": "seg_0202",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 376.66,
+    "end_sec": 376.69,
+    "start_time": "06:16.660",
+    "end_time": "06:16.690",
+    "duration_sec": 0.03,
+    "text": "What?",
+    "word_start_index": 1319,
+    "word_end_index": 1319
+  },
+  {
+    "segment_id": "seg_0203",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 377.36,
+    "end_sec": 377.9,
+    "start_time": "06:17.360",
+    "end_time": "06:17.900",
+    "duration_sec": 0.54,
+    "text": "Procaine.",
+    "word_start_index": 1320,
+    "word_end_index": 1320
+  },
+  {
+    "segment_id": "seg_0204",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 378.0,
+    "end_sec": 378.84,
+    "start_time": "06:18.000",
+    "end_time": "06:18.840",
+    "duration_sec": 0.84,
+    "text": "That's what they called it.",
+    "word_start_index": 1321,
+    "word_end_index": 1325
+  },
+  {
+    "segment_id": "seg_0205",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 379.5,
+    "end_sec": 382.94,
+    "start_time": "06:19.500",
+    "end_time": "06:22.940",
+    "duration_sec": 3.44,
+    "text": "I, I, I think of course this would happen to him,'cause he, this, he has this type of luck.",
+    "word_start_index": 1326,
+    "word_end_index": 1345
+  },
+  {
+    "segment_id": "seg_0206",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 382.99,
+    "end_sec": 384.88,
+    "start_time": "06:22.990",
+    "end_time": "06:24.880",
+    "duration_sec": 1.89,
+    "text": "I, I just love to picture it.",
+    "word_start_index": 1346,
+    "word_end_index": 1352
+  },
+  {
+    "segment_id": "seg_0207",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 384.92,
+    "end_sec": 384.93,
+    "start_time": "06:24.920",
+    "end_time": "06:24.930",
+    "duration_sec": 0.01,
+    "text": "Yeah.",
+    "word_start_index": 1353,
+    "word_end_index": 1353
+  },
+  {
+    "segment_id": "seg_0208",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 384.94,
+    "end_sec": 386.35,
+    "start_time": "06:24.940",
+    "end_time": "06:26.350",
+    "duration_sec": 1.41,
+    "text": "So I'm gonna... I feel like it's true, you know?",
+    "word_start_index": 1354,
+    "word_end_index": 1363
+  },
+  {
+    "segment_id": "seg_0209",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 386.4,
+    "end_sec": 389.68,
+    "start_time": "06:26.400",
+    "end_time": "06:29.680",
+    "duration_sec": 3.28,
+    "text": "Gosh, if he's lying, you're a genius,'cause he is a good actor too. I'm gonna say it's true.",
+    "word_start_index": 1364,
+    "word_end_index": 1382
+  },
+  {
+    "segment_id": "seg_0210",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 389.78,
+    "end_sec": 390.4,
+    "start_time": "06:29.780",
+    "end_time": "06:30.400",
+    "duration_sec": 0.62,
+    "text": "I think it's true.",
+    "word_start_index": 1383,
+    "word_end_index": 1386
+  },
+  {
+    "segment_id": "seg_0211",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 391.48,
+    "end_sec": 391.82,
+    "start_time": "06:31.480",
+    "end_time": "06:31.820",
+    "duration_sec": 0.34,
+    "text": "It's true.",
+    "word_start_index": 1387,
+    "word_end_index": 1388
+  },
+  {
+    "segment_id": "seg_0212",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 392.0,
+    "end_sec": 392.5,
+    "start_time": "06:32.000",
+    "end_time": "06:32.500",
+    "duration_sec": 0.5,
+    "text": "What?",
+    "word_start_index": 1389,
+    "word_end_index": 1389
+  },
+  {
+    "segment_id": "seg_0213",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 393.2,
+    "end_sec": 393.28,
+    "start_time": "06:33.200",
+    "end_time": "06:33.280",
+    "duration_sec": 0.08,
+    "text": "Yeah.",
+    "word_start_index": 1390,
+    "word_end_index": 1390
+  },
+  {
+    "segment_id": "seg_0214",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 395.4,
+    "end_sec": 396.27,
+    "start_time": "06:35.400",
+    "end_time": "06:36.270",
+    "duration_sec": 0.87,
+    "text": "I love you.",
+    "word_start_index": 1391,
+    "word_end_index": 1393
+  },
+  {
+    "segment_id": "seg_0215",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 396.28,
+    "end_sec": 396.41,
+    "start_time": "06:36.280",
+    "end_time": "06:36.410",
+    "duration_sec": 0.13,
+    "text": "Come on.",
+    "word_start_index": 1394,
+    "word_end_index": 1395
+  },
+  {
+    "segment_id": "seg_0216",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 396.41,
+    "end_sec": 402.08,
+    "start_time": "06:36.410",
+    "end_time": "06:42.080",
+    "duration_sec": 5.67,
+    "text": "Come on. I love you, buddy. Oh, there's the truth right there. Billie Eilish, Colin Quinn, everybody.",
+    "word_start_index": 1396,
+    "word_end_index": 1412
+  },
+  {
+    "segment_id": "seg_0217",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 403.68,
+    "end_sec": 407.56,
+    "start_time": "06:43.680",
+    "end_time": "06:47.560",
+    "duration_sec": 3.88,
+    "text": "Uh, uh-huh. It's on and on and on. Uh, I said.",
+    "word_start_index": 1413,
+    "word_end_index": 1423
+  },
+  {
+    "segment_id": "seg_0218",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 409.24,
+    "end_sec": 410.72,
+    "start_time": "06:49.240",
+    "end_time": "06:50.720",
+    "duration_sec": 1.48,
+    "text": "And it's on and on and on",
+    "word_start_index": 1424,
+    "word_end_index": 1430
+  }
+]

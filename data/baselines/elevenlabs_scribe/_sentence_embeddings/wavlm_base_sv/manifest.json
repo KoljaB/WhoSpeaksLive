@@ -1,13 +1,236 @@
 {
-  "status": "failed",
+  "status": "ok",
   "provider": "wavlm_base_sv",
   "backend": "remote",
   "remote_url": "http://192.168.178.22:8660",
   "device": "cuda",
-  "video_count": 0,
-  "segment_count": 0,
-  "created_video_count": 0,
-  "skipped_video_count": 0,
-  "error_type": "RuntimeError",
-  "error": "Remote embeddings HTTP 500: {\"detail\":\"wavlm_base_sv_provider_failed: OutOfMemoryError: CUDA out of memory. Tried to allocate 6.38 GiB. GPU 0 has a total capacity of 23.50 GiB of which 1.42 GiB is free. Process 1782 has 1.53 GiB memory in use. Process 1776 has 4.08 GiB memory in use. Including non-PyTorch memory, this process "
+  "load_result": {
+    "ok": true,
+    "requested_device": "cuda",
+    "resolved_device": "cuda",
+    "warmup_seconds": 2.0,
+    "loaded": [
+      {
+        "provider": "wavlm_base_sv",
+        "weight": 1.0,
+        "device": "cuda",
+        "dim": 512
+      }
+    ],
+    "warmups": [
+      {
+        "provider": "wavlm_base_sv",
+        "weight": 1.0,
+        "device": "cuda",
+        "elapsed_seconds": 3.5030875600059517,
+        "dim": 512,
+        "warmup_seconds": 2.0
+      }
+    ],
+    "elapsed_seconds": 3.5041812780036707
+  },
+  "video_count": 27,
+  "segment_count": 2586,
+  "created_video_count": 8,
+  "skipped_video_count": 19,
+  "elapsed_seconds": 66.98775950004347,
+  "outputs": [
+    {
+      "video": "1NBVQB-Srpw",
+      "segments": 85,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\1NBVQB-Srpw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\1NBVQB-Srpw.segments.json"
+    },
+    {
+      "video": "20v1OxUXcQY",
+      "segments": 98,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\20v1OxUXcQY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\20v1OxUXcQY.segments.json"
+    },
+    {
+      "video": "acbnyagl8jo",
+      "segments": 94,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\acbnyagl8jo.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\acbnyagl8jo.segments.json"
+    },
+    {
+      "video": "aHGd6LqAVzw",
+      "segments": 57,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\aHGd6LqAVzw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\aHGd6LqAVzw.segments.json"
+    },
+    {
+      "video": "blcKeLDDzSM",
+      "segments": 61,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\blcKeLDDzSM.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\blcKeLDDzSM.segments.json"
+    },
+    {
+      "video": "bPpcfH_HHH8",
+      "segments": 101,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\bPpcfH_HHH8.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\bPpcfH_HHH8.segments.json"
+    },
+    {
+      "video": "cLdy4P-XJPE",
+      "segments": 52,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\cLdy4P-XJPE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\cLdy4P-XJPE.segments.json"
+    },
+    {
+      "video": "cunk",
+      "segments": 45,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\cunk.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\cunk.segments.json"
+    },
+    {
+      "video": "Dd7FixvoKBw",
+      "segments": 57,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\Dd7FixvoKBw.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\Dd7FixvoKBw.segments.json"
+    },
+    {
+      "video": "DsyfYJ5Ou3g",
+      "segments": 70,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\DsyfYJ5Ou3g.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\DsyfYJ5Ou3g.segments.json"
+    },
+    {
+      "video": "e3h6es6zh1c",
+      "segments": 50,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\e3h6es6zh1c.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\e3h6es6zh1c.segments.json"
+    },
+    {
+      "video": "F2-2RBi1qzY",
+      "segments": 100,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\F2-2RBi1qzY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\F2-2RBi1qzY.segments.json"
+    },
+    {
+      "video": "gj7BRMuB-n4",
+      "segments": 155,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\gj7BRMuB-n4.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\gj7BRMuB-n4.segments.json"
+    },
+    {
+      "video": "k1tsGGz-Qw0",
+      "segments": 83,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\k1tsGGz-Qw0.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\k1tsGGz-Qw0.segments.json"
+    },
+    {
+      "video": "KdOXM3I_5hk",
+      "segments": 245,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\KdOXM3I_5hk.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\KdOXM3I_5hk.segments.json"
+    },
+    {
+      "video": "L-CfFo5aQGU",
+      "segments": 132,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\L-CfFo5aQGU.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\L-CfFo5aQGU.segments.json"
+    },
+    {
+      "video": "mBeT_AoCXvc",
+      "segments": 96,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\mBeT_AoCXvc.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\mBeT_AoCXvc.segments.json"
+    },
+    {
+      "video": "mWABb5Dy9BQ",
+      "segments": 219,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\mWABb5Dy9BQ.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\mWABb5Dy9BQ.segments.json"
+    },
+    {
+      "video": "oFBuCp19L7M",
+      "segments": 95,
+      "status": "skipped",
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\oFBuCp19L7M.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\oFBuCp19L7M.segments.json"
+    },
+    {
+      "video": "onHUfyRP1BE",
+      "segments": 9,
+      "status": "created",
+      "elapsed_seconds": 2.3718891001772135,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\onHUfyRP1BE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\onHUfyRP1BE.segments.json"
+    },
+    {
+      "video": "pD4IdQTmneI",
+      "segments": 15,
+      "status": "created",
+      "elapsed_seconds": 1.750092500122264,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\pD4IdQTmneI.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\pD4IdQTmneI.segments.json"
+    },
+    {
+      "video": "PhofRoLXqhE",
+      "segments": 100,
+      "status": "created",
+      "elapsed_seconds": 9.995309799909592,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\PhofRoLXqhE.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\PhofRoLXqhE.segments.json"
+    },
+    {
+      "video": "S_o3y7CzDUY",
+      "segments": 76,
+      "status": "created",
+      "elapsed_seconds": 8.8339167998638,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\S_o3y7CzDUY.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\S_o3y7CzDUY.segments.json"
+    },
+    {
+      "video": "vIfGgDnmBXg",
+      "segments": 145,
+      "status": "created",
+      "elapsed_seconds": 5.427974299993366,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\vIfGgDnmBXg.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\vIfGgDnmBXg.segments.json"
+    },
+    {
+      "video": "WNZn37Uc700",
+      "segments": 174,
+      "status": "created",
+      "elapsed_seconds": 6.072544799884781,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\WNZn37Uc700.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\WNZn37Uc700.segments.json"
+    },
+    {
+      "video": "y_5WfLjvOK4",
+      "segments": 91,
+      "status": "created",
+      "elapsed_seconds": 11.493802399840206,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\y_5WfLjvOK4.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\y_5WfLjvOK4.segments.json"
+    },
+    {
+      "video": "ZY0DG8rUnCA",
+      "segments": 81,
+      "status": "created",
+      "elapsed_seconds": 2.648821299895644,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\ZY0DG8rUnCA.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\_sentence_embeddings\\wavlm_base_sv\\ZY0DG8rUnCA.segments.json"
+    }
+  ]
 }

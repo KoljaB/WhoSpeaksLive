@@ -1,0 +1,75 @@
+{
+  "status": "ok",
+  "provider": "espnet_ecapa_wavlm_joint",
+  "backend": "remote",
+  "remote_url": "http://192.168.178.22:8660",
+  "device": "cuda",
+  "load_result": {
+    "ok": true,
+    "requested_device": "cuda",
+    "resolved_device": "cuda",
+    "warmup_seconds": 2.0,
+    "loaded": [
+      {
+        "provider": "espnet_ecapa_wavlm_joint",
+        "weight": 1.0,
+        "device": "cuda",
+        "dim": 192
+      }
+    ],
+    "warmups": [
+      {
+        "provider": "espnet_ecapa_wavlm_joint",
+        "weight": 1.0,
+        "device": "cuda",
+        "elapsed_seconds": 9.026239726998028,
+        "dim": 192,
+        "warmup_seconds": 2.0
+      }
+    ],
+    "elapsed_seconds": 9.031629104996682
+  },
+  "video_count": 4,
+  "sentence_count": 469,
+  "created_video_count": 4,
+  "skipped_video_count": 0,
+  "elapsed_seconds": 29.3752246000804,
+  "outputs": [
+    {
+      "video": "bPpcfH_HHH8",
+      "folder": "bPpcfH_HHH8_livewindow_60_90_cuda",
+      "sentences": 102,
+      "status": "created",
+      "elapsed_seconds": 5.21293370006606,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\bPpcfH_HHH8_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\bPpcfH_HHH8_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "e3h6es6zh1c",
+      "folder": "e3h6es6zh1c_livewindow_60_90_cuda",
+      "sentences": 85,
+      "status": "created",
+      "elapsed_seconds": 4.051190200028941,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\e3h6es6zh1c_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\e3h6es6zh1c_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "k1tsGGz-Qw0",
+      "folder": "k1tsGGz-Qw0_livewindow_60_90_cuda",
+      "sentences": 127,
+      "status": "created",
+      "elapsed_seconds": 5.008122700033709,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\k1tsGGz-Qw0_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\k1tsGGz-Qw0_livewindow_60_90_cuda.sentences.json"
+    },
+    {
+      "video": "vIfGgDnmBXg",
+      "folder": "vIfGgDnmBXg_livewindow_60_90_cuda",
+      "sentences": 155,
+      "status": "created",
+      "elapsed_seconds": 6.021052299998701,
+      "npz": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\vIfGgDnmBXg_livewindow_60_90_cuda.embeddings.npz",
+      "metadata": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\_sentence_embeddings\\espnet_ecapa_wavlm_joint\\vIfGgDnmBXg_livewindow_60_90_cuda.sentences.json"
+    }
+  ]
+}

@@ -1,0 +1,1412 @@
+[
+  {
+    "segment_id": "seg_0000",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 4.72,
+    "end_sec": 5.82,
+    "start_time": "00:04.720",
+    "end_time": "00:05.820",
+    "duration_sec": 1.1,
+    "text": "So Sam, what do you have for us?",
+    "word_start_index": 0,
+    "word_end_index": 7
+  },
+  {
+    "segment_id": "seg_0001",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 7.04,
+    "end_sec": 10.6,
+    "start_time": "00:07.040",
+    "end_time": "00:10.600",
+    "duration_sec": 3.56,
+    "text": "Dale will be here in a minute. Finding somebody in the copy room at this hour was a little bit of a challenge.",
+    "word_start_index": 8,
+    "word_end_index": 30
+  },
+  {
+    "segment_id": "seg_0002",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 10.9,
+    "end_sec": 19.98,
+    "start_time": "00:10.900",
+    "end_time": "00:19.980",
+    "duration_sec": 9.08,
+    "text": "Okay, let's go right into the introductions. This is Sarah Robertson, who you know, Chief Risk Management Officer, Ramesh Shah from upstairs, and David Horn, one of the firm's in-house counsel.",
+    "word_start_index": 31,
+    "word_end_index": 61
+  },
+  {
+    "segment_id": "seg_0003",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 20.42,
+    "end_sec": 23.24,
+    "start_time": "00:20.420",
+    "end_time": "00:23.240",
+    "duration_sec": 2.82,
+    "text": "Nice to meet you all. This is my head of trading, Will Emerson, and this is-",
+    "word_start_index": 62,
+    "word_end_index": 77
+  },
+  {
+    "segment_id": "seg_0004",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 23.92,
+    "end_sec": 27.4,
+    "start_time": "00:23.920",
+    "end_time": "00:27.400",
+    "duration_sec": 3.48,
+    "text": "Peter, uh, Sullivan, and Seth Bregman. They work in our risk department.",
+    "word_start_index": 78,
+    "word_end_index": 89
+  },
+  {
+    "segment_id": "seg_0005",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 27.58,
+    "end_sec": 28.36,
+    "start_time": "00:27.580",
+    "end_time": "00:28.360",
+    "duration_sec": 0.78,
+    "text": "Where's Eric Dale?",
+    "word_start_index": 90,
+    "word_end_index": 92
+  },
+  {
+    "segment_id": "seg_0006",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 29.48,
+    "end_sec": 30.54,
+    "start_time": "00:29.480",
+    "end_time": "00:30.540",
+    "duration_sec": 1.06,
+    "text": "He was let go today.",
+    "word_start_index": 93,
+    "word_end_index": 97
+  },
+  {
+    "segment_id": "seg_0007",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 33.52,
+    "end_sec": 35.04,
+    "start_time": "00:33.520",
+    "end_time": "00:35.040",
+    "duration_sec": 1.52,
+    "text": "Who do you have left in your risk department?",
+    "word_start_index": 98,
+    "word_end_index": 106
+  },
+  {
+    "segment_id": "seg_0008",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 36.48,
+    "end_sec": 40.34,
+    "start_time": "00:36.480",
+    "end_time": "00:40.340",
+    "duration_sec": 3.86,
+    "text": "As of today, that would be Peter and our junior analyst, Seth.",
+    "word_start_index": 107,
+    "word_end_index": 118
+  },
+  {
+    "segment_id": "seg_0009",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 42.98,
+    "end_sec": 43.22,
+    "start_time": "00:42.980",
+    "end_time": "00:43.220",
+    "duration_sec": 0.24,
+    "text": "Really?",
+    "word_start_index": 119,
+    "word_end_index": 119
+  },
+  {
+    "segment_id": "seg_0010",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 45.02,
+    "end_sec": 45.96,
+    "start_time": "00:45.020",
+    "end_time": "00:45.960",
+    "duration_sec": 0.94,
+    "text": "Uh, Will Emerson?",
+    "word_start_index": 120,
+    "word_end_index": 122
+  },
+  {
+    "segment_id": "seg_0011",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 46.54,
+    "end_sec": 47.58,
+    "start_time": "00:46.540",
+    "end_time": "00:47.580",
+    "duration_sec": 1.04,
+    "text": "Yes, please, just hand them out.",
+    "word_start_index": 123,
+    "word_end_index": 128
+  },
+  {
+    "segment_id": "seg_0012",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 49.58,
+    "end_sec": 50.0,
+    "start_time": "00:49.580",
+    "end_time": "00:50.000",
+    "duration_sec": 0.42,
+    "text": "Thank you.",
+    "word_start_index": 129,
+    "word_end_index": 130
+  },
+  {
+    "segment_id": "seg_0013",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 62.0,
+    "end_sec": 75.04,
+    "start_time": "01:02.000",
+    "end_time": "01:15.040",
+    "duration_sec": 13.04,
+    "text": "Apparently, Eric had been working on this for some time, but he wasn't able to finish it. This morning as he left the building, he handed the program to Peter here and asked him to take a look at it. Peter did. He put a few things in that Eric seemed to be missing, and this is what came out.",
+    "word_start_index": 131,
+    "word_end_index": 190
+  },
+  {
+    "segment_id": "seg_0014",
+    "speaker_id": "SPEAKER_5",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_4"
+    ],
+    "start_sec": 78.08,
+    "end_sec": 78.96,
+    "start_time": "01:18.080",
+    "end_time": "01:18.960",
+    "duration_sec": 0.88,
+    "text": "Peter, is this your work?",
+    "word_start_index": 191,
+    "word_end_index": 195
+  },
+  {
+    "segment_id": "seg_0015",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 81.48,
+    "end_sec": 82.32,
+    "start_time": "01:21.480",
+    "end_time": "01:22.320",
+    "duration_sec": 0.84,
+    "text": "Mostly Mr. Dale's.",
+    "word_start_index": 196,
+    "word_end_index": 198
+  },
+  {
+    "segment_id": "seg_0016",
+    "speaker_id": "SPEAKER_5",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_4"
+    ],
+    "start_sec": 83.48,
+    "end_sec": 84.36,
+    "start_time": "01:23.480",
+    "end_time": "01:24.360",
+    "duration_sec": 0.88,
+    "text": "But is this your draft?",
+    "word_start_index": 199,
+    "word_end_index": 203
+  },
+  {
+    "segment_id": "seg_0017",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 85.42,
+    "end_sec": 86.34,
+    "start_time": "01:25.420",
+    "end_time": "01:26.340",
+    "duration_sec": 0.92,
+    "text": "Yes, um,",
+    "word_start_index": 204,
+    "word_end_index": 205
+  },
+  {
+    "segment_id": "seg_0018",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 87.64,
+    "end_sec": 90.7,
+    "start_time": "01:27.640",
+    "end_time": "01:30.700",
+    "duration_sec": 3.06,
+    "text": "again, expanded on the original work from Mr. Dale, but yes.",
+    "word_start_index": 206,
+    "word_end_index": 216
+  },
+  {
+    "segment_id": "seg_0019",
+    "speaker_id": "SPEAKER_5",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_4"
+    ],
+    "start_sec": 91.34,
+    "end_sec": 92.22,
+    "start_time": "01:31.340",
+    "end_time": "01:32.220",
+    "duration_sec": 0.88,
+    "text": "What's your background?",
+    "word_start_index": 217,
+    "word_end_index": 219
+  },
+  {
+    "segment_id": "seg_0020",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 92.52,
+    "end_sec": 93.1,
+    "start_time": "01:32.520",
+    "end_time": "01:33.100",
+    "duration_sec": 0.58,
+    "text": "My background?",
+    "word_start_index": 220,
+    "word_end_index": 221
+  },
+  {
+    "segment_id": "seg_0021",
+    "speaker_id": "SPEAKER_5",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_4"
+    ],
+    "start_sec": 93.38,
+    "end_sec": 93.82,
+    "start_time": "01:33.380",
+    "end_time": "01:33.820",
+    "duration_sec": 0.44,
+    "text": "Your CV.",
+    "word_start_index": 222,
+    "word_end_index": 223
+  },
+  {
+    "segment_id": "seg_0022",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 94.1,
+    "end_sec": 101.26,
+    "start_time": "01:34.100",
+    "end_time": "01:41.260",
+    "duration_sec": 7.16,
+    "text": "I've been with the firm for two and a half years, working with Eric that whole time, but I hold a doctorate in engineering, specialty in propulsion from MIT with a bachelor's from Penn.",
+    "word_start_index": 224,
+    "word_end_index": 257
+  },
+  {
+    "segment_id": "seg_0023",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 101.72,
+    "end_sec": 104.1,
+    "start_time": "01:41.720",
+    "end_time": "01:44.100",
+    "duration_sec": 2.38,
+    "text": "What is a specialty in propulsion exactly?",
+    "word_start_index": 258,
+    "word_end_index": 264
+  },
+  {
+    "segment_id": "seg_0024",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 104.46,
+    "end_sec": 110.0,
+    "start_time": "01:44.460",
+    "end_time": "01:50.000",
+    "duration_sec": 5.54,
+    "text": "My thesis was a study in the ways that friction ratios affect steering outcomes in aeronautical use under reduced gravity loads.",
+    "word_start_index": 265,
+    "word_end_index": 285
+  },
+  {
+    "segment_id": "seg_0025",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 111.62,
+    "end_sec": 112.7,
+    "start_time": "01:51.620",
+    "end_time": "01:52.700",
+    "duration_sec": 1.08,
+    "text": "So you're a rocket scientist.",
+    "word_start_index": 286,
+    "word_end_index": 290
+  },
+  {
+    "segment_id": "seg_0026",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 114.26,
+    "end_sec": 115.48,
+    "start_time": "01:54.260",
+    "end_time": "01:55.480",
+    "duration_sec": 1.22,
+    "text": "I was, yeah.",
+    "word_start_index": 291,
+    "word_end_index": 293
+  },
+  {
+    "segment_id": "seg_0027",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 116.84,
+    "end_sec": 119.12,
+    "start_time": "01:56.840",
+    "end_time": "01:59.120",
+    "duration_sec": 2.28,
+    "text": "Interesting. How did you end up here?",
+    "word_start_index": 294,
+    "word_end_index": 300
+  },
+  {
+    "segment_id": "seg_0028",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 119.58,
+    "end_sec": 126.12,
+    "start_time": "01:59.580",
+    "end_time": "02:06.120",
+    "duration_sec": 6.54,
+    "text": "Well, it's all just numbers really, just changing what you're adding up, and to speak freely, the money here is considerably more attractive.",
+    "word_start_index": 301,
+    "word_end_index": 323
+  },
+  {
+    "segment_id": "seg_0029",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 135.3,
+    "end_sec": 135.92,
+    "start_time": "02:15.300",
+    "end_time": "02:15.920",
+    "duration_sec": 0.62,
+    "text": "What time is it?",
+    "word_start_index": 324,
+    "word_end_index": 327
+  },
+  {
+    "segment_id": "seg_0030",
+    "speaker_id": "SPEAKER_6",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_5"
+    ],
+    "start_sec": 137.22,
+    "end_sec": 137.76,
+    "start_time": "02:17.220",
+    "end_time": "02:17.760",
+    "duration_sec": 0.54,
+    "text": "2:15.",
+    "word_start_index": 328,
+    "word_end_index": 328
+  },
+  {
+    "segment_id": "seg_0031",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 138.34,
+    "end_sec": 145.38,
+    "start_time": "02:18.340",
+    "end_time": "02:25.380",
+    "duration_sec": 7.04,
+    "text": "Fuck me. Fuck me. And I'm guessing by the fact that you two haven't said anything that the math checks out.",
+    "word_start_index": 329,
+    "word_end_index": 349
+  },
+  {
+    "segment_id": "seg_0032",
+    "speaker_id": "SPEAKER_5",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_4"
+    ],
+    "start_sec": 146.18,
+    "end_sec": 154.7,
+    "start_time": "02:26.180",
+    "end_time": "02:34.700",
+    "duration_sec": 8.52,
+    "text": "Look, we'd need some time to go over this, but Mr. Sullivan here seems like he knows what he's doing, so it would appear we have a problem.",
+    "word_start_index": 350,
+    "word_end_index": 377
+  },
+  {
+    "segment_id": "seg_0033",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 154.98,
+    "end_sec": 157.16,
+    "start_time": "02:34.980",
+    "end_time": "02:37.160",
+    "duration_sec": 2.18,
+    "text": "Oh, thank you for that. What time is it?",
+    "word_start_index": 378,
+    "word_end_index": 386
+  },
+  {
+    "segment_id": "seg_0034",
+    "speaker_id": "SPEAKER_6",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_5"
+    ],
+    "start_sec": 157.78,
+    "end_sec": 158.4,
+    "start_time": "02:37.780",
+    "end_time": "02:38.400",
+    "duration_sec": 0.62,
+    "text": "2:16.",
+    "word_start_index": 387,
+    "word_end_index": 387
+  },
+  {
+    "segment_id": "seg_0035",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 158.66,
+    "end_sec": 159.18,
+    "start_time": "02:38.660",
+    "end_time": "02:39.180",
+    "duration_sec": 0.52,
+    "text": "Fuck me.",
+    "word_start_index": 388,
+    "word_end_index": 389
+  },
+  {
+    "segment_id": "seg_0036",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 161.06,
+    "end_sec": 161.68,
+    "start_time": "02:41.060",
+    "end_time": "02:41.680",
+    "duration_sec": 0.62,
+    "text": "Fuck me.",
+    "word_start_index": 390,
+    "word_end_index": 391
+  },
+  {
+    "segment_id": "seg_0037",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 170.68,
+    "end_sec": 175.88,
+    "start_time": "02:50.680",
+    "end_time": "02:55.880",
+    "duration_sec": 5.2,
+    "text": "Sam, how long under normal operations would it take your people to clear that from our books?",
+    "word_start_index": 392,
+    "word_end_index": 408
+  },
+  {
+    "segment_id": "seg_0038",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 179.82,
+    "end_sec": 180.13,
+    "start_time": "02:59.820",
+    "end_time": "03:00.130",
+    "duration_sec": 0.31,
+    "text": "What?",
+    "word_start_index": 409,
+    "word_end_index": 409
+  },
+  {
+    "segment_id": "seg_0039",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 182.02,
+    "end_sec": 183.04,
+    "start_time": "03:02.020",
+    "end_time": "03:03.040",
+    "duration_sec": 1.02,
+    "text": "All of it?",
+    "word_start_index": 410,
+    "word_end_index": 412
+  },
+  {
+    "segment_id": "seg_0040",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 183.12,
+    "end_sec": 183.34,
+    "start_time": "03:03.120",
+    "end_time": "03:03.340",
+    "duration_sec": 0.22,
+    "text": "Yes.",
+    "word_start_index": 413,
+    "word_end_index": 413
+  },
+  {
+    "segment_id": "seg_0041",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 185.48,
+    "end_sec": 186.66,
+    "start_time": "03:05.480",
+    "end_time": "03:06.660",
+    "duration_sec": 1.18,
+    "text": "I don't know. Weeks.",
+    "word_start_index": 414,
+    "word_end_index": 417
+  },
+  {
+    "segment_id": "seg_0042",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 186.9,
+    "end_sec": 187.16,
+    "start_time": "03:06.900",
+    "end_time": "03:07.160",
+    "duration_sec": 0.26,
+    "text": "Weeks.",
+    "word_start_index": 418,
+    "word_end_index": 418
+  },
+  {
+    "segment_id": "seg_0043",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 187.5,
+    "end_sec": 188.24,
+    "start_time": "03:07.500",
+    "end_time": "03:08.240",
+    "duration_sec": 0.74,
+    "text": "Yeah, weeks.",
+    "word_start_index": 419,
+    "word_end_index": 420
+  },
+  {
+    "segment_id": "seg_0044",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 189.6,
+    "end_sec": 205.6,
+    "start_time": "03:09.600",
+    "end_time": "03:25.600",
+    "duration_sec": 16.0,
+    "text": "But you certainly know that our business is selling and buying. It doesn't work for very long without both components. We suddenly stop buying for a day or two, that's not something you can hide under the rug. That gets out, and when it does, this whole thing comes to an end, and right quick.",
+    "word_start_index": 421,
+    "word_end_index": 475
+  },
+  {
+    "segment_id": "seg_0045",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 206.96,
+    "end_sec": 207.46,
+    "start_time": "03:26.960",
+    "end_time": "03:27.460",
+    "duration_sec": 0.5,
+    "text": "I understand.",
+    "word_start_index": 476,
+    "word_end_index": 477
+  },
+  {
+    "segment_id": "seg_0046",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 207.98,
+    "end_sec": 208.28,
+    "start_time": "03:27.980",
+    "end_time": "03:28.280",
+    "duration_sec": 0.3,
+    "text": "Do you?",
+    "word_start_index": 478,
+    "word_end_index": 479
+  },
+  {
+    "segment_id": "seg_0047",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 212.6,
+    "end_sec": 213.56,
+    "start_time": "03:32.600",
+    "end_time": "03:33.560",
+    "duration_sec": 0.96,
+    "text": "Yes.",
+    "word_start_index": 480,
+    "word_end_index": 480
+  },
+  {
+    "segment_id": "seg_0048",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 215.52,
+    "end_sec": 218.88,
+    "start_time": "03:35.520",
+    "end_time": "03:38.880",
+    "duration_sec": 3.36,
+    "text": "How many traders do we have left between your floor and Peterson's?",
+    "word_start_index": 481,
+    "word_end_index": 492
+  },
+  {
+    "segment_id": "seg_0049",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 219.14,
+    "end_sec": 220.3,
+    "start_time": "03:39.140",
+    "end_time": "03:40.300",
+    "duration_sec": 1.16,
+    "text": "I don't know, what, 60.",
+    "word_start_index": 493,
+    "word_end_index": 497
+  },
+  {
+    "segment_id": "seg_0050",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 220.52,
+    "end_sec": 220.65,
+    "start_time": "03:40.520",
+    "end_time": "03:40.650",
+    "duration_sec": 0.13,
+    "text": "60.",
+    "word_start_index": 498,
+    "word_end_index": 498
+  },
+  {
+    "segment_id": "seg_0051",
+    "speaker_id": "SPEAKER_6",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_5"
+    ],
+    "start_sec": 221.14,
+    "end_sec": 225.24,
+    "start_time": "03:41.140",
+    "end_time": "03:45.240",
+    "duration_sec": 4.1,
+    "text": "Jared, as I look at this more closely, it is these VAR numbers that are setting this thing off.",
+    "word_start_index": 499,
+    "word_end_index": 517
+  },
+  {
+    "segment_id": "seg_0052",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 225.25,
+    "end_sec": 225.7,
+    "start_time": "03:45.250",
+    "end_time": "03:45.700",
+    "duration_sec": 0.45,
+    "text": "Excuse me.",
+    "word_start_index": 518,
+    "word_end_index": 519
+  },
+  {
+    "segment_id": "seg_0053",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 238.97,
+    "end_sec": 241.7,
+    "start_time": "03:58.970",
+    "end_time": "04:01.700",
+    "duration_sec": 2.73,
+    "text": "If you bought this last year, we would not be in this position.",
+    "word_start_index": 520,
+    "word_end_index": 532
+  },
+  {
+    "segment_id": "seg_0054",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 241.78,
+    "end_sec": 241.89,
+    "start_time": "04:01.780",
+    "end_time": "04:01.890",
+    "duration_sec": 0.11,
+    "text": "I know.",
+    "word_start_index": 533,
+    "word_end_index": 534
+  },
+  {
+    "segment_id": "seg_0055",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 241.89,
+    "end_sec": 242.62,
+    "start_time": "04:01.890",
+    "end_time": "04:02.620",
+    "duration_sec": 0.73,
+    "text": "If we had done what I-",
+    "word_start_index": 535,
+    "word_end_index": 540
+  },
+  {
+    "segment_id": "seg_0056",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 242.74,
+    "end_sec": 243.02,
+    "start_time": "04:02.740",
+    "end_time": "04:03.020",
+    "duration_sec": 0.28,
+    "text": "Please.",
+    "word_start_index": 541,
+    "word_end_index": 541
+  },
+  {
+    "segment_id": "seg_0057",
+    "speaker_id": "SPEAKER_6",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_5"
+    ],
+    "start_sec": 243.64,
+    "end_sec": 254.18,
+    "start_time": "04:03.640",
+    "end_time": "04:14.180",
+    "duration_sec": 10.54,
+    "text": "As I was saying, and I speak completely off the record, it's only a matter of time before someone else starts putting these in and they come up with exactly the same results and look at exactly what we are looking at right now, if they haven't already.",
+    "word_start_index": 542,
+    "word_end_index": 589
+  },
+  {
+    "segment_id": "seg_0058",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 254.38,
+    "end_sec": 260.94,
+    "start_time": "04:14.380",
+    "end_time": "04:20.940",
+    "duration_sec": 6.56,
+    "text": "Understood. And Sarah, what value would you allow to be placed on those assets that might remain on the books if they had to?",
+    "word_start_index": 590,
+    "word_end_index": 613
+  },
+  {
+    "segment_id": "seg_0059",
+    "speaker_id": "SPEAKER_5",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_4"
+    ],
+    "start_sec": 261.84,
+    "end_sec": 263.2,
+    "start_time": "04:21.840",
+    "end_time": "04:23.200",
+    "duration_sec": 1.36,
+    "text": "Why would they still be on the books?",
+    "word_start_index": 614,
+    "word_end_index": 621
+  },
+  {
+    "segment_id": "seg_0060",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 263.53,
+    "end_sec": 265.06,
+    "start_time": "04:23.530",
+    "end_time": "04:25.060",
+    "duration_sec": 1.53,
+    "text": "'Cause suddenly nobody wants to fucking buy them.",
+    "word_start_index": 622,
+    "word_end_index": 629
+  },
+  {
+    "segment_id": "seg_0061",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 265.1,
+    "end_sec": 266.75,
+    "start_time": "04:25.100",
+    "end_time": "04:26.750",
+    "duration_sec": 1.65,
+    "text": "Fuck you, Sam. Will you give me a fucking break here?",
+    "word_start_index": 630,
+    "word_end_index": 640
+  },
+  {
+    "segment_id": "seg_0062",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 266.76,
+    "end_sec": 267.28,
+    "start_time": "04:26.760",
+    "end_time": "04:27.280",
+    "duration_sec": 0.52,
+    "text": "Excuse me, Jared-",
+    "word_start_index": 641,
+    "word_end_index": 643
+  },
+  {
+    "segment_id": "seg_0063",
+    "speaker_id": "SPEAKER_5",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_4"
+    ],
+    "start_sec": 267.3,
+    "end_sec": 273.58,
+    "start_time": "04:27.300",
+    "end_time": "04:33.580",
+    "duration_sec": 6.28,
+    "text": "Without an active market, it would take weeks or months for me to come up with an accurate value on them. You would have to go block by block.",
+    "word_start_index": 644,
+    "word_end_index": 672
+  },
+  {
+    "segment_id": "seg_0064",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 273.68,
+    "end_sec": 276.68,
+    "start_time": "04:33.680",
+    "end_time": "04:36.680",
+    "duration_sec": 3.0,
+    "text": "Yeah, look, Jared, it's a very simple business, right? We talked about this one-",
+    "word_start_index": 673,
+    "word_end_index": 686
+  },
+  {
+    "segment_id": "seg_0065",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 278.14,
+    "end_sec": 281.56,
+    "start_time": "04:38.140",
+    "end_time": "04:41.560",
+    "duration_sec": 3.42,
+    "text": "Sam. Uh, Will, Peter, and, uh, what the fuck is his name?",
+    "word_start_index": 687,
+    "word_end_index": 698
+  },
+  {
+    "segment_id": "seg_0066",
+    "speaker_id": "SPEAKER_4",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_3"
+    ],
+    "start_sec": 281.62,
+    "end_sec": 281.86,
+    "start_time": "04:41.620",
+    "end_time": "04:41.860",
+    "duration_sec": 0.24,
+    "text": "Seth.",
+    "word_start_index": 699,
+    "word_end_index": 699
+  },
+  {
+    "segment_id": "seg_0067",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 282.04,
+    "end_sec": 285.24,
+    "start_time": "04:42.040",
+    "end_time": "04:45.240",
+    "duration_sec": 3.2,
+    "text": "Thank you. Seth, uh, could you please give us a few moments?",
+    "word_start_index": 700,
+    "word_end_index": 711
+  },
+  {
+    "segment_id": "seg_0068",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 287.62,
+    "end_sec": 288.06,
+    "start_time": "04:47.620",
+    "end_time": "04:48.060",
+    "duration_sec": 0.44,
+    "text": "And Peter,",
+    "word_start_index": 712,
+    "word_end_index": 713
+  },
+  {
+    "segment_id": "seg_0069",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 289.4,
+    "end_sec": 290.24,
+    "start_time": "04:49.400",
+    "end_time": "04:50.240",
+    "duration_sec": 0.84,
+    "text": "has anyone else seen this?",
+    "word_start_index": 714,
+    "word_end_index": 718
+  },
+  {
+    "segment_id": "seg_0070",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 291.1,
+    "end_sec": 292.12,
+    "start_time": "04:51.100",
+    "end_time": "04:52.120",
+    "duration_sec": 1.02,
+    "text": "No, no one aside from us.",
+    "word_start_index": 719,
+    "word_end_index": 724
+  },
+  {
+    "segment_id": "seg_0071",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 292.82,
+    "end_sec": 293.88,
+    "start_time": "04:52.820",
+    "end_time": "04:53.880",
+    "duration_sec": 1.06,
+    "text": "And Eric Dale.",
+    "word_start_index": 725,
+    "word_end_index": 727
+  },
+  {
+    "segment_id": "seg_0072",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 293.96,
+    "end_sec": 294.56,
+    "start_time": "04:53.960",
+    "end_time": "04:54.560",
+    "duration_sec": 0.6,
+    "text": "Yes.",
+    "word_start_index": 728,
+    "word_end_index": 728
+  },
+  {
+    "segment_id": "seg_0073",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 294.62,
+    "end_sec": 298.07,
+    "start_time": "04:54.620",
+    "end_time": "04:58.070",
+    "duration_sec": 3.45,
+    "text": "And can it really be possible that we don't know where Eric Dale is?",
+    "word_start_index": 729,
+    "word_end_index": 742
+  },
+  {
+    "segment_id": "seg_0074",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 298.69,
+    "end_sec": 302.24,
+    "start_time": "04:58.690",
+    "end_time": "05:02.240",
+    "duration_sec": 3.55,
+    "text": "I called his wife. He hasn't come home yet, and we turned off his phone today.",
+    "word_start_index": 743,
+    "word_end_index": 758
+  },
+  {
+    "segment_id": "seg_0075",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 303.82,
+    "end_sec": 306.56,
+    "start_time": "05:03.820",
+    "end_time": "05:06.560",
+    "duration_sec": 2.74,
+    "text": "Perfect. Well, I'd like to know where he is.",
+    "word_start_index": 759,
+    "word_end_index": 767
+  },
+  {
+    "segment_id": "seg_0076",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 313.92,
+    "end_sec": 314.28,
+    "start_time": "05:13.920",
+    "end_time": "05:14.280",
+    "duration_sec": 0.36,
+    "text": "Jared,",
+    "word_start_index": 768,
+    "word_end_index": 768
+  },
+  {
+    "segment_id": "seg_0077",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 316.52,
+    "end_sec": 319.2,
+    "start_time": "05:16.520",
+    "end_time": "05:19.200",
+    "duration_sec": 2.68,
+    "text": "you cannot be doing what you're thinking of doing.",
+    "word_start_index": 769,
+    "word_end_index": 777
+  },
+  {
+    "segment_id": "seg_0078",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 319.42,
+    "end_sec": 320.8,
+    "start_time": "05:19.420",
+    "end_time": "05:20.800",
+    "duration_sec": 1.38,
+    "text": "Well, I don't see any other choice.",
+    "word_start_index": 778,
+    "word_end_index": 784
+  },
+  {
+    "segment_id": "seg_0079",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 321.12,
+    "end_sec": 323.74,
+    "start_time": "05:21.120",
+    "end_time": "05:23.740",
+    "duration_sec": 2.62,
+    "text": "What do you... What does that mean, we don't have a choice? Fuck you, you don't have a choice.",
+    "word_start_index": 785,
+    "word_end_index": 803
+  },
+  {
+    "segment_id": "seg_0080",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 323.78,
+    "end_sec": 324.02,
+    "start_time": "05:23.780",
+    "end_time": "05:24.020",
+    "duration_sec": 0.24,
+    "text": "Fuck me?",
+    "word_start_index": 804,
+    "word_end_index": 805
+  },
+  {
+    "segment_id": "seg_0081",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 325.34,
+    "end_sec": 327.02,
+    "start_time": "05:25.340",
+    "end_time": "05:27.020",
+    "duration_sec": 1.68,
+    "text": "Did you even look at the numbers, Sam?",
+    "word_start_index": 806,
+    "word_end_index": 813
+  },
+  {
+    "segment_id": "seg_0082",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 327.28,
+    "end_sec": 328.22,
+    "start_time": "05:27.280",
+    "end_time": "05:28.220",
+    "duration_sec": 0.94,
+    "text": "Yeah, but what do I know?",
+    "word_start_index": 814,
+    "word_end_index": 819
+  },
+  {
+    "segment_id": "seg_0083",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 328.68,
+    "end_sec": 334.06,
+    "start_time": "05:28.680",
+    "end_time": "05:34.060",
+    "duration_sec": 5.38,
+    "text": "Correct me if I'm wrong, Mr. Shah, but, uh, these numbers, they don't add up. One and one no longer makes two.",
+    "word_start_index": 820,
+    "word_end_index": 841
+  },
+  {
+    "segment_id": "seg_0084",
+    "speaker_id": "SPEAKER_6",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_5"
+    ],
+    "start_sec": 334.38,
+    "end_sec": 336.01,
+    "start_time": "05:34.380",
+    "end_time": "05:36.010",
+    "duration_sec": 1.63,
+    "text": "Look, if I may, I would like a little bit more time-",
+    "word_start_index": 842,
+    "word_end_index": 853
+  },
+  {
+    "segment_id": "seg_0085",
+    "speaker_id": "SPEAKER_5",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_4"
+    ],
+    "start_sec": 336.01,
+    "end_sec": 336.99,
+    "start_time": "05:36.010",
+    "end_time": "05:36.990",
+    "duration_sec": 0.98,
+    "text": "Jared, we can't tell you yet.",
+    "word_start_index": 854,
+    "word_end_index": 859
+  },
+  {
+    "segment_id": "seg_0086",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 336.99,
+    "end_sec": 339.31,
+    "start_time": "05:36.990",
+    "end_time": "05:39.310",
+    "duration_sec": 2.32,
+    "text": "Are you fucking kidding me? We have talked about this.",
+    "word_start_index": 860,
+    "word_end_index": 869
+  },
+  {
+    "segment_id": "seg_0087",
+    "speaker_id": "SPEAKER_5",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_4"
+    ],
+    "start_sec": 339.36,
+    "end_sec": 342.22,
+    "start_time": "05:39.360",
+    "end_time": "05:42.220",
+    "duration_sec": 2.86,
+    "text": "We need a little more time to give you our conclusion.",
+    "word_start_index": 870,
+    "word_end_index": 880
+  },
+  {
+    "segment_id": "seg_0088",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 343.29,
+    "end_sec": 344.7,
+    "start_time": "05:43.290",
+    "end_time": "05:44.700",
+    "duration_sec": 1.41,
+    "text": "Okay. We meet again in 45 minutes.",
+    "word_start_index": 881,
+    "word_end_index": 887
+  },
+  {
+    "segment_id": "seg_0089",
+    "speaker_id": "SPEAKER_6",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_5"
+    ],
+    "start_sec": 345.4,
+    "end_sec": 346.9,
+    "start_time": "05:45.400",
+    "end_time": "05:46.900",
+    "duration_sec": 1.5,
+    "text": "Sam, do you have the file?",
+    "word_start_index": 888,
+    "word_end_index": 893
+  },
+  {
+    "segment_id": "seg_0090",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 347.12,
+    "end_sec": 347.34,
+    "start_time": "05:47.120",
+    "end_time": "05:47.340",
+    "duration_sec": 0.22,
+    "text": "Yeah.",
+    "word_start_index": 894,
+    "word_end_index": 894
+  },
+  {
+    "segment_id": "seg_0091",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 365.08,
+    "end_sec": 365.68,
+    "start_time": "06:05.080",
+    "end_time": "06:05.680",
+    "duration_sec": 0.6,
+    "text": "What are you gonna do?",
+    "word_start_index": 895,
+    "word_end_index": 899
+  },
+  {
+    "segment_id": "seg_0092",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 369.9,
+    "end_sec": 370.62,
+    "start_time": "06:09.900",
+    "end_time": "06:10.620",
+    "duration_sec": 0.72,
+    "text": "You gonna call him?",
+    "word_start_index": 900,
+    "word_end_index": 903
+  },
+  {
+    "segment_id": "seg_0093",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 376.44,
+    "end_sec": 377.02,
+    "start_time": "06:16.440",
+    "end_time": "06:17.020",
+    "duration_sec": 0.58,
+    "text": "I already have.",
+    "word_start_index": 904,
+    "word_end_index": 906
+  }
+]

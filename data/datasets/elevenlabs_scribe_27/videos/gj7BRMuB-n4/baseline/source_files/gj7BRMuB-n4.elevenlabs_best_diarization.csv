@@ -1,0 +1,156 @@
+segment_id,speaker_id,raw_elevenlabs_speaker_ids,start_sec,end_sec,duration_sec,text
+seg_0000,SPEAKER_1,speaker_0,0.24,13.26,13.02,"I'm here with Kate McKinnon. Her new movie, Rough Night, is in theaters next Friday. Don't drink, it's a prop. Kate and I are about to play a game of deception called True True Confession Session."
+seg_0001,SPEAKER_1,speaker_0,22.14,30.56,8.42,"First we're gonna need another player to fill out this table, and we found a good one. He's the host of American Grit on Fox. Please welcome John Cena. Whoo."
+seg_0002,SPEAKER_1,speaker_0,34.22,35.56,1.34,Don't drink that.
+seg_0003,SPEAKER_1,speaker_0,37.7,41.85,4.15,It's a prop. It's a prop. This is a prop. This is supposed to be like a detective envelope.
+seg_0004,SPEAKER_4,speaker_3,41.85,42.69,0.84,"God, it's urine."
+seg_0005,SPEAKER_1,speaker_0,42.74,44.919,2.179,"Don't, don't... That's not urine."
+seg_0006,SPEAKER_4,speaker_3,44.949,44.949,0.0,Ugh.
+seg_0007,SPEAKER_1,speaker_0,44.98,63.54,18.56,"Guys, here's how the game works. In front of each of us are two envelopes containing confessions sessions. One of the envelopes is something that actually happened to us in real life. The other envelope is a lie. Once you read your confession, the other two have 60 seconds to interrogate you, then each of us have to guess whether you've been telling the truth or lying. John, you'll go first."
+seg_0008,SPEAKER_4,speaker_3,63.98,64.86,0.88,This is complicated.
+seg_0009,SPEAKER_1,speaker_0,64.94,67.86,2.92,"Kate, which envelope should he open? Which envelope?"
+seg_0010,SPEAKER_2,speaker_1,68.44,68.55,0.11,One.
+seg_0011,SPEAKER_1,speaker_0,68.55,69.58,1.03,One. Mm.
+seg_0012,SPEAKER_4,speaker_3,71.34,71.63,0.29,"Hold on, I-"
+seg_0013,SPEAKER_1,speaker_0,71.66,72.7,1.04,Envelope number one.
+seg_0014,SPEAKER_4,speaker_3,72.88,75.06,2.18,"I don't want you to see anything here. Okay, um."
+seg_0015,SPEAKER_1,speaker_0,75.14,76.36,1.22,You're gonna have to read it to us anyway.
+seg_0016,SPEAKER_4,speaker_3,78.14,87.64,9.5,"Okay, so I, I just, I read what's on the card. Okay, fair enough. Uh, ""I was once hit by a car while riding my bike and the driver was my girlfriend."""
+seg_0017,SPEAKER_1,speaker_0,89.25,89.5,0.25,Mm-hmm.
+seg_0018,SPEAKER_4,speaker_3,89.79,90.06,0.27,"Mm, that's it."
+seg_0019,SPEAKER_1,speaker_0,90.44,90.86,0.42,What was her name?
+seg_0020,SPEAKER_4,speaker_3,91.5,92.24,0.74,My name is John Cena.
+seg_0021,SPEAKER_1,speaker_0,92.36,93.34,0.98,"No, what's her name?"
+seg_0022,SPEAKER_4,speaker_3,95.98,96.86,0.88,"That is, uh..."
+seg_0023,SPEAKER_4,speaker_3,98.62,100.38,1.76,That's enough questions out of you. I already told you my name.
+seg_0024,SPEAKER_2,speaker_1,101.5,103.84,2.34,Were you dating at the time of the hit?
+seg_0025,SPEAKER_4,speaker_3,103.96,104.14,0.18,Yes.
+seg_0026,SPEAKER_1,speaker_0,104.92,106.72,1.8,And why were you riding your bike and she was in the car?
+seg_0027,SPEAKER_4,speaker_3,107.08,110.16,3.08,"'Cause as a young man, I fancied myself physically fit."
+seg_0028,SPEAKER_1,speaker_0,111.48,115.36,3.88,"You wouldn't travel in other, any transportation but bicycling?"
+seg_0029,SPEAKER_4,speaker_3,115.58,119.15,3.57,"I, there's enough horsepower in this body to bicycle around West Newbury just fine."
+seg_0030,SPEAKER_2,speaker_1,122.36,125.62,3.26,Did she cry when she found that she'd injured her one true love?
+seg_0031,SPEAKER_4,speaker_3,125.94,128.28,2.34,"Uh, nope, and that was the abrupt end of the relationship."
+seg_0032,SPEAKER_1,speaker_0,130.07,130.07,0.0,Oh.
+seg_0033,SPEAKER_4,speaker_3,130.08,130.16,0.08,Yeah.
+seg_0034,SPEAKER_1,speaker_0,130.19,130.4,0.21,Huh.
+seg_0035,SPEAKER_2,speaker_1,130.65,130.65,0.0,Huh.
+seg_0036,SPEAKER_1,speaker_0,130.68,132.06,1.38,"Okay. That, that was a good question."
+seg_0037,SPEAKER_2,speaker_1,132.1,133.52,1.42,What sort of bike was it?
+seg_0038,SPEAKER_4,speaker_3,133.84,134.66,0.82,It was a 10-speed.
+seg_0039,SPEAKER_1,speaker_0,134.84,135.2,0.36,What color?
+seg_0040,SPEAKER_4,speaker_3,135.58,136.04,0.46,It was maroon.
+seg_0041,SPEAKER_1,speaker_0,136.14,136.8,0.66,What year?
+seg_0042,SPEAKER_4,speaker_3,137.1,138.02,0.92,It was 1994.
+seg_0043,SPEAKER_2,speaker_1,138.2,139.57,1.37,What grade were you in in school?
+seg_0044,SPEAKER_4,speaker_3,139.82,141.16,1.34,I was just entering college.
+seg_0045,SPEAKER_2,speaker_1,142.62,143.62,1.0,Where was the accident?
+seg_0046,SPEAKER_1,speaker_0,143.91,143.91,0.0,True.
+seg_0047,SPEAKER_4,speaker_3,144.48,148.58,4.1,"It was, it was, uh, on a small street outside of Route 113, West Newbury, Massachusetts."
+seg_0048,SPEAKER_1,speaker_0,148.66,156.2,7.54,"I think I, I have enough questions. Enough questions. If th- if this is a lie, this dude should win an Oscar. That actually happened."
+seg_0049,SPEAKER_2,speaker_1,156.28,158.4,2.12,It's gotta be real. The details are too good.
+seg_0050,SPEAKER_1,speaker_0,158.62,160.76,2.14,Yeah. I say-... real.
+seg_0051,SPEAKER_4,speaker_3,162.32,164.26,1.94,"Well, you're both right. It's real."
+seg_0052,SPEAKER_2,speaker_1,165.69,165.69,0.0,Oh.
+seg_0053,SPEAKER_4,speaker_3,165.7,167.65,1.95,"Hey, I almost died. I almost died."
+seg_0054,SPEAKER_1,speaker_0,167.66,169.76,2.1,"Oh my God, you almost died."
+seg_0055,SPEAKER_4,speaker_3,170.2,171.19,0.99,It's true. It's true.
+seg_0056,SPEAKER_1,speaker_0,171.19,171.56,0.37,You almost died.
+seg_0057,SPEAKER_2,speaker_1,172.44,172.94,0.5,That's great.
+seg_0058,SPEAKER_1,speaker_0,172.98,174.07,1.09,That is great. You almost died.
+seg_0059,SPEAKER_2,speaker_1,174.08,175.26,1.18,"That's great, he almost died."
+seg_0060,SPEAKER_4,speaker_3,175.44,175.67,0.23,All right.
+seg_0061,SPEAKER_2,speaker_1,175.72,178.08,2.36,"And then, but he didn't. I love that. I love that."
+seg_0062,SPEAKER_1,speaker_0,179.28,181.67,2.39,"Which envelope, envelope, envelope?"
+seg_0063,SPEAKER_4,speaker_3,181.7,182.38,0.68,Do I choose?
+seg_0064,SPEAKER_1,speaker_0,182.56,182.9,0.34,Yeah.
+seg_0065,SPEAKER_4,speaker_3,182.96,184.16,1.2,"Well, to me, you're always a number two."
+seg_0066,SPEAKER_1,speaker_0,185.18,185.72,0.54,Thank you.
+seg_0067,SPEAKER_3,speaker_2,187.35,187.35,0.0,Aw.
+seg_0068,SPEAKER_1,speaker_0,187.4,188.44,1.04,"Thank you, appreciate that."
+seg_0069,SPEAKER_1,speaker_0,192.79,195.38,2.59,"""I made out with Gwyneth Paltrow during an SNL sketch."""
+seg_0070,SPEAKER_2,speaker_1,198.16,200.9,2.74,Okay. What was the game of the sketch?
+seg_0071,SPEAKER_1,speaker_0,201.7,216.76,15.06,"It was a Maya sketch. That's a prop, don't smoke that. It's a prop. It's all fake. It's fake smoke. It was a Maya sketch, something about high school, and we were in a, we were boyfriend and girlfriend or something like that. And I, I never go for it when I, if I have a kissing scene, but she went, she went for it."
+seg_0072,SPEAKER_2,speaker_1,217.06,218.16,1.1,How long had you been on the show?
+seg_0073,SPEAKER_1,speaker_0,218.84,219.44,0.6,Two seasons.
+seg_0074,SPEAKER_2,speaker_1,219.74,219.96,0.22,Tongue?
+seg_0075,SPEAKER_1,speaker_0,220.6,220.76,0.16,Yeah.
+seg_0076,SPEAKER_1,speaker_0,222.4,229.48,7.08,"I went for it. I, it didn't make it to air, but I think if it did make it to air, then maybe we would've struck up a relationship maybe."
+seg_0077,SPEAKER_4,speaker_3,230.08,232.2,2.12,"You seem to be stuttering a lot there, Fallon."
+seg_0078,SPEAKER_2,speaker_1,233.6,235.7,2.1,Did you rehearse the kiss during the week?
+seg_0079,SPEAKER_1,speaker_0,237.0,237.2,0.2,No.
+seg_0080,SPEAKER_2,speaker_1,238.22,238.7,0.48,Ah.
+seg_0081,SPEAKER_1,speaker_0,239.22,242.44,3.22,"We didn't rehearse the kiss during the... It's just, she just, dress rehearsal, I guess-"
+seg_0082,SPEAKER_4,speaker_3,242.46,244.44,1.98,"You seem to be moving your head a lot there, Fallon."
+seg_0083,SPEAKER_1,speaker_0,245.98,247.53,1.55,"You're not moving your head. Why, what is it?"
+seg_0084,SPEAKER_4,speaker_3,247.56,248.51,0.95,"I'm not moving at all, Fallon."
+seg_0085,SPEAKER_1,speaker_0,248.53,250.8,2.27,"But I know, but I'm not, but I'm just a very physical person."
+seg_0086,SPEAKER_4,speaker_3,250.88,253.32,2.44,"Don't talk to me. Talk to both of us, Fallon."
+seg_0087,SPEAKER_2,speaker_1,254.36,256.719,2.359,"Well, we're trying to save your ass here, okay?"
+seg_0088,SPEAKER_1,speaker_0,256.86,258.25,1.39,"Okay, okay."
+seg_0089,SPEAKER_2,speaker_1,258.28,259.56,1.28,We want to kind of deal.
+seg_0090,SPEAKER_1,speaker_0,259.899,260.88,0.981,"Okay, let's cut a deal."
+seg_0091,SPEAKER_4,speaker_3,261.42,264.18,2.76,I can get you immunity and relocation.
+seg_0092,SPEAKER_1,speaker_0,265.62,267.9,2.28,"Uh, what do you think? Truth or lie?"
+seg_0093,SPEAKER_4,speaker_3,268.12,268.84,0.72,I think it's total BS.
+seg_0094,SPEAKER_2,speaker_1,269.36,270.96,1.6,"Yeah, I agree. It's a lie."
+seg_0095,SPEAKER_4,speaker_3,271.2,271.29,0.09,Yeah?
+seg_0096,SPEAKER_2,speaker_1,271.5,272.06,0.56,I don't buy it.
+seg_0097,SPEAKER_1,speaker_0,272.66,275.16,2.5,It's a total lie. She's very professional. She would never do that.
+seg_0098,SPEAKER_4,speaker_3,278.05,278.05,0.0,Yeah.
+seg_0099,SPEAKER_1,speaker_0,278.44,279.74,1.3,All right. Horrible liar. It means we're good friends.
+seg_0100,SPEAKER_4,speaker_3,279.75,280.56,0.81,I'm really bad at it.
+seg_0101,SPEAKER_1,speaker_0,280.6,287.38,6.78,"Yeah, I'm a bad liar. All right. Kate, it is your turn. I will choose the envelope. To me, you are a number one."
+seg_0102,SPEAKER_2,speaker_1,287.44,288.1,0.66,"Oh, bless you."
+seg_0103,SPEAKER_1,speaker_0,288.34,288.6,0.26,Yeah.
+seg_0104,SPEAKER_2,speaker_1,289.26,289.8,0.54,Oh my goodness.
+seg_0105,SPEAKER_1,speaker_0,289.96,290.84,0.88,That's what's in the cup.
+seg_0106,SPEAKER_2,speaker_1,290.99,291.26,0.27,That's sweet.
+seg_0107,SPEAKER_4,speaker_3,291.68,293.58,1.9,I know. I drank it.
+seg_0108,SPEAKER_1,speaker_0,293.82,295.2,1.38,"Yeah, you did. Certainly did."
+seg_0109,SPEAKER_2,speaker_1,295.8,299.06,3.26,"""I once snuck into a zoo after hours."""
+seg_0110,SPEAKER_4,speaker_3,302.74,305.82,3.08,"Why would you want to sneak into a zoo? To see a, a, a certain animal?"
+seg_0111,SPEAKER_2,speaker_1,306.56,306.74,0.18,Yes.
+seg_0112,SPEAKER_4,speaker_3,307.19,309.46,2.27,"Do you have a thing for zoos, or were you just being rebellious?"
+seg_0113,SPEAKER_2,speaker_1,310.24,310.86,0.62,I enjoy a zoo.
+seg_0114,SPEAKER_1,speaker_0,313.36,314.219,0.859,"Do you, do you live close to a zoo?"
+seg_0115,SPEAKER_2,speaker_1,314.64,314.65,0.01,No.
+seg_0116,SPEAKER_1,speaker_0,315.58,316.7,1.12,So you'd had to travel to get there?
+seg_0117,SPEAKER_2,speaker_1,316.89,317.08,0.19,"Oh, yeah."
+seg_0118,SPEAKER_1,speaker_0,317.6,318.2,0.6,You were there alone?
+seg_0119,SPEAKER_2,speaker_1,318.76,318.86,0.1,No.
+seg_0120,SPEAKER_1,speaker_0,319.62,320.38,0.76,Besides the animals.
+seg_0121,SPEAKER_2,speaker_1,321.0,321.38,0.38,No.
+seg_0122,SPEAKER_4,speaker_3,321.82,324.12,2.3,Did the travel include anything like an airline flight?
+seg_0123,SPEAKER_2,speaker_1,324.38,324.56,0.18,Yes.
+seg_0124,SPEAKER_1,speaker_0,326.24,328.16,1.92,You flew to a place to go-
+seg_0125,SPEAKER_4,speaker_3,328.46,328.58,0.12,Let me-
+seg_0126,SPEAKER_1,speaker_0,328.59,329.56,0.97,... after hours to a zoo
+seg_0127,SPEAKER_4,speaker_3,329.82,330.5,0.68,... get this straight.
+seg_0128,SPEAKER_1,speaker_0,330.88,331.03,0.15,What?
+seg_0129,SPEAKER_4,speaker_3,331.28,336.5,5.22,You took a plane to walk to a zoo to go over into a zoo after hours?
+seg_0130,SPEAKER_2,speaker_1,337.27,341.74,4.47,"The zoo wasn't the only reason I'd boarded the plane, but it was one of them."
+seg_0131,SPEAKER_1,speaker_0,344.34,345.9,1.56,"Was there a, were the animals sleeping?"
+seg_0132,SPEAKER_2,speaker_1,347.02,347.14,0.12,No.
+seg_0133,SPEAKER_4,speaker_3,347.98,349.08,1.1,First class or coach?
+seg_0134,SPEAKER_2,speaker_1,350.26,350.64,0.38,Coach.
+seg_0135,SPEAKER_4,speaker_3,350.9,352.0,1.1,I don't believe a word of it.
+seg_0136,SPEAKER_1,speaker_0,352.2,352.9,0.7,"Wait, wait, wait."
+seg_0137,SPEAKER_4,speaker_3,352.96,353.62,0.66,"I'm sorry, wait."
+seg_0138,SPEAKER_1,speaker_0,354.24,356.66,2.42,"Wait, why would she, would she, she could fly coach. I fly coach."
+seg_0139,SPEAKER_4,speaker_3,356.7,360.16,3.46,"Not to, not to hop the wall in a zoo you don't fly coach. Everybody knows that."
+seg_0140,SPEAKER_1,speaker_0,360.88,366.98,6.1,"What are you talking about? That's not the point. That's so... I love that that's the last, last time we ever talk to each other."
+seg_0141,SPEAKER_1,speaker_0,368.34,370.6,2.26,"I think... Well, I can get enough questions in there."
+seg_0142,SPEAKER_2,speaker_1,370.69,370.69,0.0,Mm.
+seg_0143,SPEAKER_1,speaker_0,370.7,372.54,1.84,But... Mm.
+seg_0144,SPEAKER_2,speaker_1,372.72,376.099,3.379,"Too busy playing your games. Well, joke's on you, buster."
+seg_0145,SPEAKER_1,speaker_0,376.75,378.8,2.05,"Why's the joke on me, buster? I didn't even do anything yet."
+seg_0146,SPEAKER_2,speaker_1,378.86,379.13,0.27,I don't know.
+seg_0147,SPEAKER_1,speaker_0,379.28,379.82,0.54,I say-
+seg_0148,SPEAKER_4,speaker_3,380.08,380.52,0.44,Say no way.
+seg_0149,SPEAKER_1,speaker_0,380.8,384.29,3.49,"I say totally happened. Yes, I think it happened. You say didn't happen."
+seg_0150,SPEAKER_4,speaker_3,384.34,385.159,0.819,It's a lie.
+seg_0151,SPEAKER_1,speaker_0,385.22,388.36,3.14,"I say it's the truth. Yes, it is the truth."
+seg_0152,SPEAKER_1,speaker_0,392.04,397.76,5.72,"Yes. Adventurous, adventurous, creative mind. Our thanks to Kate McKinnon and John Cena for the true confessions."
+seg_0153,SPEAKER_1,speaker_0,402.6,402.9,0.3,"Uh,"
+seg_0154,SPEAKER_1,speaker_0,405.36,407.84,2.48,yeah. I ain't playin'

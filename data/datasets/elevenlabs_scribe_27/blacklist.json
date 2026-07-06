@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "excluded_videos": [
+    {
+      "video_id": "k1tsGGz-Qw0",
+      "title": "Key & Peele - High On Potenuse",
+      "source_url": "https://www.youtube.com/watch?v=k1tsGGz-Qw0",
+      "scope": "score_search",
+      "reason": "Known bad ElevenLabs canonical diarization: the opening repeated 'I wish I were/was high on pot noose' lines are labeled as the same speaker even though they are different speakers.",
+      "added_on": "2026-07-06"
+    },
+    {
+      "video_id": "Dd7FixvoKBw",
+      "title": "Substitute Teacher - Key & Peele",
+      "source_url": "https://www.youtube.com/watch?v=Dd7FixvoKBw",
+      "scope": "score_search",
+      "reason": "Filtered-26 tuned score 0.742946 is below the 0.78 review threshold; exclude from aggregate score/search until manually reviewed.",
+      "added_on": "2026-07-06"
+    },
+    {
+      "video_id": "WNZn37Uc700",
+      "title": "True Confessions with Matthew McConaughey and Hugh Grant",
+      "source_url": "https://www.youtube.com/watch?v=WNZn37Uc700",
+      "scope": "score_search",
+      "reason": "Filtered-26 tuned score 0.753477 is below the 0.78 review threshold; exclude from aggregate score/search until manually reviewed.",
+      "added_on": "2026-07-06"
+    },
+    {
+      "video_id": "acbnyagl8jo",
+      "title": "Margin Call meeting scene",
+      "source_url": "https://www.youtube.com/watch?v=acbnyagl8jo",
+      "scope": "score_search",
+      "reason": "Filtered-26 tuned score 0.760147 is below the 0.78 review threshold; exclude from aggregate score/search until manually reviewed.",
+      "added_on": "2026-07-06"
+    },
+    {
+      "video_id": "gj7BRMuB-n4",
+      "title": "True Confessions with Kate McKinnon and John Cena",
+      "source_url": "https://www.youtube.com/watch?v=gj7BRMuB-n4",
+      "scope": "score_search",
+      "reason": "Filtered-26 tuned score 0.765265 is below the 0.78 review threshold; exclude from aggregate score/search until manually reviewed.",
+      "added_on": "2026-07-06"
+    },
+    {
+      "video_id": "bPpcfH_HHH8",
+      "title": "NPR’s Delicious Dish: Schweddy Balls - SNL",
+      "source_url": "https://www.youtube.com/watch?v=bPpcfH_HHH8",
+      "scope": "score_search",
+      "reason": "Filtered-26 tuned score 0.789927 is below the 0.79 review threshold; exclude from aggregate score/search until manually reviewed.",
+      "added_on": "2026-07-06"
+    }
+  ]
+}

@@ -1,0 +1,932 @@
+[
+  {
+    "speaker": "speaker_0",
+    "start": 0.24,
+    "end": 13.26,
+    "text": "I'm here with Kate McKinnon. Her new movie, Rough Night, is in theaters next Friday. Don't drink, it's a prop. Kate and I are about to play a game of deception called True True Confession Session."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 22.14,
+    "end": 30.56,
+    "text": "First we're gonna need another player to fill out this table, and we found a good one. He's the host of American Grit on Fox. Please welcome John Cena. Whoo."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 34.22,
+    "end": 35.56,
+    "text": "Don't drink that."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 37.7,
+    "end": 41.85,
+    "text": "It's a prop. It's a prop. This is a prop. This is supposed to be like a detective envelope."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 41.85,
+    "end": 42.69,
+    "text": "God, it's urine."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 42.74,
+    "end": 44.919,
+    "text": "Don't, don't... That's not urine."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 44.949,
+    "end": 44.949,
+    "text": "Ugh."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 44.98,
+    "end": 63.54,
+    "text": "Guys, here's how the game works. In front of each of us are two envelopes containing confessions sessions. One of the envelopes is something that actually happened to us in real life. The other envelope is a lie. Once you read your confession, the other two have 60 seconds to interrogate you, then each of us have to guess whether you've been telling the truth or lying. John, you'll go first."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 63.98,
+    "end": 64.86,
+    "text": "This is complicated."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 64.94,
+    "end": 67.86,
+    "text": "Kate, which envelope should he open? Which envelope?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 68.44,
+    "end": 68.55,
+    "text": "One."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 68.55,
+    "end": 69.58,
+    "text": "One. Mm."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 71.34,
+    "end": 71.63,
+    "text": "Hold on, I-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 71.66,
+    "end": 72.7,
+    "text": "Envelope number one."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 72.88,
+    "end": 75.06,
+    "text": "I don't want you to see anything here. Okay, um."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 75.14,
+    "end": 76.36,
+    "text": "You're gonna have to read it to us anyway."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 78.14,
+    "end": 87.64,
+    "text": "Okay, so I, I just, I read what's on the card. Okay, fair enough. Uh, \"I was once hit by a car while riding my bike and the driver was my girlfriend.\""
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 89.25,
+    "end": 89.5,
+    "text": "Mm-hmm."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 89.79,
+    "end": 90.06,
+    "text": "Mm, that's it."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 90.44,
+    "end": 90.86,
+    "text": "What was her name?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 91.5,
+    "end": 92.24,
+    "text": "My name is John Cena."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 92.36,
+    "end": 93.34,
+    "text": "No, what's her name?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 95.98,
+    "end": 96.86,
+    "text": "That is, uh..."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 98.62,
+    "end": 100.38,
+    "text": "That's enough questions out of you. I already told you my name."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 101.5,
+    "end": 103.84,
+    "text": "Were you dating at the time of the hit?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 103.96,
+    "end": 104.14,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 104.92,
+    "end": 106.72,
+    "text": "And why were you riding your bike and she was in the car?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 107.08,
+    "end": 110.16,
+    "text": "'Cause as a young man, I fancied myself physically fit."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 111.48,
+    "end": 115.36,
+    "text": "You wouldn't travel in other, any transportation but bicycling?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 115.58,
+    "end": 119.15,
+    "text": "I, there's enough horsepower in this body to bicycle around West Newbury just fine."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 122.36,
+    "end": 125.62,
+    "text": "Did she cry when she found that she'd injured her one true love?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 125.94,
+    "end": 128.28,
+    "text": "Uh, nope, and that was the abrupt end of the relationship."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 130.07,
+    "end": 130.07,
+    "text": "Oh."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 130.08,
+    "end": 130.16,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 130.19,
+    "end": 130.4,
+    "text": "Huh."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 130.65,
+    "end": 130.65,
+    "text": "Huh."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 130.68,
+    "end": 132.06,
+    "text": "Okay. That, that was a good question."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 132.1,
+    "end": 133.52,
+    "text": "What sort of bike was it?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 133.84,
+    "end": 134.66,
+    "text": "It was a 10-speed."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 134.84,
+    "end": 135.2,
+    "text": "What color?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 135.58,
+    "end": 136.04,
+    "text": "It was maroon."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 136.14,
+    "end": 136.8,
+    "text": "What year?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 137.1,
+    "end": 138.02,
+    "text": "It was 1994."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 138.2,
+    "end": 139.57,
+    "text": "What grade were you in in school?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 139.82,
+    "end": 141.16,
+    "text": "I was just entering college."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 142.62,
+    "end": 143.62,
+    "text": "Where was the accident?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 143.91,
+    "end": 143.91,
+    "text": "True."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 144.48,
+    "end": 148.58,
+    "text": "It was, it was, uh, on a small street outside of Route 113, West Newbury, Massachusetts."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 148.66,
+    "end": 156.2,
+    "text": "I think I, I have enough questions. Enough questions. If th- if this is a lie, this dude should win an Oscar. That actually happened."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 156.28,
+    "end": 158.4,
+    "text": "It's gotta be real. The details are too good."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 158.62,
+    "end": 160.76,
+    "text": "Yeah. I say-... real."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 162.32,
+    "end": 164.26,
+    "text": "Well, you're both right. It's real."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 165.69,
+    "end": 165.69,
+    "text": "Oh."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 165.7,
+    "end": 167.65,
+    "text": "Hey, I almost died. I almost died."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 167.66,
+    "end": 169.76,
+    "text": "Oh my God, you almost died."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 170.2,
+    "end": 171.19,
+    "text": "It's true. It's true."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 171.19,
+    "end": 171.56,
+    "text": "You almost died."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 172.44,
+    "end": 172.94,
+    "text": "That's great."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 172.98,
+    "end": 174.07,
+    "text": "That is great. You almost died."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 174.08,
+    "end": 175.26,
+    "text": "That's great, he almost died."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 175.44,
+    "end": 175.67,
+    "text": "All right."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 175.72,
+    "end": 178.08,
+    "text": "And then, but he didn't. I love that. I love that."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 179.28,
+    "end": 181.67,
+    "text": "Which envelope, envelope, envelope?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 181.7,
+    "end": 182.38,
+    "text": "Do I choose?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 182.56,
+    "end": 182.9,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 182.96,
+    "end": 184.16,
+    "text": "Well, to me, you're always a number two."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 185.18,
+    "end": 185.72,
+    "text": "Thank you."
+  },
+  {
+    "speaker": "speaker_2",
+    "start": 187.35,
+    "end": 187.35,
+    "text": "Aw."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 187.4,
+    "end": 188.44,
+    "text": "Thank you, appreciate that."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 192.79,
+    "end": 195.38,
+    "text": "\"I made out with Gwyneth Paltrow during an SNL sketch.\""
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 198.16,
+    "end": 200.9,
+    "text": "Okay. What was the game of the sketch?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 201.7,
+    "end": 216.76,
+    "text": "It was a Maya sketch. That's a prop, don't smoke that. It's a prop. It's all fake. It's fake smoke. It was a Maya sketch, something about high school, and we were in a, we were boyfriend and girlfriend or something like that. And I, I never go for it when I, if I have a kissing scene, but she went, she went for it."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 217.06,
+    "end": 218.16,
+    "text": "How long had you been on the show?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 218.84,
+    "end": 219.44,
+    "text": "Two seasons."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 219.74,
+    "end": 219.96,
+    "text": "Tongue?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 220.6,
+    "end": 220.76,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 222.4,
+    "end": 229.48,
+    "text": "I went for it. I, it didn't make it to air, but I think if it did make it to air, then maybe we would've struck up a relationship maybe."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 230.08,
+    "end": 232.2,
+    "text": "You seem to be stuttering a lot there, Fallon."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 233.6,
+    "end": 235.7,
+    "text": "Did you rehearse the kiss during the week?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 237.0,
+    "end": 237.2,
+    "text": "No."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 238.22,
+    "end": 238.7,
+    "text": "Ah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 239.22,
+    "end": 242.44,
+    "text": "We didn't rehearse the kiss during the... It's just, she just, dress rehearsal, I guess-"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 242.46,
+    "end": 244.44,
+    "text": "You seem to be moving your head a lot there, Fallon."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 245.98,
+    "end": 247.53,
+    "text": "You're not moving your head. Why, what is it?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 247.56,
+    "end": 248.51,
+    "text": "I'm not moving at all, Fallon."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 248.53,
+    "end": 250.8,
+    "text": "But I know, but I'm not, but I'm just a very physical person."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 250.88,
+    "end": 253.32,
+    "text": "Don't talk to me. Talk to both of us, Fallon."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 254.36,
+    "end": 256.719,
+    "text": "Well, we're trying to save your ass here, okay?"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 256.86,
+    "end": 258.25,
+    "text": "Okay, okay."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 258.28,
+    "end": 259.56,
+    "text": "We want to kind of deal."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 259.899,
+    "end": 260.88,
+    "text": "Okay, let's cut a deal."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 261.42,
+    "end": 264.18,
+    "text": "I can get you immunity and relocation."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 265.62,
+    "end": 267.9,
+    "text": "Uh, what do you think? Truth or lie?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 268.12,
+    "end": 268.84,
+    "text": "I think it's total BS."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 269.36,
+    "end": 270.96,
+    "text": "Yeah, I agree. It's a lie."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 271.2,
+    "end": 271.29,
+    "text": "Yeah?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 271.5,
+    "end": 272.06,
+    "text": "I don't buy it."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 272.66,
+    "end": 275.16,
+    "text": "It's a total lie. She's very professional. She would never do that."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 278.05,
+    "end": 278.05,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 278.44,
+    "end": 279.74,
+    "text": "All right. Horrible liar. It means we're good friends."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 279.75,
+    "end": 280.56,
+    "text": "I'm really bad at it."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 280.6,
+    "end": 287.38,
+    "text": "Yeah, I'm a bad liar. All right. Kate, it is your turn. I will choose the envelope. To me, you are a number one."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 287.44,
+    "end": 288.1,
+    "text": "Oh, bless you."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 288.34,
+    "end": 288.6,
+    "text": "Yeah."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 289.26,
+    "end": 289.8,
+    "text": "Oh my goodness."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 289.96,
+    "end": 290.84,
+    "text": "That's what's in the cup."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 290.99,
+    "end": 291.26,
+    "text": "That's sweet."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 291.68,
+    "end": 293.58,
+    "text": "I know. I drank it."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 293.82,
+    "end": 295.2,
+    "text": "Yeah, you did. Certainly did."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 295.8,
+    "end": 299.06,
+    "text": "\"I once snuck into a zoo after hours.\""
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 302.74,
+    "end": 305.82,
+    "text": "Why would you want to sneak into a zoo? To see a, a, a certain animal?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 306.56,
+    "end": 306.74,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 307.19,
+    "end": 309.46,
+    "text": "Do you have a thing for zoos, or were you just being rebellious?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 310.24,
+    "end": 310.86,
+    "text": "I enjoy a zoo."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 313.36,
+    "end": 314.219,
+    "text": "Do you, do you live close to a zoo?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 314.64,
+    "end": 314.65,
+    "text": "No."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 315.58,
+    "end": 316.7,
+    "text": "So you'd had to travel to get there?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 316.89,
+    "end": 317.08,
+    "text": "Oh, yeah."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 317.6,
+    "end": 318.2,
+    "text": "You were there alone?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 318.76,
+    "end": 318.86,
+    "text": "No."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 319.62,
+    "end": 320.38,
+    "text": "Besides the animals."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 321.0,
+    "end": 321.38,
+    "text": "No."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 321.82,
+    "end": 324.12,
+    "text": "Did the travel include anything like an airline flight?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 324.38,
+    "end": 324.56,
+    "text": "Yes."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 326.24,
+    "end": 328.16,
+    "text": "You flew to a place to go-"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 328.46,
+    "end": 328.58,
+    "text": "Let me-"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 328.59,
+    "end": 329.56,
+    "text": "... after hours to a zoo"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 329.82,
+    "end": 330.5,
+    "text": "... get this straight."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 330.88,
+    "end": 331.03,
+    "text": "What?"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 331.28,
+    "end": 336.5,
+    "text": "You took a plane to walk to a zoo to go over into a zoo after hours?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 337.27,
+    "end": 341.74,
+    "text": "The zoo wasn't the only reason I'd boarded the plane, but it was one of them."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 344.34,
+    "end": 345.9,
+    "text": "Was there a, were the animals sleeping?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 347.02,
+    "end": 347.14,
+    "text": "No."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 347.98,
+    "end": 349.08,
+    "text": "First class or coach?"
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 350.26,
+    "end": 350.64,
+    "text": "Coach."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 350.9,
+    "end": 352.0,
+    "text": "I don't believe a word of it."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 352.2,
+    "end": 352.9,
+    "text": "Wait, wait, wait."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 352.96,
+    "end": 353.62,
+    "text": "I'm sorry, wait."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 354.24,
+    "end": 356.66,
+    "text": "Wait, why would she, would she, she could fly coach. I fly coach."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 356.7,
+    "end": 360.16,
+    "text": "Not to, not to hop the wall in a zoo you don't fly coach. Everybody knows that."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 360.88,
+    "end": 366.98,
+    "text": "What are you talking about? That's not the point. That's so... I love that that's the last, last time we ever talk to each other."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 368.34,
+    "end": 370.6,
+    "text": "I think... Well, I can get enough questions in there."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 370.69,
+    "end": 370.69,
+    "text": "Mm."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 370.7,
+    "end": 372.54,
+    "text": "But... Mm."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 372.72,
+    "end": 376.099,
+    "text": "Too busy playing your games. Well, joke's on you, buster."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 376.75,
+    "end": 378.8,
+    "text": "Why's the joke on me, buster? I didn't even do anything yet."
+  },
+  {
+    "speaker": "speaker_1",
+    "start": 378.86,
+    "end": 379.13,
+    "text": "I don't know."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 379.28,
+    "end": 379.82,
+    "text": "I say-"
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 380.08,
+    "end": 380.52,
+    "text": "Say no way."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 380.8,
+    "end": 384.29,
+    "text": "I say totally happened. Yes, I think it happened. You say didn't happen."
+  },
+  {
+    "speaker": "speaker_3",
+    "start": 384.34,
+    "end": 385.159,
+    "text": "It's a lie."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 385.22,
+    "end": 388.36,
+    "text": "I say it's the truth. Yes, it is the truth."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 392.04,
+    "end": 397.76,
+    "text": "Yes. Adventurous, adventurous, creative mind. Our thanks to Kate McKinnon and John Cena for the true confessions."
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 402.6,
+    "end": 402.9,
+    "text": "Uh,"
+  },
+  {
+    "speaker": "speaker_0",
+    "start": 405.36,
+    "end": 407.84,
+    "text": "yeah. I ain't playin'"
+  }
+]

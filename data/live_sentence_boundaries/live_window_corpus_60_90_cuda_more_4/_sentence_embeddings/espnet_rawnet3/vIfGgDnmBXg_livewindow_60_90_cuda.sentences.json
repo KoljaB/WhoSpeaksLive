@@ -1,0 +1,1564 @@
+{
+  "provider": "espnet_rawnet3",
+  "video": "vIfGgDnmBXg",
+  "folder": "vIfGgDnmBXg_livewindow_60_90_cuda",
+  "sentence_file": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\vIfGgDnmBXg_livewindow_60_90_cuda\\sentences.jsonl",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    155,
+    192
+  ],
+  "elapsed_seconds": 4.057188600068912,
+  "sentences": [
+    {
+      "index": 0,
+      "text": "Welcome back to The Morty Jepson Show.",
+      "start": 2.4,
+      "end": 4.664,
+      "audio_length_seconds": 2.264,
+      "embedding_audio_seconds": 2.264,
+      "audio_file": "audio\\sentence_0000.wav",
+      "word_count": 7
+    },
+    {
+      "index": 1,
+      "text": "I'm Morty Jepson.",
+      "start": 4.664,
+      "end": 5.51,
+      "audio_length_seconds": 0.846,
+      "embedding_audio_seconds": 0.846,
+      "audio_file": "audio\\sentence_0001.wav",
+      "word_count": 3
+    },
+    {
+      "index": 2,
+      "text": "We're here today continuing our conversation with unbelievable mega -superstar Young Bidness.",
+      "start": 5.51,
+      "end": 12.16,
+      "audio_length_seconds": 6.65,
+      "embedding_audio_seconds": 6.34,
+      "audio_file": "audio\\sentence_0002.wav",
+      "word_count": 12
+    },
+    {
+      "index": 3,
+      "text": "Now, young bidness, I got to tell you, we've been tiptoeing around a particular subject all day, and I think it's time to broach it.",
+      "start": 12.92,
+      "end": 18.99,
+      "audio_length_seconds": 6.07,
+      "embedding_audio_seconds": 5.86,
+      "audio_file": "audio\\sentence_0003.wav",
+      "word_count": 25
+    },
+    {
+      "index": 4,
+      "text": "You've separated recently with your actress girlfriend, Tina Boquet?",
+      "start": 18.99,
+      "end": 22.98,
+      "audio_length_seconds": 3.99,
+      "embedding_audio_seconds": 3.24,
+      "audio_file": "audio\\sentence_0004.wav",
+      "word_count": 9
+    },
+    {
+      "index": 5,
+      "text": "No.",
+      "start": 22.98,
+      "end": 23.35,
+      "audio_length_seconds": 0.37,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0005.wav",
+      "word_count": 1
+    },
+    {
+      "index": 6,
+      "text": "and everybody wants to know what's the upcoming... Mort, we ain't gonna talk about that.",
+      "start": 23.35,
+      "end": 26.92,
+      "audio_length_seconds": 3.57,
+      "embedding_audio_seconds": 3.48,
+      "audio_file": "audio\\sentence_0006.wav",
+      "word_count": 15
+    },
+    {
+      "index": 7,
+      "text": "I'm not here to talk about that.",
+      "start": 26.92,
+      "end": 28.544,
+      "audio_length_seconds": 1.624,
+      "embedding_audio_seconds": 1.524,
+      "audio_file": "audio\\sentence_0007.wav",
+      "word_count": 7
+    },
+    {
+      "index": 8,
+      "text": "I just want to hear your side of the story.",
+      "start": 28.544,
+      "end": 29.928,
+      "audio_length_seconds": 1.384,
+      "embedding_audio_seconds": 1.384,
+      "audio_file": "audio\\sentence_0008.wav",
+      "word_count": 10
+    },
+    {
+      "index": 9,
+      "text": "You don't want to hear it.",
+      "start": 29.928,
+      "end": 30.84,
+      "audio_length_seconds": 0.912,
+      "embedding_audio_seconds": 0.912,
+      "audio_file": "audio\\sentence_0009.wav",
+      "word_count": 6
+    },
+    {
+      "index": 10,
+      "text": "I told y 'all motherfuckers, we won't go talk about that more.",
+      "start": 30.84,
+      "end": 33.85,
+      "audio_length_seconds": 3.01,
+      "embedding_audio_seconds": 3.01,
+      "audio_file": "audio\\sentence_0010.wav",
+      "word_count": 12
+    },
+    {
+      "index": 11,
+      "text": "I'm trying to talk about the music.",
+      "start": 33.85,
+      "end": 35.58,
+      "audio_length_seconds": 1.73,
+      "embedding_audio_seconds": 1.73,
+      "audio_file": "audio\\sentence_0011.wav",
+      "word_count": 7
+    },
+    {
+      "index": 12,
+      "text": "And lots of people understand that you're talking about your own personal experiences more fans.",
+      "start": 35.58,
+      "end": 40.752,
+      "audio_length_seconds": 5.172,
+      "embedding_audio_seconds": 5.172,
+      "audio_file": "audio\\sentence_0012.wav",
+      "word_count": 15
+    },
+    {
+      "index": 13,
+      "text": "I ain't gon' like to know what's going on with you and Tina.",
+      "start": 40.752,
+      "end": 44.06,
+      "audio_length_seconds": 3.308,
+      "embedding_audio_seconds": 3.308,
+      "audio_file": "audio\\sentence_0013.wav",
+      "word_count": 13
+    },
+    {
+      "index": 14,
+      "text": "No, the fans don't want to know, you want to know.",
+      "start": 44.06,
+      "end": 46.58,
+      "audio_length_seconds": 2.52,
+      "embedding_audio_seconds": 2.52,
+      "audio_file": "audio\\sentence_0014.wav",
+      "word_count": 11
+    },
+    {
+      "index": 15,
+      "text": "I just want to clarify.",
+      "start": 46.58,
+      "end": 47.22,
+      "audio_length_seconds": 0.64,
+      "embedding_audio_seconds": 0.64,
+      "audio_file": "audio\\sentence_0015.wav",
+      "word_count": 5
+    },
+    {
+      "index": 16,
+      "text": "You don't wanna know.",
+      "start": 47.22,
+      "end": 47.928,
+      "audio_length_seconds": 0.708,
+      "embedding_audio_seconds": 0.708,
+      "audio_file": "audio\\sentence_0016.wav",
+      "word_count": 4
+    },
+    {
+      "index": 17,
+      "text": "All I wanna do.",
+      "start": 47.928,
+      "end": 48.32,
+      "audio_length_seconds": 0.392,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0017.wav",
+      "word_count": 4
+    },
+    {
+      "index": 18,
+      "text": "All I want to do is clarify.",
+      "start": 48.32,
+      "end": 49.11,
+      "audio_length_seconds": 0.79,
+      "embedding_audio_seconds": 0.79,
+      "audio_file": "audio\\sentence_0018.wav",
+      "word_count": 7
+    },
+    {
+      "index": 19,
+      "text": "You want clarification?",
+      "start": 49.18,
+      "end": 50.372,
+      "audio_length_seconds": 1.192,
+      "embedding_audio_seconds": 1.192,
+      "audio_file": "audio\\sentence_0019.wav",
+      "word_count": 3
+    },
+    {
+      "index": 20,
+      "text": "I want to hear your side of the story.",
+      "start": 50.372,
+      "end": 51.57,
+      "audio_length_seconds": 1.198,
+      "embedding_audio_seconds": 1.198,
+      "audio_file": "audio\\sentence_0020.wav",
+      "word_count": 9
+    },
+    {
+      "index": 21,
+      "text": "I'll tell you my side of the story.",
+      "start": 51.58,
+      "end": 52.22,
+      "audio_length_seconds": 0.64,
+      "embedding_audio_seconds": 0.64,
+      "audio_file": "audio\\sentence_0021.wav",
+      "word_count": 8
+    },
+    {
+      "index": 22,
+      "text": "I just want to hear your side of the story.",
+      "start": 52.22,
+      "end": 53.32,
+      "audio_length_seconds": 1.1,
+      "embedding_audio_seconds": 1.1,
+      "audio_file": "audio\\sentence_0022.wav",
+      "word_count": 10
+    },
+    {
+      "index": 23,
+      "text": "So, interview's over.",
+      "start": 53.32,
+      "end": 53.65,
+      "audio_length_seconds": 0.33,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0023.wav",
+      "word_count": 3
+    },
+    {
+      "index": 24,
+      "text": "How about that?",
+      "start": 53.65,
+      "end": 54.58,
+      "audio_length_seconds": 0.93,
+      "embedding_audio_seconds": 0.79,
+      "audio_file": "audio\\sentence_0024.wav",
+      "word_count": 3
+    },
+    {
+      "index": 25,
+      "text": "The enemy is over.",
+      "start": 54.58,
+      "end": 55.39,
+      "audio_length_seconds": 0.81,
+      "embedding_audio_seconds": 0.81,
+      "audio_file": "audio\\sentence_0025.wav",
+      "word_count": 4
+    },
+    {
+      "index": 26,
+      "text": "Please stop that.",
+      "start": 55.39,
+      "end": 56.21,
+      "audio_length_seconds": 0.82,
+      "embedding_audio_seconds": 0.82,
+      "audio_file": "audio\\sentence_0026.wav",
+      "word_count": 3
+    },
+    {
+      "index": 27,
+      "text": "There's no need for the interview to be over.",
+      "start": 56.21,
+      "end": 58.226,
+      "audio_length_seconds": 2.016,
+      "embedding_audio_seconds": 2.016,
+      "audio_file": "audio\\sentence_0027.wav",
+      "word_count": 9
+    },
+    {
+      "index": 28,
+      "text": "Interview's over.",
+      "start": 58.226,
+      "end": 58.996,
+      "audio_length_seconds": 0.77,
+      "embedding_audio_seconds": 0.77,
+      "audio_file": "audio\\sentence_0028.wav",
+      "word_count": 2
+    },
+    {
+      "index": 29,
+      "text": "Young bitches.",
+      "start": 59.266,
+      "end": 59.73,
+      "audio_length_seconds": 0.464,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0029.wav",
+      "word_count": 2
+    },
+    {
+      "index": 30,
+      "text": "Y 'all are young motherfuckers.",
+      "start": 59.73,
+      "end": 61.082,
+      "audio_length_seconds": 1.352,
+      "embedding_audio_seconds": 1.352,
+      "audio_file": "audio\\sentence_0030.wav",
+      "word_count": 5
+    },
+    {
+      "index": 31,
+      "text": "Young Venice, there's no need for the language or any of this.",
+      "start": 61.082,
+      "end": 63.274,
+      "audio_length_seconds": 2.192,
+      "embedding_audio_seconds": 2.192,
+      "audio_file": "audio\\sentence_0031.wav",
+      "word_count": 12
+    },
+    {
+      "index": 32,
+      "text": "Oh, yeah, I told y 'all motherfuckers wasn't gonna talk about that.",
+      "start": 63.274,
+      "end": 66.186,
+      "audio_length_seconds": 2.912,
+      "embedding_audio_seconds": 2.912,
+      "audio_file": "audio\\sentence_0032.wav",
+      "word_count": 12
+    },
+    {
+      "index": 33,
+      "text": "Do you want to talk about the album?",
+      "start": 66.186,
+      "end": 67.316,
+      "audio_length_seconds": 1.13,
+      "embedding_audio_seconds": 1.13,
+      "audio_file": "audio\\sentence_0033.wav",
+      "word_count": 8
+    },
+    {
+      "index": 34,
+      "text": "Because I'd be more than happy to talk about the album.",
+      "start": 67.316,
+      "end": 69.396,
+      "audio_length_seconds": 2.08,
+      "embedding_audio_seconds": 2.08,
+      "audio_file": "audio\\sentence_0034.wav",
+      "word_count": 11
+    },
+    {
+      "index": 35,
+      "text": "This is the C word.",
+      "start": 69.396,
+      "end": 70.406,
+      "audio_length_seconds": 1.01,
+      "embedding_audio_seconds": 1.01,
+      "audio_file": "audio\\sentence_0035.wav",
+      "word_count": 5
+    },
+    {
+      "index": 36,
+      "text": "More.",
+      "start": 70.436,
+      "end": 70.724,
+      "audio_length_seconds": 0.288,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0036.wav",
+      "word_count": 1
+    },
+    {
+      "index": 37,
+      "text": "It looks like it's well on its way to going platinum.",
+      "start": 70.724,
+      "end": 72.614,
+      "audio_length_seconds": 1.89,
+      "embedding_audio_seconds": 1.89,
+      "audio_file": "audio\\sentence_0037.wav",
+      "word_count": 11
+    },
+    {
+      "index": 38,
+      "text": "Or CD, as it were.",
+      "start": 72.614,
+      "end": 74.024,
+      "audio_length_seconds": 1.41,
+      "embedding_audio_seconds": 1.4,
+      "audio_file": "audio\\sentence_0038.wav",
+      "word_count": 5
+    },
+    {
+      "index": 39,
+      "text": "Lewis, please.",
+      "start": 74.024,
+      "end": 75.128,
+      "audio_length_seconds": 1.104,
+      "embedding_audio_seconds": 0.924,
+      "audio_file": "audio\\sentence_0039.wav",
+      "word_count": 2
+    },
+    {
+      "index": 40,
+      "text": "L -Lewis.",
+      "start": 75.128,
+      "end": 75.758,
+      "audio_length_seconds": 0.63,
+      "embedding_audio_seconds": 0.63,
+      "audio_file": "audio\\sentence_0040.wav",
+      "word_count": 2
+    },
+    {
+      "index": 41,
+      "text": "Lewis.",
+      "start": 75.758,
+      "end": 76.408,
+      "audio_length_seconds": 0.65,
+      "embedding_audio_seconds": 0.58,
+      "audio_file": "audio\\sentence_0041.wav",
+      "word_count": 1
+    },
+    {
+      "index": 42,
+      "text": "Lewis.",
+      "start": 76.408,
+      "end": 76.798,
+      "audio_length_seconds": 0.39,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0042.wav",
+      "word_count": 1
+    },
+    {
+      "index": 43,
+      "text": "Go well on its way to going platinum.",
+      "start": 78.418,
+      "end": 80.088,
+      "audio_length_seconds": 1.67,
+      "embedding_audio_seconds": 1.67,
+      "audio_file": "audio\\sentence_0043.wav",
+      "word_count": 8
+    },
+    {
+      "index": 44,
+      "text": "We can talk about this.",
+      "start": 80.088,
+      "end": 81.224,
+      "audio_length_seconds": 1.136,
+      "embedding_audio_seconds": 1.136,
+      "audio_file": "audio\\sentence_0044.wav",
+      "word_count": 5
+    },
+    {
+      "index": 45,
+      "text": "It's kind of a double album, wouldn't you say?",
+      "start": 81.224,
+      "end": 82.814,
+      "audio_length_seconds": 1.59,
+      "embedding_audio_seconds": 1.59,
+      "audio_file": "audio\\sentence_0045.wav",
+      "word_count": 9
+    },
+    {
+      "index": 46,
+      "text": "It's fine with me.",
+      "start": 83.334,
+      "end": 84.138,
+      "audio_length_seconds": 0.804,
+      "embedding_audio_seconds": 0.804,
+      "audio_file": "audio\\sentence_0046.wav",
+      "word_count": 4
+    },
+    {
+      "index": 47,
+      "text": "We can talk about the arm, we can talk about the arm.",
+      "start": 84.138,
+      "end": 85.568,
+      "audio_length_seconds": 1.43,
+      "embedding_audio_seconds": 1.43,
+      "audio_file": "audio\\sentence_0047.wav",
+      "word_count": 12
+    },
+    {
+      "index": 48,
+      "text": "How about the tanks of truth?",
+      "start": 85.568,
+      "end": 87.138,
+      "audio_length_seconds": 1.57,
+      "embedding_audio_seconds": 1.57,
+      "audio_file": "audio\\sentence_0048.wav",
+      "word_count": 6
+    },
+    {
+      "index": 49,
+      "text": "Take the tooth.",
+      "start": 87.518,
+      "end": 88.286,
+      "audio_length_seconds": 0.768,
+      "embedding_audio_seconds": 0.768,
+      "audio_file": "audio\\sentence_0049.wav",
+      "word_count": 3
+    },
+    {
+      "index": 50,
+      "text": "Is that a treatise on the conflict with ISIS?",
+      "start": 88.286,
+      "end": 91.716,
+      "audio_length_seconds": 3.43,
+      "embedding_audio_seconds": 3.43,
+      "audio_file": "audio\\sentence_0050.wav",
+      "word_count": 9
+    },
+    {
+      "index": 51,
+      "text": "I mean, what, what, talk to me about this.",
+      "start": 91.716,
+      "end": 93.246,
+      "audio_length_seconds": 1.53,
+      "embedding_audio_seconds": 1.53,
+      "audio_file": "audio\\sentence_0051.wav",
+      "word_count": 9
+    },
+    {
+      "index": 52,
+      "text": "Wait.",
+      "start": 93.686,
+      "end": 94.056,
+      "audio_length_seconds": 0.37,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0052.wav",
+      "word_count": 1
+    },
+    {
+      "index": 53,
+      "text": "Young business, please.",
+      "start": 94.916,
+      "end": 96.02,
+      "audio_length_seconds": 1.104,
+      "embedding_audio_seconds": 1.074,
+      "audio_file": "audio\\sentence_0053.wav",
+      "word_count": 3
+    },
+    {
+      "index": 54,
+      "text": "sit down, take a deep breath, and let's discuss.",
+      "start": 96.02,
+      "end": 99.45,
+      "audio_length_seconds": 3.43,
+      "embedding_audio_seconds": 3.43,
+      "audio_file": "audio\\sentence_0054.wav",
+      "word_count": 9
+    },
+    {
+      "index": 55,
+      "text": "Let's discuss the album.",
+      "start": 99.45,
+      "end": 101.146,
+      "audio_length_seconds": 1.696,
+      "embedding_audio_seconds": 1.696,
+      "audio_file": "audio\\sentence_0055.wav",
+      "word_count": 4
+    },
+    {
+      "index": 56,
+      "text": "It's done, Mark.",
+      "start": 101.146,
+      "end": 102.036,
+      "audio_length_seconds": 0.89,
+      "embedding_audio_seconds": 0.89,
+      "audio_file": "audio\\sentence_0056.wav",
+      "word_count": 3
+    },
+    {
+      "index": 57,
+      "text": "It's done.",
+      "start": 102.036,
+      "end": 103.146,
+      "audio_length_seconds": 1.11,
+      "embedding_audio_seconds": 0.71,
+      "audio_file": "audio\\sentence_0057.wav",
+      "word_count": 2
+    },
+    {
+      "index": 58,
+      "text": "Okay, there it is.",
+      "start": 105.146,
+      "end": 106.376,
+      "audio_length_seconds": 1.23,
+      "embedding_audio_seconds": 1.23,
+      "audio_file": "audio\\sentence_0058.wav",
+      "word_count": 4
+    },
+    {
+      "index": 59,
+      "text": "Okay, y 'all, here we go.",
+      "start": 106.386,
+      "end": 107.536,
+      "audio_length_seconds": 1.15,
+      "embedding_audio_seconds": 1.15,
+      "audio_file": "audio\\sentence_0059.wav",
+      "word_count": 6
+    },
+    {
+      "index": 60,
+      "text": "You brought this on yourself, Barton!",
+      "start": 108.196,
+      "end": 110.028,
+      "audio_length_seconds": 1.832,
+      "embedding_audio_seconds": 1.832,
+      "audio_file": "audio\\sentence_0060.wav",
+      "word_count": 6
+    },
+    {
+      "index": 61,
+      "text": "I would really love it.",
+      "start": 110.028,
+      "end": 110.728,
+      "audio_length_seconds": 0.7,
+      "embedding_audio_seconds": 0.7,
+      "audio_file": "audio\\sentence_0061.wav",
+      "word_count": 5
+    },
+    {
+      "index": 62,
+      "text": "Put it on yourself, though.",
+      "start": 110.728,
+      "end": 111.7,
+      "audio_length_seconds": 0.972,
+      "embedding_audio_seconds": 0.972,
+      "audio_file": "audio\\sentence_0062.wav",
+      "word_count": 5
+    },
+    {
+      "index": 63,
+      "text": "Young Bidness.",
+      "start": 111.7,
+      "end": 112.088,
+      "audio_length_seconds": 0.388,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0063.wav",
+      "word_count": 2
+    },
+    {
+      "index": 64,
+      "text": "Young business, I would really love it if you had a seat and we could just talk together about anything, anything you want.",
+      "start": 112.088,
+      "end": 117.696,
+      "audio_length_seconds": 5.608,
+      "embedding_audio_seconds": 5.608,
+      "audio_file": "audio\\sentence_0064.wav",
+      "word_count": 23
+    },
+    {
+      "index": 65,
+      "text": "We don't, I won't mention Tina's name again.",
+      "start": 117.696,
+      "end": 119.626,
+      "audio_length_seconds": 1.93,
+      "embedding_audio_seconds": 1.93,
+      "audio_file": "audio\\sentence_0065.wav",
+      "word_count": 8
+    },
+    {
+      "index": 66,
+      "text": "Young business.",
+      "start": 119.626,
+      "end": 120.636,
+      "audio_length_seconds": 1.01,
+      "embedding_audio_seconds": 1.01,
+      "audio_file": "audio\\sentence_0066.wav",
+      "word_count": 2
+    },
+    {
+      "index": 67,
+      "text": "How the fuck?",
+      "start": 120.986,
+      "end": 121.796,
+      "audio_length_seconds": 0.81,
+      "embedding_audio_seconds": 0.81,
+      "audio_file": "audio\\sentence_0067.wav",
+      "word_count": 3
+    },
+    {
+      "index": 68,
+      "text": "Youthful commerce.",
+      "start": 123.136,
+      "end": 124.006,
+      "audio_length_seconds": 0.87,
+      "embedding_audio_seconds": 0.87,
+      "audio_file": "audio\\sentence_0068.wav",
+      "word_count": 2
+    },
+    {
+      "index": 69,
+      "text": "How does... Where does it go to?",
+      "start": 124.246,
+      "end": 125.526,
+      "audio_length_seconds": 1.28,
+      "embedding_audio_seconds": 1.28,
+      "audio_file": "audio\\sentence_0069.wav",
+      "word_count": 7
+    },
+    {
+      "index": 70,
+      "text": "Louis, help me. No, get the fuck, get the fuck off me, Louis!",
+      "start": 125.526,
+      "end": 129.596,
+      "audio_length_seconds": 4.07,
+      "embedding_audio_seconds": 4.07,
+      "audio_file": "audio\\sentence_0070.wav",
+      "word_count": 13
+    },
+    {
+      "index": 71,
+      "text": "Louis.",
+      "start": 129.706,
+      "end": 130.176,
+      "audio_length_seconds": 0.47,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0071.wav",
+      "word_count": 1
+    },
+    {
+      "index": 72,
+      "text": "Go.",
+      "start": 130.176,
+      "end": 130.886,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.7101,
+      "audio_file": "audio\\sentence_0072.wav",
+      "word_count": 1
+    },
+    {
+      "index": 73,
+      "text": "Leave it be.",
+      "start": 131.206,
+      "end": 131.896,
+      "audio_length_seconds": 0.69,
+      "embedding_audio_seconds": 0.69,
+      "audio_file": "audio\\sentence_0073.wav",
+      "word_count": 3
+    },
+    {
+      "index": 74,
+      "text": "in exacerbating the situation.",
+      "start": 131.896,
+      "end": 133.326,
+      "audio_length_seconds": 1.43,
+      "embedding_audio_seconds": 1.43,
+      "audio_file": "audio\\sentence_0074.wav",
+      "word_count": 4
+    },
+    {
+      "index": 75,
+      "text": "This shit attached to.",
+      "start": 133.326,
+      "end": 134.836,
+      "audio_length_seconds": 1.51,
+      "embedding_audio_seconds": 1.51,
+      "audio_file": "audio\\sentence_0075.wav",
+      "word_count": 4
+    },
+    {
+      "index": 76,
+      "text": "It's probably coming off the system with a lot of slack.",
+      "start": 135.836,
+      "end": 137.768,
+      "audio_length_seconds": 1.932,
+      "embedding_audio_seconds": 1.932,
+      "audio_file": "audio\\sentence_0076.wav",
+      "word_count": 11
+    },
+    {
+      "index": 77,
+      "text": "The cord is blending in with the color of the carpet.",
+      "start": 137.768,
+      "end": 139.998,
+      "audio_length_seconds": 2.23,
+      "embedding_audio_seconds": 2.23,
+      "audio_file": "audio\\sentence_0077.wav",
+      "word_count": 11
+    },
+    {
+      "index": 78,
+      "text": "Would you quit?",
+      "start": 139.998,
+      "end": 140.808,
+      "audio_length_seconds": 0.81,
+      "embedding_audio_seconds": 0.81,
+      "audio_file": "audio\\sentence_0078.wav",
+      "word_count": 3
+    },
+    {
+      "index": 79,
+      "text": "Okay.",
+      "start": 140.818,
+      "end": 141.128,
+      "audio_length_seconds": 0.31,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0079.wav",
+      "word_count": 1
+    },
+    {
+      "index": 80,
+      "text": "I just think that, young bitness, why don't you drop the mic cable and have a seat?",
+      "start": 141.128,
+      "end": 145.518,
+      "audio_length_seconds": 4.39,
+      "embedding_audio_seconds": 4.36,
+      "audio_file": "audio\\sentence_0080.wav",
+      "word_count": 17
+    },
+    {
+      "index": 81,
+      "text": "This is what we used to call back in the army a foobar.",
+      "start": 145.518,
+      "end": 147.858,
+      "audio_length_seconds": 2.34,
+      "embedding_audio_seconds": 2.32,
+      "audio_file": "audio\\sentence_0081.wav",
+      "word_count": 13
+    },
+    {
+      "index": 82,
+      "text": "See, now I got this.",
+      "start": 147.858,
+      "end": 148.842,
+      "audio_length_seconds": 0.984,
+      "embedding_audio_seconds": 0.984,
+      "audio_file": "audio\\sentence_0082.wav",
+      "word_count": 5
+    },
+    {
+      "index": 83,
+      "text": "Okay, let me just tell you what's going on.",
+      "start": 148.842,
+      "end": 149.842,
+      "audio_length_seconds": 1.0,
+      "embedding_audio_seconds": 1.0,
+      "audio_file": "audio\\sentence_0083.wav",
+      "word_count": 9
+    },
+    {
+      "index": 84,
+      "text": "Don't get involved.",
+      "start": 150.422,
+      "end": 151.522,
+      "audio_length_seconds": 1.1,
+      "embedding_audio_seconds": 1.1,
+      "audio_file": "audio\\sentence_0084.wav",
+      "word_count": 3
+    },
+    {
+      "index": 85,
+      "text": "You see...",
+      "start": 151.522,
+      "end": 151.882,
+      "audio_length_seconds": 0.36,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0085.wav",
+      "word_count": 2
+    },
+    {
+      "index": 86,
+      "text": "to get you out of here.",
+      "start": 151.882,
+      "end": 152.732,
+      "audio_length_seconds": 0.85,
+      "embedding_audio_seconds": 0.85,
+      "audio_file": "audio\\sentence_0086.wav",
+      "word_count": 6
+    },
+    {
+      "index": 87,
+      "text": "Amy, please, can we just get... Why is it...",
+      "start": 152.732,
+      "end": 155.202,
+      "audio_length_seconds": 2.47,
+      "embedding_audio_seconds": 2.47,
+      "audio_file": "audio\\sentence_0087.wav",
+      "word_count": 9
+    },
+    {
+      "index": 88,
+      "text": "Listen, here, if you let go of it...",
+      "start": 155.202,
+      "end": 158.342,
+      "audio_length_seconds": 3.14,
+      "embedding_audio_seconds": 2.88,
+      "audio_file": "audio\\sentence_0088.wav",
+      "word_count": 8
+    },
+    {
+      "index": 89,
+      "text": "Let me get in there.",
+      "start": 158.342,
+      "end": 159.172,
+      "audio_length_seconds": 0.83,
+      "embedding_audio_seconds": 0.83,
+      "audio_file": "audio\\sentence_0089.wav",
+      "word_count": 5
+    },
+    {
+      "index": 90,
+      "text": "Don't get in it.",
+      "start": 159.172,
+      "end": 160.162,
+      "audio_length_seconds": 0.99,
+      "embedding_audio_seconds": 0.82,
+      "audio_file": "audio\\sentence_0090.wav",
+      "word_count": 4
+    },
+    {
+      "index": 91,
+      "text": "Don't see.",
+      "start": 160.162,
+      "end": 160.802,
+      "audio_length_seconds": 0.64,
+      "embedding_audio_seconds": 0.64,
+      "audio_file": "audio\\sentence_0091.wav",
+      "word_count": 2
+    },
+    {
+      "index": 92,
+      "text": "I'm trying to get around.",
+      "start": 160.802,
+      "end": 161.692,
+      "audio_length_seconds": 0.89,
+      "embedding_audio_seconds": 0.89,
+      "audio_file": "audio\\sentence_0092.wav",
+      "word_count": 5
+    },
+    {
+      "index": 93,
+      "text": "Hey, y 'all, don't step on my jacket!",
+      "start": 161.692,
+      "end": 163.142,
+      "audio_length_seconds": 1.45,
+      "embedding_audio_seconds": 1.45,
+      "audio_file": "audio\\sentence_0093.wav",
+      "word_count": 8
+    },
+    {
+      "index": 94,
+      "text": "Oh, $1,500 jacket, bitch.",
+      "start": 163.142,
+      "end": 165.312,
+      "audio_length_seconds": 2.17,
+      "embedding_audio_seconds": 1.9,
+      "audio_file": "audio\\sentence_0094.wav",
+      "word_count": 5
+    },
+    {
+      "index": 95,
+      "text": "You know, why do we have black cords and a black carpet?",
+      "start": 166.532,
+      "end": 169.302,
+      "audio_length_seconds": 2.77,
+      "embedding_audio_seconds": 2.72,
+      "audio_file": "audio\\sentence_0095.wav",
+      "word_count": 12
+    },
+    {
+      "index": 96,
+      "text": "All right, well, you motherfuckers...",
+      "start": 169.302,
+      "end": 171.022,
+      "audio_length_seconds": 1.72,
+      "embedding_audio_seconds": 1.6,
+      "audio_file": "audio\\sentence_0096.wav",
+      "word_count": 5
+    },
+    {
+      "index": 97,
+      "text": "I told y 'all I wasn't gonna look, Lewis.",
+      "start": 171.022,
+      "end": 173.872,
+      "audio_length_seconds": 2.85,
+      "embedding_audio_seconds": 2.85,
+      "audio_file": "audio\\sentence_0097.wav",
+      "word_count": 9
+    },
+    {
+      "index": 98,
+      "text": "I'll swear to fucking God we're gonna take care of it.",
+      "start": 173.872,
+      "end": 177.322,
+      "audio_length_seconds": 3.45,
+      "embedding_audio_seconds": 3.12,
+      "audio_file": "audio\\sentence_0098.wav",
+      "word_count": 11
+    },
+    {
+      "index": 99,
+      "text": "Just stay put.",
+      "start": 177.842,
+      "end": 178.852,
+      "audio_length_seconds": 1.01,
+      "embedding_audio_seconds": 1.01,
+      "audio_file": "audio\\sentence_0099.wav",
+      "word_count": 3
+    },
+    {
+      "index": 100,
+      "text": "Did you get it?",
+      "start": 178.852,
+      "end": 179.422,
+      "audio_length_seconds": 0.57,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0100.wav",
+      "word_count": 4
+    },
+    {
+      "index": 101,
+      "text": "Now you got... Well, I seem to have gotten myself tangled a bit.",
+      "start": 179.422,
+      "end": 182.592,
+      "audio_length_seconds": 3.17,
+      "embedding_audio_seconds": 3.17,
+      "audio_file": "audio\\sentence_0101.wav",
+      "word_count": 13
+    },
+    {
+      "index": 102,
+      "text": "Don't.",
+      "start": 183.192,
+      "end": 183.662,
+      "audio_length_seconds": 0.47,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0102.wav",
+      "word_count": 1
+    },
+    {
+      "index": 103,
+      "text": "You ain't.",
+      "start": 183.672,
+      "end": 184.902,
+      "audio_length_seconds": 1.23,
+      "embedding_audio_seconds": 1.23,
+      "audio_file": "audio\\sentence_0103.wav",
+      "word_count": 2
+    },
+    {
+      "index": 104,
+      "text": "I'll get off of you.",
+      "start": 184.902,
+      "end": 185.732,
+      "audio_length_seconds": 0.83,
+      "embedding_audio_seconds": 0.83,
+      "audio_file": "audio\\sentence_0104.wav",
+      "word_count": 5
+    },
+    {
+      "index": 105,
+      "text": "Can I, may I help you?",
+      "start": 187.732,
+      "end": 188.98,
+      "audio_length_seconds": 1.248,
+      "embedding_audio_seconds": 1.248,
+      "audio_file": "audio\\sentence_0105.wav",
+      "word_count": 6
+    },
+    {
+      "index": 106,
+      "text": "Don't touch the jacket.",
+      "start": 188.98,
+      "end": 190.19,
+      "audio_length_seconds": 1.21,
+      "embedding_audio_seconds": 1.21,
+      "audio_file": "audio\\sentence_0106.wav",
+      "word_count": 4
+    },
+    {
+      "index": 107,
+      "text": "I'm sorry, I'm sorry.",
+      "start": 190.19,
+      "end": 191.03,
+      "audio_length_seconds": 0.84,
+      "embedding_audio_seconds": 0.84,
+      "audio_file": "audio\\sentence_0107.wav",
+      "word_count": 4
+    },
+    {
+      "index": 108,
+      "text": "Look, okay, here's...",
+      "start": 191.03,
+      "end": 191.05,
+      "audio_length_seconds": 0.02,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0108.wav",
+      "word_count": 3
+    },
+    {
+      "index": 109,
+      "text": "Bounce on your nose.",
+      "start": 191.05,
+      "end": 191.33,
+      "audio_length_seconds": 0.28,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0109.wav",
+      "word_count": 4
+    },
+    {
+      "index": 110,
+      "text": "Look, okay, here's, raise your, raise your knee.",
+      "start": 191.33,
+      "end": 193.122,
+      "audio_length_seconds": 1.792,
+      "embedding_audio_seconds": 1.792,
+      "audio_file": "audio\\sentence_0110.wav",
+      "word_count": 8
+    },
+    {
+      "index": 111,
+      "text": "There's one end right here.",
+      "start": 193.122,
+      "end": 193.986,
+      "audio_length_seconds": 0.864,
+      "embedding_audio_seconds": 0.864,
+      "audio_file": "audio\\sentence_0111.wav",
+      "word_count": 5
+    },
+    {
+      "index": 112,
+      "text": "You gotta get now.",
+      "start": 193.986,
+      "end": 194.856,
+      "audio_length_seconds": 0.87,
+      "embedding_audio_seconds": 0.87,
+      "audio_file": "audio\\sentence_0112.wav",
+      "word_count": 4
+    },
+    {
+      "index": 113,
+      "text": "Hold on, I got the situs.",
+      "start": 194.856,
+      "end": 196.086,
+      "audio_length_seconds": 1.23,
+      "embedding_audio_seconds": 1.23,
+      "audio_file": "audio\\sentence_0113.wav",
+      "word_count": 6
+    },
+    {
+      "index": 114,
+      "text": "You know what?",
+      "start": 196.806,
+      "end": 197.426,
+      "audio_length_seconds": 0.62,
+      "embedding_audio_seconds": 0.62,
+      "audio_file": "audio\\sentence_0114.wav",
+      "word_count": 3
+    },
+    {
+      "index": 115,
+      "text": "Here.",
+      "start": 197.426,
+      "end": 197.606,
+      "audio_length_seconds": 0.18,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0115.wav",
+      "word_count": 1
+    },
+    {
+      "index": 116,
+      "text": "Here's what we're gonna do.",
+      "start": 197.606,
+      "end": 198.358,
+      "audio_length_seconds": 0.752,
+      "embedding_audio_seconds": 0.752,
+      "audio_file": "audio\\sentence_0116.wav",
+      "word_count": 5
+    },
+    {
+      "index": 117,
+      "text": "No, okay.",
+      "start": 198.358,
+      "end": 198.69,
+      "audio_length_seconds": 0.332,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0117.wav",
+      "word_count": 2
+    },
+    {
+      "index": 118,
+      "text": "Have a seat here.",
+      "start": 198.69,
+      "end": 199.378,
+      "audio_length_seconds": 0.688,
+      "embedding_audio_seconds": 0.688,
+      "audio_file": "audio\\sentence_0118.wav",
+      "word_count": 4
+    },
+    {
+      "index": 119,
+      "text": "Put your fanny right here.",
+      "start": 199.378,
+      "end": 200.308,
+      "audio_length_seconds": 0.93,
+      "embedding_audio_seconds": 0.93,
+      "audio_file": "audio\\sentence_0119.wav",
+      "word_count": 5
+    },
+    {
+      "index": 120,
+      "text": "Don't say Fannie.",
+      "start": 200.308,
+      "end": 201.298,
+      "audio_length_seconds": 0.99,
+      "embedding_audio_seconds": 0.99,
+      "audio_file": "audio\\sentence_0120.wav",
+      "word_count": 3
+    },
+    {
+      "index": 121,
+      "text": "Right there.",
+      "start": 201.588,
+      "end": 202.058,
+      "audio_length_seconds": 0.47,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0121.wav",
+      "word_count": 2
+    },
+    {
+      "index": 122,
+      "text": "Don't...",
+      "start": 202.698,
+      "end": 203.078,
+      "audio_length_seconds": 0.38,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0122.wav",
+      "word_count": 1
+    },
+    {
+      "index": 123,
+      "text": "There you go.",
+      "start": 203.078,
+      "end": 203.628,
+      "audio_length_seconds": 0.55,
+      "embedding_audio_seconds": 0.55,
+      "audio_file": "audio\\sentence_0123.wav",
+      "word_count": 3
+    },
+    {
+      "index": 124,
+      "text": "All right.",
+      "start": 203.918,
+      "end": 204.11,
+      "audio_length_seconds": 0.192,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0124.wav",
+      "word_count": 2
+    },
+    {
+      "index": 125,
+      "text": "How do you do it?",
+      "start": 204.11,
+      "end": 205.1,
+      "audio_length_seconds": 0.99,
+      "embedding_audio_seconds": 0.99,
+      "audio_file": "audio\\sentence_0125.wav",
+      "word_count": 5
+    },
+    {
+      "index": 126,
+      "text": "What do you do this every?",
+      "start": 205.11,
+      "end": 206.02,
+      "audio_length_seconds": 0.91,
+      "embedding_audio_seconds": 0.91,
+      "audio_file": "audio\\sentence_0126.wav",
+      "word_count": 6
+    },
+    {
+      "index": 127,
+      "text": "Don't.",
+      "start": 206.46,
+      "end": 206.876,
+      "audio_length_seconds": 0.416,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0127.wav",
+      "word_count": 1
+    },
+    {
+      "index": 128,
+      "text": "You ain't taking the pants off.",
+      "start": 206.876,
+      "end": 208.006,
+      "audio_length_seconds": 1.13,
+      "embedding_audio_seconds": 1.11,
+      "audio_file": "audio\\sentence_0128.wav",
+      "word_count": 6
+    },
+    {
+      "index": 129,
+      "text": "Nicole, goddammit.",
+      "start": 208.006,
+      "end": 209.336,
+      "audio_length_seconds": 1.33,
+      "embedding_audio_seconds": 1.31,
+      "audio_file": "audio\\sentence_0129.wav",
+      "word_count": 2
+    },
+    {
+      "index": 130,
+      "text": "Where is Jerry?",
+      "start": 209.336,
+      "end": 210.228,
+      "audio_length_seconds": 0.892,
+      "embedding_audio_seconds": 0.782,
+      "audio_file": "audio\\sentence_0130.wav",
+      "word_count": 3
+    },
+    {
+      "index": 131,
+      "text": "This is some shit right here.",
+      "start": 210.228,
+      "end": 211.998,
+      "audio_length_seconds": 1.77,
+      "embedding_audio_seconds": 1.76,
+      "audio_file": "audio\\sentence_0131.wav",
+      "word_count": 6
+    },
+    {
+      "index": 132,
+      "text": "Same sound guy for 27 years.",
+      "start": 211.998,
+      "end": 213.578,
+      "audio_length_seconds": 1.58,
+      "embedding_audio_seconds": 1.53,
+      "audio_file": "audio\\sentence_0132.wav",
+      "word_count": 6
+    },
+    {
+      "index": 133,
+      "text": "What's wrong with y 'all?",
+      "start": 213.578,
+      "end": 214.288,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.71,
+      "audio_file": "audio\\sentence_0133.wav",
+      "word_count": 5
+    },
+    {
+      "index": 134,
+      "text": "Vanishes in a flame.",
+      "start": 214.638,
+      "end": 215.378,
+      "audio_length_seconds": 0.74,
+      "embedding_audio_seconds": 0.74,
+      "audio_file": "audio\\sentence_0134.wav",
+      "word_count": 4
+    },
+    {
+      "index": 135,
+      "text": "All right, all right.",
+      "start": 215.378,
+      "end": 215.898,
+      "audio_length_seconds": 0.52,
+      "embedding_audio_seconds": 0.52,
+      "audio_file": "audio\\sentence_0135.wav",
+      "word_count": 4
+    },
+    {
+      "index": 136,
+      "text": "No.",
+      "start": 215.898,
+      "end": 216.13,
+      "audio_length_seconds": 0.232,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0136.wav",
+      "word_count": 1
+    },
+    {
+      "index": 137,
+      "text": "Nicole, for God's sake.",
+      "start": 216.13,
+      "end": 217.168,
+      "audio_length_seconds": 1.038,
+      "embedding_audio_seconds": 1.038,
+      "audio_file": "audio\\sentence_0137.wav",
+      "word_count": 4
+    },
+    {
+      "index": 138,
+      "text": "All right, Lewis, Lewis.",
+      "start": 217.168,
+      "end": 218.538,
+      "audio_length_seconds": 1.37,
+      "embedding_audio_seconds": 1.28,
+      "audio_file": "audio\\sentence_0138.wav",
+      "word_count": 4
+    },
+    {
+      "index": 139,
+      "text": "Hold that.",
+      "start": 220.168,
+      "end": 220.938,
+      "audio_length_seconds": 0.77,
+      "embedding_audio_seconds": 0.64,
+      "audio_file": "audio\\sentence_0139.wav",
+      "word_count": 2
+    },
+    {
+      "index": 140,
+      "text": "Don't do anything but hold that.",
+      "start": 221.088,
+      "end": 222.538,
+      "audio_length_seconds": 1.45,
+      "embedding_audio_seconds": 1.42,
+      "audio_file": "audio\\sentence_0140.wav",
+      "word_count": 6
+    },
+    {
+      "index": 141,
+      "text": "Okay, no, no, you got to put, no, nigga, you got to take the, no, you can't take the pants off over the shoes!",
+      "start": 223.758,
+      "end": 228.568,
+      "audio_length_seconds": 4.81,
+      "embedding_audio_seconds": 4.81,
+      "audio_file": "audio\\sentence_0141.wav",
+      "word_count": 24
+    },
+    {
+      "index": 142,
+      "text": "You can't take the pants off over the shoes!",
+      "start": 228.568,
+      "end": 230.398,
+      "audio_length_seconds": 1.83,
+      "embedding_audio_seconds": 1.7,
+      "audio_file": "audio\\sentence_0142.wav",
+      "word_count": 9
+    },
+    {
+      "index": 143,
+      "text": "Lewis, Lewis, get your white ass out the motherfucker.",
+      "start": 230.398,
+      "end": 232.718,
+      "audio_length_seconds": 2.32,
+      "embedding_audio_seconds": 2.21,
+      "audio_file": "audio\\sentence_0143.wav",
+      "word_count": 9
+    },
+    {
+      "index": 144,
+      "text": "You ain't helping nobody.",
+      "start": 232.718,
+      "end": 233.708,
+      "audio_length_seconds": 0.99,
+      "embedding_audio_seconds": 0.99,
+      "audio_file": "audio\\sentence_0144.wav",
+      "word_count": 4
+    },
+    {
+      "index": 145,
+      "text": "What's wrong with you?",
+      "start": 233.708,
+      "end": 234.638,
+      "audio_length_seconds": 0.93,
+      "embedding_audio_seconds": 0.86,
+      "audio_file": "audio\\sentence_0145.wav",
+      "word_count": 4
+    },
+    {
+      "index": 146,
+      "text": "All right, all right, all right.",
+      "start": 234.638,
+      "end": 235.83,
+      "audio_length_seconds": 1.192,
+      "embedding_audio_seconds": 1.192,
+      "audio_file": "audio\\sentence_0146.wav",
+      "word_count": 6
+    },
+    {
+      "index": 147,
+      "text": "I'm taking the shoes off.",
+      "start": 235.83,
+      "end": 236.782,
+      "audio_length_seconds": 0.952,
+      "embedding_audio_seconds": 0.952,
+      "audio_file": "audio\\sentence_0147.wav",
+      "word_count": 5
+    },
+    {
+      "index": 148,
+      "text": "OK.",
+      "start": 236.782,
+      "end": 237.06,
+      "audio_length_seconds": 0.278,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0148.wav",
+      "word_count": 1
+    },
+    {
+      "index": 149,
+      "text": "Left one first.",
+      "start": 237.06,
+      "end": 238.13,
+      "audio_length_seconds": 1.07,
+      "embedding_audio_seconds": 1.07,
+      "audio_file": "audio\\sentence_0149.wav",
+      "word_count": 3
+    },
+    {
+      "index": 150,
+      "text": "All right, well, fuck, do whatever the fuck you want, then, nigga, but fine.",
+      "start": 238.65,
+      "end": 241.76,
+      "audio_length_seconds": 3.11,
+      "embedding_audio_seconds": 3.11,
+      "audio_file": "audio\\sentence_0150.wav",
+      "word_count": 14
+    },
+    {
+      "index": 151,
+      "text": "Thank you.",
+      "start": 242.34,
+      "end": 243.084,
+      "audio_length_seconds": 0.744,
+      "embedding_audio_seconds": 0.744,
+      "audio_file": "audio\\sentence_0151.wav",
+      "word_count": 2
+    },
+    {
+      "index": 152,
+      "text": "One, two, thank you.",
+      "start": 243.084,
+      "end": 245.314,
+      "audio_length_seconds": 2.23,
+      "embedding_audio_seconds": 2.23,
+      "audio_file": "audio\\sentence_0152.wav",
+      "word_count": 4
+    },
+    {
+      "index": 153,
+      "text": "I told y 'all, I wasn't gonna talk about that shit!",
+      "start": 245.314,
+      "end": 247.644,
+      "audio_length_seconds": 2.33,
+      "embedding_audio_seconds": 2.33,
+      "audio_file": "audio\\sentence_0153.wav",
+      "word_count": 11
+    },
+    {
+      "index": 154,
+      "text": "We'll be right back with Alec Baldwin.",
+      "start": 254.624,
+      "end": 257.074,
+      "audio_length_seconds": 2.45,
+      "embedding_audio_seconds": 1.93,
+      "audio_file": "audio\\sentence_0154.wav",
+      "word_count": 7
+    }
+  ]
+}

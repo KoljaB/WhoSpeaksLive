@@ -1,0 +1,1517 @@
+[
+  {
+    "segment_id": "seg_0000",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 4.43,
+    "end_sec": 6.06,
+    "start_time": "00:04.430",
+    "end_time": "00:06.060",
+    "duration_sec": 1.63,
+    "text": "Hello, I'm Margaret Jo McCullen.",
+    "word_start_index": 0,
+    "word_end_index": 4
+  },
+  {
+    "segment_id": "seg_0001",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 6.6,
+    "end_sec": 8.36,
+    "start_time": "00:06.600",
+    "end_time": "00:08.360",
+    "duration_sec": 1.76,
+    "text": "And I'm Teri Rialto.",
+    "word_start_index": 5,
+    "word_end_index": 8
+  },
+  {
+    "segment_id": "seg_0002",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 8.38,
+    "end_sec": 10.64,
+    "start_time": "00:08.380",
+    "end_time": "00:10.640",
+    "duration_sec": 2.26,
+    "text": "And you're listening to The Delicious Dish-",
+    "word_start_index": 9,
+    "word_end_index": 15
+  },
+  {
+    "segment_id": "seg_0003",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 10.9,
+    "end_sec": 11.07,
+    "start_time": "00:10.900",
+    "end_time": "00:11.070",
+    "duration_sec": 0.17,
+    "text": "The Delicious Dish-",
+    "word_start_index": 16,
+    "word_end_index": 18
+  },
+  {
+    "segment_id": "seg_0004",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 11.07,
+    "end_sec": 11.77,
+    "start_time": "00:11.070",
+    "end_time": "00:11.770",
+    "duration_sec": 0.7,
+    "text": "... on National Public Radio",
+    "word_start_index": 19,
+    "word_end_index": 23
+  },
+  {
+    "segment_id": "seg_0005",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 11.77,
+    "end_sec": 12.68,
+    "start_time": "00:11.770",
+    "end_time": "00:12.680",
+    "duration_sec": 0.91,
+    "text": "... on National Public Radio.",
+    "word_start_index": 24,
+    "word_end_index": 28
+  },
+  {
+    "segment_id": "seg_0006",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 15.72,
+    "end_sec": 18.91,
+    "start_time": "00:15.720",
+    "end_time": "00:18.910",
+    "duration_sec": 3.19,
+    "text": "Now, Teri, it's Christmas season again, our favorite time of year.",
+    "word_start_index": 29,
+    "word_end_index": 39
+  },
+  {
+    "segment_id": "seg_0007",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 19.63,
+    "end_sec": 28.9,
+    "start_time": "00:19.630",
+    "end_time": "00:28.900",
+    "duration_sec": 9.27,
+    "text": "That's right, Margaret Jo. Holiday time is when the most wonderful culinary wishes can come true. Now, what's on your list this holiday season, Margaret Jo?",
+    "word_start_index": 40,
+    "word_end_index": 65
+  },
+  {
+    "segment_id": "seg_0008",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 29.49,
+    "end_sec": 38.12,
+    "start_time": "00:29.490",
+    "end_time": "00:38.120",
+    "duration_sec": 8.63,
+    "text": "Well, Teri, I really got greedy this year. I'm asking Kris Kringle for a wooden bowl, some oversized index cards, and a funnel.",
+    "word_start_index": 66,
+    "word_end_index": 88
+  },
+  {
+    "segment_id": "seg_0009",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 39.4,
+    "end_sec": 42.84,
+    "start_time": "00:39.400",
+    "end_time": "00:42.840",
+    "duration_sec": 3.44,
+    "text": "Ooh, a funnel. That'll be great for funneling.",
+    "word_start_index": 89,
+    "word_end_index": 96
+  },
+  {
+    "segment_id": "seg_0010",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 43.12,
+    "end_sec": 44.64,
+    "start_time": "00:43.120",
+    "end_time": "00:44.640",
+    "duration_sec": 1.52,
+    "text": "I know. I, I feel like a glutton.",
+    "word_start_index": 97,
+    "word_end_index": 104
+  },
+  {
+    "segment_id": "seg_0011",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 47.66,
+    "end_sec": 49.18,
+    "start_time": "00:47.660",
+    "end_time": "00:49.180",
+    "duration_sec": 1.52,
+    "text": "What's on your list, Teri?",
+    "word_start_index": 105,
+    "word_end_index": 109
+  },
+  {
+    "segment_id": "seg_0012",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 49.28,
+    "end_sec": 58.22,
+    "start_time": "00:49.280",
+    "end_time": "00:58.220",
+    "duration_sec": 8.94,
+    "text": "Well, I'm only asking Santa for one thing, a big box of glue traps to help me deal with my excessive rat problem. Now, tell me, um,",
+    "word_start_index": 110,
+    "word_end_index": 136
+  },
+  {
+    "segment_id": "seg_0013",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 59.76,
+    "end_sec": 63.1,
+    "start_time": "00:59.760",
+    "end_time": "01:03.100",
+    "duration_sec": 3.34,
+    "text": "are you, Margaret Jo, going to leave any treats out for Santa this year?",
+    "word_start_index": 137,
+    "word_end_index": 150
+  },
+  {
+    "segment_id": "seg_0014",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 63.18,
+    "end_sec": 67.5,
+    "start_time": "01:03.180",
+    "end_time": "01:07.500",
+    "duration_sec": 4.32,
+    "text": "Oh, absolutely. I always do. I like to leave Santa some tap water and rice.",
+    "word_start_index": 151,
+    "word_end_index": 165
+  },
+  {
+    "segment_id": "seg_0015",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 70.82,
+    "end_sec": 74.679,
+    "start_time": "01:10.820",
+    "end_time": "01:14.679",
+    "duration_sec": 3.859,
+    "text": "If Santa's anything like me, Christmas foods really wreak havoc on the old digestive system.",
+    "word_start_index": 166,
+    "word_end_index": 180
+  },
+  {
+    "segment_id": "seg_0016",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 75.88,
+    "end_sec": 76.78,
+    "start_time": "01:15.880",
+    "end_time": "01:16.780",
+    "duration_sec": 0.9,
+    "text": "What are you gonna leave, Teri?",
+    "word_start_index": 181,
+    "word_end_index": 186
+  },
+  {
+    "segment_id": "seg_0017",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 77.44,
+    "end_sec": 81.46,
+    "start_time": "01:17.440",
+    "end_time": "01:21.460",
+    "duration_sec": 4.02,
+    "text": "Uh, I can't ever leave food out in my apartment because I have an excessive rat problem.",
+    "word_start_index": 187,
+    "word_end_index": 203
+  },
+  {
+    "segment_id": "seg_0018",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 85.24,
+    "end_sec": 86.32,
+    "start_time": "01:25.240",
+    "end_time": "01:26.320",
+    "duration_sec": 1.08,
+    "text": "That's neat. Santa's fun.",
+    "word_start_index": 204,
+    "word_end_index": 207
+  },
+  {
+    "segment_id": "seg_0019",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 86.38,
+    "end_sec": 86.65,
+    "start_time": "01:26.380",
+    "end_time": "01:26.650",
+    "duration_sec": 0.27,
+    "text": "Santa's fun.",
+    "word_start_index": 208,
+    "word_end_index": 209
+  },
+  {
+    "segment_id": "seg_0020",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 86.66,
+    "end_sec": 87.28,
+    "start_time": "01:26.660",
+    "end_time": "01:27.280",
+    "duration_sec": 0.62,
+    "text": "He is fun.",
+    "word_start_index": 210,
+    "word_end_index": 212
+  },
+  {
+    "segment_id": "seg_0021",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 87.31,
+    "end_sec": 87.66,
+    "start_time": "01:27.310",
+    "end_time": "01:27.660",
+    "duration_sec": 0.35,
+    "text": "Neat.",
+    "word_start_index": 213,
+    "word_end_index": 213
+  },
+  {
+    "segment_id": "seg_0022",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 87.96,
+    "end_sec": 88.42,
+    "start_time": "01:27.960",
+    "end_time": "01:28.420",
+    "duration_sec": 0.46,
+    "text": "Yeah, it's fun.",
+    "word_start_index": 214,
+    "word_end_index": 216
+  },
+  {
+    "segment_id": "seg_0023",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 88.46,
+    "end_sec": 88.7,
+    "start_time": "01:28.460",
+    "end_time": "01:28.700",
+    "duration_sec": 0.24,
+    "text": "Fun.",
+    "word_start_index": 217,
+    "word_end_index": 217
+  },
+  {
+    "segment_id": "seg_0024",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 88.85,
+    "end_sec": 89.03,
+    "start_time": "01:28.850",
+    "end_time": "01:29.030",
+    "duration_sec": 0.18,
+    "text": "I like Christmas.",
+    "word_start_index": 218,
+    "word_end_index": 220
+  },
+  {
+    "segment_id": "seg_0025",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 89.04,
+    "end_sec": 90.34,
+    "start_time": "01:29.040",
+    "end_time": "01:30.340",
+    "duration_sec": 1.3,
+    "text": "Good times. Good times.",
+    "word_start_index": 221,
+    "word_end_index": 224
+  },
+  {
+    "segment_id": "seg_0026",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 90.78,
+    "end_sec": 91.36,
+    "start_time": "01:30.780",
+    "end_time": "01:31.360",
+    "duration_sec": 0.58,
+    "text": "It's neat.",
+    "word_start_index": 225,
+    "word_end_index": 226
+  },
+  {
+    "segment_id": "seg_0027",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 93.64,
+    "end_sec": 100.48,
+    "start_time": "01:33.640",
+    "end_time": "01:40.480",
+    "duration_sec": 6.84,
+    "text": "Well, Christmas is a time for traditional foods and bite-sized treats, and we have a very special guest today.",
+    "word_start_index": 227,
+    "word_end_index": 245
+  },
+  {
+    "segment_id": "seg_0028",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 100.78,
+    "end_sec": 105.54,
+    "start_time": "01:40.780",
+    "end_time": "01:45.540",
+    "duration_sec": 4.76,
+    "text": "That's right, Teri. He's the owner of his own holiday bakery with a very, very clever name,",
+    "word_start_index": 246,
+    "word_end_index": 262
+  },
+  {
+    "segment_id": "seg_0029",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 107.04,
+    "end_sec": 108.06,
+    "start_time": "01:47.040",
+    "end_time": "01:48.060",
+    "duration_sec": 1.02,
+    "text": "Seasons Eatings.",
+    "word_start_index": 263,
+    "word_end_index": 264
+  },
+  {
+    "segment_id": "seg_0030",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 111.74,
+    "end_sec": 112.7,
+    "start_time": "01:51.740",
+    "end_time": "01:52.700",
+    "duration_sec": 0.96,
+    "text": "That's really funny.",
+    "word_start_index": 265,
+    "word_end_index": 267
+  },
+  {
+    "segment_id": "seg_0031",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 114.24,
+    "end_sec": 116.02,
+    "start_time": "01:54.240",
+    "end_time": "01:56.020",
+    "duration_sec": 1.78,
+    "text": "I know. It rhymes with seasons greetings.",
+    "word_start_index": 268,
+    "word_end_index": 274
+  },
+  {
+    "segment_id": "seg_0032",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 119.34,
+    "end_sec": 124.55,
+    "start_time": "01:59.340",
+    "end_time": "02:04.550",
+    "duration_sec": 5.21,
+    "text": "Uh, please welcome the owner of Seasons Eatings, Pete Schweddy.",
+    "word_start_index": 275,
+    "word_end_index": 284
+  },
+  {
+    "segment_id": "seg_0033",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 126.4,
+    "end_sec": 126.41,
+    "start_time": "02:06.400",
+    "end_time": "02:06.410",
+    "duration_sec": 0.01,
+    "text": "Hi, Pete.",
+    "word_start_index": 285,
+    "word_end_index": 286
+  },
+  {
+    "segment_id": "seg_0034",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 128.36,
+    "end_sec": 129.109,
+    "start_time": "02:08.360",
+    "end_time": "02:09.109",
+    "duration_sec": 0.749,
+    "text": "Welcome. How are you?",
+    "word_start_index": 287,
+    "word_end_index": 290
+  },
+  {
+    "segment_id": "seg_0035",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 129.12,
+    "end_sec": 129.759,
+    "start_time": "02:09.120",
+    "end_time": "02:09.759",
+    "duration_sec": 0.639,
+    "text": "Welcome, Pete.",
+    "word_start_index": 291,
+    "word_end_index": 292
+  },
+  {
+    "segment_id": "seg_0036",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 129.8,
+    "end_sec": 130.8,
+    "start_time": "02:09.800",
+    "end_time": "02:10.800",
+    "duration_sec": 1.0,
+    "text": "We like the name of your store.",
+    "word_start_index": 293,
+    "word_end_index": 299
+  },
+  {
+    "segment_id": "seg_0037",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 131.76,
+    "end_sec": 132.84,
+    "start_time": "02:11.760",
+    "end_time": "02:12.840",
+    "duration_sec": 1.08,
+    "text": "Hi. Thanks for having me.",
+    "word_start_index": 300,
+    "word_end_index": 304
+  },
+  {
+    "segment_id": "seg_0038",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 133.7,
+    "end_sec": 136.88,
+    "start_time": "02:13.700",
+    "end_time": "02:16.880",
+    "duration_sec": 3.18,
+    "text": "Oh. Now, did I pronounce your name, uh, correctly?",
+    "word_start_index": 305,
+    "word_end_index": 313
+  },
+  {
+    "segment_id": "seg_0039",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 137.6,
+    "end_sec": 139.42,
+    "start_time": "02:17.600",
+    "end_time": "02:19.420",
+    "duration_sec": 1.82,
+    "text": "Y- you sure did. Pete Schweddy.",
+    "word_start_index": 314,
+    "word_end_index": 319
+  },
+  {
+    "segment_id": "seg_0040",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 142.56,
+    "end_sec": 149.5,
+    "start_time": "02:22.560",
+    "end_time": "02:29.500",
+    "duration_sec": 6.94,
+    "text": "Well, Pete, Teri and I have been looking forward to having you on the show'cause we know you're the master of all kinds of Christmas goodies. Tell us about them.",
+    "word_start_index": 320,
+    "word_end_index": 350
+  },
+  {
+    "segment_id": "seg_0041",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 149.94,
+    "end_sec": 153.12,
+    "start_time": "02:29.940",
+    "end_time": "02:33.120",
+    "duration_sec": 3.18,
+    "text": "Well, there are lots of great treats this time of year, zucchini bread-",
+    "word_start_index": 351,
+    "word_end_index": 363
+  },
+  {
+    "segment_id": "seg_0042",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 153.29,
+    "end_sec": 153.29,
+    "start_time": "02:33.290",
+    "end_time": "02:33.290",
+    "duration_sec": 0.0,
+    "text": "Mm",
+    "word_start_index": 364,
+    "word_end_index": 364
+  },
+  {
+    "segment_id": "seg_0043",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 153.29,
+    "end_sec": 158.04,
+    "start_time": "02:33.290",
+    "end_time": "02:38.040",
+    "duration_sec": 4.75,
+    "text": "... fruitcake. But the thing that I most like to bring out at this time of the year are my balls.",
+    "word_start_index": 365,
+    "word_end_index": 385
+  },
+  {
+    "segment_id": "seg_0044",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 165.1,
+    "end_sec": 167.32,
+    "start_time": "02:45.100",
+    "end_time": "02:47.320",
+    "duration_sec": 2.22,
+    "text": "Mm. Mm, balls.",
+    "word_start_index": 386,
+    "word_end_index": 388
+  },
+  {
+    "segment_id": "seg_0045",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 168.9,
+    "end_sec": 169.08,
+    "start_time": "02:48.900",
+    "end_time": "02:49.080",
+    "duration_sec": 0.18,
+    "text": "Mm.",
+    "word_start_index": 389,
+    "word_end_index": 389
+  },
+  {
+    "segment_id": "seg_0046",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 170.32,
+    "end_sec": 172.04,
+    "start_time": "02:50.320",
+    "end_time": "02:52.040",
+    "duration_sec": 1.72,
+    "text": "Tell us about your balls, Pete.",
+    "word_start_index": 390,
+    "word_end_index": 395
+  },
+  {
+    "segment_id": "seg_0047",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 174.18,
+    "end_sec": 178.19,
+    "start_time": "02:54.180",
+    "end_time": "02:58.190",
+    "duration_sec": 4.01,
+    "text": "Well, over at Seasons Eatings, we have balls for every taste, popcorn balls-",
+    "word_start_index": 396,
+    "word_end_index": 408
+  },
+  {
+    "segment_id": "seg_0048",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 178.28,
+    "end_sec": 178.329,
+    "start_time": "02:58.280",
+    "end_time": "02:58.329",
+    "duration_sec": 0.049,
+    "text": "Mm",
+    "word_start_index": 409,
+    "word_end_index": 409
+  },
+  {
+    "segment_id": "seg_0049",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 178.329,
+    "end_sec": 179.84,
+    "start_time": "02:58.329",
+    "end_time": "02:59.840",
+    "duration_sec": 1.511,
+    "text": "... cheese balls, rum balls, you name it.",
+    "word_start_index": 410,
+    "word_end_index": 417
+  },
+  {
+    "segment_id": "seg_0050",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 179.88,
+    "end_sec": 179.98,
+    "start_time": "02:59.880",
+    "end_time": "02:59.980",
+    "duration_sec": 0.1,
+    "text": "Mm.",
+    "word_start_index": 418,
+    "word_end_index": 418
+  },
+  {
+    "segment_id": "seg_0051",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 181.54,
+    "end_sec": 184.78,
+    "start_time": "03:01.540",
+    "end_time": "03:04.780",
+    "duration_sec": 3.24,
+    "text": "Wow. My mouth's watering just thinking about those balls.",
+    "word_start_index": 419,
+    "word_end_index": 427
+  },
+  {
+    "segment_id": "seg_0052",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 188.38,
+    "end_sec": 190.94,
+    "start_time": "03:08.380",
+    "end_time": "03:10.940",
+    "duration_sec": 2.56,
+    "text": "It's been years since I've seen any balls.",
+    "word_start_index": 428,
+    "word_end_index": 435
+  },
+  {
+    "segment_id": "seg_0053",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 193.769,
+    "end_sec": 195.19,
+    "start_time": "03:13.769",
+    "end_time": "03:15.190",
+    "duration_sec": 1.421,
+    "text": "Would you like to see my balls now?",
+    "word_start_index": 436,
+    "word_end_index": 443
+  },
+  {
+    "segment_id": "seg_0054",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 196.44,
+    "end_sec": 196.7,
+    "start_time": "03:16.440",
+    "end_time": "03:16.700",
+    "duration_sec": 0.26,
+    "text": "Yeah.",
+    "word_start_index": 444,
+    "word_end_index": 444
+  },
+  {
+    "segment_id": "seg_0055",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 196.76,
+    "end_sec": 197.16,
+    "start_time": "03:16.760",
+    "end_time": "03:17.160",
+    "duration_sec": 0.4,
+    "text": "Yeah.",
+    "word_start_index": 445,
+    "word_end_index": 445
+  },
+  {
+    "segment_id": "seg_0056",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 197.22,
+    "end_sec": 197.66,
+    "start_time": "03:17.220",
+    "end_time": "03:17.660",
+    "duration_sec": 0.44,
+    "text": "Whip'em out.",
+    "word_start_index": 446,
+    "word_end_index": 448
+  },
+  {
+    "segment_id": "seg_0057",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 198.2,
+    "end_sec": 199.079,
+    "start_time": "03:18.200",
+    "end_time": "03:19.079",
+    "duration_sec": 0.879,
+    "text": "Whip'em, baby.",
+    "word_start_index": 449,
+    "word_end_index": 451
+  },
+  {
+    "segment_id": "seg_0058",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 201.86,
+    "end_sec": 202.459,
+    "start_time": "03:21.860",
+    "end_time": "03:22.459",
+    "duration_sec": 0.599,
+    "text": "Ooh.",
+    "word_start_index": 452,
+    "word_end_index": 452
+  },
+  {
+    "segment_id": "seg_0059",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 202.62,
+    "end_sec": 202.63,
+    "start_time": "03:22.620",
+    "end_time": "03:22.630",
+    "duration_sec": 0.01,
+    "text": "Wow.",
+    "word_start_index": 453,
+    "word_end_index": 453
+  },
+  {
+    "segment_id": "seg_0060",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 202.68,
+    "end_sec": 203.34,
+    "start_time": "03:22.680",
+    "end_time": "03:23.340",
+    "duration_sec": 0.66,
+    "text": "Mm.",
+    "word_start_index": 454,
+    "word_end_index": 454
+  },
+  {
+    "segment_id": "seg_0061",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 204.34,
+    "end_sec": 207.02,
+    "start_time": "03:24.340",
+    "end_time": "03:27.020",
+    "duration_sec": 2.68,
+    "text": "Wow. You have some beautiful balls.",
+    "word_start_index": 455,
+    "word_end_index": 460
+  },
+  {
+    "segment_id": "seg_0062",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 209.15,
+    "end_sec": 210.36,
+    "start_time": "03:29.150",
+    "end_time": "03:30.360",
+    "duration_sec": 1.21,
+    "text": "They're bigger than I expected.",
+    "word_start_index": 461,
+    "word_end_index": 465
+  },
+  {
+    "segment_id": "seg_0063",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 213.3,
+    "end_sec": 214.48,
+    "start_time": "03:33.300",
+    "end_time": "03:34.480",
+    "duration_sec": 1.18,
+    "text": "I know. A lot of people tell me that.",
+    "word_start_index": 466,
+    "word_end_index": 474
+  },
+  {
+    "segment_id": "seg_0064",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 215.76,
+    "end_sec": 217.2,
+    "start_time": "03:35.760",
+    "end_time": "03:37.200",
+    "duration_sec": 1.44,
+    "text": "Look at that, Teri, the way they glisten.",
+    "word_start_index": 475,
+    "word_end_index": 482
+  },
+  {
+    "segment_id": "seg_0065",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 219.37,
+    "end_sec": 222.38,
+    "start_time": "03:39.370",
+    "end_time": "03:42.380",
+    "duration_sec": 3.01,
+    "text": "That's because I make sure that each one of my balls gets plenty of oil.",
+    "word_start_index": 483,
+    "word_end_index": 497
+  },
+  {
+    "segment_id": "seg_0066",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 224.12,
+    "end_sec": 226.74,
+    "start_time": "03:44.120",
+    "end_time": "03:46.740",
+    "duration_sec": 2.62,
+    "text": "I can't help but notice, Pete, your balls are a little misshapen.",
+    "word_start_index": 498,
+    "word_end_index": 509
+  },
+  {
+    "segment_id": "seg_0067",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 229.52,
+    "end_sec": 232.36,
+    "start_time": "03:49.520",
+    "end_time": "03:52.360",
+    "duration_sec": 2.84,
+    "text": "That's because I rested them on a hot stove for too long.",
+    "word_start_index": 510,
+    "word_end_index": 521
+  },
+  {
+    "segment_id": "seg_0068",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 235.52,
+    "end_sec": 236.62,
+    "start_time": "03:55.520",
+    "end_time": "03:56.620",
+    "duration_sec": 1.1,
+    "text": "Can I touch your balls?",
+    "word_start_index": 522,
+    "word_end_index": 526
+  },
+  {
+    "segment_id": "seg_0069",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 238.84,
+    "end_sec": 240.66,
+    "start_time": "03:58.840",
+    "end_time": "04:00.660",
+    "duration_sec": 1.82,
+    "text": "Go ahead, but be careful. They're very delicate.",
+    "word_start_index": 527,
+    "word_end_index": 534
+  },
+  {
+    "segment_id": "seg_0070",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 241.87,
+    "end_sec": 241.87,
+    "start_time": "04:01.870",
+    "end_time": "04:01.870",
+    "duration_sec": 0.0,
+    "text": "Okay.",
+    "word_start_index": 535,
+    "word_end_index": 535
+  },
+  {
+    "segment_id": "seg_0071",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 243.2,
+    "end_sec": 243.23,
+    "start_time": "04:03.200",
+    "end_time": "04:03.230",
+    "duration_sec": 0.03,
+    "text": "With, with...",
+    "word_start_index": 536,
+    "word_end_index": 537
+  },
+  {
+    "segment_id": "seg_0072",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 243.23,
+    "end_sec": 243.4,
+    "start_time": "04:03.230",
+    "end_time": "04:03.400",
+    "duration_sec": 0.17,
+    "text": "Wow.",
+    "word_start_index": 538,
+    "word_end_index": 538
+  },
+  {
+    "segment_id": "seg_0073",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 243.88,
+    "end_sec": 243.89,
+    "start_time": "04:03.880",
+    "end_time": "04:03.890",
+    "duration_sec": 0.01,
+    "text": "Oh.",
+    "word_start_index": 539,
+    "word_end_index": 539
+  },
+  {
+    "segment_id": "seg_0074",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 243.94,
+    "end_sec": 245.62,
+    "start_time": "04:03.940",
+    "end_time": "04:05.620",
+    "duration_sec": 1.68,
+    "text": "I can't wait to get my mouth around this ball.",
+    "word_start_index": 540,
+    "word_end_index": 549
+  },
+  {
+    "segment_id": "seg_0075",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 251.16,
+    "end_sec": 253.14,
+    "start_time": "04:11.160",
+    "end_time": "04:13.140",
+    "duration_sec": 1.98,
+    "text": "Ooh, I like the way your balls smell.",
+    "word_start_index": 550,
+    "word_end_index": 557
+  },
+  {
+    "segment_id": "seg_0076",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 262.76,
+    "end_sec": 264.1,
+    "start_time": "04:22.760",
+    "end_time": "04:24.100",
+    "duration_sec": 1.34,
+    "text": "Do whatever you want to them, ladies.",
+    "word_start_index": 558,
+    "word_end_index": 564
+  },
+  {
+    "segment_id": "seg_0077",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 265.56,
+    "end_sec": 266.98,
+    "start_time": "04:25.560",
+    "end_time": "04:26.980",
+    "duration_sec": 1.42,
+    "text": "My balls are here for your pleasure.",
+    "word_start_index": 565,
+    "word_end_index": 571
+  },
+  {
+    "segment_id": "seg_0078",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 271.46,
+    "end_sec": 274.39,
+    "start_time": "04:31.460",
+    "end_time": "04:34.390",
+    "duration_sec": 2.93,
+    "text": "Wow, Pete. I have to say, your balls are so tender.",
+    "word_start_index": 572,
+    "word_end_index": 582
+  },
+  {
+    "segment_id": "seg_0079",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 276.4,
+    "end_sec": 277.76,
+    "start_time": "04:36.400",
+    "end_time": "04:37.760",
+    "duration_sec": 1.36,
+    "text": "Well, there's no beating my balls.",
+    "word_start_index": 583,
+    "word_end_index": 588
+  },
+  {
+    "segment_id": "seg_0080",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 280.03,
+    "end_sec": 282.58,
+    "start_time": "04:40.030",
+    "end_time": "04:42.580",
+    "duration_sec": 2.55,
+    "text": "They're made from a secret Schweddy family recipe.",
+    "word_start_index": 589,
+    "word_end_index": 596
+  },
+  {
+    "segment_id": "seg_0081",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 284.28,
+    "end_sec": 286.12,
+    "start_time": "04:44.280",
+    "end_time": "04:46.120",
+    "duration_sec": 1.84,
+    "text": "No one can resist my Schweddy balls.",
+    "word_start_index": 597,
+    "word_end_index": 603
+  },
+  {
+    "segment_id": "seg_0082",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 294.4,
+    "end_sec": 295.539,
+    "start_time": "04:54.400",
+    "end_time": "04:55.539",
+    "duration_sec": 1.139,
+    "text": "What's wrong?",
+    "word_start_index": 604,
+    "word_end_index": 605
+  },
+  {
+    "segment_id": "seg_0083",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 295.6,
+    "end_sec": 296.18,
+    "start_time": "04:55.600",
+    "end_time": "04:56.180",
+    "duration_sec": 0.58,
+    "text": "Fun.",
+    "word_start_index": 606,
+    "word_end_index": 606
+  },
+  {
+    "segment_id": "seg_0084",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 296.22,
+    "end_sec": 296.84,
+    "start_time": "04:56.220",
+    "end_time": "04:56.840",
+    "duration_sec": 0.62,
+    "text": "Schweddy balls.",
+    "word_start_index": 607,
+    "word_end_index": 608
+  },
+  {
+    "segment_id": "seg_0085",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 296.9,
+    "end_sec": 297.38,
+    "start_time": "04:56.900",
+    "end_time": "04:57.380",
+    "duration_sec": 0.48,
+    "text": "Delicious.",
+    "word_start_index": 609,
+    "word_end_index": 609
+  },
+  {
+    "segment_id": "seg_0086",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 297.62,
+    "end_sec": 298.8,
+    "start_time": "04:57.620",
+    "end_time": "04:58.800",
+    "duration_sec": 1.18,
+    "text": "Nothing like a Schweddy ball.",
+    "word_start_index": 610,
+    "word_end_index": 614
+  },
+  {
+    "segment_id": "seg_0087",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 299.8,
+    "end_sec": 300.54,
+    "start_time": "04:59.800",
+    "end_time": "05:00.540",
+    "duration_sec": 0.74,
+    "text": "Schweddy balls.",
+    "word_start_index": 615,
+    "word_end_index": 616
+  },
+  {
+    "segment_id": "seg_0088",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 300.74,
+    "end_sec": 301.42,
+    "start_time": "05:00.740",
+    "end_time": "05:01.420",
+    "duration_sec": 0.68,
+    "text": "These are good times.",
+    "word_start_index": 617,
+    "word_end_index": 620
+  },
+  {
+    "segment_id": "seg_0089",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 301.48,
+    "end_sec": 302.16,
+    "start_time": "05:01.480",
+    "end_time": "05:02.160",
+    "duration_sec": 0.68,
+    "text": "Good times.",
+    "word_start_index": 621,
+    "word_end_index": 622
+  },
+  {
+    "segment_id": "seg_0090",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 303.76,
+    "end_sec": 304.18,
+    "start_time": "05:03.760",
+    "end_time": "05:04.180",
+    "duration_sec": 0.42,
+    "text": "Mm.",
+    "word_start_index": 623,
+    "word_end_index": 623
+  },
+  {
+    "segment_id": "seg_0091",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 304.56,
+    "end_sec": 305.14,
+    "start_time": "05:04.560",
+    "end_time": "05:05.140",
+    "duration_sec": 0.58,
+    "text": "Neat.",
+    "word_start_index": 624,
+    "word_end_index": 624
+  },
+  {
+    "segment_id": "seg_0092",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 305.18,
+    "end_sec": 306.14,
+    "start_time": "05:05.180",
+    "end_time": "05:06.140",
+    "duration_sec": 0.96,
+    "text": "Mm-hmm.",
+    "word_start_index": 625,
+    "word_end_index": 625
+  },
+  {
+    "segment_id": "seg_0093",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 306.15,
+    "end_sec": 306.15,
+    "start_time": "05:06.150",
+    "end_time": "05:06.150",
+    "duration_sec": 0.0,
+    "text": "Mm.",
+    "word_start_index": 626,
+    "word_end_index": 626
+  },
+  {
+    "segment_id": "seg_0094",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 306.15,
+    "end_sec": 306.15,
+    "start_time": "05:06.150",
+    "end_time": "05:06.150",
+    "duration_sec": 0.0,
+    "text": "Mm.",
+    "word_start_index": 627,
+    "word_end_index": 627
+  },
+  {
+    "segment_id": "seg_0095",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 306.22,
+    "end_sec": 308.17,
+    "start_time": "05:06.220",
+    "end_time": "05:08.170",
+    "duration_sec": 1.95,
+    "text": "Oh. H- h- oh, our producer, um,",
+    "word_start_index": 628,
+    "word_end_index": 634
+  },
+  {
+    "segment_id": "seg_0096",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 309.48,
+    "end_sec": 316.9,
+    "start_time": "05:09.480",
+    "end_time": "05:16.900",
+    "duration_sec": 7.42,
+    "text": "Glen is gesturing to us from the technicians' booth, and it looks like he, i- oh, very good. He's telling us to wrap it up.",
+    "word_start_index": 635,
+    "word_end_index": 659
+  },
+  {
+    "segment_id": "seg_0097",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 317.72,
+    "end_sec": 324.99,
+    "start_time": "05:17.720",
+    "end_time": "05:24.990",
+    "duration_sec": 7.27,
+    "text": "I guess that's all the time we have today, Teri. So join us next week when our topic will be that other holiday favorite, fragrant salty nuts.",
+    "word_start_index": 660,
+    "word_end_index": 686
+  },
+  {
+    "segment_id": "seg_0098",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 324.99,
+    "end_sec": 325.66,
+    "start_time": "05:24.990",
+    "end_time": "05:25.660",
+    "duration_sec": 0.67,
+    "text": "Fragrant salty nuts.",
+    "word_start_index": 687,
+    "word_end_index": 689
+  },
+  {
+    "segment_id": "seg_0099",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 327.58,
+    "end_sec": 334.78,
+    "start_time": "05:27.580",
+    "end_time": "05:34.780",
+    "duration_sec": 7.2,
+    "text": "A quick plug. If you order from Seasons Eatings now, we can still send out a special Schweddy ball sack in time for Christmas.",
+    "word_start_index": 690,
+    "word_end_index": 713
+  },
+  {
+    "segment_id": "seg_0100",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 334.94,
+    "end_sec": 339.4,
+    "start_time": "05:34.940",
+    "end_time": "05:39.400",
+    "duration_sec": 4.46,
+    "text": "Ooh, great idea. My niece would love a sack of Schweddy balls.",
+    "word_start_index": 714,
+    "word_end_index": 725
+  }
+]

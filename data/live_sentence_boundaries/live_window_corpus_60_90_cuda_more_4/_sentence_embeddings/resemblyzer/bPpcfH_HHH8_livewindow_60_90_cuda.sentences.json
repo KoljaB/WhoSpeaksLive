@@ -1,0 +1,1034 @@
+{
+  "provider": "resemblyzer",
+  "video": "bPpcfH_HHH8",
+  "folder": "bPpcfH_HHH8_livewindow_60_90_cuda",
+  "sentence_file": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_more_4\\bPpcfH_HHH8_livewindow_60_90_cuda\\sentences.jsonl",
+  "sample_rate": 16000,
+  "embedding_shape": [
+    102,
+    256
+  ],
+  "elapsed_seconds": 2.8853278001770377,
+  "sentences": [
+    {
+      "index": 0,
+      "text": "I'm Margaret Jo McCullen.",
+      "start": 4.54,
+      "end": 6.11,
+      "audio_length_seconds": 1.57,
+      "embedding_audio_seconds": 1.57,
+      "audio_file": "audio\\sentence_0000.wav",
+      "word_count": 4
+    },
+    {
+      "index": 1,
+      "text": "And I'm Terri Rialto.",
+      "start": 6.54,
+      "end": 7.99,
+      "audio_length_seconds": 1.45,
+      "embedding_audio_seconds": 1.45,
+      "audio_file": "audio\\sentence_0001.wav",
+      "word_count": 4
+    },
+    {
+      "index": 2,
+      "text": "And you're listening to The Delicious Dish on National Public Radio.",
+      "start": 7.99,
+      "end": 12.26,
+      "audio_length_seconds": 4.27,
+      "embedding_audio_seconds": 4.27,
+      "audio_file": "audio\\sentence_0002.wav",
+      "word_count": 11
+    },
+    {
+      "index": 3,
+      "text": "Now, Terri, it's Christmas season again, our favorite time of year.",
+      "start": 15.24,
+      "end": 19.01,
+      "audio_length_seconds": 3.77,
+      "embedding_audio_seconds": 3.49,
+      "audio_file": "audio\\sentence_0003.wav",
+      "word_count": 11
+    },
+    {
+      "index": 4,
+      "text": "That's right, Margaret Jo.",
+      "start": 19.01,
+      "end": 20.82,
+      "audio_length_seconds": 1.81,
+      "embedding_audio_seconds": 1.59,
+      "audio_file": "audio\\sentence_0004.wav",
+      "word_count": 4
+    },
+    {
+      "index": 5,
+      "text": "So, holiday time is when the most wonderful culinary wishes can come true.",
+      "start": 20.82,
+      "end": 25.41,
+      "audio_length_seconds": 4.59,
+      "embedding_audio_seconds": 4.59,
+      "audio_file": "audio\\sentence_0005.wav",
+      "word_count": 13
+    },
+    {
+      "index": 6,
+      "text": "Now, what's on your list this holiday season, Margaret Jo?",
+      "start": 25.91,
+      "end": 28.98,
+      "audio_length_seconds": 3.07,
+      "embedding_audio_seconds": 2.86,
+      "audio_file": "audio\\sentence_0006.wav",
+      "word_count": 10
+    },
+    {
+      "index": 7,
+      "text": "Well, Terri, I really got greedy this year.",
+      "start": 28.98,
+      "end": 31.27,
+      "audio_length_seconds": 2.29,
+      "embedding_audio_seconds": 1.89,
+      "audio_file": "audio\\sentence_0007.wav",
+      "word_count": 8
+    },
+    {
+      "index": 8,
+      "text": "I'm asking Kris Kringle for a wooden bowl, some oversized index cards, and a funnel.",
+      "start": 31.27,
+      "end": 38.12,
+      "audio_length_seconds": 6.85,
+      "embedding_audio_seconds": 6.3,
+      "audio_file": "audio\\sentence_0008.wav",
+      "word_count": 15
+    },
+    {
+      "index": 9,
+      "text": "Oh, a funnel.",
+      "start": 39.12,
+      "end": 41.05,
+      "audio_length_seconds": 1.93,
+      "embedding_audio_seconds": 1.93,
+      "audio_file": "audio\\sentence_0009.wav",
+      "word_count": 3
+    },
+    {
+      "index": 10,
+      "text": "That'll be great for funneling.",
+      "start": 41.05,
+      "end": 42.92,
+      "audio_length_seconds": 1.87,
+      "embedding_audio_seconds": 1.87,
+      "audio_file": "audio\\sentence_0010.wav",
+      "word_count": 5
+    },
+    {
+      "index": 11,
+      "text": "I know.",
+      "start": 42.99,
+      "end": 43.4,
+      "audio_length_seconds": 0.41,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0011.wav",
+      "word_count": 2
+    },
+    {
+      "index": 12,
+      "text": "I feel like a glutton.",
+      "start": 43.4,
+      "end": 44.77,
+      "audio_length_seconds": 1.37,
+      "embedding_audio_seconds": 1.35,
+      "audio_file": "audio\\sentence_0012.wav",
+      "word_count": 5
+    },
+    {
+      "index": 13,
+      "text": "What's on your list, Terri?",
+      "start": 47.41,
+      "end": 48.64,
+      "audio_length_seconds": 1.23,
+      "embedding_audio_seconds": 1.18,
+      "audio_file": "audio\\sentence_0013.wav",
+      "word_count": 5
+    },
+    {
+      "index": 14,
+      "text": "Well, I'm only asking Santa for one thing.",
+      "start": 48.64,
+      "end": 51.608,
+      "audio_length_seconds": 2.968,
+      "embedding_audio_seconds": 2.468,
+      "audio_file": "audio\\sentence_0014.wav",
+      "word_count": 8
+    },
+    {
+      "index": 15,
+      "text": "a big box of glue traps to help me deal with my excessive rat problem.",
+      "start": 51.608,
+      "end": 56.118,
+      "audio_length_seconds": 4.51,
+      "embedding_audio_seconds": 4.51,
+      "audio_file": "audio\\sentence_0015.wav",
+      "word_count": 15
+    },
+    {
+      "index": 16,
+      "text": "Now tell me, um, are you, Margaret Jo, going to leave any treats out for Santa this year?",
+      "start": 56.878,
+      "end": 63.042,
+      "audio_length_seconds": 6.164,
+      "embedding_audio_seconds": 6.164,
+      "audio_file": "audio\\sentence_0016.wav",
+      "word_count": 18
+    },
+    {
+      "index": 17,
+      "text": "Oh, absolutely, I always do.",
+      "start": 63.042,
+      "end": 64.672,
+      "audio_length_seconds": 1.63,
+      "embedding_audio_seconds": 1.63,
+      "audio_file": "audio\\sentence_0017.wav",
+      "word_count": 5
+    },
+    {
+      "index": 18,
+      "text": "I'd like to leave Santa some tap water and rice.",
+      "start": 64.672,
+      "end": 67.622,
+      "audio_length_seconds": 2.95,
+      "embedding_audio_seconds": 2.53,
+      "audio_file": "audio\\sentence_0018.wav",
+      "word_count": 10
+    },
+    {
+      "index": 19,
+      "text": "If Santa's anything like me, Christmas foods really wreak havoc on the old digestive system.",
+      "start": 70.362,
+      "end": 74.712,
+      "audio_length_seconds": 4.35,
+      "embedding_audio_seconds": 4.35,
+      "audio_file": "audio\\sentence_0019.wav",
+      "word_count": 15
+    },
+    {
+      "index": 20,
+      "text": "What are you going to leave, Terri?",
+      "start": 75.632,
+      "end": 76.782,
+      "audio_length_seconds": 1.15,
+      "embedding_audio_seconds": 1.0,
+      "audio_file": "audio\\sentence_0020.wav",
+      "word_count": 7
+    },
+    {
+      "index": 21,
+      "text": "Uh, I can't ever leave food out in my apartment because I have an excessive rat problem.",
+      "start": 76.782,
+      "end": 81.432,
+      "audio_length_seconds": 4.65,
+      "embedding_audio_seconds": 4.13,
+      "audio_file": "audio\\sentence_0021.wav",
+      "word_count": 17
+    },
+    {
+      "index": 22,
+      "text": "That's neat.",
+      "start": 85.072,
+      "end": 85.682,
+      "audio_length_seconds": 0.61,
+      "embedding_audio_seconds": 0.61,
+      "audio_file": "audio\\sentence_0022.wav",
+      "word_count": 2
+    },
+    {
+      "index": 23,
+      "text": "Santa's fun.",
+      "start": 85.682,
+      "end": 86.212,
+      "audio_length_seconds": 0.53,
+      "embedding_audio_seconds": 0.53,
+      "audio_file": "audio\\sentence_0023.wav",
+      "word_count": 2
+    },
+    {
+      "index": 24,
+      "text": "And it's fun.",
+      "start": 86.212,
+      "end": 87.202,
+      "audio_length_seconds": 0.99,
+      "embedding_audio_seconds": 0.94,
+      "audio_file": "audio\\sentence_0024.wav",
+      "word_count": 3
+    },
+    {
+      "index": 25,
+      "text": "Neat.",
+      "start": 87.252,
+      "end": 87.642,
+      "audio_length_seconds": 0.39,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0025.wav",
+      "word_count": 1
+    },
+    {
+      "index": 26,
+      "text": "Yeah, it's fun.",
+      "start": 87.642,
+      "end": 88.418,
+      "audio_length_seconds": 0.776,
+      "embedding_audio_seconds": 0.776,
+      "audio_file": "audio\\sentence_0026.wav",
+      "word_count": 3
+    },
+    {
+      "index": 27,
+      "text": "Fun.",
+      "start": 88.418,
+      "end": 88.718,
+      "audio_length_seconds": 0.3,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0027.wav",
+      "word_count": 1
+    },
+    {
+      "index": 28,
+      "text": "Good times, good times.",
+      "start": 88.718,
+      "end": 90.428,
+      "audio_length_seconds": 1.71,
+      "embedding_audio_seconds": 1.71,
+      "audio_file": "audio\\sentence_0028.wav",
+      "word_count": 4
+    },
+    {
+      "index": 29,
+      "text": "That's neat.",
+      "start": 90.738,
+      "end": 91.428,
+      "audio_length_seconds": 0.69,
+      "embedding_audio_seconds": 0.69,
+      "audio_file": "audio\\sentence_0029.wav",
+      "word_count": 2
+    },
+    {
+      "index": 30,
+      "text": "Well, Christmas is a time for traditional foods and bite -sized treats, and we have a very special guest today.",
+      "start": 93.168,
+      "end": 100.518,
+      "audio_length_seconds": 7.35,
+      "embedding_audio_seconds": 7.35,
+      "audio_file": "audio\\sentence_0030.wav",
+      "word_count": 20
+    },
+    {
+      "index": 31,
+      "text": "That's right, Terry.",
+      "start": 100.518,
+      "end": 101.468,
+      "audio_length_seconds": 0.95,
+      "embedding_audio_seconds": 0.81,
+      "audio_file": "audio\\sentence_0031.wav",
+      "word_count": 3
+    },
+    {
+      "index": 32,
+      "text": "He's the owner of his own holiday bakery with a very, very clever name.",
+      "start": 101.468,
+      "end": 105.698,
+      "audio_length_seconds": 4.23,
+      "embedding_audio_seconds": 4.01,
+      "audio_file": "audio\\sentence_0032.wav",
+      "word_count": 14
+    },
+    {
+      "index": 33,
+      "text": "Seasons.",
+      "start": 106.658,
+      "end": 107.528,
+      "audio_length_seconds": 0.87,
+      "embedding_audio_seconds": 0.63,
+      "audio_file": "audio\\sentence_0033.wav",
+      "word_count": 1
+    },
+    {
+      "index": 34,
+      "text": "Eatings.",
+      "start": 107.528,
+      "end": 108.138,
+      "audio_length_seconds": 0.61,
+      "embedding_audio_seconds": 0.59,
+      "audio_file": "audio\\sentence_0034.wav",
+      "word_count": 1
+    },
+    {
+      "index": 35,
+      "text": "That's really funny.",
+      "start": 111.198,
+      "end": 112.688,
+      "audio_length_seconds": 1.49,
+      "embedding_audio_seconds": 1.49,
+      "audio_file": "audio\\sentence_0035.wav",
+      "word_count": 3
+    },
+    {
+      "index": 36,
+      "text": "I know, it rhymes with season's greetings.",
+      "start": 112.688,
+      "end": 116.118,
+      "audio_length_seconds": 3.43,
+      "embedding_audio_seconds": 3.32,
+      "audio_file": "audio\\sentence_0036.wav",
+      "word_count": 7
+    },
+    {
+      "index": 37,
+      "text": "Please welcome the owner of Seasons Eatings, Pete Schweddy.",
+      "start": 119.638,
+      "end": 124.728,
+      "audio_length_seconds": 5.09,
+      "embedding_audio_seconds": 5.04,
+      "audio_file": "audio\\sentence_0037.wav",
+      "word_count": 9
+    },
+    {
+      "index": 38,
+      "text": "Thank you.",
+      "start": 125.418,
+      "end": 126.188,
+      "audio_length_seconds": 0.77,
+      "embedding_audio_seconds": 0.77,
+      "audio_file": "audio\\sentence_0038.wav",
+      "word_count": 2
+    },
+    {
+      "index": 39,
+      "text": "Welcome.",
+      "start": 128.288,
+      "end": 128.678,
+      "audio_length_seconds": 0.39,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0039.wav",
+      "word_count": 1
+    },
+    {
+      "index": 40,
+      "text": "How are you?",
+      "start": 128.678,
+      "end": 129.098,
+      "audio_length_seconds": 0.42,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0040.wav",
+      "word_count": 3
+    },
+    {
+      "index": 41,
+      "text": "Welcome Pete.",
+      "start": 129.098,
+      "end": 129.77,
+      "audio_length_seconds": 0.672,
+      "embedding_audio_seconds": 0.672,
+      "audio_file": "audio\\sentence_0041.wav",
+      "word_count": 2
+    },
+    {
+      "index": 42,
+      "text": "We like the name of your store.",
+      "start": 129.77,
+      "end": 130.8,
+      "audio_length_seconds": 1.03,
+      "embedding_audio_seconds": 1.03,
+      "audio_file": "audio\\sentence_0042.wav",
+      "word_count": 7
+    },
+    {
+      "index": 43,
+      "text": "Hi, thanks for having me.",
+      "start": 131.38,
+      "end": 132.99,
+      "audio_length_seconds": 1.61,
+      "embedding_audio_seconds": 1.42,
+      "audio_file": "audio\\sentence_0043.wav",
+      "word_count": 5
+    },
+    {
+      "index": 44,
+      "text": "Now, did I pronounce your name correctly?",
+      "start": 134.05,
+      "end": 136.82,
+      "audio_length_seconds": 2.77,
+      "embedding_audio_seconds": 2.77,
+      "audio_file": "audio\\sentence_0044.wav",
+      "word_count": 7
+    },
+    {
+      "index": 45,
+      "text": "You sure did.",
+      "start": 136.82,
+      "end": 138.27,
+      "audio_length_seconds": 1.45,
+      "embedding_audio_seconds": 1.45,
+      "audio_file": "audio\\sentence_0045.wav",
+      "word_count": 3
+    },
+    {
+      "index": 46,
+      "text": "Pete Schweddy.",
+      "start": 138.27,
+      "end": 139.76,
+      "audio_length_seconds": 1.49,
+      "embedding_audio_seconds": 1.13,
+      "audio_file": "audio\\sentence_0046.wav",
+      "word_count": 2
+    },
+    {
+      "index": 47,
+      "text": "Well Pete, Terry and I have been looking forward to having you on the show because we know you're the master of all kinds of Christmas goodies.",
+      "start": 142.26,
+      "end": 147.79,
+      "audio_length_seconds": 5.53,
+      "embedding_audio_seconds": 5.53,
+      "audio_file": "audio\\sentence_0047.wav",
+      "word_count": 27
+    },
+    {
+      "index": 48,
+      "text": "Tell us about them.",
+      "start": 147.79,
+      "end": 149.04,
+      "audio_length_seconds": 1.25,
+      "embedding_audio_seconds": 0.83,
+      "audio_file": "audio\\sentence_0048.wav",
+      "word_count": 4
+    },
+    {
+      "index": 49,
+      "text": "Well, there are lots of great treats at this time of year.",
+      "start": 149.66,
+      "end": 152.23,
+      "audio_length_seconds": 2.57,
+      "embedding_audio_seconds": 2.43,
+      "audio_file": "audio\\sentence_0049.wav",
+      "word_count": 12
+    },
+    {
+      "index": 50,
+      "text": "Zucchini bread, fruitcake.",
+      "start": 152.23,
+      "end": 153.84,
+      "audio_length_seconds": 1.61,
+      "embedding_audio_seconds": 1.61,
+      "audio_file": "audio\\sentence_0050.wav",
+      "word_count": 3
+    },
+    {
+      "index": 51,
+      "text": "But the thing that I most like to bring out at this time of the year are my balls.",
+      "start": 154.52,
+      "end": 158.09,
+      "audio_length_seconds": 3.57,
+      "embedding_audio_seconds": 3.36,
+      "audio_file": "audio\\sentence_0051.wav",
+      "word_count": 19
+    },
+    {
+      "index": 52,
+      "text": "Mmm.",
+      "start": 162.88,
+      "end": 163.39,
+      "audio_length_seconds": 0.51,
+      "embedding_audio_seconds": 0.51,
+      "audio_file": "audio\\sentence_0052.wav",
+      "word_count": 1
+    },
+    {
+      "index": 53,
+      "text": "Mmm.",
+      "start": 164.96,
+      "end": 165.47,
+      "audio_length_seconds": 0.51,
+      "embedding_audio_seconds": 0.51,
+      "audio_file": "audio\\sentence_0053.wav",
+      "word_count": 1
+    },
+    {
+      "index": 54,
+      "text": "Mmm.",
+      "start": 165.47,
+      "end": 165.82,
+      "audio_length_seconds": 0.35,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0054.wav",
+      "word_count": 1
+    },
+    {
+      "index": 55,
+      "text": "Balls.",
+      "start": 166.35,
+      "end": 167.36,
+      "audio_length_seconds": 1.01,
+      "embedding_audio_seconds": 1.01,
+      "audio_file": "audio\\sentence_0055.wav",
+      "word_count": 1
+    },
+    {
+      "index": 56,
+      "text": "Tell us about your balls, Pete.",
+      "start": 169.98,
+      "end": 172.13,
+      "audio_length_seconds": 2.15,
+      "embedding_audio_seconds": 2.15,
+      "audio_file": "audio\\sentence_0056.wav",
+      "word_count": 6
+    },
+    {
+      "index": 57,
+      "text": "Well, over at Seasons Eatings, we have balls for every taste.",
+      "start": 173.85,
+      "end": 176.74,
+      "audio_length_seconds": 2.89,
+      "embedding_audio_seconds": 2.87,
+      "audio_file": "audio\\sentence_0057.wav",
+      "word_count": 11
+    },
+    {
+      "index": 58,
+      "text": "Popcorn balls, cheese balls, rum balls, you name it.",
+      "start": 177.28,
+      "end": 180.17,
+      "audio_length_seconds": 2.89,
+      "embedding_audio_seconds": 2.83,
+      "audio_file": "audio\\sentence_0058.wav",
+      "word_count": 9
+    },
+    {
+      "index": 59,
+      "text": "Wow.",
+      "start": 181.09,
+      "end": 181.8,
+      "audio_length_seconds": 0.71,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0059.wav",
+      "word_count": 1
+    },
+    {
+      "index": 60,
+      "text": "My mouth's watering just thinking about those thoughts.",
+      "start": 181.8,
+      "end": 184.85,
+      "audio_length_seconds": 3.05,
+      "embedding_audio_seconds": 2.48,
+      "audio_file": "audio\\sentence_0060.wav",
+      "word_count": 8
+    },
+    {
+      "index": 61,
+      "text": "It's been years since I've seen any balls.",
+      "start": 187.97,
+      "end": 190.88,
+      "audio_length_seconds": 2.91,
+      "embedding_audio_seconds": 2.91,
+      "audio_file": "audio\\sentence_0061.wav",
+      "word_count": 8
+    },
+    {
+      "index": 62,
+      "text": "Would you like to see my balls now?",
+      "start": 193.5,
+      "end": 195.29,
+      "audio_length_seconds": 1.79,
+      "embedding_audio_seconds": 1.79,
+      "audio_file": "audio\\sentence_0062.wav",
+      "word_count": 8
+    },
+    {
+      "index": 63,
+      "text": "Yeah.",
+      "start": 195.29,
+      "end": 196.7,
+      "audio_length_seconds": 1.41,
+      "embedding_audio_seconds": 1.41,
+      "audio_file": "audio\\sentence_0063.wav",
+      "word_count": 1
+    },
+    {
+      "index": 64,
+      "text": "Yeah.",
+      "start": 196.7,
+      "end": 197.16,
+      "audio_length_seconds": 0.46,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0064.wav",
+      "word_count": 1
+    },
+    {
+      "index": 65,
+      "text": "Whip him out.",
+      "start": 197.16,
+      "end": 197.79,
+      "audio_length_seconds": 0.63,
+      "embedding_audio_seconds": 0.63,
+      "audio_file": "audio\\sentence_0065.wav",
+      "word_count": 3
+    },
+    {
+      "index": 66,
+      "text": "All right, bubba baby.",
+      "start": 197.79,
+      "end": 198.98,
+      "audio_length_seconds": 1.19,
+      "embedding_audio_seconds": 1.19,
+      "audio_file": "audio\\sentence_0066.wav",
+      "word_count": 4
+    },
+    {
+      "index": 67,
+      "text": "Oh, wow.",
+      "start": 200.98,
+      "end": 203.17,
+      "audio_length_seconds": 2.19,
+      "embedding_audio_seconds": 2.19,
+      "audio_file": "audio\\sentence_0067.wav",
+      "word_count": 2
+    },
+    {
+      "index": 68,
+      "text": "Wow.",
+      "start": 203.17,
+      "end": 203.54,
+      "audio_length_seconds": 0.37,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0068.wav",
+      "word_count": 1
+    },
+    {
+      "index": 69,
+      "text": "Wow, you have some beautiful balls.",
+      "start": 203.54,
+      "end": 206.97,
+      "audio_length_seconds": 3.43,
+      "embedding_audio_seconds": 3.43,
+      "audio_file": "audio\\sentence_0069.wav",
+      "word_count": 6
+    },
+    {
+      "index": 70,
+      "text": "They're bigger than I expected.",
+      "start": 208.91,
+      "end": 210.36,
+      "audio_length_seconds": 1.45,
+      "embedding_audio_seconds": 1.45,
+      "audio_file": "audio\\sentence_0070.wav",
+      "word_count": 5
+    },
+    {
+      "index": 71,
+      "text": "I know a lot of people tell me that.",
+      "start": 212.92,
+      "end": 214.65,
+      "audio_length_seconds": 1.73,
+      "embedding_audio_seconds": 1.69,
+      "audio_file": "audio\\sentence_0071.wav",
+      "word_count": 9
+    },
+    {
+      "index": 72,
+      "text": "Look at that, Terry, the way they glisten.",
+      "start": 215.51,
+      "end": 217.26,
+      "audio_length_seconds": 1.75,
+      "embedding_audio_seconds": 1.75,
+      "audio_file": "audio\\sentence_0072.wav",
+      "word_count": 8
+    },
+    {
+      "index": 73,
+      "text": "That's because I make sure that each one of my balls gets plenty of oil.",
+      "start": 219.06,
+      "end": 222.35,
+      "audio_length_seconds": 3.29,
+      "embedding_audio_seconds": 3.29,
+      "audio_file": "audio\\sentence_0073.wav",
+      "word_count": 15
+    },
+    {
+      "index": 74,
+      "text": "I can't help but notice, Pete, your balls are a little misshapen.",
+      "start": 223.77,
+      "end": 226.86,
+      "audio_length_seconds": 3.09,
+      "embedding_audio_seconds": 3.09,
+      "audio_file": "audio\\sentence_0074.wav",
+      "word_count": 12
+    },
+    {
+      "index": 75,
+      "text": "That's because I rested them on a hot stove for too long.",
+      "start": 229.08,
+      "end": 232.43,
+      "audio_length_seconds": 3.35,
+      "embedding_audio_seconds": 3.35,
+      "audio_file": "audio\\sentence_0075.wav",
+      "word_count": 12
+    },
+    {
+      "index": 76,
+      "text": "Can I touch your balls?",
+      "start": 234.91,
+      "end": 236.62,
+      "audio_length_seconds": 1.71,
+      "embedding_audio_seconds": 1.71,
+      "audio_file": "audio\\sentence_0076.wav",
+      "word_count": 5
+    },
+    {
+      "index": 77,
+      "text": "Go ahead, but be careful, they're very delicate.",
+      "start": 238.3,
+      "end": 240.61,
+      "audio_length_seconds": 2.31,
+      "embedding_audio_seconds": 2.31,
+      "audio_file": "audio\\sentence_0077.wav",
+      "word_count": 8
+    },
+    {
+      "index": 78,
+      "text": "Wow.",
+      "start": 242.93,
+      "end": 243.48,
+      "audio_length_seconds": 0.55,
+      "embedding_audio_seconds": 0.55,
+      "audio_file": "audio\\sentence_0078.wav",
+      "word_count": 1
+    },
+    {
+      "index": 79,
+      "text": "I can't wait to get my mouth around this ball.",
+      "start": 243.59,
+      "end": 245.76,
+      "audio_length_seconds": 2.17,
+      "embedding_audio_seconds": 2.17,
+      "audio_file": "audio\\sentence_0079.wav",
+      "word_count": 10
+    },
+    {
+      "index": 80,
+      "text": "Ooh, I like the way your balls smell.",
+      "start": 251.02,
+      "end": 253.15,
+      "audio_length_seconds": 2.13,
+      "embedding_audio_seconds": 2.13,
+      "audio_file": "audio\\sentence_0080.wav",
+      "word_count": 8
+    },
+    {
+      "index": 81,
+      "text": "Do whatever you want to them, ladies.",
+      "start": 262.41,
+      "end": 264.14,
+      "audio_length_seconds": 1.73,
+      "embedding_audio_seconds": 1.73,
+      "audio_file": "audio\\sentence_0081.wav",
+      "word_count": 7
+    },
+    {
+      "index": 82,
+      "text": "My balls are here for your pleasure.",
+      "start": 265.14,
+      "end": 267.01,
+      "audio_length_seconds": 1.87,
+      "embedding_audio_seconds": 1.87,
+      "audio_file": "audio\\sentence_0082.wav",
+      "word_count": 7
+    },
+    {
+      "index": 83,
+      "text": "Wow, Pete.",
+      "start": 271.17,
+      "end": 271.94,
+      "audio_length_seconds": 0.77,
+      "embedding_audio_seconds": 0.77,
+      "audio_file": "audio\\sentence_0083.wav",
+      "word_count": 2
+    },
+    {
+      "index": 84,
+      "text": "I have to say, your balls are so tender.",
+      "start": 271.94,
+      "end": 274.45,
+      "audio_length_seconds": 2.51,
+      "embedding_audio_seconds": 2.51,
+      "audio_file": "audio\\sentence_0084.wav",
+      "word_count": 9
+    },
+    {
+      "index": 85,
+      "text": "Well, there's no beating my balls.",
+      "start": 275.77,
+      "end": 277.84,
+      "audio_length_seconds": 2.07,
+      "embedding_audio_seconds": 2.07,
+      "audio_file": "audio\\sentence_0085.wav",
+      "word_count": 6
+    },
+    {
+      "index": 86,
+      "text": "They're made from a secret Shwetty family recipe.",
+      "start": 279.46,
+      "end": 282.45,
+      "audio_length_seconds": 2.99,
+      "embedding_audio_seconds": 2.99,
+      "audio_file": "audio\\sentence_0086.wav",
+      "word_count": 8
+    },
+    {
+      "index": 87,
+      "text": "No one can resist my sweaty balls.",
+      "start": 283.69,
+      "end": 286.2,
+      "audio_length_seconds": 2.51,
+      "embedding_audio_seconds": 2.51,
+      "audio_file": "audio\\sentence_0087.wav",
+      "word_count": 7
+    },
+    {
+      "index": 88,
+      "text": "I'm sweating balls.",
+      "start": 295.12,
+      "end": 296.87,
+      "audio_length_seconds": 1.75,
+      "embedding_audio_seconds": 1.75,
+      "audio_file": "audio\\sentence_0088.wav",
+      "word_count": 3
+    },
+    {
+      "index": 89,
+      "text": "Nothing like a sweaty ball.",
+      "start": 296.87,
+      "end": 298.8,
+      "audio_length_seconds": 1.93,
+      "embedding_audio_seconds": 1.93,
+      "audio_file": "audio\\sentence_0089.wav",
+      "word_count": 5
+    },
+    {
+      "index": 90,
+      "text": "It's really bad.",
+      "start": 299.38,
+      "end": 300.52,
+      "audio_length_seconds": 1.14,
+      "embedding_audio_seconds": 1.14,
+      "audio_file": "audio\\sentence_0090.wav",
+      "word_count": 3
+    },
+    {
+      "index": 91,
+      "text": "Good times.",
+      "start": 300.52,
+      "end": 301.25,
+      "audio_length_seconds": 0.73,
+      "embedding_audio_seconds": 0.73,
+      "audio_file": "audio\\sentence_0091.wav",
+      "word_count": 2
+    },
+    {
+      "index": 92,
+      "text": "Good times.",
+      "start": 301.25,
+      "end": 302.02,
+      "audio_length_seconds": 0.77,
+      "embedding_audio_seconds": 0.77,
+      "audio_file": "audio\\sentence_0092.wav",
+      "word_count": 2
+    },
+    {
+      "index": 93,
+      "text": "Mmm.",
+      "start": 302.02,
+      "end": 302.29,
+      "audio_length_seconds": 0.27,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0093.wav",
+      "word_count": 1
+    },
+    {
+      "index": 94,
+      "text": "Mmm.",
+      "start": 302.46,
+      "end": 303.13,
+      "audio_length_seconds": 0.67,
+      "embedding_audio_seconds": 0.67,
+      "audio_file": "audio\\sentence_0094.wav",
+      "word_count": 1
+    },
+    {
+      "index": 95,
+      "text": "Oh.",
+      "start": 304.3,
+      "end": 304.87,
+      "audio_length_seconds": 0.57,
+      "embedding_audio_seconds": 0.57,
+      "audio_file": "audio\\sentence_0095.wav",
+      "word_count": 1
+    },
+    {
+      "index": 96,
+      "text": "Mmm.",
+      "start": 305.18,
+      "end": 305.35,
+      "audio_length_seconds": 0.17,
+      "embedding_audio_seconds": 0.5,
+      "audio_file": "audio\\sentence_0096.wav",
+      "word_count": 1
+    },
+    {
+      "index": 97,
+      "text": "Oh, our producer Glenn is gesturing to us from the technician's booth, and it looks like he's telling us to wrap it up.",
+      "start": 306.19,
+      "end": 316.96,
+      "audio_length_seconds": 10.77,
+      "embedding_audio_seconds": 10.72,
+      "audio_file": "audio\\sentence_0097.wav",
+      "word_count": 23
+    },
+    {
+      "index": 98,
+      "text": "I guess that's all the time we have today Terry.",
+      "start": 317.3,
+      "end": 319.51,
+      "audio_length_seconds": 2.21,
+      "embedding_audio_seconds": 1.91,
+      "audio_file": "audio\\sentence_0098.wav",
+      "word_count": 10
+    },
+    {
+      "index": 99,
+      "text": "So join us next week when our topic will be that other holiday favorite fragrance salty nuts a Quick plug if you order from seasons evenings now, we can still send out a special sweaty ball sack in time for Christmas Great idea.",
+      "start": 319.51,
+      "end": 337.06,
+      "audio_length_seconds": 17.55,
+      "embedding_audio_seconds": 17.38,
+      "audio_file": "audio\\sentence_0099.wav",
+      "word_count": 43
+    },
+    {
+      "index": 100,
+      "text": "My niece would love a sack of sweaty balls.",
+      "start": 337.06,
+      "end": 339.31,
+      "audio_length_seconds": 2.25,
+      "embedding_audio_seconds": 2.25,
+      "audio_file": "audio\\sentence_0100.wav",
+      "word_count": 9
+    },
+    {
+      "index": 101,
+      "text": "♪♪ ♪♪ ♪♪ ♪♪",
+      "start": 341.93,
+      "end": 368.46,
+      "audio_length_seconds": 26.53,
+      "embedding_audio_seconds": 26.53,
+      "audio_file": "audio\\sentence_0101.wav",
+      "word_count": 4
+    }
+  ]
+}

@@ -1,0 +1,1052 @@
+[
+  {
+    "segment_id": "seg_0000",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 3.96,
+    "end_sec": 18.88,
+    "start_time": "00:03.960",
+    "end_time": "00:18.880",
+    "duration_sec": 14.92,
+    "text": "Britain is home to almost 30,000 Thai people, and in the heart of southwest London is Europe's only purpose-built Thai temple, where I'll be serving up a very special meal. I love Thai food. I love cooking it, and I love eating it. But this has to be the most daunting task so far.",
+    "word_start_index": 0,
+    "word_end_index": 53
+  },
+  {
+    "segment_id": "seg_0001",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 21.11,
+    "end_sec": 28.54,
+    "start_time": "00:21.110",
+    "end_time": "00:28.540",
+    "duration_sec": 7.43,
+    "text": "This small and revered group of Buddhist monks live in the monastery attached to the temple. They spend most of their waking hours meditating and studying.",
+    "word_start_index": 54,
+    "word_end_index": 79
+  },
+  {
+    "segment_id": "seg_0002",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 30.5,
+    "end_sec": 37.8,
+    "start_time": "00:30.500",
+    "end_time": "00:37.800",
+    "duration_sec": 7.3,
+    "text": "Buddhist teachings forbid them to cook, so it's up to the local Thai community to offer the one meal the monks are allowed to eat at 11:00 each day.",
+    "word_start_index": 80,
+    "word_end_index": 108
+  },
+  {
+    "segment_id": "seg_0003",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 40.52,
+    "end_sec": 48.46,
+    "start_time": "00:40.520",
+    "end_time": "00:48.460",
+    "duration_sec": 7.94,
+    "text": "Helping me fulfill this honor and privilege is Chang, executive chef of the Blue Elephant, one of London's top Thai restaurants. Morning. Chang, good morning. How are you?",
+    "word_start_index": 109,
+    "word_end_index": 136
+  },
+  {
+    "segment_id": "seg_0004",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 48.48,
+    "end_sec": 49.72,
+    "start_time": "00:48.480",
+    "end_time": "00:49.720",
+    "duration_sec": 1.24,
+    "text": "Good morning, Gordon. How are you?",
+    "word_start_index": 137,
+    "word_end_index": 142
+  },
+  {
+    "segment_id": "seg_0005",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 49.76,
+    "end_sec": 50.18,
+    "start_time": "00:49.760",
+    "end_time": "00:50.180",
+    "duration_sec": 0.42,
+    "text": "Good to see you.",
+    "word_start_index": 143,
+    "word_end_index": 146
+  },
+  {
+    "segment_id": "seg_0006",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 50.269,
+    "end_sec": 51.8,
+    "start_time": "00:50.269",
+    "end_time": "00:51.800",
+    "duration_sec": 1.531,
+    "text": "Thank you for come to the Blue Elephant.",
+    "word_start_index": 147,
+    "word_end_index": 154
+  },
+  {
+    "segment_id": "seg_0007",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 51.86,
+    "end_sec": 53.04,
+    "start_time": "00:51.860",
+    "end_time": "00:53.040",
+    "duration_sec": 1.18,
+    "text": "God, a little bit tight in here, no?",
+    "word_start_index": 155,
+    "word_end_index": 162
+  },
+  {
+    "segment_id": "seg_0008",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 53.1,
+    "end_sec": 54.78,
+    "start_time": "00:53.100",
+    "end_time": "00:54.780",
+    "duration_sec": 1.68,
+    "text": "Of course. Because this is the Thai kitchen, no?",
+    "word_start_index": 163,
+    "word_end_index": 171
+  },
+  {
+    "segment_id": "seg_0009",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 55.14,
+    "end_sec": 57.44,
+    "start_time": "00:55.140",
+    "end_time": "00:57.440",
+    "duration_sec": 2.3,
+    "text": "Where have you gone, Chang? Morning, everybody.",
+    "word_start_index": 172,
+    "word_end_index": 178
+  },
+  {
+    "segment_id": "seg_0010",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 57.949,
+    "end_sec": 57.949,
+    "start_time": "00:57.949",
+    "end_time": "00:57.949",
+    "duration_sec": 0.0,
+    "text": "Oh.",
+    "word_start_index": 179,
+    "word_end_index": 179
+  },
+  {
+    "segment_id": "seg_0011",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 58.04,
+    "end_sec": 58.66,
+    "start_time": "00:58.040",
+    "end_time": "00:58.660",
+    "duration_sec": 0.62,
+    "text": "Uh, hi.",
+    "word_start_index": 180,
+    "word_end_index": 181
+  },
+  {
+    "segment_id": "seg_0012",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 59.19,
+    "end_sec": 60.03,
+    "start_time": "00:59.190",
+    "end_time": "01:00.030",
+    "duration_sec": 0.84,
+    "text": "I'm here, I'm here.",
+    "word_start_index": 182,
+    "word_end_index": 185
+  },
+  {
+    "segment_id": "seg_0013",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 60.04,
+    "end_sec": 60.76,
+    "start_time": "01:00.040",
+    "end_time": "01:00.760",
+    "duration_sec": 0.72,
+    "text": "Pressure's on, right?",
+    "word_start_index": 186,
+    "word_end_index": 188
+  },
+  {
+    "segment_id": "seg_0014",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 60.88,
+    "end_sec": 61.04,
+    "start_time": "01:00.880",
+    "end_time": "01:01.040",
+    "duration_sec": 0.16,
+    "text": "Yeah.",
+    "word_start_index": 189,
+    "word_end_index": 189
+  },
+  {
+    "segment_id": "seg_0015",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 61.4,
+    "end_sec": 62.58,
+    "start_time": "01:01.400",
+    "end_time": "01:02.580",
+    "duration_sec": 1.18,
+    "text": "So they've gotta be before 11:00.",
+    "word_start_index": 190,
+    "word_end_index": 195
+  },
+  {
+    "segment_id": "seg_0016",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 62.76,
+    "end_sec": 62.84,
+    "start_time": "01:02.760",
+    "end_time": "01:02.840",
+    "duration_sec": 0.08,
+    "text": "Yeah.",
+    "word_start_index": 196,
+    "word_end_index": 196
+  },
+  {
+    "segment_id": "seg_0017",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 62.98,
+    "end_sec": 63.84,
+    "start_time": "01:02.980",
+    "end_time": "01:03.840",
+    "duration_sec": 0.86,
+    "text": "Are they fussy eaters?",
+    "word_start_index": 197,
+    "word_end_index": 200
+  },
+  {
+    "segment_id": "seg_0018",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 64.04,
+    "end_sec": 64.22,
+    "start_time": "01:04.040",
+    "end_time": "01:04.220",
+    "duration_sec": 0.18,
+    "text": "No.",
+    "word_start_index": 201,
+    "word_end_index": 201
+  },
+  {
+    "segment_id": "seg_0019",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 64.56,
+    "end_sec": 64.57,
+    "start_time": "01:04.560",
+    "end_time": "01:04.570",
+    "duration_sec": 0.01,
+    "text": "No.",
+    "word_start_index": 202,
+    "word_end_index": 202
+  },
+  {
+    "segment_id": "seg_0020",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 64.599,
+    "end_sec": 65.94,
+    "start_time": "01:04.599",
+    "end_time": "01:05.940",
+    "duration_sec": 1.341,
+    "text": "They are really nice, they're really kind.",
+    "word_start_index": 203,
+    "word_end_index": 209
+  },
+  {
+    "segment_id": "seg_0021",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 65.97,
+    "end_sec": 67.06,
+    "start_time": "01:05.970",
+    "end_time": "01:07.060",
+    "duration_sec": 1.09,
+    "text": "Great. Do they ever send food back?",
+    "word_start_index": 210,
+    "word_end_index": 216
+  },
+  {
+    "segment_id": "seg_0022",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 67.8,
+    "end_sec": 68.0,
+    "start_time": "01:07.800",
+    "end_time": "01:08.000",
+    "duration_sec": 0.2,
+    "text": "No.",
+    "word_start_index": 217,
+    "word_end_index": 217
+  },
+  {
+    "segment_id": "seg_0023",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 68.2,
+    "end_sec": 68.24,
+    "start_time": "01:08.200",
+    "end_time": "01:08.240",
+    "duration_sec": 0.04,
+    "text": "No.",
+    "word_start_index": 218,
+    "word_end_index": 218
+  },
+  {
+    "segment_id": "seg_0024",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 68.3,
+    "end_sec": 68.62,
+    "start_time": "01:08.300",
+    "end_time": "01:08.620",
+    "duration_sec": 0.32,
+    "text": "Never.",
+    "word_start_index": 219,
+    "word_end_index": 219
+  },
+  {
+    "segment_id": "seg_0025",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 71.19,
+    "end_sec": 81.02,
+    "start_time": "01:11.190",
+    "end_time": "01:21.020",
+    "duration_sec": 9.83,
+    "text": "The restaurant prepares the very best dishes to offer to the monastery, and every dish has to be perfect, like these savory dumplings known as moneybags. So that's a moneybag. And that's it.",
+    "word_start_index": 220,
+    "word_end_index": 252
+  },
+  {
+    "segment_id": "seg_0026",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 81.56,
+    "end_sec": 83.62,
+    "start_time": "01:21.560",
+    "end_time": "01:23.620",
+    "duration_sec": 2.06,
+    "text": "Yeah. So easy and simple.",
+    "word_start_index": 253,
+    "word_end_index": 257
+  },
+  {
+    "segment_id": "seg_0027",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 84.1,
+    "end_sec": 84.13,
+    "start_time": "01:24.100",
+    "end_time": "01:24.130",
+    "duration_sec": 0.03,
+    "text": "Uh-huh.",
+    "word_start_index": 258,
+    "word_end_index": 258
+  },
+  {
+    "segment_id": "seg_0028",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 84.18,
+    "end_sec": 84.84,
+    "start_time": "01:24.180",
+    "end_time": "01:24.840",
+    "duration_sec": 0.66,
+    "text": "Maybe you can try.",
+    "word_start_index": 259,
+    "word_end_index": 262
+  },
+  {
+    "segment_id": "seg_0029",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 85.6,
+    "end_sec": 94.66,
+    "start_time": "01:25.600",
+    "end_time": "01:34.660",
+    "duration_sec": 9.06,
+    "text": "These dumplings are usually served as a starter. Pork and crab meat are wrapped in a delicate bean curd pastry, and the tops are tied with thin strips of spring onion. Now the shoelace.",
+    "word_start_index": 263,
+    "word_end_index": 296
+  },
+  {
+    "segment_id": "seg_0030",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 94.72,
+    "end_sec": 96.0,
+    "start_time": "01:34.720",
+    "end_time": "01:36.000",
+    "duration_sec": 1.28,
+    "text": "Now is, uh, the next step.",
+    "word_start_index": 297,
+    "word_end_index": 302
+  },
+  {
+    "segment_id": "seg_0031",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 98.1,
+    "end_sec": 98.6,
+    "start_time": "01:38.100",
+    "end_time": "01:38.600",
+    "duration_sec": 0.5,
+    "text": "Nice and tight.",
+    "word_start_index": 303,
+    "word_end_index": 305
+  },
+  {
+    "segment_id": "seg_0032",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 98.62,
+    "end_sec": 99.34,
+    "start_time": "01:38.620",
+    "end_time": "01:39.340",
+    "duration_sec": 0.72,
+    "text": "Very tight.",
+    "word_start_index": 306,
+    "word_end_index": 307
+  },
+  {
+    "segment_id": "seg_0033",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 99.86,
+    "end_sec": 102.25,
+    "start_time": "01:39.860",
+    "end_time": "01:42.250",
+    "duration_sec": 2.39,
+    "text": "And how do you call the moneybag in your language? It's called-",
+    "word_start_index": 308,
+    "word_end_index": 319
+  },
+  {
+    "segment_id": "seg_0034",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 102.3,
+    "end_sec": 104.1,
+    "start_time": "01:42.300",
+    "end_time": "01:44.100",
+    "duration_sec": 1.8,
+    "text": "Uh, thung aun, thung thong.",
+    "word_start_index": 320,
+    "word_end_index": 324
+  },
+  {
+    "segment_id": "seg_0035",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 104.36,
+    "end_sec": 104.8,
+    "start_time": "01:44.360",
+    "end_time": "01:44.800",
+    "duration_sec": 0.44,
+    "text": "Thung thong.",
+    "word_start_index": 325,
+    "word_end_index": 326
+  },
+  {
+    "segment_id": "seg_0036",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 104.98,
+    "end_sec": 107.3,
+    "start_time": "01:44.980",
+    "end_time": "01:47.300",
+    "duration_sec": 2.32,
+    "text": "Thung thong or thung aun yong.",
+    "word_start_index": 327,
+    "word_end_index": 332
+  },
+  {
+    "segment_id": "seg_0037",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 107.38,
+    "end_sec": 108.26,
+    "start_time": "01:47.380",
+    "end_time": "01:48.260",
+    "duration_sec": 0.88,
+    "text": "Right. Moneybags.",
+    "word_start_index": 333,
+    "word_end_index": 334
+  },
+  {
+    "segment_id": "seg_0038",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 108.42,
+    "end_sec": 108.68,
+    "start_time": "01:48.420",
+    "end_time": "01:48.680",
+    "duration_sec": 0.26,
+    "text": "Okay.",
+    "word_start_index": 335,
+    "word_end_index": 335
+  },
+  {
+    "segment_id": "seg_0039",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 108.72,
+    "end_sec": 109.24,
+    "start_time": "01:48.720",
+    "end_time": "01:49.240",
+    "duration_sec": 0.52,
+    "text": "Okay, good.",
+    "word_start_index": 336,
+    "word_end_index": 337
+  },
+  {
+    "segment_id": "seg_0040",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 110.01,
+    "end_sec": 110.01,
+    "start_time": "01:50.010",
+    "end_time": "01:50.010",
+    "duration_sec": 0.0,
+    "text": "Good.",
+    "word_start_index": 338,
+    "word_end_index": 338
+  },
+  {
+    "segment_id": "seg_0041",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 110.04,
+    "end_sec": 125.1,
+    "start_time": "01:50.040",
+    "end_time": "02:05.100",
+    "duration_sec": 15.06,
+    "text": "Chang's authentic moneybags are delicious, but I want to show him my take on a classic, Thailand's national dish, pad Thai. Okay, a quick pad Thai. I fry shallots, garlic, and chili with salt and a little bit of sugar. Color on the shallots.",
+    "word_start_index": 339,
+    "word_end_index": 382
+  },
+  {
+    "segment_id": "seg_0042",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 126.62,
+    "end_sec": 134.12,
+    "start_time": "02:06.620",
+    "end_time": "02:14.120",
+    "duration_sec": 7.5,
+    "text": "Half the spring onions. This is a dish I love cooking at home. I'm using delicious king prawns and adding some extras like chili and tamarind paste.",
+    "word_start_index": 383,
+    "word_end_index": 409
+  },
+  {
+    "segment_id": "seg_0043",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 136.28,
+    "end_sec": 137.94,
+    "start_time": "02:16.280",
+    "end_time": "02:17.940",
+    "duration_sec": 1.66,
+    "text": "I'm so excited I'm gonna be cooking for the monks today.",
+    "word_start_index": 410,
+    "word_end_index": 420
+  },
+  {
+    "segment_id": "seg_0044",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 138.22,
+    "end_sec": 138.48,
+    "start_time": "02:18.220",
+    "end_time": "02:18.480",
+    "duration_sec": 0.26,
+    "text": "Yes.",
+    "word_start_index": 421,
+    "word_end_index": 421
+  },
+  {
+    "segment_id": "seg_0045",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 138.92,
+    "end_sec": 140.36,
+    "start_time": "02:18.920",
+    "end_time": "02:20.360",
+    "duration_sec": 1.44,
+    "text": "Never cooked for monks before.",
+    "word_start_index": 422,
+    "word_end_index": 426
+  },
+  {
+    "segment_id": "seg_0046",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 140.37,
+    "end_sec": 140.7,
+    "start_time": "02:20.370",
+    "end_time": "02:20.700",
+    "duration_sec": 0.33,
+    "text": "Me too, me too, you know?",
+    "word_start_index": 427,
+    "word_end_index": 432
+  },
+  {
+    "segment_id": "seg_0047",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 141.62,
+    "end_sec": 148.0,
+    "start_time": "02:21.620",
+    "end_time": "02:28.000",
+    "duration_sec": 6.38,
+    "text": "Those prawns smell amazing. My pad Thai is made sweet and sour with fish sauce, salt, and sugar.",
+    "word_start_index": 433,
+    "word_end_index": 450
+  },
+  {
+    "segment_id": "seg_0048",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 150.94,
+    "end_sec": 153.92,
+    "start_time": "02:30.940",
+    "end_time": "02:33.920",
+    "duration_sec": 2.98,
+    "text": "Turn up the gas. And the tamarind paste.",
+    "word_start_index": 451,
+    "word_end_index": 458
+  },
+  {
+    "segment_id": "seg_0049",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 156.82,
+    "end_sec": 161.26,
+    "start_time": "02:36.820",
+    "end_time": "02:41.260",
+    "duration_sec": 4.44,
+    "text": "A beaten egg is cooked in the wok and then added with the noodles and bean sprouts to the sauce.",
+    "word_start_index": 459,
+    "word_end_index": 478
+  },
+  {
+    "segment_id": "seg_0050",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 162.78,
+    "end_sec": 164.46,
+    "start_time": "02:42.780",
+    "end_time": "02:44.460",
+    "duration_sec": 1.68,
+    "text": "I hope they're gonna be happy with this, you know that?",
+    "word_start_index": 479,
+    "word_end_index": 489
+  },
+  {
+    "segment_id": "seg_0051",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 164.48,
+    "end_sec": 166.04,
+    "start_time": "02:44.480",
+    "end_time": "02:46.040",
+    "duration_sec": 1.56,
+    "text": "I think the monk will be happy.",
+    "word_start_index": 490,
+    "word_end_index": 496
+  },
+  {
+    "segment_id": "seg_0052",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 167.24,
+    "end_sec": 175.96,
+    "start_time": "02:47.240",
+    "end_time": "02:55.960",
+    "duration_sec": 8.72,
+    "text": "Prawns and fresh coriander finish the pad Thai. But what will Chang think of my quick and easy version of this classic? And then some peanuts around the outside. Happy? Oh, no.",
+    "word_start_index": 497,
+    "word_end_index": 528
+  },
+  {
+    "segment_id": "seg_0053",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 175.98,
+    "end_sec": 176.78,
+    "start_time": "02:55.980",
+    "end_time": "02:56.780",
+    "duration_sec": 0.8,
+    "text": "But I have to taste.",
+    "word_start_index": 529,
+    "word_end_index": 533
+  },
+  {
+    "segment_id": "seg_0054",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 177.3,
+    "end_sec": 178.24,
+    "start_time": "02:57.300",
+    "end_time": "02:58.240",
+    "duration_sec": 0.94,
+    "text": "Yeah, please. I'd like to-",
+    "word_start_index": 534,
+    "word_end_index": 538
+  },
+  {
+    "segment_id": "seg_0055",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 178.26,
+    "end_sec": 180.02,
+    "start_time": "02:58.260",
+    "end_time": "03:00.020",
+    "duration_sec": 1.76,
+    "text": "Before you go call pad Thai, I have to taste it first.",
+    "word_start_index": 539,
+    "word_end_index": 550
+  },
+  {
+    "segment_id": "seg_0056",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 187.19,
+    "end_sec": 188.82,
+    "start_time": "03:07.190",
+    "end_time": "03:08.820",
+    "duration_sec": 1.63,
+    "text": "What you want to know from me? Ask me.",
+    "word_start_index": 551,
+    "word_end_index": 559
+  },
+  {
+    "segment_id": "seg_0057",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 189.38,
+    "end_sec": 190.62,
+    "start_time": "03:09.380",
+    "end_time": "03:10.620",
+    "duration_sec": 1.24,
+    "text": "Well, uh, uh, how is it?",
+    "word_start_index": 560,
+    "word_end_index": 565
+  },
+  {
+    "segment_id": "seg_0058",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 191.4,
+    "end_sec": 191.56,
+    "start_time": "03:11.400",
+    "end_time": "03:11.560",
+    "duration_sec": 0.16,
+    "text": "Hmm?",
+    "word_start_index": 566,
+    "word_end_index": 566
+  },
+  {
+    "segment_id": "seg_0059",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 192.26,
+    "end_sec": 193.3,
+    "start_time": "03:12.260",
+    "end_time": "03:13.300",
+    "duration_sec": 1.04,
+    "text": "Oh, no. Look at that face.",
+    "word_start_index": 567,
+    "word_end_index": 572
+  },
+  {
+    "segment_id": "seg_0060",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 194.1,
+    "end_sec": 195.36,
+    "start_time": "03:14.100",
+    "end_time": "03:15.360",
+    "duration_sec": 1.26,
+    "text": "This is not pad Thai at all.",
+    "word_start_index": 573,
+    "word_end_index": 579
+  },
+  {
+    "segment_id": "seg_0061",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 195.6,
+    "end_sec": 196.18,
+    "start_time": "03:15.600",
+    "end_time": "03:16.180",
+    "duration_sec": 0.58,
+    "text": "This is not pad Thai?",
+    "word_start_index": 580,
+    "word_end_index": 584
+  },
+  {
+    "segment_id": "seg_0062",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 196.86,
+    "end_sec": 197.0,
+    "start_time": "03:16.860",
+    "end_time": "03:17.000",
+    "duration_sec": 0.14,
+    "text": "No.",
+    "word_start_index": 585,
+    "word_end_index": 585
+  },
+  {
+    "segment_id": "seg_0063",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 197.14,
+    "end_sec": 197.15,
+    "start_time": "03:17.140",
+    "end_time": "03:17.150",
+    "duration_sec": 0.01,
+    "text": "No.",
+    "word_start_index": 586,
+    "word_end_index": 586
+  },
+  {
+    "segment_id": "seg_0064",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 197.16,
+    "end_sec": 199.46,
+    "start_time": "03:17.160",
+    "end_time": "03:19.460",
+    "duration_sec": 2.3,
+    "text": "Pad Thai have to be sweet, sour, and salty.",
+    "word_start_index": 587,
+    "word_end_index": 595
+  },
+  {
+    "segment_id": "seg_0065",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 202.7,
+    "end_sec": 206.14,
+    "start_time": "03:22.700",
+    "end_time": "03:26.140",
+    "duration_sec": 3.44,
+    "text": "I think that doesn't taste too bad. It's not perfect.",
+    "word_start_index": 596,
+    "word_end_index": 605
+  },
+  {
+    "segment_id": "seg_0066",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 206.16,
+    "end_sec": 207.66,
+    "start_time": "03:26.160",
+    "end_time": "03:27.660",
+    "duration_sec": 1.5,
+    "text": "For you, but not for me.",
+    "word_start_index": 606,
+    "word_end_index": 611
+  },
+  {
+    "segment_id": "seg_0067",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 209.0,
+    "end_sec": 211.4,
+    "start_time": "03:29.000",
+    "end_time": "03:31.400",
+    "duration_sec": 2.4,
+    "text": "You're a tough cookie. I'm gonna keep an eye on the monks-",
+    "word_start_index": 612,
+    "word_end_index": 623
+  },
+  {
+    "segment_id": "seg_0068",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 211.49,
+    "end_sec": 211.49,
+    "start_time": "03:31.490",
+    "end_time": "03:31.490",
+    "duration_sec": 0.0,
+    "text": "Okay",
+    "word_start_index": 624,
+    "word_end_index": 624
+  },
+  {
+    "segment_id": "seg_0069",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 211.49,
+    "end_sec": 212.22,
+    "start_time": "03:31.490",
+    "end_time": "03:32.220",
+    "duration_sec": 0.73,
+    "text": "... to see how it goes down.",
+    "word_start_index": 625,
+    "word_end_index": 631
+  }
+]

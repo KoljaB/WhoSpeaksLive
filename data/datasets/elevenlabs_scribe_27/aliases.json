@@ -1,0 +1,7 @@
+[
+  {
+    "canonical_video_id": "JWS-qfR6K3w",
+    "source_baseline_key": "cunk",
+    "reason": "Baseline source folder used a local key; canonical dataset folder uses the YouTube video id."
+  }
+]

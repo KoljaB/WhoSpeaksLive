@@ -2,6 +2,8 @@
 
 This folder contains ElevenLabs Scribe diarization baselines imported from `D:\Projekte\WhoSpeaks` plus locally generated requested-video baselines.
 
+For the canonical consolidated 27-video dataset, including normalized per-video folders, embeddings, live-window sentence/audio caches, and coverage status, use `data/datasets/elevenlabs_scribe_27`. For the full dataset map, see [ElevenLabs Scribe baseline dataset](../../../docs/datasets/elevenlabs-scribe-baseline-dataset.md).
+
 Each video has its own subfolder named after the YouTube video ID or source key. The source folders were named `output_elevenlabs_*` in `WhoSpeaks`; the prefix was removed here so consumers can address baselines by key.
 
 ## Contents
@@ -36,6 +38,6 @@ The requested-video baselines generated on 2026-07-05 are:
 - `PhofRoLXqhE`
 - `S_o3y7CzDUY`
 
-`youtube_videos_to_test.txt` references `JWS-qfR6K3w`, but `WhoSpeaks` did not contain an `output_elevenlabs_JWS-qfR6K3w` folder. The available Cunk baseline was imported as `cunk`.
+`youtube_videos_to_test.txt` references `JWS-qfR6K3w`, but `WhoSpeaks` stored that ElevenLabs baseline under the local key `cunk`, not `output_elevenlabs_JWS-qfR6K3w`. Treat `cunk` as the baseline alias for YouTube video `JWS-qfR6K3w`; the live-window cache uses `JWS-qfR6K3w_livewindow_60_90_cuda`.
 
 Several entries from `20_more_youtube_videos_to_test.txt` also had no matching `output_elevenlabs_*` folder in `WhoSpeaks`; see `manifest.json` for the exact missing IDs.

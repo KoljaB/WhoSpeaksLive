@@ -1,0 +1,857 @@
+[
+  {
+    "segment_id": "seg_0000",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 0.16,
+    "end_sec": 7.26,
+    "start_time": "00:00.160",
+    "end_time": "00:07.260",
+    "duration_sec": 7.1,
+    "text": "Yeah, AI, I, I hate the word AI, called artificial intelligence. I call it Alibaba intelligence.",
+    "word_start_index": 0,
+    "word_end_index": 15
+  },
+  {
+    "segment_id": "seg_0001",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 7.86,
+    "end_sec": 8.1,
+    "start_time": "00:07.860",
+    "end_time": "00:08.100",
+    "duration_sec": 0.24,
+    "text": "Yeah.",
+    "word_start_index": 16,
+    "word_end_index": 16
+  },
+  {
+    "segment_id": "seg_0002",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 9.64,
+    "end_sec": 12.46,
+    "start_time": "00:09.640",
+    "end_time": "00:12.460",
+    "duration_sec": 2.82,
+    "text": "M- might, might end up being true. You never know. Um,",
+    "word_start_index": 17,
+    "word_end_index": 27
+  },
+  {
+    "segment_id": "seg_0003",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 14.54,
+    "end_sec": 16.64,
+    "start_time": "00:14.540",
+    "end_time": "00:16.640",
+    "duration_sec": 2.1,
+    "text": "barely getting any information out, basically, with speech.",
+    "word_start_index": 28,
+    "word_end_index": 35
+  },
+  {
+    "segment_id": "seg_0004",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 17.14,
+    "end_sec": 37.36,
+    "start_time": "00:17.140",
+    "end_time": "00:37.360",
+    "duration_sec": 20.22,
+    "text": "Yeah. I'm always amazed by the, what you're vision about the technology. I'm not a tech guy. I think more about life. I think AI is going to open a new chapter of the society, of the world, that people try to understand ourself better, rather than the outside world.",
+    "word_start_index": 36,
+    "word_end_index": 85
+  },
+  {
+    "segment_id": "seg_0005",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 38.92,
+    "end_sec": 42.56,
+    "start_time": "00:38.920",
+    "end_time": "00:42.560",
+    "duration_sec": 3.64,
+    "text": "And, uh, it's so difficult to predict the future.",
+    "word_start_index": 86,
+    "word_end_index": 94
+  },
+  {
+    "segment_id": "seg_0006",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 44.3,
+    "end_sec": 51.06,
+    "start_time": "00:44.300",
+    "end_time": "00:51.060",
+    "duration_sec": 6.76,
+    "text": "99.99% of the predictions that human being had in the history about the future, all wrong.",
+    "word_start_index": 95,
+    "word_end_index": 110
+  },
+  {
+    "segment_id": "seg_0007",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 52.14,
+    "end_sec": 52.76,
+    "start_time": "00:52.140",
+    "end_time": "00:52.760",
+    "duration_sec": 0.62,
+    "text": "Including that one?",
+    "word_start_index": 111,
+    "word_end_index": 113
+  },
+  {
+    "segment_id": "seg_0008",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 53.06,
+    "end_sec": 62.16,
+    "start_time": "00:53.060",
+    "end_time": "01:02.160",
+    "duration_sec": 9.1,
+    "text": "Oh, yeah. Only, you know, the, the 0.00%-... of the prediction are right. They're right because by accident.",
+    "word_start_index": 114,
+    "word_end_index": 132
+  },
+  {
+    "segment_id": "seg_0009",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 63.2,
+    "end_sec": 65.6,
+    "start_time": "01:03.200",
+    "end_time": "01:05.600",
+    "duration_sec": 2.4,
+    "text": "Y- yeah, but it's also true that 80% of statistics are false.",
+    "word_start_index": 133,
+    "word_end_index": 144
+  },
+  {
+    "segment_id": "seg_0010",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 66.14,
+    "end_sec": 69.2,
+    "start_time": "01:06.140",
+    "end_time": "01:09.200",
+    "duration_sec": 3.06,
+    "text": "Yeah. So my meaning is that-",
+    "word_start_index": 145,
+    "word_end_index": 150
+  },
+  {
+    "segment_id": "seg_0011",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 69.21,
+    "end_sec": 70.66,
+    "start_time": "01:09.210",
+    "end_time": "01:10.660",
+    "duration_sec": 1.45,
+    "text": "It's a cold room. Come on, guys. It was a joke.",
+    "word_start_index": 151,
+    "word_end_index": 161
+  },
+  {
+    "segment_id": "seg_0012",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 73.6,
+    "end_sec": 82.72,
+    "start_time": "01:13.600",
+    "end_time": "01:22.720",
+    "duration_sec": 9.12,
+    "text": "But is, I'm happy about the, uh, artificial- People worry a lot about this today, are those people, I call them, called, um, uh,",
+    "word_start_index": 162,
+    "word_end_index": 185
+  },
+  {
+    "segment_id": "seg_0013",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 84.18,
+    "end_sec": 95.0,
+    "start_time": "01:24.180",
+    "end_time": "01:35.000",
+    "duration_sec": 10.82,
+    "text": "called college smartness. People like us, street smart, we never scared of that. We, we think it's a great fun, and we want to change ourself to embrace it.",
+    "word_start_index": 186,
+    "word_end_index": 214
+  },
+  {
+    "segment_id": "seg_0014",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 95.64,
+    "end_sec": 97.38,
+    "start_time": "01:35.640",
+    "end_time": "01:37.380",
+    "duration_sec": 1.74,
+    "text": "I don't know, man. That's like famous last words.",
+    "word_start_index": 215,
+    "word_end_index": 223
+  },
+  {
+    "segment_id": "seg_0015",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 98.86,
+    "end_sec": 107.58,
+    "start_time": "01:38.860",
+    "end_time": "01:47.580",
+    "duration_sec": 8.72,
+    "text": "Is... Let me tell you. Like, you couldn't evolve silicon circuits. You need, they needed to be, uh, biology to get there.",
+    "word_start_index": 224,
+    "word_end_index": 245
+  },
+  {
+    "segment_id": "seg_0016",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 110.08,
+    "end_sec": 110.32,
+    "start_time": "01:50.080",
+    "end_time": "01:50.320",
+    "duration_sec": 0.24,
+    "text": "Good.",
+    "word_start_index": 246,
+    "word_end_index": 246
+  },
+  {
+    "segment_id": "seg_0017",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 110.92,
+    "end_sec": 112.12,
+    "start_time": "01:50.920",
+    "end_time": "01:52.120",
+    "duration_sec": 1.2,
+    "text": "Yeah.",
+    "word_start_index": 247,
+    "word_end_index": 247
+  },
+  {
+    "segment_id": "seg_0018",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 112.18,
+    "end_sec": 119.64,
+    "start_time": "01:52.180",
+    "end_time": "01:59.640",
+    "duration_sec": 7.46,
+    "text": "Well, let's talk about something fun. I... What do you think about that? I, I, actually, I'm not interested in, uh, Mars. I just came back from there, so.",
+    "word_start_index": 248,
+    "word_end_index": 276
+  },
+  {
+    "segment_id": "seg_0019",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 122.02,
+    "end_sec": 133.12,
+    "start_time": "02:02.020",
+    "end_time": "02:13.120",
+    "duration_sec": 11.1,
+    "text": "I'm more interested on the Earth, the things, what's going on happening here. So what, why you are so curious about the Mars? Just, uh, one step, you go to Mars, but you will never be able to come back. Yeah, that, that's-",
+    "word_start_index": 277,
+    "word_end_index": 319
+  },
+  {
+    "segment_id": "seg_0020",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 133.13,
+    "end_sec": 133.72,
+    "start_time": "02:13.130",
+    "end_time": "02:13.720",
+    "duration_sec": 0.59,
+    "text": "Well, that's my view",
+    "word_start_index": 320,
+    "word_end_index": 323
+  },
+  {
+    "segment_id": "seg_0021",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 133.76,
+    "end_sec": 134.73,
+    "start_time": "02:13.760",
+    "end_time": "02:14.730",
+    "duration_sec": 0.97,
+    "text": "... that's not how it works, though. Uh.",
+    "word_start_index": 324,
+    "word_end_index": 331
+  },
+  {
+    "segment_id": "seg_0022",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 134.78,
+    "end_sec": 135.329,
+    "start_time": "02:14.780",
+    "end_time": "02:15.329",
+    "duration_sec": 0.549,
+    "text": "And, uh,",
+    "word_start_index": 332,
+    "word_end_index": 333
+  },
+  {
+    "segment_id": "seg_0023",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 137.44,
+    "end_sec": 138.03,
+    "start_time": "02:17.440",
+    "end_time": "02:18.030",
+    "duration_sec": 0.59,
+    "text": "also, also I-",
+    "word_start_index": 334,
+    "word_end_index": 336
+  },
+  {
+    "segment_id": "seg_0024",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 138.03,
+    "end_sec": 138.4,
+    "start_time": "02:18.030",
+    "end_time": "02:18.400",
+    "duration_sec": 0.37,
+    "text": "No, don't do it.",
+    "word_start_index": 337,
+    "word_end_index": 340
+  },
+  {
+    "segment_id": "seg_0025",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 139.769,
+    "end_sec": 147.44,
+    "start_time": "02:19.769",
+    "end_time": "02:27.440",
+    "duration_sec": 7.671,
+    "text": "Yeah. I hate to go to Himalayas too. I mean, when you climb on the... I think someday I will go there. When the elevator's ready, I will go to have a look.",
+    "word_start_index": 341,
+    "word_end_index": 373
+  },
+  {
+    "segment_id": "seg_0026",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 148.54,
+    "end_sec": 148.74,
+    "start_time": "02:28.540",
+    "end_time": "02:28.740",
+    "duration_sec": 0.2,
+    "text": "Wow. But I-",
+    "word_start_index": 374,
+    "word_end_index": 376
+  },
+  {
+    "segment_id": "seg_0027",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 148.769,
+    "end_sec": 152.74,
+    "start_time": "02:28.769",
+    "end_time": "02:32.740",
+    "duration_sec": 3.971,
+    "text": "So that's my view. About jobs, don't worry about it. We, you will have jobs.",
+    "word_start_index": 377,
+    "word_end_index": 391
+  },
+  {
+    "segment_id": "seg_0028",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 155.96,
+    "end_sec": 156.98,
+    "start_time": "02:35.960",
+    "end_time": "02:36.980",
+    "duration_sec": 1.02,
+    "text": "Yeah.",
+    "word_start_index": 392,
+    "word_end_index": 392
+  },
+  {
+    "segment_id": "seg_0029",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 158.56,
+    "end_sec": 158.87,
+    "start_time": "02:38.560",
+    "end_time": "02:38.870",
+    "duration_sec": 0.31,
+    "text": "I, I,",
+    "word_start_index": 393,
+    "word_end_index": 394
+  },
+  {
+    "segment_id": "seg_0030",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 160.72,
+    "end_sec": 184.5,
+    "start_time": "02:40.720",
+    "end_time": "03:04.500",
+    "duration_sec": 23.78,
+    "text": "I mean, I think... Man, you, you think of, like, technology, like, technology and technology awareness, there's like, it's like, if there was, like, a topological map of technology awareness, and it's mostly flat but with a few short buildings, and then some very tall spires. Very tall spires. And unless you're on that very tall spire, it's not obvious what the topology is.",
+    "word_start_index": 395,
+    "word_end_index": 458
+  },
+  {
+    "segment_id": "seg_0031",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 186.84,
+    "end_sec": 193.5,
+    "start_time": "03:06.840",
+    "end_time": "03:13.500",
+    "duration_sec": 6.66,
+    "text": "Yeah. I never worry about the things that I cannot solve. I let other people to solve it.",
+    "word_start_index": 459,
+    "word_end_index": 476
+  },
+  {
+    "segment_id": "seg_0032",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 193.549,
+    "end_sec": 193.549,
+    "start_time": "03:13.549",
+    "end_time": "03:13.549",
+    "duration_sec": 0.0,
+    "text": "Sure.",
+    "word_start_index": 477,
+    "word_end_index": 477
+  },
+  {
+    "segment_id": "seg_0033",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 193.6,
+    "end_sec": 204.88,
+    "start_time": "03:13.600",
+    "end_time": "03:24.880",
+    "duration_sec": 11.28,
+    "text": "If nobody can solve it, just let it be. That's my life. Oh, let's talk about education. I'm, uh, quite interesting about education. Computer only have chips. Men have the heart.",
+    "word_start_index": 478,
+    "word_end_index": 508
+  },
+  {
+    "segment_id": "seg_0034",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 206.22,
+    "end_sec": 214.28,
+    "start_time": "03:26.220",
+    "end_time": "03:34.280",
+    "duration_sec": 8.06,
+    "text": "It's the heart where the wisdom comes from. So I think that's my view, and don't worry about it. We will change it.",
+    "word_start_index": 509,
+    "word_end_index": 531
+  },
+  {
+    "segment_id": "seg_0035",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 216.84,
+    "end_sec": 219.59,
+    "start_time": "03:36.840",
+    "end_time": "03:39.590",
+    "duration_sec": 2.75,
+    "text": "Yeah. Yeah, that's cool. Yeah. Thanks. Um.",
+    "word_start_index": 532,
+    "word_end_index": 538
+  },
+  {
+    "segment_id": "seg_0036",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 219.62,
+    "end_sec": 259.04,
+    "start_time": "03:39.620",
+    "end_time": "04:19.040",
+    "duration_sec": 39.42,
+    "text": "So I never in my life, and e- especially last two years when people talk about, uh, AI, say, uh, human, human being will be controlled by machines, I never think about that. I think it's, it's, it's, it's impossible. Right? It's impossible'cause,'cause human beings, they are different. Machines are invented by human beings. And according to the science, right, humans can never create another animal that is smarter than humans. Especially when you have so many smart people, it's impossible to make another smart people.",
+    "word_start_index": 539,
+    "word_end_index": 626
+  },
+  {
+    "segment_id": "seg_0037",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 259.34,
+    "end_sec": 260.6,
+    "start_time": "04:19.340",
+    "end_time": "04:20.600",
+    "duration_sec": 1.26,
+    "text": "I, I very much disagree with that.",
+    "word_start_index": 627,
+    "word_end_index": 633
+  },
+  {
+    "segment_id": "seg_0038",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 260.82,
+    "end_sec": 261.06,
+    "start_time": "04:20.820",
+    "end_time": "04:21.060",
+    "duration_sec": 0.24,
+    "text": "Okay.",
+    "word_start_index": 634,
+    "word_end_index": 634
+  },
+  {
+    "segment_id": "seg_0039",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 261.28,
+    "end_sec": 261.399,
+    "start_time": "04:21.280",
+    "end_time": "04:21.399",
+    "duration_sec": 0.119,
+    "text": "Yeah.",
+    "word_start_index": 635,
+    "word_end_index": 635
+  },
+  {
+    "segment_id": "seg_0040",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 261.74,
+    "end_sec": 262.2,
+    "start_time": "04:21.740",
+    "end_time": "04:22.200",
+    "duration_sec": 0.46,
+    "text": "That's good.",
+    "word_start_index": 636,
+    "word_end_index": 637
+  },
+  {
+    "segment_id": "seg_0041",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 263.02,
+    "end_sec": 265.2,
+    "start_time": "04:23.020",
+    "end_time": "04:25.200",
+    "duration_sec": 2.18,
+    "text": "Yeah. Um, but, um-",
+    "word_start_index": 638,
+    "word_end_index": 641
+  },
+  {
+    "segment_id": "seg_0042",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 265.28,
+    "end_sec": 273.28,
+    "start_time": "04:25.280",
+    "end_time": "04:33.280",
+    "duration_sec": 8.0,
+    "text": "Okay. Yeah, my view is that, um, computer may be clever, but human being are much smarter.",
+    "word_start_index": 642,
+    "word_end_index": 658
+  },
+  {
+    "segment_id": "seg_0043",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 274.2,
+    "end_sec": 274.74,
+    "start_time": "04:34.200",
+    "end_time": "04:34.740",
+    "duration_sec": 0.54,
+    "text": "Yeah, definitely not.",
+    "word_start_index": 659,
+    "word_end_index": 661
+  },
+  {
+    "segment_id": "seg_0044",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 274.88,
+    "end_sec": 290.76,
+    "start_time": "04:34.880",
+    "end_time": "04:50.760",
+    "duration_sec": 15.88,
+    "text": "Clever is very academic. So I told those guys, they are very sad. Say, \"Ah, computer will be smarter than human beings because computer can play chess better.\" Ah, I think you are stupid to compete with that. Don't do that.",
+    "word_start_index": 662,
+    "word_end_index": 702
+  },
+  {
+    "segment_id": "seg_0045",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 292.54,
+    "end_sec": 294.29,
+    "start_time": "04:52.540",
+    "end_time": "04:54.290",
+    "duration_sec": 1.75,
+    "text": "So this is, this is-",
+    "word_start_index": 703,
+    "word_end_index": 707
+  },
+  {
+    "segment_id": "seg_0046",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 294.32,
+    "end_sec": 294.33,
+    "start_time": "04:54.320",
+    "end_time": "04:54.330",
+    "duration_sec": 0.01,
+    "text": "Well-",
+    "word_start_index": 708,
+    "word_end_index": 708
+  },
+  {
+    "segment_id": "seg_0047",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 294.33,
+    "end_sec": 296.02,
+    "start_time": "04:54.330",
+    "end_time": "04:56.020",
+    "duration_sec": 1.69,
+    "text": "We will always do things we are good at.",
+    "word_start_index": 709,
+    "word_end_index": 717
+  },
+  {
+    "segment_id": "seg_0048",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 296.26,
+    "end_sec": 303.76,
+    "start_time": "04:56.260",
+    "end_time": "05:03.760",
+    "duration_sec": 7.5,
+    "text": "Sure. Okay. Well, what would be an example of something that humans are better than a computer at, and, and then let's see if that happens.",
+    "word_start_index": 718,
+    "word_end_index": 743
+  },
+  {
+    "segment_id": "seg_0049",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 305.08,
+    "end_sec": 325.56,
+    "start_time": "05:05.080",
+    "end_time": "05:25.560",
+    "duration_sec": 20.48,
+    "text": "Well, humans... Computer is only one of the clever tools that human created. And hu- computers are s- are clever, but there will be more tools that human beings will created much clever than computers. That's my view.",
+    "word_start_index": 744,
+    "word_end_index": 781
+  },
+  {
+    "segment_id": "seg_0050",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 328.24,
+    "end_sec": 328.92,
+    "start_time": "05:28.240",
+    "end_time": "05:28.920",
+    "duration_sec": 0.68,
+    "text": "Yeah. O- okay.",
+    "word_start_index": 782,
+    "word_end_index": 784
+  },
+  {
+    "segment_id": "seg_0051",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 329.18,
+    "end_sec": 336.02,
+    "start_time": "05:29.180",
+    "end_time": "05:36.020",
+    "duration_sec": 6.84,
+    "text": "Q, right? In the future, if you wanna survive in this world, you have to be the LQ, the Q of love.",
+    "word_start_index": 785,
+    "word_end_index": 806
+  },
+  {
+    "segment_id": "seg_0052",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 337.66,
+    "end_sec": 342.08,
+    "start_time": "05:37.660",
+    "end_time": "05:42.080",
+    "duration_sec": 4.42,
+    "text": "That's important too. Otherwise, you cannot survive in artificial intelligence time.",
+    "word_start_index": 807,
+    "word_end_index": 817
+  },
+  {
+    "segment_id": "seg_0053",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 343.32,
+    "end_sec": 343.4,
+    "start_time": "05:43.320",
+    "end_time": "05:43.400",
+    "duration_sec": 0.08,
+    "text": "Uh.",
+    "word_start_index": 818,
+    "word_end_index": 818
+  },
+  {
+    "segment_id": "seg_0054",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 343.42,
+    "end_sec": 344.96,
+    "start_time": "05:43.420",
+    "end_time": "05:44.960",
+    "duration_sec": 1.54,
+    "text": "Well, I agree with love is the answer.",
+    "word_start_index": 819,
+    "word_end_index": 826
+  },
+  {
+    "segment_id": "seg_0055",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 345.14,
+    "end_sec": 345.32,
+    "start_time": "05:45.140",
+    "end_time": "05:45.320",
+    "duration_sec": 0.18,
+    "text": "Yeah.",
+    "word_start_index": 827,
+    "word_end_index": 827
+  },
+  {
+    "segment_id": "seg_0056",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 345.62,
+    "end_sec": 346.38,
+    "start_time": "05:45.620",
+    "end_time": "05:46.380",
+    "duration_sec": 0.76,
+    "text": "There's many songs about that.",
+    "word_start_index": 828,
+    "word_end_index": 832
+  }
+]

@@ -1,0 +1,264 @@
+{
+  "generated_at_utc": "2026-07-06T01:03:43.271559+00:00",
+  "baseline_root": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe",
+  "live_window_root": "D:\\Projekte\\SpeakerDiarization\\data\\live_sentence_boundaries\\live_window_corpus_60_90_cuda_complete_23",
+  "baseline_count": 27,
+  "live_dataset_count": 23,
+  "covered_baseline_count": 23,
+  "missing_baseline_count": 4,
+  "aliases": [
+    {
+      "baseline_key": "cunk",
+      "youtube_id": "JWS-qfR6K3w",
+      "live_video_id": "JWS-qfR6K3w",
+      "reason": "Baseline folder uses a local/source key while the live-window cache uses the YouTube video id."
+    }
+  ],
+  "covered": [
+    {
+      "baseline_key": "1NBVQB-Srpw",
+      "youtube_id": "1NBVQB-Srpw",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\1NBVQB-Srpw\\1NBVQB-Srpw.canonical_diarization.json",
+      "live_video_id": "1NBVQB-Srpw",
+      "live_dataset": "1NBVQB-Srpw_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 105
+    },
+    {
+      "baseline_key": "20v1OxUXcQY",
+      "youtube_id": "20v1OxUXcQY",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\20v1OxUXcQY\\20v1OxUXcQY.canonical_diarization.json",
+      "live_video_id": "20v1OxUXcQY",
+      "live_dataset": "20v1OxUXcQY_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 138
+    },
+    {
+      "baseline_key": "acbnyagl8jo",
+      "youtube_id": "acbnyagl8jo",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\acbnyagl8jo\\acbnyagl8jo.canonical_diarization.json",
+      "live_video_id": "acbnyagl8jo",
+      "live_dataset": "acbnyagl8jo_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 115
+    },
+    {
+      "baseline_key": "aHGd6LqAVzw",
+      "youtube_id": "aHGd6LqAVzw",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\aHGd6LqAVzw\\aHGd6LqAVzw.canonical_diarization.json",
+      "live_video_id": "aHGd6LqAVzw",
+      "live_dataset": "aHGd6LqAVzw_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 92
+    },
+    {
+      "baseline_key": "blcKeLDDzSM",
+      "youtube_id": "blcKeLDDzSM",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\blcKeLDDzSM\\blcKeLDDzSM.canonical_diarization.json",
+      "live_video_id": "blcKeLDDzSM",
+      "live_dataset": "blcKeLDDzSM_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 116
+    },
+    {
+      "baseline_key": "cLdy4P-XJPE",
+      "youtube_id": "cLdy4P-XJPE",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\cLdy4P-XJPE\\cLdy4P-XJPE.canonical_diarization.json",
+      "live_video_id": "cLdy4P-XJPE",
+      "live_dataset": "cLdy4P-XJPE_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 134
+    },
+    {
+      "baseline_key": "cunk",
+      "youtube_id": "JWS-qfR6K3w",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\cunk\\cunk_on_earth_clip.canonical_diarization.json",
+      "live_video_id": "JWS-qfR6K3w",
+      "live_dataset": "JWS-qfR6K3w_livewindow_60_90_cuda",
+      "match_method": "youtube_id_alias",
+      "sentence_count": 65
+    },
+    {
+      "baseline_key": "Dd7FixvoKBw",
+      "youtube_id": "Dd7FixvoKBw",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\Dd7FixvoKBw\\Dd7FixvoKBw.canonical_diarization.json",
+      "live_video_id": "Dd7FixvoKBw",
+      "live_dataset": "Dd7FixvoKBw_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 66
+    },
+    {
+      "baseline_key": "DsyfYJ5Ou3g",
+      "youtube_id": "DsyfYJ5Ou3g",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\DsyfYJ5Ou3g\\DsyfYJ5Ou3g.canonical_diarization.json",
+      "live_video_id": "DsyfYJ5Ou3g",
+      "live_dataset": "DsyfYJ5Ou3g_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 90
+    },
+    {
+      "baseline_key": "F2-2RBi1qzY",
+      "youtube_id": "F2-2RBi1qzY",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\F2-2RBi1qzY\\F2-2RBi1qzY.canonical_diarization.json",
+      "live_video_id": "F2-2RBi1qzY",
+      "live_dataset": "F2-2RBi1qzY_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 71
+    },
+    {
+      "baseline_key": "gj7BRMuB-n4",
+      "youtube_id": "gj7BRMuB-n4",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\gj7BRMuB-n4\\gj7BRMuB-n4.canonical_diarization.json",
+      "live_video_id": "gj7BRMuB-n4",
+      "live_dataset": "gj7BRMuB-n4_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 209
+    },
+    {
+      "baseline_key": "KdOXM3I_5hk",
+      "youtube_id": "KdOXM3I_5hk",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\KdOXM3I_5hk\\KdOXM3I_5hk.canonical_diarization.json",
+      "live_video_id": "KdOXM3I_5hk",
+      "live_dataset": "KdOXM3I_5hk_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 191
+    },
+    {
+      "baseline_key": "L-CfFo5aQGU",
+      "youtube_id": "L-CfFo5aQGU",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\L-CfFo5aQGU\\L-CfFo5aQGU.canonical_diarization.json",
+      "live_video_id": "L-CfFo5aQGU",
+      "live_dataset": "L-CfFo5aQGU_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 267
+    },
+    {
+      "baseline_key": "mBeT_AoCXvc",
+      "youtube_id": "mBeT_AoCXvc",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\mBeT_AoCXvc\\mBeT_AoCXvc.canonical_diarization.json",
+      "live_video_id": "mBeT_AoCXvc",
+      "live_dataset": "mBeT_AoCXvc_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 149
+    },
+    {
+      "baseline_key": "mWABb5Dy9BQ",
+      "youtube_id": "mWABb5Dy9BQ",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\mWABb5Dy9BQ\\mWABb5Dy9BQ.canonical_diarization.json",
+      "live_video_id": "mWABb5Dy9BQ",
+      "live_dataset": "mWABb5Dy9BQ_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 220
+    },
+    {
+      "baseline_key": "oFBuCp19L7M",
+      "youtube_id": "oFBuCp19L7M",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\oFBuCp19L7M\\oFBuCp19L7M.canonical_diarization.json",
+      "live_video_id": "oFBuCp19L7M",
+      "live_dataset": "oFBuCp19L7M_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 114
+    },
+    {
+      "baseline_key": "onHUfyRP1BE",
+      "youtube_id": "onHUfyRP1BE",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\onHUfyRP1BE\\onHUfyRP1BE.canonical_diarization.json",
+      "live_video_id": "onHUfyRP1BE",
+      "live_dataset": "onHUfyRP1BE_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 64
+    },
+    {
+      "baseline_key": "pD4IdQTmneI",
+      "youtube_id": "pD4IdQTmneI",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\pD4IdQTmneI\\pD4IdQTmneI.canonical_diarization.json",
+      "live_video_id": "pD4IdQTmneI",
+      "live_dataset": "pD4IdQTmneI_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 64
+    },
+    {
+      "baseline_key": "PhofRoLXqhE",
+      "youtube_id": "PhofRoLXqhE",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\PhofRoLXqhE\\PhofRoLXqhE.canonical_diarization.json",
+      "live_video_id": "PhofRoLXqhE",
+      "live_dataset": "PhofRoLXqhE_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 286
+    },
+    {
+      "baseline_key": "S_o3y7CzDUY",
+      "youtube_id": "S_o3y7CzDUY",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\S_o3y7CzDUY\\S_o3y7CzDUY.canonical_diarization.json",
+      "live_video_id": "S_o3y7CzDUY",
+      "live_dataset": "S_o3y7CzDUY_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 274
+    },
+    {
+      "baseline_key": "WNZn37Uc700",
+      "youtube_id": "WNZn37Uc700",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\WNZn37Uc700\\WNZn37Uc700.canonical_diarization.json",
+      "live_video_id": "WNZn37Uc700",
+      "live_dataset": "WNZn37Uc700_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 178
+    },
+    {
+      "baseline_key": "y_5WfLjvOK4",
+      "youtube_id": "y_5WfLjvOK4",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\y_5WfLjvOK4\\y_5WfLjvOK4.canonical_diarization.json",
+      "live_video_id": "y_5WfLjvOK4",
+      "live_dataset": "y_5WfLjvOK4_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 327
+    },
+    {
+      "baseline_key": "ZY0DG8rUnCA",
+      "youtube_id": "ZY0DG8rUnCA",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\ZY0DG8rUnCA\\ZY0DG8rUnCA.canonical_diarization.json",
+      "live_video_id": "ZY0DG8rUnCA",
+      "live_dataset": "ZY0DG8rUnCA_livewindow_60_90_cuda",
+      "match_method": "baseline_key",
+      "sentence_count": 85
+    }
+  ],
+  "missing": [
+    {
+      "baseline_key": "bPpcfH_HHH8",
+      "youtube_id": "bPpcfH_HHH8",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\bPpcfH_HHH8\\bPpcfH_HHH8.canonical_diarization.json",
+      "reason": "No complete live-window cache with provider embeddings exists in this repo.",
+      "source_sentence_cache_in_whospeaks": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda_more\\bPpcfH_HHH8_livewindow_60_90_cuda",
+      "source_sentence_count_in_whospeaks": 102,
+      "source_provider_embedding_count_in_whospeaks": 0
+    },
+    {
+      "baseline_key": "e3h6es6zh1c",
+      "youtube_id": "e3h6es6zh1c",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\e3h6es6zh1c\\e3h6es6zh1c.canonical_diarization.json",
+      "reason": "No complete live-window cache with provider embeddings exists in this repo.",
+      "source_sentence_cache_in_whospeaks": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda_more\\e3h6es6zh1c_livewindow_60_90_cuda",
+      "source_sentence_count_in_whospeaks": 85,
+      "source_provider_embedding_count_in_whospeaks": 0
+    },
+    {
+      "baseline_key": "k1tsGGz-Qw0",
+      "youtube_id": "k1tsGGz-Qw0",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\k1tsGGz-Qw0\\k1tsGGz-Qw0.canonical_diarization.json",
+      "reason": "No complete live-window cache with provider embeddings exists in this repo.",
+      "source_sentence_cache_in_whospeaks": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda_more\\k1tsGGz-Qw0_livewindow_60_90_cuda",
+      "source_sentence_count_in_whospeaks": 127,
+      "source_provider_embedding_count_in_whospeaks": 0
+    },
+    {
+      "baseline_key": "vIfGgDnmBXg",
+      "youtube_id": "vIfGgDnmBXg",
+      "canonical_file": "D:\\Projekte\\SpeakerDiarization\\data\\baselines\\elevenlabs_scribe\\vIfGgDnmBXg\\vIfGgDnmBXg.canonical_diarization.json",
+      "reason": "No complete live-window cache with provider embeddings exists in this repo.",
+      "source_sentence_cache_in_whospeaks": "D:\\Projekte\\WhoSpeaks\\tools\\.window_diarize_feature_cache\\live_window_corpus_60_90_cuda_more\\vIfGgDnmBXg_livewindow_60_90_cuda",
+      "source_sentence_count_in_whospeaks": 155,
+      "source_provider_embedding_count_in_whospeaks": 0
+    }
+  ]
+}

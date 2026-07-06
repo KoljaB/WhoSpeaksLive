@@ -1,0 +1,1472 @@
+[
+  {
+    "segment_id": "seg_0000",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 6.34,
+    "end_sec": 8.84,
+    "start_time": "00:06.340",
+    "end_time": "00:08.840",
+    "duration_sec": 2.5,
+    "text": "You two, first of all, well done. Brilliant film.",
+    "word_start_index": 0,
+    "word_end_index": 8
+  },
+  {
+    "segment_id": "seg_0001",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 9.02,
+    "end_sec": 9.12,
+    "start_time": "00:09.020",
+    "end_time": "00:09.120",
+    "duration_sec": 0.1,
+    "text": "Oh.",
+    "word_start_index": 9,
+    "word_end_index": 9
+  },
+  {
+    "segment_id": "seg_0002",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 9.56,
+    "end_sec": 9.65,
+    "start_time": "00:09.560",
+    "end_time": "00:09.650",
+    "duration_sec": 0.09,
+    "text": "Thank you.",
+    "word_start_index": 10,
+    "word_end_index": 11
+  },
+  {
+    "segment_id": "seg_0003",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 9.66,
+    "end_sec": 13.02,
+    "start_time": "00:09.660",
+    "end_time": "00:13.020",
+    "duration_sec": 3.36,
+    "text": "You were right in the mix in this one. Was it just like one giant workout?",
+    "word_start_index": 12,
+    "word_end_index": 27
+  },
+  {
+    "segment_id": "seg_0004",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 13.48,
+    "end_sec": 14.4,
+    "start_time": "00:13.480",
+    "end_time": "00:14.400",
+    "duration_sec": 0.92,
+    "text": "It's exactly what it was.",
+    "word_start_index": 28,
+    "word_end_index": 32
+  },
+  {
+    "segment_id": "seg_0005",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 14.44,
+    "end_sec": 16.96,
+    "start_time": "00:14.440",
+    "end_time": "00:16.960",
+    "duration_sec": 2.52,
+    "text": "It kinda was. W- you know, we have to kind of-",
+    "word_start_index": 33,
+    "word_end_index": 43
+  },
+  {
+    "segment_id": "seg_0006",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 17.0,
+    "end_sec": 17.79,
+    "start_time": "00:17.000",
+    "end_time": "00:17.790",
+    "duration_sec": 0.79,
+    "text": "We worked out a lot, didn't we?",
+    "word_start_index": 44,
+    "word_end_index": 50
+  },
+  {
+    "segment_id": "seg_0007",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 17.82,
+    "end_sec": 41.7,
+    "start_time": "00:17.820",
+    "end_time": "00:41.700",
+    "duration_sec": 23.88,
+    "text": "We did work out together actually and, and, uh, it's kinda fun to have a reason to work out and, and get in shape. It's hard when you, you know, you're doing a job and there's no time to go to the gym. A lot of people find it hard to actually just fit it into their schedule. It's not'cause they're lazy or they don't wanna work out, it's just like, \"When do I do that? When do I dedicate that amount of time?\" But when it's part of your job, it's joyous. So yeah, we got in, uh, in good shape in the California sunshine, didn't we?",
+    "word_start_index": 51,
+    "word_end_index": 159
+  },
+  {
+    "segment_id": "seg_0008",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 41.9,
+    "end_sec": 42.54,
+    "start_time": "00:41.900",
+    "end_time": "00:42.540",
+    "duration_sec": 0.64,
+    "text": "Green juice.",
+    "word_start_index": 160,
+    "word_end_index": 161
+  },
+  {
+    "segment_id": "seg_0009",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 42.64,
+    "end_sec": 44.52,
+    "start_time": "00:42.640",
+    "end_time": "00:44.520",
+    "duration_sec": 1.88,
+    "text": "Green juice, running up and down stairs.",
+    "word_start_index": 162,
+    "word_end_index": 168
+  },
+  {
+    "segment_id": "seg_0010",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 45.0,
+    "end_sec": 45.58,
+    "start_time": "00:45.000",
+    "end_time": "00:45.580",
+    "duration_sec": 0.58,
+    "text": "Good work.",
+    "word_start_index": 169,
+    "word_end_index": 170
+  },
+  {
+    "segment_id": "seg_0011",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 45.62,
+    "end_sec": 46.2,
+    "start_time": "00:45.620",
+    "end_time": "00:46.200",
+    "duration_sec": 0.58,
+    "text": "Happy days.",
+    "word_start_index": 171,
+    "word_end_index": 172
+  },
+  {
+    "segment_id": "seg_0012",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 46.28,
+    "end_sec": 46.88,
+    "start_time": "00:46.280",
+    "end_time": "00:46.880",
+    "duration_sec": 0.6,
+    "text": "Lifting weights.",
+    "word_start_index": 173,
+    "word_end_index": 174
+  },
+  {
+    "segment_id": "seg_0013",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 47.38,
+    "end_sec": 49.519,
+    "start_time": "00:47.380",
+    "end_time": "00:49.519",
+    "duration_sec": 2.139,
+    "text": "Now we're back to London, Guinness and pies.",
+    "word_start_index": 175,
+    "word_end_index": 182
+  },
+  {
+    "segment_id": "seg_0014",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 51.36,
+    "end_sec": 55.69,
+    "start_time": "00:51.360",
+    "end_time": "00:55.690",
+    "duration_sec": 4.33,
+    "text": "And everyone seems to describe so far a utopian set, where everyone's having the best time. Was it hard?",
+    "word_start_index": 183,
+    "word_end_index": 201
+  },
+  {
+    "segment_id": "seg_0015",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 55.8,
+    "end_sec": 58.01,
+    "start_time": "00:55.800",
+    "end_time": "00:58.010",
+    "duration_sec": 2.21,
+    "text": "I know, it's nauseating. I feel like it's nauseating.",
+    "word_start_index": 202,
+    "word_end_index": 210
+  },
+  {
+    "segment_id": "seg_0016",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 58.08,
+    "end_sec": 58.15,
+    "start_time": "00:58.080",
+    "end_time": "00:58.150",
+    "duration_sec": 0.07,
+    "text": "I know.",
+    "word_start_index": 211,
+    "word_end_index": 212
+  },
+  {
+    "segment_id": "seg_0017",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 58.15,
+    "end_sec": 65.12,
+    "start_time": "00:58.150",
+    "end_time": "01:05.120",
+    "duration_sec": 6.97,
+    "text": "I keep saying it, but it's not untrue. Sometimes Simon is a bit mean. Come on, what else happened that was bad? Um, someone hurt themselves.",
+    "word_start_index": 213,
+    "word_end_index": 238
+  },
+  {
+    "segment_id": "seg_0018",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 65.56,
+    "end_sec": 66.44,
+    "start_time": "01:05.560",
+    "end_time": "01:06.440",
+    "duration_sec": 0.88,
+    "text": "There was an accident.",
+    "word_start_index": 239,
+    "word_end_index": 242
+  },
+  {
+    "segment_id": "seg_0019",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 67.8,
+    "end_sec": 68.38,
+    "start_time": "01:07.800",
+    "end_time": "01:08.380",
+    "duration_sec": 0.58,
+    "text": "I fell on my bum.",
+    "word_start_index": 243,
+    "word_end_index": 247
+  },
+  {
+    "segment_id": "seg_0020",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 68.46,
+    "end_sec": 72.06,
+    "start_time": "01:08.460",
+    "end_time": "01:12.060",
+    "duration_sec": 3.6,
+    "text": "You fell on your bum, and I'm never really mean. I'm only mean to you'cause it makes you laugh.",
+    "word_start_index": 248,
+    "word_end_index": 267
+  },
+  {
+    "segment_id": "seg_0021",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 72.27,
+    "end_sec": 72.55,
+    "start_time": "01:12.270",
+    "end_time": "01:12.550",
+    "duration_sec": 0.28,
+    "text": "It does make me laugh.",
+    "word_start_index": 268,
+    "word_end_index": 272
+  },
+  {
+    "segment_id": "seg_0022",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 72.56,
+    "end_sec": 76.36,
+    "start_time": "01:12.560",
+    "end_time": "01:16.360",
+    "duration_sec": 3.8,
+    "text": "'Cause you're not u-'cause you're used to people sort of like worshiping at your feet'cause you're such a princess.",
+    "word_start_index": 273,
+    "word_end_index": 293
+  },
+  {
+    "segment_id": "seg_0023",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 76.5,
+    "end_sec": 77.81,
+    "start_time": "01:16.500",
+    "end_time": "01:17.810",
+    "duration_sec": 1.31,
+    "text": "Oh, that's great. That's great. That's gonna be-",
+    "word_start_index": 294,
+    "word_end_index": 301
+  },
+  {
+    "segment_id": "seg_0024",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 77.82,
+    "end_sec": 81.0,
+    "start_time": "01:17.820",
+    "end_time": "01:21.000",
+    "duration_sec": 3.18,
+    "text": "You're used to, \"Oh, Alice, oh you're great,\" and I like, so I just try to keep it real.",
+    "word_start_index": 302,
+    "word_end_index": 320
+  },
+  {
+    "segment_id": "seg_0025",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 81.06,
+    "end_sec": 83.44,
+    "start_time": "01:21.060",
+    "end_time": "01:23.440",
+    "duration_sec": 2.38,
+    "text": "Yeah, all I do is all cry and then say people say I'm great. You're...",
+    "word_start_index": 321,
+    "word_end_index": 335
+  },
+  {
+    "segment_id": "seg_0026",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 86.2,
+    "end_sec": 87.42,
+    "start_time": "01:26.200",
+    "end_time": "01:27.420",
+    "duration_sec": 1.22,
+    "text": "You, you s- you're not a-",
+    "word_start_index": 336,
+    "word_end_index": 341
+  },
+  {
+    "segment_id": "seg_0027",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 87.46,
+    "end_sec": 101.42,
+    "start_time": "01:27.460",
+    "end_time": "01:41.420",
+    "duration_sec": 13.96,
+    "text": "Alice is being... A- but Alice was raised on a cushion basically of privilege, and she needs to be leveled immediately whenever I see her because she needs to know that she's just a, a normal person and not some beautiful...",
+    "word_start_index": 342,
+    "word_end_index": 382
+  },
+  {
+    "segment_id": "seg_0028",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 103.68,
+    "end_sec": 104.52,
+    "start_time": "01:43.680",
+    "end_time": "01:44.520",
+    "duration_sec": 0.84,
+    "text": "That was really bad.",
+    "word_start_index": 383,
+    "word_end_index": 386
+  },
+  {
+    "segment_id": "seg_0029",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 104.59,
+    "end_sec": 104.59,
+    "start_time": "01:44.590",
+    "end_time": "01:44.590",
+    "duration_sec": 0.0,
+    "text": "Sorry. Sorry.",
+    "word_start_index": 387,
+    "word_end_index": 388
+  },
+  {
+    "segment_id": "seg_0030",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 104.6,
+    "end_sec": 113.85,
+    "start_time": "01:44.600",
+    "end_time": "01:53.850",
+    "duration_sec": 9.25,
+    "text": "That was really bad. I didn't buy that at all. The scene is cut. Do it again. That, that change from delivery of where I was raised to beautiful, I didn't believe it in your eyes at all. You were thinking-",
+    "word_start_index": 389,
+    "word_end_index": 429
+  },
+  {
+    "segment_id": "seg_0031",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 113.85,
+    "end_sec": 118.3,
+    "start_time": "01:53.850",
+    "end_time": "01:58.300",
+    "duration_sec": 4.45,
+    "text": "'Cause I was just, I was trying to get across the idea that I, my meanness is entirely motivated by devotion.",
+    "word_start_index": 430,
+    "word_end_index": 450
+  },
+  {
+    "segment_id": "seg_0032",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 118.38,
+    "end_sec": 119.1,
+    "start_time": "01:58.380",
+    "end_time": "01:59.100",
+    "duration_sec": 0.72,
+    "text": "You were thinking about green juice.",
+    "word_start_index": 451,
+    "word_end_index": 456
+  },
+  {
+    "segment_id": "seg_0033",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 119.42,
+    "end_sec": 119.74,
+    "start_time": "01:59.420",
+    "end_time": "01:59.740",
+    "duration_sec": 0.32,
+    "text": "Exactly.",
+    "word_start_index": 457,
+    "word_end_index": 457
+  },
+  {
+    "segment_id": "seg_0034",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 119.78,
+    "end_sec": 128.6,
+    "start_time": "01:59.780",
+    "end_time": "02:08.600",
+    "duration_sec": 8.82,
+    "text": "This is how you play it. And Simon is just a beautiful, beautiful person. This is the best.",
+    "word_start_index": 458,
+    "word_end_index": 475
+  },
+  {
+    "segment_id": "seg_0035",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 130.47,
+    "end_sec": 133.94,
+    "start_time": "02:10.470",
+    "end_time": "02:13.940",
+    "duration_sec": 3.47,
+    "text": "Alice, you can get him back. Tell us one thing about Simon that might surprise us.",
+    "word_start_index": 476,
+    "word_end_index": 491
+  },
+  {
+    "segment_id": "seg_0036",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 134.08,
+    "end_sec": 135.01,
+    "start_time": "02:14.080",
+    "end_time": "02:15.010",
+    "duration_sec": 0.93,
+    "text": "It's a bit hot in here all of a sudden.",
+    "word_start_index": 492,
+    "word_end_index": 501
+  },
+  {
+    "segment_id": "seg_0037",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 135.02,
+    "end_sec": 139.86,
+    "start_time": "02:15.020",
+    "end_time": "02:19.860",
+    "duration_sec": 4.84,
+    "text": "The thing about Simon is he wears it all on his sleeve, doesn't he? We know exactly what's wrong with him-",
+    "word_start_index": 502,
+    "word_end_index": 522
+  },
+  {
+    "segment_id": "seg_0038",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 141.14,
+    "end_sec": 142.44,
+    "start_time": "02:21.140",
+    "end_time": "02:22.440",
+    "duration_sec": 1.3,
+    "text": "... just, just by looking at him.",
+    "word_start_index": 523,
+    "word_end_index": 529
+  },
+  {
+    "segment_id": "seg_0039",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 142.48,
+    "end_sec": 144.6,
+    "start_time": "02:22.480",
+    "end_time": "02:24.600",
+    "duration_sec": 2.12,
+    "text": "All my psychosis are very plain to see.",
+    "word_start_index": 530,
+    "word_end_index": 537
+  },
+  {
+    "segment_id": "seg_0040",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 144.72,
+    "end_sec": 150.52,
+    "start_time": "02:24.720",
+    "end_time": "02:30.520",
+    "duration_sec": 5.8,
+    "text": "Um, that's, that's called being a comedian. Probably the most difficult predicament in the world, I would say.",
+    "word_start_index": 538,
+    "word_end_index": 555
+  },
+  {
+    "segment_id": "seg_0041",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 150.56,
+    "end_sec": 151.39,
+    "start_time": "02:30.560",
+    "end_time": "02:31.390",
+    "duration_sec": 0.83,
+    "text": "It's not easy being easy.",
+    "word_start_index": 556,
+    "word_end_index": 560
+  },
+  {
+    "segment_id": "seg_0042",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 151.42,
+    "end_sec": 152.34,
+    "start_time": "02:31.420",
+    "end_time": "02:32.340",
+    "duration_sec": 0.92,
+    "text": "Other than...",
+    "word_start_index": 561,
+    "word_end_index": 562
+  },
+  {
+    "segment_id": "seg_0043",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 154.9,
+    "end_sec": 165.46,
+    "start_time": "02:34.900",
+    "end_time": "02:45.460",
+    "duration_sec": 10.56,
+    "text": "You know, it's not easy. They have to go out and make people laugh. We had a discussion the other day about when Simon would do standup again. I suggested it would be better if he did it in his underwear and very fit.",
+    "word_start_index": 563,
+    "word_end_index": 606
+  },
+  {
+    "segment_id": "seg_0044",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 165.76,
+    "end_sec": 166.06,
+    "start_time": "02:45.760",
+    "end_time": "02:46.060",
+    "duration_sec": 0.3,
+    "text": "Yes.",
+    "word_start_index": 607,
+    "word_end_index": 607
+  },
+  {
+    "segment_id": "seg_0045",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 166.26,
+    "end_sec": 167.58,
+    "start_time": "02:46.260",
+    "end_time": "02:47.580",
+    "duration_sec": 1.32,
+    "text": "That usually gets a lot of attention.",
+    "word_start_index": 608,
+    "word_end_index": 614
+  },
+  {
+    "segment_id": "seg_0046",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 167.6,
+    "end_sec": 168.299,
+    "start_time": "02:47.600",
+    "end_time": "02:48.299",
+    "duration_sec": 0.699,
+    "text": "Absolutely.",
+    "word_start_index": 615,
+    "word_end_index": 615
+  },
+  {
+    "segment_id": "seg_0047",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 168.42,
+    "end_sec": 169.84,
+    "start_time": "02:48.420",
+    "end_time": "02:49.840",
+    "duration_sec": 1.42,
+    "text": "But what do you think about that?",
+    "word_start_index": 616,
+    "word_end_index": 622
+  },
+  {
+    "segment_id": "seg_0048",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 170.28,
+    "end_sec": 180.489,
+    "start_time": "02:50.280",
+    "end_time": "03:00.489",
+    "duration_sec": 10.209,
+    "text": "I think it w- the, the idea of doing standup again for me, I know you didn't ask this question, uh, it, you have to be very, you have to be very match fit to do standup. Like, you have to do a lot of gigs. That, it would take a lot of time. I don't think I can go into that again.",
+    "word_start_index": 623,
+    "word_end_index": 685
+  },
+  {
+    "segment_id": "seg_0049",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 180.8,
+    "end_sec": 181.76,
+    "start_time": "03:00.800",
+    "end_time": "03:01.760",
+    "duration_sec": 0.96,
+    "text": "See? That's a weakness.",
+    "word_start_index": 686,
+    "word_end_index": 689
+  },
+  {
+    "segment_id": "seg_0050",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 181.86,
+    "end_sec": 182.4,
+    "start_time": "03:01.860",
+    "end_time": "03:02.400",
+    "duration_sec": 0.54,
+    "text": "That's a weakness.",
+    "word_start_index": 690,
+    "word_end_index": 692
+  },
+  {
+    "segment_id": "seg_0051",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 182.62,
+    "end_sec": 186.96,
+    "start_time": "03:02.620",
+    "end_time": "03:06.960",
+    "duration_sec": 4.34,
+    "text": "Can you tell me, as a woman, what's it like being so close to Benedict Cumberbatch?",
+    "word_start_index": 693,
+    "word_end_index": 708
+  },
+  {
+    "segment_id": "seg_0052",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 187.26,
+    "end_sec": 189.36,
+    "start_time": "03:07.260",
+    "end_time": "03:09.360",
+    "duration_sec": 2.1,
+    "text": "As a woman, would you like to share?",
+    "word_start_index": 709,
+    "word_end_index": 716
+  },
+  {
+    "segment_id": "seg_0053",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 189.42,
+    "end_sec": 189.54,
+    "start_time": "03:09.420",
+    "end_time": "03:09.540",
+    "duration_sec": 0.12,
+    "text": "Well-",
+    "word_start_index": 717,
+    "word_end_index": 717
+  },
+  {
+    "segment_id": "seg_0054",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 189.549,
+    "end_sec": 190.16,
+    "start_time": "03:09.549",
+    "end_time": "03:10.160",
+    "duration_sec": 0.611,
+    "text": "Well, as a woman",
+    "word_start_index": 718,
+    "word_end_index": 721
+  },
+  {
+    "segment_id": "seg_0055",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 190.26,
+    "end_sec": 190.829,
+    "start_time": "03:10.260",
+    "end_time": "03:10.829",
+    "duration_sec": 0.569,
+    "text": "... I'm a woman asking.",
+    "word_start_index": 722,
+    "word_end_index": 726
+  },
+  {
+    "segment_id": "seg_0056",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 190.92,
+    "end_sec": 191.78,
+    "start_time": "03:10.920",
+    "end_time": "03:11.780",
+    "duration_sec": 0.86,
+    "text": "Oh, you as a woman.",
+    "word_start_index": 727,
+    "word_end_index": 731
+  },
+  {
+    "segment_id": "seg_0057",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 191.88,
+    "end_sec": 192.18,
+    "start_time": "03:11.880",
+    "end_time": "03:12.180",
+    "duration_sec": 0.3,
+    "text": "Yeah.",
+    "word_start_index": 732,
+    "word_end_index": 732
+  },
+  {
+    "segment_id": "seg_0058",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 192.26,
+    "end_sec": 197.44,
+    "start_time": "03:12.260",
+    "end_time": "03:17.440",
+    "duration_sec": 5.18,
+    "text": "Um, I, what's it like being so close to him, uh, you mean phys- when I'm physically close to him, do I get the shivers?",
+    "word_start_index": 733,
+    "word_end_index": 757
+  },
+  {
+    "segment_id": "seg_0059",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 197.48,
+    "end_sec": 198.56,
+    "start_time": "03:17.480",
+    "end_time": "03:18.560",
+    "duration_sec": 1.08,
+    "text": "The cumbers bumbers wumbers.",
+    "word_start_index": 758,
+    "word_end_index": 761
+  },
+  {
+    "segment_id": "seg_0060",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 200.12,
+    "end_sec": 201.12,
+    "start_time": "03:20.120",
+    "end_time": "03:21.120",
+    "duration_sec": 1.0,
+    "text": "Do I want to lick him?",
+    "word_start_index": 762,
+    "word_end_index": 767
+  },
+  {
+    "segment_id": "seg_0061",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 201.56,
+    "end_sec": 206.36,
+    "start_time": "03:21.560",
+    "end_time": "03:26.360",
+    "duration_sec": 4.8,
+    "text": "The thing is, the Benedict that everyone kn- sees is a little different to the Benedict we know.",
+    "word_start_index": 768,
+    "word_end_index": 785
+  },
+  {
+    "segment_id": "seg_0062",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 207.76,
+    "end_sec": 248.52,
+    "start_time": "03:27.760",
+    "end_time": "04:08.520",
+    "duration_sec": 40.76,
+    "text": "I, the Benedict, the, the real Benedict is like, \"Oh, hello, I'm Benedict.\" He talks like that, and he's, he's very ungainly and he's not, he's what I call dyspraxic, which means he can't dance and he can't sort of like physically, uh, um, move himself. But you switch a camera on the guy-... he becomes this super sexy, lithe, Sherlock, super intelligent... It's like, \"Cut,\" and it's like, \"Was that any good?\" And you're like, \"Oh, Benedict, for G- someone's gonna see that and they're gonna know.\" So what, after a take, what, Benedict will be shepherded into a small room and he's just kept there. And we tell him he's there for, you know, \"Just stay there, Ben. We'll be out. We all go and have dinner and stuff.\" And he just sits there like playing with his, like, you know, we got a little toy for him. It looks like a Rubik's Cube, but it's simpler. It's like a four, it's like four, not six.",
+    "word_start_index": 786,
+    "word_end_index": 954
+  },
+  {
+    "segment_id": "seg_0063",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 249.22,
+    "end_sec": 250.42,
+    "start_time": "04:09.220",
+    "end_time": "04:10.420",
+    "duration_sec": 1.2,
+    "text": "Oh, God, Simon.",
+    "word_start_index": 955,
+    "word_end_index": 957
+  },
+  {
+    "segment_id": "seg_0064",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 251.12,
+    "end_sec": 255.12,
+    "start_time": "04:11.120",
+    "end_time": "04:15.120",
+    "duration_sec": 4.0,
+    "text": "So the Benedict that you, that all the girls love and stuff, it's a, it's a myth.",
+    "word_start_index": 958,
+    "word_end_index": 974
+  },
+  {
+    "segment_id": "seg_0065",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 255.24,
+    "end_sec": 258.14,
+    "start_time": "04:15.240",
+    "end_time": "04:18.140",
+    "duration_sec": 2.9,
+    "text": "I would've thought that girls would love Chris Pine as well. Do they not?",
+    "word_start_index": 975,
+    "word_end_index": 988
+  },
+  {
+    "segment_id": "seg_0066",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 258.74,
+    "end_sec": 261.68,
+    "start_time": "04:18.740",
+    "end_time": "04:21.680",
+    "duration_sec": 2.94,
+    "text": "I do love him. He's almost a bit obviously handsome, if that's a thing.",
+    "word_start_index": 989,
+    "word_end_index": 1002
+  },
+  {
+    "segment_id": "seg_0067",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 261.72,
+    "end_sec": 264.01,
+    "start_time": "04:21.720",
+    "end_time": "04:24.010",
+    "duration_sec": 2.29,
+    "text": "I love that, that Chris is actually too handsome to be handsome.",
+    "word_start_index": 1003,
+    "word_end_index": 1014
+  },
+  {
+    "segment_id": "seg_0068",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 264.22,
+    "end_sec": 266.12,
+    "start_time": "04:24.220",
+    "end_time": "04:26.120",
+    "duration_sec": 1.9,
+    "text": "You're too handsome for your own good, Pine.",
+    "word_start_index": 1015,
+    "word_end_index": 1022
+  },
+  {
+    "segment_id": "seg_0069",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 266.5,
+    "end_sec": 268.969,
+    "start_time": "04:26.500",
+    "end_time": "04:28.969",
+    "duration_sec": 2.469,
+    "text": "He's like, oh, Benedict. With Benedict it's like if I tried really hard, maybe I could get him.",
+    "word_start_index": 1023,
+    "word_end_index": 1040
+  },
+  {
+    "segment_id": "seg_0070",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 269.04,
+    "end_sec": 270.02,
+    "start_time": "04:29.040",
+    "end_time": "04:30.020",
+    "duration_sec": 0.98,
+    "text": "Oh, he's attainable.",
+    "word_start_index": 1041,
+    "word_end_index": 1043
+  },
+  {
+    "segment_id": "seg_0071",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 270.06,
+    "end_sec": 270.07,
+    "start_time": "04:30.060",
+    "end_time": "04:30.070",
+    "duration_sec": 0.01,
+    "text": "Mm-hmm.",
+    "word_start_index": 1044,
+    "word_end_index": 1044
+  },
+  {
+    "segment_id": "seg_0072",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 270.14,
+    "end_sec": 276.24,
+    "start_time": "04:30.140",
+    "end_time": "04:36.240",
+    "duration_sec": 6.1,
+    "text": "Is that what Benedict feels? You know what I think is with Benedict, I think it's'cause he wants to have a family. I think that's what gets women as well.",
+    "word_start_index": 1045,
+    "word_end_index": 1075
+  },
+  {
+    "segment_id": "seg_0073",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 276.27,
+    "end_sec": 277.5,
+    "start_time": "04:36.270",
+    "end_time": "04:37.500",
+    "duration_sec": 1.23,
+    "text": "Oh, he's giving off those pheromones.",
+    "word_start_index": 1076,
+    "word_end_index": 1081
+  },
+  {
+    "segment_id": "seg_0074",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 277.56,
+    "end_sec": 279.68,
+    "start_time": "04:37.560",
+    "end_time": "04:39.680",
+    "duration_sec": 2.12,
+    "text": "I don't think Chris gives off those pheromones.",
+    "word_start_index": 1082,
+    "word_end_index": 1089
+  },
+  {
+    "segment_id": "seg_0075",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 279.82,
+    "end_sec": 281.76,
+    "start_time": "04:39.820",
+    "end_time": "04:41.760",
+    "duration_sec": 1.94,
+    "text": "Chris wants to have lots of family.",
+    "word_start_index": 1090,
+    "word_end_index": 1096
+  },
+  {
+    "segment_id": "seg_0076",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 284.46,
+    "end_sec": 285.5,
+    "start_time": "04:44.460",
+    "end_time": "04:45.500",
+    "duration_sec": 1.04,
+    "text": "And there's nothing wrong with that.",
+    "word_start_index": 1097,
+    "word_end_index": 1102
+  },
+  {
+    "segment_id": "seg_0077",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 288.52,
+    "end_sec": 290.52,
+    "start_time": "04:48.520",
+    "end_time": "04:50.520",
+    "duration_sec": 2.0,
+    "text": "I'm literally gonna pee my pants.",
+    "word_start_index": 1103,
+    "word_end_index": 1108
+  },
+  {
+    "segment_id": "seg_0078",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 292.74,
+    "end_sec": 307.34,
+    "start_time": "04:52.740",
+    "end_time": "05:07.340",
+    "duration_sec": 14.6,
+    "text": "Chris, Benedict, Benedict l- Benedict wants to have... Oh, God. Benedict wants to have a family, and I think that's what women respond to is that he, I th- and I think the thing about him is he will actually be a good dad and a good husband. I think he'll be loyal and I think he'll be caring.",
+    "word_start_index": 1109,
+    "word_end_index": 1167
+  },
+  {
+    "segment_id": "seg_0079",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 307.62,
+    "end_sec": 307.74,
+    "start_time": "05:07.620",
+    "end_time": "05:07.740",
+    "duration_sec": 0.12,
+    "text": "Yeah.",
+    "word_start_index": 1168,
+    "word_end_index": 1168
+  },
+  {
+    "segment_id": "seg_0080",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 307.8,
+    "end_sec": 308.48,
+    "start_time": "05:07.800",
+    "end_time": "05:08.480",
+    "duration_sec": 0.68,
+    "text": "So I think women-",
+    "word_start_index": 1169,
+    "word_end_index": 1172
+  },
+  {
+    "segment_id": "seg_0081",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 308.8,
+    "end_sec": 309.039,
+    "start_time": "05:08.800",
+    "end_time": "05:09.039",
+    "duration_sec": 0.239,
+    "text": "Like a dog.",
+    "word_start_index": 1173,
+    "word_end_index": 1175
+  },
+  {
+    "segment_id": "seg_0082",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 309.76,
+    "end_sec": 311.2,
+    "start_time": "05:09.760",
+    "end_time": "05:11.200",
+    "duration_sec": 1.44,
+    "text": "Women respond to that.",
+    "word_start_index": 1176,
+    "word_end_index": 1179
+  },
+  {
+    "segment_id": "seg_0083",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 311.88,
+    "end_sec": 316.45,
+    "start_time": "05:11.880",
+    "end_time": "05:16.450",
+    "duration_sec": 4.57,
+    "text": "Benedict, Benedict, the thing about Benedict is that he is, uh, and in all seriousness, he's, he's such a delightful human being.",
+    "word_start_index": 1180,
+    "word_end_index": 1201
+  },
+  {
+    "segment_id": "seg_0084",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 316.45,
+    "end_sec": 317.96,
+    "start_time": "05:16.450",
+    "end_time": "05:17.960",
+    "duration_sec": 1.51,
+    "text": "Let's not do that. Everybody knows it.",
+    "word_start_index": 1202,
+    "word_end_index": 1208
+  },
+  {
+    "segment_id": "seg_0085",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 318.02,
+    "end_sec": 318.16,
+    "start_time": "05:18.020",
+    "end_time": "05:18.160",
+    "duration_sec": 0.14,
+    "text": "Mm.",
+    "word_start_index": 1209,
+    "word_end_index": 1209
+  },
+  {
+    "segment_id": "seg_0086",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 318.38,
+    "end_sec": 320.38,
+    "start_time": "05:18.380",
+    "end_time": "05:20.380",
+    "duration_sec": 2.0,
+    "text": "But that, he is a delightful human. Yeah, he's an idiot.",
+    "word_start_index": 1210,
+    "word_end_index": 1220
+  },
+  {
+    "segment_id": "seg_0087",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 320.42,
+    "end_sec": 321.98,
+    "start_time": "05:20.420",
+    "end_time": "05:21.980",
+    "duration_sec": 1.56,
+    "text": "Can you set me up with him? Can you just be my nan?",
+    "word_start_index": 1221,
+    "word_end_index": 1233
+  },
+  {
+    "segment_id": "seg_0088",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 322.04,
+    "end_sec": 323.46,
+    "start_time": "05:22.040",
+    "end_time": "05:23.460",
+    "duration_sec": 1.42,
+    "text": "Well, haven't you gone in to meet him?",
+    "word_start_index": 1234,
+    "word_end_index": 1241
+  },
+  {
+    "segment_id": "seg_0089",
+    "speaker_id": "SPEAKER_1",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_0"
+    ],
+    "start_sec": 323.84,
+    "end_sec": 325.72,
+    "start_time": "05:23.840",
+    "end_time": "05:25.720",
+    "duration_sec": 1.88,
+    "text": "Yeah, but he didn't ask me out, which was a shame.",
+    "word_start_index": 1242,
+    "word_end_index": 1252
+  },
+  {
+    "segment_id": "seg_0090",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 326.24,
+    "end_sec": 330.88,
+    "start_time": "05:26.240",
+    "end_time": "05:30.880",
+    "duration_sec": 4.64,
+    "text": "I'm surprised about that, to be honest. Truth be told, I'm actually, with a face like yours, surprised he didn't ask you out.",
+    "word_start_index": 1253,
+    "word_end_index": 1275
+  },
+  {
+    "segment_id": "seg_0091",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 330.92,
+    "end_sec": 331.13,
+    "start_time": "05:30.920",
+    "end_time": "05:31.130",
+    "duration_sec": 0.21,
+    "text": "If you, uh-",
+    "word_start_index": 1276,
+    "word_end_index": 1278
+  },
+  {
+    "segment_id": "seg_0092",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 331.18,
+    "end_sec": 334.4,
+    "start_time": "05:31.180",
+    "end_time": "05:34.400",
+    "duration_sec": 3.22,
+    "text": "So maybe we could circle back and rearrange that meeting.",
+    "word_start_index": 1279,
+    "word_end_index": 1288
+  },
+  {
+    "segment_id": "seg_0093",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 334.51,
+    "end_sec": 335.84,
+    "start_time": "05:34.510",
+    "end_time": "05:35.840",
+    "duration_sec": 1.33,
+    "text": "Yeah. I think he's, is he, uh-",
+    "word_start_index": 1289,
+    "word_end_index": 1295
+  },
+  {
+    "segment_id": "seg_0094",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 336.46,
+    "end_sec": 337.06,
+    "start_time": "05:36.460",
+    "end_time": "05:37.060",
+    "duration_sec": 0.6,
+    "text": "Singulare?",
+    "word_start_index": 1296,
+    "word_end_index": 1296
+  },
+  {
+    "segment_id": "seg_0095",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 337.18,
+    "end_sec": 337.84,
+    "start_time": "05:37.180",
+    "end_time": "05:37.840",
+    "duration_sec": 0.66,
+    "text": "Singularis?",
+    "word_start_index": 1297,
+    "word_end_index": 1297
+  },
+  {
+    "segment_id": "seg_0096",
+    "speaker_id": "SPEAKER_2",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_1"
+    ],
+    "start_sec": 338.8,
+    "end_sec": 341.03,
+    "start_time": "05:38.800",
+    "end_time": "05:41.030",
+    "duration_sec": 2.23,
+    "text": "He's... I wouldn't know. I think that might-",
+    "word_start_index": 1298,
+    "word_end_index": 1305
+  },
+  {
+    "segment_id": "seg_0097",
+    "speaker_id": "SPEAKER_3",
+    "raw_elevenlabs_speaker_ids": [
+      "speaker_2"
+    ],
+    "start_sec": 341.1,
+    "end_sec": 342.96,
+    "start_time": "05:41.100",
+    "end_time": "05:42.960",
+    "duration_sec": 1.86,
+    "text": "I know him sing- I know him and Martin Freeman were tight for a while.",
+    "word_start_index": 1306,
+    "word_end_index": 1320
+  }
+]
