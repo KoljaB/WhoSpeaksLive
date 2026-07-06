@@ -333,6 +333,19 @@ class WindowDiarizer:
             new_speaker_confirmation_count=self.args.new_speaker_confirmation_count,
             new_speaker_confirmation_similarity=self.args.new_speaker_confirmation_similarity,
             max_pending_new_speakers=self.args.max_pending_new_speakers,
+            known_speaker_min_similarity=self.args.known_speaker_min_similarity,
+            known_speaker_gray_zone_min_unknown_probability=(
+                self.args.known_speaker_gray_zone_min_unknown_probability
+            ),
+            profile_update_min_similarity=self.args.profile_update_min_similarity,
+            profile_update_min_margin=self.args.profile_update_min_margin,
+            low_similarity_unknown_floor_similarity=self.args.low_similarity_unknown_floor_similarity,
+            low_similarity_unknown_floor_probability=self.args.low_similarity_unknown_floor_probability,
+            gray_zone_promote_max_similarity=getattr(
+                self.args,
+                "gray_zone_promote_max_similarity",
+                1.0,
+            ),
         )
 
     def _reset_live_speaker_memory(self) -> None:

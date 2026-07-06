@@ -139,6 +139,13 @@ class SpeakerMemory:
         new_speaker_confirmation_count: int = 1,
         new_speaker_confirmation_similarity: float = 0.52,
         max_pending_new_speakers: int = 6,
+        known_speaker_min_similarity: float = -1.0,
+        known_speaker_gray_zone_min_unknown_probability: float = 0.0,
+        profile_update_min_similarity: float = -1.0,
+        profile_update_min_margin: float = -1.0,
+        low_similarity_unknown_floor_similarity: float = -1.0,
+        low_similarity_unknown_floor_probability: float = 0.0,
+        gray_zone_promote_max_similarity: float = 1.0,
     ) -> None:
         self.same_speaker_similarity = same_speaker_similarity
         self.similarity_temperature = similarity_temperature
@@ -156,6 +163,13 @@ class SpeakerMemory:
         self.new_speaker_confirmation_count = max(1, int(new_speaker_confirmation_count))
         self.new_speaker_confirmation_similarity = new_speaker_confirmation_similarity
         self.max_pending_new_speakers = max(1, int(max_pending_new_speakers))
+        self.known_speaker_min_similarity = known_speaker_min_similarity
+        self.known_speaker_gray_zone_min_unknown_probability = known_speaker_gray_zone_min_unknown_probability
+        self.profile_update_min_similarity = profile_update_min_similarity
+        self.profile_update_min_margin = profile_update_min_margin
+        self.low_similarity_unknown_floor_similarity = low_similarity_unknown_floor_similarity
+        self.low_similarity_unknown_floor_probability = low_similarity_unknown_floor_probability
+        self.gray_zone_promote_max_similarity = gray_zone_promote_max_similarity
         self._profiles: list[SpeakerProfile] = []
         self._new_speaker_candidates: list[NewSpeakerCandidate] = []
         self.locked_labels: set[str] = set()
@@ -303,6 +317,8 @@ class SpeakerMemory:
         maturity = min(1.0, 0.45 + 0.55 * (self._profiles[top_index].speech_seconds / 8.0))
         known_mass = clamp01(same_probability * margin_probability * maturity * (0.55 + 0.45 * quality))
         unknown_probability = 1.0 - known_mass
+        unknown_probability = self._calibrated_unknown_probability(unknown_probability, top_similarity)
+        known_mass = 1.0 - unknown_probability
 
         probabilities = {"unknown": unknown_probability}
         similarities_by_label = {}
@@ -324,6 +340,7 @@ class SpeakerMemory:
         )
         created = False
         assigned: SpeakerProfile | None
+        assignment_source = "embedding"
         if (
             allow_new_speaker
             and self._should_create_new_profile(
@@ -335,6 +352,12 @@ class SpeakerMemory:
         ):
             assigned = self._create_or_stage_new_profile_locked(embedding, duration_seconds)
             created = assigned is not None
+        elif self._should_defer_known_assignment(top_similarity, unknown_probability):
+            assigned = None
+            assignment_source = "gray_zone_unknown"
+            if allow_new_speaker and duration_seconds >= self.min_new_speaker_seconds:
+                assigned = self._create_or_stage_uncertain_profile_locked(embedding, duration_seconds)
+                created = assigned is not None
         elif (
             single_profile_weak_short
             or (
@@ -349,6 +372,7 @@ class SpeakerMemory:
                 assigned.label not in self.locked_labels
                 and unknown_probability <= self.update_unknown_max
                 and quality >= 0.35
+                and self._should_update_profile(top_similarity, margin)
             ):
                 weight = min(0.28, 0.08 + 0.18 * quality)
                 weight /= max(1.0, float(assigned.sentence_count) ** 0.35)
@@ -372,6 +396,7 @@ class SpeakerMemory:
             top_similarity=round(float(top_similarity), 4),
             margin=round(float(margin), 4),
             quality=round(float(quality), 4),
+            assignment_source=assignment_source,
         )
 
     def _score_existing_locked(
@@ -395,6 +420,8 @@ class SpeakerMemory:
         maturity = min(1.0, 0.45 + 0.55 * (self._profiles[top_index].speech_seconds / 8.0))
         known_mass = clamp01(same_probability * margin_probability * maturity * (0.55 + 0.45 * quality))
         unknown_probability = 1.0 - known_mass
+        unknown_probability = self._calibrated_unknown_probability(unknown_probability, top_similarity)
+        known_mass = 1.0 - unknown_probability
 
         probabilities = {"unknown": unknown_probability}
         similarities_by_label = {}
@@ -444,6 +471,31 @@ class SpeakerMemory:
             margin=round(float(1.0 if margin is None else margin), 4),
             quality=round(float(quality), 4),
         )
+
+    def _calibrated_unknown_probability(self, unknown_probability: float, top_similarity: float) -> float:
+        if (
+            self.low_similarity_unknown_floor_similarity >= 0.0
+            and top_similarity < self.low_similarity_unknown_floor_similarity
+        ):
+            unknown_probability = max(
+                unknown_probability,
+                self.low_similarity_unknown_floor_probability,
+            )
+        return clamp01(unknown_probability)
+
+    def _should_defer_known_assignment(self, top_similarity: float, unknown_probability: float) -> bool:
+        if self.known_speaker_min_similarity < 0.0:
+            return False
+        if top_similarity >= self.known_speaker_min_similarity:
+            return False
+        return unknown_probability >= self.known_speaker_gray_zone_min_unknown_probability
+
+    def _should_update_profile(self, top_similarity: float, margin: float) -> bool:
+        if self.profile_update_min_similarity >= 0.0 and top_similarity < self.profile_update_min_similarity:
+            return False
+        if self.profile_update_min_margin >= 0.0 and margin < self.profile_update_min_margin:
+            return False
+        return True
 
     def _should_create_new_profile(
         self,
@@ -526,6 +578,44 @@ class SpeakerMemory:
                 sentence_count=candidate.sentence_count,
             )
         return None
+
+    def _create_or_stage_uncertain_profile_locked(
+        self,
+        embedding: np.ndarray,
+        duration_seconds: float,
+    ) -> SpeakerProfile | None:
+        candidate = self._best_new_speaker_candidate_locked(embedding)
+        if candidate is None:
+            self._add_new_speaker_candidate_locked(embedding, duration_seconds)
+            return None
+
+        candidate.update(embedding, duration_seconds)
+        required_count = max(2, self.new_speaker_confirmation_count)
+        if (
+            candidate.sentence_count >= required_count
+            and candidate.speech_seconds >= self.min_new_speaker_seconds
+        ):
+            if not self._can_promote_uncertain_profile_locked(candidate.centroid):
+                return None
+            self._new_speaker_candidates = [
+                item for item in self._new_speaker_candidates
+                if item is not candidate
+            ]
+            return self._create_profile_locked(
+                candidate.centroid,
+                candidate.speech_seconds,
+                sentence_count=candidate.sentence_count,
+            )
+        return None
+
+    def _can_promote_uncertain_profile_locked(self, centroid: np.ndarray) -> bool:
+        if self.gray_zone_promote_max_similarity >= 1.0 or not self._profiles:
+            return True
+        best_existing_similarity = max(
+            cosine_similarity(centroid, profile.centroid)
+            for profile in self._profiles
+        )
+        return best_existing_similarity < self.gray_zone_promote_max_similarity
 
     def _best_new_speaker_candidate_locked(self, embedding: np.ndarray) -> NewSpeakerCandidate | None:
         best_candidate = None

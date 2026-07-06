@@ -1026,6 +1026,15 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "new_speaker_confirmation_count": args.new_speaker_confirmation_count,
             "new_speaker_confirmation_similarity": args.new_speaker_confirmation_similarity,
             "max_pending_new_speakers": args.max_pending_new_speakers,
+            "known_speaker_min_similarity": args.known_speaker_min_similarity,
+            "known_speaker_gray_zone_min_unknown_probability": (
+                args.known_speaker_gray_zone_min_unknown_probability
+            ),
+            "profile_update_min_similarity": args.profile_update_min_similarity,
+            "profile_update_min_margin": args.profile_update_min_margin,
+            "low_similarity_unknown_floor_similarity": args.low_similarity_unknown_floor_similarity,
+            "low_similarity_unknown_floor_probability": args.low_similarity_unknown_floor_probability,
+            "gray_zone_promote_max_similarity": args.gray_zone_promote_max_similarity,
             "min_new_speaker_words": args.min_new_speaker_words,
             "min_speech_audio_ratio": args.min_speech_audio_ratio,
             "retro_reassign_min_similarity": args.retro_reassign_min_similarity,
@@ -1451,6 +1460,48 @@ def parse_args() -> argparse.Namespace:
         help="Minimum cosine similarity between pending new-speaker candidates before creating a speaker.",
     )
     parser.add_argument("--max-pending-new-speakers", type=int, default=6)
+    parser.add_argument(
+        "--known-speaker-min-similarity",
+        type=float,
+        default=-1.0,
+        help="When non-negative, existing speakers below this top similarity are treated as gray-zone UNKNOWN instead of confidently assigned.",
+    )
+    parser.add_argument(
+        "--known-speaker-gray-zone-min-unknown-probability",
+        type=float,
+        default=0.0,
+        help="Minimum unknown probability required before --known-speaker-min-similarity defers an assignment to UNKNOWN.",
+    )
+    parser.add_argument(
+        "--profile-update-min-similarity",
+        type=float,
+        default=-1.0,
+        help="When non-negative, update existing speaker centroids only if top similarity is at least this value.",
+    )
+    parser.add_argument(
+        "--profile-update-min-margin",
+        type=float,
+        default=-1.0,
+        help="When non-negative, update existing speaker centroids only if top-vs-runner-up margin is at least this value.",
+    )
+    parser.add_argument(
+        "--low-similarity-unknown-floor-similarity",
+        type=float,
+        default=-1.0,
+        help="When non-negative, raise unknown probability for known-speaker comparisons below this top similarity.",
+    )
+    parser.add_argument(
+        "--low-similarity-unknown-floor-probability",
+        type=float,
+        default=0.0,
+        help="Unknown probability floor used with --low-similarity-unknown-floor-similarity.",
+    )
+    parser.add_argument(
+        "--gray-zone-promote-max-similarity",
+        type=float,
+        default=1.0,
+        help="Maximum candidate-vs-known centroid similarity allowed before a gray-zone pending voice can become a new speaker.",
+    )
     parser.add_argument(
         "--min-new-speaker-words",
         type=int,

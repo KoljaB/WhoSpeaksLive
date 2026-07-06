@@ -139,6 +139,33 @@ def _segment_audio_bounds(
     return start, max(start, end)
 
 
+def _embed_audio_window(
+    *,
+    client: RemoteEmbeddingClient,
+    audio: np.ndarray,
+    sample_rate: int,
+    max_chunk_seconds: float,
+) -> np.ndarray:
+    audio = np.asarray(audio, dtype=np.float32).reshape(-1)
+    max_chunk_seconds = max(0.0, float(max_chunk_seconds))
+    if max_chunk_seconds <= 0.0 or len(audio) <= int(round(max_chunk_seconds * sample_rate)):
+        return client.embed_audio(audio, sample_rate)
+
+    max_samples = max(1, int(round(max_chunk_seconds * sample_rate)))
+    vectors: list[np.ndarray] = []
+    weights: list[float] = []
+    for left in range(0, len(audio), max_samples):
+        right = min(len(audio), left + max_samples)
+        chunk = audio[left:right]
+        if not len(chunk):
+            continue
+        vectors.append(client.embed_audio(chunk, sample_rate).astype(np.float32, copy=False))
+        weights.append(float(len(chunk)))
+    if not vectors:
+        return client.embed_audio(audio, sample_rate)
+    return normalize_vector(np.average(np.stack(vectors), axis=0, weights=np.asarray(weights, dtype=np.float32)))
+
+
 def _is_complete(npz_path: Path, metadata_path: Path, expected_count: int, provider: str) -> bool:
     if not npz_path.is_file() or not metadata_path.is_file():
         return False
@@ -160,6 +187,7 @@ def _embed_video(
     client: RemoteEmbeddingClient,
     output_dir: Path,
     min_slice_seconds: float,
+    max_embed_chunk_seconds: float,
 ) -> dict[str, Any]:
     video_key = canonical.parent.name
     payload = _read_json(canonical)
@@ -191,7 +219,12 @@ def _embed_video(
         left = int(round(audio_start * sample_rate))
         right = int(round(audio_end * sample_rate))
         chunk = np.asarray(audio[left:right], dtype=np.float32)
-        embedding = client.embed_audio(chunk, sample_rate)
+        embedding = _embed_audio_window(
+            client=client,
+            audio=chunk,
+            sample_rate=sample_rate,
+            max_chunk_seconds=max_embed_chunk_seconds,
+        )
         vectors.append(embedding.astype(np.float32, copy=False))
         rows.append(
             {
@@ -257,6 +290,7 @@ def build_provider(
     device: str,
     timeout_seconds: float,
     min_slice_seconds: float,
+    max_embed_chunk_seconds: float,
 ) -> dict[str, Any]:
     provider_dir = output_root / _provider_dir_name(provider)
     manifest_path = provider_dir / "manifest.json"
@@ -281,6 +315,7 @@ def build_provider(
             client=client,
             output_dir=provider_dir,
             min_slice_seconds=min_slice_seconds,
+            max_embed_chunk_seconds=max_embed_chunk_seconds,
         )
         results.append(result)
         print(
@@ -315,6 +350,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--timeout-seconds", type=float, default=600.0)
     parser.add_argument("--min-slice-seconds", type=float, default=0.10)
+    parser.add_argument(
+        "--max-embed-chunk-seconds",
+        type=float,
+        default=0.0,
+        help="Split longer segment audio into fixed windows and average embeddings. Zero disables chunking.",
+    )
     parser.add_argument("--providers", default="", help="Comma-separated provider ids. Empty means all remote providers.")
     parser.add_argument("--max-videos", type=int, default=0, help="Optional smoke-test limit. Zero means all videos.")
     parser.add_argument(
@@ -358,6 +399,7 @@ def main() -> int:
                     device=args.device,
                     timeout_seconds=args.timeout_seconds,
                     min_slice_seconds=args.min_slice_seconds,
+                    max_embed_chunk_seconds=args.max_embed_chunk_seconds,
                 )
             )
         except Exception as exc:

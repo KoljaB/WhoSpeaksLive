@@ -48,6 +48,7 @@ HTML = r"""<!doctype html>
     .stop-icon { width:10px; height:10px; border-radius:2px; background:#FFFFFF; display:inline-block; }
     button:disabled { opacity:.45; cursor:not-allowed; }
     .session-banner { min-height:34px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:6px 12px 6px 16px; border-top:1px solid rgba(255,255,255,.035); border-bottom:1px solid var(--line); background:#0F161F; color:#B7C1CD; font-size:13px; }
+    .session-banner[hidden] { display:none; }
     .session-banner.available { color:#3DC77C; background:#0B1015; }
     .session-banner.owner { color:#D7DEE8; background:color-mix(in srgb, #3DC77C 10%, #0B1015); border-bottom-color:color-mix(in srgb, #3DC77C 35%, var(--line)); }
     .session-banner.observer { color:#E5B96F; background:color-mix(in srgb, #FF9F1C 10%, #0B1015); border-bottom-color:color-mix(in srgb, #FF9F1C 35%, var(--line)); }
@@ -114,7 +115,7 @@ HTML = r"""<!doctype html>
     .media-controls { min-width:0; min-height:100%; display:grid; grid-template-rows:auto minmax(0,1fr) auto; align-items:center; gap:8px; }
     .youtube-source-controls { align-self:start; }
     .media-card.mode-microphone .youtube-source-controls, .media-card.mode-system .youtube-source-controls { display:none; }
-    .timeline-row { width:100%; min-width:0; align-self:center; display:grid; grid-template-columns:auto minmax(120px,1fr) auto; align-items:center; gap:10px; color:#B7C1CD; font-size:14px; font-variant-numeric:tabular-nums; }
+    .timeline-row { width:100%; min-width:0; padding-right:13px; align-self:center; display:grid; grid-template-columns:auto minmax(120px,1fr) auto; align-items:center; gap:10px; color:#B7C1CD; font-size:14px; font-variant-numeric:tabular-nums; }
     .timeline-bar { position:relative; height:6px; margin-left:8px; margin-right:10px; border-radius:999px; background:#93A1AF; box-shadow:inset 0 1px 2px rgba(0,0,0,.28); }
     .timeline-fill { position:absolute; inset:0 auto 0 0; width:0%; border-radius:inherit; background:#17B7FE; box-shadow:0 0 16px rgba(23,183,254,.35); }
     .timeline-thumb { position:absolute; top:50%; left:0%; width:18px; height:18px; border-radius:50%; background:#FFFFFF; transform:translate(-50%, -50%); box-shadow:0 2px 10px rgba(0,0,0,.32); }
@@ -232,7 +233,7 @@ HTML = r"""<!doctype html>
     .transcript-settings-panel label { display:flex; align-items:center; gap:7px; color:#C6D0DC; font-size:12px; }
     .transcript-settings-panel input { width:14px; height:14px; accent-color:#17B7FE; }
     .sentences { min-height:0; overflow:auto; padding:8px; }
-    .row { border-bottom:1px solid var(--line); padding:7px 2px; }
+    .row { border-bottom:1px solid var(--line); padding:7px 10px; }
     .top { display:flex; gap:8px; align-items:flex-start; justify-content:space-between; margin-bottom:4px; color:var(--muted); font-size:11px; }
     .top-left { min-width:0; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
     .badge { font-weight:400; border-radius:999px; padding:2px 8px; border:1px solid currentColor; background:#0B1015; }
@@ -309,7 +310,7 @@ HTML = r"""<!doctype html>
       .source-mode-menu, .source-mode-button { width:100%; }
       .source-mode-options { width:100%; left:0; right:auto; }
       .source-grid { grid-template-columns:1fr; }
-      .timeline-row { grid-template-columns:1fr; gap:6px; font-size:13px; }
+      .timeline-row { padding-right:0; grid-template-columns:1fr; gap:6px; font-size:13px; }
       .timeline-thumb { width:16px; height:16px; }
       .level-row, .mic-gain-control { grid-template-columns:1fr; }
       .control-panel { padding:8px; gap:8px; }
@@ -357,7 +358,7 @@ HTML = r"""<!doctype html>
       <button id="stop" disabled><span class="stop-icon" aria-hidden="true"></span>Stop transcription</button>
     </div>
   </header>
-  <div id="sessionBanner" class="session-banner available">
+  <div id="sessionBanner" class="session-banner available" hidden>
     <span id="sessionBannerMessage" class="session-banner-message">Demo seat available. Press Start or Load to take it.</span>
     <span class="session-banner-actions">
       <button id="releaseSession" type="button" hidden>Release seat</button>

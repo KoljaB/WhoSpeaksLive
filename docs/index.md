@@ -22,6 +22,7 @@ Follow these in order for a new machine:
 - [Live window workflow](live-window-workflow.md): run a media session, watch live speaker labels, and export results.
 - [Speaker libraries](speaker-libraries.md): save, load, import, export, and reuse known speakers.
 - [Validation and scoring](validation-and-scoring.md): evaluate diarization and live-speaker behavior.
+- [ElevenLabs Scribe baseline dataset](datasets/elevenlabs-scribe-baseline-dataset.md): local dataset map for 27 baseline videos, transcripts, sentence boundaries, and embeddings.
 
 ## System Setup
 
