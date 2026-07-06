@@ -233,7 +233,7 @@ HTML = r"""<!doctype html>
     .transcript-settings-panel label { display:flex; align-items:center; gap:7px; color:#C6D0DC; font-size:12px; }
     .transcript-settings-panel input { width:14px; height:14px; accent-color:#17B7FE; }
     .sentences { min-height:0; overflow:auto; padding:8px; }
-    .row { border-bottom:1px solid var(--line); padding:7px 10px; }
+    .row { border-bottom:1px solid var(--line); padding:7px 10px; transition:background-color .18s ease, border-color .18s ease, box-shadow .18s ease, opacity .18s ease, transform .18s ease; }
     .top { display:flex; gap:8px; align-items:flex-start; justify-content:space-between; margin-bottom:4px; color:var(--muted); font-size:11px; }
     .top-left { min-width:0; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
     .badge { font-weight:400; border-radius:999px; padding:2px 8px; border:1px solid currentColor; background:#0B1015; }
@@ -251,6 +251,8 @@ HTML = r"""<!doctype html>
     .row.realtime.live-speaker-row { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, #0B1015); border-bottom-color:color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, var(--line)); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, transparent), inset 7px 0 14px color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, transparent); }
     .row.provisional-split-source { border-bottom-color:color-mix(in srgb, var(--live-row-color, #8F9BA8) 24%, var(--line)); }
     .row.provisional-visual-split { border-top:1px dashed color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, transparent); }
+    .row.realtime-settling { opacity:.76; }
+    .row.row-removing { opacity:0; transform:translateY(-2px); pointer-events:none; }
     .row.realtime .text { color:#d7dee8; }
     .prob { flex:0 0 min(180px, 24vw); display:flex; width:min(180px, 24vw); height:6px; overflow:hidden; border:1px solid var(--line); border-radius:4px; background:#0B1015; margin-top:4px; }
     .prob span { display:block; height:100%; min-width:0; }
@@ -712,6 +714,8 @@ let capturePreRollSamples = 0;
 let speakerSensitivityDirty = false;
 let speakerLibraryState = initialSpeakerLibrary || {group_name:"", groups:[], speakers:[]};
 let speakerNames = {};
+let speakerSessionBaselineSentenceCounts = {};
+let speakerSessionBaselineSpeakingSeconds = {};
 let renderedSpeakerSentenceCounts = {};
 let renderedSpeakerSpeakingSeconds = {};
 let hasRenderedFinalSentenceRows = false;
@@ -730,6 +734,7 @@ let fallbackLiveSpeakerClearTimer = null;
 let transcriptLiveSpeakerExpiryTimer = null;
 let liveSpeakerTimeline = [];
 let transcriptLiveSpeakerOverrideId = "";
+const realtimeSettleRemovalDelayMs = 1400;
 let browserLiveObservationTimer = null;
 let browserLiveObservationBuffer = [];
 let browserLiveObservationStarted = false;
@@ -1659,6 +1664,7 @@ function resetTranscriptDisplay() {
   renderedSpeakerSentenceCounts = {};
   renderedSpeakerSpeakingSeconds = {};
   hasRenderedFinalSentenceRows = false;
+  syncSpeakerSessionBaselines();
   refreshSpeakerPanelSentenceCounts();
 }
 function clearUnsavedDetectedSpeakerDisplay() {
@@ -1668,6 +1674,18 @@ function clearUnsavedDetectedSpeakerDisplay() {
   ));
   if (retainedSpeakers.length === speakerLibraryState.speakers.length) return;
   updateSpeakerState({...speakerLibraryState, speakers: retainedSpeakers});
+}
+function syncSpeakerSessionBaselines(state = speakerLibraryState) {
+  const counts = {};
+  const speakingSeconds = {};
+  (Array.isArray(state.speakers) ? state.speakers : []).forEach(speaker => {
+    const speakerId = speaker && speaker.id;
+    if (!speakerId) return;
+    counts[speakerId] = Number(speaker.sentence_count || 0);
+    speakingSeconds[speakerId] = Number(speaker.speech_seconds || 0);
+  });
+  speakerSessionBaselineSentenceCounts = counts;
+  speakerSessionBaselineSpeakingSeconds = speakingSeconds;
 }
 function refreshMediaElements(version) {
   setBrowserStreamMode(false);
@@ -1837,6 +1855,9 @@ function updateSpeakerState(state) {
   pruneSpeakerFilterState();
   refreshTranscriptVisibility();
   recomputeRenderedSpeakerSentenceCounts();
+  if (!hasCurrentSessionSpeakerCounts()) {
+    syncSpeakerSessionBaselines(speakerLibraryState);
+  }
   updateSpeakerCount();
   renderSpeakerPanel();
   refreshSpeakerRows();
@@ -1873,6 +1894,13 @@ function recomputeRenderedSpeakerSentenceCounts() {
   renderedSpeakerSpeakingSeconds = speakingSeconds;
   hasRenderedFinalSentenceRows = hasFinalRows;
 }
+function hasCurrentSessionSpeakerCounts() {
+  if (hasRenderedFinalSentenceRows) return true;
+  return Object.values(fastSpeakerPanelStats).some(stats => (
+    Number((stats && stats.count) || 0) > 0
+    || Number((stats && stats.speakingSeconds) || 0) > 0
+  ));
+}
 function ensureSpeakerPanelSpeaker(speakerId) {
   if (!speakerId || speakerId === "UNKNOWN") return;
   if (speakerLibraryState.speakers.some(speaker => speaker.id === speakerId)) return;
@@ -1895,19 +1923,43 @@ function ensureSpeakerPanelSpeaker(speakerId) {
   updateSpeakerCount();
   renderSpeakerPanel();
 }
+function speakerBaselineSentenceCount(speaker) {
+  const speakerId = speaker && speaker.id;
+  if (!speakerId) return Number((speaker && speaker.sentence_count) || 0);
+  if (Object.prototype.hasOwnProperty.call(speakerSessionBaselineSentenceCounts, speakerId)) {
+    return Number(speakerSessionBaselineSentenceCounts[speakerId] || 0);
+  }
+  return 0;
+}
+function speakerBaselineSpeakingSeconds(speaker) {
+  const speakerId = speaker && speaker.id;
+  if (!speakerId) return Number((speaker && speaker.speech_seconds) || 0);
+  if (Object.prototype.hasOwnProperty.call(speakerSessionBaselineSpeakingSeconds, speakerId)) {
+    return Number(speakerSessionBaselineSpeakingSeconds[speakerId] || 0);
+  }
+  return 0;
+}
+function speakerCurrentSessionSentenceCount(speakerId) {
+  const rendered = Number(renderedSpeakerSentenceCounts[speakerId] || 0);
+  const fast = Number(((fastSpeakerPanelStats[speakerId] || {}).count) || 0);
+  if (hasRenderedFinalSentenceRows) return rendered;
+  return fast;
+}
+function speakerCurrentSessionSpeakingSeconds(speakerId) {
+  const rendered = Number(renderedSpeakerSpeakingSeconds[speakerId] || 0);
+  const fast = Number(((fastSpeakerPanelStats[speakerId] || {}).speakingSeconds) || 0);
+  if (hasRenderedFinalSentenceRows) return rendered;
+  return fast;
+}
 function speakerPanelSentenceCount(speaker) {
   const speakerId = speaker && speaker.id;
-  if (hasRenderedFinalSentenceRows && speakerId) {
-    return renderedSpeakerSentenceCounts[speakerId] || 0;
-  }
-  return Number((speaker && speaker.sentence_count) || 0);
+  if (!speakerId) return Number((speaker && speaker.sentence_count) || 0);
+  return speakerBaselineSentenceCount(speaker) + speakerCurrentSessionSentenceCount(speakerId);
 }
 function speakerPanelSpeakingSeconds(speaker) {
   const speakerId = speaker && speaker.id;
-  if (hasRenderedFinalSentenceRows && speakerId) {
-    return renderedSpeakerSpeakingSeconds[speakerId] || 0;
-  }
-  return Number((speaker && speaker.speech_seconds) || 0);
+  if (!speakerId) return Number((speaker && speaker.speech_seconds) || 0);
+  return speakerBaselineSpeakingSeconds(speaker) + speakerCurrentSessionSpeakingSeconds(speakerId);
 }
 function speakerPanelCountUnit() {
   return "sentence";
@@ -2146,6 +2198,7 @@ function applyRealtimeRowSpeaker(row, speakerId) {
 function refreshRealtimeRowsFromLiveSpeaker() {
   Array.from(sentences.querySelectorAll(".row[data-realtime='true']")).forEach(row => {
     if (!row.isConnected) return;
+    if (row.dataset.realtimeSettling === "true") return;
     if (row.dataset.provisionalSplit === "true") {
       applyRealtimeRowSpeaker(row, row.dataset.speaker);
       return;
@@ -2315,7 +2368,8 @@ function applyFastSpeakerPanelSignal(item) {
   refreshSpeakerPanelSentenceCounts();
 }
 function updateCurrentLiveSpeakerFromRealtimeRows() {
-  const realtimeRows = Array.from(sentences.querySelectorAll(".row[data-realtime='true']"));
+  const realtimeRows = Array.from(sentences.querySelectorAll(".row[data-realtime='true']"))
+    .filter(row => row.dataset.realtimeSettling !== "true");
   const activeRow = realtimeRows[realtimeRows.length - 1] || null;
   transcriptLiveSpeakerId = realtimeRowTranscriptLiveSpeakerId(activeRow);
   transcriptLiveSpeakerOverrideId = transcriptOverrideCandidate(activeRow);
@@ -3014,6 +3068,132 @@ function findSentenceRow(index) {
   const key = String(index);
   return Array.from(sentences.querySelectorAll(".row")).find(row => row.dataset.index === key) || null;
 }
+function findFinalSentenceRow(index) {
+  const key = String(index);
+  return Array.from(sentences.querySelectorAll(".row")).find(row => (
+    row.dataset.index === key && row.dataset.realtime !== "true"
+  )) || null;
+}
+function findRealtimeSentenceRow(index) {
+  const key = String(index);
+  return Array.from(sentences.querySelectorAll(".row")).find(row => (
+    row.dataset.index === key && row.dataset.realtime === "true"
+  )) || null;
+}
+function rowChronologyKey(row) {
+  return {
+    start: finiteAudioSecond(row && row.dataset.start, Number.POSITIVE_INFINITY),
+    end: finiteAudioSecond(row && row.dataset.end, Number.POSITIVE_INFINITY),
+    index: String((row && row.dataset.index) || ""),
+  };
+}
+function rowShouldSortBefore(a, b) {
+  const left = rowChronologyKey(a);
+  const right = rowChronologyKey(b);
+  if (left.start !== right.start) return left.start < right.start;
+  if (left.end !== right.end) return left.end < right.end;
+  return left.index < right.index;
+}
+function placeSentenceRowChronologically(row) {
+  if (!row || !row.isConnected) return;
+  const next = Array.from(sentences.querySelectorAll(".row")).find(candidate => (
+    candidate !== row
+    && candidate.isConnected
+    && rowShouldSortBefore(row, candidate)
+  ));
+  if (next && next !== row.nextSibling) {
+    sentences.insertBefore(row, next);
+  } else if (!next && row.nextSibling) {
+    sentences.appendChild(row);
+  }
+}
+function fadeRemoveRow(row) {
+  if (!row || !row.isConnected) return;
+  row.classList.add("row-removing");
+  setTimeout(() => {
+    if (row.isConnected && row.classList.contains("row-removing")) {
+      row.remove();
+    }
+  }, 220);
+}
+function markRealtimeRowSettling(row, generation) {
+  if (!row || !row.isConnected || row.dataset.realtime !== "true") return;
+  const generationKey = String(generation || "");
+  row.dataset.realtimeSettling = "true";
+  row.dataset.realtimeClearGeneration = generationKey;
+  row.classList.add("realtime-settling");
+  setTimeout(() => {
+    if (
+      row.isConnected
+      && row.dataset.realtimeSettling === "true"
+      && row.dataset.realtimeClearGeneration === generationKey
+    ) {
+      fadeRemoveRow(row);
+    }
+  }, realtimeSettleRemovalDelayMs);
+}
+function clearSettlingRealtimeState(row) {
+  if (!row) return;
+  delete row.dataset.realtimeSettling;
+  delete row.dataset.realtimeClearGeneration;
+  row.classList.remove("realtime-settling", "row-removing");
+}
+function textAdoptionScore(a, b) {
+  const tokensA = String(a || "").toLowerCase().match(/[a-z0-9]+/g) || [];
+  const tokensB = String(b || "").toLowerCase().match(/[a-z0-9]+/g) || [];
+  if (!tokensA.length || !tokensB.length) return 0;
+  const remaining = new Map();
+  tokensA.forEach(token => remaining.set(token, (remaining.get(token) || 0) + 1));
+  let shared = 0;
+  tokensB.forEach(token => {
+    const count = remaining.get(token) || 0;
+    if (count <= 0) return;
+    shared += 1;
+    remaining.set(token, count - 1);
+  });
+  return shared / Math.max(1, Math.min(tokensA.length, tokensB.length));
+}
+function rowTimeAdoptionScore(row, start, end) {
+  const rowStart = finiteAudioSecond(row.dataset.start, NaN);
+  const rowEnd = finiteAudioSecond(row.dataset.end, NaN);
+  if (!Number.isFinite(rowStart) || !Number.isFinite(rowEnd) || !(rowEnd > rowStart) || !(end > start)) return 0;
+  const overlap = Math.max(0, Math.min(rowEnd, end) - Math.max(rowStart, start));
+  return overlap / Math.max(0.1, Math.min(rowEnd - rowStart, end - start));
+}
+function findAdoptableRealtimeRow(item, options = {}) {
+  const start = finiteAudioSecond(item && item.start, NaN);
+  const end = finiteAudioSecond(item && item.end, NaN);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || !(end > start)) return null;
+  const settlingOnly = options.settlingOnly === true;
+  let best = null;
+  Array.from(sentences.querySelectorAll(".row[data-realtime='true']")).forEach(row => {
+    if (!row.isConnected || row.classList.contains("row-removing")) return;
+    if (settlingOnly && row.dataset.realtimeSettling !== "true") return;
+    const timeScore = rowTimeAdoptionScore(row, start, end);
+    if (timeScore <= 0) return;
+    const textScore = textAdoptionScore(row.dataset.text || row.dataset.fullText || "", item.text || "");
+    if (timeScore < 0.34 && textScore < 0.5) return;
+    const settlingBonus = row.dataset.realtimeSettling === "true" ? 0.08 : 0;
+    const score = timeScore * 0.72 + textScore * 0.28 + settlingBonus;
+    if (!best || score > best.score) {
+      best = {row, score};
+    }
+  });
+  return best ? best.row : null;
+}
+function removeOverlappingSettlingRealtimeRows(item, keepRow = null) {
+  const start = finiteAudioSecond(item && item.start, NaN);
+  const end = finiteAudioSecond(item && item.end, NaN);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || !(end > start)) return;
+  Array.from(sentences.querySelectorAll(".row[data-realtime='true']")).forEach(row => {
+    if (row === keepRow || !row.isConnected || row.dataset.realtimeSettling !== "true") return;
+    const timeScore = rowTimeAdoptionScore(row, start, end);
+    const textScore = textAdoptionScore(row.dataset.text || row.dataset.fullText || "", item.text || "");
+    if (timeScore >= 0.34 && textScore >= 0.5) {
+      fadeRemoveRow(row);
+    }
+  });
+}
 function clearProvisionalRealtimeSplitsFor(index) {
   const key = String(index || "");
   Array.from(sentences.querySelectorAll(".row[data-provisional-split='true']")).forEach(row => {
@@ -3021,9 +3201,6 @@ function clearProvisionalRealtimeSplitsFor(index) {
       row.remove();
     }
   });
-}
-function clearAllProvisionalRealtimeSplits() {
-  clearProvisionalRealtimeSplitsFor("");
 }
 function renderProvisionalRealtimeSplitRow(baseRow, split) {
   const baseIndex = String(baseRow.dataset.index || "");
@@ -3128,7 +3305,7 @@ function applyProvisionalRealtimeVisualSplit(row, split) {
 }
 function clearRealtimeRows(generation) {
   currentRealtimeGeneration = Math.max(currentRealtimeGeneration, Number(generation || 0));
-  Array.from(sentences.querySelectorAll(".row[data-realtime='true']")).forEach(row => row.remove());
+  Array.from(sentences.querySelectorAll(".row[data-realtime='true']")).forEach(row => markRealtimeRowSettling(row, generation));
   updateCurrentLiveSpeakerFromRealtimeRows();
   refreshSpeakerPanelSentenceCounts();
   refreshTranscriptVisibility();
@@ -3137,10 +3314,11 @@ function renderSentence(item) {
   if (item.realtime && Number(item.realtime_generation || 0) < currentRealtimeGeneration) {
     return;
   }
+  if (item.realtime && findFinalSentenceRow(item.index)) {
+    return;
+  }
   if (item.realtime) {
     clearProvisionalRealtimeSplitsFor(item.index);
-  } else {
-    clearAllProvisionalRealtimeSplits();
   }
   if (item.assigned_speaker && item.speaker_name) {
     speakerNames[item.assigned_speaker] = item.speaker_name;
@@ -3148,7 +3326,15 @@ function renderSentence(item) {
   if (item.realtime) {
     currentRealtimeGeneration = Math.max(currentRealtimeGeneration, Number(item.realtime_generation || 0));
   }
-  let row = findSentenceRow(item.index);
+  let row = item.realtime
+    ? findRealtimeSentenceRow(item.index)
+    : (findFinalSentenceRow(item.index) || findRealtimeSentenceRow(item.index));
+  if (!row && item.realtime) {
+    row = findAdoptableRealtimeRow(item, {settlingOnly: true});
+  }
+  if (!row && !item.realtime) {
+    row = findAdoptableRealtimeRow(item);
+  }
   const isNewRow = !row;
   if (!row) {
     row = document.createElement("div");
@@ -3157,6 +3343,17 @@ function renderSentence(item) {
   row.className = item.realtime ? "row realtime" : "row";
   row.dataset.index = item.index;
   row.dataset.realtime = item.realtime ? "true" : "false";
+  if (item.realtime) {
+    clearSettlingRealtimeState(row);
+  }
+  delete row.dataset.provisionalSplit;
+  delete row.dataset.provisionalSplitFor;
+  if (!item.realtime) {
+    clearSettlingRealtimeState(row);
+    delete row.dataset.fullRawSpeaker;
+    delete row.dataset.fullEnd;
+    delete row.dataset.fullText;
+  }
   const startSeconds = Number(item.start || 0);
   const endSeconds = Number(item.end || 0);
   const ratio = Number(item.speech_audio_ratio);
@@ -3255,6 +3452,7 @@ function renderSentence(item) {
   text.className = "text";
   text.textContent = displayText;
   row.replaceChildren(top, text);
+  placeSentenceRowChronologically(row);
   if (visualSplit) {
     renderProvisionalRealtimeSplitRow(row, visualSplit);
   }
@@ -3273,6 +3471,7 @@ function renderSentence(item) {
   if (item.error) {
     prob.title = item.error;
   }
+  removeOverlappingSettlingRealtimeRows(item, row);
   updateCurrentLiveSpeakerFromRealtimeRows();
   refreshSpeakerPanelSentenceCounts();
   refreshTranscriptVisibility();
