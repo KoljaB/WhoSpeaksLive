@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -41,7 +42,7 @@ class RemoteWindowAsrClient:
         query = urlencode({
             "sample_rate": int(sample_rate),
             "encoding": "float32",
-            "language": "en",
+            "language": os.environ.get("WHOSPEAKS_ASR_LANGUAGE", "en"),
             "task": "transcribe",
             "beam_size": int(beam_size),
             "word_timestamps": "true",

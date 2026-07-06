@@ -145,7 +145,11 @@ def choose_torch_device(device: str) -> str:
         return device
     import torch
 
-    return "cuda" if torch.cuda.is_available() else "cpu"
+    if torch.cuda.is_available():
+        return "cuda"
+    if torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
 
 
 class SpeechBrainProvider:
