@@ -96,6 +96,22 @@ def _word_ends_soft_boundary(word_text: str) -> bool:
     return bool(re.search(r"[,;:]+[\"')\]]*$", word_text.strip()))
 
 
+def _text_ends_strong_sentence(text: str) -> bool:
+    return bool(re.search(r"[.!?]+[\"')\]]*$", text.strip()))
+
+
+def _sentence_initial_uppercase_after_strong_boundary(text: str) -> str:
+    for index, character in enumerate(text):
+        if not character.isalpha():
+            continue
+        if not character.islower():
+            return text
+        if index + 1 < len(text) and text[index + 1].isupper():
+            return text
+        return f"{text[:index]}{character.upper()}{text[index + 1:]}"
+    return text
+
+
 def sentence_audio_boundary_between_words(
     last_word_end: float,
     next_word_start: float,
@@ -237,6 +253,7 @@ def split_transcript_by_timestamps(
         (float(group[0][0]["start"]), float(group[0][-1]["end"]))
         for group in groups
     ]
+    previous_emitted_ended_sentence = False
     for index, ((group, reason), (raw_start, raw_end)) in enumerate(zip(groups, raw_bounds)):
         previous_boundary = None
         if index > 0:
@@ -279,6 +296,8 @@ def split_transcript_by_timestamps(
         part_text = timed_word_text(group)
         if not part_text:
             continue
+        if previous_emitted_ended_sentence:
+            part_text = _sentence_initial_uppercase_after_strong_boundary(part_text)
         parts.append(
             TranscriptPart(
                 text=part_text,
@@ -293,6 +312,7 @@ def split_transcript_by_timestamps(
                 part_count=0,
             )
         )
+        previous_emitted_ended_sentence = _text_ends_strong_sentence(part_text)
 
     if not parts:
         return fallback

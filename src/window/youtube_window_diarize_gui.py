@@ -1434,19 +1434,19 @@ def parse_args() -> argparse.Namespace:
         metavar="{1,2,3,4,5}",
         help="Optional five-step new-speaker spawning sensitivity preset. Position 3 matches the tuned defaults.",
     )
-    parser.add_argument("--same-speaker-similarity", type=float, default=0.37)
-    parser.add_argument("--similarity-temperature", type=float, default=0.0648)
-    parser.add_argument("--speaker-softmax-temperature", type=float, default=0.0443)
-    parser.add_argument("--new-speaker-threshold", type=float, default=0.38)
-    parser.add_argument("--duplicate-profile-similarity", type=float, default=0.4)
-    parser.add_argument("--unknown-short-threshold", type=float, default=0.3225)
-    parser.add_argument("--min-first-speaker-seconds", type=float, default=1.3098)
-    parser.add_argument("--min-new-speaker-seconds", type=float, default=1.6)
-    parser.add_argument("--late-new-speaker-min-seconds", type=float, default=3.4127)
+    parser.add_argument("--same-speaker-similarity", type=float, default=0.401)
+    parser.add_argument("--similarity-temperature", type=float, default=0.0617)
+    parser.add_argument("--speaker-softmax-temperature", type=float, default=0.0557)
+    parser.add_argument("--new-speaker-threshold", type=float, default=0.4309)
+    parser.add_argument("--duplicate-profile-similarity", type=float, default=0.4247)
+    parser.add_argument("--unknown-short-threshold", type=float, default=0.3115)
+    parser.add_argument("--min-first-speaker-seconds", type=float, default=1.8373)
+    parser.add_argument("--min-new-speaker-seconds", type=float, default=2.0358)
+    parser.add_argument("--late-new-speaker-min-seconds", type=float, default=3.1604)
     parser.add_argument("--max-speakers", type=int, default=12)
-    parser.add_argument("--min-margin", type=float, default=0.0386)
-    parser.add_argument("--margin-temperature", type=float, default=0.03)
-    parser.add_argument("--update-unknown-max", type=float, default=0.61)
+    parser.add_argument("--min-margin", type=float, default=0.0372)
+    parser.add_argument("--margin-temperature", type=float, default=0.0453)
+    parser.add_argument("--update-unknown-max", type=float, default=0.4289)
     parser.add_argument(
         "--new-speaker-confirmation-count",
         type=int,
@@ -1456,50 +1456,50 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--new-speaker-confirmation-similarity",
         type=float,
-        default=0.5149,
+        default=0.5801,
         help="Minimum cosine similarity between pending new-speaker candidates before creating a speaker.",
     )
     parser.add_argument("--max-pending-new-speakers", type=int, default=6)
     parser.add_argument(
         "--known-speaker-min-similarity",
         type=float,
-        default=-1.0,
+        default=0.56,
         help="When non-negative, existing speakers below this top similarity are treated as gray-zone UNKNOWN instead of confidently assigned.",
     )
     parser.add_argument(
         "--known-speaker-gray-zone-min-unknown-probability",
         type=float,
-        default=0.0,
+        default=0.064,
         help="Minimum unknown probability required before --known-speaker-min-similarity defers an assignment to UNKNOWN.",
     )
     parser.add_argument(
         "--profile-update-min-similarity",
         type=float,
-        default=-1.0,
+        default=0.5011,
         help="When non-negative, update existing speaker centroids only if top similarity is at least this value.",
     )
     parser.add_argument(
         "--profile-update-min-margin",
         type=float,
-        default=-1.0,
+        default=0.0037,
         help="When non-negative, update existing speaker centroids only if top-vs-runner-up margin is at least this value.",
     )
     parser.add_argument(
         "--low-similarity-unknown-floor-similarity",
         type=float,
-        default=-1.0,
+        default=0.56,
         help="When non-negative, raise unknown probability for known-speaker comparisons below this top similarity.",
     )
     parser.add_argument(
         "--low-similarity-unknown-floor-probability",
         type=float,
-        default=0.0,
+        default=0.1702,
         help="Unknown probability floor used with --low-similarity-unknown-floor-similarity.",
     )
     parser.add_argument(
         "--gray-zone-promote-max-similarity",
         type=float,
-        default=1.0,
+        default=0.55,
         help="Maximum candidate-vs-known centroid similarity allowed before a gray-zone pending voice can become a new speaker.",
     )
     parser.add_argument(
@@ -1511,7 +1511,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--retro-reassign-min-similarity",
         type=float,
-        default=0.05,
+        default=0.02,
         help="Minimum cosine similarity for assigning an earlier UNKNOWN sentence to an existing speaker.",
     )
     parser.add_argument(
@@ -1529,7 +1529,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--allow-speaker-reassignment",
         action=argparse.BooleanOptionalAction,
-        default=False,
+        default=True,
         help="Allow prototype refinement to change already assigned speaker labels.",
     )
     parser.add_argument("--speaker-refinement-max-per-profile", type=int, default=32)
