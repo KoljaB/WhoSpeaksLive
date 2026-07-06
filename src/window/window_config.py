@@ -129,7 +129,7 @@ DEFAULT_REMOTE_EMBEDDINGS_TIMEOUT_SECONDS = _env_float(
     "WHOSPEAKS_REMOTE_EMBEDDINGS_TIMEOUT_SECONDS",
     600.0,
 )
-DEFAULT_WINDOW_EMBEDDING_PROVIDER = "espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12"
+DEFAULT_WINDOW_EMBEDDING_PROVIDER = "espnet_ecapa_wavlm_joint"
 NEW_SPEAKER_SENSITIVITY_FIELDS = (
     "new_speaker_threshold",
     "duplicate_profile_similarity",
@@ -162,13 +162,13 @@ NEW_SPEAKER_SENSITIVITY_PRESETS: dict[int, dict[str, Any]] = {
     },
     3: {
         "label": "Balanced",
-        "new_speaker_threshold": 0.38,
-        "duplicate_profile_similarity": 0.40,
-        "min_new_speaker_seconds": 1.6,
-        "late_new_speaker_min_seconds": 3.4127,
+        "new_speaker_threshold": 0.4309,
+        "duplicate_profile_similarity": 0.4247,
+        "min_new_speaker_seconds": 2.0358,
+        "late_new_speaker_min_seconds": 3.1604,
         "min_new_speaker_words": 3,
         "new_speaker_confirmation_count": 1,
-        "new_speaker_confirmation_similarity": 0.5149,
+        "new_speaker_confirmation_similarity": 0.5801,
     },
     4: {
         "label": "Sensitive",

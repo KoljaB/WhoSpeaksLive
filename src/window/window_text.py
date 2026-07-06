@@ -43,6 +43,18 @@ def text_ends_sentence(text: str) -> bool:
     return bool(text.strip().rstrip("\"')]}").endswith((".", "?", "!")))
 
 
+def sentence_initial_uppercase_after_strong_boundary(text: str) -> str:
+    for index, character in enumerate(text):
+        if not character.isalpha():
+            continue
+        if not character.islower():
+            return text
+        if index + 1 < len(text) and text[index + 1].isupper():
+            return text
+        return f"{text[:index]}{character.upper()}{text[index + 1:]}"
+    return text
+
+
 def word_token_text(text: str) -> str:
     return " ".join(str(text or "").strip().split())
 
@@ -166,6 +178,7 @@ def split_words_with_stream2sentence(
     parts: list[SentencePart] = []
     search_start = 0
     sentence_left = left
+    previous_emitted_ended_sentence = False
     for sentence_text in sentence_texts:
         if not final_flush and not text_ends_sentence(sentence_text):
             break
@@ -228,8 +241,11 @@ def split_words_with_stream2sentence(
         )
         audio_length = max(0.0, boundary - clip_start)
         speech_audio_ratio = spoken_word_seconds / audio_length if audio_length > 0.0 else 0.0
+        emitted_text = sentence_text.strip()
+        if previous_emitted_ended_sentence:
+            emitted_text = sentence_initial_uppercase_after_strong_boundary(emitted_text)
         parts.append(SentencePart(
-            sentence_text.strip(),
+            emitted_text,
             clip_start,
             boundary,
             boundary,
@@ -245,6 +261,7 @@ def split_words_with_stream2sentence(
             boundary_post_padding_seconds,
             boundary_gap_ratio,
         ))
+        previous_emitted_ended_sentence = text_ends_sentence(emitted_text)
         sentence_left = boundary
     return parts
 

@@ -584,6 +584,8 @@ class SpeakerMemory:
         embedding: np.ndarray,
         duration_seconds: float,
     ) -> SpeakerProfile | None:
+        if len(self._profiles) >= self.max_speakers:
+            return None
         candidate = self._best_new_speaker_candidate_locked(embedding)
         if candidate is None:
             self._add_new_speaker_candidate_locked(embedding, duration_seconds)
