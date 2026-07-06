@@ -385,6 +385,7 @@ class Handler(BaseHTTPRequestHandler):
                 .replace(
                     "__LIVE_SPEAKER_JSON__",
                     json_dumps({
+                        "assignment_enabled": bool(getattr(self.server.args, "live_speaker_assignment", True)),
                         "unknown_clear_debounce_seconds": max(
                             0.0,
                             float(getattr(self.server.args, "live_speaker_probe_unknown_clear_debounce_seconds", 0.0)),
@@ -526,9 +527,19 @@ class Handler(BaseHTTPRequestHandler):
                     response["new_speaker_sensitivity"] = self.server.controller.set_new_speaker_sensitivity(
                         payload.get("new_speaker_sensitivity", getattr(self.server.args, "new_speaker_sensitivity", 3))
                     )
-                if "allow_speaker_reassignment" in payload:
-                    response["speaker_refinement"] = self.server.controller.set_allow_speaker_reassignment(
-                        payload.get("allow_speaker_reassignment")
+                speaker_refinement_keys = {
+                    "speaker_refinement_unknown_tentative",
+                    "speaker_refinement_unknown_commit",
+                    "allow_speaker_reassignment",
+                }
+                speaker_refinement_updates = {
+                    key: payload.get(key)
+                    for key in speaker_refinement_keys
+                    if key in payload
+                }
+                if speaker_refinement_updates:
+                    response["speaker_refinement"] = self.server.controller.set_speaker_refinement_settings(
+                        speaker_refinement_updates
                     )
                 else:
                     response["speaker_refinement"] = self.server.controller.speaker_refinement_settings()
@@ -900,7 +911,7 @@ def build_window_validation_records(records: list[dict[str, Any]]) -> tuple[list
         if record.get("event") != "sentence":
             continue
         payload = record.get("payload") or {}
-        if payload.get("pending") or payload.get("realtime"):
+        if payload.get("pending") or payload.get("realtime") or payload.get("provisional_assignment"):
             continue
         index = payload.get("index")
         if not isinstance(index, int):
@@ -1040,6 +1051,8 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "retro_reassign_min_similarity": args.retro_reassign_min_similarity,
             "retro_reassign_min_margin": args.retro_reassign_min_margin,
             "speaker_refinement": args.speaker_refinement,
+            "speaker_refinement_unknown_tentative": args.speaker_refinement_unknown_tentative,
+            "speaker_refinement_unknown_commit": args.speaker_refinement_unknown_commit,
             "allow_speaker_reassignment": args.allow_speaker_reassignment,
             "speaker_refinement_max_per_profile": args.speaker_refinement_max_per_profile,
             "speaker_refinement_min_duration": args.speaker_refinement_min_duration,
@@ -1048,7 +1061,6 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "speaker_refinement_centroid_blend": args.speaker_refinement_centroid_blend,
             "speaker_refinement_unknown_min_similarity": args.speaker_refinement_unknown_min_similarity,
             "speaker_refinement_unknown_min_margin": args.speaker_refinement_unknown_min_margin,
-            "speaker_refinement_unknown_min_later_rows": args.speaker_refinement_unknown_min_later_rows,
             "speaker_refinement_known_max_duration": args.speaker_refinement_known_max_duration,
             "speaker_refinement_known_min_similarity": args.speaker_refinement_known_min_similarity,
             "speaker_refinement_known_min_delta": args.speaker_refinement_known_min_delta,
@@ -1067,6 +1079,7 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "vad_frame_seconds": args.vad_frame_seconds,
             "vad_merge_gap_seconds": args.vad_merge_gap_seconds,
             "vad_min_speech_seconds": args.vad_min_speech_seconds,
+            "live_speaker_assignment": args.live_speaker_assignment,
             "live_speaker_embedding_provider": args.live_speaker_embedding_provider,
             "live_speaker_embedding_min_interval_seconds": args.live_speaker_embedding_min_interval_seconds,
             "live_speaker_embedding_target_utilization": args.live_speaker_embedding_target_utilization,
@@ -1385,6 +1398,15 @@ def parse_args() -> argparse.Namespace:
         help="Single provider used only for fast live speaker assignment. Empty uses --embedding-provider.",
     )
     parser.add_argument(
+        "--live-speaker-assignment",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Enable live speaker highlighting/scoring during realtime preview. "
+            "Use --no-live-speaker-assignment to keep live text preview without live speaker scoring."
+        ),
+    )
+    parser.add_argument(
         "--embeddings-backend",
         "--embedding-backend",
         "-embeddings-backend",
@@ -1528,10 +1550,22 @@ def parse_args() -> argparse.Namespace:
         help="Enable prototype-based live refinement. Stable mode only fills UNKNOWN rows later.",
     )
     parser.add_argument(
+        "--speaker-refinement-unknown-tentative",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Allow prototype refinement to show tentative speaker hints on UNKNOWN transcript rows.",
+    )
+    parser.add_argument(
+        "--speaker-refinement-unknown-commit",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Allow later evidence to commit UNKNOWN transcript rows to a known or newly confirmed speaker.",
+    )
+    parser.add_argument(
         "--allow-speaker-reassignment",
         action=argparse.BooleanOptionalAction,
         default=True,
-        help="Allow prototype refinement to change already assigned speaker labels.",
+        help="Allow prototype refinement to change already committed non-UNKNOWN speaker labels.",
     )
     parser.add_argument("--speaker-refinement-max-per-profile", type=int, default=32)
     parser.add_argument("--speaker-refinement-min-duration", type=float, default=0.15)
@@ -1540,7 +1574,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--speaker-refinement-centroid-blend", type=float, default=0.555)
     parser.add_argument("--speaker-refinement-unknown-min-similarity", type=float, default=0.20)
     parser.add_argument("--speaker-refinement-unknown-min-margin", type=float, default=0.0)
-    parser.add_argument("--speaker-refinement-unknown-min-later-rows", type=int, default=5)
     parser.add_argument("--speaker-refinement-known-max-duration", type=float, default=8.0)
     parser.add_argument("--speaker-refinement-known-min-similarity", type=float, default=-0.039)
     parser.add_argument("--speaker-refinement-known-min-delta", type=float, default=0.108)
@@ -2125,6 +2158,14 @@ def parse_args() -> argparse.Namespace:
     else:
         args.new_speaker_sensitivity = 3
         args.new_speaker_sensitivity_label = NEW_SPEAKER_SENSITIVITY_PRESETS[3]["label"]
+    if not args.live_speaker_assignment:
+        args.live_speaker_probe = False
+        args.live_speaker_sentence_hint = False
+        args.live_speaker_highlight_transcript = False
+        args.live_speaker_verify_on_change = False
+        args.live_speaker_raw_change_snap = False
+        args.live_speaker_provisional_new_speaker = False
+        args.live_speaker_weak_profile_assist = False
     return args
 
 

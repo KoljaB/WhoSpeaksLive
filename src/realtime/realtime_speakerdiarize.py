@@ -750,7 +750,11 @@ def analyze_trace_against_canonical(
             continue
         if record.get("event") == "final":
             finals[index] = payload
-        elif record.get("event") == "sentence" and not payload.get("pending"):
+        elif (
+            record.get("event") == "sentence"
+            and not payload.get("pending")
+            and not payload.get("provisional_assignment")
+        ):
             sentences[index] = payload
 
     canonical_text = " ".join(str(segment.get("text") or "") for segment in canonical_segments)

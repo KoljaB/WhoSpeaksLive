@@ -156,6 +156,7 @@ def split_words_with_stream2sentence(
     right: float,
     unstable_tail_seconds: float,
     final_flush: bool,
+    previous_text_ended_sentence: bool = False,
     boundary_pre_padding_seconds: float = DEFAULT_SENTENCE_BOUNDARY_PRE_PADDING_SECONDS,
     boundary_post_padding_seconds: float = DEFAULT_SENTENCE_BOUNDARY_POST_PADDING_SECONDS,
     boundary_gap_ratio: float = DEFAULT_SENTENCE_BOUNDARY_GAP_RATIO,
@@ -178,7 +179,7 @@ def split_words_with_stream2sentence(
     parts: list[SentencePart] = []
     search_start = 0
     sentence_left = left
-    previous_emitted_ended_sentence = False
+    previous_emitted_ended_sentence = bool(previous_text_ended_sentence)
     for sentence_text in sentence_texts:
         if not final_flush and not text_ends_sentence(sentence_text):
             break
