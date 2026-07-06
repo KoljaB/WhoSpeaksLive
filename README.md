@@ -10,6 +10,12 @@ Language support is adaptable in principle, but the published project should be 
 
 CPU-only operation is not the recommended path for the current stack. The system is GPU-heavy today; a CPU-only setup may be possible, but should be treated as a separate optimization target and will likely require engineering work, slower processing, and some accuracy or throughput tradeoffs.
 
+## License
+
+WhoSpeaksLive's own code is licensed under the [MIT License](LICENSE).
+
+Optional Kroko/Banafo preview support uses separately licensed upstream components and model files. This repository's MIT license does not relicense Kroko/Banafo assets; before downloading, bundling, or deploying them, review and respect the current terms from [Kroko by Banafo](https://kroko.ai/), the [Banafo/Kroko-ASR model card](https://huggingface.co/Banafo/Kroko-ASR), and the [kroko-ai/kroko-onnx repository](https://github.com/kroko-ai/kroko-onnx).
+
 ## Start Here
 
 For a full working setup, follow these in order:
