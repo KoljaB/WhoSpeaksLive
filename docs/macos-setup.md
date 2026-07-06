@@ -52,9 +52,21 @@ Device auto-detection picks `mps` when available (falls back to `cpu`, then `cud
 
 ### Provider status on MPS (M3 Max, this checkout)
 
+Install the full provider set with `pip install -r requirements.txt` (skip `nvidia-ml-py`, it's a no-op off Nvidia hardware). Every provider below was tested with one `/embed` call (`device=auto`) against the running server.
+
 | Provider | Device used | Result |
 | --- | --- | --- |
 | `speechbrain_ecapa` | mps | Works. Needs the `Pretrained.device_type` workaround already applied in `embeddings_server.py` (SpeechBrain 1.1.0 never sets this attribute for `mps`, which otherwise crashes `TorchAutocast` construction). |
+| `speechbrain_resnet` | mps | Works (same SpeechBrain code path/workaround as `speechbrain_ecapa`). |
+| `resemblyzer` | mps | Works out of the box. |
+| `espnet_ecapa_wavlm_joint` | mps | Works. First call downloads a WavLM checkpoint (multi-GB) — expect several minutes on first load. |
+| `wespeaker_campplus` | mps | Works, but needed `onnxruntime` (see below — added to `requirements.txt`). |
+| `wespeaker_resnet34_lm_onnx` | — | **Broken.** Despite the name, this provider routes through `pyannote.audio`'s `PretrainedSpeakerEmbedding`, not the native wespeaker/onnx path. Blocked by the same torchaudio incompatibility below. |
+| `pyannote_wespeaker_resnet34_lm` | — | **Blocked/broken.** Needs `HF_TOKEN` (gated model) *and* is broken independently by the torchaudio incompatibility below — never gets far enough to hit the auth check. |
+
+**Known blocker: `pyannote.audio` 3.3.2 is incompatible with current torchaudio.** `pyannote.audio`'s import chain calls now-removed torchaudio APIs (`torchaudio.AudioMetaData` as a type annotation, then `torchaudio.list_audio_backends()`, and more beyond that) that don't exist in torchaudio 2.11.0 — the newest torchaudio release currently on PyPI, which no longer tracks recent torch versions (torch itself is at 2.12.1+). There is no pinned-version combination on PyPI today that satisfies both `torch>=2.x` (for MPS) and a `pyannote.audio`-compatible `torchaudio`. This affects both pyannote-backed providers above; fixing it needs either an upstream pyannote.audio release or vendoring a compatibility shim deeper than a one-line monkeypatch (multiple removed APIs, not just one). Not fixed here — flagging for follow-up.
+
+Recommended macOS stack given the above: `speechbrain_ecapa` (already the default) or `espnet_ecapa_wavlm_joint` for higher quality; avoid the two pyannote-backed providers until the torchaudio compatibility issue is resolved upstream.
 
 See [External Servers](external-servers.md) for the full provider list and stack recommendations; this page only tracks macOS/MPS-specific behavior.
 
