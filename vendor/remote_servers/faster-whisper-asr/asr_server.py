@@ -5,6 +5,7 @@ import io
 import json
 import os
 import tempfile
+import threading
 import time
 from pathlib import Path
 from typing import Any, Optional
@@ -34,9 +35,29 @@ def get_model() -> WhisperModel:
     return model
 
 
+def start_parent_watchdog() -> None:
+    # These servers are started by hand (docs/macos-setup.md) and hold multi-GB
+    # models; if the launching shell dies they would otherwise run forever as
+    # orphans. Exit once reparented. Opt out (nohup-style daemonizing) with
+    # WHOSPEAKS_EXIT_WITH_PARENT=0.
+    if os.environ.get("WHOSPEAKS_EXIT_WITH_PARENT", "1") in {"0", "false", "False"}:
+        return
+    parent = os.getppid()
+    if parent <= 1:
+        return
+
+    def watch() -> None:
+        while os.getppid() == parent:
+            time.sleep(5)
+        os._exit(0)
+
+    threading.Thread(target=watch, daemon=True, name="parent-watchdog").start()
+
+
 @app.on_event("startup")
 def load_model() -> None:
     global model, model_loaded_at
+    start_parent_watchdog()
     start = time.perf_counter()
     model = WhisperModel(
         MODEL_NAME,
