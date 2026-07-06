@@ -6,6 +6,7 @@ import argparse
 import json
 import queue
 import re
+import sys
 import threading
 import time
 import uuid
@@ -70,13 +71,29 @@ class VideoClock:
     monotonic_seconds: float
 
 
-def list_audio_input_devices() -> list[dict[str, Any]]:
+def _import_pyaudio() -> Any:
+    """Windows uses pyaudiowpatch for WASAPI loopback; macOS uses stock pyaudio
+    with a BlackHole virtual device standing in for loopback capture."""
+    if sys.platform == "darwin":
+        try:
+            import pyaudio
+        except ModuleNotFoundError as exc:
+            raise RuntimeError(
+                "pyaudio is required for audio capture on macOS. "
+                "Install portaudio (brew install portaudio) then pip install pyaudio."
+            ) from exc
+        return pyaudio
     try:
         import pyaudiowpatch as pyaudio
     except ModuleNotFoundError as exc:
         raise RuntimeError(
             "pyaudiowpatch is required for WASAPI loopback capture."
         ) from exc
+    return pyaudio
+
+
+def list_audio_input_devices() -> list[dict[str, Any]]:
+    pyaudio = _import_pyaudio()
 
     audio = pyaudio.PyAudio()
     devices: list[dict[str, Any]] = []
@@ -98,13 +115,18 @@ def list_audio_input_devices() -> list[dict[str, Any]]:
             if max_input_channels <= 0:
                 continue
             host_api_index = int(info.get("hostApi") or 0)
+            name = str(info.get("name", ""))
             devices.append({
                 "index": int(info.get("index", index)),
-                "name": str(info.get("name", "")),
+                "name": name,
                 "host_api": host_api_names.get(host_api_index, ""),
                 "channels": max_input_channels,
                 "sample_rate": int(float(info.get("defaultSampleRate") or 0)),
-                "is_loopback": bool(info.get("isLoopbackDevice")),
+                "is_loopback": (
+                    bool(info.get("isLoopbackDevice"))
+                    if sys.platform != "darwin"
+                    else "blackhole" in name.lower()
+                ),
             })
     finally:
         audio.terminate()
@@ -112,10 +134,41 @@ def list_audio_input_devices() -> list[dict[str, Any]]:
     return devices
 
 
+def _choose_loopback_device_darwin(
+    requested_index: int | None,
+) -> tuple[int | None, dict[str, Any] | None, list[dict[str, Any]]]:
+    devices = list_audio_input_devices()
+    if requested_index is not None:
+        for device in devices:
+            if device["index"] == requested_index:
+                return requested_index, device, devices
+        raise RuntimeError(f"Input device index {requested_index} is not available.")
+
+    blackhole_devices = [device for device in devices if device.get("is_loopback")]
+    if blackhole_devices:
+        return blackhole_devices[0]["index"], blackhole_devices[0], devices
+
+    device_lines = [
+        f"{item['index']}: {item['name']} [{item['host_api']}, "
+        f"{item['channels']}ch, {item['sample_rate']} Hz]"
+        for item in devices
+    ]
+    raise RuntimeError(
+        "No BlackHole input device was detected. Install BlackHole 2ch "
+        "(brew install blackhole-2ch) and route system output to it "
+        "(create a Multi-Output Device in Audio MIDI Setup with BlackHole "
+        "and your speakers so you can still hear audio), then rerun. "
+        "Available input devices:\n" + "\n".join(device_lines)
+    )
+
+
 def choose_wasapi_loopback_device(
     requested_index: int | None,
     allow_default_input: bool,
 ) -> tuple[int | None, dict[str, Any] | None, list[dict[str, Any]]]:
+    if sys.platform == "darwin":
+        return _choose_loopback_device_darwin(requested_index)
+
     devices = list_audio_input_devices()
     if requested_index is not None:
         for device in devices:
@@ -465,6 +518,11 @@ class YouTubeWasapiController:
         recorder: Any,
         device: dict[str, Any] | None,
     ) -> tuple[Any, Any]:
+        if sys.platform == "darwin":
+            return self._open_loopback_stream_darwin(
+                session_id, input_device_index, recorder, device
+            )
+
         try:
             import pyaudiowpatch as pyaudio
         except ModuleNotFoundError as exc:
@@ -487,6 +545,70 @@ class YouTubeWasapiController:
             channels = int(device_info["maxInputChannels"])
             if channels <= 0:
                 raise RuntimeError(f"Loopback device {input_device_index} has no input channels.")
+
+            display_name = (
+                device["name"]
+                if device is not None
+                else str(device_info.get("name", input_device_index))
+            )
+            self._status(
+                session_id,
+                f"Opening loopback stream: {display_name}, {channels}ch, {sample_rate} Hz.",
+            )
+
+            def feed(data: bytes, _frame_count: int, _time_info: Any, _status: Any):
+                audio = np.frombuffer(data, np.int16)
+                if channels > 1:
+                    audio = audio.reshape(-1, channels)
+                recorder.feed_audio(audio, original_sample_rate=sample_rate)
+                return (None, pyaudio.paContinue)
+
+            stream = audio_interface.open(
+                format=pyaudio.paInt16,
+                channels=channels,
+                rate=sample_rate,
+                input=True,
+                input_device_index=input_device_index,
+                frames_per_buffer=max(1, sample_rate // 10),
+                stream_callback=feed,
+            )
+            stream.start_stream()
+            return audio_interface, stream
+        except Exception:
+            try:
+                audio_interface.terminate()
+            except Exception:
+                pass
+            raise
+
+    def _open_loopback_stream_darwin(
+        self,
+        session_id: str,
+        input_device_index: int | None,
+        recorder: Any,
+        device: dict[str, Any] | None,
+    ) -> tuple[Any, Any]:
+        try:
+            import pyaudio
+        except ModuleNotFoundError as exc:
+            raise RuntimeError(
+                "pyaudio is required for audio capture on macOS. "
+                "Install portaudio (brew install portaudio) then pip install pyaudio."
+            ) from exc
+
+        audio_interface = pyaudio.PyAudio()
+        try:
+            if input_device_index is None:
+                _, device, _ = _choose_loopback_device_darwin(None)
+                if device is None:
+                    raise RuntimeError("No BlackHole input device was detected.")
+                input_device_index = int(device["index"])
+            device_info = audio_interface.get_device_info_by_index(input_device_index)
+
+            sample_rate = int(float(device_info["defaultSampleRate"]))
+            channels = int(device_info["maxInputChannels"])
+            if channels <= 0:
+                raise RuntimeError(f"Device {input_device_index} has no input channels.")
 
             display_name = (
                 device["name"]

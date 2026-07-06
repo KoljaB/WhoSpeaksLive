@@ -26,6 +26,7 @@ Follow these in order for a new machine:
 ## System Setup
 
 - [External servers](external-servers.md): run ASR and embeddings services on a Linux GPU machine.
+- [macOS setup](macos-setup.md): run the controller and both servers locally on Apple Silicon.
 - [Configuration](configuration.md): choose the most important runtime flags.
 - [Modal deployment](modal-deployment.md): deploy supported remote components on Modal.
 

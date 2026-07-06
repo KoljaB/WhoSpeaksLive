@@ -4,7 +4,9 @@
 # The full historical environment is still captured in requirements.txt, but
 # this file is the better first install target for a clean controller machine.
 av>=11.0.0
+emoji>=2.15.0
 librosa>=0.10.1
+nltk>=3.9.4
 numpy>=1.26,<2
 onnxruntime>=1.17
 soundfile>=0.12.1

@@ -151,7 +151,11 @@ def resolve_runtime_device(device: str) -> str:
     try:
         import torch
 
-        return "cuda" if torch.cuda.is_available() else "cpu"
+        if torch.cuda.is_available():
+            return "cuda"
+        if torch.backends.mps.is_available():
+            return "mps"
+        return "cpu"
     except Exception:
         return "cpu"
 
@@ -216,11 +220,15 @@ class SpeechBrainProvider:
     def __init__(self, device: str, model_id: str) -> None:
         configure_env()
         import torch
-        from speechbrain.inference.speaker import EncoderClassifier
+        from speechbrain.inference.speaker import EncoderClassifier, Pretrained
 
         self.torch = torch
         self.device = choose_torch_device(device)
         self.lock = threading.Lock()
+        # speechbrain 1.1.0 only sets device_type for cpu/cuda; on mps the
+        # attribute is missing and TorchAutocast construction crashes.
+        if not hasattr(Pretrained, "device_type"):
+            Pretrained.device_type = "cpu"
         savedir = ROOT / ".cache" / "speechbrain" / sanitize(model_id)
         self.model = EncoderClassifier.from_hparams(
             source=model_id,
