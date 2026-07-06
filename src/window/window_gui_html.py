@@ -1688,6 +1688,46 @@ function speakerDisplayLabel(label) {
   const index = speakerIndex(label);
   return index === null ? "Unknown" : `Speaker ${index}`;
 }
+function revisionSpeakerId(label) {
+  const value = String(label || "").trim();
+  return value && value !== "UNKNOWN" ? value : "UNKNOWN";
+}
+function revisionSpeakerBadge(label) {
+  const speakerId = revisionSpeakerId(label);
+  const index = speakerIndex(speakerId);
+  if (index !== null) return `[${index}]`;
+  return speakerId === "UNKNOWN" ? "[?]" : `[${speakerId}]`;
+}
+function parseRevisionChain(row) {
+  if (!row || !row.dataset.revisionChain) return [];
+  try {
+    const values = JSON.parse(row.dataset.revisionChain);
+    if (!Array.isArray(values)) return [];
+    return values.map(revisionSpeakerId).filter(Boolean);
+  } catch (error) {
+    return [];
+  }
+}
+function pushRevisionSpeaker(chain, speakerId) {
+  const normalized = revisionSpeakerId(speakerId);
+  if (!chain.length || chain[chain.length - 1] !== normalized) {
+    chain.push(normalized);
+  }
+}
+function sentenceRevisionLabel(row, item, nextSpeakerId, previousSpeakerId) {
+  if (!item.revision) {
+    if (!item.pending && !item.realtime && row) {
+      delete row.dataset.revisionChain;
+    }
+    return "";
+  }
+  const chain = parseRevisionChain(row);
+  const from = item.revision_from || item.prototype_reassigned_from || item.retro_reassigned_from || previousSpeakerId || "UNKNOWN";
+  pushRevisionSpeaker(chain, from);
+  pushRevisionSpeaker(chain, nextSpeakerId || item.revision_to || item.assigned_speaker || "UNKNOWN");
+  row.dataset.revisionChain = JSON.stringify(chain);
+  return `Revised ${chain.map(revisionSpeakerBadge).join(" -> ")}`;
+}
 function speakerPanelName(speaker) {
   return speaker.name || speaker.display_name || speakerDisplayLabel(speaker.id);
 }
@@ -2875,6 +2915,7 @@ function renderSentence(item) {
   const rawProbabilities = item.probabilities || {};
   const rawSpeakerProbability = probabilityForSpeakerId(rawProbabilities, rawSpeakerId);
   const rawSpeakerUnknownMargin = probabilityLeadOverUnknown(rawProbabilities, rawSpeakerId);
+  const previousRevisionSpeakerId = revisionSpeakerId(row.dataset.speaker);
   const previousDisplaySpeakerId = item.realtime ? normalizedLiveSpeakerId(row.dataset.speaker) : "";
   const displaySpeakerId = item.realtime
     ? realtimeRowDisplaySpeakerId(rawSpeakerId, startSeconds, endSeconds, previousDisplaySpeakerId)
@@ -2887,7 +2928,11 @@ function renderSentence(item) {
   const speakerLabel = speakerDisplayLabel(displaySpeakerId);
   const color = speakerColor(displaySpeakerId);
   const speakerClass = displaySpeakerId ? "badge" : "badge unknown";
-  const stateLabel = item.realtime ? "Live" : (item.pending ? "Embedding" : (item.error ? "Error" : (item.revision ? "Revised" : "")));
+  const stateLabel = item.realtime ? "Live" : (
+    item.pending ? "Embedding" : (
+      item.error ? "Error" : sentenceRevisionLabel(row, item, displaySpeakerId, previousRevisionSpeakerId)
+    )
+  );
   row.dataset.start = String(startSeconds);
   row.dataset.end = String(endSeconds);
   row.dataset.text = item.text || "";

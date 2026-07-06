@@ -1048,6 +1048,7 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "speaker_refinement_centroid_blend": args.speaker_refinement_centroid_blend,
             "speaker_refinement_unknown_min_similarity": args.speaker_refinement_unknown_min_similarity,
             "speaker_refinement_unknown_min_margin": args.speaker_refinement_unknown_min_margin,
+            "speaker_refinement_unknown_min_later_rows": args.speaker_refinement_unknown_min_later_rows,
             "speaker_refinement_known_max_duration": args.speaker_refinement_known_max_duration,
             "speaker_refinement_known_min_similarity": args.speaker_refinement_known_min_similarity,
             "speaker_refinement_known_min_delta": args.speaker_refinement_known_min_delta,
@@ -1539,6 +1540,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--speaker-refinement-centroid-blend", type=float, default=0.555)
     parser.add_argument("--speaker-refinement-unknown-min-similarity", type=float, default=0.20)
     parser.add_argument("--speaker-refinement-unknown-min-margin", type=float, default=0.0)
+    parser.add_argument("--speaker-refinement-unknown-min-later-rows", type=int, default=5)
     parser.add_argument("--speaker-refinement-known-max-duration", type=float, default=8.0)
     parser.add_argument("--speaker-refinement-known-min-similarity", type=float, default=-0.039)
     parser.add_argument("--speaker-refinement-known-min-delta", type=float, default=0.108)
@@ -1596,7 +1598,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--realtime-preview-reset-overlap-seconds",
         type=float,
-        default=0.25,
+        default=0.15,
         help="Audio pre-roll kept before the committed sentence boundary when resetting preview after final sentence commits.",
     )
     parser.add_argument(
