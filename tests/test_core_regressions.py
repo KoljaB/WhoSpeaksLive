@@ -239,6 +239,27 @@ class WindowSentenceTextTests(unittest.TestCase):
 
         self.assertEqual(transcript.sentences[0].text, "Was Beethoven good at music?")
 
+    def test_realtime_preview_capitalizes_session_start_and_after_strong_sentence(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer._final_sentence_count = 0
+        diarizer._last_final_sentence_ended_strong = False
+
+        self.assertEqual(diarizer._format_realtime_preview_text("hello there", 0.0), "Hello there")
+
+        diarizer._final_sentence_count = 1
+        diarizer._last_final_sentence_ended_strong = True
+        self.assertEqual(diarizer._format_realtime_preview_text("next idea", 8.0), "Next idea")
+
+        diarizer._last_final_sentence_ended_strong = False
+        self.assertEqual(diarizer._format_realtime_preview_text("still continuing", 9.0), "still continuing")
+
+    def test_run_treats_first_final_sentence_as_sentence_start(self) -> None:
+        source = inspect.getsource(WindowDiarizer._run)
+
+        self.assertIn("previous_emitted_sentence_ended_strong = True", source)
+        self.assertIn("self._last_final_sentence_ended_strong = previous_emitted_sentence_ended_strong", source)
+        self.assertIn('self._final_sentence_count = int(getattr(self, "_final_sentence_count", 0)) + 1', source)
+
 
 class ScoreParityTests(unittest.TestCase):
     def load_current_memory_optimizer(self) -> object:
@@ -967,12 +988,61 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("const boundaryPattern = /[.!?][\"')\\]]*\\s+/g;", HTML)
         self.assertIn("renderProvisionalRealtimeSplitRow(row, visualSplit);", HTML)
         self.assertIn("clearProvisionalRealtimeSplitsFor(item.index);", HTML)
-        self.assertIn("clearAllProvisionalRealtimeSplits();", HTML)
         self.assertIn("restoreRealtimeRowFullPreview(row);", HTML)
         self.assertIn("applyProvisionalRealtimeVisualSplit(row, visualSplit);", HTML)
         self.assertIn("row.dataset.fullRawSpeaker = item.realtime ? rawSpeakerId : \"\";", HTML)
         self.assertIn("row.dataset.fullEnd = item.realtime ? String(endSeconds) : \"\";", HTML)
         self.assertIn("row.dataset.fullText = item.realtime ? (item.text || \"\") : \"\";", HTML)
+
+    def test_realtime_clear_settles_rows_for_smooth_final_adoption(self) -> None:
+        self.assertIn(".row.realtime-settling", HTML)
+        self.assertIn(".row.row-removing", HTML)
+        self.assertIn("const realtimeSettleRemovalDelayMs = 1400;", HTML)
+        self.assertIn("function markRealtimeRowSettling(row, generation)", HTML)
+        self.assertIn("function findAdoptableRealtimeRow(item, options = {})", HTML)
+        self.assertIn("function removeOverlappingSettlingRealtimeRows(item, keepRow = null)", HTML)
+        self.assertIn("function placeSentenceRowChronologically(row)", HTML)
+        self.assertIn("function clearSettlingRealtimeState(row)", HTML)
+        self.assertIn("markRealtimeRowSettling(row, generation)", HTML)
+        self.assertNotIn("forEach(row => row.remove())", HTML)
+        self.assertIn("row = findAdoptableRealtimeRow(item, {settlingOnly: true});", HTML)
+        self.assertIn("row = findAdoptableRealtimeRow(item);", HTML)
+        self.assertIn("clearSettlingRealtimeState(row);", HTML)
+        self.assertIn("removeOverlappingSettlingRealtimeRows(item, row);", HTML)
+        self.assertIn("if (settlingOnly && row.dataset.realtimeSettling !== \"true\") return;", HTML)
+        self.assertIn("if (timeScore >= 0.34 && textScore >= 0.5) {", HTML)
+        self.assertIn('.filter(row => row.dataset.realtimeSettling !== "true")', HTML)
+        self.assertNotIn("clearAllProvisionalRealtimeSplits", HTML)
+
+    def test_reused_sentence_rows_are_reinserted_chronologically(self) -> None:
+        self.assertIn("function rowShouldSortBefore(a, b)", HTML)
+        self.assertIn("function rowChronologyKey(row)", HTML)
+        self.assertIn("sentences.insertBefore(row, next);", HTML)
+        self.assertIn("sentences.appendChild(row);", HTML)
+
+        render_start = HTML.index("function renderSentence(item)")
+        render_end = HTML.index("function connect()", render_start)
+        render_block = HTML[render_start:render_end]
+        place_index = render_block.index("placeSentenceRowChronologically(row);")
+        split_index = render_block.index("if (visualSplit) {", place_index)
+        self.assertLess(render_block.index("row.replaceChildren(top, text);"), place_index)
+        self.assertLess(place_index, split_index)
+
+    def test_late_realtime_update_cannot_overwrite_final_sentence_row(self) -> None:
+        self.assertIn("function findFinalSentenceRow(index)", HTML)
+        self.assertIn("function findRealtimeSentenceRow(index)", HTML)
+        self.assertIn('row.dataset.index === key && row.dataset.realtime !== "true"', HTML)
+        self.assertIn('row.dataset.index === key && row.dataset.realtime === "true"', HTML)
+
+        render_start = HTML.index("function renderSentence(item)")
+        render_end = HTML.index("function connect()", render_start)
+        render_block = HTML[render_start:render_end]
+        guard = 'if (item.realtime && findFinalSentenceRow(item.index)) {'
+        self.assertIn(guard, render_block)
+        self.assertLess(render_block.index(guard), render_block.index("clearProvisionalRealtimeSplitsFor(item.index);"))
+        self.assertIn("let row = item.realtime", render_block)
+        self.assertIn("? findRealtimeSentenceRow(item.index)", render_block)
+        self.assertIn(": (findFinalSentenceRow(item.index) || findRealtimeSentenceRow(item.index));", render_block)
 
     def test_speaker_solo_mute_filters_transcript_rows(self) -> None:
         self.assertIn("let soloSpeakerIds = new Set();", HTML)
@@ -1276,14 +1346,21 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn('button.setAttribute("aria-pressed", active ? "true" : "false");', HTML)
         self.assertIn('target.closest(".speaker-row-name-input, .speaker-filter-toggle, .speaker-transcript-action")', HTML)
         self.assertIn("function recomputeRenderedSpeakerSentenceCounts()", HTML)
+        self.assertIn("let speakerSessionBaselineSentenceCounts = {};", HTML)
+        self.assertIn("function syncSpeakerSessionBaselines(state = speakerLibraryState)", HTML)
+        self.assertIn("function hasCurrentSessionSpeakerCounts()", HTML)
         self.assertIn('if (row.dataset.realtime === "true") return;', HTML)
         self.assertIn("function speakerPanelSpeakingSeconds(speaker)", HTML)
-        self.assertIn('return renderedSpeakerSpeakingSeconds[speakerId] || 0;', HTML)
         self.assertIn('function speakerSentenceText(count, speakingSeconds = 0, unit = "sentence")', HTML)
         self.assertIn('return `${total} ${unit}${total === 1 ? "" : "s"} · ${speakerSpeakingTimeText(speakingSeconds)}`;', HTML)
         self.assertIn("function refreshSpeakerPanelSentenceCounts()", HTML)
         self.assertIn("speakerPanelSentenceCount(speaker)", HTML)
         self.assertIn("speakerPanelSpeakingSeconds(speaker)", HTML)
+        self.assertIn("speakerBaselineSentenceCount(speaker) + speakerCurrentSessionSentenceCount(speakerId)", HTML)
+        self.assertIn("speakerBaselineSpeakingSeconds(speaker) + speakerCurrentSessionSpeakingSeconds(speakerId)", HTML)
+        self.assertGreaterEqual(HTML.count("if (hasRenderedFinalSentenceRows) return rendered;"), 2)
+        self.assertIn("return fast;", HTML)
+        self.assertIn("if (!hasCurrentSessionSpeakerCounts()) {", HTML)
         self.assertIn("function clearUnsavedDetectedSpeakerDisplay()", HTML)
         self.assertIn('if (speakerLibraryState.group_name) return;', HTML)
         self.assertIn("if (result.speaker_state) updateSpeakerState(result.speaker_state);", HTML)

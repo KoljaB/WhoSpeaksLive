@@ -66,6 +66,7 @@ from window.window_remote_asr import RemoteWindowAsrClient
 from window.window_text import (
     is_embedding_candidate_text,
     round_optional,
+    sentence_initial_uppercase_after_strong_boundary,
     split_words_with_stream2sentence,
     text_content_words,
     text_ends_sentence,
@@ -146,6 +147,8 @@ class WindowDiarizer:
         self._embedding_warmed_at: float | None = None
         self._asr_probe_warmed_at: float | None = None
         self._speaker_generation = 0
+        self._final_sentence_count = 0
+        self._last_final_sentence_ended_strong = True
 
     def _new_embedding_client(self, args: argparse.Namespace, provider: str | None = None) -> Any:
         embeddings_backend = str(getattr(args, "embeddings_backend", "local") or "local").strip().lower().replace("-", "_")
@@ -426,6 +429,8 @@ class WindowDiarizer:
             self._clear_unknown_sentence_state_locked()
         self._clear_sentence_refinement_records()
         self._speaker_last_media_end = {}
+        self._final_sentence_count = 0
+        self._last_final_sentence_ended_strong = True
         self._reset_realtime_preview_state()
         if emit:
             return self.emit_speaker_state()
@@ -1107,6 +1112,19 @@ class WindowDiarizer:
                 and not self._preview_paused
                 and abs(left - self._preview_left) < 0.001
             )
+
+    def _format_realtime_preview_text(self, text: str, left: float) -> str:
+        normalized = " ".join(str(text or "").split())
+        if not normalized:
+            return ""
+        should_uppercase = (
+            int(getattr(self, "_final_sentence_count", 0)) <= 0
+            or bool(getattr(self, "_last_final_sentence_ended_strong", True))
+            or float(left) <= 0.001
+        )
+        if should_uppercase:
+            return sentence_initial_uppercase_after_strong_boundary(normalized)
+        return normalized
 
     def stop(self) -> None:
         self._stop.set()
@@ -3266,6 +3284,7 @@ class WindowDiarizer:
             next_at = time.monotonic() + interval_seconds
             if not text or not re.search(r"[A-Za-z0-9]", text):
                 continue
+            text = self._format_realtime_preview_text(text, left)
             if not self._preview_generation_is_current(generation, left):
                 continue
             duration_seconds = max(0.0, preview_right - left)
@@ -3301,7 +3320,7 @@ class WindowDiarizer:
             index = 0
             last_transcribed_right = -1.0
             last_vad_flush_right = -1.0
-            previous_emitted_sentence_ended_strong = False
+            previous_emitted_sentence_ended_strong = True
             interval_seconds = max(0.0, float(self.args.interval_seconds))
             min_playback_advance = max(0.0, float(self.args.min_playback_advance_seconds))
             final_flush_epsilon = max(0.0, float(self.args.final_flush_epsilon_seconds))
@@ -3419,6 +3438,8 @@ class WindowDiarizer:
                 for sentence in transcript.sentences:
                     self._emit_sentence(index, sentence, left, transcribe_right)
                     previous_emitted_sentence_ended_strong = text_ends_sentence(sentence.text)
+                    self._last_final_sentence_ended_strong = previous_emitted_sentence_ended_strong
+                    self._final_sentence_count = int(getattr(self, "_final_sentence_count", 0)) + 1
                     index += 1
                     left = max(left, sentence.next_left)
                 if vad_next_left is not None:
