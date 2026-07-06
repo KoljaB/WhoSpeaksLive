@@ -23,6 +23,32 @@ from window.window_config import (
     _console_print,
 )
 
+
+KROKO_KEY_ENV_NAMES = (
+    "REALTIMESTT_KROKO_ONNX_KEY",
+    "KROKO_ONNX_KEY",
+    "KROKO_KEY",
+)
+KROKO_REFERRAL_ENV_NAMES = (
+    "REALTIMESTT_KROKO_ONNX_REFERRALCODE",
+    "KROKO_ONNX_REFERRALCODE",
+    "KROKO_REFERRALCODE",
+)
+
+
+def _first_env_value(names: tuple[str, ...]) -> str:
+    for name in names:
+        value = os.environ.get(name)
+        if value:
+            return value
+    return ""
+
+
+def add_kroko_license_options(options: dict[str, Any]) -> None:
+    options.setdefault("key", _first_env_value(KROKO_KEY_ENV_NAMES))
+    options.setdefault("referralcode", _first_env_value(KROKO_REFERRAL_ENV_NAMES))
+
+
 class RealtimePreviewTranscriber:
     def reset_preview(self) -> None:
         return
@@ -75,6 +101,7 @@ class KrokoRealtimePreviewTranscriber(RealtimePreviewTranscriber):
         }
         if args.realtime_preview_model_path is not None:
             options["model_path"] = str(args.realtime_preview_model_path)
+        add_kroko_license_options(options)
         if args.realtime_preview_engine_options_json:
             extra_options = json.loads(args.realtime_preview_engine_options_json)
             if not isinstance(extra_options, dict):
@@ -150,6 +177,13 @@ class KrokoSubprocessPreviewTranscriber(RealtimePreviewTranscriber):
         env = dict(os.environ)
         env["PYTHONUTF8"] = "1"
         env["KROKO_ONNX_SUPPRESS_LICENSE_OUTPUT"] = "1"
+        src_path = str(ROOT / "src")
+        existing_pythonpath = env.get("PYTHONPATH")
+        env["PYTHONPATH"] = (
+            src_path
+            if not existing_pythonpath
+            else src_path + os.pathsep + existing_pythonpath
+        )
         creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
         self.process = subprocess.Popen(
             command,

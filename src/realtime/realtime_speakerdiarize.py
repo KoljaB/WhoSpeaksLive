@@ -98,7 +98,7 @@ from realtime.realtime_transcript import (
 )
 
 def read_canonical_segments(path: Path) -> list[dict[str, Any]]:
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = json.loads(path.read_text(encoding="utf-8-sig"))
     if isinstance(data, list):
         return data
     if isinstance(data, dict) and isinstance(data.get("segments"), list):
@@ -750,7 +750,11 @@ def analyze_trace_against_canonical(
             continue
         if record.get("event") == "final":
             finals[index] = payload
-        elif record.get("event") == "sentence" and not payload.get("pending"):
+        elif (
+            record.get("event") == "sentence"
+            and not payload.get("pending")
+            and not payload.get("provisional_assignment")
+        ):
             sentences[index] = payload
 
     canonical_text = " ".join(str(segment.get("text") or "") for segment in canonical_segments)
