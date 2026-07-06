@@ -135,6 +135,7 @@ from window.window_diarizer import WindowDiarizer  # noqa: E402
 from window.window_events import EventBus, RecordingEventBus  # noqa: E402
 from window.window_gui_html import HTML  # noqa: E402
 from window.window_preview import infer_kroko_preview_chunk_seconds  # noqa: E402
+from window.public_events import PublicEventNormalizer  # noqa: E402
 from window.browser_live_speaker_scoring import (  # noqa: E402
     DEFAULT_BROWSER_OBSERVATION_FLICKER_GAP_SECONDS,
     DEFAULT_BROWSER_OBSERVATION_INTERVAL_SECONDS,
@@ -415,6 +416,8 @@ class Handler(BaseHTTPRequestHandler):
             self._send_bytes(html.encode("utf-8"), "text/html; charset=utf-8")
         elif path == "/events":
             self._serve_events()
+        elif path == "/api/events":
+            self._serve_public_events(parsed)
         elif path == "/media/video":
             self._serve_file(self.server.current_media().video_file)
         elif path == "/media/audio":
@@ -619,6 +622,42 @@ class Handler(BaseHTTPRequestHandler):
         finally:
             self.server.bus.unsubscribe(subscriber)
 
+    def _serve_public_events(self, parsed: Any) -> None:
+        query = parse_qs(parsed.query)
+        include_snapshot = str((query.get("snapshot") or ["1"])[0]).strip().lower() not in {"0", "false", "no"}
+        normalizer = PublicEventNormalizer(session_id=self.server.public_event_session_id)
+        subscriber = self.server.bus.subscribe()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        try:
+            if include_snapshot:
+                for envelope in normalizer.speaker_snapshot(self.server.controller.speaker_state()):
+                    self._write_public_event(envelope)
+            while True:
+                try:
+                    event, payload_json = subscriber.get(timeout=10)
+                    payload = json.loads(payload_json)
+                    for envelope in normalizer.normalize(event, payload):
+                        self._write_public_event(envelope)
+                    continue
+                except queue.Empty:
+                    message = ": heartbeat\n\n"
+                self.wfile.write(message.encode("utf-8"))
+                self.wfile.flush()
+        except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError):
+            pass
+        finally:
+            self.server.bus.unsubscribe(subscriber)
+
+    def _write_public_event(self, envelope: dict[str, Any]) -> None:
+        event_type = str(envelope.get("type") or "message")
+        event_id = str(envelope.get("id") or "")
+        message = f"id: {event_id}\nevent: {event_type}\ndata: {json_dumps(envelope)}\n\n"
+        self.wfile.write(message.encode("utf-8"))
+        self.wfile.flush()
+
     def _serve_file(self, path: Path) -> None:
         size = path.stat().st_size
         content_type = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
@@ -682,6 +721,7 @@ class WindowServer(ThreadingHTTPServer):
         self.media_version = int(time.time() * 1000)
         self.bus = bus
         self.controller = controller
+        self.public_event_session_id = uuid.uuid4().hex
         self.session_lease = SessionLease(
             idle_timeout_seconds=getattr(args, "session_lease_idle_timeout_seconds", 120.0),
             heartbeat_timeout_seconds=getattr(args, "session_lease_heartbeat_timeout_seconds", 45.0),
@@ -1458,7 +1498,7 @@ def parse_args() -> argparse.Namespace:
         help="Optional five-step new-speaker spawning sensitivity preset. Position 3 matches the tuned defaults.",
     )
     parser.add_argument("--same-speaker-similarity", type=float, default=0.401)
-    parser.add_argument("--similarity-temperature", type=float, default=0.0617)
+    parser.add_argument("--similarity-temperature", type=float, default=0.0687)
     parser.add_argument("--speaker-softmax-temperature", type=float, default=0.0557)
     parser.add_argument("--new-speaker-threshold", type=float, default=0.4309)
     parser.add_argument("--duplicate-profile-similarity", type=float, default=0.4247)
@@ -1468,7 +1508,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--late-new-speaker-min-seconds", type=float, default=3.1604)
     parser.add_argument("--max-speakers", type=int, default=12)
     parser.add_argument("--min-margin", type=float, default=0.0372)
-    parser.add_argument("--margin-temperature", type=float, default=0.0453)
+    parser.add_argument("--margin-temperature", type=float, default=0.0361)
     parser.add_argument("--update-unknown-max", type=float, default=0.4289)
     parser.add_argument(
         "--new-speaker-confirmation-count",
@@ -1486,7 +1526,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--known-speaker-min-similarity",
         type=float,
-        default=0.56,
+        default=0.5563,
         help="When non-negative, existing speakers below this top similarity are treated as gray-zone UNKNOWN instead of confidently assigned.",
     )
     parser.add_argument(
@@ -1516,7 +1556,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--low-similarity-unknown-floor-probability",
         type=float,
-        default=0.1702,
+        default=0.1885,
         help="Unknown probability floor used with --low-similarity-unknown-floor-similarity.",
     )
     parser.add_argument(
