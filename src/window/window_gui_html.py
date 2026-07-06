@@ -668,6 +668,7 @@ const presetVideos = __PRESET_VIDEOS__;
 const speakerSensitivityConfig = __NEW_SPEAKER_SENSITIVITY_JSON__;
 const speakerRefinementConfig = __SPEAKER_REFINEMENT_JSON__;
 const liveSpeakerConfig = __LIVE_SPEAKER_JSON__;
+const sessionLeaseEnabled = liveSpeakerConfig.session_lease_enabled !== false;
 const initialSpeakerLibrary = __SPEAKER_LIBRARY_JSON__;
 const svgNamespace = "http://www.w3.org/2000/svg";
 const targetCaptureSampleRate = 16000;
@@ -712,7 +713,9 @@ let fallbackLiveSpeakerId = "";
 let fallbackLiveSpeakerUntilMs = 0;
 let fallbackLiveSpeakerExpiryTimer = null;
 let fallbackLiveSpeakerClearTimer = null;
+let transcriptLiveSpeakerExpiryTimer = null;
 let liveSpeakerTimeline = [];
+let transcriptLiveSpeakerOverrideId = "";
 let browserLiveObservationTimer = null;
 let browserLiveObservationBuffer = [];
 let browserLiveObservationStarted = false;
@@ -1258,9 +1261,11 @@ function log(text) {
   statusBox.scrollTop = statusBox.scrollHeight;
 }
 function sessionControlsLocked() {
+  if (!sessionLeaseEnabled) return false;
   return Boolean(sessionState && sessionState.active && !sessionState.is_owner);
 }
 function sessionOwnerActive() {
+  if (!sessionLeaseEnabled) return true;
   return Boolean(sessionState && sessionState.active && sessionState.is_owner && sessionToken);
 }
 function sessionSecondsText(seconds) {
@@ -1276,6 +1281,13 @@ function sessionExpiryText(fieldName="expires_in_seconds") {
 }
 function updateSessionBanner() {
   if (!sessionBanner || !sessionBannerMessage) return;
+  if (!sessionLeaseEnabled) {
+    sessionBanner.hidden = true;
+    if (releaseSessionButton) releaseSessionButton.hidden = true;
+    syncSessionControlLock();
+    return;
+  }
+  sessionBanner.hidden = false;
   sessionBanner.classList.remove("available", "owner", "observer");
   releaseSessionButton.hidden = true;
   if (!sessionState || !sessionState.active) {
@@ -1373,6 +1385,7 @@ function updateSessionState(nextState) {
   }
 }
 async function fetchSessionStatus() {
+  if (!sessionLeaseEnabled) return {};
   const params = new URLSearchParams({client_id: sessionClientId});
   const response = await fetch(`/api/session/status?${params.toString()}`, {cache:"no-store"});
   const data = await response.json();
@@ -1380,6 +1393,7 @@ async function fetchSessionStatus() {
   return data.session || {};
 }
 async function acquireSession() {
+  if (!sessionLeaseEnabled) return true;
   const response = await fetch("/api/session/acquire", {
     method:"POST",
     headers:{"Content-Type":"application/json"},
@@ -1397,6 +1411,7 @@ async function acquireSession() {
   return true;
 }
 async function ensureSessionOwner(actionLabel="control this demo") {
+  if (!sessionLeaseEnabled) return true;
   if (sessionOwnerActive()) return true;
   await fetchSessionStatus().catch(() => null);
   if (sessionOwnerActive()) return true;
@@ -1408,6 +1423,7 @@ async function ensureSessionOwner(actionLabel="control this demo") {
   return true;
 }
 async function heartbeatSession() {
+  if (!sessionLeaseEnabled) return;
   if (!sessionToken) return;
   try {
     const response = await fetch("/api/session/heartbeat", {
@@ -1425,6 +1441,7 @@ async function heartbeatSession() {
   } catch (_) {}
 }
 function startSessionHeartbeat() {
+  if (!sessionLeaseEnabled) return;
   if (sessionHeartbeatTimer || !sessionToken) return;
   void heartbeatSession();
   sessionHeartbeatTimer = setInterval(heartbeatSession, 5000);
@@ -1436,6 +1453,7 @@ function stopSessionHeartbeat() {
   }
 }
 async function releaseSession(reason="released") {
+  if (!sessionLeaseEnabled) return;
   if (!sessionToken) {
     await fetchSessionStatus().catch(() => null);
     return;
@@ -1453,6 +1471,7 @@ async function releaseSession(reason="released") {
   if (data.session) updateSessionState(data.session);
 }
 function sendSessionReleaseBeacon(reason="tab closed") {
+  if (!sessionLeaseEnabled) return;
   if (!sessionToken || !navigator.sendBeacon) return;
   const payload = JSON.stringify({client_id: sessionClientId, session_token: sessionToken, reason});
   const body = new Blob([payload], {type:"application/json"});
@@ -1461,6 +1480,7 @@ function sendSessionReleaseBeacon(reason="tab closed") {
   storeSessionValue(sessionTokenStorageKey, "");
 }
 function scheduleCompletedSessionRelease() {
+  if (!sessionLeaseEnabled) return;
   if (!sessionOwnerActive()) return;
   if (sessionCompletionReleaseTimer) clearTimeout(sessionCompletionReleaseTimer);
   const delay = Math.max(1000, Number(sessionState.completed_release_delay_seconds || 10) * 1000);
@@ -1469,6 +1489,7 @@ function scheduleCompletedSessionRelease() {
   }, delay);
 }
 function startSessionStatusPolling() {
+  if (!sessionLeaseEnabled) return;
   if (sessionStatusTimer) clearInterval(sessionStatusTimer);
   sessionStatusTimer = setInterval(() => fetchSessionStatus().catch(() => {}), 10000);
 }
@@ -1525,6 +1546,7 @@ function browserLiveObservationSample() {
     visible_live_speaker_id: domLiveSpeakerIds.length === 1 ? domLiveSpeakerIds[0] : "",
     current_live_speaker_id: currentLiveSpeakerId || "",
     transcript_live_speaker_id: transcriptLiveSpeakerId || "",
+    transcript_live_override_speaker_id: transcriptLiveSpeakerOverrideId || "",
     fallback_live_speaker_id: fallbackLiveSpeakerId || "",
     runtime_state: state.textContent || "",
   });
@@ -1860,13 +1882,21 @@ function clearFallbackLiveSpeaker() {
     fallbackLiveSpeakerClearTimer = null;
   }
 }
+function clearTranscriptLiveSpeakerExpiryTimer() {
+  if (transcriptLiveSpeakerExpiryTimer) {
+    clearTimeout(transcriptLiveSpeakerExpiryTimer);
+    transcriptLiveSpeakerExpiryTimer = null;
+  }
+}
 function clearLiveSpeakerState() {
   currentLiveSpeakerId = "";
   transcriptLiveSpeakerId = "";
+  transcriptLiveSpeakerOverrideId = "";
   fastSpeakerPanelStats = {};
   fastSpeakerPanelLastRight = null;
   liveSpeakerTimeline = [];
   clearFallbackLiveSpeaker();
+  clearTranscriptLiveSpeakerExpiryTimer();
   refreshRealtimeRowsFromLiveSpeaker();
 }
 function activeFallbackLiveSpeakerId(nowMs = performance.now()) {
@@ -1974,8 +2004,66 @@ function refreshRealtimeRowsFromLiveSpeaker() {
   refreshSpeakerPanelSentenceCounts();
   refreshTranscriptVisibility();
 }
+function transcriptHighlightMaxLagSeconds() {
+  const value = Number(liveSpeakerConfig.transcript_highlight_max_lag_seconds);
+  return Number.isFinite(value) ? value : -1;
+}
+function realtimeRowWithinTranscriptHighlightWindow(row) {
+  if (!row) return false;
+  const maxLag = transcriptHighlightMaxLagSeconds();
+  if (maxLag < 0) return true;
+  const start = finiteAudioSecond(row.dataset.start, NaN);
+  const end = finiteAudioSecond(row.dataset.end, NaN);
+  const playback = playbackSeconds();
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return false;
+  if (playback < start - 0.25) return false;
+  if (playback > end + maxLag) return false;
+  return true;
+}
+function probabilityForSpeakerId(probabilities, speakerId) {
+  const key = speakerProbabilityKey(speakerId);
+  if (!key || !probabilities || typeof probabilities !== "object") return 0;
+  const value = Number(probabilities[key]);
+  return Number.isFinite(value) ? Math.max(0, value) : 0;
+}
+function probabilityLeadOverUnknown(probabilities, speakerId) {
+  const speakerProbability = probabilityForSpeakerId(probabilities, speakerId);
+  const unknownProbability = Number(probabilities && probabilities.unknown);
+  return speakerProbability - (Number.isFinite(unknownProbability) ? Math.max(0, unknownProbability) : 0);
+}
+function transcriptOverrideCandidate(row) {
+  if (!row || !liveSpeakerConfig.highlight_transcript) return "";
+  if (!realtimeRowWithinTranscriptHighlightWindow(row)) return "";
+  const minProbability = Number(liveSpeakerConfig.transcript_override_min_probability);
+  if (!Number.isFinite(minProbability) || minProbability > 1) return "";
+  const speakerId = normalizedLiveSpeakerId(row.dataset.rawSpeaker);
+  if (!speakerId) return "";
+  const probability = Number(row.dataset.rawSpeakerProbability || 0);
+  if (!Number.isFinite(probability) || probability < minProbability) return "";
+  const minMargin = Number(liveSpeakerConfig.transcript_override_min_margin || 0);
+  const margin = Number(row.dataset.rawSpeakerUnknownMargin || 0);
+  if (Number.isFinite(minMargin) && margin < minMargin) return "";
+  return speakerId;
+}
+function realtimeRowTranscriptLiveSpeakerId(row) {
+  if (!row || !liveSpeakerConfig.highlight_transcript) return "";
+  const speakerId = row.dataset.speaker !== "UNKNOWN" ? normalizedLiveSpeakerId(row.dataset.speaker) : "";
+  if (!speakerId) return "";
+  return realtimeRowWithinTranscriptHighlightWindow(row) ? speakerId : "";
+}
+function scheduleTranscriptLiveSpeakerExpiry(row) {
+  clearTranscriptLiveSpeakerExpiryTimer();
+  const maxLag = transcriptHighlightMaxLagSeconds();
+  if (!row || maxLag < 0 || !transcriptLiveSpeakerId) return;
+  const end = finiteAudioSecond(row.dataset.end, NaN);
+  if (!Number.isFinite(end)) return;
+  const remainingMs = Math.max(0, (end + maxLag - playbackSeconds()) * 1000);
+  transcriptLiveSpeakerExpiryTimer = setTimeout(updateCurrentLiveSpeakerFromRealtimeRows, remainingMs + 25);
+}
 function reconcileLiveSpeakerHighlight() {
-  currentLiveSpeakerId = activeFallbackLiveSpeakerId() || transcriptLiveSpeakerId;
+  currentLiveSpeakerId = transcriptLiveSpeakerOverrideId
+    || activeFallbackLiveSpeakerId()
+    || (liveSpeakerConfig.highlight_transcript ? transcriptLiveSpeakerId : "");
   refreshLiveSpeakerHighlight();
 }
 function scheduleFallbackLiveSpeakerExpiry() {
@@ -2055,7 +2143,9 @@ function applyFastSpeakerPanelSignal(item) {
 function updateCurrentLiveSpeakerFromRealtimeRows() {
   const realtimeRows = Array.from(sentences.querySelectorAll(".row[data-realtime='true']"));
   const activeRow = realtimeRows[realtimeRows.length - 1] || null;
-  transcriptLiveSpeakerId = activeRow && activeRow.dataset.speaker !== "UNKNOWN" ? activeRow.dataset.speaker : "";
+  transcriptLiveSpeakerId = realtimeRowTranscriptLiveSpeakerId(activeRow);
+  transcriptLiveSpeakerOverrideId = transcriptOverrideCandidate(activeRow);
+  scheduleTranscriptLiveSpeakerExpiry(activeRow);
   reconcileLiveSpeakerHighlight();
 }
 function speakerSpeakingTimeText(seconds) {
@@ -2781,11 +2871,16 @@ function renderSentence(item) {
   const durationSeconds = Math.max(0, endSeconds - startSeconds);
   const ratio = Number(item.speech_audio_ratio);
   const rawSpeakerId = normalizedLiveSpeakerId(item.assigned_speaker);
+  const rawProbabilities = item.probabilities || {};
+  const rawSpeakerProbability = probabilityForSpeakerId(rawProbabilities, rawSpeakerId);
+  const rawSpeakerUnknownMargin = probabilityLeadOverUnknown(rawProbabilities, rawSpeakerId);
   const previousDisplaySpeakerId = item.realtime ? normalizedLiveSpeakerId(row.dataset.speaker) : "";
   const displaySpeakerId = item.realtime
     ? realtimeRowDisplaySpeakerId(rawSpeakerId, startSeconds, endSeconds, previousDisplaySpeakerId)
     : rawSpeakerId;
   row.dataset.rawSpeaker = item.realtime ? rawSpeakerId : "";
+  row.dataset.rawSpeakerProbability = item.realtime ? String(rawSpeakerProbability) : "";
+  row.dataset.rawSpeakerUnknownMargin = item.realtime ? String(rawSpeakerUnknownMargin) : "";
   row.dataset.speaker = displaySpeakerId || "UNKNOWN";
   row.classList.toggle("live-speaker-row", item.realtime && Boolean(displaySpeakerId));
   const speakerLabel = speakerDisplayLabel(displaySpeakerId);

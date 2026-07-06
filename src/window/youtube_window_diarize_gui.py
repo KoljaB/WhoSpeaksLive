@@ -394,6 +394,19 @@ class Handler(BaseHTTPRequestHandler):
                             0.02,
                             float(getattr(self.server.args, "browser_live_observation_interval_seconds", DEFAULT_BROWSER_OBSERVATION_INTERVAL_SECONDS)),
                         ),
+                        "highlight_transcript": bool(
+                            getattr(self.server.args, "live_speaker_highlight_transcript", True)
+                        ),
+                        "transcript_highlight_max_lag_seconds": float(
+                            getattr(self.server.args, "live_speaker_highlight_transcript_max_lag_seconds", -1.0)
+                        ),
+                        "transcript_override_min_probability": float(
+                            getattr(self.server.args, "live_speaker_highlight_transcript_override_min_probability", 1.1)
+                        ),
+                        "transcript_override_min_margin": float(
+                            getattr(self.server.args, "live_speaker_highlight_transcript_override_min_margin", 0.0)
+                        ),
+                        "session_lease_enabled": self.server.session_lease_enabled,
                     }),
                 )
                 .replace("__SPEAKER_LIBRARY_JSON__", json_dumps(speaker_state))
@@ -678,7 +691,23 @@ class WindowServer(ThreadingHTTPServer):
             else None
         )
 
+    @property
+    def session_lease_enabled(self) -> bool:
+        return bool(getattr(self.args, "demo_seat_lease", True))
+
+    def _disabled_session_state(self, client_id: str = "") -> dict[str, Any]:
+        return {
+            "enabled": False,
+            "active": False,
+            "is_owner": True,
+            "running": self.controller.is_running(),
+            "completed": False,
+            "client_id": str(client_id or "")[:120],
+        }
+
     def _enforce_session_timeouts(self) -> None:
+        if not self.session_lease_enabled:
+            return
         expired = self.session_lease.expire_if_needed()
         if not expired:
             return
@@ -688,10 +717,19 @@ class WindowServer(ThreadingHTTPServer):
             self.controller.stop()
 
     def session_status(self, client_id: str = "") -> dict[str, Any]:
+        if not self.session_lease_enabled:
+            return self._disabled_session_state(client_id)
         self._enforce_session_timeouts()
         return self.session_lease.status(client_id)
 
     def acquire_session(self, client_id: str) -> dict[str, Any]:
+        if not self.session_lease_enabled:
+            return {
+                "ok": True,
+                "acquired": True,
+                "session_token": "",
+                "session": self._disabled_session_state(client_id),
+            }
         self._enforce_session_timeouts()
         result = self.session_lease.acquire(client_id)
         if result.get("acquired"):
@@ -699,14 +737,20 @@ class WindowServer(ThreadingHTTPServer):
         return result
 
     def require_session(self, token: str, client_id: str = "") -> dict[str, Any]:
+        if not self.session_lease_enabled:
+            return self._disabled_session_state(client_id)
         self._enforce_session_timeouts()
         return self.session_lease.authorize(token, client_id)
 
     def heartbeat_session(self, token: str, client_id: str = "") -> dict[str, Any]:
+        if not self.session_lease_enabled:
+            return {"ok": True, "session": self._disabled_session_state(client_id)}
         self._enforce_session_timeouts()
         return self.session_lease.heartbeat(token, client_id)
 
     def release_session(self, token: str, reason: str = "released", client_id: str = "") -> dict[str, Any]:
+        if not self.session_lease_enabled:
+            return {"ok": True, "released": False, "session": self._disabled_session_state(client_id)}
         was_running = self.session_lease.is_active_token(token) and self.controller.is_running()
         result = self.session_lease.release(token, reason, client_id)
         if result.get("released"):
@@ -716,6 +760,8 @@ class WindowServer(ThreadingHTTPServer):
         return result
 
     def mark_session_running(self, token: str) -> None:
+        if not self.session_lease_enabled:
+            return
         self.session_lease.mark_running(token)
         self._start_session_completion_monitor(token)
 
@@ -1135,6 +1181,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8795)
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument(
+        "--demo-seat-lease",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Require one browser tab to take the public demo seat before controlling a shared run.",
+    )
     parser.add_argument(
         "--session-lease-idle-timeout-seconds",
         type=float,
@@ -1849,6 +1901,30 @@ def parse_args() -> argparse.Namespace:
         action=argparse.BooleanOptionalAction,
         default=True,
         help="Let fresh final sentence assignments seed the visible live speaker when no stronger live tag is active.",
+    )
+    parser.add_argument(
+        "--live-speaker-highlight-transcript",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Allow realtime transcript rows to drive the speaker-list live highlight when no fallback live-speaker probe is active.",
+    )
+    parser.add_argument(
+        "--live-speaker-highlight-transcript-max-lag-seconds",
+        type=float,
+        default=-1.0,
+        help="Maximum playback lag after a realtime transcript row end for that row to drive the speaker-list live highlight; negative disables the limit.",
+    )
+    parser.add_argument(
+        "--live-speaker-highlight-transcript-override-min-probability",
+        type=float,
+        default=1.1,
+        help="Minimum raw realtime transcript speaker probability needed to override an active fallback live-speaker highlight; values above 1 disable override.",
+    )
+    parser.add_argument(
+        "--live-speaker-highlight-transcript-override-min-margin",
+        type=float,
+        default=0.0,
+        help="Minimum raw probability lead over UNKNOWN needed for transcript speaker highlight override.",
     )
     parser.add_argument(
         "--live-speaker-sentence-hint-override",
