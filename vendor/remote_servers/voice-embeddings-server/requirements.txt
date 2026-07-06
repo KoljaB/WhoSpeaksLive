@@ -11,6 +11,7 @@ matplotlib>=3.8
 modelscope>=1.14
 numpy>=2.0,<3
 nvidia-ml-py>=12.535
+onnxruntime>=1.27
 pyannote.audio==3.3.2
 resemblyzer>=0.1.4
 soundfile>=0.12.1

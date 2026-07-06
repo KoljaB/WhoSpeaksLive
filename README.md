@@ -17,6 +17,7 @@ For a full working setup, follow these in order:
 | Documentation map | [docs/index.md](docs/index.md) |
 | Product overview and use cases | [docs/overview.md](docs/overview.md) |
 | Installation | [docs/installation.md](docs/installation.md) |
+| macOS setup | [docs/macos-setup.md](docs/macos-setup.md) |
 | Quickstart | [docs/quickstart.md](docs/quickstart.md) |
 | Live window workflow | [docs/live-window-workflow.md](docs/live-window-workflow.md) |
 | Speaker libraries | [docs/speaker-libraries.md](docs/speaker-libraries.md) |
