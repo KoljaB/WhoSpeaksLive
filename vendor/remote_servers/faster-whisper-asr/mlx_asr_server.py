@@ -17,9 +17,11 @@ from __future__ import annotations
 
 import math
 import os
+import threading
 import time
 from typing import Any
 
+import mlx.core as mx
 import mlx_whisper
 import numpy as np
 from fastapi import FastAPI, HTTPException, Request
@@ -61,12 +63,32 @@ def parse_bool(value: Any, name: str) -> bool:
     raise HTTPException(status_code=400, detail=f"{name}_must_be_boolean")
 
 
+def start_parent_watchdog() -> None:
+    # These servers are started by hand (docs/macos-setup.md) and hold multi-GB
+    # models; if the launching shell dies they would otherwise run forever as
+    # orphans. Exit once reparented. Opt out (nohup-style daemonizing) with
+    # WHOSPEAKS_EXIT_WITH_PARENT=0.
+    if os.environ.get("WHOSPEAKS_EXIT_WITH_PARENT", "1") in {"0", "false", "False"}:
+        return
+    parent = os.getppid()
+    if parent <= 1:
+        return
+
+    def watch() -> None:
+        while os.getppid() == parent:
+            time.sleep(5)
+        os._exit(0)
+
+    threading.Thread(target=watch, daemon=True, name="parent-watchdog").start()
+
+
 @app.on_event("startup")
 def load_model() -> None:
     # mlx_whisper loads/caches the model lazily on first transcribe() call
     # (there is no separate "load model" API), so warm it up here to keep
     # /transcribe-window latency off the model-load cost.
     global model_loaded_at
+    start_parent_watchdog()
     start = time.perf_counter()
     warmup = np.zeros(TARGET_SAMPLE_RATE, dtype=np.float32)
     mlx_whisper.transcribe(warmup, path_or_hf_repo=MODEL_REPO, language="en")
@@ -137,6 +159,10 @@ async def transcribe_window(request: Request) -> JSONResponse:
         condition_on_previous_text=False,
     )
     elapsed = time.perf_counter() - started
+    # MLX's unified-memory buffer cache is unbounded by default and ratchets up
+    # to the largest window ever transcribed, inflating RSS by tens of GB over a
+    # long session; drop it after each request so memory stays near model size.
+    mx.clear_cache()
 
     segments = []
     all_words = []
