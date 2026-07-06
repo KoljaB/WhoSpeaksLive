@@ -249,6 +249,8 @@ HTML = r"""<!doctype html>
     .text { font-size:15px; line-height:1.34; }
     .row.realtime { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 10%, #0B1015); }
     .row.realtime.live-speaker-row { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, #0B1015); border-bottom-color:color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, var(--line)); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, transparent), inset 7px 0 14px color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, transparent); }
+    .row.provisional-split-source { border-bottom-color:color-mix(in srgb, var(--live-row-color, #8F9BA8) 24%, var(--line)); }
+    .row.provisional-visual-split { border-top:1px dashed color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, transparent); }
     .row.realtime .text { color:#d7dee8; }
     .prob { flex:0 0 min(180px, 24vw); display:flex; width:min(180px, 24vw); height:6px; overflow:hidden; border:1px solid var(--line); border-radius:4px; background:#0B1015; margin-top:4px; }
     .prob span { display:block; height:100%; min-width:0; }
@@ -1998,15 +2000,29 @@ function rememberLiveSpeakerEvidence(speakerId, item) {
 }
 function realtimeDominanceScoredEnd(start, end) {
   const duration = Math.max(0, end - start);
-  if (duration <= 2) return end;
-  const tailSeconds = duration >= 8 ? 2 : (duration - 2) * 0.25;
+  if (duration <= 3) return end;
+  const tailSeconds = Math.min(3, Math.max(2, duration * 0.25));
   return Math.max(start + 0.1, end - tailSeconds);
+}
+function realtimeRowHasSpeakerEvidence(start, end) {
+  const rowStart = Math.max(0, finiteAudioSecond(start, 0));
+  const rowEnd = Math.max(rowStart, finiteAudioSecond(end, rowStart));
+  if (!(rowEnd > rowStart)) return false;
+  return liveSpeakerTimeline.some(item => {
+    const speakerId = normalizedLiveSpeakerId(item.speakerId);
+    if (!speakerId) return false;
+    const overlapStart = Math.max(rowStart, finiteAudioSecond(item.start, rowStart));
+    const overlapEnd = Math.min(rowEnd, finiteAudioSecond(item.end, rowStart));
+    return overlapEnd - overlapStart > 0;
+  });
 }
 function dominantRealtimeSpeakerId(start, end) {
   const rowStart = Math.max(0, finiteAudioSecond(start, 0));
   const rowEnd = Math.max(rowStart, finiteAudioSecond(end, rowStart));
   if (!(rowEnd > rowStart)) return "";
   const scoredEnd = realtimeDominanceScoredEnd(rowStart, rowEnd);
+  const scoredSeconds = Math.max(0, scoredEnd - rowStart);
+  if (scoredSeconds <= 0) return "";
   const weights = {};
   liveSpeakerTimeline.forEach(item => {
     const speakerId = normalizedLiveSpeakerId(item.speakerId);
@@ -2025,15 +2041,87 @@ function dominantRealtimeSpeakerId(start, end) {
       bestSeconds = seconds;
     }
   });
-  return bestSeconds >= 0.1 ? bestSpeakerId : "";
+  const requiredSeconds = Math.max(0.3, scoredSeconds * 0.5);
+  return bestSeconds >= requiredSeconds ? bestSpeakerId : "";
+}
+function realtimeTailSpeakerChange(start, end, currentSpeakerId = "") {
+  const rowStart = Math.max(0, finiteAudioSecond(start, 0));
+  const rowEnd = Math.max(rowStart, finiteAudioSecond(end, rowStart));
+  if (rowEnd - rowStart < 4) return null;
+  const scoredEnd = realtimeDominanceScoredEnd(rowStart, rowEnd);
+  const current = normalizedLiveSpeakerId(currentSpeakerId);
+  let best = null;
+  liveSpeakerTimeline.forEach(item => {
+    const speakerId = normalizedLiveSpeakerId(item.speakerId);
+    if (!speakerId || speakerId === current) return;
+    const evidenceStart = Math.max(rowStart, finiteAudioSecond(item.start, rowStart));
+    const evidenceEnd = Math.min(rowEnd, finiteAudioSecond(item.end, rowStart));
+    if (!(evidenceEnd > evidenceStart)) return;
+    const tailStart = Math.max(evidenceStart, scoredEnd);
+    const tailSeconds = Math.max(0, evidenceEnd - tailStart);
+    if (tailSeconds < 0.4) return;
+    const score = tailSeconds + evidenceEnd * 0.001;
+    if (!best || score > best.score) {
+      best = {speakerId, start: evidenceStart, end: evidenceEnd, tailSeconds, score};
+    }
+  });
+  return best;
 }
 function realtimeRowDisplaySpeakerId(rawSpeakerId = "", start = 0, end = 0, previousSpeakerId = "") {
-  return (
-    dominantRealtimeSpeakerId(start, end)
-    || normalizedLiveSpeakerId(previousSpeakerId)
-    || activeFallbackLiveSpeakerId()
-    || normalizedLiveSpeakerId(rawSpeakerId)
-  );
+  const dominantSpeakerId = dominantRealtimeSpeakerId(start, end);
+  if (dominantSpeakerId) return dominantSpeakerId;
+  const previousNormalizedSpeakerId = normalizedLiveSpeakerId(previousSpeakerId);
+  if (previousNormalizedSpeakerId) return previousNormalizedSpeakerId;
+  if (realtimeRowHasSpeakerEvidence(start, end)) return "";
+  const rawNormalizedSpeakerId = normalizedLiveSpeakerId(rawSpeakerId);
+  if (!rawNormalizedSpeakerId) return "";
+  const rowStart = Math.max(0, finiteAudioSecond(start, 0));
+  const rowEnd = Math.max(rowStart, finiteAudioSecond(end, rowStart));
+  if (rowEnd - rowStart > 3) return "";
+  return rawNormalizedSpeakerId;
+}
+function lastPunctuationTextSplit(textValue) {
+  const value = String(textValue || "").replace(/\s+/g, " ").trim();
+  if (!value) return null;
+  const boundaryPattern = /[.!?]["')\]]*\s+/g;
+  const candidates = [];
+  let match = null;
+  while ((match = boundaryPattern.exec(value)) !== null) {
+    const boundary = match.index + match[0].length;
+    const prefixText = value.slice(0, boundary).trim();
+    const suffixText = value.slice(boundary).trim();
+    if (!/[A-Za-z0-9]/.test(prefixText) || !/[A-Za-z0-9]/.test(suffixText)) continue;
+    candidates.push({
+      prefixText,
+      suffixText,
+      suffixRatio: suffixText.length / Math.max(1, value.length),
+    });
+  }
+  return candidates.length ? candidates[candidates.length - 1] : null;
+}
+function provisionalRealtimeVisualSplit(item, displaySpeakerId, start, end) {
+  if (!item || !item.realtime) return null;
+  const tailChange = realtimeTailSpeakerChange(start, end, displaySpeakerId);
+  if (!tailChange) return null;
+  const textSplit = lastPunctuationTextSplit(item.text);
+  if (!textSplit) return null;
+  const rowStart = Math.max(0, finiteAudioSecond(start, 0));
+  const rowEnd = Math.max(rowStart, finiteAudioSecond(end, rowStart));
+  const duration = rowEnd - rowStart;
+  if (duration <= 0) return null;
+  const splitStart = Math.min(Math.max(tailChange.start, rowStart + 0.2), rowEnd - 0.2);
+  const tailDuration = Math.max(0, rowEnd - splitStart);
+  if (tailDuration < 0.5) return null;
+  const tailRatio = tailDuration / duration;
+  const maxSuffixRatio = Math.max(0.25, Math.min(0.5, tailRatio + 0.25));
+  if (textSplit.suffixRatio > maxSuffixRatio) return null;
+  return {
+    speakerId: tailChange.speakerId,
+    prefixText: textSplit.prefixText,
+    suffixText: textSplit.suffixText,
+    splitStart,
+    end: rowEnd,
+  };
 }
 function applyRealtimeRowSpeaker(row, speakerId) {
   const normalizedSpeakerId = normalizedLiveSpeakerId(speakerId);
@@ -2057,15 +2145,34 @@ function applyRealtimeRowSpeaker(row, speakerId) {
 }
 function refreshRealtimeRowsFromLiveSpeaker() {
   Array.from(sentences.querySelectorAll(".row[data-realtime='true']")).forEach(row => {
+    if (!row.isConnected) return;
+    if (row.dataset.provisionalSplit === "true") {
+      applyRealtimeRowSpeaker(row, row.dataset.speaker);
+      return;
+    }
+    clearProvisionalRealtimeSplitsFor(row.dataset.index);
+    restoreRealtimeRowFullPreview(row);
+    const rowStart = row.dataset.start;
+    const rowEnd = row.dataset.fullEnd || row.dataset.end;
+    const rowRawSpeaker = row.dataset.fullRawSpeaker || row.dataset.rawSpeaker || "";
     applyRealtimeRowSpeaker(
       row,
       realtimeRowDisplaySpeakerId(
-        row.dataset.rawSpeaker || "",
-        row.dataset.start,
-        row.dataset.end,
+        rowRawSpeaker,
+        rowStart,
+        rowEnd,
         row.dataset.speaker,
       ),
     );
+    const visualSplit = provisionalRealtimeVisualSplit(
+      {realtime: true, text: row.dataset.fullText || row.dataset.text || ""},
+      normalizedLiveSpeakerId(row.dataset.speaker),
+      rowStart,
+      rowEnd,
+    );
+    if (visualSplit) {
+      applyProvisionalRealtimeVisualSplit(row, visualSplit);
+    }
   });
   updateCurrentLiveSpeakerFromRealtimeRows();
   refreshSpeakerPanelSentenceCounts();
@@ -2907,6 +3014,118 @@ function findSentenceRow(index) {
   const key = String(index);
   return Array.from(sentences.querySelectorAll(".row")).find(row => row.dataset.index === key) || null;
 }
+function clearProvisionalRealtimeSplitsFor(index) {
+  const key = String(index || "");
+  Array.from(sentences.querySelectorAll(".row[data-provisional-split='true']")).forEach(row => {
+    if (!key || row.dataset.provisionalSplitFor === key) {
+      row.remove();
+    }
+  });
+}
+function clearAllProvisionalRealtimeSplits() {
+  clearProvisionalRealtimeSplitsFor("");
+}
+function renderProvisionalRealtimeSplitRow(baseRow, split) {
+  const baseIndex = String(baseRow.dataset.index || "");
+  const splitIndex = `${baseIndex}:split`;
+  let row = findSentenceRow(splitIndex);
+  if (!row) {
+    row = document.createElement("div");
+  }
+  const speakerId = normalizedLiveSpeakerId(split.speakerId);
+  const color = speakerColor(speakerId);
+  row.className = "row realtime provisional-visual-split live-speaker-row";
+  row.dataset.index = splitIndex;
+  row.dataset.realtime = "true";
+  row.dataset.provisionalSplit = "true";
+  row.dataset.provisionalSplitFor = baseIndex;
+  row.dataset.rawSpeaker = speakerId;
+  row.dataset.rawSpeakerProbability = "1";
+  row.dataset.rawSpeakerUnknownMargin = "1";
+  row.dataset.speaker = speakerId || "UNKNOWN";
+  row.dataset.start = String(split.splitStart);
+  row.dataset.end = String(split.end);
+  row.dataset.text = split.suffixText;
+  row.dataset.searchText = split.suffixText;
+  row.style.setProperty("--live-row-color", color || "#8F9BA8");
+
+  const top = document.createElement("div");
+  top.className = "top";
+  const topLeft = document.createElement("div");
+  topLeft.className = "top-left";
+
+  const speakerBadge = document.createElement("span");
+  speakerBadge.className = `${speakerId ? "badge" : "badge unknown"} speaker-name`;
+  if (color) {
+    speakerBadge.style.color = color;
+    speakerBadge.style.borderColor = color;
+    speakerBadge.style.background = "#0B1015";
+  }
+  speakerBadge.textContent = speakerDisplayLabel(speakerId);
+  topLeft.appendChild(speakerBadge);
+
+  const stateBadge = document.createElement("span");
+  stateBadge.className = "badge state";
+  stateBadge.textContent = "Live";
+  topLeft.appendChild(stateBadge);
+
+  const duration = document.createElement("span");
+  duration.className = "sentence-duration";
+  duration.textContent = secondsLabel(Math.max(0, split.end - split.splitStart));
+  topLeft.appendChild(duration);
+
+  const range = document.createElement("span");
+  range.className = "sentence-range";
+  range.textContent = `(${secondsLabel(split.splitStart)} - ${secondsLabel(split.end)})`;
+  topLeft.appendChild(range);
+
+  const prob = document.createElement("div");
+  prob.className = "prob";
+  if (color) {
+    const span = document.createElement("span");
+    span.style.flex = "0 0 100%";
+    span.style.background = color;
+    prob.appendChild(span);
+  }
+  top.appendChild(topLeft);
+  top.appendChild(prob);
+
+  const text = document.createElement("div");
+  text.className = "text";
+  text.textContent = split.suffixText;
+  row.replaceChildren(top, text);
+  if (baseRow.nextSibling !== row) {
+    sentences.insertBefore(row, baseRow.nextSibling);
+  }
+}
+function updateRenderedRealtimeRowTextRange(row, textValue, endValue) {
+  const text = String(textValue || "");
+  const end = finiteAudioSecond(endValue, finiteAudioSecond(row.dataset.end, 0));
+  row.dataset.end = String(end);
+  row.dataset.text = text;
+  row.dataset.searchText = text;
+  const textNode = row.querySelector(".text");
+  if (textNode) textNode.textContent = text;
+  const start = finiteAudioSecond(row.dataset.start, 0);
+  const duration = row.querySelector(".sentence-duration");
+  if (duration) duration.textContent = secondsLabel(Math.max(0, end - start));
+  const range = row.querySelector(".sentence-range");
+  if (range) range.textContent = `(${secondsLabel(start)} - ${secondsLabel(end)})`;
+}
+function restoreRealtimeRowFullPreview(row) {
+  const fullText = row.dataset.fullText;
+  const fullEnd = row.dataset.fullEnd;
+  if (fullText === undefined || fullEnd === undefined) return;
+  row.classList.remove("provisional-split-source");
+  updateRenderedRealtimeRowTextRange(row, fullText, fullEnd);
+  row.dataset.rawSpeaker = row.dataset.fullRawSpeaker || row.dataset.rawSpeaker || "";
+}
+function applyProvisionalRealtimeVisualSplit(row, split) {
+  row.classList.add("provisional-split-source");
+  updateRenderedRealtimeRowTextRange(row, split.prefixText, split.splitStart);
+  row.dataset.rawSpeaker = normalizedLiveSpeakerId(row.dataset.speaker);
+  renderProvisionalRealtimeSplitRow(row, split);
+}
 function clearRealtimeRows(generation) {
   currentRealtimeGeneration = Math.max(currentRealtimeGeneration, Number(generation || 0));
   Array.from(sentences.querySelectorAll(".row[data-realtime='true']")).forEach(row => row.remove());
@@ -2917,6 +3136,11 @@ function clearRealtimeRows(generation) {
 function renderSentence(item) {
   if (item.realtime && Number(item.realtime_generation || 0) < currentRealtimeGeneration) {
     return;
+  }
+  if (item.realtime) {
+    clearProvisionalRealtimeSplitsFor(item.index);
+  } else {
+    clearAllProvisionalRealtimeSplits();
   }
   if (item.assigned_speaker && item.speaker_name) {
     speakerNames[item.assigned_speaker] = item.speaker_name;
@@ -2935,7 +3159,6 @@ function renderSentence(item) {
   row.dataset.realtime = item.realtime ? "true" : "false";
   const startSeconds = Number(item.start || 0);
   const endSeconds = Number(item.end || 0);
-  const durationSeconds = Math.max(0, endSeconds - startSeconds);
   const ratio = Number(item.speech_audio_ratio);
   const rawSpeakerId = normalizedLiveSpeakerId(item.assigned_speaker);
   const rawProbabilities = item.probabilities || {};
@@ -2946,11 +3169,19 @@ function renderSentence(item) {
   const displaySpeakerId = item.realtime
     ? realtimeRowDisplaySpeakerId(rawSpeakerId, startSeconds, endSeconds, previousDisplaySpeakerId)
     : rawSpeakerId;
-  row.dataset.rawSpeaker = item.realtime ? rawSpeakerId : "";
+  const visualSplit = provisionalRealtimeVisualSplit(item, displaySpeakerId, startSeconds, endSeconds);
+  const displayEndSeconds = visualSplit ? visualSplit.splitStart : endSeconds;
+  const displayText = visualSplit ? visualSplit.prefixText : (item.text || "");
+  const durationSeconds = Math.max(0, displayEndSeconds - startSeconds);
+  row.dataset.rawSpeaker = item.realtime ? (visualSplit ? displaySpeakerId : rawSpeakerId) : "";
   row.dataset.rawSpeakerProbability = item.realtime ? String(rawSpeakerProbability) : "";
   row.dataset.rawSpeakerUnknownMargin = item.realtime ? String(rawSpeakerUnknownMargin) : "";
+  row.dataset.fullRawSpeaker = item.realtime ? rawSpeakerId : "";
+  row.dataset.fullEnd = item.realtime ? String(endSeconds) : "";
+  row.dataset.fullText = item.realtime ? (item.text || "") : "";
   row.dataset.speaker = displaySpeakerId || "UNKNOWN";
   row.classList.toggle("provisional-assignment", Boolean(item.provisional_assignment));
+  row.classList.toggle("provisional-split-source", Boolean(visualSplit));
   row.classList.toggle("live-speaker-row", item.realtime && Boolean(displaySpeakerId));
   const speakerLabel = speakerDisplayLabel(displaySpeakerId);
   const color = speakerColor(displaySpeakerId);
@@ -2961,9 +3192,9 @@ function renderSentence(item) {
     )
   );
   row.dataset.start = String(startSeconds);
-  row.dataset.end = String(endSeconds);
-  row.dataset.text = item.text || "";
-  row.dataset.searchText = item.text || "";
+  row.dataset.end = String(displayEndSeconds);
+  row.dataset.text = displayText;
+  row.dataset.searchText = displayText;
   if (item.realtime) {
     row.style.setProperty("--live-row-color", color || "#8F9BA8");
   } else {
@@ -3005,7 +3236,7 @@ function renderSentence(item) {
 
   const range = document.createElement("span");
   range.className = "sentence-range";
-  range.textContent = `(${secondsLabel(startSeconds)} - ${secondsLabel(endSeconds)})`;
+  range.textContent = `(${secondsLabel(startSeconds)} - ${secondsLabel(displayEndSeconds)})`;
   topLeft.appendChild(range);
 
   if (Number.isFinite(ratio)) {
@@ -3022,8 +3253,11 @@ function renderSentence(item) {
 
   const text = document.createElement("div");
   text.className = "text";
-  text.textContent = item.text || "";
+  text.textContent = displayText;
   row.replaceChildren(top, text);
+  if (visualSplit) {
+    renderProvisionalRealtimeSplitRow(row, visualSplit);
+  }
 
   const probabilities = displayProbabilities(item);
   const segments = probabilitySegments(probabilities);

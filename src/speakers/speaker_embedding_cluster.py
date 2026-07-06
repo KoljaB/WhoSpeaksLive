@@ -672,4 +672,4 @@ class SpeakerMemory:
 
     @staticmethod
     def _duration_quality(duration_seconds: float) -> float:
-        return max(0.25, min(1.0, (duration_seconds - 0.35) / (2.2 - 0.35)))
+        return max(0.25, min(1.0, (duration_seconds - 0.45) / (2.6 - 0.45)))

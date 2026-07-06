@@ -92,6 +92,119 @@ class WindowEventBusTests(unittest.TestCase):
         self.assertIsInstance(bus.records[0]["time"], float)
 
 
+class PublicEventNormalizerTests(unittest.TestCase):
+    def test_final_unknown_and_later_assignment_emit_stable_events(self) -> None:
+        from window.public_events import PublicEventNormalizer
+
+        normalizer = PublicEventNormalizer(session_id="test-session")
+
+        final_unknown = normalizer.normalize(
+            "sentence",
+            {
+                "index": 7,
+                "text": "We should track this.",
+                "pending": False,
+                "assigned_speaker": None,
+                "start": 1.0,
+                "end": 2.5,
+                "unknown_probability": 1.0,
+                "assignment_source": "embedding",
+            },
+        )
+
+        self.assertEqual([event["type"] for event in final_unknown], ["transcript.final", "transcript.final_unknown"])
+        self.assertEqual(final_unknown[0]["session_id"], "test-session")
+        self.assertEqual(final_unknown[0]["payload"]["id"], "7")
+        self.assertIsNone(final_unknown[0]["payload"]["speaker"])
+
+        revised = normalizer.normalize(
+            "sentence",
+            {
+                "index": 7,
+                "text": "We should track this.",
+                "pending": False,
+                "revision": True,
+                "revision_from": "UNKNOWN",
+                "revision_to": "S2",
+                "assigned_speaker": "S2",
+                "start": 1.0,
+                "end": 2.5,
+                "unknown_probability": 0.0,
+                "assignment_source": "retro",
+            },
+        )
+
+        self.assertEqual([event["type"] for event in revised], ["transcript.speaker_revised", "transcript.speaker_assigned"])
+        self.assertEqual(revised[0]["payload"]["previous_speaker"], None)
+        self.assertEqual(revised[0]["payload"]["new_speaker"], "S2")
+
+    def test_speaker_events_detect_create_rename_and_state_change(self) -> None:
+        from window.public_events import PublicEventNormalizer
+
+        normalizer = PublicEventNormalizer()
+        first = normalizer.normalize(
+            "speakers",
+            {
+                "group_name": "",
+                "embedding_provider": "espnet",
+                "speakers": [
+                    {
+                        "id": "S1",
+                        "name": "",
+                        "display_name": "Speaker 1",
+                        "source": "detected",
+                        "locked": False,
+                        "sentence_count": 1,
+                        "speech_seconds": 2.5,
+                    }
+                ],
+            },
+        )
+
+        self.assertEqual([event["type"] for event in first], ["speaker.created", "speaker.state_changed"])
+
+        renamed = normalizer.normalize(
+            "speakers",
+            {
+                "group_name": "",
+                "embedding_provider": "espnet",
+                "speakers": [
+                    {
+                        "id": "S1",
+                        "name": "Alice",
+                        "display_name": "Alice",
+                        "source": "detected",
+                        "locked": False,
+                        "sentence_count": 1,
+                        "speech_seconds": 2.5,
+                    }
+                ],
+            },
+        )
+
+        self.assertEqual([event["type"] for event in renamed], ["speaker.renamed", "speaker.state_changed"])
+        self.assertEqual(renamed[0]["payload"]["speaker_id"], "S1")
+        self.assertEqual(renamed[0]["payload"]["previous_name"], "")
+        self.assertEqual(renamed[0]["payload"]["new_name"], "Alice")
+
+    def test_speaker_snapshot_seeds_state_without_created_events(self) -> None:
+        from window.public_events import PublicEventNormalizer
+
+        normalizer = PublicEventNormalizer()
+        snapshot = normalizer.speaker_snapshot({
+            "group_name": "daily",
+            "embedding_provider": "espnet",
+            "speakers": [{"id": "S1", "name": "Alice", "display_name": "Alice"}],
+        })
+
+        self.assertEqual([event["type"] for event in snapshot], ["speaker.snapshot"])
+        self.assertEqual(snapshot[0]["payload"]["speakers"][0]["speaker_id"], "S1")
+
+        unchanged = normalizer.normalize("speakers", snapshot[0]["payload"]["raw"])
+
+        self.assertEqual(unchanged, [])
+
+
 class WindowSentenceTextTests(unittest.TestCase):
     def test_transcribe_window_capitalizes_after_previous_strong_sentence_boundary(self) -> None:
         import window.window_text as window_text
@@ -805,18 +918,20 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("let hasRenderedFinalSentenceRows = false;", HTML)
         self.assertIn("function dominantRealtimeSpeakerId(start, end)", HTML)
         self.assertIn("function realtimeDominanceScoredEnd(start, end)", HTML)
-        self.assertIn("const tailSeconds = duration >= 8 ? 2 : (duration - 2) * 0.25;", HTML)
+        self.assertIn("const tailSeconds = Math.min(3, Math.max(2, duration * 0.25));", HTML)
+        self.assertIn("const requiredSeconds = Math.max(0.3, scoredSeconds * 0.5);", HTML)
         self.assertIn("function rememberLiveSpeakerEvidence(speakerId, item)", HTML)
+        self.assertIn("function realtimeRowHasSpeakerEvidence(start, end)", HTML)
         self.assertIn("liveSpeakerTimeline.push({speakerId: normalizedSpeakerId, start, end});", HTML)
         self.assertIn("liveSpeakerTimeline = [];", HTML)
         self.assertIn("const previousDisplaySpeakerId = item.realtime ? normalizedLiveSpeakerId(row.dataset.speaker) : \"\";", HTML)
         self.assertIn("realtimeRowDisplaySpeakerId(rawSpeakerId, startSeconds, endSeconds, previousDisplaySpeakerId)", HTML)
-        self.assertIn('row.dataset.rawSpeaker = item.realtime ? rawSpeakerId : "";', HTML)
+        self.assertIn('row.dataset.rawSpeaker = item.realtime ? (visualSplit ? displaySpeakerId : rawSpeakerId) : "";', HTML)
         self.assertIn('row.dataset.speaker = displaySpeakerId || "UNKNOWN";', HTML)
         self.assertIn('row.classList.toggle("live-speaker-row", item.realtime && Boolean(displaySpeakerId));', HTML)
         self.assertIn('row.style.setProperty("--live-row-color", color || "#8F9BA8");', HTML)
         self.assertIn("function updateCurrentLiveSpeakerFromRealtimeRows()", HTML)
-        self.assertIn('transcriptLiveSpeakerId = activeRow && activeRow.dataset.speaker !== "UNKNOWN" ? activeRow.dataset.speaker : "";', HTML)
+        self.assertIn("transcriptLiveSpeakerId = realtimeRowTranscriptLiveSpeakerId(activeRow);", HTML)
         self.assertIn("function reconcileLiveSpeakerHighlight()", HTML)
         self.assertIn("updateCurrentLiveSpeakerFromRealtimeRows();", HTML)
         self.assertIn("speakingSeconds[speakerId] = (speakingSeconds[speakerId] || 0) + Math.max(0, end - start);", HTML)
@@ -829,6 +944,35 @@ class WindowHtmlSafetyTests(unittest.TestCase):
             HTML.index('row.dataset.speaker = displaySpeakerId || "UNKNOWN";'),
             HTML.index("refreshSpeakerPanelSentenceCounts();", HTML.index("function renderSentence(item)")),
         )
+
+    def test_realtime_unknown_sentence_ignores_tail_only_known_speaker(self) -> None:
+        display_start = HTML.index("function realtimeRowDisplaySpeakerId")
+        display_end = HTML.index("function applyRealtimeRowSpeaker")
+        display_block = HTML[display_start:display_end]
+
+        self.assertIn("const dominantSpeakerId = dominantRealtimeSpeakerId(start, end);", display_block)
+        self.assertIn('if (realtimeRowHasSpeakerEvidence(start, end)) return "";', display_block)
+        self.assertIn("if (rowEnd - rowStart > 3) return \"\";", display_block)
+        self.assertNotIn("activeFallbackLiveSpeakerId()", display_block)
+        self.assertIn("const requiredSeconds = Math.max(0.3, scoredSeconds * 0.5);", HTML)
+
+    def test_realtime_visual_split_uses_tail_speaker_and_punctuation_only(self) -> None:
+        self.assertIn(".row.provisional-visual-split", HTML)
+        self.assertIn("function realtimeTailSpeakerChange(start, end, currentSpeakerId = \"\")", HTML)
+        self.assertIn("function lastPunctuationTextSplit(textValue)", HTML)
+        self.assertIn("function provisionalRealtimeVisualSplit(item, displaySpeakerId, start, end)", HTML)
+        self.assertIn("const tailChange = realtimeTailSpeakerChange(start, end, displaySpeakerId);", HTML)
+        self.assertIn("const textSplit = lastPunctuationTextSplit(item.text);", HTML)
+        self.assertIn('if (tailSeconds < 0.4) return;', HTML)
+        self.assertIn("const boundaryPattern = /[.!?][\"')\\]]*\\s+/g;", HTML)
+        self.assertIn("renderProvisionalRealtimeSplitRow(row, visualSplit);", HTML)
+        self.assertIn("clearProvisionalRealtimeSplitsFor(item.index);", HTML)
+        self.assertIn("clearAllProvisionalRealtimeSplits();", HTML)
+        self.assertIn("restoreRealtimeRowFullPreview(row);", HTML)
+        self.assertIn("applyProvisionalRealtimeVisualSplit(row, visualSplit);", HTML)
+        self.assertIn("row.dataset.fullRawSpeaker = item.realtime ? rawSpeakerId : \"\";", HTML)
+        self.assertIn("row.dataset.fullEnd = item.realtime ? String(endSeconds) : \"\";", HTML)
+        self.assertIn("row.dataset.fullText = item.realtime ? (item.text || \"\") : \"\";", HTML)
 
     def test_speaker_solo_mute_filters_transcript_rows(self) -> None:
         self.assertIn("let soloSpeakerIds = new Set();", HTML)
@@ -1090,7 +1234,9 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn('es.addEventListener("live_speaker_clear", e => clearFallbackLiveSpeakerFromProbe(JSON.parse(e.data)));', HTML)
         self.assertIn("const holdSeconds = Math.max(0, Number(item.hold_seconds || 2.0));", HTML)
         self.assertIn("fallbackLiveSpeakerUntilMs = performance.now() + holdSeconds * 1000;", HTML)
-        self.assertIn("currentLiveSpeakerId = activeFallbackLiveSpeakerId() || transcriptLiveSpeakerId;", HTML)
+        self.assertIn("currentLiveSpeakerId = transcriptLiveSpeakerOverrideId", HTML)
+        self.assertIn("|| activeFallbackLiveSpeakerId()", HTML)
+        self.assertIn("|| (liveSpeakerConfig.highlight_transcript ? transcriptLiveSpeakerId : \"\");", HTML)
         self.assertIn('return "sentence";', HTML)
         self.assertNotIn("fast window", HTML)
         self.assertIn("fastSpeakerPanelStats[speakerId]", HTML)
@@ -2101,7 +2247,7 @@ class RepositoryStructureTests(unittest.TestCase):
             os.environ.update(original_env)
             importlib.reload(paths)
 
-    def test_window_gui_default_embedding_provider_matches_promoted_stack(self) -> None:
+    def test_window_gui_default_embedding_provider_ignores_environment_override(self) -> None:
         import window.window_config as window_config
 
         original_env = dict(os.environ)
@@ -2110,7 +2256,7 @@ class RepositoryStructureTests(unittest.TestCase):
             reloaded = importlib.reload(window_config)
             self.assertEqual(
                 reloaded.DEFAULT_WINDOW_EMBEDDING_PROVIDER,
-                "espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12",
+                "espnet_ecapa_wavlm_joint",
             )
         finally:
             os.environ.clear()
@@ -2121,26 +2267,33 @@ class RepositoryStructureTests(unittest.TestCase):
         from window.youtube_window_diarize_gui import parse_args
 
         expected = {
-            "embedding_provider": "espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12",
+            "embedding_provider": "espnet_ecapa_wavlm_joint",
             "interval_seconds": 0.7,
-            "same_speaker_similarity": 0.37,
-            "similarity_temperature": 0.0648,
-            "speaker_softmax_temperature": 0.0443,
-            "new_speaker_threshold": 0.38,
-            "duplicate_profile_similarity": 0.4,
-            "unknown_short_threshold": 0.3225,
-            "min_first_speaker_seconds": 1.3098,
-            "min_new_speaker_seconds": 1.6,
-            "late_new_speaker_min_seconds": 3.4127,
+            "same_speaker_similarity": 0.401,
+            "similarity_temperature": 0.0687,
+            "speaker_softmax_temperature": 0.0557,
+            "new_speaker_threshold": 0.4309,
+            "duplicate_profile_similarity": 0.4247,
+            "unknown_short_threshold": 0.3115,
+            "min_first_speaker_seconds": 1.8373,
+            "min_new_speaker_seconds": 2.0358,
+            "late_new_speaker_min_seconds": 3.1604,
             "max_speakers": 12,
-            "min_margin": 0.0386,
-            "margin_temperature": 0.03,
-            "update_unknown_max": 0.61,
+            "min_margin": 0.0372,
+            "margin_temperature": 0.0361,
+            "update_unknown_max": 0.4289,
             "new_speaker_confirmation_count": 1,
-            "new_speaker_confirmation_similarity": 0.5149,
+            "new_speaker_confirmation_similarity": 0.5801,
             "max_pending_new_speakers": 6,
+            "known_speaker_min_similarity": 0.5563,
+            "known_speaker_gray_zone_min_unknown_probability": 0.064,
+            "profile_update_min_similarity": 0.5011,
+            "profile_update_min_margin": 0.0037,
+            "low_similarity_unknown_floor_similarity": 0.56,
+            "low_similarity_unknown_floor_probability": 0.1885,
+            "gray_zone_promote_max_similarity": 0.55,
             "min_new_speaker_words": 3,
-            "retro_reassign_min_similarity": 0.05,
+            "retro_reassign_min_similarity": 0.02,
             "retro_reassign_min_margin": 0.0,
             "min_embed_seconds": 0.5,
             "min_speech_audio_ratio": 0.0,
