@@ -14,6 +14,8 @@ All Kroko languages supported by this integration work with realtime preview tex
 
 Without realtime preview text, WhoSpeaksLive can also work with additional languages. The key requirement is that the language is supported by Whisper and by at least one configured sentence segmenter, meaning NLTK or Stanza.
 
+That currently makes these additional languages principally supported without realtime preview text: Afrikaans, Arabic, Belarusian, Bulgarian, Catalan, Czech, Welsh, Danish, Greek, Estonian, Basque, Persian, Finnish, Faroese, Galician, Hindi, Croatian, Hungarian, Armenian, Indonesian, Icelandic, Japanese, Georgian, Kazakh, Korean, Latin, Lithuanian, Latvian, Malayalam, Marathi, Maltese, Myanmar/Burmese, Norwegian, Norwegian Nynorsk, Polish, Romanian, Russian, Sanskrit, Sindhi, Slovak, Slovenian, Albanian, Serbian, Tamil, Telugu, Thai, Ukrainian, Urdu, Vietnamese, and Chinese.
+
 CPU-only operation is not the recommended path for the current stack. The system is GPU-heavy today; a CPU-only setup may be possible, but should be treated as a separate optimization target and will likely require engineering work, slower processing, and some accuracy or throughput tradeoffs.
 
 ## License
