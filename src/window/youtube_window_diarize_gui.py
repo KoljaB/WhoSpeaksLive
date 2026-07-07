@@ -917,6 +917,8 @@ class WindowServer(ThreadingHTTPServer):
         parsed = urlparse(url)
         if parsed.scheme == "microphone":
             instruction = "press Start and allow microphone access."
+        elif parsed.scheme == "mixed-audio":
+            instruction = "press Start, share a tab or window with audio, and allow microphone access."
         else:
             instruction = "press Start and share a tab or window with audio."
         self.bus.emit(

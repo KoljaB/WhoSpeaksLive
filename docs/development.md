@@ -65,3 +65,11 @@ Before committing:
 5. Confirm `git diff --cached --check`.
 
 The repository may contain local runtime artifacts and generated caches. Do not force-add ignored files unless they are intentionally part of a source snapshot.
+
+## Local Experiments
+
+Some branches or local runs may include a `window.fact_lens_sidecar` module. Treat it as a very first implementation of an LLM-based transcript claim extraction experiment, not as a functional or supported fact-checking feature.
+
+It is disabled by default and should remain opt-in only. Do not present it in public workflow docs, demos, or quickstart material until it has a validated product behavior, clear safety boundaries, and reproducible evaluation. At this stage it is extremely experimental: it may misclassify transcript fragments, does not perform reliable source verification, and should not be used as evidence that the application provides working fact checking.
+
+If a developer needs to inspect it locally, start it explicitly with `--enable-llm`; otherwise it should only mirror final transcript events without creating claim cards or calling an LLM.

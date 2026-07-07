@@ -86,8 +86,8 @@ HTML = r"""<!doctype html>
     .source-icon { width:36px; height:30px; display:none; align-items:center; justify-content:center; border-radius:7px; color:var(--text); }
     .source-icon svg { width:21px; height:21px; display:block; }
     .source-icon-youtube { display:flex; background:#E5252A; box-shadow:inset 0 1px 0 rgba(255,255,255,.22); }
-    .media-card.mode-microphone .source-icon-youtube, .media-card.mode-system .source-icon-youtube { display:none; }
-    .media-card.mode-microphone .source-icon-microphone, .media-card.mode-system .source-icon-system { display:flex; background:#0F161F; border:1px solid var(--line); color:#17B7FE; }
+    .media-card.mode-microphone .source-icon-youtube, .media-card.mode-system .source-icon-youtube, .media-card.mode-both .source-icon-youtube { display:none; }
+    .media-card.mode-microphone .source-icon-microphone, .media-card.mode-system .source-icon-system, .media-card.mode-both .source-icon-system { display:flex; background:#0F161F; border:1px solid var(--line); color:#17B7FE; }
     .source-copy { min-width:0; display:flex; align-items:baseline; gap:16px; }
     .source-kind { flex:0 0 auto; color:#D7DEE8; font-size:15px; font-weight:400; white-space:nowrap; }
     .source-title { min-width:0; color:var(--text); font-size:15px; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -114,7 +114,7 @@ HTML = r"""<!doctype html>
     .app.browser-stream .media-card.mode-youtube .youtube-stream { display:block; }
     .media-controls { min-width:0; min-height:100%; display:grid; grid-template-rows:auto minmax(0,1fr) auto; align-items:center; gap:8px; }
     .youtube-source-controls { align-self:start; }
-    .media-card.mode-microphone .youtube-source-controls, .media-card.mode-system .youtube-source-controls { display:none; }
+    .media-card.mode-microphone .youtube-source-controls, .media-card.mode-system .youtube-source-controls, .media-card.mode-both .youtube-source-controls { display:none; }
     .timeline-row { width:100%; min-width:0; padding-right:13px; align-self:center; display:grid; grid-template-columns:auto minmax(120px,1fr) auto; align-items:center; gap:10px; color:#B7C1CD; font-size:14px; font-variant-numeric:tabular-nums; }
     .timeline-bar { position:relative; height:6px; margin-left:8px; margin-right:10px; border-radius:999px; background:#93A1AF; box-shadow:inset 0 1px 2px rgba(0,0,0,.28); }
     .timeline-fill { position:absolute; inset:0 auto 0 0; width:0%; border-radius:inherit; background:#17B7FE; box-shadow:0 0 16px rgba(23,183,254,.35); }
@@ -122,11 +122,11 @@ HTML = r"""<!doctype html>
     .media-expand { width:40px; height:40px; align-self:end; justify-self:start; display:grid; place-items:center; padding:0; border-color:var(--line); background:#0F161F; color:#D7DEE8; }
     .media-expand svg { width:20px; height:20px; }
     .capture-panel { min-height:132px; display:none; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:14px; padding:12px; }
-    .media-card.mode-microphone .capture-panel, .media-card.mode-system .capture-panel { display:grid; }
-    .media-card.mode-microphone .playback-panel, .media-card.mode-system .playback-panel { display:none; }
+    .media-card.mode-microphone .capture-panel, .media-card.mode-system .capture-panel, .media-card.mode-both .capture-panel { display:grid; }
+    .media-card.mode-microphone .playback-panel, .media-card.mode-system .playback-panel, .media-card.mode-both .playback-panel { display:none; }
     .capture-icon { width:42px; height:42px; display:grid; place-items:center; border:1px solid var(--line); border-radius:8px; background:#0F161F; color:#17B7FE; }
     .capture-icon svg { width:24px; height:24px; display:none; }
-    .media-card.mode-microphone .capture-icon-mic, .media-card.mode-system .capture-icon-system { display:block; }
+    .media-card.mode-microphone .capture-icon-mic, .media-card.mode-system .capture-icon-system, .media-card.mode-both .capture-icon-system { display:block; }
     .capture-body { min-width:0; display:grid; gap:12px; }
     .capture-title { margin:0; color:var(--text); font-size:16px; line-height:1.2; }
     .capture-description { margin:0; color:#9EAAB6; font-size:12px; }
@@ -401,6 +401,7 @@ HTML = r"""<!doctype html>
             <option value="youtube">YouTube video</option>
             <option value="microphone">Microphone</option>
             <option value="system">Computer audio</option>
+            <option value="both">Computer audio + microphone</option>
           </select>
           <div id="sourceModeMenu" class="source-mode-menu">
             <button id="sourceModeButton" class="source-mode-button dropdown-control" type="button" aria-expanded="false" aria-controls="sourceModeOptions">Change source</button>
@@ -408,6 +409,7 @@ HTML = r"""<!doctype html>
               <button class="source-mode-option" type="button" data-input-mode="youtube">YouTube video</button>
               <button class="source-mode-option" type="button" data-input-mode="microphone">Microphone</button>
               <button class="source-mode-option" type="button" data-input-mode="system">Computer audio</button>
+              <button class="source-mode-option" type="button" data-input-mode="both">Computer audio + microphone</button>
             </div>
           </div>
         </section>
@@ -711,10 +713,13 @@ let browserStreamPrepared = false;
 let browserStreamPreparedUrl = "";
 let captureSourceKind = "display";
 let captureStream = null;
+let captureStreams = [];
 let captureAudioContext = null;
 let captureSourceNode = null;
+let captureSourceNodes = [];
 let captureProcessor = null;
 let captureSilentGain = null;
+let captureMicGainNode = null;
 let captureSendQueue = Promise.resolve();
 let capturePending = [];
 let capturePendingSamples = 0;
@@ -829,7 +834,13 @@ function reflectRuntimeStatus(message) {
 
   if (!browserStreamMode) return;
   if (lower.includes("waiting for audible input")) {
-    setStreamHint("Audio capture is armed. Play the video and make sure the shared source includes audio.");
+    if (captureSourceKind === "microphone") {
+      setStreamHint("Microphone capture is armed. Speak into the selected microphone.");
+    } else if (captureSourceKind === "mixed") {
+      setStreamHint("Mixed capture is armed. Play the shared source or speak into the microphone.");
+    } else {
+      setStreamHint("Audio capture is armed. Play the video and make sure the shared source includes audio.");
+    }
   } else if (lower.includes("detected audible input")) {
     setStreamHint("Audio detected. Transcription appears after the first completed window.");
   } else if (lower.includes("growing-window transcription started") || lower.includes("realtime preview started")) {
@@ -874,6 +885,7 @@ function updateMediaMode() {
   mediaCard.classList.toggle("mode-youtube", mode === "youtube");
   mediaCard.classList.toggle("mode-microphone", mode === "microphone");
   mediaCard.classList.toggle("mode-system", mode === "system");
+  mediaCard.classList.toggle("mode-both", mode === "both");
   sourceModeOptionButtons.forEach(button => {
     const active = button.dataset.inputMode === mode;
     button.classList.toggle("active", active);
@@ -891,6 +903,12 @@ function updateMediaMode() {
     mediaTime.textContent = "Live input";
     captureTitle.textContent = "Computer audio";
     captureDescription.textContent = "Shared audio level appears after capture starts.";
+  } else if (mode === "both") {
+    sourceKind.textContent = "Computer audio + microphone";
+    sourceTitle.textContent = "Shared audio mixed with local microphone";
+    mediaTime.textContent = "Live input";
+    captureTitle.textContent = "Computer audio + microphone";
+    captureDescription.textContent = "Mixed input level appears after capture starts.";
   } else {
     sourceKind.textContent = "YouTube";
     sourceTitle.textContent = sourceTitleForUrl(source.value);
@@ -942,13 +960,17 @@ function updateMediaTimeline() {
   timelineThumb.style.left = `${percent}%`;
 }
 function updateMicGainLabel() {
-  const gain = Number(micGain.value || 1);
+  const gain = microphoneGainValue();
   micGainValue.textContent = `${gain.toFixed(2)}x`;
+  if (captureMicGainNode) captureMicGainNode.gain.value = gain;
+}
+function microphoneGainValue() {
+  const gain = Number(micGain.value || 1);
+  return Number.isFinite(gain) ? Math.max(0, Math.min(2, gain)) : 1;
 }
 function captureGainValue() {
   if ((inputMode.value || "youtube") !== "microphone") return 1;
-  const gain = Number(micGain.value || 1);
-  return Number.isFinite(gain) ? Math.max(0, Math.min(2, gain)) : 1;
+  return microphoneGainValue();
 }
 function copyCaptureSamples(input) {
   const gain = captureGainValue();
@@ -1071,6 +1093,8 @@ function setBrowserStreamMode(enabled, url="", sourceKind="display") {
     if (streamHint) {
       if (captureSourceKind === "microphone") {
         setStreamHint("Microphone mode. Press Start, allow microphone access, then speak.");
+      } else if (captureSourceKind === "mixed") {
+        setStreamHint("Computer audio + microphone mode. Press Start, share a tab or window with audio, then allow microphone access.");
       } else if (embed) {
         setStreamHint("Play the video, press Start, then share this tab with audio.");
       } else {
@@ -1086,6 +1110,7 @@ function setBrowserStreamMode(enabled, url="", sourceKind="display") {
 }
 function browserStreamSourceUrl() {
   if (captureSourceKind === "microphone") return "microphone://local";
+  if (captureSourceKind === "mixed") return "mixed-audio://local";
   const url = source.value.trim();
   return url || "system-audio://local";
 }
@@ -1108,6 +1133,9 @@ function initializeInputModeFromSource() {
   } else if (value.startsWith("system-audio://")) {
     inputMode.value = "system";
     setBrowserStreamMode(true, "", "display");
+  } else if (value.startsWith("mixed-audio://")) {
+    inputMode.value = "both";
+    setBrowserStreamMode(true, "", "mixed");
   }
   updateMediaMode();
 }
@@ -1196,6 +1224,37 @@ function flushBrowserAudio(force=false) {
   capturePendingSamples = 0;
   queueBrowserAudioChunk(combined, sampleRate);
 }
+function stopCaptureStream(stream) {
+  if (!stream) return;
+  stream.getTracks().forEach(track => {
+    track.onended = null;
+    try { track.stop(); } catch (_) {}
+  });
+}
+async function requestMicrophoneCapture(audioOptions) {
+  if (!navigator.mediaDevices.getUserMedia) {
+    throw new Error("Microphone capture is not available in this browser.");
+  }
+  log("Allow microphone access.");
+  const stream = await navigator.mediaDevices.getUserMedia({video: false, audio: audioOptions});
+  if (!stream.getAudioTracks().length) {
+    stopCaptureStream(stream);
+    throw new Error("No microphone audio track was shared.");
+  }
+  return stream;
+}
+async function requestDisplayAudioCapture(audioOptions) {
+  if (!navigator.mediaDevices.getDisplayMedia) {
+    throw new Error("Browser tab-audio capture is not available in this browser.");
+  }
+  log("Choose the YouTube/app tab or window and enable tab/system audio in the share dialog.");
+  const stream = await navigator.mediaDevices.getDisplayMedia({video: true, audio: audioOptions});
+  if (!stream.getAudioTracks().length) {
+    stopCaptureStream(stream);
+    throw new Error("No tab or system audio track was shared.");
+  }
+  return stream;
+}
 function stopBrowserAudioCapture() {
   flushBrowserAudio(true);
   if (captureProcessor) {
@@ -1203,6 +1262,14 @@ function stopBrowserAudioCapture() {
     captureProcessor.onaudioprocess = null;
     captureProcessor = null;
   }
+  if (captureMicGainNode) {
+    try { captureMicGainNode.disconnect(); } catch (_) {}
+    captureMicGainNode = null;
+  }
+  for (const node of captureSourceNodes) {
+    try { node.disconnect(); } catch (_) {}
+  }
+  captureSourceNodes = [];
   if (captureSourceNode) {
     try { captureSourceNode.disconnect(); } catch (_) {}
     captureSourceNode = null;
@@ -1211,10 +1278,10 @@ function stopBrowserAudioCapture() {
     try { captureSilentGain.disconnect(); } catch (_) {}
     captureSilentGain = null;
   }
-  if (captureStream) {
-    captureStream.getTracks().forEach(track => track.stop());
-    captureStream = null;
-  }
+  const streams = captureStreams.length ? captureStreams : (captureStream ? [captureStream] : []);
+  streams.forEach(stopCaptureStream);
+  captureStreams = [];
+  captureStream = null;
   if (captureAudioContext) {
     captureAudioContext.close().catch(() => {});
     captureAudioContext = null;
@@ -1237,27 +1304,30 @@ async function startBrowserAudioCapture() {
     autoGainControl: false,
     channelCount: 1,
   };
-  if (captureSourceKind === "microphone") {
-    if (!navigator.mediaDevices.getUserMedia) {
-      throw new Error("Microphone capture is not available in this browser.");
+  let displayStream = null;
+  let microphoneStream = null;
+  try {
+    if (captureSourceKind === "microphone") {
+      microphoneStream = await requestMicrophoneCapture(audioOptions);
+      captureStreams = [microphoneStream];
+    } else if (captureSourceKind === "mixed") {
+      displayStream = await requestDisplayAudioCapture(audioOptions);
+      microphoneStream = await requestMicrophoneCapture(audioOptions);
+      captureStreams = [displayStream, microphoneStream];
+    } else {
+      displayStream = await requestDisplayAudioCapture(audioOptions);
+      captureStreams = [displayStream];
     }
-    log("Allow microphone access. Capture will start when speech is audible.");
-    captureStream = await navigator.mediaDevices.getUserMedia({video: false, audio: audioOptions});
-  } else {
-    if (!navigator.mediaDevices.getDisplayMedia) {
-      throw new Error("Browser tab-audio capture is not available in this browser.");
-    }
-    log("Choose the YouTube/app tab and enable tab/system audio in the share dialog.");
-    captureStream = await navigator.mediaDevices.getDisplayMedia({video: true, audio: audioOptions});
+  } catch (error) {
+    stopCaptureStream(displayStream);
+    stopCaptureStream(microphoneStream);
+    captureStreams = [];
+    captureStream = null;
+    throw error;
   }
-  if (!captureStream.getAudioTracks().length) {
-    stopBrowserAudioCapture();
-    throw new Error(captureSourceKind === "microphone" ? "No microphone audio track was shared." : "No tab audio track was shared.");
-  }
+  captureStream = captureStreams[0] || null;
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   captureAudioContext = new AudioContextClass({sampleRate: targetCaptureSampleRate});
-  const audioOnlyStream = new MediaStream(captureStream.getAudioTracks());
-  captureSourceNode = captureAudioContext.createMediaStreamSource(audioOnlyStream);
   captureProcessor = captureAudioContext.createScriptProcessor(4096, 1, 1);
   captureSilentGain = captureAudioContext.createGain();
   captureSilentGain.gain.value = 0;
@@ -1280,15 +1350,32 @@ async function startBrowserAudioCapture() {
     capturePendingSamples += copy.length;
     flushBrowserAudio(false);
   };
-  captureSourceNode.connect(captureProcessor);
+  if (captureSourceKind === "mixed") {
+    const displayAudioStream = new MediaStream(displayStream.getAudioTracks());
+    const microphoneAudioStream = new MediaStream(microphoneStream.getAudioTracks());
+    const displaySourceNode = captureAudioContext.createMediaStreamSource(displayAudioStream);
+    const microphoneSourceNode = captureAudioContext.createMediaStreamSource(microphoneAudioStream);
+    captureMicGainNode = captureAudioContext.createGain();
+    captureMicGainNode.gain.value = microphoneGainValue();
+    displaySourceNode.connect(captureProcessor);
+    microphoneSourceNode.connect(captureMicGainNode);
+    captureMicGainNode.connect(captureProcessor);
+    captureSourceNodes = [displaySourceNode, microphoneSourceNode];
+  } else {
+    const audioOnlyStream = new MediaStream(captureStream.getAudioTracks());
+    captureSourceNode = captureAudioContext.createMediaStreamSource(audioOnlyStream);
+    captureSourceNode.connect(captureProcessor);
+  }
   captureProcessor.connect(captureSilentGain);
   captureSilentGain.connect(captureAudioContext.destination);
   await captureAudioContext.resume();
-  captureStream.getTracks().forEach(track => {
-    track.onended = () => {
-      if (browserStreamMode) log("Browser audio capture ended.");
-      stopBrowserAudioCapture();
-    };
+  captureStreams.forEach(stream => {
+    stream.getTracks().forEach(track => {
+      track.onended = () => {
+        if (browserStreamMode) log("Browser audio capture ended.");
+        stopBrowserAudioCapture();
+      };
+    });
   });
   log(`Browser audio capture armed at ${Math.round(captureAudioContext.sampleRate)} Hz; waiting for audible input.`);
 }
@@ -3589,11 +3676,11 @@ start.addEventListener("click", async () => {
   if (browserStreamMode) {
     try {
       await applySpeakerSensitivityIfDirty();
-      setState(captureSourceKind === "microphone" ? "Requesting mic" : "Requesting audio");
+      setState(captureSourceKind === "microphone" ? "Requesting mic" : (captureSourceKind === "mixed" ? "Requesting audio + mic" : "Requesting audio"));
       await prepareBrowserStreamSession();
       await startBrowserAudioCapture();
       setState("Warming backend");
-      setStreamHint(captureSourceKind === "microphone" ? "Microphone capture is armed; warming backend." : "Audio capture is armed; warming backend before transcription starts.");
+      setStreamHint(captureSourceKind === "microphone" ? "Microphone capture is armed; warming backend." : (captureSourceKind === "mixed" ? "Mixed audio capture is armed; warming backend before transcription starts." : "Audio capture is armed; warming backend before transcription starts."));
       const result = await post("/api/start");
       if (result.speaker_state) updateSpeakerState(result.speaker_state);
     } catch (error) {
@@ -3634,6 +3721,8 @@ preset.addEventListener("change", () => {
     source.value = preset.value;
     if (inputMode.value === "system") {
       setBrowserStreamMode(true, source.value.trim(), "display");
+    } else if (inputMode.value === "both") {
+      setBrowserStreamMode(true, source.value.trim(), "mixed");
     }
   }
   updateMediaMode();
@@ -3642,6 +3731,8 @@ source.addEventListener("input", () => {
   syncPresetSelection(source.value);
   if (inputMode.value === "system") {
     setBrowserStreamMode(true, source.value.trim(), "display");
+  } else if (inputMode.value === "both") {
+    setBrowserStreamMode(true, source.value.trim(), "mixed");
   }
   updateMediaMode();
 });
@@ -3658,6 +3749,11 @@ inputMode.addEventListener("change", () => {
     setState("Ready");
     start.disabled = false;
     log("Computer/tab audio mode selected. Press Start and share audio from a tab or window.");
+  } else if (inputMode.value === "both") {
+    setBrowserStreamMode(true, source.value.trim(), "mixed");
+    setState("Ready");
+    start.disabled = false;
+    log("Computer audio + microphone mode selected. Press Start, share audio from a tab or window, and allow microphone access.");
   } else {
     setBrowserStreamMode(false);
     setState("Ready");
@@ -3899,6 +3995,21 @@ load.addEventListener("click", async () => {
     connect();
     setBrowserStreamMode(true, url, "display");
     log("Computer/tab audio mode ready. Press Start and share audio from a tab or window.");
+    setState("Ready");
+    start.disabled = false;
+    stop.disabled = true;
+    updateMediaMode();
+    return;
+  }
+  if (inputMode.value === "both") {
+    stopPlaybackClock();
+    stopBrowserAudioCapture();
+    video.pause();
+    audio.pause();
+    resetTranscriptDisplay();
+    connect();
+    setBrowserStreamMode(true, url, "mixed");
+    log("Computer audio + microphone mode ready. Press Start, share audio from a tab or window, and allow microphone access.");
     setState("Ready");
     start.disabled = false;
     stop.disabled = true;
