@@ -195,7 +195,7 @@ def replay_cached_window_diarizer(
             })
             continue
         if not is_embedding_candidate_text(part.text):
-            bus.emit("sentence", {
+            payload = {
                 **base_payload,
                 "pending": False,
                 "assigned_speaker": None,
@@ -206,7 +206,15 @@ def replay_cached_window_diarizer(
                 "unknown_probability": 1.0,
                 "top_similarity": None,
                 "margin": None,
-            })
+                "assignment_source": "non_embedding_candidate",
+            }
+            bus.emit("sentence", payload)
+            controller._record_unknown_refinement_candidate(
+                index,
+                base_payload,
+                max(0.0, part.end - part.start),
+                payload,
+            )
             continue
         controller._apply_sentence_embedding_decision(
             index=index,
@@ -238,6 +246,14 @@ def replay_cached_window_diarizer(
             )
             if committed_after == committed_before:
                 break
+        controller._merge_tiny_fragmented_speaker_profiles()
+        controller._merge_terminal_promotional_outro()
+        controller._split_long_low_confidence_retro_assignments()
+        controller._fill_unknown_same_speaker_islands()
+        controller._fill_unknown_previous_speaker_tails()
+        controller._fill_unknown_next_speaker_heads()
+    elif bool(getattr(args, "speaker_refinement", True)):
+        controller._finalize_speaker_refinement()
     if emit_done:
         bus.emit("done", {"message": "Cached window replay stopped."})
     analysis_records, final_payloads = build_window_validation_records(bus.records)
