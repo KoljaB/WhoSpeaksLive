@@ -1104,6 +1104,80 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "speaker_refinement_known_max_duration": args.speaker_refinement_known_max_duration,
             "speaker_refinement_known_min_similarity": args.speaker_refinement_known_min_similarity,
             "speaker_refinement_known_min_delta": args.speaker_refinement_known_min_delta,
+            "speaker_refinement_final_passes": args.speaker_refinement_final_passes,
+            "speaker_refinement_small_island_merge": args.speaker_refinement_small_island_merge,
+            "speaker_refinement_small_island_max_duration": args.speaker_refinement_small_island_max_duration,
+            "speaker_refinement_small_island_max_segments": args.speaker_refinement_small_island_max_segments,
+            "speaker_refinement_tiny_fragmented_merge": args.speaker_refinement_tiny_fragmented_merge,
+            "speaker_refinement_tiny_fragmented_max_duration": args.speaker_refinement_tiny_fragmented_max_duration,
+            "speaker_refinement_tiny_fragmented_max_segments": args.speaker_refinement_tiny_fragmented_max_segments,
+            "speaker_refinement_tiny_fragmented_min_islands": args.speaker_refinement_tiny_fragmented_min_islands,
+            "speaker_refinement_tiny_fragmented_max_islands": args.speaker_refinement_tiny_fragmented_max_islands,
+            "speaker_refinement_tiny_fragmented_min_neighbor_share": (
+                args.speaker_refinement_tiny_fragmented_min_neighbor_share
+            ),
+            "speaker_refinement_terminal_outro_merge": args.speaker_refinement_terminal_outro_merge,
+            "speaker_refinement_terminal_outro_max_duration": args.speaker_refinement_terminal_outro_max_duration,
+            "speaker_refinement_terminal_outro_lookback_segments": (
+                args.speaker_refinement_terminal_outro_lookback_segments
+            ),
+            "speaker_refinement_terminal_outro_min_target_duration": (
+                args.speaker_refinement_terminal_outro_min_target_duration
+            ),
+            "speaker_refinement_unknown_same_speaker_fill": (
+                args.speaker_refinement_unknown_same_speaker_fill
+            ),
+            "speaker_refinement_unknown_same_speaker_max_duration": (
+                args.speaker_refinement_unknown_same_speaker_max_duration
+            ),
+            "speaker_refinement_unknown_same_speaker_max_segments": (
+                args.speaker_refinement_unknown_same_speaker_max_segments
+            ),
+            "speaker_refinement_unknown_previous_speaker_fill": (
+                args.speaker_refinement_unknown_previous_speaker_fill
+            ),
+            "speaker_refinement_unknown_previous_speaker_max_duration": (
+                args.speaker_refinement_unknown_previous_speaker_max_duration
+            ),
+            "speaker_refinement_unknown_previous_speaker_max_segments": (
+                args.speaker_refinement_unknown_previous_speaker_max_segments
+            ),
+            "speaker_refinement_unknown_previous_speaker_max_previous_gap": (
+                args.speaker_refinement_unknown_previous_speaker_max_previous_gap
+            ),
+            "speaker_refinement_unknown_previous_speaker_min_next_gap": (
+                args.speaker_refinement_unknown_previous_speaker_min_next_gap
+            ),
+            "speaker_refinement_unknown_next_speaker_fill": (
+                args.speaker_refinement_unknown_next_speaker_fill
+            ),
+            "speaker_refinement_unknown_next_speaker_max_duration": (
+                args.speaker_refinement_unknown_next_speaker_max_duration
+            ),
+            "speaker_refinement_unknown_next_speaker_max_segments": (
+                args.speaker_refinement_unknown_next_speaker_max_segments
+            ),
+            "speaker_refinement_unknown_next_speaker_max_next_gap": (
+                args.speaker_refinement_unknown_next_speaker_max_next_gap
+            ),
+            "speaker_refinement_unknown_next_speaker_min_previous_gap": (
+                args.speaker_refinement_unknown_next_speaker_min_previous_gap
+            ),
+            "speaker_refinement_long_low_confidence_retro_split": (
+                args.speaker_refinement_long_low_confidence_retro_split
+            ),
+            "speaker_refinement_long_low_confidence_retro_min_duration": (
+                args.speaker_refinement_long_low_confidence_retro_min_duration
+            ),
+            "speaker_refinement_long_low_confidence_retro_max_similarity": (
+                args.speaker_refinement_long_low_confidence_retro_max_similarity
+            ),
+            "speaker_refinement_long_low_confidence_retro_max_margin": (
+                args.speaker_refinement_long_low_confidence_retro_max_margin
+            ),
+            "speaker_refinement_long_low_confidence_retro_max_splits": (
+                args.speaker_refinement_long_low_confidence_retro_max_splits
+            ),
             "new_speaker_sensitivity": getattr(args, "new_speaker_sensitivity", 3),
             "new_speaker_sensitivity_label": getattr(args, "new_speaker_sensitivity_label", "Balanced"),
             "vad_sentence_splitting": args.vad_sentence_splitting,
@@ -1497,12 +1571,12 @@ def parse_args() -> argparse.Namespace:
         metavar="{1,2,3,4,5}",
         help="Optional five-step new-speaker spawning sensitivity preset. Position 3 matches the tuned defaults.",
     )
-    parser.add_argument("--same-speaker-similarity", type=float, default=0.401)
-    parser.add_argument("--similarity-temperature", type=float, default=0.0687)
+    parser.add_argument("--same-speaker-similarity", type=float, default=0.43)
+    parser.add_argument("--similarity-temperature", type=float, default=0.061)
     parser.add_argument("--speaker-softmax-temperature", type=float, default=0.0557)
     parser.add_argument("--new-speaker-threshold", type=float, default=0.4309)
     parser.add_argument("--duplicate-profile-similarity", type=float, default=0.4247)
-    parser.add_argument("--unknown-short-threshold", type=float, default=0.3115)
+    parser.add_argument("--unknown-short-threshold", type=float, default=0.287)
     parser.add_argument("--min-first-speaker-seconds", type=float, default=1.8373)
     parser.add_argument("--min-new-speaker-seconds", type=float, default=2.0358)
     parser.add_argument("--late-new-speaker-min-seconds", type=float, default=3.1604)
@@ -1616,7 +1690,79 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--speaker-refinement-unknown-min-margin", type=float, default=0.0)
     parser.add_argument("--speaker-refinement-known-max-duration", type=float, default=8.0)
     parser.add_argument("--speaker-refinement-known-min-similarity", type=float, default=-0.039)
-    parser.add_argument("--speaker-refinement-known-min-delta", type=float, default=0.108)
+    parser.add_argument("--speaker-refinement-known-min-delta", type=float, default=0.04)
+    parser.add_argument(
+        "--speaker-refinement-final-passes",
+        type=int,
+        default=1,
+        help="Bounded extra speaker refinement passes after the final sentence is committed.",
+    )
+    parser.add_argument(
+        "--speaker-refinement-small-island-merge",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Merge a tiny one-off speaker island when the same speaker appears immediately before and after it.",
+    )
+    parser.add_argument("--speaker-refinement-small-island-max-duration", type=float, default=5.0)
+    parser.add_argument("--speaker-refinement-small-island-max-segments", type=int, default=3)
+    parser.add_argument(
+        "--speaker-refinement-tiny-fragmented-merge",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Merge a very small fragmented speaker profile into its dominant neighboring speaker at finalization.",
+    )
+    parser.add_argument("--speaker-refinement-tiny-fragmented-max-duration", type=float, default=6.0)
+    parser.add_argument("--speaker-refinement-tiny-fragmented-max-segments", type=int, default=8)
+    parser.add_argument("--speaker-refinement-tiny-fragmented-min-islands", type=int, default=2)
+    parser.add_argument("--speaker-refinement-tiny-fragmented-max-islands", type=int, default=3)
+    parser.add_argument("--speaker-refinement-tiny-fragmented-min-neighbor-share", type=float, default=0.5)
+    parser.add_argument(
+        "--speaker-refinement-terminal-outro-merge",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Merge a singleton terminal promotional outro back to the stable opening speaker.",
+    )
+    parser.add_argument("--speaker-refinement-terminal-outro-max-duration", type=float, default=12.0)
+    parser.add_argument("--speaker-refinement-terminal-outro-lookback-segments", type=int, default=2)
+    parser.add_argument("--speaker-refinement-terminal-outro-min-target-duration", type=float, default=5.0)
+    parser.add_argument(
+        "--speaker-refinement-unknown-same-speaker-fill",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Fill a short UNKNOWN island only when it is flanked by the same speaker on both sides.",
+    )
+    parser.add_argument("--speaker-refinement-unknown-same-speaker-max-duration", type=float, default=3.0)
+    parser.add_argument("--speaker-refinement-unknown-same-speaker-max-segments", type=int, default=1)
+    parser.add_argument(
+        "--speaker-refinement-unknown-previous-speaker-fill",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Fill a short non-embedding UNKNOWN tail only when it is contiguous with the previous speaker and separated from the next speaker by a pause.",
+    )
+    parser.add_argument("--speaker-refinement-unknown-previous-speaker-max-duration", type=float, default=0.75)
+    parser.add_argument("--speaker-refinement-unknown-previous-speaker-max-segments", type=int, default=1)
+    parser.add_argument("--speaker-refinement-unknown-previous-speaker-max-previous-gap", type=float, default=0.35)
+    parser.add_argument("--speaker-refinement-unknown-previous-speaker-min-next-gap", type=float, default=0.3)
+    parser.add_argument(
+        "--speaker-refinement-unknown-next-speaker-fill",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Fill a short non-embedding UNKNOWN head only when it is separated from the previous speaker by a pause and contiguous with the next speaker.",
+    )
+    parser.add_argument("--speaker-refinement-unknown-next-speaker-max-duration", type=float, default=1.75)
+    parser.add_argument("--speaker-refinement-unknown-next-speaker-max-segments", type=int, default=1)
+    parser.add_argument("--speaker-refinement-unknown-next-speaker-max-next-gap", type=float, default=0.05)
+    parser.add_argument("--speaker-refinement-unknown-next-speaker-min-previous-gap", type=float, default=0.15)
+    parser.add_argument(
+        "--speaker-refinement-long-low-confidence-retro-split",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Split a long, very low-confidence retro assignment into a new final speaker.",
+    )
+    parser.add_argument("--speaker-refinement-long-low-confidence-retro-min-duration", type=float, default=4.0)
+    parser.add_argument("--speaker-refinement-long-low-confidence-retro-max-similarity", type=float, default=0.06)
+    parser.add_argument("--speaker-refinement-long-low-confidence-retro-max-margin", type=float, default=0.04)
+    parser.add_argument("--speaker-refinement-long-low-confidence-retro-max-splits", type=int, default=1)
     parser.add_argument("--min-embed-seconds", type=float, default=0.5)
     parser.add_argument(
         "--min-speech-audio-ratio",

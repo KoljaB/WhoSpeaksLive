@@ -129,7 +129,9 @@ DEFAULT_REMOTE_EMBEDDINGS_TIMEOUT_SECONDS = _env_float(
     "WHOSPEAKS_REMOTE_EMBEDDINGS_TIMEOUT_SECONDS",
     600.0,
 )
-DEFAULT_WINDOW_EMBEDDING_PROVIDER = "espnet_ecapa_wavlm_joint"
+DEFAULT_WINDOW_EMBEDDING_PROVIDER = (
+    "espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37"
+)
 NEW_SPEAKER_SENSITIVITY_FIELDS = (
     "new_speaker_threshold",
     "duplicate_profile_similarity",

@@ -506,6 +506,82 @@ class ScoreParityTests(unittest.TestCase):
         self.assertEqual(score["assigned_counts"], {"S1": 1, "S2": 2})
         self.assertEqual(score["duration_accuracy"], 1.0)
 
+    def test_small_island_refinement_merges_oneoff_flanked_speaker(self) -> None:
+        from window.window_validation_replay import replay_cached_window_diarizer
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(sys, "argv", ["youtube_window_diarize_gui"]):
+            args = parse_args()
+        args.min_embed_seconds = 0.0
+        args.min_first_speaker_seconds = 0.1
+        args.min_new_speaker_seconds = 0.1
+        args.late_new_speaker_min_seconds = 0.1
+        args.min_new_speaker_words = 3
+        args.speaker_refinement = True
+        args.speaker_refinement_unknown_tentative = False
+        args.speaker_refinement_unknown_commit = False
+        args.allow_speaker_reassignment = False
+        args.speaker_refinement_small_island_merge = True
+        args.speaker_refinement_small_island_max_duration = 5.0
+        args.speaker_refinement_small_island_max_segments = 3
+
+        sentences = [
+            {
+                "index": 0,
+                "start": 0.0,
+                "end": 2.0,
+                "text": "alpha beta anchor",
+                "spoken_word_seconds": 2.0,
+                "speech_audio_ratio": 1.0,
+            },
+            {
+                "index": 1,
+                "start": 2.2,
+                "end": 4.2,
+                "text": "gamma delta anchor",
+                "spoken_word_seconds": 2.0,
+                "speech_audio_ratio": 1.0,
+            },
+            {
+                "index": 2,
+                "start": 4.4,
+                "end": 5.4,
+                "text": "brief different island",
+                "spoken_word_seconds": 1.0,
+                "speech_audio_ratio": 1.0,
+            },
+            {
+                "index": 3,
+                "start": 5.6,
+                "end": 7.6,
+                "text": "gamma delta returns",
+                "spoken_word_seconds": 2.0,
+                "speech_audio_ratio": 1.0,
+            },
+        ]
+        embeddings = [
+            np.array([1.0, 0.0, 0.0], dtype=np.float32),
+            np.array([0.0, 1.0, 0.0], dtype=np.float32),
+            np.array([0.0, 0.0, 1.0], dtype=np.float32),
+            np.array([0.0, 0.99, 0.01], dtype=np.float32),
+        ]
+
+        replay = replay_cached_window_diarizer(
+            sentences,
+            embeddings,
+            args,
+            defer_speaker_refinement=False,
+        )
+        final_by_index = {
+            payload["index"]: payload
+            for payload in replay.final_payloads
+        }
+
+        self.assertEqual(final_by_index[2]["assigned_speaker"], "S2")
+        self.assertTrue(final_by_index[2].get("small_island_merged"))
+        self.assertEqual(final_by_index[2].get("small_island_merged_from"), "S3")
+        self.assertEqual(final_by_index[2].get("assignment_source"), "small_island_merge")
+
     def test_speaker_refinement_split_switches_default_on(self) -> None:
         from window.youtube_window_diarize_gui import parse_args
 
@@ -515,6 +591,466 @@ class ScoreParityTests(unittest.TestCase):
         self.assertTrue(args.speaker_refinement_unknown_tentative)
         self.assertTrue(args.speaker_refinement_unknown_commit)
         self.assertTrue(args.allow_speaker_reassignment)
+        self.assertEqual(args.speaker_refinement_known_min_delta, 0.04)
+        self.assertEqual(args.speaker_refinement_final_passes, 1)
+        self.assertTrue(args.speaker_refinement_small_island_merge)
+        self.assertTrue(args.speaker_refinement_tiny_fragmented_merge)
+        self.assertEqual(args.speaker_refinement_tiny_fragmented_max_islands, 3)
+        self.assertTrue(args.speaker_refinement_terminal_outro_merge)
+        self.assertEqual(args.speaker_refinement_terminal_outro_max_duration, 12.0)
+        self.assertTrue(args.speaker_refinement_unknown_same_speaker_fill)
+        self.assertEqual(args.speaker_refinement_unknown_same_speaker_max_duration, 3.0)
+        self.assertEqual(args.speaker_refinement_unknown_same_speaker_max_segments, 1)
+        self.assertTrue(args.speaker_refinement_unknown_previous_speaker_fill)
+        self.assertEqual(args.speaker_refinement_unknown_previous_speaker_max_duration, 0.75)
+        self.assertEqual(args.speaker_refinement_unknown_previous_speaker_max_segments, 1)
+        self.assertEqual(args.speaker_refinement_unknown_previous_speaker_max_previous_gap, 0.35)
+        self.assertEqual(args.speaker_refinement_unknown_previous_speaker_min_next_gap, 0.3)
+        self.assertTrue(args.speaker_refinement_unknown_next_speaker_fill)
+        self.assertEqual(args.speaker_refinement_unknown_next_speaker_max_duration, 1.75)
+        self.assertEqual(args.speaker_refinement_unknown_next_speaker_max_segments, 1)
+        self.assertEqual(args.speaker_refinement_unknown_next_speaker_max_next_gap, 0.05)
+        self.assertEqual(args.speaker_refinement_unknown_next_speaker_min_previous_gap, 0.15)
+        self.assertTrue(args.speaker_refinement_long_low_confidence_retro_split)
+        self.assertEqual(args.speaker_refinement_long_low_confidence_retro_max_similarity, 0.06)
+
+    def test_final_speaker_refinement_runs_configured_passes(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            speaker_refinement=True,
+            speaker_refinement_final_passes=2,
+            speaker_refinement_tiny_fragmented_merge=False,
+            speaker_refinement_terminal_outro_merge=False,
+            speaker_refinement_long_low_confidence_retro_split=False,
+            speaker_refinement_unknown_same_speaker_fill=False,
+            speaker_refinement_unknown_previous_speaker_fill=False,
+            speaker_refinement_unknown_next_speaker_fill=False,
+        )
+        calls = 0
+
+        def refine() -> None:
+            nonlocal calls
+            calls += 1
+
+        diarizer._refine_speaker_assignments = refine
+
+        diarizer._finalize_speaker_refinement()
+
+        self.assertEqual(calls, 2)
+
+    def test_tiny_fragmented_refinement_merges_dominant_neighbor_profile(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            speaker_refinement_tiny_fragmented_merge=True,
+            speaker_refinement_tiny_fragmented_max_duration=6.0,
+            speaker_refinement_tiny_fragmented_max_segments=8,
+            speaker_refinement_tiny_fragmented_min_islands=2,
+            speaker_refinement_tiny_fragmented_max_islands=3,
+            speaker_refinement_tiny_fragmented_min_neighbor_share=0.5,
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer._speaker_lock = threading.Lock()
+        diarizer._speaker_metadata = {}
+        diarizer._sentence_refinement_lock = threading.Lock()
+
+        def record(index: int, speaker: str, duration: float = 1.0) -> dict[str, object]:
+            return {
+                "index": index,
+                "base_payload": {
+                    "index": index,
+                    "text": f"sentence {index}",
+                    "start": float(index),
+                    "end": float(index) + duration,
+                },
+                "duration_seconds": duration,
+                "assigned_speaker": speaker,
+                "created_speaker": False,
+                "probabilities": {"unknown": 0.0},
+                "similarities": {speaker: 0.6, "S2": 0.4},
+                "unknown_probability": 0.0,
+                "top_similarity": 0.6,
+                "margin": 0.2,
+                "quality": 1.0,
+                "assignment_source": "embedding",
+            }
+
+        diarizer._sentence_refinement_records = {
+            0: record(0, "S2", 2.0),
+            1: record(1, "S3"),
+            2: record(2, "S2", 2.0),
+            3: record(3, "S2", 2.0),
+            4: record(4, "S3"),
+            5: record(5, "S2", 2.0),
+        }
+
+        self.assertEqual(diarizer._merge_tiny_fragmented_speaker_profiles(), 2)
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
+        self.assertEqual(diarizer._sentence_refinement_records[4]["assigned_speaker"], "S2")
+        payload = diarizer.bus.records[-1]["payload"]
+        self.assertTrue(payload["tiny_fragmented_profile_merged"])
+        self.assertEqual(payload["tiny_fragmented_profile_merged_from"], "S3")
+        self.assertEqual(payload["assignment_source"], "tiny_fragmented_profile_merge")
+
+    def test_tiny_fragmented_refinement_skips_too_many_islands(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            speaker_refinement_tiny_fragmented_merge=True,
+            speaker_refinement_tiny_fragmented_max_duration=6.0,
+            speaker_refinement_tiny_fragmented_max_segments=8,
+            speaker_refinement_tiny_fragmented_min_islands=2,
+            speaker_refinement_tiny_fragmented_max_islands=3,
+            speaker_refinement_tiny_fragmented_min_neighbor_share=0.5,
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer._speaker_lock = threading.Lock()
+        diarizer._speaker_metadata = {}
+        diarizer._sentence_refinement_lock = threading.Lock()
+
+        def record(index: int, speaker: str, duration: float = 0.5) -> dict[str, object]:
+            return {
+                "index": index,
+                "base_payload": {
+                    "index": index,
+                    "text": f"sentence {index}",
+                    "start": float(index),
+                    "end": float(index) + duration,
+                },
+                "duration_seconds": duration,
+                "assigned_speaker": speaker,
+                "created_speaker": False,
+                "probabilities": {"unknown": 0.0},
+                "similarities": {speaker: 0.6, "S1": 0.4},
+                "unknown_probability": 0.0,
+                "top_similarity": 0.6,
+                "margin": 0.2,
+                "quality": 1.0,
+                "assignment_source": "embedding",
+            }
+
+        diarizer._sentence_refinement_records = {
+            0: record(0, "S1", 1.0),
+            1: record(1, "S3"),
+            2: record(2, "S1", 1.0),
+            3: record(3, "S3"),
+            4: record(4, "S1", 1.0),
+            5: record(5, "S3"),
+            6: record(6, "S1", 1.0),
+            7: record(7, "S3"),
+            8: record(8, "S1", 1.0),
+        }
+
+        self.assertEqual(diarizer._merge_tiny_fragmented_speaker_profiles(), 0)
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S3")
+        self.assertEqual(diarizer._sentence_refinement_records[3]["assigned_speaker"], "S3")
+        self.assertEqual(diarizer._sentence_refinement_records[5]["assigned_speaker"], "S3")
+        self.assertEqual(diarizer._sentence_refinement_records[7]["assigned_speaker"], "S3")
+
+    def test_terminal_promotional_outro_merges_to_opening_speaker(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            speaker_refinement_terminal_outro_merge=True,
+            speaker_refinement_terminal_outro_max_duration=12.0,
+            speaker_refinement_terminal_outro_lookback_segments=2,
+            speaker_refinement_terminal_outro_min_target_duration=5.0,
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer._speaker_lock = threading.Lock()
+        diarizer._speaker_metadata = {}
+        diarizer._sentence_refinement_lock = threading.Lock()
+
+        def record(index: int, speaker: str, text: str, duration: float = 2.0) -> dict[str, object]:
+            return {
+                "index": index,
+                "base_payload": {
+                    "index": index,
+                    "text": text,
+                    "start": float(index * 10),
+                    "end": float(index * 10) + duration,
+                },
+                "duration_seconds": duration,
+                "assigned_speaker": speaker,
+                "created_speaker": False,
+                "probabilities": {"unknown": 0.0},
+                "similarities": {speaker: 0.7},
+                "unknown_probability": 0.0,
+                "top_similarity": 0.7,
+                "margin": 0.5,
+                "quality": 1.0,
+                "assignment_source": "embedding",
+            }
+
+        diarizer._sentence_refinement_records = {
+            0: record(0, "S1", "Opening narration from the host.", 6.0),
+            1: record(1, "S2", "Main guest answer.", 5.0),
+            2: record(2, "S3", "Be sure to like and subscribe on YouTube.", 7.0),
+        }
+
+        self.assertEqual(diarizer._merge_terminal_promotional_outro(), 1)
+        self.assertEqual(diarizer._sentence_refinement_records[2]["assigned_speaker"], "S1")
+        payload = diarizer.bus.records[-1]["payload"]
+        self.assertTrue(payload["terminal_promotional_outro_merged"])
+        self.assertEqual(payload["terminal_promotional_outro_merged_from"], "S3")
+        self.assertEqual(payload["assignment_source"], "terminal_promotional_outro_merge")
+
+    def test_unknown_same_speaker_fill_assigns_short_flanked_unknown(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            speaker_refinement_unknown_same_speaker_fill=True,
+            speaker_refinement_unknown_same_speaker_max_duration=3.0,
+            speaker_refinement_unknown_same_speaker_max_segments=1,
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer._speaker_lock = threading.Lock()
+        diarizer._speaker_metadata = {}
+        diarizer._sentence_refinement_lock = threading.Lock()
+
+        def record(index: int, speaker: str | None, duration: float = 1.0) -> dict[str, object]:
+            assigned = speaker if speaker is not None else "UNKNOWN"
+            return {
+                "index": index,
+                "base_payload": {
+                    "index": index,
+                    "text": f"sentence {index}",
+                    "start": float(index),
+                    "end": float(index) + duration,
+                },
+                "duration_seconds": duration,
+                "assigned_speaker": assigned,
+                "created_speaker": False,
+                "probabilities": {"unknown": 1.0} if speaker is None else {"unknown": 0.0},
+                "similarities": {},
+                "unknown_probability": 1.0 if speaker is None else 0.0,
+                "top_similarity": None,
+                "margin": None,
+                "quality": 1.0,
+                "assignment_source": "embedding" if speaker is not None else None,
+            }
+
+        diarizer._sentence_refinement_records = {
+            0: record(0, "S2", 2.0),
+            1: record(1, None, 0.8),
+            2: record(2, "S2", 2.0),
+        }
+
+        self.assertEqual(diarizer._fill_unknown_same_speaker_islands(), 1)
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
+        payload = diarizer.bus.records[-1]["payload"]
+        self.assertTrue(payload["unknown_same_speaker_filled"])
+        self.assertEqual(payload["revision_from"], "UNKNOWN")
+        self.assertEqual(payload["revision_to"], "S2")
+        self.assertEqual(payload["assignment_source"], "unknown_same_speaker_island_fill")
+
+    def test_unknown_previous_speaker_fill_assigns_short_tail_before_pause(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            speaker_refinement_unknown_previous_speaker_fill=True,
+            speaker_refinement_unknown_previous_speaker_max_duration=0.6,
+            speaker_refinement_unknown_previous_speaker_max_segments=1,
+            speaker_refinement_unknown_previous_speaker_max_previous_gap=0.05,
+            speaker_refinement_unknown_previous_speaker_min_next_gap=0.15,
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer._speaker_lock = threading.Lock()
+        diarizer._speaker_metadata = {}
+        diarizer._sentence_refinement_lock = threading.Lock()
+
+        def record(
+            index: int,
+            speaker: str | None,
+            start: float,
+            end: float,
+            source: str = "embedding",
+        ) -> dict[str, object]:
+            return {
+                "index": index,
+                "base_payload": {
+                    "index": index,
+                    "text": f"sentence {index}",
+                    "start": start,
+                    "end": end,
+                },
+                "duration_seconds": end - start,
+                "assigned_speaker": speaker,
+                "created_speaker": False,
+                "probabilities": {"unknown": 1.0} if speaker is None else {"unknown": 0.0},
+                "similarities": {},
+                "unknown_probability": 1.0 if speaker is None else 0.0,
+                "top_similarity": None,
+                "margin": None,
+                "quality": 1.0,
+                "assignment_source": source,
+            }
+
+        diarizer._sentence_refinement_records = {
+            0: record(0, "S2", 0.0, 2.0),
+            1: record(1, None, 2.0, 2.25, "non_embedding_candidate"),
+            2: record(2, "S4", 2.7, 4.0),
+        }
+
+        self.assertEqual(diarizer._fill_unknown_previous_speaker_tails(), 1)
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
+        payload = diarizer.bus.records[-1]["payload"]
+        self.assertTrue(payload["unknown_previous_speaker_filled"])
+        self.assertEqual(payload["revision_from"], "UNKNOWN")
+        self.assertEqual(payload["revision_to"], "S2")
+        self.assertEqual(payload["assignment_source"], "unknown_previous_speaker_tail_fill")
+
+    def test_unknown_previous_speaker_fill_updates_scan_for_chained_tails(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            speaker_refinement_unknown_previous_speaker_fill=True,
+            speaker_refinement_unknown_previous_speaker_max_duration=0.75,
+            speaker_refinement_unknown_previous_speaker_max_segments=1,
+            speaker_refinement_unknown_previous_speaker_max_previous_gap=0.35,
+            speaker_refinement_unknown_previous_speaker_min_next_gap=0.3,
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer._speaker_lock = threading.Lock()
+        diarizer._speaker_metadata = {}
+        diarizer._sentence_refinement_lock = threading.Lock()
+
+        def record(
+            index: int,
+            speaker: str | None,
+            start: float,
+            end: float,
+            source: str = "embedding",
+        ) -> dict[str, object]:
+            return {
+                "index": index,
+                "base_payload": {
+                    "index": index,
+                    "text": f"sentence {index}",
+                    "start": start,
+                    "end": end,
+                },
+                "duration_seconds": end - start,
+                "assigned_speaker": speaker,
+                "created_speaker": False,
+                "probabilities": {"unknown": 1.0} if speaker is None else {"unknown": 0.0},
+                "similarities": {},
+                "unknown_probability": 1.0 if speaker is None else 0.0,
+                "top_similarity": None,
+                "margin": None,
+                "quality": 1.0,
+                "assignment_source": source,
+            }
+
+        diarizer._sentence_refinement_records = {
+            0: record(0, "S2", 0.0, 2.0),
+            1: record(1, None, 2.0, 2.25, "non_embedding_candidate"),
+            2: record(2, None, 2.58, 2.97, "non_embedding_candidate"),
+            3: record(3, "S4", 3.45, 5.0),
+        }
+
+        self.assertEqual(diarizer._fill_unknown_previous_speaker_tails(), 2)
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
+        self.assertEqual(diarizer._sentence_refinement_records[2]["assigned_speaker"], "S2")
+        self.assertEqual(diarizer.bus.records[-1]["payload"]["revision_to"], "S2")
+
+    def test_unknown_next_speaker_fill_assigns_short_head_after_pause(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            speaker_refinement_unknown_next_speaker_fill=True,
+            speaker_refinement_unknown_next_speaker_max_duration=0.75,
+            speaker_refinement_unknown_next_speaker_max_segments=1,
+            speaker_refinement_unknown_next_speaker_max_next_gap=0.05,
+            speaker_refinement_unknown_next_speaker_min_previous_gap=0.15,
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer._speaker_lock = threading.Lock()
+        diarizer._speaker_metadata = {}
+        diarizer._sentence_refinement_lock = threading.Lock()
+
+        def record(
+            index: int,
+            speaker: str | None,
+            start: float,
+            end: float,
+            source: str = "embedding",
+        ) -> dict[str, object]:
+            return {
+                "index": index,
+                "base_payload": {
+                    "index": index,
+                    "text": f"sentence {index}",
+                    "start": start,
+                    "end": end,
+                },
+                "duration_seconds": end - start,
+                "assigned_speaker": speaker,
+                "created_speaker": False,
+                "probabilities": {"unknown": 1.0} if speaker is None else {"unknown": 0.0},
+                "similarities": {},
+                "unknown_probability": 1.0 if speaker is None else 0.0,
+                "top_similarity": None,
+                "margin": None,
+                "quality": 1.0,
+                "assignment_source": source,
+            }
+
+        diarizer._sentence_refinement_records = {
+            0: record(0, "S1", 0.0, 2.0),
+            1: record(1, None, 2.7, 3.35, "non_embedding_candidate"),
+            2: record(2, "S3", 3.35, 5.0),
+        }
+
+        self.assertEqual(diarizer._fill_unknown_next_speaker_heads(), 1)
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S3")
+        payload = diarizer.bus.records[-1]["payload"]
+        self.assertTrue(payload["unknown_next_speaker_filled"])
+        self.assertEqual(payload["revision_from"], "UNKNOWN")
+        self.assertEqual(payload["revision_to"], "S3")
+        self.assertEqual(payload["assignment_source"], "unknown_next_speaker_head_fill")
+
+    def test_long_low_confidence_retro_split_creates_final_speaker(self) -> None:
+        from speakers.speaker_embedding_cluster import SpeakerMemory
+
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            speaker_refinement_long_low_confidence_retro_split=True,
+            speaker_refinement_long_low_confidence_retro_min_duration=4.0,
+            speaker_refinement_long_low_confidence_retro_max_similarity=0.06,
+            speaker_refinement_long_low_confidence_retro_max_margin=0.04,
+            speaker_refinement_long_low_confidence_retro_max_splits=1,
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer.memory = SpeakerMemory()
+        diarizer.memory.upsert_profile("S1", np.array([1.0, 0.0, 0.0], dtype=np.float32), duration_seconds=8.0)
+        diarizer.memory.upsert_profile("S2", np.array([0.0, 1.0, 0.0], dtype=np.float32), duration_seconds=8.0)
+        diarizer._speaker_lock = threading.Lock()
+        diarizer._speaker_metadata = {}
+        diarizer._sentence_refinement_lock = threading.Lock()
+
+        diarizer._sentence_refinement_records = {
+            0: {
+                "index": 0,
+                "base_payload": {
+                    "index": 0,
+                    "text": "uncertain long segment",
+                    "start": 0.0,
+                    "end": 12.0,
+                },
+                "embedding": np.array([0.0, 0.0, 1.0], dtype=np.float32),
+                "duration_seconds": 12.0,
+                "assigned_speaker": "S1",
+                "created_speaker": False,
+                "probabilities": {"unknown": 0.0, "speaker1": 1.0},
+                "similarities": {"S1": 0.044, "S2": 0.038},
+                "unknown_probability": 0.0,
+                "top_similarity": 0.044,
+                "margin": 0.006,
+                "quality": 1.0,
+                "assignment_source": "retro",
+            }
+        }
+
+        self.assertEqual(diarizer._split_long_low_confidence_retro_assignments(), 1)
+        self.assertEqual(diarizer._sentence_refinement_records[0]["assigned_speaker"], "S3")
+        payload = diarizer.bus.records[-1]["payload"]
+        self.assertTrue(payload["long_low_confidence_retro_split"])
+        self.assertEqual(payload["long_low_confidence_retro_split_from"], "S1")
+        self.assertEqual(payload["assignment_source"], "long_low_confidence_retro_split")
 
     def test_speaker_refinement_settings_update_split_switches(self) -> None:
         diarizer = WindowDiarizer.__new__(WindowDiarizer)
@@ -2340,7 +2876,7 @@ class RepositoryStructureTests(unittest.TestCase):
             reloaded = importlib.reload(window_config)
             self.assertEqual(
                 reloaded.DEFAULT_WINDOW_EMBEDDING_PROVIDER,
-                "espnet_ecapa_wavlm_joint",
+                "espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37",
             )
         finally:
             os.environ.clear()
@@ -2351,14 +2887,16 @@ class RepositoryStructureTests(unittest.TestCase):
         from window.youtube_window_diarize_gui import parse_args
 
         expected = {
-            "embedding_provider": "espnet_ecapa_wavlm_joint",
+            "embedding_provider": (
+                "espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37"
+            ),
             "interval_seconds": 0.7,
-            "same_speaker_similarity": 0.401,
-            "similarity_temperature": 0.0687,
+            "same_speaker_similarity": 0.43,
+            "similarity_temperature": 0.061,
             "speaker_softmax_temperature": 0.0557,
             "new_speaker_threshold": 0.4309,
             "duplicate_profile_similarity": 0.4247,
-            "unknown_short_threshold": 0.3115,
+            "unknown_short_threshold": 0.287,
             "min_first_speaker_seconds": 1.8373,
             "min_new_speaker_seconds": 2.0358,
             "late_new_speaker_min_seconds": 3.1604,
@@ -2379,6 +2917,36 @@ class RepositoryStructureTests(unittest.TestCase):
             "min_new_speaker_words": 3,
             "retro_reassign_min_similarity": 0.02,
             "retro_reassign_min_margin": 0.0,
+            "speaker_refinement_final_passes": 1,
+            "speaker_refinement_small_island_merge": True,
+            "speaker_refinement_tiny_fragmented_merge": True,
+            "speaker_refinement_tiny_fragmented_max_duration": 6.0,
+            "speaker_refinement_tiny_fragmented_max_segments": 8,
+            "speaker_refinement_tiny_fragmented_min_islands": 2,
+            "speaker_refinement_tiny_fragmented_max_islands": 3,
+            "speaker_refinement_tiny_fragmented_min_neighbor_share": 0.5,
+            "speaker_refinement_terminal_outro_merge": True,
+            "speaker_refinement_terminal_outro_max_duration": 12.0,
+            "speaker_refinement_terminal_outro_lookback_segments": 2,
+            "speaker_refinement_terminal_outro_min_target_duration": 5.0,
+            "speaker_refinement_unknown_same_speaker_fill": True,
+            "speaker_refinement_unknown_same_speaker_max_duration": 3.0,
+            "speaker_refinement_unknown_same_speaker_max_segments": 1,
+            "speaker_refinement_unknown_previous_speaker_fill": True,
+            "speaker_refinement_unknown_previous_speaker_max_duration": 0.75,
+            "speaker_refinement_unknown_previous_speaker_max_segments": 1,
+            "speaker_refinement_unknown_previous_speaker_max_previous_gap": 0.35,
+            "speaker_refinement_unknown_previous_speaker_min_next_gap": 0.3,
+            "speaker_refinement_unknown_next_speaker_fill": True,
+            "speaker_refinement_unknown_next_speaker_max_duration": 1.75,
+            "speaker_refinement_unknown_next_speaker_max_segments": 1,
+            "speaker_refinement_unknown_next_speaker_max_next_gap": 0.05,
+            "speaker_refinement_unknown_next_speaker_min_previous_gap": 0.15,
+            "speaker_refinement_long_low_confidence_retro_split": True,
+            "speaker_refinement_long_low_confidence_retro_min_duration": 4.0,
+            "speaker_refinement_long_low_confidence_retro_max_similarity": 0.06,
+            "speaker_refinement_long_low_confidence_retro_max_margin": 0.04,
+            "speaker_refinement_long_low_confidence_retro_max_splits": 1,
             "min_embed_seconds": 0.5,
             "min_speech_audio_ratio": 0.0,
             "live_speaker_embedding_provider": "jungjee_rawnet3",

@@ -20,7 +20,7 @@ class SpeakerRefinementConfig:
     unknown_min_margin: float = 0.0
     known_max_duration: float = 8.0
     known_min_similarity: float = -0.039
-    known_min_delta: float = 0.108
+    known_min_delta: float = 0.04
 
 
 @dataclass(frozen=True)
