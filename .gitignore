@@ -20,6 +20,8 @@ runtime/
 hub/
 test-model-cache/
 /speakers/
+dev-logs/
+*.log
 output_*_cunk/
 realtime_output/
 benchmarks/

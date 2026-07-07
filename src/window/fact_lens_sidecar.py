@@ -23,7 +23,7 @@ from urllib.parse import urlparse
 DEFAULT_SOURCE_URL = "http://127.0.0.1:8796"
 DEFAULT_DASHBOARD_HOST = "127.0.0.1"
 DEFAULT_DASHBOARD_PORT = 8890
-DEFAULT_LLM_BASE_URL = "http://192.168.178.22:8081/v1"
+DEFAULT_LLM_BASE_URL = "http://127.0.0.1:8081/v1"
 DEFAULT_LLM_MODEL = "local"
 SCHEMA_VERSION = "claim_triage_v1"
 CLAIM_STATUSES = {"queued", "checking", "ignored", "needs_context", "unverified", "supported", "contradicted", "mixed"}
