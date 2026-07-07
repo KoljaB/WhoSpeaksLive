@@ -102,6 +102,7 @@ from window.window_media import (  # noqa: E402
     resolve_media_url,
 )
 from window.window_remote_asr import RemoteWindowAsrClient  # noqa: E402
+from window.session_store import DEFAULT_SESSION_DIR, SessionStore  # noqa: E402
 
 
 from window.window_config import (  # noqa: E402
@@ -136,6 +137,7 @@ from window.language_config import (  # noqa: E402
     default_sentence_language,
     default_sentence_tokenizer,
     infer_language_from_kroko_model_name,
+    is_kroko_preview_language,
     kroko_preview_model_name,
     language_arg,
     sentence_tokenizer_arg,
@@ -433,6 +435,11 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_file(self.server.current_media().audio_file)
         elif path == "/api/speakers":
             self._send_json({"ok": True, "speaker_state": self.server.controller.speaker_state()})
+        elif path == "/api/sessions":
+            query = parse_qs(parsed.query)
+            filter_mode = str((query.get("filter") or ["active"])[0])
+            search = str((query.get("q") or [""])[0])
+            self._send_json(self.server.list_saved_sessions(filter_mode, search))
         elif path == "/api/session/status":
             query = parse_qs(parsed.query)
             client_id = str((query.get("client_id") or [""])[0])
@@ -444,7 +451,28 @@ class Handler(BaseHTTPRequestHandler):
         try:
             path = urlparse(self.path).path
             payload = self._read_json_body()
-            if path == "/api/session/acquire":
+            if path == "/api/sessions/create":
+                self._send_json(self.server.create_saved_session(payload))
+            elif path == "/api/sessions/open":
+                self._send_json(self.server.open_saved_session(str(payload.get("session_id") or "")))
+            elif path == "/api/sessions/rename":
+                self._send_json(self.server.rename_saved_session(
+                    str(payload.get("session_id") or ""),
+                    str(payload.get("title") or ""),
+                ))
+            elif path == "/api/sessions/archive":
+                self._send_json(self.server.archive_saved_session(str(payload.get("session_id") or "")))
+            elif path == "/api/sessions/restore":
+                self._send_json(self.server.restore_saved_session(str(payload.get("session_id") or "")))
+            elif path == "/api/sessions/delete":
+                self._send_json(self.server.delete_saved_session(str(payload.get("session_id") or "")))
+            elif path == "/api/sessions/speakers/rename":
+                self._send_json(self.server.rename_saved_session_speaker(
+                    str(payload.get("session_id") or ""),
+                    str(payload.get("speaker_id") or ""),
+                    str(payload.get("name") or ""),
+                ))
+            elif path == "/api/session/acquire":
                 self._send_json(self.server.acquire_session(str(payload.get("client_id") or "")))
             elif path == "/api/session/heartbeat":
                 self._send_json(self.server.heartbeat_session(
@@ -460,11 +488,15 @@ class Handler(BaseHTTPRequestHandler):
             elif path == "/api/start":
                 session_token = self._require_session(payload)
                 self.server.bus.emit("status", {"message": "Browser Start request received."})
+                self.server.controller.set_session_source_title(str(payload.get("source_title") or ""))
+                self.server.controller.set_next_session_id(str(payload.get("session_id") or ""))
                 speaker_state = self.server.controller.start()
                 self.server.mark_session_running(session_token)
+                saved_session = self.server._save_current_session(status_label="Started", write_audio=False)
                 self._send_json({
                     "ok": True,
                     "speaker_state": speaker_state,
+                    "saved_session": saved_session,
                     "session": self.server.session_status(str(payload.get("client_id") or "")),
                 })
             elif path == "/api/stop":
@@ -730,6 +762,9 @@ class WindowServer(ThreadingHTTPServer):
         self.media_version = int(time.time() * 1000)
         self.bus = bus
         self.controller = controller
+        self.session_store = SessionStore(Path(getattr(args, "session_dir", DEFAULT_SESSION_DIR)))
+        self._session_save_lock = threading.Lock()
+        self._session_save_timer: threading.Timer | None = None
         self.public_event_session_id = uuid.uuid4().hex
         self.session_lease = SessionLease(
             idle_timeout_seconds=getattr(args, "session_lease_idle_timeout_seconds", 120.0),
@@ -750,6 +785,84 @@ class WindowServer(ThreadingHTTPServer):
             if args.browser_live_observation_output is not None
             else None
         )
+        self.bus.add_listener(self._record_session_event)
+
+    def _record_session_event(self, event: str, payload: dict[str, Any]) -> None:
+        if event == "sentence":
+            if payload.get("pending") or payload.get("realtime") or payload.get("provisional_assignment"):
+                return
+            self._schedule_session_autosave()
+        elif event == "speakers":
+            self._schedule_session_autosave()
+        elif event == "done":
+            self._cancel_session_autosave()
+            self._save_current_session(status_label="Saved", write_audio=True)
+
+    def _cancel_session_autosave(self) -> None:
+        with self._session_save_lock:
+            if self._session_save_timer is not None:
+                self._session_save_timer.cancel()
+                self._session_save_timer = None
+
+    def _schedule_session_autosave(self) -> None:
+        with self._session_save_lock:
+            if self._session_save_timer is not None:
+                self._session_save_timer.cancel()
+            timer = threading.Timer(1.0, self._run_session_autosave)
+            timer.daemon = True
+            self._session_save_timer = timer
+            timer.start()
+
+    def _run_session_autosave(self) -> None:
+        with self._session_save_lock:
+            self._session_save_timer = None
+        self._save_current_session(status_label="Autosaved", write_audio=False)
+
+    def _save_current_session(self, *, status_label: str, write_audio: bool) -> dict[str, Any] | None:
+        snapshot = self.controller.session_snapshot()
+        if not snapshot.get("id"):
+            return None
+        return self.session_store.save_snapshot(
+            snapshot,
+            status_label=status_label,
+            write_audio=write_audio,
+            audio_writer=self.controller.write_session_audio,
+        )
+
+    def list_saved_sessions(self, filter_mode: str = "active", query: str = "") -> dict[str, Any]:
+        return {
+            "ok": True,
+            "sessions": self.session_store.list_sessions(filter_mode, query),
+            "filter": filter_mode,
+        }
+
+    def create_saved_session(self, payload: dict[str, Any]) -> dict[str, Any]:
+        source = payload.get("source") if isinstance(payload.get("source"), dict) else {}
+        summary = self.session_store.create_session(
+            source=source,
+            title=str(payload.get("title") or ""),
+            session_id=str(payload.get("session_id") or ""),
+            status_label=str(payload.get("status_label") or "New"),
+        )
+        return {"ok": True, "session": summary}
+
+    def open_saved_session(self, session_id: str) -> dict[str, Any]:
+        return {"ok": True, "session": self.session_store.open_session(session_id)}
+
+    def rename_saved_session(self, session_id: str, title: str) -> dict[str, Any]:
+        return {"ok": True, "session": self.session_store.rename_session(session_id, title)}
+
+    def archive_saved_session(self, session_id: str) -> dict[str, Any]:
+        return {"ok": True, "session": self.session_store.archive_session(session_id)}
+
+    def restore_saved_session(self, session_id: str) -> dict[str, Any]:
+        return {"ok": True, "session": self.session_store.restore_session(session_id)}
+
+    def delete_saved_session(self, session_id: str) -> dict[str, Any]:
+        return {"ok": True, "session": self.session_store.delete_session(session_id)}
+
+    def rename_saved_session_speaker(self, session_id: str, speaker_id: str, name: str) -> dict[str, Any]:
+        return {"ok": True, "session": self.session_store.rename_speaker(session_id, speaker_id, name)}
 
     @property
     def session_lease_enabled(self) -> bool:
@@ -1333,6 +1446,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--url", default=DEFAULT_URL)
     parser.add_argument("--work-dir", type=Path, default=DEFAULT_WORK_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument(
+        "--session-dir",
+        type=Path,
+        default=DEFAULT_SESSION_DIR,
+        help="Directory used for durable saved WhoSpeaks Live sessions.",
+    )
     parser.add_argument("--audio-file", type=Path, default=None)
     parser.add_argument("--video-file", type=Path, default=None)
     parser.add_argument("--skip-download", action="store_true")
@@ -2454,14 +2573,25 @@ def parse_args() -> argparse.Namespace:
     args.sentence_tokenizer = default_sentence_tokenizer(args.language, args.sentence_tokenizer)
     args.sentence_language = default_sentence_language(args.language)
     args.realtime_preview_language = args.language
+    preview_engine = str(args.realtime_preview_engine or "off").strip().lower().replace("-", "_")
+    preview_uses_kroko = preview_engine not in {"off", "mock"}
+    language_has_kroko_preview = is_kroko_preview_language(args.language)
+    if preview_uses_kroko and not language_has_kroko_preview:
+        parser.error(
+            f"{args.language!r} is supported for final ASR and sentence splitting, but not for Kroko realtime "
+            "preview; use --realtime-preview-engine off or choose a Kroko preview language."
+        )
     if args.realtime_preview_model is None:
-        try:
-            args.realtime_preview_model = kroko_preview_model_name(
-                args.language,
-                args.realtime_preview_model_preset,
-            )
-        except ValueError as exc:
-            parser.error(str(exc))
+        if language_has_kroko_preview:
+            try:
+                args.realtime_preview_model = kroko_preview_model_name(
+                    args.language,
+                    args.realtime_preview_model_preset,
+                )
+            except ValueError as exc:
+                parser.error(str(exc))
+        else:
+            args.realtime_preview_model = ""
     else:
         args.realtime_preview_model_preset = "custom"
     if args.realtime_preview_startup_timeout_seconds is None:
@@ -2470,6 +2600,7 @@ def parse_args() -> argparse.Namespace:
         )
     args.work_dir = args.work_dir.resolve()
     args.output_dir = args.output_dir.resolve()
+    args.session_dir = args.session_dir.resolve()
     args.embedding_python = args.embedding_python.resolve()
     args.speaker_library_dir = args.speaker_library_dir.resolve()
     args.validation_canonical = args.validation_canonical.resolve()
@@ -2480,7 +2611,7 @@ def parse_args() -> argparse.Namespace:
         args.browser_live_observation_output = args.browser_live_observation_output.resolve()
     if args.download_root is not None:
         args.download_root = args.download_root.resolve()
-    if args.realtime_preview_model_path is None:
+    if args.realtime_preview_model_path is None and args.realtime_preview_model:
         use_env_model_path = not (
             preview_model_was_explicit
             or preview_model_path_was_explicit

@@ -95,11 +95,13 @@ class WindowEventBusTests(unittest.TestCase):
 class LanguageConfigTests(unittest.TestCase):
     def test_language_config_maps_discussion_languages_to_runtime_components(self) -> None:
         from window.language_config import (
+            SUPPORTED_LANGUAGE_CODES,
             default_sentence_tokenizer,
             kroko_preview_model_name,
             normalize_language_code,
         )
 
+        self.assertEqual(len(SUPPORTED_LANGUAGE_CODES), 60)
         self.assertEqual(normalize_language_code("Deutsch"), "de")
         self.assertEqual(kroko_preview_model_name("de"), "Kroko-DE-Community-64-L-Streaming-001.data")
         self.assertEqual(default_sentence_tokenizer("de"), "nltk+rule-based")
@@ -107,6 +109,13 @@ class LanguageConfigTests(unittest.TestCase):
         self.assertEqual(normalize_language_code("iw"), "he")
         self.assertEqual(kroko_preview_model_name("he"), "Kroko-IW-Community-64-L-Streaming-001.data")
         self.assertEqual(default_sentence_tokenizer("he"), "rule-based")
+
+        self.assertEqual(default_sentence_tokenizer("pl"), "nltk+rule-based")
+        self.assertEqual(default_sentence_tokenizer("ml"), "nltk+rule-based")
+        self.assertEqual(default_sentence_tokenizer("zh"), "stanza")
+        self.assertEqual(default_sentence_tokenizer("nn"), "stanza")
+        with self.assertRaisesRegex(ValueError, "Kroko realtime preview"):
+            kroko_preview_model_name("pl")
 
 
 class PublicEventNormalizerTests(unittest.TestCase):
@@ -3358,6 +3367,67 @@ class RepositoryStructureTests(unittest.TestCase):
         self.assertEqual(args.realtime_preview_language, "de")
         self.assertEqual(args.realtime_preview_model_preset, "custom")
         self.assertEqual(args.sentence_language, "de")
+
+    def test_window_gui_extended_language_requires_preview_off(self) -> None:
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(
+            sys,
+            "argv",
+            [
+                "youtube_window_diarize_gui.py",
+                "--language",
+                "pl",
+            ],
+        ):
+            with mock.patch("sys.stderr", io.StringIO()):
+                with self.assertRaises(SystemExit) as raised:
+                    parse_args()
+
+        self.assertEqual(raised.exception.code, 2)
+
+    def test_window_gui_extended_language_selects_nltk_when_preview_off(self) -> None:
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(
+            sys,
+            "argv",
+            [
+                "youtube_window_diarize_gui.py",
+                "--language",
+                "pl",
+                "--realtime-preview-engine",
+                "off",
+            ],
+        ):
+            args = parse_args()
+
+        self.assertEqual(args.language, "pl")
+        self.assertEqual(args.sentence_tokenizer, "nltk+rule-based")
+        self.assertEqual(args.sentence_language, "pl")
+        self.assertEqual(args.realtime_preview_engine, "off")
+        self.assertEqual(args.realtime_preview_model, "")
+        self.assertIsNone(args.realtime_preview_model_path)
+
+    def test_window_gui_extended_language_uses_stanza_when_needed(self) -> None:
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(
+            sys,
+            "argv",
+            [
+                "youtube_window_diarize_gui.py",
+                "--language",
+                "zh",
+                "--realtime-preview-engine",
+                "off",
+            ],
+        ):
+            args = parse_args()
+
+        self.assertEqual(args.language, "zh")
+        self.assertEqual(args.sentence_tokenizer, "stanza")
+        self.assertEqual(args.sentence_language, "zh-hans")
 
     def test_kroko_preview_model_path_searches_configured_model_dir(self) -> None:
         from window.window_config import default_kroko_preview_model_path

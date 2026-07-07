@@ -111,6 +111,9 @@ class WindowDiarizer:
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
         self._session_id = ""
+        self._session_started_at = ""
+        self._session_source_title = ""
+        self._next_session_id = ""
         self._playback_lock = threading.Lock()
         self._playback_time = 0.0
         self._playback_clock_started_at: float | None = None
@@ -266,7 +269,9 @@ class WindowDiarizer:
         self._load_realtime_preview()
         speaker_state = self._reset_runtime_session_state()
         self._stop = threading.Event()
-        self._session_id = uuid.uuid4().hex
+        self._session_id = self._next_session_id or uuid.uuid4().hex
+        self._next_session_id = ""
+        self._session_started_at = datetime.now().astimezone().isoformat(timespec="seconds")
         self.set_playback_time(0.0, reset=True)
         self._playback_clock_started_at = time.monotonic()
         self._last_playback_jump_warning_at = 0.0
@@ -282,6 +287,15 @@ class WindowDiarizer:
             self._live_probe_thread = threading.Thread(target=self._run_live_speaker_probe, name="LiveSpeakerProbe", daemon=True)
             self._live_probe_thread.start()
         return speaker_state
+
+    def set_session_source_title(self, title: str) -> None:
+        self._session_source_title = " ".join(str(title or "").strip().split())[:120]
+
+    def set_next_session_id(self, session_id: str) -> None:
+        normalized = str(session_id or "").strip()
+        if normalized and not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", normalized):
+            raise ValueError("Invalid session id.")
+        self._next_session_id = normalized
 
     def _prepare_model_dependencies(self, include_asr_probe: bool, force_runtime_warmup: bool = False) -> None:
         self.bus.emit("status", {"message": "Loading transcription model."})
@@ -530,6 +544,134 @@ class WindowDiarizer:
     def speaker_state(self) -> dict[str, Any]:
         self._sync_metadata_with_memory()
         return self._speaker_state()
+
+    def _session_transcript_rows_and_embeddings(self) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        with self._sentence_refinement_lock:
+            records = [
+                dict(record)
+                for _index, record in sorted(self._sentence_refinement_records.items())
+            ]
+
+        rows: list[dict[str, Any]] = []
+        embeddings: list[dict[str, Any]] = []
+        for record in records:
+            base_payload = dict(record.get("base_payload") or {})
+            assigned_speaker = record.get("assigned_speaker")
+            row = {
+                **base_payload,
+                "pending": False,
+                "assigned_speaker": assigned_speaker,
+                **self._speaker_info_for_payload(assigned_speaker),
+                "created_speaker": bool(record.get("created_speaker")),
+                "probabilities": dict(record.get("probabilities") or {}),
+                "similarities": dict(record.get("similarities") or {}),
+                "unknown_probability": record.get("unknown_probability"),
+                "top_similarity": record.get("top_similarity"),
+                "margin": record.get("margin"),
+                "quality": record.get("quality"),
+                "assignment_source": str(record.get("assignment_source") or ""),
+            }
+            rows.append(row)
+            embedding = record.get("embedding")
+            if embedding is not None:
+                embeddings.append({
+                    "index": int(record.get("index") or base_payload.get("index") or 0),
+                    "duration_seconds": float(record.get("duration_seconds") or 0.0),
+                    "assigned_speaker": assigned_speaker,
+                    "embedding": embedding,
+                })
+        return rows, embeddings
+
+    def _session_speaker_profiles(self) -> list[dict[str, Any]]:
+        self._sync_metadata_with_memory()
+        profiles = self.memory.export_profiles()
+        with self._speaker_lock:
+            metadata_by_label = {
+                label: dict(metadata)
+                for label, metadata in self._speaker_metadata.items()
+            }
+        serialized: list[dict[str, Any]] = []
+        for profile in profiles:
+            label = str(profile.get("label") or "")
+            metadata = metadata_by_label.get(label, {})
+            item = {
+                "label": label,
+                "name": str(metadata.get("name") or ""),
+                "display_name": str(metadata.get("name") or "") or f"Speaker {profile.get('index') or label}",
+                "source": str(metadata.get("source") or "detected"),
+                "locked": bool(metadata.get("locked") or profile.get("locked")),
+                "reference_audio": str(metadata.get("reference_audio") or ""),
+                "sentence_count": int(profile.get("sentence_count") or 1),
+                "speech_seconds": float(profile.get("speech_seconds") or 0.0),
+                "created_at": float(profile.get("created_at") or time.time()),
+                "last_seen_at": float(profile.get("last_seen_at") or time.time()),
+            }
+            item.update(self._centroid_payload(profile["centroid"]))
+            serialized.append(item)
+        return serialized
+
+    def _session_source_metadata(self) -> dict[str, Any]:
+        media = self.media
+        with self._audio_lock:
+            streaming_audio = bool(self._streaming_audio)
+            duration_seconds = float(self.duration)
+            sample_rate = int(self.sample_rate)
+            stream_samples = int(self._stream_audio_samples)
+        source = {
+            "url": str(media.url or ""),
+            "video_id": str(media.video_id or ""),
+            "started_at": str(self._session_started_at or ""),
+            "video_path": "" if streaming_audio else str(media.video_file),
+            "audio_path": "" if streaming_audio else str(media.audio_file),
+            "streaming_audio": streaming_audio,
+            "audio_sample_rate": sample_rate,
+            "stream_audio_samples": stream_samples,
+        }
+        if str(media.url or "").startswith("microphone://"):
+            source["capture_mode"] = "microphone"
+            source["title"] = "Microphone recording"
+        elif str(media.url or "").startswith("mixed-audio://"):
+            source["capture_mode"] = "mixed"
+            source["title"] = "Computer audio + microphone recording"
+        elif str(media.url or "").startswith("browser-stream://"):
+            source["capture_mode"] = "browser-stream"
+            source["title"] = "Browser audio recording"
+        else:
+            source["capture_mode"] = "youtube"
+            if self._session_source_title:
+                source["title"] = self._session_source_title
+        source["duration_seconds"] = round(duration_seconds, 4)
+        return source
+
+    def session_snapshot(self) -> dict[str, Any]:
+        rows, embeddings = self._session_transcript_rows_and_embeddings()
+        speaker_state = self.speaker_state()
+        source = self._session_source_metadata()
+        return {
+            "id": str(self._session_id or ""),
+            "created_at": datetime.now().isoformat(timespec="seconds"),
+            "duration_seconds": float(source.get("duration_seconds") or self.duration),
+            "source": source,
+            "transcript_rows": rows,
+            "speaker_state": speaker_state,
+            "speaker_profiles": self._session_speaker_profiles(),
+            "live_speaker_profiles": self._serialized_live_speaker_profiles(
+                self.memory.export_profiles(),
+                portable=True,
+            ),
+            "embedding_records": embeddings,
+            "embedding_provider": str(self.args.embedding_provider),
+            "live_embedding_provider": self._current_live_embedding_provider(),
+        }
+
+    def write_session_audio(self, path: Path) -> bool:
+        with self._audio_lock:
+            if not self._streaming_audio or not self._stream_audio_chunks:
+                return False
+            audio = np.concatenate([chunk.astype(np.float32, copy=True) for chunk in self._stream_audio_chunks])
+            sample_rate = int(self.sample_rate)
+        write_wav(path, audio, sample_rate)
+        return True
 
     def rename_speaker(self, speaker_id: str, name: str) -> dict[str, Any]:
         label = str(speaker_id or "").strip()

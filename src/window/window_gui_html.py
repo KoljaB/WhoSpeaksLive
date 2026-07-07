@@ -58,7 +58,7 @@ HTML = r"""<!doctype html>
     .session-banner button[hidden] { display:none; }
     .layout { min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(330px,380px); }
     .workspace { min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); }
-    .control-panel { min-height:0; overflow:auto; padding:8px; background:#0B1015; display:grid; align-content:start; gap:8px; }
+    .control-panel { min-height:0; overflow:hidden; padding:8px; background:#0B1015; display:grid; grid-template-rows:minmax(0,1fr) auto; align-content:stretch; gap:8px; }
     .control-card, .media-card, .transcript-panel { background:var(--panel-2); border:1px solid var(--line); border-radius:8px; }
     .control-card { padding:8px; }
     .section-title, summary { min-height:24px; display:flex; align-items:center; gap:6px; font-size:13px; font-weight:400; color:var(--text); }
@@ -135,12 +135,13 @@ HTML = r"""<!doctype html>
     .level-fill { width:0%; height:100%; background:#3DC77C; box-shadow:0 0 16px rgba(61,199,124,.32); transition:width .08s linear; }
     .mic-gain-control input { width:100%; accent-color:#17B7FE; }
     .media-card.mode-system .mic-gain-control { display:none; }
-    .speaker-panel { padding:0; overflow:hidden; display:grid; gap:0; }
-    .speaker-tabs { min-height:38px; display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--line); }
+    .speaker-panel { min-height:0; padding:0; overflow:hidden; display:grid; grid-template-rows:auto minmax(0,1fr); gap:0; }
+    .speaker-tabs { min-height:38px; display:grid; grid-template-columns:1fr 1fr 1fr; border-bottom:1px solid var(--line); }
     .speaker-tab { min-height:38px; border:0; border-radius:0; background:transparent; color:#9EAAB6; font-size:13px; }
     .speaker-tab.active { color:#E8EEF5; box-shadow:inset 0 -2px 0 #17B7FE; }
-    .speaker-tab-panel { min-width:0; padding:8px; }
+    .speaker-tab-panel { min-width:0; min-height:0; padding:8px; overflow:hidden; }
     .speaker-tab-panel[hidden] { display:none; }
+    .speaker-tab-panel[data-speaker-panel="speakers"]:not([hidden]) { display:grid; grid-template-rows:auto auto minmax(0,1fr) auto; gap:0; }
     .speaker-panel-header { margin:0 0 7px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .speaker-panel-title { margin:0; color:#D7DEE8; font-size:13px; font-weight:400; line-height:1.25; }
     .speaker-panel-actions { flex:0 0 auto; display:flex; align-items:center; gap:7px; }
@@ -149,8 +150,39 @@ HTML = r"""<!doctype html>
     .clear-speakers-button:disabled { opacity:.45; color:#87919C; }
     .manual-speaker-composer { display:grid; gap:8px; margin:0 0 8px; padding:9px 10px 10px 12px; border:1px solid var(--line); border-radius:7px; background:#0F161F; box-shadow:inset 4px 0 0 #17B7FE; }
     .manual-speaker-composer[hidden] { display:none; }
-    .speaker-list { display:grid; gap:0; max-height:none; overflow:hidden; border:1px solid var(--line); border-radius:7px; background:#0B1015; }
+    .speaker-list { min-height:0; display:grid; align-content:start; gap:0; max-height:none; overflow:auto; border:1px solid var(--line); border-radius:7px; background:#0B1015; }
     .speaker-empty { padding:12px; color:var(--muted); font-size:11px; }
+    .sessions-panel:not([hidden]) { display:grid; grid-template-rows:auto auto minmax(0,1fr); gap:8px; }
+    .sessions-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .sessions-title { margin:0; color:#D7DEE8; font-size:13px; font-weight:400; }
+    .sessions-header-actions { flex:0 0 auto; display:flex; align-items:center; gap:6px; }
+    .sessions-new-run { min-height:28px; padding:0 9px; border-color:#17B7FE; background:#121C26; color:#17B7FE; font-size:12px; white-space:nowrap; }
+    .session-menu-button svg { width:16px; height:16px; display:block; }
+    .sessions-filter { display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; padding:3px; border:1px solid var(--line); border-radius:7px; background:#0B1015; }
+    .sessions-filter-button { min-height:27px; border:0; border-radius:5px; padding:0 8px; background:transparent; color:#9EAAB6; font-size:12px; }
+    .sessions-filter-button.active { background:#102436; color:#E8EEF5; box-shadow:inset 0 0 0 1px #17B7FE; }
+    .session-list { min-height:0; display:grid; align-content:start; gap:8px; overflow:auto; padding-right:2px; }
+    .session-empty { min-height:48px; display:flex; align-items:center; padding:10px 12px; border:1px solid var(--line); border-radius:7px; background:#0B1015; color:#9EAAB6; font-size:12px; }
+    .session-row { position:relative; display:grid; gap:8px; padding:10px 10px 9px 12px; border:1px solid var(--line); border-radius:7px; background:#0F161F; box-shadow:inset 0 1px 0 rgba(255,255,255,.035); }
+    .session-row.open { border-color:#17B7FE; box-shadow:inset 0 0 0 1px rgba(23,183,254,.42), inset 0 1px 0 rgba(255,255,255,.05); }
+    .session-row.editing { border-color:#20303E; }
+    .session-row.archived { opacity:.78; }
+    .session-row-main { min-width:0; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:8px; }
+    .session-row-title { min-width:0; color:#E8EEF5; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:text; }
+    .session-row-title:focus-visible { outline:1px solid #17B7FE; outline-offset:2px; border-radius:4px; }
+    .session-row-title-input { min-width:0; width:100%; height:24px; margin:-2px -5px; border:1px solid #20303E; border-radius:5px; padding:0 4px; background:#0B1015; color:#E8EEF5; font:inherit; font-size:13px; font-weight:600; outline:none; }
+    .session-row-title-input:focus { border-color:#17B7FE; }
+    .session-row-meta, .session-row-status { min-width:0; display:flex; flex-wrap:wrap; align-items:center; gap:6px; color:#AEB9C5; font-size:12px; }
+    .session-row-dot { width:8px; height:8px; border-radius:50%; background:#3DC77C; box-shadow:0 0 12px rgba(61,199,124,.35); }
+    .session-row-dot.muted { background:#7D8997; box-shadow:none; }
+    .session-row-actions { display:flex; align-items:center; gap:7px; }
+    .session-row-actions button { min-height:28px; padding:0 10px; border-color:#20303E; background:#121C26; color:#C6D0DC; font-size:12px; }
+    .session-row-actions .session-open-button { border-color:#17B7FE; color:#17B7FE; }
+    .session-menu-button { width:28px; min-height:28px; display:grid; place-items:center; padding:0; border:0; background:transparent; color:#AEB9C5; }
+    .session-row-menu { position:absolute; top:36px; right:10px; z-index:50; display:grid; gap:4px; min-width:118px; padding:6px; border:1px solid var(--line); border-radius:7px; background:#0B1015; box-shadow:0 18px 42px rgba(0,0,0,.42); }
+    .session-row-menu[hidden] { display:none; }
+    .session-row-menu button { justify-content:flex-start; min-height:28px; border-color:#20303E; background:#121C26; color:#C6D0DC; text-align:left; font-size:12px; }
+    .session-row-menu .danger { color:#E0A0A0; }
     .speaker-item { --speaker-color:transparent; min-width:0; display:grid; border-bottom:1px solid var(--line); background:#0F161F; }
     .speaker-item:last-child { border-bottom:0; }
     .speaker-item.live-speaker { background:color-mix(in srgb, var(--speaker-color) 18%, #0F161F); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--speaker-color) 35%, transparent); }
@@ -202,7 +234,7 @@ HTML = r"""<!doctype html>
     .speaker-reference-button svg, .speaker-panel #recordReference svg { width:14px; height:14px; flex:0 0 auto; }
     .speaker-panel #recordReference.recording { border-color:#DF3C36; color:var(--text); background:#981D20; }
     .speaker-record-seconds { color:#9EAAB6; font-size:11px; }
-    .speaker-settings-panel { display:grid; gap:8px; }
+    .speaker-settings-panel:not([hidden]) { display:grid; align-content:start; gap:8px; overflow:auto; }
     .speaker-setting-toggle { min-height:24px; display:flex; align-items:center; gap:8px; color:#C6D0DC; font-size:12px; line-height:1.25; }
     .speaker-setting-toggle input { width:14px; height:14px; margin:0; accent-color:#1789F2; }
     .speaker-tools { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; }
@@ -215,7 +247,7 @@ HTML = r"""<!doctype html>
     .status { max-height:180px; overflow:auto; color:var(--muted); font-size:12px; line-height:1.3; padding-top:2px; }
     .transcript-panel { min-height:0; margin:0 8px 8px; display:grid; grid-template-rows:auto minmax(0,1fr); position:relative; }
     .transcript-header { display:grid; grid-template-columns:auto minmax(240px,1fr) auto; gap:8px 14px; align-items:center; padding:10px; border-bottom:1px solid var(--line); }
-    .transcript-title { grid-column:1 / -1; margin:0; color:#E8EEF5; font-size:15px; line-height:1.2; font-weight:400; }
+    .transcript-title { grid-column:1 / -1; min-width:0; margin:0; color:#E8EEF5; font-size:15px; line-height:1.2; font-weight:400; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .transcript-left-tools, .transcript-right-tools { display:flex; align-items:center; gap:8px; }
     .transcript-right-tools { justify-content:flex-end; }
     .follow-live-toggle { min-height:22px; display:inline-flex; align-items:center; gap:7px; color:#C6D0DC; font-size:12px; }
@@ -476,7 +508,7 @@ HTML = r"""<!doctype html>
       </section>
       <section class="transcript-panel">
         <div class="transcript-header">
-          <h2 class="transcript-title">Live transcript</h2>
+          <h2 id="transcriptTitle" class="transcript-title">Live transcript</h2>
           <div class="transcript-left-tools">
             <label class="follow-live-toggle">
               <input id="followLive" type="checkbox" checked>
@@ -537,6 +569,7 @@ HTML = r"""<!doctype html>
       <section class="control-card speaker-panel" aria-label="Speakers">
         <div class="speaker-tabs" role="tablist" aria-label="Speaker controls">
           <button class="speaker-tab active" type="button" role="tab" aria-selected="true" data-speaker-tab="speakers">Speakers</button>
+          <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="sessions">Sessions</button>
           <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="settings">Settings</button>
         </div>
         <div class="speaker-tab-panel" data-speaker-panel="speakers">
@@ -577,6 +610,20 @@ HTML = r"""<!doctype html>
               </div>
             </form>
           </div>
+        </div>
+        <div class="speaker-tab-panel sessions-panel" data-speaker-panel="sessions" hidden>
+          <div class="sessions-header">
+            <h2 id="sessionsPanelTitle" class="sessions-title">Recent sessions</h2>
+            <div class="sessions-header-actions">
+              <button id="newRunSession" class="sessions-new-run" type="button" title="Create a new session">+ New session</button>
+            </div>
+          </div>
+          <div class="sessions-filter" role="tablist" aria-label="Session filter">
+            <button class="sessions-filter-button active" type="button" data-session-filter="active">Active</button>
+            <button class="sessions-filter-button" type="button" data-session-filter="archived">Archived</button>
+            <button class="sessions-filter-button" type="button" data-session-filter="all">All</button>
+          </div>
+          <div id="sessionList" class="session-list"></div>
         </div>
         <div class="speaker-tab-panel speaker-settings-panel" data-speaker-panel="settings" hidden>
           <label class="sensitivity" title="Controls how easily the diarizer creates a new speaker profile.">
@@ -652,6 +699,7 @@ const statusBox = document.getElementById("status");
 const statusCard = document.querySelector(".status-card");
 const sentences = document.getElementById("sentences");
 const transcriptPanel = document.querySelector(".transcript-panel");
+const transcriptTitle = document.getElementById("transcriptTitle");
 const followLive = document.getElementById("followLive");
 const transcriptSearch = document.getElementById("transcriptSearch");
 const clearTranscriptButton = document.getElementById("clearTranscript");
@@ -685,6 +733,9 @@ const manualSpeakerName = document.getElementById("manualSpeakerName");
 const manualSpeakerReferenceDock = document.getElementById("manualSpeakerReferenceDock");
 const speakerTabButtons = Array.from(document.querySelectorAll(".speaker-tab"));
 const speakerTabPanels = Array.from(document.querySelectorAll(".speaker-tab-panel"));
+const sessionList = document.getElementById("sessionList");
+const newRunSessionButton = document.getElementById("newRunSession");
+const sessionFilterButtons = Array.from(document.querySelectorAll(".sessions-filter-button"));
 const referenceSpeakerForm = document.getElementById("referenceSpeakerForm");
 const referenceSpeakerFile = document.getElementById("referenceSpeakerFile");
 const recordReferenceButton = document.getElementById("recordReference");
@@ -778,6 +829,15 @@ let sessionState = {active:false, is_owner:false, running:false, completed:false
 let sessionHeartbeatTimer = null;
 let sessionStatusTimer = null;
 let sessionCompletionReleaseTimer = null;
+let savedSessions = [];
+let savedSessionFilter = "active";
+let openedSavedSessionId = "";
+let draftSavedSessionId = "";
+let openSessionMenuId = "";
+let editingSessionTitleId = "";
+let pendingSessionTitleFocusId = "";
+let savedSessionRefreshTimer = null;
+let savedSessionAutoRefreshTimer = null;
 if (statusCard && window.matchMedia("(max-width: 900px)").matches) {
   statusCard.open = false;
 }
@@ -855,6 +915,7 @@ function setSourceControlsDisabled(disabled) {
   sourceModeButton.disabled = disabled;
   sourceModeOptionButtons.forEach(button => { button.disabled = disabled; });
   if (!disabled) syncSessionControlLock();
+  updateNewRunButtonState();
 }
 function normalizeUrl(url) {
   return String(url || "").trim();
@@ -879,6 +940,63 @@ function sourceTitleForUrl(url) {
   } catch (_) {
     return text.length > 64 ? `${text.slice(0, 61)}...` : text;
   }
+}
+function currentStartSessionMetadata() {
+  const match = presetForUrl(source.value);
+  return {
+    source_title: match && !browserStreamMode ? match.title : "",
+    session_id: draftSavedSessionId,
+  };
+}
+function currentSessionSourceMetadata(startedAt = new Date().toISOString()) {
+  const mode = inputMode.value || "youtube";
+  const url = source.value.trim();
+  const match = presetForUrl(url);
+  if (mode === "microphone") {
+    return {
+      url: "microphone://local",
+      video_id: "microphone",
+      capture_mode: "microphone",
+      streaming_audio: true,
+      title: "Microphone recording",
+      started_at: startedAt,
+    };
+  }
+  if (mode === "system") {
+    return {
+      url: url || "browser-stream://display",
+      video_id: "browser-stream",
+      capture_mode: "browser-stream",
+      streaming_audio: true,
+      title: "Browser audio recording",
+      started_at: startedAt,
+    };
+  }
+  if (mode === "both") {
+    return {
+      url: url || "mixed-audio://local",
+      video_id: "mixed-audio",
+      capture_mode: "mixed",
+      streaming_audio: true,
+      title: "Computer audio + microphone recording",
+      started_at: startedAt,
+    };
+  }
+  return {
+    url,
+    video_id: "",
+    capture_mode: "youtube",
+    title: match ? match.title : "",
+    started_at: startedAt,
+  };
+}
+function currentSessionDraftTitle() {
+  const mode = inputMode.value || "youtube";
+  if (mode === "youtube") {
+    const match = presetForUrl(source.value);
+    return match ? match.title : "";
+  }
+  return "";
 }
 function updateMediaMode() {
   const mode = inputMode.value || "youtube";
@@ -1394,6 +1512,99 @@ function sessionOwnerActive() {
   if (!sessionLeaseEnabled) return true;
   return Boolean(sessionState && sessionState.active && sessionState.is_owner && sessionToken);
 }
+function savedSessionReviewOpen() {
+  return Boolean(openedSavedSessionId);
+}
+function runInProgress() {
+  return Boolean(sessionState && sessionState.running) || (stop && !stop.disabled);
+}
+function updateNewRunButtonState() {
+  if (!newRunSessionButton) return;
+  const disabled = sessionControlsLocked() || runInProgress();
+  newRunSessionButton.disabled = disabled;
+  newRunSessionButton.title = disabled
+    ? "New session is available when the current run is idle."
+    : "Create a new session";
+}
+function setTranscriptTitleLive() {
+  if (transcriptTitle) transcriptTitle.textContent = "Live transcript";
+}
+function setTranscriptTitleSaved(title) {
+  if (transcriptTitle) transcriptTitle.textContent = title ? `Saved: ${title}` : "Saved transcript";
+}
+function leaveSavedSessionReview() {
+  if (!openedSavedSessionId) return;
+  openedSavedSessionId = "";
+  setTranscriptTitleLive();
+  renderSavedSessions();
+}
+function clearSessionReviewForNewSession() {
+  stopPlaybackClock();
+  stopBrowserAudioCapture();
+  video.pause();
+  audio.pause();
+  if (es) {
+    es.close();
+    es = null;
+  }
+  openedSavedSessionId = "";
+  openSessionMenuId = "";
+  editingSessionTitleId = "";
+  pendingSessionTitleFocusId = "";
+  editingSpeakerId = "";
+  pendingSpeakerNameFocusId = "";
+  manualSpeakerComposerOpen = false;
+  pendingManualSpeakerNameFocus = false;
+  soloSpeakerIds.clear();
+  mutedSpeakerIds.clear();
+  clearLiveSpeakerState();
+  resetTranscriptDisplay();
+  setTranscriptTitleLive();
+  updateSpeakerState({group_name:"", groups:[], speakers:[]});
+  updateMediaMode();
+  setSourceControlsDisabled(false);
+  start.disabled = false;
+  stop.disabled = true;
+  setState("Ready");
+  renderSpeakerPanel();
+  updateNewRunButtonState();
+}
+async function createDraftSavedSession(statusLabel = "New") {
+  const startedAt = new Date().toISOString();
+  const result = await post("/api/sessions/create", {
+    title: currentSessionDraftTitle(),
+    status_label: statusLabel,
+    source: currentSessionSourceMetadata(startedAt),
+  });
+  const summary = result.session || {};
+  draftSavedSessionId = summary.id || "";
+  savedSessionFilter = "active";
+  await fetchSavedSessions();
+  return draftSavedSessionId;
+}
+async function ensureDraftSavedSession(statusLabel = "Started") {
+  if (draftSavedSessionId) return draftSavedSessionId;
+  return createDraftSavedSession(statusLabel);
+}
+async function createNewSession() {
+  if (sessionControlsLocked()) {
+    log("Session in use. You can create a new session when the demo seat is free.");
+    return;
+  }
+  if (runInProgress()) {
+    log("Stop the current run before creating a new session.");
+    return;
+  }
+  clearSessionReviewForNewSession();
+  try {
+    await createDraftSavedSession("New");
+    renderSavedSessions();
+    log("New session created. Press Start to begin transcription.");
+  } catch (error) {
+    draftSavedSessionId = "";
+    log(`Create session failed: ${error.message}`);
+  }
+}
 function sessionSecondsText(seconds) {
   const value = Number(seconds);
   if (!Number.isFinite(value) || value <= 0) return "";
@@ -1493,6 +1704,7 @@ function syncSessionControlLock() {
     recordReferenceButton,
   ].forEach(element => applySessionLockedDisabled(element, locked));
   sourceModeOptionButtons.forEach(button => applySessionLockedDisabled(button, locked));
+  updateNewRunButtonState();
 }
 function updateSessionState(nextState) {
   if (!nextState || typeof nextState !== "object") return;
@@ -1508,6 +1720,7 @@ function updateSessionState(nextState) {
     startSessionHeartbeat();
   }
   updateSessionBanner();
+  updateNewRunButtonState();
   if (wasLocked !== sessionControlsLocked()) {
     renderSpeakerPanel();
   }
@@ -1623,7 +1836,7 @@ function startSessionStatusPolling() {
 }
 async function post(path, payload={}) {
   const requestPayload = {...payload};
-  if (path.startsWith("/api/") && !path.startsWith("/api/session/")) {
+  if (path.startsWith("/api/") && !path.startsWith("/api/session/") && !path.startsWith("/api/sessions/")) {
     requestPayload.client_id = sessionClientId;
     if (sessionToken) requestPayload.session_token = sessionToken;
   }
@@ -1632,6 +1845,449 @@ async function post(path, payload={}) {
   if (data.session) updateSessionState(data.session);
   if (!r.ok) throw new Error(data.error || r.statusText);
   return data;
+}
+function savedSessionTitle(sessionData) {
+  const summary = (sessionData && sessionData.summary) || {};
+  const manifest = (sessionData && sessionData.manifest) || {};
+  return summary.title || manifest.title || "Saved session";
+}
+function savedSessionDisplayTitle(item) {
+  return (item && item.title) || "Saved session";
+}
+function savedSessionRows(sessionData) {
+  return Array.isArray(sessionData && sessionData.transcript_rows) ? sessionData.transcript_rows : [];
+}
+function savedSessionDurationLabel(seconds) {
+  const value = Number(seconds || 0);
+  return value > 0 ? clockLabel(value) : "00:00";
+}
+function savedSessionDate(value) {
+  const time = Date.parse(value || "");
+  return Number.isFinite(time) ? new Date(time) : null;
+}
+function sameLocalDate(left, right) {
+  return left && right
+    && left.getFullYear() === right.getFullYear()
+    && left.getMonth() === right.getMonth()
+    && left.getDate() === right.getDate();
+}
+function savedSessionDatePart(date) {
+  return date.toLocaleDateString([], {month:"short", day:"numeric"});
+}
+function savedSessionTimePart(date) {
+  return date.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+}
+function savedSessionTimeRangeLabel(item) {
+  const started = savedSessionDate((item && (item.started_at || item.created_at)) || "");
+  if (!started) return "";
+  const ended = savedSessionDate((item && (item.ended_at || item.updated_at)) || "");
+  const startLabel = `${savedSessionDatePart(started)} ${savedSessionTimePart(started)}`;
+  if (!ended || ended < started || Math.abs(ended.getTime() - started.getTime()) < 60000) {
+    return startLabel;
+  }
+  if (sameLocalDate(started, ended)) {
+    return `${startLabel}-${savedSessionTimePart(ended)}`;
+  }
+  return `${startLabel} - ${savedSessionDatePart(ended)} ${savedSessionTimePart(ended)}`;
+}
+function savedSessionUpdatedLabel(value) {
+  const time = Date.parse(value || "");
+  if (!Number.isFinite(time)) return "";
+  const seconds = Math.max(0, (Date.now() - time) / 1000);
+  if (seconds < 60) return "Just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+  return new Date(time).toLocaleDateString([], {month:"short", day:"numeric"});
+}
+function createSessionMenuIcon() {
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "currentColor");
+  svg.setAttribute("aria-hidden", "true");
+  [["12", "5"], ["12", "12"], ["12", "19"]].forEach(([cx, cy]) => {
+    const circle = document.createElementNS(svgNamespace, "circle");
+    circle.setAttribute("cx", cx);
+    circle.setAttribute("cy", cy);
+    circle.setAttribute("r", "1.7");
+    svg.appendChild(circle);
+  });
+  return svg;
+}
+function renderSavedSessions() {
+  if (!sessionList) return;
+  updateNewRunButtonState();
+  sessionFilterButtons.forEach(button => {
+    const active = button.dataset.sessionFilter === savedSessionFilter;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  sessionList.textContent = "";
+  if (editingSessionTitleId && !savedSessions.some(item => item.id === editingSessionTitleId)) {
+    editingSessionTitleId = "";
+    pendingSessionTitleFocusId = "";
+  }
+  if (!savedSessions.length) {
+    const empty = document.createElement("div");
+    empty.className = "session-empty";
+    empty.textContent = savedSessionFilter === "archived" ? "No archived sessions" : "No saved sessions";
+    sessionList.appendChild(empty);
+    return;
+  }
+  savedSessions.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "session-row";
+    row.classList.toggle("open", item.id === openedSavedSessionId);
+    row.classList.toggle("archived", Boolean(item.archived));
+    row.classList.toggle("editing", item.id === editingSessionTitleId);
+    row.dataset.sessionId = item.id || "";
+
+    const main = document.createElement("div");
+    main.className = "session-row-main";
+    const copy = document.createElement("div");
+    copy.className = "session-row-copy";
+    let title;
+    if (item.id === editingSessionTitleId) {
+      title = document.createElement("input");
+      title.className = "session-row-title-input";
+      title.type = "text";
+      title.value = savedSessionDisplayTitle(item);
+      title.setAttribute("aria-label", "Session name");
+      title.setAttribute("autocomplete", "off");
+      title.addEventListener("click", event => event.stopPropagation());
+      title.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          title.blur();
+        } else if (event.key === "Escape") {
+          event.preventDefault();
+          title.dataset.cancelled = "1";
+          editingSessionTitleId = "";
+          pendingSessionTitleFocusId = "";
+          renderSavedSessions();
+        }
+      });
+      title.addEventListener("blur", () => {
+        if (title.dataset.cancelled === "1") return;
+        commitSessionTitleInput(item, title);
+      });
+    } else {
+      title = document.createElement("div");
+      title.className = "session-row-title";
+      title.textContent = savedSessionDisplayTitle(item);
+      title.setAttribute("role", "button");
+      title.tabIndex = 0;
+      title.title = "Rename session";
+      title.addEventListener("click", event => {
+        event.stopPropagation();
+        setEditingSessionTitle(item.id || "");
+      });
+      title.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          setEditingSessionTitle(item.id || "");
+        }
+      });
+    }
+    copy.appendChild(title);
+
+    const meta = document.createElement("div");
+    meta.className = "session-row-meta";
+    const speakerCount = Number(item.speaker_count || 0);
+    const metaParts = [
+      savedSessionTimeRangeLabel(item),
+      savedSessionDurationLabel(item.duration_seconds),
+      `${speakerCount} ${speakerCount === 1 ? "speaker" : "speakers"}`,
+    ].filter(Boolean);
+    meta.textContent = metaParts.join(" - ");
+    copy.appendChild(meta);
+
+    const status = document.createElement("div");
+    status.className = "session-row-status";
+    const dot = document.createElement("span");
+    dot.className = `session-row-dot${item.archived ? " muted" : ""}`;
+    dot.setAttribute("aria-hidden", "true");
+    const statusText = document.createElement("span");
+    const updated = savedSessionUpdatedLabel(item.updated_at);
+    statusText.textContent = `${item.status_label || "Saved"}${updated ? ` - ${updated}` : ""}`;
+    status.appendChild(dot);
+    status.appendChild(statusText);
+    copy.appendChild(status);
+
+    const menuButton = document.createElement("button");
+    menuButton.type = "button";
+    menuButton.className = "session-menu-button";
+    menuButton.title = "Session menu";
+    menuButton.setAttribute("aria-label", `Session menu for ${item.title || "saved session"}`);
+    menuButton.setAttribute("aria-expanded", openSessionMenuId === item.id ? "true" : "false");
+    menuButton.appendChild(createSessionMenuIcon());
+    menuButton.addEventListener("click", event => {
+      event.stopPropagation();
+      openSessionMenuId = openSessionMenuId === item.id ? "" : item.id;
+      renderSavedSessions();
+    });
+    main.appendChild(copy);
+    main.appendChild(menuButton);
+    row.appendChild(main);
+
+    const actions = document.createElement("div");
+    actions.className = "session-row-actions";
+    const openButton = document.createElement("button");
+    openButton.type = "button";
+    openButton.className = "session-open-button";
+    openButton.textContent = "Open";
+    openButton.addEventListener("click", () => openSavedSession(item.id));
+    actions.appendChild(openButton);
+
+    const archiveButton = document.createElement("button");
+    archiveButton.type = "button";
+    archiveButton.textContent = item.archived ? "Restore" : "Archive";
+    archiveButton.addEventListener("click", () => {
+      if (item.archived) {
+        restoreSavedSession(item.id);
+      } else {
+        archiveSavedSession(item.id);
+      }
+    });
+    actions.appendChild(archiveButton);
+    row.appendChild(actions);
+
+    const menu = document.createElement("div");
+    menu.className = "session-row-menu";
+    menu.hidden = openSessionMenuId !== item.id;
+    const renameButton = document.createElement("button");
+    renameButton.type = "button";
+    renameButton.textContent = "Rename";
+    renameButton.addEventListener("click", () => setEditingSessionTitle(item.id || ""));
+    menu.appendChild(renameButton);
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "danger";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => deleteSavedSession(item));
+    menu.appendChild(deleteButton);
+    row.appendChild(menu);
+    sessionList.appendChild(row);
+    if (pendingSessionTitleFocusId === item.id && title instanceof HTMLInputElement) {
+      pendingSessionTitleFocusId = "";
+      requestAnimationFrame(() => {
+        title.focus();
+        title.select();
+      });
+    }
+  });
+}
+function setEditingSessionTitle(sessionId) {
+  const requestedId = sessionId || "";
+  if (!requestedId) return;
+  editingSessionTitleId = requestedId;
+  pendingSessionTitleFocusId = requestedId;
+  openSessionMenuId = "";
+  renderSavedSessions();
+}
+async function fetchSavedSessions() {
+  if (savedSessionRefreshTimer) {
+    clearTimeout(savedSessionRefreshTimer);
+    savedSessionRefreshTimer = null;
+  }
+  const params = new URLSearchParams({filter: savedSessionFilter});
+  const response = await fetch(`/api/sessions?${params.toString()}`, {cache:"no-store"});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || response.statusText);
+  savedSessions = Array.isArray(data.sessions) ? data.sessions : [];
+  renderSavedSessions();
+  return savedSessions;
+}
+function scheduleSavedSessionsRefresh(delayMs = 1600) {
+  if (savedSessionRefreshTimer) clearTimeout(savedSessionRefreshTimer);
+  savedSessionRefreshTimer = setTimeout(() => {
+    savedSessionRefreshTimer = null;
+    if (editingSessionTitleId) {
+      scheduleSavedSessionsRefresh(delayMs);
+      return;
+    }
+    fetchSavedSessions().catch(() => {});
+  }, Math.max(0, Number(delayMs) || 0));
+}
+function savedSessionsTabVisible() {
+  const panel = document.querySelector("[data-speaker-panel='sessions']");
+  return Boolean(panel && !panel.hidden && document.visibilityState !== "hidden");
+}
+function syncSavedSessionsAutoRefresh() {
+  if (savedSessionsTabVisible()) {
+    if (!savedSessionAutoRefreshTimer) {
+      savedSessionAutoRefreshTimer = setInterval(() => {
+        if (!editingSessionTitleId) fetchSavedSessions().catch(() => {});
+      }, 5000);
+    }
+    return;
+  }
+  if (savedSessionAutoRefreshTimer) {
+    clearInterval(savedSessionAutoRefreshTimer);
+    savedSessionAutoRefreshTimer = null;
+  }
+}
+function refreshSavedSessionsAfterCompletion() {
+  if (!editingSessionTitleId) {
+    fetchSavedSessions().catch(() => {});
+  }
+  scheduleSavedSessionsRefresh(1500);
+}
+function setSavedSessionFilter(filter) {
+  const nextFilter = ["active", "archived", "all"].includes(filter) ? filter : "active";
+  if (savedSessionFilter === nextFilter) {
+    fetchSavedSessions().catch(error => log(`Refresh sessions failed: ${error.message}`));
+    return;
+  }
+  savedSessionFilter = nextFilter;
+  openSessionMenuId = "";
+  renderSavedSessions();
+  fetchSavedSessions().catch(error => log(`Refresh sessions failed: ${error.message}`));
+}
+function reflectSavedSessionSource(sessionData) {
+  const summary = sessionData.summary || {};
+  const manifest = sessionData.manifest || {};
+  const sourceInfo = manifest.source || summary.source || {};
+  const mode = sourceInfo.capture_mode || (sourceInfo.streaming_audio ? "browser-stream" : "youtube");
+  const label = {
+    microphone: "Microphone",
+    mixed: "Computer audio + microphone",
+    "browser-stream": "Computer audio",
+    youtube: "YouTube",
+  }[mode] || "Source";
+  const duration = Number(summary.duration_seconds || manifest.duration_seconds || sourceInfo.duration_seconds || 0);
+  sourceKind.textContent = label;
+  sourceTitle.textContent = savedSessionTitle(sessionData);
+  mediaTime.textContent = duration > 0 ? `Saved ${clockLabel(duration)}` : "Saved session";
+  mediaCurrentTime.textContent = "00:00";
+  mediaDuration.textContent = savedSessionDurationLabel(duration);
+  timelineFill.style.width = "0%";
+  timelineThumb.style.left = "0%";
+}
+function loadSavedSessionReview(sessionData, options = {}) {
+  const summary = sessionData.summary || {};
+  openedSavedSessionId = summary.id || (sessionData.manifest && sessionData.manifest.id) || "";
+  draftSavedSessionId = "";
+  stopPlaybackClock();
+  stopBrowserAudioCapture();
+  video.pause();
+  audio.pause();
+  if (es) {
+    es.close();
+    es = null;
+  }
+  resetTranscriptDisplay();
+  editingSpeakerId = "";
+  manualSpeakerComposerOpen = false;
+  pendingManualSpeakerNameFocus = false;
+  setTranscriptTitleSaved(savedSessionTitle(sessionData));
+  reflectSavedSessionSource(sessionData);
+  updateSpeakerState(sessionData.speaker_state || {group_name:"", groups:[], speakers:[]});
+  speakerSessionBaselineSentenceCounts = {};
+  speakerSessionBaselineSpeakingSeconds = {};
+  const rows = savedSessionRows(sessionData);
+  const previousFollowLiveEnabled = followLiveEnabled;
+  followLiveEnabled = false;
+  rows.forEach(row => renderSentence({...row, realtime:false, pending:false}));
+  followLiveEnabled = previousFollowLiveEnabled;
+  speakerSessionBaselineSentenceCounts = {};
+  speakerSessionBaselineSpeakingSeconds = {};
+  recomputeRenderedSpeakerSentenceCounts();
+  refreshSpeakerPanelSentenceCounts();
+  refreshTranscriptVisibility();
+  renderSpeakerPanel();
+  renderSavedSessions();
+  setSourceControlsDisabled(false);
+  start.disabled = false;
+  stop.disabled = true;
+  updateNewRunButtonState();
+  setState("Reviewing");
+  if (!options.quiet) {
+    log(`Opened saved session ${savedSessionTitle(sessionData)}.`);
+  }
+}
+async function openSavedSession(sessionId) {
+  if (!sessionId) return;
+  try {
+    const result = await post("/api/sessions/open", {session_id: sessionId});
+    if (result.session) {
+      loadSavedSessionReview(result.session);
+    }
+  } catch (error) {
+    log(`Open session failed: ${error.message}`);
+  }
+}
+async function archiveSavedSession(sessionId) {
+  try {
+    await post("/api/sessions/archive", {session_id: sessionId});
+    if (openedSavedSessionId === sessionId) renderSavedSessions();
+    await fetchSavedSessions();
+  } catch (error) {
+    log(`Archive failed: ${error.message}`);
+  }
+}
+async function restoreSavedSession(sessionId) {
+  try {
+    await post("/api/sessions/restore", {session_id: sessionId});
+    await fetchSavedSessions();
+  } catch (error) {
+    log(`Restore failed: ${error.message}`);
+  }
+}
+async function commitSessionTitleInput(item, input) {
+  if (!item || !input || input.dataset.saving === "1") return;
+  const sessionId = item.id || "";
+  const currentTitle = savedSessionDisplayTitle(item);
+  const cleanTitle = input.value.trim();
+  if (!cleanTitle) {
+    input.value = currentTitle;
+    log("Session title must not be empty.");
+    return;
+  }
+  editingSessionTitleId = "";
+  pendingSessionTitleFocusId = "";
+  if (cleanTitle === currentTitle) {
+    input.value = currentTitle;
+    renderSavedSessions();
+    return;
+  }
+  input.dataset.saving = "1";
+  input.disabled = true;
+  try {
+    const result = await post("/api/sessions/rename", {session_id: sessionId, title: cleanTitle});
+    if (openedSavedSessionId === sessionId && result.session) {
+      setTranscriptTitleSaved(result.session.title || cleanTitle);
+      sourceTitle.textContent = result.session.title || cleanTitle;
+    }
+    await fetchSavedSessions();
+  } catch (error) {
+    input.disabled = false;
+    input.dataset.saving = "";
+    input.value = currentTitle;
+    log(`Rename session failed: ${error.message}`);
+    renderSavedSessions();
+  }
+}
+async function deleteSavedSession(item) {
+  openSessionMenuId = "";
+  if (!confirm(`Delete "${item.title || "saved session"}" permanently?`)) {
+    renderSavedSessions();
+    return;
+  }
+  try {
+    await post("/api/sessions/delete", {session_id: item.id});
+    if (draftSavedSessionId === item.id) draftSavedSessionId = "";
+    if (openedSavedSessionId === item.id) {
+      openedSavedSessionId = "";
+      setTranscriptTitleLive();
+      resetTranscriptDisplay();
+      setState("Ready");
+    }
+    await fetchSavedSessions();
+  } catch (error) {
+    log(`Delete session failed: ${error.message}`);
+    renderSavedSessions();
+  }
 }
 function browserLiveObservationEnabled() {
   return Boolean(liveSpeakerConfig.browser_observation_enabled);
@@ -1992,7 +2648,7 @@ function updateSpeakerState(state) {
   refreshSpeakerRows();
 }
 function setSpeakerTab(tabName) {
-  const nextTab = tabName === "settings" ? "settings" : "speakers";
+  const nextTab = tabName === "settings" || tabName === "sessions" ? tabName : "speakers";
   speakerTabButtons.forEach(button => {
     const active = button.dataset.speakerTab === nextTab;
     button.classList.toggle("active", active);
@@ -2001,6 +2657,10 @@ function setSpeakerTab(tabName) {
   speakerTabPanels.forEach(panel => {
     panel.hidden = panel.dataset.speakerPanel !== nextTab;
   });
+  if (nextTab === "sessions") {
+    fetchSavedSessions().catch(error => log(`Refresh sessions failed: ${error.message}`));
+  }
+  syncSavedSessionsAutoRefresh();
 }
 function selectedSpeaker() {
   return speakerLibraryState.speakers.find(speaker => speaker.id === editingSpeakerId) || null;
@@ -2644,7 +3304,7 @@ function setEditingSpeaker(speakerId, options = {}) {
   renderSpeakerPanel();
 }
 function syncSpeakerEditor(speaker) {
-  if (!speaker) {
+  if (!speaker || savedSessionReviewOpen()) {
     referenceSpeakerForm.hidden = true;
     speakerEditorDock.appendChild(referenceSpeakerForm);
     return;
@@ -2687,12 +3347,6 @@ function selectedSpeakerReferenceName() {
 }
 async function commitSpeakerNameInput(speaker, input) {
   if (!speaker || !input || input.dataset.saving === "1") return;
-  try {
-    await ensureSessionOwner("rename speakers");
-  } catch (error) {
-    log(error.message);
-    return;
-  }
   const currentName = speakerPanelName(speaker);
   const name = input.value.trim();
   if (!name) {
@@ -2706,6 +3360,33 @@ async function commitSpeakerNameInput(speaker, input) {
   }
   input.dataset.saving = "1";
   input.disabled = true;
+  if (savedSessionReviewOpen()) {
+    try {
+      const result = await post("/api/sessions/speakers/rename", {
+        session_id: openedSavedSessionId,
+        speaker_id: speaker.id,
+        name,
+      });
+      if (result.session) {
+        loadSavedSessionReview(result.session, {quiet:true});
+      }
+      await fetchSavedSessions();
+    } catch (error) {
+      input.disabled = false;
+      input.dataset.saving = "";
+      input.value = currentName;
+      log(`Rename failed: ${error.message}`);
+    }
+    return;
+  }
+  try {
+    await ensureSessionOwner("rename speakers");
+  } catch (error) {
+    input.disabled = false;
+    input.dataset.saving = "";
+    log(error.message);
+    return;
+  }
   try {
     const result = await post("/api/speakers/rename", {speaker_id: speaker.id, name});
     updateSpeakerState(result.speaker_state);
@@ -2739,10 +3420,11 @@ function downloadJsonFile(filename, payload) {
 }
 function renderSpeakerPanel() {
   const controlsLocked = sessionControlsLocked();
+  const reviewMode = savedSessionReviewOpen();
   speakerPanelTitle.textContent = `Detected speakers (${speakerLibraryState.speakers.length})`;
-  clearSpeakersButton.disabled = controlsLocked || !speakerLibraryState.speakers.length;
-  addReferenceSpeakerButton.disabled = controlsLocked;
-  manualSpeakerName.disabled = controlsLocked;
+  clearSpeakersButton.disabled = controlsLocked || reviewMode || !speakerLibraryState.speakers.length;
+  addReferenceSpeakerButton.disabled = controlsLocked || reviewMode;
+  manualSpeakerName.disabled = controlsLocked || reviewMode;
   syncManualSpeakerComposer();
   speakerList.textContent = "";
   if (!speakerLibraryState.speakers.length) {
@@ -3607,6 +4289,9 @@ function renderSentence(item) {
   updateCurrentLiveSpeakerFromRealtimeRows();
   refreshSpeakerPanelSentenceCounts();
   refreshTranscriptVisibility();
+  if (!item.realtime && !item.pending && !item.provisional_assignment) {
+    scheduleSavedSessionsRefresh();
+  }
   if (isNewRow || item.realtime) {
     scrollSentencesToBottom();
   }
@@ -3629,12 +4314,14 @@ function connect() {
     stopPlaybackClock();
     stopBrowserAudioCapture();
     void stopBrowserLiveObservation("done");
+    draftSavedSessionId = "";
     setState("Stopped");
     start.disabled = false;
     stop.disabled = true;
     setSourceControlsDisabled(false);
     log(JSON.parse(e.data).message);
     scheduleCompletedSessionRelease();
+    refreshSavedSessionsAfterCompletion();
   });
 }
 followLive.addEventListener("change", () => {
@@ -3661,6 +4348,7 @@ releaseSessionButton.addEventListener("click", () => {
 });
 applyTranscriptDisplaySettings();
 start.addEventListener("click", async () => {
+  leaveSavedSessionReview();
   let playbackUnlockResults = null;
   if (!browserStreamMode) {
     playbackUnlockResults = await unlockPlayback();
@@ -3669,6 +4357,15 @@ start.addEventListener("click", async () => {
     await ensureSessionOwner("start a run");
   } catch (error) {
     log(error.message);
+    setState("Ready");
+    return;
+  }
+  setState("Creating session");
+  try {
+    await ensureDraftSavedSession("Started");
+  } catch (error) {
+    draftSavedSessionId = "";
+    log(`Create session failed: ${error.message}`);
     setState("Ready");
     return;
   }
@@ -3681,8 +4378,9 @@ start.addEventListener("click", async () => {
       await startBrowserAudioCapture();
       setState("Warming backend");
       setStreamHint(captureSourceKind === "microphone" ? "Microphone capture is armed; warming backend." : (captureSourceKind === "mixed" ? "Mixed audio capture is armed; warming backend before transcription starts." : "Audio capture is armed; warming backend before transcription starts."));
-      const result = await post("/api/start");
+      const result = await post("/api/start", currentStartSessionMetadata());
       if (result.speaker_state) updateSpeakerState(result.speaker_state);
+      if (result.saved_session) fetchSavedSessions().catch(() => {});
     } catch (error) {
       stopBrowserAudioCapture();
       start.disabled = false; stop.disabled = true; setSourceControlsDisabled(false); setState("Ready"); log(`Start failed: ${error.message}`);
@@ -3696,8 +4394,9 @@ start.addEventListener("click", async () => {
     await applySpeakerSensitivityIfDirty();
     setState("Warming backend");
     log("Warming backend before playback starts. First Modal starts can take about two minutes.");
-    const result = await post("/api/start");
+    const result = await post("/api/start", currentStartSessionMetadata());
     if (result.speaker_state) updateSpeakerState(result.speaker_state);
+    if (result.saved_session) fetchSavedSessions().catch(() => {});
   } catch (error) {
     start.disabled = false; stop.disabled = true; setSourceControlsDisabled(false); setState("Ready"); log(`Start failed: ${error.message}`);
     return;
@@ -3782,7 +4481,12 @@ document.addEventListener("click", event => {
   if (!transcriptSettingsButton.contains(event.target) && !transcriptSettingsPanel.contains(event.target)) {
     setTranscriptSettingsOpen(false);
   }
+  if (openSessionMenuId && !(event.target instanceof Element && event.target.closest(".session-row-menu, .session-menu-button"))) {
+    openSessionMenuId = "";
+    renderSavedSessions();
+  }
 });
+document.addEventListener("visibilitychange", syncSavedSessionsAutoRefresh);
 newSpeakerSensitivity.addEventListener("input", () => {
   speakerSensitivityDirty = true;
   updateSpeakerSensitivityLabel();
@@ -3815,6 +4519,10 @@ newSpeakerSensitivity.addEventListener("change", () => {
 speakerTabButtons.forEach(button => {
   button.addEventListener("click", () => setSpeakerTab(button.dataset.speakerTab));
 });
+sessionFilterButtons.forEach(button => {
+  button.addEventListener("click", () => setSavedSessionFilter(button.dataset.sessionFilter || "active"));
+});
+newRunSessionButton.addEventListener("click", createNewSession);
 addReferenceSpeakerButton.addEventListener("click", () => {
   manualSpeakerComposerOpen = !manualSpeakerComposerOpen;
   if (manualSpeakerComposerOpen) {
@@ -3969,6 +4677,7 @@ recordReferenceButton.addEventListener("click", async () => {
   startReferenceRecording().catch(error => log(`Reference recording failed: ${error.message}`));
 });
 load.addEventListener("click", async () => {
+  leaveSavedSessionReview();
   setSourceModeMenuOpen(false);
   const url = source.value.trim();
   if (inputMode.value === "microphone") {
@@ -4083,6 +4792,8 @@ audio.addEventListener("ended", flushPlaybackEnd);
 window.addEventListener("pagehide", () => sendSessionReleaseBeacon("tab closed"));
 window.addEventListener("beforeunload", () => sendSessionReleaseBeacon("tab closed"));
 updateSessionBanner();
+fetchSavedSessions().catch(() => {});
+syncSavedSessionsAutoRefresh();
 fetchSessionStatus().catch(() => {});
 startSessionStatusPolling();
 </script>
