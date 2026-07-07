@@ -58,7 +58,7 @@ def resolve_media_url(args: argparse.Namespace, url: str, skip_download: bool = 
 
 def resolve_browser_stream_id(url: str) -> str:
     parsed = urlparse(str(url or ""))
-    if parsed.scheme in {"microphone", "system-audio"}:
+    if parsed.scheme in {"microphone", "system-audio", "mixed-audio"}:
         return parsed.scheme
     if parsed.scheme and parsed.scheme not in {"http", "https"}:
         raw = parsed.scheme or parsed.netloc or parsed.path or "browser-stream"

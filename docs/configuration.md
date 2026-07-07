@@ -26,6 +26,19 @@ Use `--language` to keep final ASR, realtime Kroko/Banafo preview, and stream2se
 
 Supported realtime language codes are `de`, `en`, `es`, `fr`, `it`, `he`/`iw`, `nl`, `pt`, `sv`, and `tr`. The app maps these to Kroko model files such as `Kroko-DE-Community-64-L-Streaming-001.data`; English can still explicitly select the legacy `pro-16l` preset if that model is installed locally.
 
+| Language | CLI code | Kroko Community model code |
+| --- | --- | --- |
+| German | `de` | `DE` |
+| English | `en` | `EN` |
+| Spanish | `es` | `ES` |
+| French | `fr` | `FR` |
+| Italian | `it` | `IT` |
+| Hebrew | `he` or `iw` | `IW` |
+| Dutch | `nl` | `NL` |
+| Portuguese | `pt` | `PT` |
+| Swedish | `sv` | `SV` |
+| Turkish | `tr` | `TR` |
+
 Missing public Kroko Community models are downloaded automatically from `Banafo/Kroko-ASR` into `runtime/models/kroko-onnx/` when realtime preview starts. Disable this with `--no-realtime-preview-auto-download` if you need strictly offline startup. Pro/private models are not auto-downloaded; pass an existing `.data` file with `--realtime-preview-model-path`.
 
 By default stream2sentence uses `nltk+rule-based` for the Latin-script supported languages and `rule-based` for Hebrew. Override this only for a validated setup:
@@ -82,6 +95,33 @@ Recent defaults are tuned for faster live speaker feedback:
 - `--live-speaker-sentence-hint`: enabled by default.
 - `--live-speaker-sentence-hint-override`: enabled by default.
 - `--live-speaker-sentence-hint-hold-seconds 0.30`: browser hold time for final sentence hints.
+
+## ASR No-Speech Filtering
+
+The final ASR path can reject segments that the ASR model itself marks as likely non-speech. This is useful for music beds, long pauses, or other non-speech audio that can otherwise make Whisper-like models produce plausible but invented text.
+
+This filter does not compare transcript text against known phrases. It uses faster-whisper segment metadata, especially `no_speech_prob`.
+
+The filter is enabled by default:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --asr-no-speech-filter
+```
+
+Disable it for comparison runs:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --no-asr-no-speech-filter
+```
+
+Tuning flags:
+
+- `--asr-no-speech-prob-threshold 0.65`: discard ASR segments at or above this `no_speech_prob`.
+- `--asr-no-speech-hard-threshold 0.85`: discard even very short ASR segments at or above this value.
+- `--asr-no-speech-keep-short-max-words 2`: keep short interjections below the hard threshold when they have at most this many words.
+- `--asr-no-speech-keep-short-max-seconds 0.45`: keep short interjections below the hard threshold when they are at most this long.
+
+Use a lower `--asr-no-speech-prob-threshold` when music-only sections still produce text. Use a higher value, or disable the filter, only when validation shows real speech is being dropped. The short-segment exception is meant to preserve real utterances such as "yes", "no", "ok", or "ja" while still rejecting high-confidence non-speech segments.
 
 ## Speaker Sensitivity
 

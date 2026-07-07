@@ -1,0 +1,168 @@
+from __future__ import annotations
+
+import sys
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+
+from window.fact_lens_sidecar import (
+    SCHEMA_VERSION,
+    SidecarState,
+    TranscriptSentence,
+    build_arg_parser,
+    coalesce_sentences,
+    evidence_matches_transcript,
+    parse_openai_chat_json,
+    parse_sse_lines,
+    validate_extraction_payload,
+)
+
+
+class FactLensParsingTests(unittest.TestCase):
+    def test_llm_claim_extraction_is_disabled_by_default(self) -> None:
+        args = build_arg_parser().parse_args([])
+
+        self.assertFalse(args.enable_llm)
+        self.assertFalse(args.mock_llm)
+
+    def test_openai_json_parser_accepts_fenced_json(self) -> None:
+        response = {
+            "choices": [
+                {
+                    "message": {
+                        "content": (
+                            "```json\n"
+                            '{"schema_version":"claim_triage_v1","sentence_id":"7",'
+                            '"classification":"ignore","claims":[],"rationale":"small talk"}'
+                            "\n```"
+                        )
+                    }
+                }
+            ]
+        }
+
+        payload = parse_openai_chat_json(response)
+
+        self.assertEqual(payload["schema_version"], SCHEMA_VERSION)
+        self.assertEqual(payload["classification"], "ignore")
+
+    def test_validate_extraction_rejects_claim_when_evidence_is_not_in_transcript(self) -> None:
+        sentence = TranscriptSentence(
+            id="42",
+            text="Berlin has more than three million residents.",
+            speaker="S1",
+        )
+        payload = {
+            "schema_version": SCHEMA_VERSION,
+            "sentence_id": "42",
+            "classification": "checkable_claim",
+            "rationale": "contains a population claim",
+            "claims": [
+                {
+                    "claim": "Paris has fewer than one million residents.",
+                    "evidence": "Paris has fewer than one million residents",
+                    "priority": "high",
+                    "rationale": "population claim",
+                }
+            ],
+        }
+
+        result = validate_extraction_payload(payload, sentence)
+
+        self.assertEqual(result.classification, "needs_context")
+        self.assertEqual(result.claims, [])
+        self.assertEqual(result.rejected_claims, ["claim_0:evidence_mismatch"])
+
+    def test_validate_extraction_deduplicates_repeated_claims(self) -> None:
+        sentence = TranscriptSentence(
+            id="43",
+            text="The Eiffel Tower is located in Paris, France.",
+            speaker="S1",
+        )
+        claim = {
+            "claim": "The Eiffel Tower is located in Paris, France.",
+            "evidence": "The Eiffel Tower is located in Paris, France.",
+            "priority": "high",
+            "rationale": "location claim",
+        }
+        payload = {
+            "schema_version": SCHEMA_VERSION,
+            "sentence_id": "43",
+            "classification": "checkable_claim",
+            "rationale": "contains a location claim",
+            "claims": [dict(claim), dict(claim)],
+        }
+
+        result = validate_extraction_payload(payload, sentence)
+
+        self.assertEqual(result.classification, "checkable_claim")
+        self.assertEqual(len(result.claims), 1)
+        self.assertEqual(result.rejected_claims, ["claim_1:duplicate_claim"])
+
+    def test_evidence_matching_allows_near_exact_punctuation_differences(self) -> None:
+        self.assertTrue(
+            evidence_matches_transcript(
+                "Berlin has more than three million residents",
+                "Berlin has more than three million residents.",
+            )
+        )
+        self.assertFalse(
+            evidence_matches_transcript(
+                "Paris has fewer than one million residents",
+                "Berlin has more than three million residents.",
+            )
+        )
+
+    def test_coalesce_sentences_keeps_latest_duplicate_in_latest_position(self) -> None:
+        first = TranscriptSentence(id="1", text="old")
+        second = TranscriptSentence(id="2", text="middle")
+        updated = TranscriptSentence(id="1", text="new")
+
+        coalesced = coalesce_sentences([first, second, updated])
+
+        self.assertEqual([(item.id, item.text) for item in coalesced], [("2", "middle"), ("1", "new")])
+
+    def test_record_sentence_can_observe_without_queueing_llm_work(self) -> None:
+        state = SidecarState()
+        sentence = TranscriptSentence(id="1", text="Berlin has more than three million residents.", speaker="S1")
+
+        queued = state.record_sentence(sentence, queue_claim_extraction=False)
+        snapshot = state.snapshot()
+
+        self.assertFalse(queued)
+        self.assertEqual(snapshot["stats"]["sentences_seen"], 1)
+        self.assertEqual(snapshot["stats"]["sentences_queued"], 0)
+        self.assertEqual(snapshot["cards"], [])
+
+    def test_sse_parser_handles_event_id_data_and_heartbeat(self) -> None:
+        events = list(
+            parse_sse_lines(
+                [
+                    ": heartbeat\n",
+                    "id: 11\n",
+                    "event: transcript.final\n",
+                    'data: {"type":"transcript.final"}\n',
+                    "\n",
+                    "event: message\n",
+                    "data: first\n",
+                    "data: second\n",
+                    "\n",
+                ]
+            )
+        )
+
+        self.assertEqual(len(events), 2)
+        self.assertEqual(events[0].event_id, "11")
+        self.assertEqual(events[0].event, "transcript.final")
+        self.assertEqual(events[0].data, '{"type":"transcript.final"}')
+        self.assertEqual(events[1].data, "first\nsecond")
+
+
+if __name__ == "__main__":
+    unittest.main()
