@@ -9,6 +9,7 @@ import modal
 APP_NAME = "whospeaks-live-asr"
 ENDPOINT_LABEL = "whospeaks-live-asr"
 MODEL_NAME = os.environ.get("WHOSPEAKS_MODAL_ASR_MODEL", "large-v2")
+DEFAULT_LANGUAGE = os.environ.get("WHOSPEAKS_ASR_LANGUAGE", os.environ.get("WHOSPEAKS_LANGUAGE", "en"))
 CACHE_DIR = "/cache"
 
 image = (
@@ -66,6 +67,7 @@ def create_asgi_app():
             "model": MODEL_NAME,
             "device": "cuda",
             "compute_type": "float16",
+            "language": DEFAULT_LANGUAGE,
             "model_loaded": _model is not None,
             "model_load_seconds": _loaded_at,
         }
@@ -75,7 +77,7 @@ def create_asgi_app():
         request: Request,
         sample_rate: int = Query(..., ge=1),
         encoding: str = Query("float32"),
-        language: str = Query("en"),
+        language: str = Query(DEFAULT_LANGUAGE),
         task: str = Query("transcribe"),
         beam_size: int = Query(5, ge=1),
         word_timestamps: bool = Query(True),
@@ -136,6 +138,9 @@ def create_asgi_app():
                     "start": float(getattr(segment, "start", 0.0) or 0.0),
                     "end": float(getattr(segment, "end", 0.0) or 0.0),
                     "text": str(getattr(segment, "text", "") or ""),
+                    "avg_logprob": float(getattr(segment, "avg_logprob", 0.0) or 0.0),
+                    "no_speech_prob": float(getattr(segment, "no_speech_prob", 0.0) or 0.0),
+                    "compression_ratio": float(getattr(segment, "compression_ratio", 0.0) or 0.0),
                     "words": segment_words,
                 }
             )

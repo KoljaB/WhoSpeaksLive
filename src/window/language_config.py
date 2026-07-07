@@ -1,0 +1,177 @@
+"""Language normalization and realtime ASR/sentence-tokenizer defaults."""
+
+from __future__ import annotations
+
+import argparse
+from dataclasses import dataclass
+import os
+import re
+from typing import Any
+
+
+@dataclass(frozen=True)
+class LanguageConfig:
+    code: str
+    display_name: str
+    kroko_code: str
+    sentence_tokenizer: str
+    sentence_language: str
+    nltk_language: str | None
+    aliases: tuple[str, ...] = ()
+
+
+SUPPORTED_LANGUAGE_CONFIGS: dict[str, LanguageConfig] = {
+    "de": LanguageConfig(
+        "de", "German", "DE", "nltk+rule-based", "de", "german",
+        ("deu", "ger", "german", "deutsch"),
+    ),
+    "en": LanguageConfig(
+        "en", "English", "EN", "nltk+rule-based", "en", "english",
+        ("eng", "english"),
+    ),
+    "es": LanguageConfig(
+        "es", "Spanish", "ES", "nltk+rule-based", "es", "spanish",
+        ("spa", "spanish", "espanol"),
+    ),
+    "fr": LanguageConfig(
+        "fr", "French", "FR", "nltk+rule-based", "fr", "french",
+        ("fra", "fre", "french", "francais"),
+    ),
+    "it": LanguageConfig(
+        "it", "Italian", "IT", "nltk+rule-based", "it", "italian",
+        ("ita", "italian", "italiano"),
+    ),
+    "he": LanguageConfig(
+        "he", "Hebrew", "IW", "rule-based", "he", None,
+        ("iw", "heb", "hebrew", "hebraisch"),
+    ),
+    "nl": LanguageConfig(
+        "nl", "Dutch", "NL", "nltk+rule-based", "nl", "dutch",
+        ("nld", "dut", "dutch", "nederlands"),
+    ),
+    "pt": LanguageConfig(
+        "pt", "Portuguese", "PT", "nltk+rule-based", "pt", "portuguese",
+        ("por", "portuguese", "portugues"),
+    ),
+    "sv": LanguageConfig(
+        "sv", "Swedish", "SV", "nltk+rule-based", "sv", "swedish",
+        ("swe", "swedish", "svenska"),
+    ),
+    "tr": LanguageConfig(
+        "tr", "Turkish", "TR", "nltk+rule-based", "tr", "turkish",
+        ("tur", "turkish", "turkisch"),
+    ),
+}
+
+SUPPORTED_LANGUAGE_CODES = tuple(SUPPORTED_LANGUAGE_CONFIGS)
+SUPPORTED_KROKO_CODES = tuple(config.kroko_code for config in SUPPORTED_LANGUAGE_CONFIGS.values())
+SUPPORTED_SENTENCE_TOKENIZERS = ("auto", "nltk", "nltk+rule-based", "rule-based", "stanza")
+
+_ALIAS_TO_CODE: dict[str, str] = {}
+for _code, _config in SUPPORTED_LANGUAGE_CONFIGS.items():
+    _ALIAS_TO_CODE[_code] = _code
+    _ALIAS_TO_CODE[_config.kroko_code.lower()] = _code
+    _ALIAS_TO_CODE[_config.display_name.lower()] = _code
+    for _alias in _config.aliases:
+        _ALIAS_TO_CODE[_alias.lower()] = _code
+
+
+def _language_key(value: Any) -> str:
+    text = str(value or "").strip().lower().replace("_", "-")
+    text = re.sub(r"\s+", "-", text)
+    return text
+
+
+def normalize_language_code(value: Any) -> str:
+    key = _language_key(value)
+    if not key:
+        raise ValueError("language must not be empty")
+    code = _ALIAS_TO_CODE.get(key)
+    if code is None:
+        regional_match = re.match(r"^([a-z]{2,3})-[a-z0-9-]+$", key)
+        if regional_match:
+            code = _ALIAS_TO_CODE.get(regional_match.group(1))
+    if code is None:
+        allowed = ", ".join(SUPPORTED_LANGUAGE_CODES)
+        raise ValueError(f"unsupported realtime language {value!r}; choose one of: {allowed}")
+    return code
+
+
+def language_arg(value: Any) -> str:
+    try:
+        return normalize_language_code(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
+
+
+def default_language_code() -> str:
+    for name in ("WHOSPEAKS_LANGUAGE", "WHOSPEAKS_ASR_LANGUAGE"):
+        value = os.environ.get(name)
+        if value:
+            try:
+                return normalize_language_code(value)
+            except ValueError:
+                return "en"
+    return "en"
+
+
+def get_language_config(value: Any) -> LanguageConfig:
+    return SUPPORTED_LANGUAGE_CONFIGS[normalize_language_code(value)]
+
+
+def normalize_sentence_tokenizer(value: Any) -> str:
+    tokenizer = str(value or "auto").strip().lower().replace("_", "-")
+    aliases = {
+        "rules": "rule-based",
+        "nltk-rules": "nltk+rule-based",
+        "nltk+rules": "nltk+rule-based",
+        "nltk-rule-based": "nltk+rule-based",
+        "consensus": "nltk+rule-based",
+    }
+    tokenizer = aliases.get(tokenizer, tokenizer)
+    if tokenizer not in SUPPORTED_SENTENCE_TOKENIZERS:
+        allowed = ", ".join(SUPPORTED_SENTENCE_TOKENIZERS)
+        raise ValueError(f"unsupported sentence tokenizer {value!r}; choose one of: {allowed}")
+    return tokenizer
+
+
+def sentence_tokenizer_arg(value: Any) -> str:
+    try:
+        return normalize_sentence_tokenizer(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
+
+
+def default_sentence_tokenizer(language: Any, requested: Any = None) -> str:
+    tokenizer = normalize_sentence_tokenizer(
+        requested or os.environ.get("WHOSPEAKS_SENTENCE_TOKENIZER", "auto")
+    )
+    if tokenizer != "auto":
+        return tokenizer
+    return get_language_config(language).sentence_tokenizer
+
+
+def default_sentence_language(language: Any) -> str:
+    return get_language_config(language).sentence_language
+
+
+def kroko_preview_model_name(language: Any, preset: str = "community-64l") -> str:
+    config = get_language_config(language)
+    normalized_preset = str(preset or "community-64l").strip().lower().replace("_", "-")
+    if normalized_preset == "community-64l":
+        return f"Kroko-{config.kroko_code}-Community-64-L-Streaming-001.data"
+    if normalized_preset == "pro-16l":
+        if config.code != "en":
+            raise ValueError("Kroko pro-16l preview preset is only configured for English.")
+        return "Kroko-EN-Pro-16-L-Streaming-001.data"
+    raise ValueError(f"unsupported Kroko preview preset {preset!r}")
+
+
+def infer_language_from_kroko_model_name(model: Any) -> str | None:
+    match = re.search(r"Kroko-([A-Z]{2})-", str(model or ""), re.IGNORECASE)
+    if not match:
+        return None
+    try:
+        return normalize_language_code(match.group(1))
+    except ValueError:
+        return None

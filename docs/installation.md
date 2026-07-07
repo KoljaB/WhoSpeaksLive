@@ -159,7 +159,7 @@ This path is slower to install and more likely to hit CUDA, PyTorch, model-cache
 
 The first launch above disables the local realtime preview engine with `--realtime-preview-engine off`. Final transcript diarization and live speaker probing still work.
 
-Kroko/RealtimeSTT preview is optional and currently depends on a separate local RealtimeSTT/Kroko environment plus model files. If that environment exists, remove `--realtime-preview-engine off` or point `--realtime-preview-python` and `--realtime-preview-model-path` at the working preview environment.
+Kroko/RealtimeSTT preview is optional and currently depends on a separate local RealtimeSTT/Kroko environment. If that environment exists, remove `--realtime-preview-engine off` or point `--realtime-preview-python` at the working preview environment. The `--language` flag selects the matching community model name for supported realtime languages, for example `--language de` selects `Kroko-DE-Community-64-L-Streaming-001.data`. Missing public Community model files are downloaded automatically to `runtime/models/kroko-onnx/`; use `--no-realtime-preview-auto-download` to require preinstalled files.
 
 ## Next Step
 

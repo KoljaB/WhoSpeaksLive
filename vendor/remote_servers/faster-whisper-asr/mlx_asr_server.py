@@ -28,6 +28,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 MODEL_REPO = os.environ.get("ASR_MLX_MODEL", "mlx-community/whisper-large-v3-turbo")
+DEFAULT_LANGUAGE = os.environ.get("ASR_LANGUAGE", os.environ.get("WHOSPEAKS_ASR_LANGUAGE", "en"))
 HOST = os.environ.get("ASR_HOST", "0.0.0.0")
 PORT = int(os.environ.get("ASR_PORT", "8651"))
 TARGET_SAMPLE_RATE = 16000
@@ -91,7 +92,7 @@ def load_model() -> None:
     start_parent_watchdog()
     start = time.perf_counter()
     warmup = np.zeros(TARGET_SAMPLE_RATE, dtype=np.float32)
-    mlx_whisper.transcribe(warmup, path_or_hf_repo=MODEL_REPO, language="en")
+    mlx_whisper.transcribe(warmup, path_or_hf_repo=MODEL_REPO, language=DEFAULT_LANGUAGE)
     model_loaded_at = time.perf_counter() - start
 
 
@@ -102,7 +103,7 @@ def health() -> dict[str, Any]:
         "model": MODEL_REPO,
         "device": "mlx",
         "compute_type": "mlx-default",
-        "language": "en",
+        "language": DEFAULT_LANGUAGE,
         "model_loaded_seconds": model_loaded_at,
         "routes": ["/health", "/transcribe-window"],
     }
@@ -144,7 +145,7 @@ async def transcribe_window(request: Request) -> JSONResponse:
     audio = pcm_bytes_to_float32(audio_bytes, sample_rate, encoding)
     decode_seconds = time.perf_counter() - decode_started
 
-    language = value_or_default(values, "language", "en")
+    language = value_or_default(values, "language", DEFAULT_LANGUAGE)
     if isinstance(language, str) and language.strip().lower() in {"auto", "detect"}:
         language = None
     word_timestamps = parse_bool(value_or_default(values, "word_timestamps", True), "word_timestamps")
@@ -193,7 +194,7 @@ async def transcribe_window(request: Request) -> JSONResponse:
     return JSONResponse(
         {
             "text": result["text"].strip(),
-            "language": "en",
+            "language": language or result.get("language"),
             "detected_language": result.get("language"),
             "language_probability": None,
             "duration": len(audio) / TARGET_SAMPLE_RATE,

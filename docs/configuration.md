@@ -16,6 +16,24 @@ Use remote backends when ASR and embeddings run on a GPU server:
 .\.venv\Scripts\whospeaks-window.exe --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660
 ```
 
+## Language
+
+Use `--language` to keep final ASR, realtime Kroko/Banafo preview, and stream2sentence sentence splitting on the same language:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --language de --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660
+```
+
+Supported realtime language codes are `de`, `en`, `es`, `fr`, `it`, `he`/`iw`, `nl`, `pt`, `sv`, and `tr`. The app maps these to Kroko model files such as `Kroko-DE-Community-64-L-Streaming-001.data`; English can still explicitly select the legacy `pro-16l` preset if that model is installed locally.
+
+Missing public Kroko Community models are downloaded automatically from `Banafo/Kroko-ASR` into `runtime/models/kroko-onnx/` when realtime preview starts. Disable this with `--no-realtime-preview-auto-download` if you need strictly offline startup. Pro/private models are not auto-downloaded; pass an existing `.data` file with `--realtime-preview-model-path`.
+
+By default stream2sentence uses `nltk+rule-based` for the Latin-script supported languages and `rule-based` for Hebrew. Override this only for a validated setup:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --language de --sentence-tokenizer nltk+rule-based
+```
+
 ## Embedding Providers
 
 Final speaker assignment uses `--embedding-provider`.

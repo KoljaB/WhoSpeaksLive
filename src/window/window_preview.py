@@ -96,7 +96,7 @@ class KrokoRealtimePreviewTranscriber(RealtimePreviewTranscriber):
             "provider": args.realtime_preview_provider,
             "num_threads": args.realtime_preview_num_threads,
             "sample_rate": 16000,
-            "language": "en",
+            "language": getattr(args, "realtime_preview_language", getattr(args, "language", "en")),
             "suppress_native_output": True,
         }
         if args.realtime_preview_model_path is not None:
@@ -117,7 +117,10 @@ class KrokoRealtimePreviewTranscriber(RealtimePreviewTranscriber):
             engine_options=options,
         )
         self.engine = create_transcription_engine(args.realtime_preview_engine, config)
-        self.session = self.engine.create_streaming_session(language="en", use_prompt=False)
+        self.session = self.engine.create_streaming_session(
+            language=getattr(args, "realtime_preview_language", getattr(args, "language", "en")),
+            use_prompt=False,
+        )
 
     def reset_preview(self) -> None:
         self.session.reset()
@@ -163,6 +166,8 @@ class KrokoSubprocessPreviewTranscriber(RealtimePreviewTranscriber):
             str(args.realtime_preview_provider),
             "--num-threads",
             str(args.realtime_preview_num_threads),
+            "--language",
+            str(getattr(args, "realtime_preview_language", getattr(args, "language", "en"))),
         ]
         if args.realtime_preview_model_path is not None:
             command.extend(["--model-path", str(args.realtime_preview_model_path)])

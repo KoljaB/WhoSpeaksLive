@@ -108,6 +108,7 @@ from window.window_config import (  # noqa: E402
     DEFAULT_CUNK_CANONICAL,
     DEFAULT_EMBEDDING_HELPER_RESPONSE_TIMEOUT_SECONDS,
     DEFAULT_FAST_WHISPER_CACHE,
+    DEFAULT_KROKO_PREVIEW_AUTO_DOWNLOAD,
     DEFAULT_KROKO_PREVIEW_MODEL_PRESET,
     DEFAULT_KROKO_PREVIEW_PYTHON,
     DEFAULT_OUTPUT_DIR,
@@ -118,7 +119,6 @@ from window.window_config import (  # noqa: E402
     DEFAULT_SPEAKER_LIBRARY_DIR,
     DEFAULT_VALIDATION_OUTPUT,
     DEFAULT_WINDOW_EMBEDDING_PROVIDER,
-    KROKO_PREVIEW_MODEL_PRESETS,
     NEW_SPEAKER_SENSITIVITY_PRESETS,
     PRESET_YOUTUBE_VIDEOS,
     SPEAKER_COLORS,
@@ -130,6 +130,15 @@ from window.window_config import (  # noqa: E402
     default_silero_vad_model_path,
     new_speaker_sensitivity_config,
     normalize_kroko_preview_model_preset,
+)
+from window.language_config import (  # noqa: E402
+    default_language_code,
+    default_sentence_language,
+    default_sentence_tokenizer,
+    infer_language_from_kroko_model_name,
+    kroko_preview_model_name,
+    language_arg,
+    sentence_tokenizer_arg,
 )
 from window.window_diarizer import WindowDiarizer  # noqa: E402
 from window.window_events import EventBus, RecordingEventBus  # noqa: E402
@@ -1193,6 +1202,15 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "vad_frame_seconds": args.vad_frame_seconds,
             "vad_merge_gap_seconds": args.vad_merge_gap_seconds,
             "vad_min_speech_seconds": args.vad_min_speech_seconds,
+            "vad_gate_secondary_backend": args.vad_gate_secondary_backend,
+            "vad_gate_webrtc_mode": args.vad_gate_webrtc_mode,
+            "vad_gate_min_consensus_seconds": args.vad_gate_min_consensus_seconds,
+            "vad_gate_min_consensus_ratio": args.vad_gate_min_consensus_ratio,
+            "asr_no_speech_filter": args.asr_no_speech_filter,
+            "asr_no_speech_prob_threshold": args.asr_no_speech_prob_threshold,
+            "asr_no_speech_hard_threshold": args.asr_no_speech_hard_threshold,
+            "asr_no_speech_keep_short_max_words": args.asr_no_speech_keep_short_max_words,
+            "asr_no_speech_keep_short_max_seconds": args.asr_no_speech_keep_short_max_seconds,
             "live_speaker_assignment": args.live_speaker_assignment,
             "live_speaker_embedding_provider": args.live_speaker_embedding_provider,
             "live_speaker_embedding_min_interval_seconds": args.live_speaker_embedding_min_interval_seconds,
@@ -1306,6 +1324,8 @@ def parse_args() -> argparse.Namespace:
     preview_model_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model")
     preview_model_path_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model-path")
     preview_model_preset_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model-preset")
+    language_was_explicit = _argv_has_option(raw_argv, "--language")
+    language_was_from_env = bool(os.environ.get("WHOSPEAKS_LANGUAGE") or os.environ.get("WHOSPEAKS_ASR_LANGUAGE"))
     default_vad_model_path = default_silero_vad_model_path()
     parser = argparse.ArgumentParser(description="Growing-window faster-whisper speaker diarization GUI.")
     parser.add_argument("--url", default=DEFAULT_URL)
@@ -1366,6 +1386,18 @@ def parse_args() -> argparse.Namespace:
         help="HTTP timeout for each remote ASR request.",
     )
     parser.add_argument("--model", default="large-v2")
+    parser.add_argument(
+        "--language",
+        type=language_arg,
+        default=default_language_code(),
+        help="Realtime language for final ASR, Kroko preview model selection, and sentence splitting.",
+    )
+    parser.add_argument(
+        "--sentence-tokenizer",
+        type=sentence_tokenizer_arg,
+        default=None,
+        help="Sentence tokenizer for stream2sentence. Defaults to the language-specific realtime choice.",
+    )
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--compute-type", default="float16")
     parser.add_argument("--download-root", type=Path, default=default_faster_whisper_download_root())
@@ -1466,6 +1498,99 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=0.25,
         help="Minimum detected speech in a window before VAD can trigger a split.",
+    )
+    parser.add_argument(
+        "--vad-gate-secondary-backend",
+        choices=("off", "webrtc"),
+        default="webrtc",
+        help="Realtime-safe secondary VAD required to confirm ASR/preview speech gates.",
+    )
+    parser.add_argument(
+        "--vad-gate-webrtc-mode",
+        type=int,
+        default=3,
+        help="WebRTC VAD aggressiveness for ASR/preview gate confirmation (0-3).",
+    )
+    parser.add_argument(
+        "--vad-gate-min-consensus-seconds",
+        type=float,
+        default=0.12,
+        help="Minimum secondary-VAD overlap required to accept a primary VAD speech span.",
+    )
+    parser.add_argument(
+        "--vad-gate-min-consensus-ratio",
+        type=float,
+        default=0.05,
+        help="Minimum secondary-VAD overlap ratio required to accept a primary VAD speech span.",
+    )
+    parser.add_argument(
+        "--asr-vad-gate",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Before final ASR, trim leading/trailing non-speech and transcribe one padded "
+            "speech-bounded clip instead of the full music/silence-containing window."
+        ),
+    )
+    parser.add_argument(
+        "--asr-vad-gate-pre-padding-seconds",
+        type=float,
+        default=0.20,
+        help="Audio kept before each VAD speech island sent to final ASR.",
+    )
+    parser.add_argument(
+        "--asr-vad-gate-post-padding-seconds",
+        type=float,
+        default=0.35,
+        help="Audio kept after each VAD speech island sent to final ASR.",
+    )
+    parser.add_argument(
+        "--asr-vad-gate-merge-gap-seconds",
+        type=float,
+        default=0.85,
+        help="When internal gap cutting is enabled, merge padded ASR speech islands separated by at most this many seconds.",
+    )
+    parser.add_argument(
+        "--asr-vad-gate-min-clip-seconds",
+        type=float,
+        default=0.20,
+        help="Drop padded ASR speech clips shorter than this duration.",
+    )
+    parser.add_argument(
+        "--asr-vad-gate-cut-internal-gaps",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Experimental: cut long non-speech gaps inside a final ASR window. Disabled by default to avoid splitting sentences.",
+    )
+    parser.add_argument(
+        "--asr-no-speech-filter",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Drop ASR segments whose Whisper no_speech_prob is above the configured threshold.",
+    )
+    parser.add_argument(
+        "--asr-no-speech-prob-threshold",
+        type=float,
+        default=0.65,
+        help="Whisper no_speech_prob threshold above which ASR segment words are discarded.",
+    )
+    parser.add_argument(
+        "--asr-no-speech-hard-threshold",
+        type=float,
+        default=0.85,
+        help="Whisper no_speech_prob threshold above which even very short ASR segments are discarded.",
+    )
+    parser.add_argument(
+        "--asr-no-speech-keep-short-max-words",
+        type=int,
+        default=2,
+        help="Keep ASR segments at or above the no_speech_prob threshold when they have at most this many words and stay below the hard threshold.",
+    )
+    parser.add_argument(
+        "--asr-no-speech-keep-short-max-seconds",
+        type=float,
+        default=0.45,
+        help="Keep ASR segments at or above the no_speech_prob threshold when they are at most this long and stay below the hard threshold.",
     )
     parser.add_argument(
         "--sentence-boundary-pre-padding-seconds",
@@ -1788,6 +1913,12 @@ def parse_args() -> argparse.Namespace:
         help="Named Kroko preview model preset. Use pro-16l for Kroko-EN-Pro-16-L-Streaming-001.data.",
     )
     parser.add_argument("--realtime-preview-model-path", type=Path, default=None)
+    parser.add_argument(
+        "--realtime-preview-auto-download",
+        action=argparse.BooleanOptionalAction,
+        default=DEFAULT_KROKO_PREVIEW_AUTO_DOWNLOAD,
+        help="Download missing public Kroko Community preview models from Hugging Face before starting preview.",
+    )
     parser.add_argument("--realtime-preview-download-root", type=Path, default=None)
     parser.add_argument("--realtime-preview-python", type=Path, default=DEFAULT_KROKO_PREVIEW_PYTHON)
     parser.add_argument("--realtime-preview-realtimestt-root", type=Path, default=DEFAULT_REALTIMESTT_ROOT)
@@ -1813,6 +1944,30 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=None,
         help="Audio seconds fed to Kroko per streaming accept call. By default this is inferred from the Kroko model name.",
+    )
+    parser.add_argument(
+        "--realtime-preview-vad-gate",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Start Kroko preview only after VAD speech onset and reset it after sustained non-speech.",
+    )
+    parser.add_argument(
+        "--realtime-preview-vad-gate-pre-padding-seconds",
+        type=float,
+        default=0.35,
+        help="Buffered audio kept before VAD speech onset when starting Kroko preview.",
+    )
+    parser.add_argument(
+        "--realtime-preview-vad-gate-post-padding-seconds",
+        type=float,
+        default=0.35,
+        help="Audio kept after VAD speech end before resetting Kroko preview.",
+    )
+    parser.add_argument(
+        "--realtime-preview-vad-gate-close-silence-seconds",
+        type=float,
+        default=1.1,
+        help="Sustained VAD non-speech required before closing and resetting a Kroko preview session.",
     )
     parser.add_argument(
         "--realtime-preview-reset-overlap-seconds",
@@ -2290,8 +2445,21 @@ def parse_args() -> argparse.Namespace:
         help="Keep realtime preview enabled during validation. Final sentence metrics usually do not need this.",
     )
     args = parser.parse_args()
+    if not language_was_explicit and not language_was_from_env:
+        inferred_language = infer_language_from_kroko_model_name(args.realtime_preview_model)
+        if inferred_language is not None:
+            args.language = inferred_language
+    args.sentence_tokenizer = default_sentence_tokenizer(args.language, args.sentence_tokenizer)
+    args.sentence_language = default_sentence_language(args.language)
+    args.realtime_preview_language = args.language
     if args.realtime_preview_model is None:
-        args.realtime_preview_model = KROKO_PREVIEW_MODEL_PRESETS[args.realtime_preview_model_preset]
+        try:
+            args.realtime_preview_model = kroko_preview_model_name(
+                args.language,
+                args.realtime_preview_model_preset,
+            )
+        except ValueError as exc:
+            parser.error(str(exc))
     else:
         args.realtime_preview_model_preset = "custom"
     if args.realtime_preview_startup_timeout_seconds is None:
@@ -2366,6 +2534,7 @@ def main() -> int:
     print(
         f"[{datetime.now().strftime('%H:%M:%S')}] Startup config: "
         f"url={args.url} port={args.port} asr_backend={args.asr_backend} "
+        f"language={args.language} sentence_tokenizer={args.sentence_tokenizer}/{args.sentence_language} "
         f"embeddings_backend={args.embeddings_backend} "
         f"embedding_provider={args.embedding_provider} "
         f"embedding_timeout={args.embedding_helper_response_timeout_seconds:.0f}s "

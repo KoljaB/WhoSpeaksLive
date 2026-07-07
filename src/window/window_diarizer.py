@@ -31,6 +31,7 @@ from speakers.speaker_embedding_cluster import (
     cosine_similarity,
 )
 from window.window_config import (
+    DEFAULT_KROKO_PREVIEW_AUTO_DOWNLOAD,
     DEFAULT_REALTIMESTT_ROOT,
     DEFAULT_SPEAKER_LIBRARY_DIR,
     NEW_SPEAKER_SENSITIVITY_FIELDS,
@@ -38,12 +39,14 @@ from window.window_config import (
     SILERO_VAD_SAMPLE_RATE,
     apply_new_speaker_sensitivity,
     default_silero_vad_backend,
+    download_kroko_preview_model,
     list_speaker_groups,
     normalize_new_speaker_sensitivity,
     safe_library_name,
     safe_reference_filename,
     speaker_group_dir,
 )
+from window.language_config import default_sentence_language, default_sentence_tokenizer
 from window.window_domain import (
     EmbeddingSentenceJob,
     LiveSpeakerMemoryUpdateJob,
@@ -76,6 +79,7 @@ from window.window_speaker_refinement import (
     SpeakerRefinementConfig,
     find_speaker_prototype_revisions,
 )
+
 
 class WindowDiarizer:
     def __init__(self, args: argparse.Namespace, media: MediaFiles, bus: EventBus) -> None:
@@ -141,6 +145,7 @@ class WindowDiarizer:
         self._vad_model_backend = ""
         self._vad_model_error: str | None = None
         self._vad_model_lock = threading.Lock()
+        self._webrtc_vad_error: str | None = None
         self._sentence_splitter_warmed = False
         self._embedding_warmed = False
         self._asr_probe_warmed = False
@@ -1004,6 +1009,25 @@ class WindowDiarizer:
             if hasattr(self.memory, key):
                 setattr(self.memory, key, preset[key])
 
+    def _ensure_realtime_preview_model(self) -> None:
+        model_path = getattr(self.args, "realtime_preview_model_path", None)
+        if model_path is not None:
+            if Path(model_path).is_file():
+                return
+            raise RuntimeError(f"Kroko preview model path does not exist: {model_path}")
+
+        if not bool(getattr(self.args, "realtime_preview_auto_download", DEFAULT_KROKO_PREVIEW_AUTO_DOWNLOAD)):
+            return
+
+        model_name = str(getattr(self.args, "realtime_preview_model", "") or "")
+        self.bus.emit(
+            "status",
+            {"message": f"Kroko preview model {model_name} not found locally; downloading from Hugging Face."},
+        )
+        model_path = download_kroko_preview_model(model_name)
+        self.args.realtime_preview_model_path = model_path
+        self.bus.emit("status", {"message": f"Kroko preview model ready: {model_path}."})
+
     def _load_realtime_preview(self) -> None:
         self._preview_transcriber = None
         engine = str(self.args.realtime_preview_engine or "off").strip().lower().replace("-", "_")
@@ -1025,6 +1049,7 @@ class WindowDiarizer:
                     )
                 },
             )
+            self._ensure_realtime_preview_model()
             if self.args.realtime_preview_python is not None and self.args.realtime_preview_python.is_file():
                 self._preview_transcriber = KrokoSubprocessPreviewTranscriber(self.args)
             else:
@@ -1484,18 +1509,48 @@ class WindowDiarizer:
             return VadWindowState(False, False, backend=backend)
 
         self._smooth_vad_flags(flags, frame_seconds)
-        speech_indexes = [index for index, is_speech in enumerate(flags) if is_speech]
-        if not speech_indexes:
+        spans: list[tuple[float, float]] = []
+        index = 0
+        while index < len(flags):
+            if not flags[index]:
+                index += 1
+                continue
+            span_start_index = index
+            while index < len(flags) and flags[index]:
+                index += 1
+            span_end_index = index - 1
+            span_start = left + (starts[span_start_index] / sample_rate)
+            span_end = left + (min(audio_size, starts[span_end_index] + frame_samples) / sample_rate)
+            if span_end <= span_start:
+                continue
+            spans.append((round(float(span_start), 4), round(float(span_end), 4)))
+        return self._vad_state_from_spans(left, right, spans, backend=backend)
+
+    def _vad_state_from_spans(
+        self,
+        left: float,
+        right: float,
+        spans: list[tuple[float, float]],
+        *,
+        backend: str,
+        min_speech_seconds: float | None = None,
+    ) -> VadWindowState:
+        spans = [
+            (round(max(left, float(start)), 4), round(min(right, float(end)), 4))
+            for start, end in sorted(spans)
+            if min(right, float(end)) > max(left, float(start))
+        ]
+        if not spans:
             return VadWindowState(False, False, backend=backend)
 
-        first = speech_indexes[0]
-        last = speech_indexes[-1]
-        speech_start = left + (starts[first] / sample_rate)
-        speech_end = left + (min(audio_size, starts[last] + frame_samples) / sample_rate)
-        speech_seconds = sum(frame_seconds for is_speech in flags if is_speech)
-        if speech_seconds < max(0.0, float(self.args.vad_min_speech_seconds)):
+        speech_seconds = sum(max(0.0, end - start) for start, end in spans)
+        if min_speech_seconds is None:
+            min_speech_seconds = float(self.args.vad_min_speech_seconds)
+        if speech_seconds < max(0.0, float(min_speech_seconds)):
             return VadWindowState(False, False, backend=backend)
 
+        speech_start = spans[0][0]
+        speech_end = spans[-1][1]
         trailing_silence = max(0.0, right - speech_end)
         should_flush = trailing_silence >= max(0.0, float(self.args.vad_silence_seconds))
         return VadWindowState(
@@ -1506,6 +1561,7 @@ class WindowDiarizer:
             speech_seconds=round(float(speech_seconds), 4),
             trailing_silence_seconds=round(float(trailing_silence), 4),
             backend=backend,
+            speech_spans=spans,
         )
 
     def _rms_vad_window_state(
@@ -1642,8 +1698,155 @@ class WindowDiarizer:
             backend=self._vad_model_backend or "silero",
         )
 
-    def _vad_window_state(self, left: float, right: float) -> VadWindowState:
-        if not getattr(self.args, "vad_sentence_splitting", True):
+    def _webrtc_vad_window_state(
+        self,
+        left: float,
+        right: float,
+        audio: np.ndarray,
+        sample_rate: int,
+    ) -> VadWindowState:
+        if getattr(self, "_webrtc_vad_error", None):
+            return VadWindowState(False, False, backend="webrtc_unavailable")
+        try:
+            import webrtcvad  # type: ignore[import-not-found]
+        except Exception as exc:
+            self._webrtc_vad_error = str(exc)
+            self.bus.emit(
+                "status",
+                {"message": f"WebRTC VAD unavailable; using primary VAD gate only: {exc}"},
+            )
+            return VadWindowState(False, False, backend="webrtc_unavailable")
+
+        vad_audio = self._resample_for_silero_vad(audio, sample_rate)
+        if vad_audio.size <= 0:
+            return VadWindowState(False, False, backend="webrtc")
+
+        mode = max(0, min(3, int(getattr(self.args, "vad_gate_webrtc_mode", 3))))
+        detector = webrtcvad.Vad(mode)
+        frame_samples = int(SILERO_VAD_SAMPLE_RATE * 0.03)
+        frame_seconds = frame_samples / float(SILERO_VAD_SAMPLE_RATE)
+        flags: list[bool] = []
+        starts: list[int] = []
+        for start in range(0, vad_audio.size, frame_samples):
+            end = min(vad_audio.size, start + frame_samples)
+            if end - start < max(1, frame_samples // 2):
+                break
+            chunk = vad_audio[start:end]
+            if chunk.size < frame_samples:
+                padded = np.zeros(frame_samples, dtype=np.float32)
+                padded[:chunk.size] = chunk
+                chunk = padded
+            pcm16 = (np.clip(chunk, -1.0, 1.0) * 32767.0).astype(np.int16).tobytes()
+            try:
+                flags.append(bool(detector.is_speech(pcm16, SILERO_VAD_SAMPLE_RATE)))
+            except Exception as exc:
+                self._webrtc_vad_error = str(exc)
+                self.bus.emit(
+                    "status",
+                    {"message": f"WebRTC VAD failed; using primary VAD gate only: {exc}"},
+                )
+                return VadWindowState(False, False, backend="webrtc_unavailable")
+            starts.append(start)
+
+        return self._vad_state_from_flags(
+            left=left,
+            right=right,
+            audio_size=vad_audio.size,
+            sample_rate=SILERO_VAD_SAMPLE_RATE,
+            frame_samples=frame_samples,
+            frame_seconds=frame_seconds,
+            flags=flags,
+            starts=starts,
+            backend=f"webrtc{mode}",
+        )
+
+    @staticmethod
+    def _spans_overlap_seconds(
+        source_spans: list[tuple[float, float]],
+        start: float,
+        end: float,
+    ) -> float:
+        overlap = 0.0
+        for other_start, other_end in source_spans:
+            overlap += max(0.0, min(end, other_end) - max(start, other_start))
+        return overlap
+
+    def _vad_gate_secondary_backend(self) -> str:
+        return str(getattr(self.args, "vad_gate_secondary_backend", "webrtc") or "off").lower()
+
+    def _vad_gate_evidence_spans(
+        self,
+        primary_state: VadWindowState,
+        secondary_state: VadWindowState | None,
+    ) -> list[tuple[float, float]]:
+        primary_spans = list(primary_state.speech_spans or [])
+        if not primary_spans and primary_state.speech_start is not None and primary_state.speech_end is not None:
+            primary_spans = [(float(primary_state.speech_start), float(primary_state.speech_end))]
+        if not primary_state.has_speech or not primary_spans:
+            return []
+        if (
+            secondary_state is None
+            or self._vad_gate_secondary_backend() == "off"
+            or str(secondary_state.backend or "").startswith("webrtc_unavailable")
+        ):
+            return primary_spans
+
+        secondary_spans = list(secondary_state.speech_spans or [])
+        if not secondary_spans and secondary_state.speech_start is not None and secondary_state.speech_end is not None:
+            secondary_spans = [(float(secondary_state.speech_start), float(secondary_state.speech_end))]
+        if not secondary_state.has_speech or not secondary_spans:
+            return []
+
+        min_seconds = max(0.0, float(getattr(self.args, "vad_gate_min_consensus_seconds", 0.12)))
+        min_ratio = max(0.0, min(1.0, float(getattr(self.args, "vad_gate_min_consensus_ratio", 0.05))))
+        validated_primary: list[tuple[float, float]] = []
+        for start, end in primary_spans:
+            duration = max(0.0, float(end) - float(start))
+            if duration <= 0.0:
+                continue
+            overlap = self._spans_overlap_seconds(secondary_spans, float(start), float(end))
+            required = min(duration, max(min_seconds, duration * min_ratio))
+            if overlap >= required:
+                validated_primary.append((float(start), float(end)))
+        if not validated_primary:
+            return []
+
+        evidence: list[tuple[float, float]] = []
+        for start, end in secondary_spans:
+            if self._spans_overlap_seconds(validated_primary, float(start), float(end)) > 0.0:
+                evidence.append((float(start), float(end)))
+        return evidence
+
+    def _vad_gate_window_state(
+        self,
+        left: float,
+        right: float,
+        *,
+        force: bool = False,
+        primary_state: VadWindowState | None = None,
+    ) -> VadWindowState:
+        if primary_state is None:
+            primary_state = self._vad_window_state(left, right, force=force)
+        if self._vad_gate_secondary_backend() == "off" or not primary_state.has_speech:
+            return primary_state
+        audio, sample_rate = self._audio_window_copy(left, right)
+        if audio.size <= 0 or sample_rate <= 0:
+            return VadWindowState(False, False, backend=primary_state.backend)
+        secondary_state = self._webrtc_vad_window_state(left, right, audio, sample_rate)
+        evidence_spans = self._vad_gate_evidence_spans(primary_state, secondary_state)
+        if not evidence_spans:
+            return VadWindowState(False, False, backend=f"{primary_state.backend}+{secondary_state.backend}")
+        min_speech = max(0.0, float(getattr(self.args, "vad_gate_min_consensus_seconds", 0.12)))
+        return self._vad_state_from_spans(
+            left,
+            right,
+            evidence_spans,
+            backend=f"{primary_state.backend}+{secondary_state.backend}",
+            min_speech_seconds=min_speech,
+        )
+
+    def _vad_window_state(self, left: float, right: float, *, force: bool = False) -> VadWindowState:
+        if not force and not getattr(self.args, "vad_sentence_splitting", True):
             return VadWindowState(False, False)
         if right <= left:
             return VadWindowState(False, False)
@@ -1656,17 +1859,72 @@ class WindowDiarizer:
             return self._rms_vad_window_state(left, right, audio, sample_rate)
         return self._silero_vad_window_state(left, right, audio, sample_rate)
 
+    def _asr_vad_gate_enabled(self) -> bool:
+        return bool(getattr(self.args, "asr_vad_gate", True))
+
+    def _asr_vad_gate_spans(
+        self,
+        left: float,
+        right: float,
+        vad_state: VadWindowState,
+        secondary_vad_state: VadWindowState | None = None,
+    ) -> list[tuple[float, float]]:
+        if not self._asr_vad_gate_enabled():
+            return [(left, right)]
+        if right <= left or not vad_state.has_speech:
+            return []
+
+        source_spans = self._vad_gate_evidence_spans(vad_state, secondary_vad_state)
+        if not source_spans:
+            return []
+
+        pre_padding = max(0.0, float(getattr(self.args, "asr_vad_gate_pre_padding_seconds", 0.20)))
+        post_padding = max(0.0, float(getattr(self.args, "asr_vad_gate_post_padding_seconds", 0.35)))
+        merge_gap = max(0.0, float(getattr(self.args, "asr_vad_gate_merge_gap_seconds", 0.85)))
+        min_clip_seconds = max(0.0, float(getattr(self.args, "asr_vad_gate_min_clip_seconds", 0.20)))
+        cut_internal_gaps = bool(getattr(self.args, "asr_vad_gate_cut_internal_gaps", False))
+        if not cut_internal_gaps:
+            speech_start = min(start for start, _end in source_spans)
+            speech_end = max(end for _start, end in source_spans)
+            span = (max(left, speech_start - pre_padding), min(right, speech_end + post_padding))
+            return [span] if span[1] - span[0] >= min_clip_seconds else []
+
+        spans: list[tuple[float, float]] = []
+        for start, end in sorted((float(start), float(end)) for start, end in source_spans):
+            padded_start = max(left, start - pre_padding)
+            padded_end = min(right, end + post_padding)
+            if padded_end - padded_start < min_clip_seconds:
+                continue
+            if spans and padded_start <= spans[-1][1] + merge_gap:
+                spans[-1] = (spans[-1][0], max(spans[-1][1], padded_end))
+            else:
+                spans.append((padded_start, padded_end))
+        return spans
+
     def _warm_sentence_splitter(self) -> None:
         if self._sentence_splitter_warmed:
             self.bus.emit("status", {"message": "stream2sentence tokenizer already warm."})
             return
-        self.bus.emit("status", {"message": "Initializing stream2sentence tokenizer before playback."})
+        sentence_tokenizer = str(getattr(
+            self.args,
+            "sentence_tokenizer",
+            default_sentence_tokenizer(getattr(self.args, "language", "en")),
+        ))
+        sentence_language = str(getattr(
+            self.args,
+            "sentence_language",
+            default_sentence_language(getattr(self.args, "language", "en")),
+        ))
+        self.bus.emit(
+            "status",
+            {"message": f"Initializing stream2sentence {sentence_tokenizer}/{sentence_language} tokenizer before playback."},
+        )
         started = time.monotonic()
-        init_tokenizer("nltk+rule-based", language="en")
+        init_tokenizer(sentence_tokenizer, language=sentence_language)
         list(generate_sentences(
             list("A warmup sentence vs. a false split. Another sentence."),
-            tokenizer="nltk+rule-based",
-            language="en",
+            tokenizer=sentence_tokenizer,
+            language=sentence_language,
             auto_context=True,
             minimum_sentence_length=1,
             minimum_first_fragment_length=1,
@@ -3033,7 +3291,11 @@ class WindowDiarizer:
                 return
             asr_backend = str(self.args.asr_backend or "local").strip().lower().replace("-", "_")
             if asr_backend == "remote":
-                client = RemoteWindowAsrClient(self.args.remote_asr_url, self.args.remote_asr_timeout_seconds)
+                client = RemoteWindowAsrClient(
+                    self.args.remote_asr_url,
+                    self.args.remote_asr_timeout_seconds,
+                    language=getattr(self.args, "language", "en"),
+                )
                 self.bus.emit("status", {"message": f"Checking remote ASR server at {client.base_url}."})
                 health = client.health()
                 health_status = health.get("status") or health.get("model") or health.get("raw") or "ok"
@@ -3042,7 +3304,7 @@ class WindowDiarizer:
                     "status",
                     {
                         "message": (
-                            f"Remote faster-whisper large-v2 ASR ready at {client.base_url} "
+                            f"Remote faster-whisper large-v2 ASR ready at {client.base_url} for {client.language} "
                             f"(health={health_status})."
                         )
                     },
@@ -3051,7 +3313,7 @@ class WindowDiarizer:
             self.bus.emit("status", {"message": "Importing faster-whisper."})
             from faster_whisper import WhisperModel
 
-            self.bus.emit("status", {"message": f"Loading faster-whisper {self.args.model} on {self.args.device} before playback."})
+            self.bus.emit("status", {"message": f"Loading faster-whisper {self.args.model} for {getattr(self.args, 'language', 'en')} on {self.args.device} before playback."})
             self._model = WhisperModel(
                 self.args.model,
                 device=self.args.device,
@@ -3062,11 +3324,12 @@ class WindowDiarizer:
 
     def _transcribe_audio_words(self, model: Any, audio: np.ndarray, sample_rate: int) -> tuple[list[TimedWord], int]:
         if isinstance(model, RemoteWindowAsrClient):
-            return model.transcribe_window(audio, sample_rate, self.args.beam_size)
+            words, segment_count = model.transcribe_window(audio, sample_rate, self.args.beam_size)
+            return self._filter_asr_no_speech_words(words), segment_count
 
         segments, _info = model.transcribe(
             audio,
-            language="en",
+            language=getattr(self.args, "language", "en"),
             task="transcribe",
             beam_size=self.args.beam_size,
             word_timestamps=True,
@@ -3077,6 +3340,10 @@ class WindowDiarizer:
         segment_count = 0
         for segment in segments:
             segment_count += 1
+            segment_index = segment_count - 1
+            no_speech_prob = self._optional_float(word_attr(segment, "no_speech_prob", None))
+            avg_logprob = self._optional_float(word_attr(segment, "avg_logprob", None))
+            compression_ratio = self._optional_float(word_attr(segment, "compression_ratio", None))
             for word in getattr(segment, "words", None) or []:
                 text = str(word_attr(word, "word", "") or "")
                 if not text.strip():
@@ -3086,6 +3353,130 @@ class WindowDiarizer:
                         text,
                         float(word_attr(word, "start", 0.0)),
                         float(word_attr(word, "end", 0.0)),
+                        probability=self._optional_float(word_attr(word, "probability", None)),
+                        no_speech_prob=no_speech_prob,
+                        avg_logprob=avg_logprob,
+                        compression_ratio=compression_ratio,
+                        segment_index=segment_index,
+                    )
+                )
+        words.sort(key=lambda item: (item.start, item.end))
+        return self._filter_asr_no_speech_words(words), segment_count
+
+    @staticmethod
+    def _optional_float(value: Any) -> float | None:
+        try:
+            if value is None:
+                return None
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _filter_asr_no_speech_words(self, words: list[TimedWord]) -> list[TimedWord]:
+        if not bool(getattr(self.args, "asr_no_speech_filter", True)):
+            return words
+        threshold = max(0.0, min(1.0, float(getattr(self.args, "asr_no_speech_prob_threshold", 0.65))))
+        hard_threshold = max(0.0, min(1.0, float(getattr(self.args, "asr_no_speech_hard_threshold", 0.85))))
+        keep_short_max_words = max(0, int(getattr(self.args, "asr_no_speech_keep_short_max_words", 2)))
+        keep_short_max_seconds = max(0.0, float(getattr(self.args, "asr_no_speech_keep_short_max_seconds", 0.45)))
+        kept: list[TimedWord] = []
+        dropped_words = 0
+        dropped_segments = 0
+        max_dropped_prob = 0.0
+
+        def segment_key(word: TimedWord, fallback_index: int) -> tuple[object, ...]:
+            if word.segment_index is not None:
+                return ("segment", int(word.segment_index))
+            if word.no_speech_prob is not None:
+                return (
+                    "metadata",
+                    float(word.no_speech_prob),
+                    word.avg_logprob,
+                    word.compression_ratio,
+                )
+            return ("word", fallback_index)
+
+        groups: list[list[TimedWord]] = []
+        current_group: list[TimedWord] = []
+        current_key: tuple[object, ...] | None = None
+        for index, word in enumerate(words):
+            key = segment_key(word, index)
+            if current_group and key != current_key:
+                groups.append(current_group)
+                current_group = []
+            current_group.append(word)
+            current_key = key
+        if current_group:
+            groups.append(current_group)
+
+        for group in groups:
+            probability_values = [float(word.no_speech_prob) for word in group if word.no_speech_prob is not None]
+            probability = max(probability_values) if probability_values else None
+            if probability is None:
+                kept.extend(group)
+                continue
+            start = min(float(word.start) for word in group)
+            end = max(float(word.end) for word in group)
+            duration = max(0.0, end - start)
+            is_short_interjection = (
+                probability < hard_threshold
+                and len(group) <= keep_short_max_words
+                and duration <= keep_short_max_seconds
+            )
+            if probability >= threshold and not is_short_interjection:
+                dropped_words += len(group)
+                dropped_segments += 1
+                max_dropped_prob = max(max_dropped_prob, probability)
+                continue
+            kept.extend(group)
+        bus = getattr(self, "bus", None)
+        if dropped_words and bus is not None:
+            bus.emit(
+                "status",
+                {
+                    "message": (
+                        f"ASR no-speech filter dropped {dropped_words} word(s) from {dropped_segments} segment(s) "
+                        f"(max no_speech_prob={max_dropped_prob:.2f}, threshold={threshold:.2f})."
+                    )
+                },
+            )
+        return kept
+
+    def _transcribe_window_audio_words(
+        self,
+        model: Any,
+        left: float,
+        right: float,
+        speech_spans: list[tuple[float, float]] | None = None,
+    ) -> tuple[list[TimedWord], int]:
+        spans = speech_spans if speech_spans is not None else [(left, right)]
+        words: list[TimedWord] = []
+        segment_count = 0
+        for span_left, span_right in spans:
+            span_left = max(left, min(right, float(span_left)))
+            span_right = max(span_left, min(right, float(span_right)))
+            if span_right <= span_left:
+                continue
+            window, sample_rate = self._audio_window_copy(span_left, span_right)
+            if window.size <= 0:
+                continue
+            relative_words, relative_segment_count = self._transcribe_audio_words(model, window, sample_rate)
+            segment_count += relative_segment_count
+            for word in relative_words:
+                start = span_left + float(word.start)
+                end = span_left + float(word.end)
+                if end <= span_left or start >= span_right:
+                    continue
+                words.append(
+                    TimedWord(
+                        word.text,
+                        max(left, min(right, start)),
+                        max(left, min(right, end)),
+                        probability=word.probability,
+                        no_speech_prob=word.no_speech_prob,
+                        avg_logprob=word.avg_logprob,
+                        compression_ratio=word.compression_ratio,
+                        segment_index=word.segment_index,
                     )
                 )
         words.sort(key=lambda item: (item.start, item.end))
@@ -3109,7 +3500,22 @@ class WindowDiarizer:
             probe = padded
 
         started = time.monotonic()
-        words, segment_count = self._transcribe_audio_words(self._model, probe, sample_rate)
+        try:
+            words, segment_count = self._transcribe_audio_words(self._model, probe, sample_rate)
+        except RuntimeError as exc:
+            asr_backend = str(getattr(self.args, "asr_backend", "local") or "local").strip().lower().replace("-", "_")
+            if asr_backend != "remote":
+                raise
+            self.bus.emit(
+                "status",
+                {
+                    "message": (
+                        "Remote ASR warmup failed after server health check; "
+                        f"continuing and retrying during transcription ({exc})."
+                    )
+                },
+            )
+            return
         self._asr_probe_warmed = True
         self._asr_probe_warmed_at = time.monotonic()
         self.bus.emit(
@@ -4034,6 +4440,16 @@ class WindowDiarizer:
         last_diarized_right = -1.0
         last_speaker_payload = self._realtime_unknown_speaker_payload()
         next_at = 0.0
+        vad_gate = bool(getattr(self.args, "realtime_preview_vad_gate", True))
+        gate_open = not vad_gate
+        gate_left = 0.0
+        gate_search_left = 0.0
+        gate_search_window = max(
+            2.5,
+            min_audio_seconds
+            + max(0.0, float(getattr(self.args, "realtime_preview_vad_gate_pre_padding_seconds", 0.35)))
+            + max(0.0, float(getattr(self.args, "realtime_preview_vad_gate_close_silence_seconds", 1.1))),
+        )
         self.bus.emit(
             "status",
             {
@@ -4055,31 +4471,93 @@ class WindowDiarizer:
                 last_decode_right = -1.0
                 last_diarized_right = -1.0
                 last_speaker_payload = self._realtime_unknown_speaker_payload()
+                gate_open = not vad_gate
+                gate_left = left
+                gate_search_left = left
                 try:
                     transcriber.reset_preview()
                 except Exception as exc:
                     self.bus.emit("status", {"message": f"Realtime preview reset error: {type(exc).__name__}: {exc}"})
                     time.sleep(interval_seconds)
                     continue
-            if right - left < min_audio_seconds:
+            active_left = gate_left if gate_open else gate_search_left
+            if right - active_left < min_audio_seconds:
                 time.sleep(0.05)
                 continue
-            if right < last_right + feed_chunk_seconds:
+            if vad_gate and not gate_open:
+                search_left = max(gate_search_left, right - gate_search_window)
+                vad_state = self._vad_gate_window_state(search_left, right, force=True)
+                if not vad_state.has_speech or vad_state.speech_start is None:
+                    gate_search_left = search_left
+                    time.sleep(0.05)
+                    continue
+                pre_padding = max(0.0, float(getattr(self.args, "realtime_preview_vad_gate_pre_padding_seconds", 0.35)))
+                gate_left = max(gate_search_left, float(vad_state.speech_start) - pre_padding)
+                gate_open = True
+                last_right = gate_left
+                last_decode_right = -1.0
+                last_diarized_right = -1.0
+                last_speaker_payload = self._realtime_unknown_speaker_payload()
+                try:
+                    transcriber.reset_preview()
+                except Exception as exc:
+                    self.bus.emit("status", {"message": f"Realtime preview reset error: {type(exc).__name__}: {exc}"})
+                    gate_open = False
+                    gate_search_left = max(gate_search_left, gate_left)
+                    time.sleep(interval_seconds)
+                    continue
+            feed_limit = right
+            close_after_feed = False
+            close_search_left = gate_search_left
+            if vad_gate and gate_open:
+                vad_state = self._vad_gate_window_state(gate_left, right, force=True)
+                close_silence = max(
+                    0.0,
+                    float(getattr(self.args, "realtime_preview_vad_gate_close_silence_seconds", 1.1)),
+                )
+                if not vad_state.has_speech:
+                    close_after_feed = True
+                    feed_limit = last_right
+                    close_search_left = max(gate_left, right - gate_search_window)
+                elif vad_state.trailing_silence_seconds >= close_silence and vad_state.speech_end is not None:
+                    post_padding = max(
+                        0.0,
+                        float(getattr(self.args, "realtime_preview_vad_gate_post_padding_seconds", 0.35)),
+                    )
+                    speech_end = float(vad_state.speech_end)
+                    feed_limit = max(last_right, min(right, speech_end + post_padding))
+                    close_after_feed = True
+                    close_search_left = max(gate_left, speech_end + post_padding)
+            if feed_limit < last_right + feed_chunk_seconds and not close_after_feed:
                 time.sleep(0.05)
                 continue
             now = time.monotonic()
-            if now < next_at:
+            if now < next_at and not close_after_feed:
                 time.sleep(min(0.05, next_at - now))
                 continue
             try:
                 text = ""
-                while right >= last_right + feed_chunk_seconds:
+                while feed_limit >= last_right + feed_chunk_seconds:
                     feed_right = last_right + feed_chunk_seconds
                     audio, sample_rate = self._audio_window_copy(last_right, feed_right)
                     last_right = feed_right
                     if audio.size <= 0:
                         continue
                     text = " ".join(transcriber.accept_preview_audio(audio, sample_rate).split())
+                if close_after_feed:
+                    try:
+                        transcriber.reset_preview()
+                    except Exception as exc:
+                        self.bus.emit("status", {"message": f"Realtime preview reset error: {type(exc).__name__}: {exc}"})
+                    gate_open = False
+                    gate_search_left = max(close_search_left, last_right)
+                    gate_left = gate_search_left
+                    last_right = gate_search_left
+                    last_decode_right = -1.0
+                    last_diarized_right = -1.0
+                    last_speaker_payload = self._realtime_unknown_speaker_payload()
+                    self.bus.emit("realtime_clear", {"generation": generation, "reason": "preview_vad_gate_closed"})
+                    continue
             except Exception as exc:
                 self.bus.emit("status", {"message": f"Realtime preview error: {type(exc).__name__}: {exc}"})
                 time.sleep(interval_seconds)
@@ -4092,15 +4570,15 @@ class WindowDiarizer:
             next_at = time.monotonic() + interval_seconds
             if not text or not re.search(r"[A-Za-z0-9]", text):
                 continue
-            text = self._format_realtime_preview_text(text, left)
+            text = self._format_realtime_preview_text(text, gate_left)
             if not self._preview_generation_is_current(generation, left):
                 continue
-            duration_seconds = max(0.0, preview_right - left)
+            duration_seconds = max(0.0, preview_right - gate_left)
             if self._live_speaker_assignment_enabled() and duration_seconds >= self.args.realtime_preview_diarize_min_audio_seconds and (
                 last_diarized_right < 0.0 or preview_right >= last_diarized_right + diarize_min_advance
             ):
                 if self.memory.profile_count() > 0 and self._try_reserve_live_speaker_embedding():
-                    audio, _sample_rate = self._audio_window_copy(left, preview_right)
+                    audio, _sample_rate = self._audio_window_copy(gate_left, preview_right)
                     last_speaker_payload = self._score_realtime_preview_speaker(audio, duration_seconds)
                     last_diarized_right = preview_right
                     if not self._preview_generation_is_current(generation, left):
@@ -4110,9 +4588,9 @@ class WindowDiarizer:
                 "realtime": True,
                 "realtime_generation": generation,
                 "text": text,
-                "start": round(left, 4),
+                "start": round(gate_left, 4),
                 "end": round(preview_right, 4),
-                "audio_length_seconds": round(float(max(0.0, preview_right - left)), 4),
+                "audio_length_seconds": round(float(max(0.0, preview_right - gate_left)), 4),
                 "pending": False,
                 **last_speaker_payload,
             })
@@ -4154,6 +4632,16 @@ class WindowDiarizer:
                     right = duration
 
                 vad_state = self._vad_window_state(left, right)
+                asr_vad_state = vad_state
+                if self._asr_vad_gate_enabled():
+                    if getattr(self.args, "vad_sentence_splitting", True):
+                        asr_vad_state = self._vad_gate_window_state(
+                            left,
+                            right,
+                            primary_state=vad_state,
+                        )
+                    else:
+                        asr_vad_state = self._vad_gate_window_state(left, right, force=True)
                 vad_flush = vad_state.should_flush and not media_final_flush
                 if (
                     getattr(self.args, "vad_sentence_splitting", True)
@@ -4222,6 +4710,38 @@ class WindowDiarizer:
                             },
                         )
                 self.bus.emit("status", {"message": f"Transcribing{final_note} window left={left:.2f}s right={transcribe_right:.2f}s."})
+                speech_spans: list[tuple[float, float]] | None = None
+                if self._asr_vad_gate_enabled():
+                    speech_spans = self._asr_vad_gate_spans(left, transcribe_right, asr_vad_state)
+                    if not speech_spans:
+                        self.bus.emit(
+                            "status",
+                            {
+                                "message": (
+                                    f"ASR VAD gate skipped non-speech window "
+                                    f"left={left:.2f}s right={transcribe_right:.2f}s."
+                                )
+                            },
+                        )
+                        if vad_next_left is not None:
+                            left = max(left, vad_next_left)
+                            self._advance_realtime_preview_after_commit(left)
+                        if media_final_flush:
+                            break
+                        time.sleep(0.05)
+                        continue
+                    kept_seconds = sum(max(0.0, span_right - span_left) for span_left, span_right in speech_spans)
+                    if len(speech_spans) > 1 or kept_seconds < max(0.0, transcribe_right - left) - 0.05:
+                        self.bus.emit(
+                            "status",
+                            {
+                                "message": (
+                                    f"ASR VAD gate kept {kept_seconds:.2f}s across "
+                                    f"{len(speech_spans)} speech clip(s) from "
+                                    f"{transcribe_right - left:.2f}s window."
+                                )
+                            },
+                        )
                 transcribe_started = time.monotonic()
                 transcript = self._transcribe_window(
                     model,
@@ -4229,6 +4749,7 @@ class WindowDiarizer:
                     transcribe_right,
                     final_flush=transcript_final_flush,
                     previous_text_ended_sentence=previous_emitted_sentence_ended_strong,
+                    speech_spans=speech_spans,
                 )
                 transcribe_seconds = time.monotonic() - transcribe_started
                 if vad_flush:
@@ -4276,13 +4797,9 @@ class WindowDiarizer:
         right: float,
         final_flush: bool = False,
         previous_text_ended_sentence: bool = False,
+        speech_spans: list[tuple[float, float]] | None = None,
     ) -> WindowTranscript:
-        window, sample_rate = self._audio_window_copy(left, right)
-        relative_words, segment_count = self._transcribe_audio_words(model, window, sample_rate)
-        words = [
-            TimedWord(word.text, left + float(word.start), left + float(word.end))
-            for word in relative_words
-        ]
+        words, segment_count = self._transcribe_window_audio_words(model, left, right, speech_spans)
         words.sort(key=lambda item: (item.start, item.end))
         parts = split_words_with_stream2sentence(
             words,
@@ -4294,6 +4811,8 @@ class WindowDiarizer:
             boundary_pre_padding_seconds=self.args.sentence_boundary_pre_padding_seconds,
             boundary_post_padding_seconds=self.args.sentence_boundary_post_padding_seconds,
             boundary_gap_ratio=self.args.sentence_boundary_gap_ratio,
+            sentence_tokenizer=getattr(self.args, "sentence_tokenizer", "nltk+rule-based"),
+            sentence_language=getattr(self.args, "sentence_language", getattr(self.args, "language", "en")),
         )
         return WindowTranscript(parts, len(words), segment_count)
 

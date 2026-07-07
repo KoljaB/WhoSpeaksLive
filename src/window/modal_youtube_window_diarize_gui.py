@@ -12,6 +12,8 @@ from pathlib import Path, PurePosixPath
 
 import modal
 
+from window.language_config import default_language_code, kroko_preview_model_name
+
 
 APP_NAME = "whospeaks-youtube-window-diarize"
 PORT = 8000
@@ -53,7 +55,8 @@ REMOTE_ROOT = PurePosixPath("/root/WhoSpeaksLive")
 REMOTE_BAKED_MEDIA = REMOTE_ROOT / "runtime" / "media" / "local-filefeed"
 REMOTE_CACHE = PurePosixPath("/cache")
 REMOTE_MEDIA = REMOTE_CACHE / "media"
-KROKO_MODEL_NAME = "Kroko-EN-Community-64-L-Streaming-001.data"
+MODAL_LANGUAGE = os.environ.get("WHOSPEAKS_MODAL_LANGUAGE") or default_language_code()
+KROKO_MODEL_NAME = kroko_preview_model_name(MODAL_LANGUAGE, "community-64l")
 KROKO_MODEL_REPO = "Banafo/Kroko-ASR"
 KROKO_MODEL_PATH = REMOTE_CACHE / "kroko" / KROKO_MODEL_NAME
 
@@ -103,6 +106,8 @@ CACHE_ENV = {
     "OMP_NUM_THREADS": "1",
     "MKL_NUM_THREADS": "1",
     "KROKO_ONNX_SUPPRESS_LICENSE_OUTPUT": "1",
+    "WHOSPEAKS_LANGUAGE": MODAL_LANGUAGE,
+    "WHOSPEAKS_ASR_LANGUAGE": MODAL_LANGUAGE,
     "WHOSPEAKS_MODAL_EMBEDDING_PROVIDER": MODAL_EMBEDDING_PROVIDER,
     "WHOSPEAKS_MODAL_EXTRA_ARGS": MODAL_EXTRA_ARGS,
 }
@@ -276,6 +281,8 @@ def _command() -> list[str]:
         "cuda",
         "--compute-type",
         "float16",
+        "--language",
+        MODAL_LANGUAGE,
         "--realtime-preview-engine",
         "kroko_onnx",
         "--realtime-preview-model",

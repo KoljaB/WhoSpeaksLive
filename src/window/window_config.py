@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import shutil
 import sys
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ from paths import (
     WINDOW_OUTPUT_DIR,
     WINDOW_VALIDATION_OUTPUT,
 )
+from window.language_config import default_language_code, kroko_preview_model_name
 
 ROOT = PROJECT_ROOT
 os.environ.setdefault("NLTK_DATA", str(CACHE_DIR / "nltk"))
@@ -49,18 +51,33 @@ def _env_float(name: str, default: float) -> float:
         return default
 
 
+def _env_bool(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    normalized = raw.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    _console_print(f"Ignoring invalid {name}={raw!r}; using {default}.")
+    return default
+
+
 DEFAULT_OUTPUT_DIR = WINDOW_OUTPUT_DIR
 DEFAULT_SPEAKER_LIBRARY_DIR = SPEAKER_LIBRARY_DIR
 DEFAULT_VALIDATION_OUTPUT = WINDOW_VALIDATION_OUTPUT
 DEFAULT_CUNK_CANONICAL = CUNK_CANONICAL
 SPEAKER_COLORS = SpeakerColorAllocator(max_colors=16, allow_reuse=True).palette()
 DEFAULT_REALTIMESTT_ROOT = Path(os.environ.get("REALTIMESTT_ROOT", str(VENDOR_DIR)))
+DEFAULT_LANGUAGE = default_language_code()
 DEFAULT_KROKO_PREVIEW_PYTHON = Path(os.environ.get(
     "WHOSPEAKS_KROKO_PREVIEW_PYTHON",
     str(VENVS_DIR / "kroko-install-test" / "Scripts" / "python.exe"),
 ))
-DEFAULT_KROKO_COMMUNITY_64L_PREVIEW_MODEL = "Kroko-EN-Community-64-L-Streaming-001.data"
-DEFAULT_KROKO_PRO_16L_PREVIEW_MODEL = "Kroko-EN-Pro-16-L-Streaming-001.data"
+DEFAULT_KROKO_COMMUNITY_64L_PREVIEW_MODEL = kroko_preview_model_name("en", "community-64l")
+DEFAULT_KROKO_PRO_16L_PREVIEW_MODEL = kroko_preview_model_name("en", "pro-16l")
+KROKO_PREVIEW_MODEL_REPO = os.environ.get("WHOSPEAKS_KROKO_PREVIEW_MODEL_REPO", "Banafo/Kroko-ASR")
 KROKO_PREVIEW_MODEL_PRESETS = {
     "community-64l": DEFAULT_KROKO_COMMUNITY_64L_PREVIEW_MODEL,
     "pro-16l": DEFAULT_KROKO_PRO_16L_PREVIEW_MODEL,
@@ -99,7 +116,15 @@ if DEFAULT_KROKO_PREVIEW_MODEL_PRESET not in KROKO_PREVIEW_MODEL_PRESETS:
         f"{os.environ.get('WHOSPEAKS_KROKO_PREVIEW_MODEL_PRESET')!r}; using community-64l."
     )
     DEFAULT_KROKO_PREVIEW_MODEL_PRESET = "community-64l"
-DEFAULT_KROKO_PREVIEW_MODEL = KROKO_PREVIEW_MODEL_PRESETS[DEFAULT_KROKO_PREVIEW_MODEL_PRESET]
+try:
+    DEFAULT_KROKO_PREVIEW_MODEL = kroko_preview_model_name(
+        DEFAULT_LANGUAGE,
+        DEFAULT_KROKO_PREVIEW_MODEL_PRESET,
+    )
+except ValueError as exc:
+    _console_print(f"{exc} Using community-64l for {DEFAULT_LANGUAGE}.")
+    DEFAULT_KROKO_PREVIEW_MODEL_PRESET = "community-64l"
+    DEFAULT_KROKO_PREVIEW_MODEL = kroko_preview_model_name(DEFAULT_LANGUAGE, "community-64l")
 KROKO_PREVIEW_MODEL_STARTUP_TIMEOUT_SECONDS = {
     "community-64l": 12.0,
     "pro-16l": 45.0,
@@ -108,6 +133,7 @@ DEFAULT_KROKO_PREVIEW_MODEL_PATH = Path(os.environ.get(
     "WHOSPEAKS_KROKO_PREVIEW_MODEL_PATH",
     str(KROKO_MODEL_DIR / DEFAULT_KROKO_PREVIEW_MODEL),
 ))
+DEFAULT_KROKO_PREVIEW_AUTO_DOWNLOAD = _env_bool("WHOSPEAKS_KROKO_PREVIEW_AUTO_DOWNLOAD", True)
 DEFAULT_KROKO_PREVIEW_MODEL_DIRS = (
     KROKO_MODEL_DIR,
     DEFAULT_REALTIMESTT_ROOT / "test-model-cache" / "kroko-onnx",
@@ -398,6 +424,48 @@ def default_kroko_preview_model_path(model: Any = None, *, use_env: bool = True)
         if candidate.is_file():
             return candidate
     return None
+
+
+def is_public_kroko_community_model(model: Any) -> bool:
+    name = Path(str(model or "")).name
+    return bool(re.fullmatch(r"Kroko-[A-Z]{2}-Community-64-L-Streaming-\d{3}\.data", name))
+
+
+def download_kroko_preview_model(
+    model: Any,
+    *,
+    target_dir: Path | None = None,
+    repo_id: str = KROKO_PREVIEW_MODEL_REPO,
+) -> Path:
+    filename = Path(str(model or "")).name
+    if not is_public_kroko_community_model(filename):
+        raise RuntimeError(
+            f"Automatic Kroko download only supports public Community models, got {model!r}."
+        )
+    target_root = Path(target_dir or KROKO_MODEL_DIR).expanduser().resolve()
+    target_root.mkdir(parents=True, exist_ok=True)
+    target = target_root / filename
+    if target.is_file():
+        return target
+
+    try:
+        from huggingface_hub import hf_hub_download
+    except Exception as exc:
+        raise RuntimeError(
+            "huggingface_hub is required to auto-download Kroko preview models."
+        ) from exc
+
+    downloaded = Path(hf_hub_download(
+        repo_id=repo_id,
+        filename=filename,
+        local_dir=str(target_root),
+        local_dir_use_symlinks=False,
+    ))
+    if downloaded.resolve() != target.resolve() and downloaded.is_file():
+        shutil.copy2(downloaded, target)
+    if not target.is_file():
+        raise RuntimeError(f"Kroko preview model download did not produce {target}")
+    return target
 
 
 def default_faster_whisper_download_root() -> Path | None:
