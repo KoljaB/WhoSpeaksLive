@@ -34,13 +34,23 @@ _QUICK_YIELD_TERMINATORS = ".?!。！？؟।"
 _QUICK_YIELD_CLOSING_MARKS = "\"')]}”’»›"
 _QUICK_YIELD_PRE_TERMINAL_CLOSING_MARKS = ")]}"
 _NLTK_LANGUAGE_NAMES = {
+    "cs": "czech",
+    "da": "danish",
     "de": "german",
+    "el": "greek",
     "en": "english",
     "es": "spanish",
+    "et": "estonian",
+    "fi": "finnish",
     "fr": "french",
     "it": "italian",
+    "ml": "malayalam",
     "nl": "dutch",
+    "no": "norwegian",
+    "pl": "polish",
     "pt": "portuguese",
+    "ru": "russian",
+    "sl": "slovene",
     "sv": "swedish",
     "tr": "turkish",
 }

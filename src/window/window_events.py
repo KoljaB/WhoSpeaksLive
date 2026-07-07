@@ -7,7 +7,7 @@ import queue
 import threading
 import time
 from datetime import datetime
-from typing import Any
+from typing import Any, Callable
 
 from common.audio_utils import json_dumps
 from window.window_config import _console_print
@@ -15,7 +15,12 @@ from window.window_config import _console_print
 class EventBus:
     def __init__(self) -> None:
         self._subscribers: list[queue.Queue[tuple[str, str]]] = []
+        self._listeners: list[Callable[[str, dict[str, Any]], None]] = []
         self._lock = threading.Lock()
+
+    def add_listener(self, listener: Callable[[str, dict[str, Any]], None]) -> None:
+        with self._lock:
+            self._listeners.append(listener)
 
     def subscribe(self) -> queue.Queue[tuple[str, str]]:
         subscriber: queue.Queue[tuple[str, str]] = queue.Queue()
@@ -35,6 +40,12 @@ class EventBus:
         line = json_dumps(payload)
         with self._lock:
             subscribers = list(self._subscribers)
+            listeners = list(self._listeners)
+        for listener in listeners:
+            try:
+                listener(event, payload)
+            except Exception as exc:
+                _console_print(f"[{datetime.now().strftime('%H:%M:%S')}] Event listener failed: {type(exc).__name__}: {exc}")
         for subscriber in subscribers:
             subscriber.put((event, line))
 

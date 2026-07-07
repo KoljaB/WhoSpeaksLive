@@ -122,9 +122,9 @@ try:
         DEFAULT_KROKO_PREVIEW_MODEL_PRESET,
     )
 except ValueError as exc:
-    _console_print(f"{exc} Using community-64l for {DEFAULT_LANGUAGE}.")
+    _console_print(f"{exc} Using community-64l for en.")
     DEFAULT_KROKO_PREVIEW_MODEL_PRESET = "community-64l"
-    DEFAULT_KROKO_PREVIEW_MODEL = kroko_preview_model_name(DEFAULT_LANGUAGE, "community-64l")
+    DEFAULT_KROKO_PREVIEW_MODEL = kroko_preview_model_name("en", "community-64l")
 KROKO_PREVIEW_MODEL_STARTUP_TIMEOUT_SECONDS = {
     "community-64l": 12.0,
     "pro-16l": 45.0,

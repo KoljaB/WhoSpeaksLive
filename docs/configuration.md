@@ -47,6 +47,14 @@ By default stream2sentence uses `nltk+rule-based` for the Latin-script supported
 .\.venv\Scripts\whospeaks-window.exe --language de --sentence-tokenizer nltk+rule-based
 ```
 
+Additional Whisper languages can be used for final ASR and sentence splitting when realtime preview text is disabled:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --language pl --realtime-preview-engine off
+```
+
+Automatic sentence-tokenizer selection prefers NLTK whenever both NLTK and Stanza support the language. Languages supported only by Stanza, such as Chinese, use `stanza`; Hebrew keeps the lightweight rule-based splitter used by the realtime Kroko path.
+
 ## Embedding Providers
 
 Final speaker assignment uses `--embedding-provider`.

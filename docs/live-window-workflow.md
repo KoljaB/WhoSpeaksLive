@@ -55,9 +55,28 @@ During a run you can:
 
 Saved speakers are most useful after a complete pass over a representative clip.
 
+## Saved Sessions
+
+The Sessions tab stores completed or autosaved runs so they can be reopened later for transcript review, speaker cleanup, filtering, and export without rerunning ASR or embeddings.
+
+The session filters are visibility filters:
+
+- `Active`: saved sessions that are not archived.
+- `Archived`: saved sessions that have been archived.
+- `All`: both active and archived sessions.
+
+Active does not mean currently recording, currently open, or resumable. A newly saved YouTube run appears in Active by default because archive is only a visibility flag. Archiving a session hides it from Active, keeps it in Archived and All, and does not delete transcript, speaker, embedding, or audio-reference data.
+
+Session names can be edited directly in the Sessions tab: click the session title, type the new name, and press Enter or click away to save it. The row menu still exposes Rename and Delete for explicit actions.
+
+New sessions use the clearest title available. Preset YouTube clips use their preset title; custom YouTube runs fall back to the YouTube video id plus the run start time instead of only showing `youtube.com`. The row metadata shows the saved start-to-end time range in a compact form, followed by duration and speaker count.
+
+Use `+ New session` in the Sessions tab to create a new active session immediately and return to a clean Ready state. Pressing Start also creates a new active session immediately if one is not already prepared; transcript rows, speakers, embeddings, and audio references are filled into that same session as the run progresses.
+
 ## Practical Tips
 
 - Let the full clip finish before saving a speaker group.
+- Use Archive to remove old saved sessions from the default Active list without deleting them.
 - Use a remote GPU server for smoother local UI work when using large ASR and embedding models.
 - If a newly detected speaker appears at the end of a sentence, wait for the sentence split before judging final assignment quality.
 - Use validation runs when comparing parameter changes.
