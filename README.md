@@ -10,7 +10,9 @@ https://github.com/user-attachments/assets/2de749e0-6c02-47de-b949-bd90b4f4efbb
 
 WhoSpeaksLive performs best on clean recordings where one person speaks at a time into good microphones. Diarization accuracy can degrade with background noise, background music, echo, crosstalk, overlapping speech, or low-quality microphones, and it may become less reliable as the active speaker count grows. The system assumes complete utterances can be assigned to a single speaker, so cases where one speaker starts a sentence and another finishes it are not expected to score well.
 
-Realtime language support is explicit for German, English, Spanish, French, Italian, Hebrew, Dutch, Portuguese, Swedish, and Turkish. Set `--language de` or `WHOSPEAKS_LANGUAGE=de` to make final ASR, Kroko/Banafo preview model selection, and stream2sentence sentence splitting use German together. Hebrew accepts `he` or `iw` and uses the Kroko `IW` model files. Other languages need a validated realtime ASR model and sentence tokenizer before they should be used with live preview.
+All Kroko languages supported by this integration now work with realtime preview text: German, English, Spanish, French, Italian, Hebrew, Dutch, Portuguese, Swedish, and Turkish. Set `--language de` or `WHOSPEAKS_LANGUAGE=de` to make final ASR, Kroko/Banafo preview model selection, and stream2sentence sentence splitting use German together. Hebrew accepts `he` or `iw` and uses the Kroko `IW` model files.
+
+Without realtime preview text, WhoSpeaksLive can also work with additional languages. The key requirement is that the language is supported by Whisper and by at least one configured sentence segmenter, meaning NLTK or Stanza.
 
 CPU-only operation is not the recommended path for the current stack. The system is GPU-heavy today; a CPU-only setup may be possible, but should be treated as a separate optimization target and will likely require engineering work, slower processing, and some accuracy or throughput tradeoffs.
 
