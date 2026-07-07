@@ -28,7 +28,7 @@ from embeddings.embedding_providers import EmbeddingSubprocessClient, RemoteEmbe
 from speakers.realtime_speaker_memory import SpeakerMemory as RealtimeSpeakerMemory
 from speakers.speaker_embedding_cluster import SpeakerMemory as ClusterSpeakerMemory
 from window.window_diarizer import WindowDiarizer
-from window.window_domain import LiveSpeakerMemoryUpdateJob, TimedWord
+from window.window_domain import LiveSpeakerMemoryUpdateJob, TimedWord, VadWindowState
 from window.window_events import RecordingEventBus
 from window.window_gui_html import HTML
 from window.browser_live_speaker_scoring import score_browser_live_speaker_samples
@@ -90,6 +90,23 @@ class WindowEventBusTests(unittest.TestCase):
         self.assertEqual(bus.records[0]["event"], "validation_replay_start")
         self.assertEqual(bus.records[0]["payload"], {"replay_speed": 1.0})
         self.assertIsInstance(bus.records[0]["time"], float)
+
+
+class LanguageConfigTests(unittest.TestCase):
+    def test_language_config_maps_discussion_languages_to_runtime_components(self) -> None:
+        from window.language_config import (
+            default_sentence_tokenizer,
+            kroko_preview_model_name,
+            normalize_language_code,
+        )
+
+        self.assertEqual(normalize_language_code("Deutsch"), "de")
+        self.assertEqual(kroko_preview_model_name("de"), "Kroko-DE-Community-64-L-Streaming-001.data")
+        self.assertEqual(default_sentence_tokenizer("de"), "nltk+rule-based")
+
+        self.assertEqual(normalize_language_code("iw"), "he")
+        self.assertEqual(kroko_preview_model_name("he"), "Kroko-IW-Community-64-L-Streaming-001.data")
+        self.assertEqual(default_sentence_tokenizer("he"), "rule-based")
 
 
 class PublicEventNormalizerTests(unittest.TestCase):
@@ -2270,6 +2287,152 @@ class WindowStreamingAudioTests(unittest.TestCase):
 
         self.assertTrue(diarizer._audio_has_rms_speech(audio, 100))
 
+    def test_asr_vad_gate_spans_trim_window_edges_without_cutting_internal_gaps(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            asr_vad_gate=True,
+            asr_vad_gate_pre_padding_seconds=0.2,
+            asr_vad_gate_post_padding_seconds=0.35,
+            asr_vad_gate_merge_gap_seconds=0.85,
+            asr_vad_gate_min_clip_seconds=0.2,
+            asr_vad_gate_cut_internal_gaps=False,
+        )
+        vad_state = VadWindowState(
+            has_speech=True,
+            should_flush=False,
+            speech_spans=[(1.0, 1.4), (2.0, 2.3), (4.0, 4.4)],
+        )
+
+        spans = diarizer._asr_vad_gate_spans(0.0, 5.0, vad_state)
+
+        self.assertEqual(len(spans), 1)
+        np.testing.assert_allclose(spans[0], (0.8, 4.75))
+
+    def test_asr_vad_gate_rejects_primary_vad_without_secondary_evidence(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            asr_vad_gate=True,
+            asr_vad_gate_pre_padding_seconds=0.2,
+            asr_vad_gate_post_padding_seconds=0.35,
+            asr_vad_gate_merge_gap_seconds=0.85,
+            asr_vad_gate_min_clip_seconds=0.2,
+            asr_vad_gate_cut_internal_gaps=False,
+            vad_gate_secondary_backend="webrtc",
+            vad_gate_min_consensus_seconds=0.1,
+            vad_gate_min_consensus_ratio=0.05,
+        )
+        primary_state = VadWindowState(
+            has_speech=True,
+            should_flush=False,
+            speech_spans=[(11.8, 14.1)],
+            backend="silero",
+        )
+        secondary_state = VadWindowState(False, False, backend="webrtc3")
+
+        self.assertEqual(diarizer._asr_vad_gate_spans(10.0, 15.0, primary_state, secondary_state), [])
+
+    def test_asr_vad_gate_uses_secondary_evidence_for_edges_but_keeps_middle(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            asr_vad_gate=True,
+            asr_vad_gate_pre_padding_seconds=0.2,
+            asr_vad_gate_post_padding_seconds=0.35,
+            asr_vad_gate_merge_gap_seconds=0.85,
+            asr_vad_gate_min_clip_seconds=0.2,
+            asr_vad_gate_cut_internal_gaps=False,
+            vad_gate_secondary_backend="webrtc",
+            vad_gate_min_consensus_seconds=0.1,
+            vad_gate_min_consensus_ratio=0.05,
+        )
+        primary_state = VadWindowState(
+            has_speech=True,
+            should_flush=False,
+            speech_spans=[(1.0, 2.0), (3.0, 4.5)],
+            backend="silero",
+        )
+        secondary_state = VadWindowState(
+            has_speech=True,
+            should_flush=False,
+            speech_spans=[(1.05, 1.2), (4.15, 4.35)],
+            backend="webrtc3",
+        )
+
+        spans = diarizer._asr_vad_gate_spans(0.0, 5.0, primary_state, secondary_state)
+
+        self.assertEqual(len(spans), 1)
+        np.testing.assert_allclose(spans[0], (0.85, 4.7))
+
+    def test_asr_no_speech_filter_drops_high_no_speech_prob_words(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            asr_no_speech_filter=True,
+            asr_no_speech_prob_threshold=0.65,
+            asr_no_speech_hard_threshold=0.85,
+            asr_no_speech_keep_short_max_words=2,
+            asr_no_speech_keep_short_max_seconds=0.45,
+        )
+        diarizer.bus = RecordingEventBus()
+        words = [
+            TimedWord(" Hallo", 0.0, 0.4, no_speech_prob=0.08, segment_index=0),
+            TimedWord(" alpha", 1.0, 1.6, no_speech_prob=0.74, segment_index=1),
+            TimedWord(" beta", 1.6, 1.9, no_speech_prob=0.74, segment_index=1),
+            TimedWord(" gamma", 1.9, 3.2, no_speech_prob=0.74, segment_index=1),
+            TimedWord(" Ja.", 3.5, 3.7, no_speech_prob=0.69, segment_index=2),
+            TimedWord(" unknown", 4.0, 4.4, no_speech_prob=None),
+        ]
+
+        kept = diarizer._filter_asr_no_speech_words(words)
+
+        self.assertEqual([word.text for word in kept], [" Hallo", " Ja.", " unknown"])
+        self.assertTrue(any("ASR no-speech filter dropped 3 word" in item["payload"]["message"] for item in diarizer.bus.records))
+
+    def test_asr_no_speech_filter_drops_short_segments_above_hard_threshold(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer.args = argparse.Namespace(
+            asr_no_speech_filter=True,
+            asr_no_speech_prob_threshold=0.65,
+            asr_no_speech_hard_threshold=0.85,
+            asr_no_speech_keep_short_max_words=2,
+            asr_no_speech_keep_short_max_seconds=0.45,
+        )
+        diarizer.bus = RecordingEventBus()
+        words = [
+            TimedWord(" Ja.", 0.0, 0.2, no_speech_prob=0.90, segment_index=0),
+            TimedWord(" Hallo", 1.0, 1.4, no_speech_prob=0.08, segment_index=1),
+        ]
+
+        kept = diarizer._filter_asr_no_speech_words(words)
+
+        self.assertEqual([word.text for word in kept], [" Hallo"])
+
+    def test_transcribe_window_audio_words_maps_speech_clip_times_to_media_time(self) -> None:
+        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer._audio_lock = threading.Lock()
+        diarizer._streaming_audio = False
+        diarizer.sample_rate = 10
+        diarizer.audio = np.arange(100, dtype=np.float32)
+        calls: list[int] = []
+
+        def fake_transcribe(_model: object, audio: np.ndarray, sample_rate: int) -> tuple[list[TimedWord], int]:
+            calls.append(int(audio.size))
+            self.assertEqual(sample_rate, 10)
+            return [TimedWord(" word", 0.1, 0.2)], 1
+
+        diarizer._transcribe_audio_words = fake_transcribe  # type: ignore[method-assign]
+
+        words, segment_count = diarizer._transcribe_window_audio_words(
+            object(),
+            0.0,
+            10.0,
+            [(2.0, 3.0), (6.0, 7.0)],
+        )
+
+        self.assertEqual(calls, [10, 10])
+        self.assertEqual(segment_count, 2)
+        self.assertEqual([word.text for word in words], [" word", " word"])
+        np.testing.assert_allclose([word.start for word in words], [2.1, 6.1])
+        np.testing.assert_allclose([word.end for word in words], [2.2, 6.2])
+
     def test_sentence_live_speaker_hint_emits_fresh_assignment(self) -> None:
         class Bus:
             def __init__(self) -> None:
@@ -2752,6 +2915,8 @@ class KrokoPreviewStartupTests(unittest.TestCase):
             realtime_preview_python=Path(sys.executable),
             realtime_preview_engine="kroko_onnx",
             realtime_preview_model="Kroko-EN-Community-64-L-Streaming-001.data",
+            language="de",
+            realtime_preview_language="de",
             realtime_preview_provider="cpu",
             realtime_preview_num_threads=2,
             realtime_preview_model_path=None,
@@ -2768,9 +2933,129 @@ class KrokoPreviewStartupTests(unittest.TestCase):
         command = popen.call_args.args[0]
         self.assertIn("-m", command)
         self.assertIn("workers.kroko_realtime_preview_worker", command)
+        self.assertIn("--language", command)
+        self.assertIn("de", command)
         self.assertFalse(any(part.endswith("kroko_realtime_preview_worker.py") for part in command))
         env = popen.call_args.kwargs["env"]
         self.assertIn(str(SRC), str(env.get("PYTHONPATH", "")).split(os.pathsep))
+
+
+class RemoteWindowAsrClientTests(unittest.TestCase):
+    def test_remote_asr_client_sends_configured_language(self) -> None:
+        from window.window_remote_asr import RemoteWindowAsrClient
+
+        class FakeResponse:
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, *_args: object) -> None:
+                return None
+
+            def read(self) -> bytes:
+                return b'{"words":[],"segment_count":0}'
+
+        captured: dict[str, str] = {}
+
+        def fake_urlopen(request: object, timeout: float) -> FakeResponse:
+            captured["url"] = str(getattr(request, "full_url"))
+            captured["timeout"] = str(timeout)
+            return FakeResponse()
+
+        with mock.patch("window.window_remote_asr.urlopen", side_effect=fake_urlopen):
+            client = RemoteWindowAsrClient("http://127.0.0.1:8650", 7.0, language="de")
+            words, segment_count = client.transcribe_window(np.zeros(160, dtype=np.float32), 16000, 5)
+
+        self.assertEqual(words, [])
+        self.assertEqual(segment_count, 0)
+        self.assertIn("language=de", captured["url"])
+        self.assertEqual(captured["timeout"], "7.0")
+
+    def test_remote_asr_client_retries_transient_http_500(self) -> None:
+        from urllib.error import HTTPError
+
+        from window.window_remote_asr import RemoteWindowAsrClient
+
+        class FakeResponse:
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, *_args: object) -> None:
+                return None
+
+            def read(self) -> bytes:
+                return b'{"words":[{"word":"Hallo","start":0.0,"end":0.2}],"segment_count":1}'
+
+        error = HTTPError(
+            "http://127.0.0.1:8650/transcribe-window",
+            500,
+            "Internal Server Error",
+            {},
+            io.BytesIO(b"transient"),
+        )
+
+        with mock.patch("window.window_remote_asr.urlopen", side_effect=[error, FakeResponse()]) as urlopen:
+            with mock.patch("window.window_remote_asr.time.sleep"):
+                client = RemoteWindowAsrClient("http://127.0.0.1:8650", 7.0, language="de", retry_attempts=1)
+                words, segment_count = client.transcribe_window(np.zeros(160, dtype=np.float32), 16000, 5)
+
+        self.assertEqual(urlopen.call_count, 2)
+        self.assertEqual(segment_count, 1)
+        self.assertEqual([word.text for word in words], ["Hallo"])
+
+    def test_remote_asr_client_carries_segment_confidence_to_words(self) -> None:
+        from window.window_remote_asr import RemoteWindowAsrClient
+
+        client = RemoteWindowAsrClient("http://127.0.0.1:8650", 7.0, language="de")
+        words, segment_count = client._timed_words_from_result({
+            "segments": [
+                {
+                    "id": 1,
+                    "start": 0.0,
+                    "end": 1.0,
+                    "text": " Hallo",
+                    "avg_logprob": -0.25,
+                    "no_speech_prob": 0.08,
+                    "compression_ratio": 1.2,
+                    "words": [
+                        {"word": " Hallo", "start": 0.0, "end": 0.4, "probability": 0.9},
+                    ],
+                }
+            ],
+            "segment_count": 1,
+        })
+
+        self.assertEqual(segment_count, 1)
+        self.assertEqual(len(words), 1)
+        self.assertEqual(words[0].text, " Hallo")
+        self.assertEqual(words[0].probability, 0.9)
+        self.assertEqual(words[0].no_speech_prob, 0.08)
+        self.assertEqual(words[0].avg_logprob, -0.25)
+        self.assertEqual(words[0].compression_ratio, 1.2)
+        self.assertEqual(words[0].segment_index, 1)
+
+
+class WindowDiarizerWarmupTests(unittest.TestCase):
+    def test_remote_asr_warmup_failure_does_not_abort_startup(self) -> None:
+        controller = WindowDiarizer.__new__(WindowDiarizer)
+        controller.args = argparse.Namespace(asr_backend="remote")
+        controller.bus = RecordingEventBus()
+        controller.sample_rate = 16000
+        controller._model = object()
+        controller._asr_probe_warmed = False
+        controller._asr_probe_warmed_at = None
+        controller._load_model = lambda: None
+        controller._audio_window_copy = lambda _left, _right: (np.zeros(12000, dtype=np.float32), 16000)
+
+        def fail_transcribe(_model: object, _audio: np.ndarray, _sample_rate: int) -> tuple[list[TimedWord], int]:
+            raise RuntimeError("Remote ASR HTTP 500: Internal Server Error")
+
+        controller._transcribe_audio_words = fail_transcribe
+
+        controller._warm_asr_transcription()
+
+        self.assertFalse(controller._asr_probe_warmed)
+        messages = [str(record["payload"].get("message") or "") for record in controller.bus.records]
+        self.assertTrue(any("Remote ASR warmup failed" in message for message in messages))
 
 
 class RemoteEmbeddingClientTests(unittest.TestCase):
@@ -3033,6 +3318,47 @@ class RepositoryStructureTests(unittest.TestCase):
         self.assertEqual(args.realtime_preview_min_advance_seconds, 0.32)
         self.assertEqual(args.realtime_preview_feed_chunk_seconds, 0.32)
 
+    def test_window_gui_language_selects_kroko_and_sentence_tokenizer(self) -> None:
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(
+            sys,
+            "argv",
+            [
+                "youtube_window_diarize_gui.py",
+                "--language",
+                "de",
+            ],
+        ):
+            args = parse_args()
+
+        self.assertEqual(args.language, "de")
+        self.assertEqual(args.realtime_preview_language, "de")
+        self.assertEqual(args.realtime_preview_model_preset, "community-64l")
+        self.assertEqual(args.realtime_preview_model, "Kroko-DE-Community-64-L-Streaming-001.data")
+        self.assertEqual(args.sentence_tokenizer, "nltk+rule-based")
+        self.assertEqual(args.sentence_language, "de")
+
+    def test_window_gui_env_language_is_not_overridden_by_custom_preview_model(self) -> None:
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.dict(os.environ, {"WHOSPEAKS_LANGUAGE": "de"}):
+            with mock.patch.object(
+                sys,
+                "argv",
+                [
+                    "youtube_window_diarize_gui.py",
+                    "--realtime-preview-model",
+                    "Kroko-EN-Community-64-L-Streaming-001.data",
+                ],
+            ):
+                args = parse_args()
+
+        self.assertEqual(args.language, "de")
+        self.assertEqual(args.realtime_preview_language, "de")
+        self.assertEqual(args.realtime_preview_model_preset, "custom")
+        self.assertEqual(args.sentence_language, "de")
+
     def test_kroko_preview_model_path_searches_configured_model_dir(self) -> None:
         from window.window_config import default_kroko_preview_model_path
 
@@ -3045,6 +3371,29 @@ class RepositoryStructureTests(unittest.TestCase):
                 resolved = default_kroko_preview_model_path(model_name, use_env=False)
 
         self.assertEqual(resolved, model_path)
+
+    def test_kroko_preview_community_model_downloads_to_model_dir(self) -> None:
+        from window.window_config import download_kroko_preview_model
+
+        model_name = "Kroko-DE-Community-64-L-Streaming-001.data"
+
+        def fake_hf_hub_download(**kwargs: object) -> str:
+            target = Path(str(kwargs["local_dir"])) / str(kwargs["filename"])
+            target.write_bytes(b"model")
+            return str(target)
+
+        with tempfile.TemporaryDirectory() as directory:
+            with mock.patch("huggingface_hub.hf_hub_download", side_effect=fake_hf_hub_download) as download:
+                resolved = download_kroko_preview_model(model_name, target_dir=Path(directory))
+
+        self.assertEqual(resolved.name, model_name)
+        self.assertTrue(download.called)
+
+    def test_kroko_preview_auto_download_rejects_non_public_model(self) -> None:
+        from window.window_config import download_kroko_preview_model
+
+        with self.assertRaisesRegex(RuntimeError, "public Community"):
+            download_kroko_preview_model("Kroko-EN-Pro-16-L-Streaming-001.data")
 
     def test_window_loop_restarts_interval_after_successful_split(self) -> None:
         source = inspect.getsource(WindowDiarizer._run)

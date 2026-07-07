@@ -17,6 +17,7 @@ from fastapi.responses import JSONResponse
 from faster_whisper import WhisperModel
 
 MODEL_NAME = os.environ.get("ASR_MODEL", "large-v2")
+DEFAULT_LANGUAGE = os.environ.get("ASR_LANGUAGE", os.environ.get("WHOSPEAKS_ASR_LANGUAGE", "en"))
 DEVICE = os.environ.get("ASR_DEVICE", "cuda")
 COMPUTE_TYPE = os.environ.get("ASR_COMPUTE_TYPE", "float16")
 HOST = os.environ.get("ASR_HOST", "0.0.0.0")
@@ -75,7 +76,7 @@ def health() -> dict[str, Any]:
         "model": MODEL_NAME,
         "device": DEVICE,
         "compute_type": COMPUTE_TYPE,
-        "language": "en",
+        "language": DEFAULT_LANGUAGE,
         "model_loaded_seconds": model_loaded_at,
         "routes": [
             "/transcribe",
@@ -227,7 +228,7 @@ def transcribe_options(values: dict[str, Any], defaults: dict[str, Any] | None =
     defaults = defaults or {}
     get = lambda name, default: value_or_default(values, name, defaults.get(name, default))
     return {
-        "language": normalize_language(get("language", "en")),
+        "language": normalize_language(get("language", DEFAULT_LANGUAGE)),
         "task": str(get("task", "transcribe")),
         "beam_size": parse_int(get("beam_size", 1), "beam_size"),
         "best_of": parse_int(get("best_of", 5), "best_of"),
@@ -387,7 +388,7 @@ def run_transcription(
     return JSONResponse(
         {
             "text": "".join(text_parts).strip(),
-            "language": "en",
+            "language": options.get("language") or info.language,
             "detected_language": info.language,
             "language_probability": info.language_probability,
             "duration": info.duration,

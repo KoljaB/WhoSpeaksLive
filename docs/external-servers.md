@@ -61,6 +61,7 @@ python -m pip install -r requirements.txt
 ```
 
 The ASR server uses faster-whisper. By default it expects `large-v2`, CUDA, and `float16`.
+The Windows controller sends the selected `--language` with each request, so one ASR server can serve all supported faster-whisper languages. Set `ASR_LANGUAGE=de` only if you want the server's own default language to be German when a request omits `language`.
 
 For a first run that can download the model if it is not already cached:
 

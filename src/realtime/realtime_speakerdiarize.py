@@ -74,6 +74,7 @@ from paths import (
     PROJECT_ROOT,
     REALTIME_VALIDATION_OUTPUT_DIR,
 )
+from window.language_config import default_language_code, language_arg
 
 
 ROOT = PROJECT_ROOT
@@ -1189,6 +1190,7 @@ def validate_cunk_realtime_replay(args: argparse.Namespace) -> int:
 
 
 def parse_args() -> argparse.Namespace:
+    raw_argv = sys.argv[1:]
     parser = argparse.ArgumentParser(
         description="Embedding-only realtime speaker diarization for a YouTube WASAPI capture."
     )
@@ -1200,7 +1202,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--model", default="large-v2")
     parser.add_argument("--rt-model", default="tiny.en")
-    parser.add_argument("--language", default="en")
+    parser.add_argument("--language", type=language_arg, default=default_language_code())
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--compute-type", default="float16")
     parser.add_argument("--download-root", default=None)
@@ -1396,7 +1398,14 @@ def parse_args() -> argparse.Namespace:
     )
     parser.set_defaults(replay_sleep=True)
     parser.add_argument("--embedding-helper", action="store_true", help=argparse.SUPPRESS)
-    return parser.parse_args()
+    args = parser.parse_args()
+    rt_model_was_explicit = any(
+        item == "--rt-model" or item.startswith("--rt-model=")
+        for item in raw_argv
+    )
+    if args.language != "en" and not rt_model_was_explicit and str(args.rt_model).endswith(".en"):
+        args.rt_model = str(args.rt_model)[:-3]
+    return args
 
 
 def main() -> int:

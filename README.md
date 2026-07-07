@@ -10,7 +10,7 @@ https://github.com/user-attachments/assets/2de749e0-6c02-47de-b949-bd90b4f4efbb
 
 WhoSpeaksLive performs best on clean recordings where one person speaks at a time into good microphones. Diarization accuracy can degrade with background noise, background music, echo, crosstalk, overlapping speech, or low-quality microphones, and it may become less reliable as the active speaker count grows. The system assumes complete utterances can be assigned to a single speaker, so cases where one speaker starts a sentence and another finishes it are not expected to score well.
 
-Language support is adaptable in principle, but the published project should be treated as English-first. The remote ASR language can be overridden with `WHOSPEAKS_ASR_LANGUAGE`, but full support for another language still needs explicit integration and validation of the transcription, sentence-boundary, and scoring behavior. If you need another language, ask your agent harness to integrate and validate that language explicitly.
+Realtime language support is explicit for German, English, Spanish, French, Italian, Hebrew, Dutch, Portuguese, Swedish, and Turkish. Set `--language de` or `WHOSPEAKS_LANGUAGE=de` to make final ASR, Kroko/Banafo preview model selection, and stream2sentence sentence splitting use German together. Hebrew accepts `he` or `iw` and uses the Kroko `IW` model files. Other languages need a validated realtime ASR model and sentence tokenizer before they should be used with live preview.
 
 CPU-only operation is not the recommended path for the current stack. The system is GPU-heavy today; a CPU-only setup may be possible, but should be treated as a separate optimization target and will likely require engineering work, slower processing, and some accuracy or throughput tradeoffs.
 
@@ -18,7 +18,7 @@ CPU-only operation is not the recommended path for the current stack. The system
 
 WhoSpeaksLive's own code is licensed under the [MIT License](LICENSE).
 
-Optional Kroko/Banafo preview support uses separately licensed upstream components and model files. This repository's MIT license does not relicense Kroko/Banafo assets; before downloading, bundling, or deploying them, review and respect the current terms from [Kroko by Banafo](https://kroko.ai/), the [Banafo/Kroko-ASR model card](https://huggingface.co/Banafo/Kroko-ASR), and the [kroko-ai/kroko-onnx repository](https://github.com/kroko-ai/kroko-onnx).
+Optional Kroko/Banafo preview support uses separately licensed upstream components and model files. Missing public Community preview models are downloaded automatically from Hugging Face when realtime preview starts. This repository's MIT license does not relicense Kroko/Banafo assets; before downloading, bundling, or deploying them, review and respect the current terms from [Kroko by Banafo](https://kroko.ai/), the [Banafo/Kroko-ASR model card](https://huggingface.co/Banafo/Kroko-ASR), and the [kroko-ai/kroko-onnx repository](https://github.com/kroko-ai/kroko-onnx).
 
 ## Start Here
 

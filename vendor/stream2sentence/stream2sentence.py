@@ -33,6 +33,17 @@ nlp = None
 _QUICK_YIELD_TERMINATORS = ".?!。！？؟।"
 _QUICK_YIELD_CLOSING_MARKS = "\"')]}”’»›"
 _QUICK_YIELD_PRE_TERMINAL_CLOSING_MARKS = ")]}"
+_NLTK_LANGUAGE_NAMES = {
+    "de": "german",
+    "en": "english",
+    "es": "spanish",
+    "fr": "french",
+    "it": "italian",
+    "nl": "dutch",
+    "pt": "portuguese",
+    "sv": "swedish",
+    "tr": "turkish",
+}
 
 
 def _normalize_tokenizer(tokenizer: str) -> str:
@@ -48,6 +59,12 @@ def _normalize_tokenizer(tokenizer: str) -> str:
     }:
         return "nltk+rule-based"
     return tokenizer
+
+
+def _nltk_language_name(language: str) -> str:
+    normalized = (language or current_language or "en").lower().replace("_", "-")
+    normalized = normalized.split("-", 1)[0]
+    return _NLTK_LANGUAGE_NAMES.get(normalized, normalized)
 
 
 def initialize_nltk(language: str = "en", debug=False):
@@ -204,7 +221,7 @@ def _tokenize_sentences(
         if tokenizer == "nltk":
             import nltk
 
-            sentences = nltk.tokenize.sent_tokenize(text)
+            sentences = nltk.tokenize.sent_tokenize(text, language=_nltk_language_name(language))
         elif tokenizer == "rule-based":
             sentences = _rule_based_tokenize_sentences(
                 text,
@@ -325,7 +342,7 @@ def _nltk_rule_based_tokenize_sentences(
 ) -> list[str]:
     import nltk
 
-    nltk_sentences = nltk.tokenize.sent_tokenize(text)
+    nltk_sentences = nltk.tokenize.sent_tokenize(text, language=_nltk_language_name(language))
     rule_based_sentences = _rule_based_tokenize_sentences(
         text,
         language,

@@ -40,11 +40,12 @@ def first_env_value(names: tuple[str, ...]) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--engine", default="kroko_onnx")
-    parser.add_argument("--model", default="Kroko-EN-Pro-16-L-Streaming-001.data")
+    parser.add_argument("--model", default="Kroko-EN-Community-64-L-Streaming-001.data")
     parser.add_argument("--model-path", default="")
     parser.add_argument("--download-root", default="")
     parser.add_argument("--provider", default="cpu")
     parser.add_argument("--num-threads", type=int, default=2)
+    parser.add_argument("--language", default="en")
     parser.add_argument("--engine-options-json", default="")
     parser.add_argument("--realtimestt-root", default="")
     return parser.parse_args()
@@ -64,7 +65,7 @@ def create_session(args: argparse.Namespace):
         "provider": args.provider,
         "num_threads": args.num_threads,
         "sample_rate": 16000,
-        "language": "en",
+        "language": args.language,
         "suppress_native_output": True,
     }
     if args.model_path:
@@ -86,7 +87,7 @@ def create_session(args: argparse.Namespace):
         engine_options=options,
     )
     engine = create_transcription_engine(args.engine, config)
-    return engine.create_streaming_session(language="en", use_prompt=False)
+    return engine.create_streaming_session(language=args.language, use_prompt=False)
 
 
 def main() -> int:

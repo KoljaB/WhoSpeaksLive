@@ -5,8 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from stream2sentence import generate_sentences, init_tokenizer
-from window.window_config import _console_print
+from stream2sentence import generate_sentences
 from window.window_domain import (
     DEFAULT_SENTENCE_BOUNDARY_GAP_RATIO,
     DEFAULT_SENTENCE_BOUNDARY_POST_PADDING_SECONDS,
@@ -160,6 +159,8 @@ def split_words_with_stream2sentence(
     boundary_pre_padding_seconds: float = DEFAULT_SENTENCE_BOUNDARY_PRE_PADDING_SECONDS,
     boundary_post_padding_seconds: float = DEFAULT_SENTENCE_BOUNDARY_POST_PADDING_SECONDS,
     boundary_gap_ratio: float = DEFAULT_SENTENCE_BOUNDARY_GAP_RATIO,
+    sentence_tokenizer: str = "nltk+rule-based",
+    sentence_language: str = "en",
 ) -> list[SentencePart]:
     text, mapped_words = words_to_mapped_text(words)
     if not text or not mapped_words:
@@ -167,8 +168,8 @@ def split_words_with_stream2sentence(
 
     sentence_texts = list(generate_sentences(
         list(text),
-        tokenizer="nltk+rule-based",
-        language="en",
+        tokenizer=sentence_tokenizer,
+        language=sentence_language,
         auto_context=True,
         minimum_sentence_length=1,
         minimum_first_fragment_length=1,

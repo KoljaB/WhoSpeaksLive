@@ -26,6 +26,11 @@ class TimedWord:
     text: str
     start: float
     end: float
+    probability: float | None = None
+    no_speech_prob: float | None = None
+    avg_logprob: float | None = None
+    compression_ratio: float | None = None
+    segment_index: int | None = None
 
 
 @dataclass
@@ -70,6 +75,7 @@ class VadWindowState:
     speech_seconds: float = 0.0
     trailing_silence_seconds: float = 0.0
     backend: str = ""
+    speech_spans: list[tuple[float, float]] = field(default_factory=list)
 
 
 @dataclass

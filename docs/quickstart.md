@@ -53,6 +53,15 @@ The live-speaker timing defaults are tuned for fast feedback, so the command doe
 
 The commands above disable local realtime preview with `--realtime-preview-engine off`. Remove that flag only after the local RealtimeSTT/Kroko preview environment is installed and working.
 
+For a German realtime session with Kroko preview enabled, add `--language de` and keep the default `community-64l` preview preset:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --port 8796 --language de --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660 --embedding-provider "espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12" --live-speaker-embedding-provider "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50" --vad-backend rms
+```
+
+This selects `Kroko-DE-Community-64-L-Streaming-001.data` for preview, sends `de` to the final faster-whisper server, and uses German stream2sentence sentence splitting.
+If the German Kroko model is not present locally, the app downloads it from Hugging Face before starting realtime preview.
+
 ## First Session
 
 1. Start the command.

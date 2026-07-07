@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-import os
+import time
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -21,11 +21,19 @@ def _word_attr(word: Any, name: str, default: Any = None) -> Any:
 
 
 class RemoteWindowAsrClient:
-    def __init__(self, base_url: str, timeout_seconds: float) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        timeout_seconds: float,
+        language: str = "en",
+        retry_attempts: int = 2,
+    ) -> None:
         self.base_url = str(base_url or "").rstrip("/")
         if not self.base_url:
             raise ValueError("Remote ASR base URL must not be empty.")
         self.timeout_seconds = max(1.0, float(timeout_seconds))
+        self.language = str(language or "en")
+        self.retry_attempts = max(0, int(retry_attempts))
 
     def health(self) -> dict[str, Any]:
         raw = self._read_url(f"{self.base_url}/health", timeout=min(self.timeout_seconds, 10.0))
@@ -42,7 +50,7 @@ class RemoteWindowAsrClient:
         query = urlencode({
             "sample_rate": int(sample_rate),
             "encoding": "float32",
-            "language": os.environ.get("WHOSPEAKS_ASR_LANGUAGE", "en"),
+            "language": self.language,
             "task": "transcribe",
             "beam_size": int(beam_size),
             "word_timestamps": "true",
@@ -71,18 +79,49 @@ class RemoteWindowAsrClient:
     def _timed_words_from_result(self, result: dict[str, Any]) -> tuple[list[TimedWord], int]:
         raw_segments = result.get("segments")
         raw_words = result.get("words")
-        if raw_words is None and isinstance(raw_segments, list):
-            raw_words = []
-            for segment in raw_segments:
+        segment_count_value = result.get("segment_count", result.get("segments_count"))
+        try:
+            segment_count = int(segment_count_value)
+        except (TypeError, ValueError):
+            segment_count = len(raw_segments) if isinstance(raw_segments, list) else 0
+
+        words: list[TimedWord] = []
+        if isinstance(raw_segments, list):
+            for fallback_index, segment in enumerate(raw_segments):
                 segment_words = _word_attr(segment, "words", [])
                 if isinstance(segment_words, list):
-                    raw_words.extend(segment_words)
+                    segment_id = _word_attr(segment, "id", fallback_index)
+                    try:
+                        segment_index = int(segment_id)
+                    except (TypeError, ValueError):
+                        segment_index = fallback_index
+                    words.extend(self._timed_words_from_raw_words(segment_words, segment, segment_index))
+            words.sort(key=lambda item: (item.start, item.end))
+            if segment_count <= 0:
+                segment_count = len(raw_segments)
+            return words, segment_count
+
         if raw_words is None:
             raw_words = []
         if not isinstance(raw_words, list):
             raise RuntimeError("Remote ASR response field 'words' must be a list.")
 
+        words = self._timed_words_from_raw_words(raw_words, None, None)
+        words.sort(key=lambda item: (item.start, item.end))
+        if segment_count <= 0:
+            segment_count = 1 if words else 0
+        return words, segment_count
+
+    def _timed_words_from_raw_words(
+        self,
+        raw_words: list[Any],
+        segment: Any | None,
+        segment_index: int | None,
+    ) -> list[TimedWord]:
         words: list[TimedWord] = []
+        no_speech_prob = self._optional_float(_word_attr(segment, "no_speech_prob")) if segment is not None else None
+        avg_logprob = self._optional_float(_word_attr(segment, "avg_logprob")) if segment is not None else None
+        compression_ratio = self._optional_float(_word_attr(segment, "compression_ratio")) if segment is not None else None
         for word in raw_words:
             text = str(_word_attr(word, "word", _word_attr(word, "text", "")) or "")
             if not text.strip():
@@ -94,32 +133,59 @@ class RemoteWindowAsrClient:
                 continue
             start_seconds = max(0.0, start)
             end_seconds = max(start_seconds, end)
-            words.append(TimedWord(text=text, start=start_seconds, end=end_seconds))
-        words.sort(key=lambda item: (item.start, item.end))
+            words.append(TimedWord(
+                text=text,
+                start=start_seconds,
+                end=end_seconds,
+                probability=self._optional_float(_word_attr(word, "probability")),
+                no_speech_prob=no_speech_prob,
+                avg_logprob=avg_logprob,
+                compression_ratio=compression_ratio,
+                segment_index=segment_index,
+            ))
+        return words
 
-        segment_count_value = result.get("segment_count", result.get("segments_count"))
+    @staticmethod
+    def _optional_float(value: Any) -> float | None:
         try:
-            segment_count = int(segment_count_value)
+            if value is None:
+                return None
+            return float(value)
         except (TypeError, ValueError):
-            segment_count = len(raw_segments) if isinstance(raw_segments, list) else (1 if words else 0)
-        return words, segment_count
+            return None
 
     def _read_url(self, url: str, timeout: float) -> bytes:
-        try:
-            with urlopen(url, timeout=timeout) as response:
-                return response.read()
-        except HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace").strip()
-            raise RuntimeError(f"Remote ASR HTTP {exc.code}: {detail[:300]}") from exc
-        except URLError as exc:
-            raise RuntimeError(f"Remote ASR connection failed: {exc.reason}") from exc
+        attempts = self.retry_attempts + 1
+        for attempt in range(attempts):
+            try:
+                with urlopen(url, timeout=timeout) as response:
+                    return response.read()
+            except HTTPError as exc:
+                detail = exc.read().decode("utf-8", errors="replace").strip()
+                message = f"Remote ASR HTTP {exc.code}: {detail[:300]}"
+                if exc.code < 500 or attempt >= attempts - 1:
+                    raise RuntimeError(message) from exc
+            except URLError as exc:
+                message = f"Remote ASR connection failed: {exc.reason}"
+                if attempt >= attempts - 1:
+                    raise RuntimeError(message) from exc
+            time.sleep(min(1.0, 0.2 * (attempt + 1)))
+        raise RuntimeError("Remote ASR connection failed.")
 
     def _open_request(self, request: Request, timeout: float) -> bytes:
-        try:
-            with urlopen(request, timeout=timeout) as response:
-                return response.read()
-        except HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace").strip()
-            raise RuntimeError(f"Remote ASR HTTP {exc.code}: {detail[:300]}") from exc
-        except URLError as exc:
-            raise RuntimeError(f"Remote ASR connection failed: {exc.reason}") from exc
+        attempts = self.retry_attempts + 1
+        for attempt in range(attempts):
+            try:
+                with urlopen(request, timeout=timeout) as response:
+                    return response.read()
+            except HTTPError as exc:
+                detail = exc.read().decode("utf-8", errors="replace").strip()
+                message = f"Remote ASR HTTP {exc.code}: {detail[:300]}"
+                if exc.code < 500 or attempt >= attempts - 1:
+                    raise RuntimeError(message) from exc
+            except URLError as exc:
+                message = f"Remote ASR connection failed: {exc.reason}"
+                if attempt >= attempts - 1:
+                    raise RuntimeError(message) from exc
+            time.sleep(min(1.0, 0.2 * (attempt + 1)))
+        raise RuntimeError("Remote ASR connection failed.")
