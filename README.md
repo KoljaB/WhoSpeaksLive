@@ -64,6 +64,7 @@ For a manual full working setup, follow these in order:
 | macOS setup | [docs/macos-setup.md](docs/macos-setup.md) |
 | Quickstart | [docs/quickstart.md](docs/quickstart.md) |
 | Live window workflow | [docs/live-window-workflow.md](docs/live-window-workflow.md) |
+| Meeting intelligence server | [docs/meeting-intelligence-server.md](docs/meeting-intelligence-server.md) |
 | Speaker libraries | [docs/speaker-libraries.md](docs/speaker-libraries.md) |
 | External ASR and embeddings servers | [docs/external-servers.md](docs/external-servers.md) |
 | Docker server image | [docs/docker.md](docs/docker.md) |
