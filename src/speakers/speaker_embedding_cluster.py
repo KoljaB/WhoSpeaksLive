@@ -234,15 +234,36 @@ class SpeakerMemory:
             self._profiles = []
             self._new_speaker_candidates = []
             self.locked_labels = set()
+            used_indexes: set[int] = set()
+            next_index = 1
             for item in profiles:
                 embedding = normalize_vector(item["centroid"])
-                profile = self._create_profile_locked(
-                    embedding,
-                    float(item.get("speech_seconds") or 0.0),
+                index = speaker_label_index(str(item.get("label") or ""))
+                if index is None:
+                    try:
+                        index = int(item.get("index") or 0)
+                    except (TypeError, ValueError):
+                        index = 0
+                    if index <= 0:
+                        while next_index in used_indexes:
+                            next_index += 1
+                        index = next_index
+                if index in used_indexes:
+                    raise ValueError(f"Duplicate speaker profile index: {index}")
+                used_indexes.add(index)
+                now = time.time()
+                profile = SpeakerProfile(
+                    index=index,
+                    centroid=embedding.astype(np.float32),
                     sentence_count=max(1, int(item.get("sentence_count") or 1)),
+                    speech_seconds=max(0.0, float(item.get("speech_seconds") or 0.0)),
+                    created_at=float(item.get("created_at") or now),
+                    last_seen_at=float(item.get("last_seen_at") or now),
                 )
+                self._profiles.append(profile)
                 if bool(item.get("locked")):
                     self.locked_labels.add(profile.label)
+            self._profiles.sort(key=lambda item: item.index)
 
     def export_profiles(self) -> list[dict[str, Any]]:
         with self._lock:

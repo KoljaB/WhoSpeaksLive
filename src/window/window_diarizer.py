@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import copy
 from collections import Counter, deque
 from datetime import datetime
 import json
@@ -65,6 +66,7 @@ from window.window_preview import (
     MockRealtimePreviewTranscriber,
     RealtimePreviewTranscriber,
 )
+from window.review_flags import annotate_review
 from window.window_remote_asr import RemoteWindowAsrClient
 from window.window_text import (
     is_embedding_candidate_text,
@@ -123,6 +125,7 @@ class WindowDiarizer:
         self._recent_unknown_pair_candidates: deque[PendingUnknownSentence] = deque(maxlen=24)
         self._sentence_refinement_lock = threading.Lock()
         self._sentence_refinement_records: dict[int, dict[str, Any]] = {}
+        self._correction_history: list[dict[str, Any]] = []
         self._sentence_refinement_run_lock = threading.Lock()
         self._speaker_last_media_end: dict[str, float] = {}
         self._embedding_jobs: "queue.Queue[EmbeddingSentenceJob | None] | None" = None
@@ -545,6 +548,100 @@ class WindowDiarizer:
         self._sync_metadata_with_memory()
         return self._speaker_state()
 
+    @staticmethod
+    def _speaker_label_sort_key(label: str) -> tuple[int, str]:
+        value = str(label or "").strip().upper()
+        if value.startswith("S") and value[1:].isdigit():
+            return (int(value[1:]), value)
+        return (999999, value)
+
+    @staticmethod
+    def _normalized_speaker_label(label: Any) -> str | None:
+        value = str(label or "").strip().upper()
+        if not value or value == "UNKNOWN":
+            return None
+        if not re.fullmatch(r"S\d+", value):
+            raise ValueError("Invalid speaker id.")
+        return value
+
+    @staticmethod
+    def _embedding_copy(value: Any) -> np.ndarray | None:
+        if value is None:
+            return None
+        return np.asarray(value, dtype=np.float32).reshape(-1).copy()
+
+    def _speaker_review_profiles(self) -> list[dict[str, Any]]:
+        memory = getattr(self, "memory", None)
+        export_profiles = getattr(memory, "export_profiles", None)
+        if not callable(export_profiles):
+            return []
+        profiles = export_profiles()
+        centroids: dict[str, np.ndarray] = {}
+        for profile in profiles:
+            label = str(profile.get("label") or "")
+            if not label:
+                continue
+            try:
+                centroids[label] = np.asarray(profile.get("centroid"), dtype=np.float32).reshape(-1)
+            except (TypeError, ValueError):
+                continue
+        for profile in profiles:
+            label = str(profile.get("label") or "")
+            similarities: dict[str, float] = {}
+            left = centroids.get(label)
+            if left is None:
+                continue
+            for other_label, right in centroids.items():
+                if other_label == label:
+                    continue
+                try:
+                    similarities[other_label] = round(float(cosine_similarity(left, right)), 4)
+                except ValueError:
+                    continue
+            profile["similarities"] = similarities
+        return profiles
+
+    def _with_sentence_review(self, payload: dict[str, Any]) -> dict[str, Any]:
+        row = dict(payload)
+        if bool(row.get("pending")) or bool(row.get("realtime")):
+            return row
+        row["review"] = annotate_review(
+            row,
+            speaker_profiles=self._speaker_review_profiles(),
+        )
+        return row
+
+    def _emit_transcript_sentence(self, payload: dict[str, Any]) -> dict[str, Any]:
+        row = self._with_sentence_review(payload)
+        self.bus.emit("sentence", row)
+        return row
+
+    def _record_to_sentence_payload(self, record: dict[str, Any]) -> dict[str, Any]:
+        base_payload = dict(record.get("base_payload") or {})
+        assigned_speaker = record.get("assigned_speaker")
+        row = {
+            **base_payload,
+            "pending": False,
+            "assigned_speaker": assigned_speaker,
+            **self._speaker_info_for_payload(assigned_speaker),
+            "created_speaker": bool(record.get("created_speaker")),
+            "probabilities": dict(record.get("probabilities") or {}),
+            "similarities": dict(record.get("similarities") or {}),
+            "unknown_probability": record.get("unknown_probability"),
+            "top_similarity": record.get("top_similarity"),
+            "margin": record.get("margin"),
+            "quality": record.get("quality"),
+            "assignment_source": str(record.get("assignment_source") or ""),
+        }
+        if "automatic_assigned_speaker" in record:
+            row["automatic_assigned_speaker"] = record.get("automatic_assigned_speaker")
+        if "automatic_assignment_source" in record:
+            row["automatic_assignment_source"] = record.get("automatic_assignment_source")
+        correction = record.get("correction")
+        if isinstance(correction, dict) and correction:
+            row["correction"] = copy.deepcopy(correction)
+        return self._with_sentence_review(row)
+
     def _session_transcript_rows_and_embeddings(self) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         with self._sentence_refinement_lock:
             records = [
@@ -555,29 +652,18 @@ class WindowDiarizer:
         rows: list[dict[str, Any]] = []
         embeddings: list[dict[str, Any]] = []
         for record in records:
-            base_payload = dict(record.get("base_payload") or {})
-            assigned_speaker = record.get("assigned_speaker")
-            row = {
-                **base_payload,
-                "pending": False,
-                "assigned_speaker": assigned_speaker,
-                **self._speaker_info_for_payload(assigned_speaker),
-                "created_speaker": bool(record.get("created_speaker")),
-                "probabilities": dict(record.get("probabilities") or {}),
-                "similarities": dict(record.get("similarities") or {}),
-                "unknown_probability": record.get("unknown_probability"),
-                "top_similarity": record.get("top_similarity"),
-                "margin": record.get("margin"),
-                "quality": record.get("quality"),
-                "assignment_source": str(record.get("assignment_source") or ""),
-            }
+            row = self._record_to_sentence_payload(record)
             rows.append(row)
             embedding = record.get("embedding")
             if embedding is not None:
+                base_payload = dict(record.get("base_payload") or {})
+                index_value = record.get("index")
+                if index_value is None:
+                    index_value = base_payload.get("index", 0)
                 embeddings.append({
-                    "index": int(record.get("index") or base_payload.get("index") or 0),
+                    "index": int(index_value or 0),
                     "duration_seconds": float(record.get("duration_seconds") or 0.0),
-                    "assigned_speaker": assigned_speaker,
+                    "assigned_speaker": row.get("assigned_speaker"),
                     "embedding": embedding,
                 })
         return rows, embeddings
@@ -636,6 +722,9 @@ class WindowDiarizer:
         elif str(media.url or "").startswith("browser-stream://"):
             source["capture_mode"] = "browser-stream"
             source["title"] = "Browser audio recording"
+        elif str(media.url or "").startswith("local-audio://"):
+            source["capture_mode"] = "audio-file"
+            source["title"] = self._session_source_title or Path(media.audio_file).name
         else:
             source["capture_mode"] = "youtube"
             if self._session_source_title:
@@ -706,6 +795,407 @@ class WindowDiarizer:
         self.bus.emit("status", {"message": "Cleared speakers."})
         return self.emit_speaker_state()
 
+    def _speaker_exists(self, label: str) -> bool:
+        return any(str(profile.get("label") or "") == label for profile in self.memory.export_profiles())
+
+    def _next_speaker_label(self) -> str:
+        indexes: set[int] = set()
+        for profile in self.memory.export_profiles():
+            key = str(profile.get("label") or "").strip().upper()
+            if key.startswith("S") and key[1:].isdigit():
+                indexes.add(int(key[1:]))
+        with self._speaker_lock:
+            metadata_labels = list(self._speaker_metadata)
+        for label in metadata_labels:
+            key = str(label or "").strip().upper()
+            if key.startswith("S") and key[1:].isdigit():
+                indexes.add(int(key[1:]))
+        with self._sentence_refinement_lock:
+            for record in self._sentence_refinement_records.values():
+                key = str(record.get("assigned_speaker") or "").strip().upper()
+                if key.startswith("S") and key[1:].isdigit():
+                    indexes.add(int(key[1:]))
+        index = 1
+        while index in indexes:
+            index += 1
+        return f"S{index}"
+
+    def _copy_sentence_records(self) -> dict[int, dict[str, Any]]:
+        with self._sentence_refinement_lock:
+            copied: dict[int, dict[str, Any]] = {}
+            for index, record in self._sentence_refinement_records.items():
+                next_record = copy.deepcopy(record)
+                if record.get("embedding") is not None:
+                    next_record["embedding"] = self._embedding_copy(record.get("embedding"))
+                copied[int(index)] = next_record
+            return copied
+
+    def _push_correction_history(self, action: str) -> None:
+        with self._speaker_lock:
+            metadata = copy.deepcopy(self._speaker_metadata)
+            group_name = self._speaker_group_name
+            seed_profiles = copy.deepcopy(self._seed_profiles)
+            seed_live_profiles = copy.deepcopy(getattr(self, "_seed_live_profiles", []))
+        self._correction_history.append({
+            "action": str(action or "correction"),
+            "records": self._copy_sentence_records(),
+            "speaker_profiles": copy.deepcopy(self.memory.export_profiles()),
+            "speaker_metadata": metadata,
+            "speaker_group_name": group_name,
+            "seed_profiles": seed_profiles,
+            "seed_live_profiles": seed_live_profiles,
+        })
+        if len(self._correction_history) > 50:
+            self._correction_history = self._correction_history[-50:]
+
+    def _restore_correction_snapshot(self, snapshot: dict[str, Any]) -> None:
+        with self._live_memory_update_lock_obj():
+            self._speaker_generation = int(getattr(self, "_speaker_generation", 0)) + 1
+            jobs = getattr(self, "_embedding_jobs", None)
+            if jobs is not None:
+                self._cancel_pending_embedding_jobs(jobs)
+            self._cancel_pending_live_memory_update_jobs()
+            self.memory.replace_profiles(list(snapshot.get("speaker_profiles") or []))
+            with self._speaker_lock:
+                self._speaker_metadata = copy.deepcopy(snapshot.get("speaker_metadata") or {})
+                self._speaker_group_name = str(snapshot.get("speaker_group_name") or "")
+                self._seed_profiles = copy.deepcopy(snapshot.get("seed_profiles") or [])
+                self._seed_live_profiles = copy.deepcopy(snapshot.get("seed_live_profiles") or [])
+            self._reset_live_speaker_memory()
+        with self._sentence_refinement_lock:
+            self._sentence_refinement_records = copy.deepcopy(snapshot.get("records") or {})
+        with self._unknown_lock:
+            self._clear_unknown_sentence_state_locked()
+
+    def _duration_for_record(self, record: dict[str, Any]) -> float:
+        try:
+            duration = float(record.get("duration_seconds") or 0.0)
+        except (TypeError, ValueError):
+            duration = 0.0
+        if duration > 0.0:
+            return duration
+        base = record.get("base_payload") if isinstance(record.get("base_payload"), dict) else {}
+        try:
+            start = float(base.get("start"))
+            end = float(base.get("end"))
+        except (TypeError, ValueError):
+            return 0.0
+        return max(0.0, end - start)
+
+    def _rebuild_speaker_memory_from_records(
+        self,
+        records: dict[int, dict[str, Any]],
+        *,
+        remove_labels: set[str] | None = None,
+    ) -> None:
+        removed = {str(label or "").strip().upper() for label in (remove_labels or set()) if label}
+        current_profiles = {
+            str(profile.get("label") or ""): dict(profile)
+            for profile in self.memory.export_profiles()
+            if str(profile.get("label") or "")
+        }
+        embeddings_by_label: dict[str, list[tuple[np.ndarray, float]]] = {}
+        for record in records.values():
+            label = str(record.get("assigned_speaker") or "").strip().upper()
+            if not label or label in removed:
+                continue
+            embedding = self._embedding_copy(record.get("embedding"))
+            if embedding is None:
+                continue
+            duration = self._duration_for_record(record)
+            embeddings_by_label.setdefault(label, []).append((embedding, max(0.05, duration)))
+
+        labels = set(current_profiles) | set(embeddings_by_label)
+        labels.difference_update(removed)
+        rebuilt: list[dict[str, Any]] = []
+        now = time.time()
+        for label in sorted(labels, key=self._speaker_label_sort_key):
+            samples = embeddings_by_label.get(label) or []
+            current = current_profiles.get(label, {})
+            if samples:
+                weighted = None
+                total_weight = 0.0
+                for embedding, weight in samples:
+                    if weighted is None:
+                        weighted = embedding.astype(np.float32) * weight
+                    else:
+                        weighted = weighted + (embedding.astype(np.float32) * weight)
+                    total_weight += weight
+                assert weighted is not None
+                centroid = weighted / max(total_weight, 0.0001)
+                norm = float(np.linalg.norm(centroid))
+                if norm > 0.0:
+                    centroid = centroid / norm
+                sentence_count = len(samples)
+                speech_seconds = sum(weight for _embedding, weight in samples)
+            else:
+                centroid = np.asarray(current.get("centroid"), dtype=np.float32).reshape(-1)
+                if centroid.size <= 0:
+                    continue
+                sentence_count = max(1, int(current.get("sentence_count") or 1))
+                speech_seconds = float(current.get("speech_seconds") or 0.0)
+            rebuilt.append({
+                "label": label,
+                "centroid": centroid.astype(float).tolist(),
+                "sentence_count": max(1, int(sentence_count)),
+                "speech_seconds": float(speech_seconds),
+                "created_at": float(current.get("created_at") or now),
+                "last_seen_at": now,
+                "locked": bool(current.get("locked")),
+            })
+
+        self.memory.replace_profiles(rebuilt)
+        self._sync_metadata_with_memory()
+        self._reset_live_speaker_memory()
+
+    def _set_user_assignment(
+        self,
+        record: dict[str, Any],
+        speaker_id: str | None,
+        *,
+        action: str,
+        updates_memory: bool,
+    ) -> None:
+        previous_speaker = record.get("assigned_speaker")
+        if "automatic_assigned_speaker" not in record:
+            record["automatic_assigned_speaker"] = previous_speaker
+            record["automatic_assignment_source"] = str(record.get("assignment_source") or "")
+        record["assigned_speaker"] = speaker_id
+        record["created_speaker"] = False
+        if speaker_id:
+            probability_key = self._speaker_probability_key(speaker_id)
+            record["probabilities"] = {probability_key: 1.0} if probability_key else {}
+            record["unknown_probability"] = 0.0
+            record["top_similarity"] = 1.0
+            record["margin"] = 1.0
+            self._ensure_speaker_metadata(speaker_id)
+        else:
+            record["probabilities"] = {"unknown": 1.0}
+            record["unknown_probability"] = 1.0
+            record["top_similarity"] = None
+            record["margin"] = None
+        record["assignment_source"] = "user_correction"
+        record["correction"] = {
+            "status": "user_corrected",
+            "action": action,
+            "original_speaker": record.get("automatic_assigned_speaker"),
+            "previous_speaker": previous_speaker,
+            "corrected_speaker": speaker_id,
+            "corrected_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+            "updates_memory": bool(updates_memory),
+        }
+
+    def _emit_records(self, records: list[dict[str, Any]]) -> None:
+        for record in records:
+            self.bus.emit("sentence", self._record_to_sentence_payload(record))
+
+    def reassign_sentence(
+        self,
+        index: int,
+        speaker_id: str | None,
+        *,
+        update_memory: bool = True,
+    ) -> dict[str, Any]:
+        target = self._normalized_speaker_label(speaker_id)
+        if target and not self._speaker_exists(target):
+            raise ValueError(f"Unknown speaker {target}.")
+        row_index = int(index)
+        with self._sentence_refinement_lock:
+            if row_index not in self._sentence_refinement_records:
+                raise ValueError(f"Unknown transcript row {index}.")
+        self._push_correction_history("reassign_sentence")
+        changed: list[dict[str, Any]] = []
+        with self._live_memory_update_lock_obj():
+            with self._sentence_refinement_lock:
+                record = self._sentence_refinement_records.get(row_index)
+                if record is None:
+                    raise ValueError(f"Unknown transcript row {index}.")
+                self._set_user_assignment(
+                    record,
+                    target,
+                    action="reassign",
+                    updates_memory=update_memory,
+                )
+                changed.append(copy.deepcopy(record))
+                records_copy = copy.deepcopy(self._sentence_refinement_records)
+            if update_memory:
+                self._rebuild_speaker_memory_from_records(records_copy)
+            if target:
+                self._remove_unknown_sentence(row_index)
+        self._emit_records(changed)
+        state = self.emit_speaker_state()
+        self.bus.emit("status", {"message": f"Reassigned sentence {index} to {target or 'UNKNOWN'}."})
+        return {"speaker_state": state, "rows": [self._record_to_sentence_payload(record) for record in changed]}
+
+    def mark_sentence_correct(self, index: int) -> dict[str, Any]:
+        row_index = int(index)
+        with self._sentence_refinement_lock:
+            if row_index not in self._sentence_refinement_records:
+                raise ValueError(f"Unknown transcript row {index}.")
+        self._push_correction_history("mark_sentence_correct")
+        with self._sentence_refinement_lock:
+            record = self._sentence_refinement_records.get(row_index)
+            if record is None:
+                raise ValueError(f"Unknown transcript row {index}.")
+            if "automatic_assigned_speaker" not in record:
+                record["automatic_assigned_speaker"] = record.get("assigned_speaker")
+                record["automatic_assignment_source"] = str(record.get("assignment_source") or "")
+            record["correction"] = {
+                "status": "user_confirmed",
+                "action": "mark_correct",
+                "original_speaker": record.get("automatic_assigned_speaker"),
+                "corrected_speaker": record.get("assigned_speaker"),
+                "corrected_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+                "updates_memory": False,
+            }
+            changed = copy.deepcopy(record)
+        row = self._record_to_sentence_payload(changed)
+        self.bus.emit("sentence", row)
+        self.bus.emit("status", {"message": f"Marked sentence {index} correct."})
+        return {"speaker_state": self.speaker_state(), "rows": [row]}
+
+    def split_speaker(
+        self,
+        speaker_id: str,
+        sentence_indices: list[int],
+        *,
+        name: str = "",
+        update_memory: bool = True,
+    ) -> dict[str, Any]:
+        source = self._normalized_speaker_label(speaker_id)
+        if not source or not self._speaker_exists(source):
+            raise ValueError(f"Unknown speaker {speaker_id}.")
+        indexes = sorted({int(index) for index in sentence_indices})
+        if not indexes:
+            raise ValueError("Choose at least one sentence to split.")
+        new_label = self._next_speaker_label()
+        clean_name = " ".join(str(name or "").strip().split())[:80]
+        with self._sentence_refinement_lock:
+            for index in indexes:
+                record = self._sentence_refinement_records.get(index)
+                if record is None:
+                    raise ValueError(f"Unknown transcript row {index}.")
+                if str(record.get("assigned_speaker") or "").strip().upper() != source:
+                    raise ValueError(f"Sentence {index} is not assigned to {source}.")
+        self._push_correction_history("split_speaker")
+        changed: list[dict[str, Any]] = []
+        with self._live_memory_update_lock_obj():
+            with self._speaker_lock:
+                self._speaker_metadata[new_label] = {
+                    "name": clean_name,
+                    "source": "user_split",
+                    "locked": False,
+                    "reference_audio": "",
+                }
+            with self._sentence_refinement_lock:
+                for index in indexes:
+                    record = self._sentence_refinement_records.get(index)
+                    if record is None:
+                        raise ValueError(f"Unknown transcript row {index}.")
+                    if str(record.get("assigned_speaker") or "").strip().upper() != source:
+                        raise ValueError(f"Sentence {index} is not assigned to {source}.")
+                    self._set_user_assignment(
+                        record,
+                        new_label,
+                        action="split",
+                        updates_memory=update_memory,
+                    )
+                    changed.append(copy.deepcopy(record))
+                records_copy = copy.deepcopy(self._sentence_refinement_records)
+            if update_memory:
+                self._rebuild_speaker_memory_from_records(records_copy)
+        self._emit_records(changed)
+        state = self.emit_speaker_state()
+        self.bus.emit("status", {"message": f"Split {len(indexes)} sentence(s) from {source} to {new_label}."})
+        return {
+            "speaker_state": state,
+            "new_speaker_id": new_label,
+            "rows": [self._record_to_sentence_payload(record) for record in changed],
+        }
+
+    def merge_speakers(
+        self,
+        source_speaker_id: str,
+        target_speaker_id: str,
+        *,
+        update_memory: bool = True,
+    ) -> dict[str, Any]:
+        source = self._normalized_speaker_label(source_speaker_id)
+        target = self._normalized_speaker_label(target_speaker_id)
+        if not source or not target or source == target:
+            raise ValueError("Choose two different speakers to merge.")
+        if not self._speaker_exists(source):
+            raise ValueError(f"Unknown speaker {source}.")
+        if not self._speaker_exists(target):
+            raise ValueError(f"Unknown speaker {target}.")
+        self._push_correction_history("merge_speakers")
+        changed: list[dict[str, Any]] = []
+        with self._live_memory_update_lock_obj():
+            with self._sentence_refinement_lock:
+                for record in self._sentence_refinement_records.values():
+                    if str(record.get("assigned_speaker") or "").strip().upper() != source:
+                        continue
+                    self._set_user_assignment(
+                        record,
+                        target,
+                        action="merge",
+                        updates_memory=update_memory,
+                    )
+                    changed.append(copy.deepcopy(record))
+                records_copy = copy.deepcopy(self._sentence_refinement_records)
+            with self._speaker_lock:
+                self._speaker_metadata.pop(source, None)
+            if update_memory:
+                self._rebuild_speaker_memory_from_records(records_copy, remove_labels={source})
+            else:
+                profiles = [profile for profile in self.memory.export_profiles() if profile.get("label") != source]
+                self.memory.replace_profiles(profiles)
+                self._sync_metadata_with_memory()
+                self._reset_live_speaker_memory()
+        self._emit_records(changed)
+        state = self.emit_speaker_state()
+        self.bus.emit("status", {"message": f"Merged {source} into {target}."})
+        return {"speaker_state": state, "rows": [self._record_to_sentence_payload(record) for record in changed]}
+
+    def undo_last_correction(self) -> dict[str, Any]:
+        if not self._correction_history:
+            raise ValueError("No correction to undo.")
+        snapshot = self._correction_history.pop()
+        self._restore_correction_snapshot(snapshot)
+        with self._sentence_refinement_lock:
+            records = [copy.deepcopy(record) for _index, record in sorted(self._sentence_refinement_records.items())]
+        self._emit_records(records)
+        state = self.emit_speaker_state()
+        self.bus.emit("status", {"message": f"Undid {snapshot.get('action') or 'correction'}."})
+        return {"speaker_state": state, "rows": [self._record_to_sentence_payload(record) for record in records]}
+
+    def _speaker_correction_summary(self) -> dict[str, Any]:
+        counts: Counter[str] = Counter()
+        corrected_rows = 0
+        confirmed_rows = 0
+        record_map = getattr(self, "_sentence_refinement_records", {})
+        lock = getattr(self, "_sentence_refinement_lock", None)
+        if lock is None:
+            records = list(record_map.values()) if isinstance(record_map, dict) else []
+        else:
+            with lock:
+                records = list(record_map.values()) if isinstance(record_map, dict) else []
+        for record in records:
+            correction = record.get("correction")
+            if not isinstance(correction, dict) or not correction:
+                continue
+            action = str(correction.get("action") or "correction")
+            counts[action] += 1
+            if correction.get("status") == "user_corrected":
+                corrected_rows += 1
+            if correction.get("status") == "user_confirmed":
+                confirmed_rows += 1
+        return {
+            "corrected_rows": corrected_rows,
+            "confirmed_rows": confirmed_rows,
+            "actions": dict(sorted(counts.items())),
+        }
+
     def save_speaker_group(self, name: str) -> dict[str, Any]:
         self._sync_metadata_with_memory()
         self._drain_embedding_jobs()
@@ -764,6 +1254,7 @@ class WindowDiarizer:
             "embedding_provider": self.args.embedding_provider,
             "embedding_device": self.args.embedding_device,
             "live_embedding_provider": self._current_live_embedding_provider(),
+            "correction_summary": self._speaker_correction_summary(),
             "live_speakers": saved_live_profiles,
             "speakers": saved_profiles,
         }
@@ -940,6 +1431,7 @@ class WindowDiarizer:
             "embedding_provider": self.args.embedding_provider,
             "embedding_device": self.args.embedding_device,
             "live_embedding_provider": self._current_live_embedding_provider(),
+            "correction_summary": self._speaker_correction_summary(),
             "live_speakers": exported_live_speakers,
             "speakers": exported_speakers,
         }
@@ -2116,6 +2608,7 @@ class WindowDiarizer:
     def _clear_sentence_refinement_records(self) -> None:
         with self._sentence_refinement_lock:
             self._sentence_refinement_records = {}
+        self._correction_history = []
 
     def _speaker_refinement_config(self) -> SpeakerRefinementConfig:
         return SpeakerRefinementConfig(
@@ -2453,7 +2946,7 @@ class WindowDiarizer:
             candidate.duration_seconds,
             payload,
         )
-        self.bus.emit("sentence", payload)
+        self._emit_transcript_sentence(payload)
 
     @staticmethod
     def _prototype_probabilities(assigned_speaker: str, scores: dict[str, float]) -> dict[str, float]:
@@ -2514,7 +3007,7 @@ class WindowDiarizer:
         self._ensure_speaker_metadata(revision.assigned_speaker)
         revision_from = previous_provisional or revision.previous_speaker or "UNKNOWN"
         assignment_source = "prototype_unknown_tentative" if is_provisional_unknown else revision.assignment_source
-        self.bus.emit("sentence", {
+        self._emit_transcript_sentence({
             **base_payload,
             "pending": False,
             "revision": True,
@@ -2613,7 +3106,7 @@ class WindowDiarizer:
                     duration_field: round(float(island_duration), 4),
                 })
         for payload in emitted:
-            self.bus.emit("sentence", payload)
+            self._emit_transcript_sentence(payload)
         return len(emitted)
 
     def _merge_small_speaker_islands(self) -> int:
@@ -2993,7 +3486,7 @@ class WindowDiarizer:
                     duration_field: round(float(island_duration), 4),
                 })
         for payload in emitted:
-            self.bus.emit("sentence", payload)
+            self._emit_transcript_sentence(payload)
         return len(emitted)
 
     def _fill_unknown_previous_speaker_tails(self) -> int:
@@ -3234,7 +3727,7 @@ class WindowDiarizer:
                     "long_low_confidence_retro_duration": round(duration, 4),
                 })
         for payload in emitted:
-            self.bus.emit("sentence", payload)
+            self._emit_transcript_sentence(payload)
         return len(emitted)
 
     def _refine_speaker_assignments(self) -> None:
@@ -3414,7 +3907,7 @@ class WindowDiarizer:
                 candidate.duration_seconds,
                 payload,
             )
-            self.bus.emit("sentence", payload)
+            self._emit_transcript_sentence(payload)
             self.bus.emit(
                 "status",
                 {
@@ -5014,7 +5507,7 @@ class WindowDiarizer:
                     )
                 },
             )
-            self.bus.emit("sentence", {
+            self._emit_transcript_sentence({
                 **base_payload,
                 "pending": False,
                 "unknown_permanent": True,
@@ -5045,7 +5538,7 @@ class WindowDiarizer:
                 "margin": None,
                 "assignment_source": "non_embedding_candidate",
             }
-            self.bus.emit("sentence", payload)
+            self._emit_transcript_sentence(payload)
             self._record_unknown_refinement_candidate(
                 index,
                 base_payload,
@@ -5252,7 +5745,7 @@ class WindowDiarizer:
             duration_seconds,
             sentence_payload,
         )
-        self.bus.emit("sentence", sentence_payload)
+        sentence_payload = self._emit_transcript_sentence(sentence_payload)
         if paired_unknown_revision is not None:
             paired_candidate, pair_similarity = paired_unknown_revision
             self._emit_unknown_pair_revision(paired_candidate, decision, pair_similarity)
@@ -5309,7 +5802,7 @@ class WindowDiarizer:
             )
         except Exception as exc:
             self.bus.emit("status", {"message": f"Embedding failed for sentence {index}: {type(exc).__name__}: {exc}"})
-            self.bus.emit("sentence", {
+            self._emit_transcript_sentence({
                 **base_payload,
                 "pending": False,
                 "error": f"{type(exc).__name__}: {exc}",

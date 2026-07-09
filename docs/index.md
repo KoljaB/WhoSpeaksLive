@@ -6,16 +6,18 @@ This documentation is organized by the task a reader is trying to complete.
 
 Follow these in order for a new machine:
 
-1. [Installation](installation.md): prepare the Windows controller and install console commands.
+1. [Installation](installation.md): install `whospeaks`, run the starter CLI, and choose a setup mode.
 2. [External servers](external-servers.md): prepare ASR and embeddings on the Linux GPU server.
-3. [Quickstart](quickstart.md): run the smoke provider, then switch to higher-quality providers.
-4. [Troubleshooting](troubleshooting.md): use health checks and common failure fixes when a step fails.
+3. [Quickstart](quickstart.md): run a local or remote smoke provider, then switch to higher-quality providers.
+4. [Docker](docker.md): optionally build and run the packaged Linux server image.
+5. [Troubleshooting](troubleshooting.md): use health checks and common failure fixes when a step fails.
 
 ## Start Here
 
 - [Overview](overview.md): what WhoSpeaksLive does and where it fits.
-- [Installation](installation.md): prepare the Windows controller and Python environment.
-- [Quickstart](quickstart.md): launch the browser app after remote services are healthy.
+- [Installation](installation.md): install the `whospeaks` starter CLI and choose local or remote setup.
+- [Quickstart](quickstart.md): launch the browser app locally or after remote services are healthy.
+- [Docker](docker.md): build and run the Linux containerized browser UI server.
 
 ## User Workflows
 
@@ -30,10 +32,13 @@ Follow these in order for a new machine:
 - [External servers](external-servers.md): run ASR and embeddings services on a Linux GPU machine.
 - [macOS setup](macos-setup.md): run the controller and both servers locally on Apple Silicon.
 - [Configuration](configuration.md): choose the most important runtime flags.
+- [Docker](docker.md): container build/run path, volumes, and validation commands.
+- [CLI reference](cli-reference.md): look up every command-line parameter and environment variable.
 - [Modal deployment](modal-deployment.md): deploy supported remote components on Modal.
 
 ## Technical Reference
 
+- [CLI reference](cli-reference.md): complete parameter reference for installed commands and helper modules.
 - [Technical description](technical-description.md): the concepts behind ASR windows, embeddings, live speakers, and final speakers.
 - [Architecture](architecture.md): how audio, ASR, embeddings, memory, and the browser UI interact.
 - [Troubleshooting](troubleshooting.md): common failures and concrete checks.

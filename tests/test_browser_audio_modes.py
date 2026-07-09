@@ -24,6 +24,13 @@ class BrowserAudioModeTests(unittest.TestCase):
         self.assertIn('mixed-audio://local', HTML)
         self.assertIn('captureSourceKind === "mixed"', HTML)
 
+    def test_audio_file_mode_is_exposed(self) -> None:
+        self.assertIn('<option value="file">Audio file</option>', HTML)
+        self.assertIn('data-input-mode="file"', HTML)
+        self.assertIn('id="audioFileInput"', HTML)
+        self.assertIn('id="fileDropZone"', HTML)
+        self.assertIn('/api/load-audio-file', HTML)
+
 
 if __name__ == "__main__":
     unittest.main()

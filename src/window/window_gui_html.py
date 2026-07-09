@@ -86,8 +86,9 @@ HTML = r"""<!doctype html>
     .source-icon { width:36px; height:30px; display:none; align-items:center; justify-content:center; border-radius:7px; color:var(--text); }
     .source-icon svg { width:21px; height:21px; display:block; }
     .source-icon-youtube { display:flex; background:#E5252A; box-shadow:inset 0 1px 0 rgba(255,255,255,.22); }
-    .media-card.mode-microphone .source-icon-youtube, .media-card.mode-system .source-icon-youtube, .media-card.mode-both .source-icon-youtube { display:none; }
+    .media-card.mode-microphone .source-icon-youtube, .media-card.mode-system .source-icon-youtube, .media-card.mode-both .source-icon-youtube, .media-card.mode-file .source-icon-youtube { display:none; }
     .media-card.mode-microphone .source-icon-microphone, .media-card.mode-system .source-icon-system, .media-card.mode-both .source-icon-system { display:flex; background:#0F161F; border:1px solid var(--line); color:#17B7FE; }
+    .media-card.mode-file .source-icon-file { display:flex; background:#0F161F; border:1px solid var(--line); color:#FF9F1C; }
     .source-copy { min-width:0; display:flex; align-items:baseline; gap:16px; }
     .source-kind { flex:0 0 auto; color:#D7DEE8; font-size:15px; font-weight:400; white-space:nowrap; }
     .source-title { min-width:0; color:var(--text); font-size:15px; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -112,9 +113,26 @@ HTML = r"""<!doctype html>
     .youtube-stream.empty .stream-hint { inset:0; height:100%; border:0; border-radius:0; background:transparent; padding:24px; }
     .app.browser-stream .media-card.mode-youtube .video-frame video { display:none; }
     .app.browser-stream .media-card.mode-youtube .youtube-stream { display:block; }
+    .file-preview { width:100%; height:100%; display:none; place-items:center; padding:14px; color:#C6D0DC; text-align:center; }
+    .file-preview-inner { min-width:0; display:grid; justify-items:center; gap:8px; }
+    .file-preview-icon { width:42px; height:42px; display:grid; place-items:center; border:1px solid var(--line); border-radius:8px; color:#FF9F1C; background:#0F161F; }
+    .file-preview-icon svg { width:24px; height:24px; display:block; }
+    .file-preview-name { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#E8EEF5; font-size:13px; }
+    .media-card.mode-file .video-frame video, .media-card.mode-file .youtube-stream { display:none; }
+    .media-card.mode-file .file-preview { display:grid; }
     .media-controls { min-width:0; min-height:100%; display:grid; grid-template-rows:auto minmax(0,1fr) auto; align-items:center; gap:8px; }
     .youtube-source-controls { align-self:start; }
-    .media-card.mode-microphone .youtube-source-controls, .media-card.mode-system .youtube-source-controls, .media-card.mode-both .youtube-source-controls { display:none; }
+    .file-source-controls { align-self:start; display:none; }
+    .media-card.mode-file .file-source-controls { display:block; }
+    .media-card.mode-microphone .youtube-source-controls, .media-card.mode-system .youtube-source-controls, .media-card.mode-both .youtube-source-controls, .media-card.mode-file .youtube-source-controls { display:none; }
+    .file-input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+    .file-drop-zone { min-height:76px; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; padding:10px 12px; border:1px dashed #315064; border-radius:7px; background:#0B1015; color:#C6D0DC; cursor:pointer; }
+    .file-drop-zone.dragover { border-color:#17B7FE; background:#102436; }
+    .file-drop-zone.disabled { opacity:.55; cursor:not-allowed; }
+    .file-drop-copy { min-width:0; display:grid; gap:3px; }
+    .file-drop-title { color:#E8EEF5; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .file-upload-status { color:#9EAAB6; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .choose-audio-file { min-height:32px; border-color:#17B7FE; color:#17B7FE; background:#121C26; white-space:nowrap; }
     .timeline-row { width:100%; min-width:0; padding-right:13px; align-self:center; display:grid; grid-template-columns:auto minmax(120px,1fr) auto; align-items:center; gap:10px; color:#B7C1CD; font-size:14px; font-variant-numeric:tabular-nums; }
     .timeline-bar { position:relative; height:6px; margin-left:8px; margin-right:10px; border-radius:999px; background:#93A1AF; box-shadow:inset 0 1px 2px rgba(0,0,0,.28); }
     .timeline-fill { position:absolute; inset:0 auto 0 0; width:0%; border-radius:inherit; background:#17B7FE; box-shadow:0 0 16px rgba(23,183,254,.35); }
@@ -250,6 +268,11 @@ HTML = r"""<!doctype html>
     .transcript-title { grid-column:1 / -1; min-width:0; margin:0; color:#E8EEF5; font-size:15px; line-height:1.2; font-weight:400; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .transcript-left-tools, .transcript-right-tools { display:flex; align-items:center; gap:8px; }
     .transcript-right-tools { justify-content:flex-end; }
+    .review-filter { display:flex; align-items:center; gap:2px; padding:2px; border:1px solid var(--line); border-radius:7px; background:#0B1015; }
+    .review-filter-button { min-height:24px; border:0; border-radius:5px; padding:0 8px; background:transparent; color:#9EAAB6; font-size:12px; }
+    .review-filter-button.active { background:#102436; color:#E8EEF5; box-shadow:inset 0 0 0 1px #17B7FE; }
+    .undo-correction-button { min-height:24px; border-color:#20303E; background:#121C26; color:#C6D0DC; padding:0 8px; font-size:12px; }
+    .undo-correction-button:disabled { opacity:.45; }
     .follow-live-toggle { min-height:22px; display:inline-flex; align-items:center; gap:7px; color:#C6D0DC; font-size:12px; }
     .follow-live-toggle input { position:absolute; opacity:0; pointer-events:none; }
     .follow-live-track { position:relative; width:38px; height:20px; border-radius:999px; background:#22313E; box-shadow:inset 0 0 0 1px #20303E; }
@@ -286,6 +309,18 @@ HTML = r"""<!doctype html>
     .row.realtime-settling { opacity:.76; }
     .row.row-removing { opacity:0; transform:translateY(-2px); pointer-events:none; }
     .row.realtime .text { color:#d7dee8; }
+    .row.needs-review { box-shadow:inset 3px 0 0 #F59E0B; }
+    .row.user-corrected { box-shadow:inset 3px 0 0 #22C55E; }
+    .review-reasons { display:inline-flex; align-items:center; flex-wrap:wrap; gap:4px; min-width:0; }
+    .review-chip { border:1px solid #6B4A12; border-radius:999px; padding:1px 6px; color:#F8D38A; background:#1C1609; font-size:11px; line-height:1.45; }
+    .review-chip.corrected { border-color:#1F6F3C; color:#9EE6B2; background:#091A10; }
+    .correction-actions { margin-left:auto; display:flex; align-items:center; gap:4px; min-width:0; }
+    .correction-speaker-select { max-width:120px; min-height:24px; border:1px solid #20303E; border-radius:5px; background:#0B1015; color:#D7DEE8; font-size:12px; }
+    .correction-button { min-height:24px; border:1px solid #20303E; border-radius:5px; background:#121C26; color:#C6D0DC; padding:0 7px; font-size:12px; }
+    .correction-button:disabled, .correction-speaker-select:disabled { opacity:.45; }
+    .speaker-merge-controls { display:flex; gap:4px; align-items:center; margin-top:5px; }
+    .speaker-merge-controls select { min-width:0; flex:1 1 auto; height:24px; border:1px solid #20303E; border-radius:5px; background:#0B1015; color:#D7DEE8; font-size:12px; }
+    .speaker-merge-controls button { min-height:24px; flex:0 0 auto; border-color:#20303E; background:#121C26; color:#C6D0DC; padding:0 7px; font-size:12px; }
     .prob { flex:0 0 min(180px, 24vw); display:flex; width:min(180px, 24vw); height:6px; overflow:hidden; border:1px solid var(--line); border-radius:4px; background:#0B1015; margin-top:4px; }
     .prob span { display:block; height:100%; min-width:0; }
     @media (max-width: 900px) {
@@ -323,6 +358,9 @@ HTML = r"""<!doctype html>
       .transcript-panel { margin:0 8px 8px; min-height:45vh; display:block; }
       .transcript-header { grid-template-columns:1fr; gap:8px; padding:9px; }
       .transcript-left-tools, .transcript-right-tools { justify-content:flex-start; }
+      .review-filter { width:100%; overflow:auto; }
+      .correction-actions { width:100%; margin-left:0; flex-wrap:wrap; }
+      .correction-speaker-select { flex:1 1 140px; max-width:none; }
       .sentences { overflow:visible; padding:8px; }
       .status { max-height:130px; }
       .speaker-list { max-height:none; }
@@ -347,6 +385,8 @@ HTML = r"""<!doctype html>
       .source-mode-menu, .source-mode-button { width:100%; }
       .source-mode-options { width:100%; left:0; right:auto; }
       .source-grid { grid-template-columns:1fr; }
+      .file-drop-zone { grid-template-columns:1fr; }
+      .choose-audio-file { width:100%; }
       .timeline-row { padding-right:0; grid-template-columns:1fr; gap:6px; font-size:13px; }
       .timeline-thumb { width:16px; height:16px; }
       .level-row, .mic-gain-control { grid-template-columns:1fr; }
@@ -424,6 +464,13 @@ HTML = r"""<!doctype html>
               <path d="M12 16v4"></path>
             </svg>
           </span>
+          <span class="source-icon source-icon-file" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18V5l12-2v13"></path>
+              <circle cx="6" cy="18" r="3"></circle>
+              <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+          </span>
           <div class="source-copy">
             <span class="source-kind">Source: <span id="sourceKind">YouTube</span></span>
             <strong id="sourceTitle" class="source-title">Loading source</strong>
@@ -431,6 +478,7 @@ HTML = r"""<!doctype html>
           <div id="mediaTime" class="media-time">00:00 / 00:00</div>
           <select id="inputMode" class="mode source-mode-select" aria-label="Input mode">
             <option value="youtube">YouTube video</option>
+            <option value="file">Audio file</option>
             <option value="microphone">Microphone</option>
             <option value="system">Computer audio</option>
             <option value="both">Computer audio + microphone</option>
@@ -439,6 +487,7 @@ HTML = r"""<!doctype html>
             <button id="sourceModeButton" class="source-mode-button dropdown-control" type="button" aria-expanded="false" aria-controls="sourceModeOptions">Change source</button>
             <div id="sourceModeOptions" class="source-mode-options" hidden>
               <button class="source-mode-option" type="button" data-input-mode="youtube">YouTube video</button>
+              <button class="source-mode-option" type="button" data-input-mode="file">Audio file</button>
               <button class="source-mode-option" type="button" data-input-mode="microphone">Microphone</button>
               <button class="source-mode-option" type="button" data-input-mode="system">Computer audio</button>
               <button class="source-mode-option" type="button" data-input-mode="both">Computer audio + microphone</button>
@@ -449,6 +498,18 @@ HTML = r"""<!doctype html>
           <div class="video-frame">
             <video id="video" src="/media/video" muted playsinline></video>
             <div id="youtubeStream" class="youtube-stream"><iframe id="youtubeFrame" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div id="streamHint" class="stream-hint"></div></div>
+            <div id="filePreview" class="file-preview" aria-hidden="true">
+              <div class="file-preview-inner">
+                <span class="file-preview-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18V5l12-2v13"></path>
+                    <circle cx="6" cy="18" r="3"></circle>
+                    <circle cx="18" cy="16" r="3"></circle>
+                  </svg>
+                </span>
+                <span id="filePreviewName" class="file-preview-name">No audio file selected</span>
+              </div>
+            </div>
           </div>
           <div class="media-controls">
             <div id="youtubeSourceControls" class="source-grid youtube-source-controls">
@@ -456,6 +517,16 @@ HTML = r"""<!doctype html>
               <div class="source-row">
                 <input id="source" class="source" type="url" spellcheck="false" autocomplete="off">
                 <button id="load">Load</button>
+              </div>
+            </div>
+            <div id="fileSourceControls" class="file-source-controls">
+              <input id="audioFileInput" class="file-input" type="file" accept=".wav,.mp3,.m4a,.aac,.flac,.ogg,.oga,.opus,.webm,.mp4,.aif,.aiff,audio/*">
+              <div id="fileDropZone" class="file-drop-zone" tabindex="0" aria-label="Choose or drop an audio file">
+                <span class="file-drop-copy">
+                  <span id="fileDropTitle" class="file-drop-title">Drop audio file here</span>
+                  <span id="fileUploadStatus" class="file-upload-status">WAV, MP3, M4A, FLAC, OGG</span>
+                </span>
+                <button id="chooseAudioFile" class="choose-audio-file" type="button">Choose audio file</button>
               </div>
             </div>
             <div class="timeline-row" aria-label="Playback progress">
@@ -515,6 +586,12 @@ HTML = r"""<!doctype html>
               <span class="follow-live-track" aria-hidden="true"></span>
               <span>Follow live</span>
             </label>
+            <div class="review-filter" role="tablist" aria-label="Transcript review filter">
+              <button class="review-filter-button active" type="button" data-review-filter="all">All</button>
+              <button class="review-filter-button" type="button" data-review-filter="needs-review">Needs review</button>
+              <button class="review-filter-button" type="button" data-review-filter="corrected">Corrected</button>
+            </div>
+            <button id="undoCorrection" class="undo-correction-button" type="button" disabled>Undo</button>
           </div>
           <div class="transcript-search">
             <input id="transcriptSearch" type="search" placeholder="Search transcript" autocomplete="off">
@@ -544,6 +621,14 @@ HTML = r"""<!doctype html>
                 <path d="M12 3v12"></path>
                 <path d="m7 10 5 5 5-5"></path>
                 <path d="M5 21h14"></path>
+              </svg>
+            </button>
+            <button id="downloadTranscriptJson" class="transcript-icon-button" type="button" title="Download transcript metadata" aria-label="Download transcript metadata">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"></path>
+                <path d="M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2"></path>
+                <path d="m10 9-3 3 3 3"></path>
+                <path d="m14 9 3 3-3 3"></path>
               </svg>
             </button>
             <div class="transcript-settings-menu">
@@ -650,6 +735,7 @@ HTML = r"""<!doctype html>
             <span class="speaker-file-actions">
               <button id="loadSpeakerGroup" type="button">Load file</button>
               <button id="saveSpeakerGroup" type="button">Save file</button>
+              <button id="saveCorrectedSpeakerGroup" type="button">Save corrected</button>
             </span>
             <input id="speakerGroupFile" type="file" accept=".whospeaks-speakers.json,.json,application/json" hidden>
           </div>
@@ -679,6 +765,13 @@ const sourceModeMenu = document.getElementById("sourceModeMenu");
 const sourceModeButton = document.getElementById("sourceModeButton");
 const sourceModeOptions = document.getElementById("sourceModeOptions");
 const sourceModeOptionButtons = Array.from(document.querySelectorAll(".source-mode-option"));
+const fileSourceControls = document.getElementById("fileSourceControls");
+const audioFileInput = document.getElementById("audioFileInput");
+const fileDropZone = document.getElementById("fileDropZone");
+const fileDropTitle = document.getElementById("fileDropTitle");
+const fileUploadStatus = document.getElementById("fileUploadStatus");
+const chooseAudioFileButton = document.getElementById("chooseAudioFile");
+const filePreviewName = document.getElementById("filePreviewName");
 const mediaTime = document.getElementById("mediaTime");
 const mediaCurrentTime = document.getElementById("mediaCurrentTime");
 const mediaDuration = document.getElementById("mediaDuration");
@@ -705,12 +798,15 @@ const transcriptSearch = document.getElementById("transcriptSearch");
 const clearTranscriptButton = document.getElementById("clearTranscript");
 const copyTranscriptButton = document.getElementById("copyTranscript");
 const downloadTranscriptButton = document.getElementById("downloadTranscript");
+const downloadTranscriptJsonButton = document.getElementById("downloadTranscriptJson");
 const transcriptSettingsButton = document.getElementById("transcriptSettings");
 const transcriptSettingsPanel = document.getElementById("transcriptSettingsPanel");
 const showTranscriptTags = document.getElementById("showTranscriptTags");
 const showTranscriptTime = document.getElementById("showTranscriptTime");
 const showTranscriptSpeechRate = document.getElementById("showTranscriptSpeechRate");
 const showTranscriptProbabilities = document.getElementById("showTranscriptProbabilities");
+const undoCorrectionButton = document.getElementById("undoCorrection");
+const reviewFilterButtons = Array.from(document.querySelectorAll(".review-filter-button"));
 const inputMode = document.getElementById("inputMode");
 const newSpeakerSensitivity = document.getElementById("newSpeakerSensitivity");
 const newSpeakerSensitivityLabel = document.getElementById("newSpeakerSensitivityLabel");
@@ -719,6 +815,7 @@ const speakerRefinementUnknownCommit = document.getElementById("speakerRefinemen
 const allowSpeakerReassignment = document.getElementById("allowSpeakerReassignment");
 const loadSpeakerGroupButton = document.getElementById("loadSpeakerGroup");
 const saveSpeakerGroupButton = document.getElementById("saveSpeakerGroup");
+const saveCorrectedSpeakerGroupButton = document.getElementById("saveCorrectedSpeakerGroup");
 const speakerGroupFile = document.getElementById("speakerGroupFile");
 const speakerCount = document.getElementById("speakerCount");
 const speakerCountNumber = document.getElementById("speakerCountNumber");
@@ -753,6 +850,7 @@ const svgNamespace = "http://www.w3.org/2000/svg";
 const targetCaptureSampleRate = 16000;
 const captureStartRmsThreshold = 0.003;
 const capturePreRollSeconds = 0.7;
+const audioUploadExtensions = new Set(["aac", "aif", "aiff", "flac", "m4a", "mp3", "mp4", "oga", "ogg", "opus", "wav", "webm"]);
 let es = null;
 let playbackTimer = null;
 let playbackClockStartedAt = null;
@@ -762,6 +860,9 @@ let mediaVersion = 0;
 let browserStreamMode = false;
 let browserStreamPrepared = false;
 let browserStreamPreparedUrl = "";
+let localAudioFileName = "";
+let localAudioFileSize = 0;
+let audioUploadInProgress = false;
 let captureSourceKind = "display";
 let captureStream = null;
 let captureStreams = [];
@@ -791,6 +892,8 @@ let soloSpeakerIds = new Set();
 let mutedSpeakerIds = new Set();
 let followLiveEnabled = true;
 let transcriptSearchText = "";
+let transcriptReviewFilter = "all";
+let hasUndoableCorrection = false;
 let transcriptClearBeforeSeconds = 0;
 let currentLiveSpeakerId = "";
 let transcriptLiveSpeakerId = "";
@@ -913,8 +1016,13 @@ function setSourceControlsDisabled(disabled) {
   preset.disabled = disabled;
   inputMode.disabled = disabled;
   sourceModeButton.disabled = disabled;
+  audioFileInput.disabled = disabled;
+  chooseAudioFileButton.disabled = disabled;
+  fileDropZone.classList.toggle("disabled", disabled);
+  fileDropZone.setAttribute("aria-disabled", disabled ? "true" : "false");
   sourceModeOptionButtons.forEach(button => { button.disabled = disabled; });
   if (!disabled) syncSessionControlLock();
+  syncSourceReadyState();
   updateNewRunButtonState();
 }
 function normalizeUrl(url) {
@@ -934,6 +1042,15 @@ function sourceTitleForUrl(url) {
   if (match) return match.title;
   const text = normalizeUrl(url);
   if (!text) return "Custom source";
+  if (text.startsWith("local-audio://")) {
+    try {
+      const parsed = new URL(text);
+      const name = decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
+      return name || "Audio file";
+    } catch (_) {
+      return "Audio file";
+    }
+  }
   try {
     const parsed = new URL(text);
     return parsed.hostname.replace(/^www\./, "") || "Custom source";
@@ -943,8 +1060,9 @@ function sourceTitleForUrl(url) {
 }
 function currentStartSessionMetadata() {
   const match = presetForUrl(source.value);
+  const mode = inputMode.value || "youtube";
   return {
-    source_title: match && !browserStreamMode ? match.title : "",
+    source_title: mode === "file" ? localAudioFileName : (match && !browserStreamMode ? match.title : ""),
     session_id: draftSavedSessionId,
   };
 }
@@ -982,6 +1100,16 @@ function currentSessionSourceMetadata(startedAt = new Date().toISOString()) {
       started_at: startedAt,
     };
   }
+  if (mode === "file") {
+    return {
+      url: url || "local-audio://pending",
+      video_id: "",
+      capture_mode: "audio-file",
+      title: localAudioFileName || "Audio file",
+      size_bytes: localAudioFileSize,
+      started_at: startedAt,
+    };
+  }
   return {
     url,
     video_id: "",
@@ -996,11 +1124,13 @@ function currentSessionDraftTitle() {
     const match = presetForUrl(source.value);
     return match ? match.title : "";
   }
+  if (mode === "file") return localAudioFileName || "Audio file";
   return "";
 }
 function updateMediaMode() {
   const mode = inputMode.value || "youtube";
   mediaCard.classList.toggle("mode-youtube", mode === "youtube");
+  mediaCard.classList.toggle("mode-file", mode === "file");
   mediaCard.classList.toggle("mode-microphone", mode === "microphone");
   mediaCard.classList.toggle("mode-system", mode === "system");
   mediaCard.classList.toggle("mode-both", mode === "both");
@@ -1027,11 +1157,36 @@ function updateMediaMode() {
     mediaTime.textContent = "Live input";
     captureTitle.textContent = "Computer audio + microphone";
     captureDescription.textContent = "Mixed input level appears after capture starts.";
+  } else if (mode === "file") {
+    const hasFile = source.value.trim().startsWith("local-audio://");
+    const name = localAudioFileName || (hasFile ? sourceTitleForUrl(source.value) : "No audio file selected");
+    sourceKind.textContent = "Audio file";
+    sourceTitle.textContent = name;
+    fileDropTitle.textContent = name;
+    filePreviewName.textContent = name;
+    if (audioUploadInProgress) {
+      mediaTime.textContent = "Uploading";
+    } else if (hasFile) {
+      updateMediaTimeline();
+    } else {
+      mediaTime.textContent = "Choose an audio file";
+      mediaCurrentTime.textContent = "00:00";
+      mediaDuration.textContent = "00:00";
+      timelineFill.style.width = "0%";
+      timelineThumb.style.left = "0%";
+    }
   } else {
     sourceKind.textContent = "YouTube";
     sourceTitle.textContent = sourceTitleForUrl(source.value);
     updateMediaTimeline();
   }
+  syncSourceReadyState();
+}
+function syncSourceReadyState() {
+  if ((inputMode.value || "youtube") !== "file") return;
+  const loaded = source.value.trim().startsWith("local-audio://");
+  if (stop && !stop.disabled) return;
+  start.disabled = audioUploadInProgress || !loaded || sessionControlsLocked() || savedSessionReviewOpen();
 }
 function setSourceModeMenuOpen(open) {
   sourceModeMenu.classList.toggle("open", open);
@@ -1059,7 +1214,8 @@ function currentMediaSeconds() {
   return Math.max(mediaSeconds(audio), mediaSeconds(video));
 }
 function updateMediaTimeline() {
-  if ((inputMode.value || "youtube") !== "youtube") {
+  const mode = inputMode.value || "youtube";
+  if (mode === "microphone" || mode === "system" || mode === "both") {
     mediaCurrentTime.textContent = "00:00";
     mediaDuration.textContent = "00:00";
     timelineFill.style.width = "0%";
@@ -1245,7 +1401,11 @@ async function prepareBrowserStreamSession() {
 }
 function initializeInputModeFromSource() {
   const value = source.value.trim();
-  if (value.startsWith("microphone://")) {
+  if (value.startsWith("local-audio://")) {
+    inputMode.value = "file";
+    localAudioFileName = sourceTitleForUrl(value);
+    setBrowserStreamMode(false);
+  } else if (value.startsWith("microphone://")) {
     inputMode.value = "microphone";
     setBrowserStreamMode(true, "", "microphone");
   } else if (value.startsWith("system-audio://")) {
@@ -1699,11 +1859,17 @@ function syncSessionControlLock() {
     addReferenceSpeakerButton,
     loadSpeakerGroupButton,
     saveSpeakerGroupButton,
+    saveCorrectedSpeakerGroupButton,
+    audioFileInput,
+    chooseAudioFileButton,
     manualSpeakerName,
     referenceSpeakerFile,
     recordReferenceButton,
   ].forEach(element => applySessionLockedDisabled(element, locked));
+  fileDropZone.classList.toggle("disabled", locked);
+  fileDropZone.setAttribute("aria-disabled", locked ? "true" : "false");
   sourceModeOptionButtons.forEach(button => applySessionLockedDisabled(button, locked));
+  syncSourceReadyState();
   updateNewRunButtonState();
 }
 function updateSessionState(nextState) {
@@ -1721,6 +1887,7 @@ function updateSessionState(nextState) {
   }
   updateSessionBanner();
   updateNewRunButtonState();
+  syncCorrectionUndoState();
   if (wasLocked !== sessionControlsLocked()) {
     renderSpeakerPanel();
   }
@@ -1845,6 +2012,120 @@ async function post(path, payload={}) {
   if (data.session) updateSessionState(data.session);
   if (!r.ok) throw new Error(data.error || r.statusText);
   return data;
+}
+function audioFileExtension(filename) {
+  const match = String(filename || "").toLowerCase().match(/\.([a-z0-9]+)$/);
+  return match ? match[1] : "";
+}
+function supportedAudioFile(file) {
+  if (!file) return false;
+  const extension = audioFileExtension(file.name);
+  return audioUploadExtensions.has(extension) || String(file.type || "").startsWith("audio/");
+}
+function fileSizeLabel(bytes) {
+  const value = Number(bytes || 0);
+  if (!Number.isFinite(value) || value <= 0) return "";
+  if (value >= 1024 * 1024 * 1024) return `${(value / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  if (value >= 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+  if (value >= 1024) return `${Math.round(value / 1024)} KB`;
+  return `${value} B`;
+}
+function setFileUploadStatus(text, progress=null) {
+  const progressText = progress === null ? "" : ` ${Math.max(0, Math.min(100, Math.round(progress)))}%`;
+  fileUploadStatus.textContent = `${text || ""}${progressText}`.trim() || "WAV, MP3, M4A, FLAC, OGG";
+}
+function uploadAudioFileRequest(file) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/load-audio-file");
+    xhr.responseType = "json";
+    xhr.setRequestHeader("X-Whospeaks-Client", sessionClientId);
+    if (sessionToken) xhr.setRequestHeader("X-Whospeaks-Session", sessionToken);
+    xhr.setRequestHeader("X-Whospeaks-Filename", encodeURIComponent(file.name || "audio.wav"));
+    if (file.type) xhr.setRequestHeader("Content-Type", file.type);
+    xhr.upload.onprogress = event => {
+      if (!event.lengthComputable) {
+        setFileUploadStatus("Uploading");
+        return;
+      }
+      setFileUploadStatus("Uploading", (event.loaded / event.total) * 100);
+    };
+    xhr.upload.onload = () => {
+      setFileUploadStatus("Upload complete; loading audio");
+      setState("Loading audio");
+    };
+    xhr.onerror = () => reject(new Error("Audio upload failed."));
+    xhr.onload = () => {
+      const data = xhr.response || {};
+      if (data.session) updateSessionState(data.session);
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new Error(data.error || xhr.statusText || "Audio upload failed."));
+        return;
+      }
+      resolve(data);
+    };
+    xhr.send(file);
+  });
+}
+async function loadAudioFile(file) {
+  if (!file) return;
+  if (!supportedAudioFile(file)) {
+    log("Unsupported audio file. Choose WAV, MP3, M4A, FLAC, OGG, OPUS, WEBM, MP4, AAC, AIFF, or OGA.");
+    return;
+  }
+  if (sessionControlsLocked()) {
+    log("Session in use. Watching live until the seat is free.");
+    return;
+  }
+  leaveSavedSessionReview();
+  setSourceModeMenuOpen(false);
+  try {
+    await ensureSessionOwner("load audio files");
+  } catch (error) {
+    log(error.message);
+    return;
+  }
+  stopPlaybackClock();
+  stopBrowserAudioCapture();
+  video.pause();
+  audio.pause();
+  inputMode.value = "file";
+  setBrowserStreamMode(false);
+  audioUploadInProgress = true;
+  localAudioFileName = file.name || "Audio file";
+  localAudioFileSize = Number(file.size || 0);
+  source.value = "";
+  start.disabled = true;
+  stop.disabled = true;
+  setSourceControlsDisabled(true);
+  resetTranscriptDisplay();
+  connect();
+  setState("Uploading");
+  setFileUploadStatus(fileSizeLabel(file.size) ? `Uploading ${fileSizeLabel(file.size)}` : "Uploading");
+  updateMediaMode();
+  try {
+    const result = await uploadAudioFileRequest(file);
+    if (result.speaker_state) updateSpeakerState(result.speaker_state);
+    localAudioFileName = result.display_name || file.name || "Audio file";
+    localAudioFileSize = Number(result.size_bytes || file.size || 0);
+    source.value = result.url || "";
+    syncPresetSelection("");
+    refreshMediaElements(result.version);
+    updateMediaMode();
+    setFileUploadStatus(fileSizeLabel(localAudioFileSize) || "Ready");
+    log(`Loaded audio file ${localAudioFileName}.`);
+    setState("Ready");
+  } catch (error) {
+    source.value = "";
+    setFileUploadStatus("Upload failed");
+    log(`Audio file load failed: ${error.message}`);
+    setState("Ready");
+  } finally {
+    audioUploadInProgress = false;
+    setSourceControlsDisabled(false);
+    syncSourceReadyState();
+    audioFileInput.value = "";
+  }
 }
 function savedSessionTitle(sessionData) {
   const summary = (sessionData && sessionData.summary) || {};
@@ -2153,6 +2434,7 @@ function reflectSavedSessionSource(sessionData) {
     microphone: "Microphone",
     mixed: "Computer audio + microphone",
     "browser-stream": "Computer audio",
+    "audio-file": "Audio file",
     youtube: "YouTube",
   }[mode] || "Source";
   const duration = Number(summary.duration_seconds || manifest.duration_seconds || sourceInfo.duration_seconds || 0);
@@ -2477,22 +2759,43 @@ function refreshMediaElements(version) {
   mediaVersion = Number(version || Date.now());
   video.pause();
   audio.pause();
-  video.src = `/media/video?v=${mediaVersion}`;
+  if ((inputMode.value || "youtube") === "file") {
+    video.removeAttribute("src");
+  } else {
+    video.src = `/media/video?v=${mediaVersion}`;
+  }
   audio.src = `/media/audio?v=${mediaVersion}`;
   video.load();
   audio.load();
   updateMediaTimeline();
 }
+function currentPlaybackElements() {
+  return (inputMode.value || "youtube") === "file" ? [audio] : [video, audio];
+}
+function playbackElementLabel(element, index) {
+  if (element === audio) return "audio";
+  if (element === video) return "video";
+  return `media ${index + 1}`;
+}
 async function unlockPlayback() {
-  video.currentTime = 0; audio.currentTime = 0; video.muted = true; audio.volume = 1.0;
-  const results = await Promise.allSettled([video.play(), audio.play()]);
-  video.pause(); audio.pause(); video.currentTime = 0; audio.currentTime = 0;
-  return results;
+  const elements = currentPlaybackElements();
+  elements.forEach(element => {
+    element.currentTime = 0;
+    if (element === video) element.muted = true;
+    if (element === audio) element.volume = 1.0;
+  });
+  const results = await Promise.allSettled(elements.map(element => element.play()));
+  elements.forEach(element => {
+    element.pause();
+    element.currentTime = 0;
+  });
+  return results.map((result, index) => ({result, element: elements[index], index}));
 }
 function logRejectedPlayback(results) {
-  results.forEach((result, index) => {
+  results.forEach((entry, index) => {
+    const result = entry && entry.result ? entry.result : entry;
     if (result.status === "rejected") {
-      log(`${index === 0 ? "video" : "audio"} playback blocked: ${result.reason?.name || result.reason}`);
+      log(`${playbackElementLabel(entry && entry.element, index)} playback blocked: ${result.reason?.name || result.reason}`);
     }
   });
 }
@@ -2597,10 +2900,45 @@ function transcriptSearchVisible(row) {
   const searchable = (row.dataset.searchText || "").toLowerCase();
   return query.split(/\s+/).every(term => searchable.includes(term));
 }
+function transcriptReviewVisible(row) {
+  if (transcriptReviewFilter === "needs-review") return row.dataset.needsReview === "true";
+  if (transcriptReviewFilter === "corrected") return row.dataset.corrected === "true";
+  return true;
+}
 function refreshTranscriptVisibility() {
   Array.from(sentences.querySelectorAll(".row")).forEach(row => {
-    row.hidden = !speakerTranscriptVisible(row.dataset.speaker) || !transcriptSearchVisible(row);
+    row.hidden = !speakerTranscriptVisible(row.dataset.speaker) || !transcriptSearchVisible(row) || !transcriptReviewVisible(row);
   });
+}
+function setTranscriptReviewFilter(filter) {
+  transcriptReviewFilter = ["all", "needs-review", "corrected"].includes(filter) ? filter : "all";
+  reviewFilterButtons.forEach(button => {
+    const active = button.dataset.reviewFilter === transcriptReviewFilter;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  refreshTranscriptVisibility();
+}
+function correctionStatus(item) {
+  const correction = item && item.correction;
+  return correction && typeof correction === "object" ? String(correction.status || "") : "";
+}
+function rowIsCorrected(item) {
+  const status = correctionStatus(item);
+  return status === "user_corrected" || status === "user_confirmed";
+}
+function reviewReasonsForItem(item, displaySpeakerId, adoptedLiveSpeakerId) {
+  const review = item && item.review && typeof item.review === "object" ? item.review : {};
+  const reasons = Array.isArray(review.reasons) ? review.reasons.map(reason => String(reason || "").trim()).filter(Boolean) : [];
+  if (displaySpeakerId && adoptedLiveSpeakerId && displaySpeakerId !== adoptedLiveSpeakerId) {
+    reasons.push("conflicting live/final evidence");
+  }
+  if (rowIsCorrected(item)) return [];
+  return Array.from(new Set(reasons));
+}
+function syncCorrectionUndoState(enabled = hasUndoableCorrection) {
+  hasUndoableCorrection = Boolean(enabled);
+  undoCorrectionButton.disabled = !hasUndoableCorrection || sessionControlsLocked() || savedSessionReviewOpen();
 }
 function setSpeakerFilter(speakerId, mode, active) {
   if (!speakerId) return;
@@ -3270,6 +3608,180 @@ function createTranscriptActionButton(kind, speaker) {
   button.addEventListener("keydown", event => event.stopPropagation());
   return button;
 }
+function applyCorrectionResult(result) {
+  if (!result || typeof result !== "object") return;
+  if (result.speaker_state) updateSpeakerState(result.speaker_state);
+  if (Array.isArray(result.rows)) {
+    result.rows.forEach(row => renderSentence({...row, realtime:false, pending:false}));
+  }
+  hasUndoableCorrection = true;
+  syncCorrectionUndoState(true);
+  scheduleSavedSessionsRefresh();
+}
+async function reassignSentenceRow(row, select) {
+  const index = Number(row.dataset.index);
+  const speakerId = select.value || "";
+  if (!Number.isFinite(index) || !speakerId || speakerId === row.dataset.speaker) return;
+  try {
+    await ensureSessionOwner("correct speaker labels");
+    const result = await post("/api/corrections/reassign", {index, speaker_id: speakerId, update_memory: true});
+    applyCorrectionResult(result);
+    log(`Reassigned sentence ${index} to ${speakerDisplayLabel(speakerId)}.`);
+  } catch (error) {
+    log(`Reassign failed: ${error.message}`);
+  }
+}
+async function markSentenceCorrect(row) {
+  const index = Number(row.dataset.index);
+  if (!Number.isFinite(index)) return;
+  try {
+    await ensureSessionOwner("mark speaker labels correct");
+    const result = await post("/api/corrections/mark-correct", {index});
+    applyCorrectionResult(result);
+    log(`Marked sentence ${index} correct.`);
+  } catch (error) {
+    log(`Mark correct failed: ${error.message}`);
+  }
+}
+async function splitSentenceToNewSpeaker(row) {
+  const index = Number(row.dataset.index);
+  const speakerId = row.dataset.speaker || "";
+  if (!Number.isFinite(index) || !speakerId || speakerId === "UNKNOWN") return;
+  try {
+    await ensureSessionOwner("split speaker profiles");
+    const result = await post("/api/speakers/split", {speaker_id: speakerId, sentence_indices: [index], update_memory: true});
+    applyCorrectionResult(result);
+    log(`Split sentence ${index} to ${speakerDisplayLabel(result.new_speaker_id)}.`);
+  } catch (error) {
+    log(`Split failed: ${error.message}`);
+  }
+}
+async function mergeSpeakerInto(sourceSpeakerId, targetSpeakerId) {
+  if (!sourceSpeakerId || !targetSpeakerId || sourceSpeakerId === targetSpeakerId) return;
+  try {
+    await ensureSessionOwner("merge speaker profiles");
+    const result = await post("/api/speakers/merge", {
+      source_speaker_id: sourceSpeakerId,
+      target_speaker_id: targetSpeakerId,
+      update_memory: true,
+    });
+    applyCorrectionResult(result);
+    editingSpeakerId = targetSpeakerId;
+    log(`Merged ${speakerDisplayLabel(sourceSpeakerId)} into ${speakerDisplayLabel(targetSpeakerId)}.`);
+  } catch (error) {
+    log(`Merge failed: ${error.message}`);
+  }
+}
+function createSpeakerMergeControls(speaker) {
+  const controls = document.createElement("span");
+  controls.className = "speaker-merge-controls";
+  const select = document.createElement("select");
+  select.setAttribute("aria-label", `Merge ${speakerPanelName(speaker)} into`);
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Merge into...";
+  select.appendChild(placeholder);
+  speakerLibraryState.speakers
+    .filter(candidate => candidate.id && candidate.id !== speaker.id)
+    .forEach(candidate => {
+      const option = document.createElement("option");
+      option.value = candidate.id;
+      option.textContent = speakerPanelName(candidate);
+      select.appendChild(option);
+    });
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = "Merge";
+  button.disabled = sessionControlsLocked() || savedSessionReviewOpen() || select.options.length <= 1;
+  button.addEventListener("click", event => {
+    event.stopPropagation();
+    mergeSpeakerInto(speaker.id || "", select.value || "");
+  });
+  select.addEventListener("click", event => event.stopPropagation());
+  select.addEventListener("keydown", event => event.stopPropagation());
+  controls.appendChild(select);
+  controls.appendChild(button);
+  return controls;
+}
+function createReviewReasonGroup(reasons, item) {
+  const group = document.createElement("span");
+  group.className = "review-reasons";
+  const status = correctionStatus(item);
+  if (status === "user_corrected" || status === "user_confirmed") {
+    const chip = document.createElement("span");
+    chip.className = "review-chip corrected";
+    chip.textContent = status === "user_confirmed" ? "marked correct" : "corrected";
+    group.appendChild(chip);
+    return group;
+  }
+  reasons.slice(0, 3).forEach(reason => {
+    const chip = document.createElement("span");
+    chip.className = "review-chip";
+    chip.textContent = reason;
+    group.appendChild(chip);
+  });
+  if (reasons.length > 3) {
+    const chip = document.createElement("span");
+    chip.className = "review-chip";
+    chip.textContent = `+${reasons.length - 3}`;
+    group.appendChild(chip);
+  }
+  return group;
+}
+function createSentenceCorrectionControls(row, item, displaySpeakerId) {
+  if (item.realtime || item.pending || savedSessionReviewOpen()) return null;
+  const speakers = Array.isArray(speakerLibraryState.speakers) ? speakerLibraryState.speakers : [];
+  if (!speakers.length) return null;
+  const controlsLocked = sessionControlsLocked();
+  const controls = document.createElement("span");
+  controls.className = "correction-actions";
+  const select = document.createElement("select");
+  select.className = "correction-speaker-select";
+  select.setAttribute("aria-label", "Reassign sentence speaker");
+  speakers.forEach(speaker => {
+    const option = document.createElement("option");
+    option.value = speaker.id || "";
+    option.textContent = speakerPanelName(speaker);
+    if (speaker.id === displaySpeakerId) option.selected = true;
+    select.appendChild(option);
+  });
+  select.disabled = controlsLocked;
+  const reassign = document.createElement("button");
+  reassign.type = "button";
+  reassign.className = "correction-button";
+  reassign.textContent = "Reassign";
+  reassign.disabled = controlsLocked;
+  reassign.addEventListener("click", event => {
+    event.stopPropagation();
+    reassignSentenceRow(row, select);
+  });
+  const correct = document.createElement("button");
+  correct.type = "button";
+  correct.className = "correction-button";
+  correct.textContent = "Correct";
+  correct.disabled = controlsLocked || rowIsCorrected(item);
+  correct.addEventListener("click", event => {
+    event.stopPropagation();
+    markSentenceCorrect(row);
+  });
+  const split = document.createElement("button");
+  split.type = "button";
+  split.className = "correction-button";
+  split.textContent = "Split";
+  split.disabled = controlsLocked || !displaySpeakerId;
+  split.addEventListener("click", event => {
+    event.stopPropagation();
+    splitSentenceToNewSpeaker(row);
+  });
+  [select, reassign, correct, split].forEach(control => {
+    control.addEventListener("keydown", event => event.stopPropagation());
+  });
+  controls.appendChild(select);
+  controls.appendChild(reassign);
+  controls.appendChild(correct);
+  controls.appendChild(split);
+  return controls;
+}
 function createSpeakerLiveIndicator() {
   const indicator = document.createElement("span");
   indicator.className = "speaker-live-indicator";
@@ -3526,6 +4038,9 @@ function renderSpeakerPanel() {
       referenceStatus.appendChild(referenceIcon);
       referenceStatus.appendChild(referenceText);
       body.appendChild(referenceStatus);
+    }
+    if (isEditing && speakerLibraryState.speakers.length > 1 && !reviewMode) {
+      body.appendChild(createSpeakerMergeControls(speaker));
     }
 
     const tail = document.createElement("span");
@@ -3815,15 +4330,30 @@ function transcriptTimeLabel(value) {
   const seconds = total - (minutes * 60);
   return `${String(minutes).padStart(2, "0")}:${seconds.toFixed(1).padStart(4, "0")}`;
 }
+function optionalNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
 function transcriptExportRows(speakerId = null) {
   return Array.from(sentences.querySelectorAll(".row"))
     .filter(row => row.dataset.realtime !== "true")
     .filter(row => !speakerId || row.dataset.speaker === speakerId)
     .map(row => ({
+      index: row.dataset.index || "",
+      speaker_id: row.dataset.speaker === "UNKNOWN" ? null : row.dataset.speaker,
       speaker: speakerDisplayLabel(row.dataset.speaker === "UNKNOWN" ? null : row.dataset.speaker),
       start: transcriptTimeLabel(row.dataset.start),
       end: transcriptTimeLabel(row.dataset.end),
+      start_seconds: optionalNumber(row.dataset.start),
+      end_seconds: optionalNumber(row.dataset.end),
       text: row.dataset.text || "",
+      assignment_source: row.dataset.assignmentSource || "",
+      top_similarity: optionalNumber(row.dataset.topSimilarity),
+      margin: optionalNumber(row.dataset.margin),
+      unknown_probability: optionalNumber(row.dataset.unknownProbability),
+      needs_review: row.dataset.needsReview === "true",
+      review_reasons: (row.dataset.reviewReasons || "").split("|").filter(Boolean),
+      correction_status: row.dataset.correctionStatus || "",
     }))
     .filter(row => row.text.trim());
 }
@@ -3874,6 +4404,19 @@ function downloadTranscript(speakerId = null) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+function downloadTranscriptJson(speakerId = null) {
+  const rows = transcriptExportRows(speakerId);
+  if (!rows.length) {
+    log("No transcript metadata to download.");
+    return;
+  }
+  downloadJsonFile(transcriptExportFilename(speakerId).replace(/\.txt$/, ".json"), {
+    format: "whospeaks-transcript",
+    version: 1,
+    exported_at: new Date().toISOString(),
+    rows,
+  });
 }
 function findSentenceRow(index) {
   const key = String(index);
@@ -4149,6 +4692,9 @@ function renderSentence(item) {
   if (!row && !item.realtime) {
     row = findAdoptableRealtimeRow(item);
   }
+  const adoptedLiveSpeakerId = !item.realtime && row && row.dataset.realtime === "true"
+    ? normalizedLiveSpeakerId(row.dataset.speaker)
+    : "";
   const isNewRow = !row;
   if (!row) {
     row = document.createElement("div");
@@ -4180,6 +4726,8 @@ function renderSentence(item) {
   const displaySpeakerId = item.realtime
     ? realtimeRowDisplaySpeakerId(rawSpeakerId, startSeconds, endSeconds, previousDisplaySpeakerId)
     : rawSpeakerId;
+  const reviewReasons = reviewReasonsForItem(item, displaySpeakerId, adoptedLiveSpeakerId);
+  const corrected = rowIsCorrected(item);
   const visualSplit = provisionalRealtimeVisualSplit(item, displaySpeakerId, startSeconds, endSeconds);
   const displayEndSeconds = visualSplit ? visualSplit.splitStart : endSeconds;
   const displayText = visualSplit ? visualSplit.prefixText : (item.text || "");
@@ -4191,9 +4739,19 @@ function renderSentence(item) {
   row.dataset.fullEnd = item.realtime ? String(endSeconds) : "";
   row.dataset.fullText = item.realtime ? (item.text || "") : "";
   row.dataset.speaker = displaySpeakerId || "UNKNOWN";
+  row.dataset.needsReview = (!item.realtime && !item.pending && reviewReasons.length > 0) ? "true" : "false";
+  row.dataset.reviewReasons = reviewReasons.join("|");
+  row.dataset.corrected = corrected ? "true" : "false";
+  row.dataset.assignmentSource = item.assignment_source || "";
+  row.dataset.margin = item.margin === undefined || item.margin === null ? "" : String(item.margin);
+  row.dataset.topSimilarity = item.top_similarity === undefined || item.top_similarity === null ? "" : String(item.top_similarity);
+  row.dataset.unknownProbability = item.unknown_probability === undefined || item.unknown_probability === null ? "" : String(item.unknown_probability);
+  row.dataset.correctionStatus = correctionStatus(item);
   row.classList.toggle("provisional-assignment", Boolean(item.provisional_assignment));
   row.classList.toggle("provisional-split-source", Boolean(visualSplit));
   row.classList.toggle("live-speaker-row", item.realtime && Boolean(displaySpeakerId));
+  row.classList.toggle("needs-review", row.dataset.needsReview === "true");
+  row.classList.toggle("user-corrected", corrected);
   const speakerLabel = speakerDisplayLabel(displaySpeakerId);
   const color = speakerColor(displaySpeakerId);
   const speakerClass = displaySpeakerId ? "badge" : "badge unknown";
@@ -4256,10 +4814,17 @@ function renderSentence(item) {
     ratioSpan.textContent = `speech/audio ${ratioLabel(item.speech_audio_ratio)}`;
     topLeft.appendChild(ratioSpan);
   }
+  if ((!item.realtime && !item.pending) && (reviewReasons.length || corrected)) {
+    topLeft.appendChild(createReviewReasonGroup(reviewReasons, item));
+  }
 
   const prob = document.createElement("div");
   prob.className = "prob";
   top.appendChild(topLeft);
+  const correctionControls = createSentenceCorrectionControls(row, item, displaySpeakerId);
+  if (correctionControls) {
+    top.appendChild(correctionControls);
+  }
   top.appendChild(prob);
 
   const text = document.createElement("div");
@@ -4335,6 +4900,7 @@ transcriptSearch.addEventListener("input", () => {
 clearTranscriptButton.addEventListener("click", clearDisplayedTranscript);
 copyTranscriptButton.addEventListener("click", () => copyTranscript());
 downloadTranscriptButton.addEventListener("click", () => downloadTranscript());
+downloadTranscriptJsonButton.addEventListener("click", () => downloadTranscriptJson());
 transcriptSettingsButton.addEventListener("click", event => {
   event.stopPropagation();
   setTranscriptSettingsOpen(transcriptSettingsPanel.hidden);
@@ -4345,6 +4911,27 @@ transcriptSettingsPanel.addEventListener("click", event => event.stopPropagation
 });
 releaseSessionButton.addEventListener("click", () => {
   releaseSession("released").catch(error => log(`Release failed: ${error.message}`));
+});
+reviewFilterButtons.forEach(button => {
+  button.addEventListener("click", () => setTranscriptReviewFilter(button.dataset.reviewFilter || "all"));
+});
+undoCorrectionButton.addEventListener("click", async () => {
+  try {
+    await ensureSessionOwner("undo corrections");
+    const result = await post("/api/corrections/undo", {});
+    if (result.speaker_state) updateSpeakerState(result.speaker_state);
+    if (Array.isArray(result.rows)) {
+      result.rows.forEach(row => renderSentence({...row, realtime:false, pending:false}));
+    }
+    hasUndoableCorrection = false;
+    syncCorrectionUndoState(false);
+    scheduleSavedSessionsRefresh();
+    log("Undid last correction.");
+  } catch (error) {
+    hasUndoableCorrection = false;
+    syncCorrectionUndoState(false);
+    log(`Undo failed: ${error.message}`);
+  }
 });
 applyTranscriptDisplaySettings();
 start.addEventListener("click", async () => {
@@ -4402,8 +4989,14 @@ start.addEventListener("click", async () => {
     return;
   }
   setState("Starting playback");
-  video.currentTime = 0; audio.currentTime = 0; video.muted = true; audio.volume = 1.0;
-  logRejectedPlayback(await Promise.allSettled([video.play(), audio.play()]));
+  const playbackElements = currentPlaybackElements();
+  playbackElements.forEach(element => {
+    element.currentTime = 0;
+    if (element === video) element.muted = true;
+    if (element === audio) element.volume = 1.0;
+  });
+  const playbackResults = await Promise.allSettled(playbackElements.map(element => element.play()));
+  logRejectedPlayback(playbackResults.map((result, index) => ({result, element: playbackElements[index], index})));
   startPlaybackClock();
   startBrowserLiveObservation();
   setState("Playing");
@@ -4453,6 +5046,11 @@ inputMode.addEventListener("change", () => {
     setState("Ready");
     start.disabled = false;
     log("Computer audio + microphone mode selected. Press Start, share audio from a tab or window, and allow microphone access.");
+  } else if (inputMode.value === "file") {
+    setBrowserStreamMode(false);
+    setState("Ready");
+    log(source.value.trim().startsWith("local-audio://") ? "Audio file mode selected. Press Start to transcribe." : "Audio file mode selected. Drop or choose an audio file.");
+    syncSourceReadyState();
   } else {
     setBrowserStreamMode(false);
     setState("Ready");
@@ -4588,6 +5186,28 @@ saveSpeakerGroupButton.addEventListener("click", async () => {
     saveSpeakerGroupButton.disabled = false;
   }
 });
+saveCorrectedSpeakerGroupButton.addEventListener("click", async () => {
+  try {
+    await ensureSessionOwner("save corrected speakers");
+  } catch (error) {
+    log(error.message);
+    return;
+  }
+  const name = speakerLibraryState.group_name || "corrected-speakers";
+  saveCorrectedSpeakerGroupButton.disabled = true;
+  try {
+    const result = await post("/api/speakers/export", {name});
+    const group = result.group || {};
+    group.corrected_export = true;
+    downloadJsonFile(speakerGroupFileName(group.name || name), group);
+    updateSpeakerState(result.speaker_state);
+    log(`Saved corrected speaker group ${group.name || name} to a local file.`);
+  } catch (error) {
+    log(`Save corrected speakers failed: ${error.message}`);
+  } finally {
+    saveCorrectedSpeakerGroupButton.disabled = false;
+  }
+});
 loadSpeakerGroupButton.addEventListener("click", () => {
   if (sessionControlsLocked()) {
     log("Session in use. Watching live until the seat is free.");
@@ -4676,10 +5296,60 @@ recordReferenceButton.addEventListener("click", async () => {
   }
   startReferenceRecording().catch(error => log(`Reference recording failed: ${error.message}`));
 });
+chooseAudioFileButton.addEventListener("click", event => {
+  event.stopPropagation();
+  if (sessionControlsLocked() || audioUploadInProgress) {
+    log(audioUploadInProgress ? "Audio upload already in progress." : "Session in use. Watching live until the seat is free.");
+    return;
+  }
+  audioFileInput.click();
+});
+audioFileInput.addEventListener("change", () => {
+  const file = audioFileInput.files && audioFileInput.files[0];
+  if (file) loadAudioFile(file).catch(error => log(`Audio file load failed: ${error.message}`));
+});
+fileDropZone.addEventListener("click", event => {
+  if (event.target instanceof Element && event.target.closest("button")) return;
+  if (sessionControlsLocked() || audioUploadInProgress) return;
+  audioFileInput.click();
+});
+fileDropZone.addEventListener("keydown", event => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  if (sessionControlsLocked() || audioUploadInProgress) return;
+  audioFileInput.click();
+});
+["dragenter", "dragover"].forEach(eventName => {
+  fileDropZone.addEventListener(eventName, event => {
+    event.preventDefault();
+    if (!sessionControlsLocked() && !audioUploadInProgress) {
+      fileDropZone.classList.add("dragover");
+    }
+  });
+});
+["dragleave", "drop"].forEach(eventName => {
+  fileDropZone.addEventListener(eventName, event => {
+    event.preventDefault();
+    fileDropZone.classList.remove("dragover");
+  });
+});
+fileDropZone.addEventListener("drop", event => {
+  if (sessionControlsLocked() || audioUploadInProgress) return;
+  const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+  if (file) loadAudioFile(file).catch(error => log(`Audio file load failed: ${error.message}`));
+});
 load.addEventListener("click", async () => {
   leaveSavedSessionReview();
   setSourceModeMenuOpen(false);
   const url = source.value.trim();
+  if (inputMode.value === "file") {
+    if (sessionControlsLocked()) {
+      log("Session in use. Watching live until the seat is free.");
+      return;
+    }
+    audioFileInput.click();
+    return;
+  }
   if (inputMode.value === "microphone") {
     stopPlaybackClock();
     stopBrowserAudioCapture();

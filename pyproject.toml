@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "whospeaks"
-version = "0.1.0"
+version = "0.1.0.dev16"
 description = "Local speaker diarization and realtime voice-labeling tools."
 readme = "README.md"
 license = { text = "MIT" }
@@ -14,7 +14,118 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 
+[project.optional-dependencies]
+controller = [
+    "av>=11.0.0",
+    "emoji>=2.15.0",
+    "librosa>=0.10.1",
+    "nltk>=3.9.4",
+    "numpy>=2,<3",
+    "onnxruntime>=1.17",
+    "soundfile>=0.12.1",
+    "yt-dlp>=2024.3.10",
+]
+local = [
+    "av>=11.0.0",
+    "emoji>=2.15.0",
+    "espnet==202511",
+    "espnet-model-zoo==0.1.7",
+    "faster-whisper>=1.2.1",
+    "huggingface-hub>=0.34,<1",
+    "librosa>=0.10.1",
+    "matplotlib>=3.8",
+    "modelscope>=1.14",
+    "nltk>=3.9.4",
+    "numpy>=2,<3",
+    "onnxruntime>=1.17",
+    "pyannote.audio>=3.1,<4",
+    "resemblyzer>=0.1.4",
+    "soundfile>=0.12.1",
+    "speechbrain>=1.0.0",
+    "stanza>=1.13.0",
+    "torch>=2.2",
+    "torchaudio>=2.2",
+    "transformers>=4.39,<5",
+    "yt-dlp>=2024.3.10",
+]
+preview = [
+    "webrtcvad==2.0.10",
+]
+server = [
+    "av>=11.0.0",
+    "espnet==202511",
+    "espnet-model-zoo==0.1.7",
+    "fastapi>=0.110",
+    "faster-whisper>=1.2.1",
+    "huggingface-hub>=0.34,<1",
+    "librosa>=0.10.1",
+    "matplotlib>=3.8",
+    "modelscope>=1.14",
+    "numpy>=2,<3",
+    "onnxruntime>=1.17",
+    "pyannote.audio>=3.1,<4",
+    "python-multipart>=0.0.9",
+    "resemblyzer>=0.1.4",
+    "soundfile>=0.12.1",
+    "speechbrain>=1.0.0",
+    "torch>=2.2",
+    "torchaudio>=2.2",
+    "transformers>=4.39,<5",
+    "uvicorn[standard]>=0.29",
+]
+complete = [
+    "av>=11.0.0",
+    "emoji>=2.15.0",
+    "espnet==202511",
+    "espnet-model-zoo==0.1.7",
+    "faster-whisper>=1.2.1",
+    "huggingface-hub>=0.34,<1",
+    "librosa>=0.10.1",
+    "matplotlib>=3.8",
+    "modelscope>=1.14",
+    "nltk>=3.9.4",
+    "numpy>=2,<3",
+    "onnxruntime>=1.17",
+    "pyannote.audio>=3.1,<4",
+    "resemblyzer>=0.1.4",
+    "soundfile>=0.12.1",
+    "speechbrain>=1.0.0",
+    "stanza>=1.13.0",
+    "torch>=2.2",
+    "torchaudio>=2.2",
+    "transformers>=4.39,<5",
+    "yt-dlp>=2024.3.10",
+]
+all = [
+    "av>=11.0.0",
+    "emoji>=2.15.0",
+    "espnet==202511",
+    "espnet-model-zoo==0.1.7",
+    "faster-whisper>=1.2.1",
+    "huggingface-hub>=0.34,<1",
+    "librosa>=0.10.1",
+    "matplotlib>=3.8",
+    "modelscope>=1.14",
+    "nltk>=3.9.4",
+    "numpy>=2,<3",
+    "onnxruntime>=1.17",
+    "pyannote.audio>=3.1,<4",
+    "resemblyzer>=0.1.4",
+    "soundfile>=0.12.1",
+    "speechbrain>=1.0.0",
+    "stanza>=1.13.0",
+    "torch>=2.2",
+    "torchaudio>=2.2",
+    "transformers>=4.39,<5",
+    "fastapi>=0.110",
+    "python-multipart>=0.0.9",
+    "uvicorn[standard]>=0.29",
+    "yt-dlp>=2024.3.10",
+    "webrtcvad==2.0.10",
+]
+
 [project.scripts]
+whospeaks = "whospeaks_cli.main:main"
 whospeaks-window = "window.youtube_window_diarize_gui:main"
 whospeaks-realtime = "realtime.realtime_speakerdiarize:main"
 whospeaks-filefeed-replay = "replay.youtube_local_filefeed_replay:main"

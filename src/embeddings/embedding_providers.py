@@ -27,7 +27,8 @@ from common.audio_utils import (
     pad_audio,
     trim_silence,
 )
-from paths import CACHE_DIR, EMBEDDING_VENV, PROJECT_ROOT
+from common.pythonpath import build_pythonpath
+from paths import CACHE_DIR, EMBEDDING_VENV, PROJECT_ROOT, SRC_ROOT, VENDOR_DIR
 
 DEFAULT_HELPER_MODULE = "realtime.realtime_speakerdiarize"
 
@@ -118,6 +119,18 @@ def configure_embedding_env() -> None:
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
     os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
     os.environ.setdefault("OMP_NUM_THREADS", "1")
+
+
+def helper_pythonpath(existing_pythonpath: str | None = None) -> str:
+    return build_pythonpath(
+        (
+            SRC_ROOT,
+            PROJECT_ROOT / "src",
+            Path(__file__).resolve().parents[1],
+            VENDOR_DIR,
+        ),
+        existing_pythonpath,
+    )
     os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 
@@ -134,21 +147,47 @@ def canonical_embedding_provider_name(value: str) -> str:
 
 
 def default_embedding_python() -> Path:
-    candidate = EMBEDDING_VENV / "Scripts" / "python.exe"
-    if candidate.exists():
-        return candidate
+    for candidate in (
+        EMBEDDING_VENV / "Scripts" / "python.exe",
+        EMBEDDING_VENV / "bin" / "python",
+    ):
+        if candidate.exists():
+            return candidate
     return Path(sys.executable)
 
 
+def _torch_cuda_available(torch_module: Any) -> bool:
+    try:
+        return bool(torch_module.cuda.is_available()) and hasattr(torch_module._C, "_cuda_setDevice")
+    except Exception:
+        return False
+
+
 def choose_torch_device(device: str) -> str:
-    if device != "auto":
+    normalized = str(device or "auto").strip().lower()
+    if normalized not in {"auto"} and not normalized.startswith("cuda"):
         return device
+
     import torch
 
-    if torch.cuda.is_available():
+    if normalized.startswith("cuda"):
+        if _torch_cuda_available(torch):
+            return device
+        print(
+            "Warning: requested CUDA for speaker embeddings, but this PyTorch install cannot use CUDA; "
+            "falling back to CPU.",
+            file=sys.stderr,
+            flush=True,
+        )
+        return "cpu"
+    if _torch_cuda_available(torch):
         return "cuda"
-    if torch.backends.mps.is_available():
-        return "mps"
+    mps = getattr(getattr(torch, "backends", None), "mps", None)
+    try:
+        if mps is not None and mps.is_available():
+            return "mps"
+    except Exception:
+        pass
     return "cpu"
 
 
@@ -260,7 +299,7 @@ class BenchmarkAdapterProvider:
         engine = ENGINES[engine_id]
         self.device = choose_torch_device(device)
         if self.device == "auto":
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+            self.device = "cuda" if _torch_cuda_available(torch) else "cpu"
         self.adapter = ADAPTERS[engine["kind"]](engine["model"], self.device)
 
     def embed(self, audio: np.ndarray, sample_rate: int) -> np.ndarray:
@@ -419,6 +458,8 @@ class EmbeddingSubprocessClient:
             "--embedding-device",
             self.device,
         ]
+        env = dict(os.environ)
+        env["PYTHONPATH"] = helper_pythonpath(env.get("PYTHONPATH"))
         self._process = subprocess.Popen(
             command,
             cwd=str(PROJECT_ROOT),
@@ -429,6 +470,7 @@ class EmbeddingSubprocessClient:
             encoding="utf-8",
             errors="replace",
             bufsize=1,
+            env=env,
         )
         process = self._process
         stdout_closed = self._stdout_closed

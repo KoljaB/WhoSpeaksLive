@@ -118,6 +118,18 @@ class LanguageConfigTests(unittest.TestCase):
             kroko_preview_model_name("pl")
 
 
+class WindowParserTests(unittest.TestCase):
+    def parse_window_args(self, *args: str) -> argparse.Namespace:
+        from window.youtube_window_diarize_gui import parse_args
+
+        with mock.patch.object(sys, "argv", ["whospeaks-window", "--realtime-preview-engine", "off", *args]):
+            return parse_args()
+
+    def test_demo_seat_lease_is_opt_in(self) -> None:
+        self.assertFalse(self.parse_window_args().demo_seat_lease)
+        self.assertTrue(self.parse_window_args("--demo-seat-lease").demo_seat_lease)
+
+
 class PublicEventNormalizerTests(unittest.TestCase):
     def test_final_unknown_and_later_assignment_emit_stable_events(self) -> None:
         from window.public_events import PublicEventNormalizer
@@ -1612,7 +1624,10 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("function speakerTranscriptVisible(speakerId)", HTML)
         self.assertIn("if (mutedSpeakerIds.has(speakerId)) return false;", HTML)
         self.assertIn("if (soloSpeakerIds.size > 0) return soloSpeakerIds.has(speakerId);", HTML)
-        self.assertIn("row.hidden = !speakerTranscriptVisible(row.dataset.speaker) || !transcriptSearchVisible(row);", HTML)
+        self.assertIn(
+            "row.hidden = !speakerTranscriptVisible(row.dataset.speaker) || !transcriptSearchVisible(row) || !transcriptReviewVisible(row);",
+            HTML,
+        )
         self.assertIn("function setSpeakerFilter(speakerId, mode, active)", HTML)
         self.assertIn("function pruneSpeakerFilterState()", HTML)
         self.assertIn("refreshTranscriptVisibility();", HTML)
@@ -3259,18 +3274,18 @@ class RepositoryStructureTests(unittest.TestCase):
             "realtime_preview_diarize_min_margin": 0.08,
             "realtime_preview_diarize_min_known_probability": 0.5,
             "live_speaker_assignment": True,
-            "live_speaker_embedding_min_interval_seconds": 0.2,
-            "live_speaker_embedding_target_utilization": 1.0,
+            "live_speaker_embedding_min_interval_seconds": 0.75,
+            "live_speaker_embedding_target_utilization": 0.25,
             "live_speaker_verify_on_change": False,
             "live_speaker_verify_min_interval_seconds": 2.0,
             "live_speaker_ema_window_seconds": 1.0,
             "live_speaker_ema_count": 1,
             "live_speaker_ema_alpha": 0.55,
-            "live_speaker_probe_interval_seconds": 0.2,
+            "live_speaker_probe_interval_seconds": 0.75,
             "live_speaker_probe_attack_interval_seconds": 0.0,
             "live_speaker_probe_window_seconds": 1.0,
             "live_speaker_probe_hold_seconds": 1.0,
-            "live_speaker_probe_min_advance_seconds": 0.2,
+            "live_speaker_probe_min_advance_seconds": 0.75,
             "live_speaker_probe_attack_min_advance_seconds": 0.0,
             "live_speaker_probe_min_speech_seconds": 0.15,
             "live_speaker_probe_clear_on_silence": True,

@@ -11,11 +11,14 @@ import subprocess
 import sys
 import threading
 import time
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 from common.audio_utils import json_dumps
+from common.pythonpath import build_pythonpath
+from paths import SRC_ROOT, VENDOR_DIR
 from window.window_config import (
     DEFAULT_KROKO_16L_CHUNK_SECONDS,
     KROKO_PREVIEW_FRAME_SECONDS,
@@ -47,6 +50,18 @@ def _first_env_value(names: tuple[str, ...]) -> str:
 def add_kroko_license_options(options: dict[str, Any]) -> None:
     options.setdefault("key", _first_env_value(KROKO_KEY_ENV_NAMES))
     options.setdefault("referralcode", _first_env_value(KROKO_REFERRAL_ENV_NAMES))
+
+
+def preview_worker_pythonpath(existing_pythonpath: str | None = None) -> str:
+    return build_pythonpath(
+        (
+            SRC_ROOT,
+            ROOT / "src",
+            Path(__file__).resolve().parents[1],
+            VENDOR_DIR,
+        ),
+        existing_pythonpath,
+    )
 
 
 class RealtimePreviewTranscriber:
@@ -158,6 +173,8 @@ class KrokoSubprocessPreviewTranscriber(RealtimePreviewTranscriber):
             str(args.realtime_preview_python),
             "-m",
             "workers.kroko_realtime_preview_worker",
+        ]
+        command.extend([
             "--engine",
             str(args.realtime_preview_engine),
             "--model",
@@ -168,7 +185,7 @@ class KrokoSubprocessPreviewTranscriber(RealtimePreviewTranscriber):
             str(args.realtime_preview_num_threads),
             "--language",
             str(getattr(args, "realtime_preview_language", getattr(args, "language", "en"))),
-        ]
+        ])
         if args.realtime_preview_model_path is not None:
             command.extend(["--model-path", str(args.realtime_preview_model_path)])
         download_root = args.realtime_preview_download_root or args.download_root
@@ -182,13 +199,7 @@ class KrokoSubprocessPreviewTranscriber(RealtimePreviewTranscriber):
         env = dict(os.environ)
         env["PYTHONUTF8"] = "1"
         env["KROKO_ONNX_SUPPRESS_LICENSE_OUTPUT"] = "1"
-        src_path = str(ROOT / "src")
-        existing_pythonpath = env.get("PYTHONPATH")
-        env["PYTHONPATH"] = (
-            src_path
-            if not existing_pythonpath
-            else src_path + os.pathsep + existing_pythonpath
-        )
+        env["PYTHONPATH"] = preview_worker_pythonpath(env.get("PYTHONPATH"))
         creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
         self.process = subprocess.Popen(
             command,

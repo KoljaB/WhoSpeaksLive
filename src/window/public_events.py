@@ -179,6 +179,8 @@ class PublicEventNormalizer:
             "top_similarity": _optional_float(payload.get("top_similarity")),
             "margin": _optional_float(payload.get("margin")),
             "assignment_source": str(payload.get("assignment_source") or ""),
+            "review": payload.get("review") if isinstance(payload.get("review"), dict) else {},
+            "correction": payload.get("correction") if isinstance(payload.get("correction"), dict) else {},
             "raw": dict(payload),
         }
 

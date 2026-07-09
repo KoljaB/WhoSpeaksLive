@@ -26,11 +26,31 @@ Optional Kroko/Banafo preview support uses separately licensed upstream componen
 
 ## Start Here
 
-For a full working setup, follow these in order:
+For a guided setup, install the lightweight CLI and let it inspect the machine:
+
+```powershell
+pip install whospeaks
+whospeaks
+```
+
+The `whospeaks` starter shows the current component state and gives direct controls for language, realtime text, provider quality, backend URLs, ASR runtime, browser port, diagnostics, installation, exact launch-command printing, and launching the browser UI.
+
+The short `whospeaks` command is a setup and launcher wrapper. It saves a small profile, runs doctor checks, and expands that profile into the longer `whospeaks-window ...` browser-server command when you launch.
+
+For a Linux container server:
+
+```bash
+docker build -t whospeaks:local .
+docker run --rm --name whospeaks -p 8796:8796 -v whospeaks-data:/data -v whospeaks-models:/models whospeaks:local
+```
+
+See [Docker](docs/docker.md) for the full build/run path and volume notes.
+
+For a manual full working setup, follow these in order:
 
 1. [Installation](docs/installation.md): install the Windows controller.
 2. [External ASR and embeddings servers](docs/external-servers.md): set up the Linux GPU services.
-3. [Quickstart](docs/quickstart.md): verify the smoke provider, then run the tuned provider stack.
+3. [Quickstart](docs/quickstart.md): verify a local or remote smoke run, then run the tuned provider stack.
 
 ## Documentation
 
@@ -44,6 +64,7 @@ For a full working setup, follow these in order:
 | Live window workflow | [docs/live-window-workflow.md](docs/live-window-workflow.md) |
 | Speaker libraries | [docs/speaker-libraries.md](docs/speaker-libraries.md) |
 | External ASR and embeddings servers | [docs/external-servers.md](docs/external-servers.md) |
+| Docker server image | [docs/docker.md](docs/docker.md) |
 | Configuration guide | [docs/configuration.md](docs/configuration.md) |
 | Technical description | [docs/technical-description.md](docs/technical-description.md) |
 | Technical architecture | [docs/architecture.md](docs/architecture.md) |

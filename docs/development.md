@@ -45,6 +45,8 @@ Check the controller install path after packaging changes:
 
 Public docs should explain stable workflows, concepts, and supported commands.
 
+When adding or renaming a command-line flag, update [CLI reference](cli-reference.md) in the same change. The reference is intentionally complete so a reader can understand any parameter they see in `--help`, launch profiles, validation commands, or helper scripts.
+
 Keep these out of public docs:
 
 - One-off optimization logs.
