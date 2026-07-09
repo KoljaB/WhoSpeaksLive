@@ -3,8 +3,8 @@ FROM python:3.11-slim
 
 ARG PIP_INDEX_URL=https://pypi.org/simple/
 ARG TORCH_CPU_INDEX_URL=https://download.pytorch.org/whl/cpu
-ARG WHOSPEAKS_WHEEL_URL=https://test-files.pythonhosted.org/packages/8a/b9/891577c7ba3b0179c6c7872212b7566d32f2c31c06404ab5cebe55c9bb03/whospeaks-0.1.0.dev16-py3-none-any.whl#sha256=c62481febff48d02fe8a7aa5e2d75e0c03cc3989b6da7181a0a197b22198a7ac
-ARG WHOSPEAKS_VERSION=0.1.0.dev16
+ARG WHOSPEAKS_WHEEL_URL=
+ARG WHOSPEAKS_VERSION=0.0.1
 ARG INSTALL_KROKO=1
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
