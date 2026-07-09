@@ -8,11 +8,15 @@ from datetime import datetime, timezone
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import os
 from pathlib import Path
 import re
 import threading
 from typing import Any, Callable
 from urllib.parse import parse_qs, urlparse
+import urllib.error
+import urllib.parse
+import urllib.request
 import uuid
 
 from paths import RUNTIME_DIR
@@ -31,6 +35,44 @@ from window.session_store import DEFAULT_SESSION_DIR, SessionStore
 
 DEMO_SESSION_ID = "demo-whospeakslive-transcript"
 DEFAULT_CACHE_DIR = RUNTIME_DIR / "meeting_intelligence_reports"
+DEFAULT_ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
+LLM_PROVIDER_OPTIONS = {
+    "llama_cpp": {
+        "label": "llama.cpp",
+        "default_base_url": "http://127.0.0.1:8081/v1",
+        "models": ["gemma-4-12b-it-Q6_K.gguf", "local"],
+        "requires_api_key": False,
+        "api_key_env_var": "",
+    },
+    "ollama": {
+        "label": "Ollama",
+        "default_base_url": "http://127.0.0.1:11434/v1",
+        "models": ["gemma3", "llama3.1"],
+        "requires_api_key": False,
+        "api_key_env_var": "",
+    },
+    "lm_studio": {
+        "label": "LM Studio",
+        "default_base_url": "http://127.0.0.1:1234/v1",
+        "models": ["local-model"],
+        "requires_api_key": False,
+        "api_key_env_var": "",
+    },
+    "openai": {
+        "label": "OpenAI",
+        "default_base_url": "https://api.openai.com/v1",
+        "models": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"],
+        "requires_api_key": True,
+        "api_key_env_var": "OPENAI_API_KEY",
+    },
+    "openrouter": {
+        "label": "OpenRouter",
+        "default_base_url": "https://openrouter.ai/api/v1",
+        "models": ["google/gemma-3-12b-it"],
+        "requires_api_key": True,
+        "api_key_env_var": "OPENROUTER_API_KEY",
+    },
+}
 TRANSCRIPT_LINE_RE = re.compile(
     r"^\[(?P<start>\d+(?::\d+){1,2}(?:\.\d+)?)\s+-\s+"
     r"(?P<end>\d+(?::\d+){1,2}(?:\.\d+)?)\]\s+"
@@ -43,7 +85,7 @@ class MeetingIntelligenceServerConfig:
     session_dir: Path = DEFAULT_SESSION_DIR
     cache_dir: Path = DEFAULT_CACHE_DIR
     demo_transcript: Path | None = None
-    llm_config: MeetingLLMConfig = default_llm_config()
+    llm_config: MeetingLLMConfig = field(default_factory=default_llm_config)
     mock_llm: bool = False
     max_segment_rows: int = 80
     auto_generate: bool = False
@@ -77,11 +119,13 @@ class MeetingIntelligenceService:
         self.config = config
         self.store = SessionStore(config.session_dir)
         self.client_factory = client_factory
+        self._llm_config = config.llm_config
+        self._settings_lock = threading.Lock()
         self._jobs: dict[str, GenerationJob] = {}
         self._jobs_lock = threading.Lock()
 
     def public_config(self) -> dict[str, Any]:
-        llm = self.config.llm_config
+        llm = self._current_llm_config()
         return {
             "provider": llm.provider,
             "base_url": llm.base_url,
@@ -91,13 +135,77 @@ class MeetingIntelligenceService:
             "auto_generate": self.config.auto_generate,
             "max_segment_rows": self.config.max_segment_rows,
             "expected_report_provider": self.expected_report_provider(),
+            "api_key_configured": self._provider_api_key_configured(llm),
+            "api_key_env_var": self._provider_api_key_env_var(llm.provider),
+            "providers": provider_options_payload(),
         }
 
     def expected_report_provider(self) -> str:
         if self.config.mock_llm:
             return MockMeetingLLMClient.name
-        llm = self.config.llm_config
+        llm = self._current_llm_config()
         return f"{llm.provider}:{llm.model}"
+
+    def update_llm_config(self, payload: dict[str, Any]) -> dict[str, Any]:
+        if self.config.mock_llm:
+            raise ValueError("Provider switching is disabled while mock LLM mode is active.")
+        provider = normalize_provider(payload.get("provider"))
+        model = str(payload.get("model") or "").strip()
+        base_url = str(payload.get("base_url") or "").strip().rstrip("/")
+        if not model:
+            raise ValueError("Model is required.")
+        with self._settings_lock:
+            current = self._llm_config
+            overrides: dict[str, Any] = {
+                "model": model,
+                "timeout_seconds": current.timeout_seconds,
+                "max_tokens": current.max_tokens,
+                "section_max_tokens": current.section_max_tokens,
+                "temperature": current.temperature,
+                "client_name": current.client_name,
+                "lane": current.lane,
+                "enable_thinking": current.enable_thinking,
+            }
+            if base_url:
+                overrides["base_url"] = base_url
+            if provider == current.provider and current.api_key:
+                overrides["api_key"] = current.api_key
+            self._llm_config = default_llm_config(provider, **overrides)
+        return self.public_config()
+
+    def list_provider_models(self, provider_value: Any, base_url_value: Any = "") -> dict[str, Any]:
+        provider = normalize_provider(provider_value)
+        base_url = str(base_url_value or "").strip().rstrip("/")
+        current = self._current_llm_config()
+        overrides: dict[str, Any] = {
+            "timeout_seconds": min(float(current.timeout_seconds or 30.0), 30.0),
+            "max_tokens": current.max_tokens,
+            "section_max_tokens": current.section_max_tokens,
+        }
+        if base_url:
+            overrides["base_url"] = base_url
+        if provider == current.provider and current.api_key:
+            overrides["api_key"] = current.api_key
+        llm = default_llm_config(provider, **overrides)
+        if self._provider_requires_api_key(llm.provider) and not llm.api_key:
+            env_var = self._provider_api_key_env_var(llm.provider)
+            raise ValueError(f"{llm.provider} requires {env_var} in .env or the server environment.")
+        request = urllib.request.Request(
+            f"{llm.base_url}/models",
+            headers=self._model_list_headers(llm),
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=min(llm.timeout_seconds, 30.0)) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except (urllib.error.URLError, TimeoutError) as exc:
+            raise RuntimeError(f"Model list request failed: {exc}") from exc
+        model_ids = extract_model_ids(payload)
+        return {
+            "provider": provider,
+            "base_url": llm.base_url,
+            "models": model_ids,
+        }
 
     def list_sessions(self) -> list[dict[str, Any]]:
         sessions: list[dict[str, Any]] = []
@@ -154,12 +262,16 @@ class MeetingIntelligenceService:
         speaker_state = session.get("speaker_state") if isinstance(session.get("speaker_state"), dict) else {}
         summary = session.get("summary") if isinstance(session.get("summary"), dict) else {}
         title = str(summary.get("title") or session_id)
-        client = self._new_client()
+        llm_config = self._current_llm_config()
+        if not self.config.mock_llm and self._provider_requires_api_key(llm_config.provider) and not llm_config.api_key:
+            env_var = self._provider_api_key_env_var(llm_config.provider)
+            raise ValueError(f"{llm_config.provider} requires {env_var} in .env or the server environment.")
+        client = self._new_client(llm_config)
         pipeline = MultiPassMeetingIntelligencePipeline(
             client,
             max_segment_rows=self.config.max_segment_rows,
-            evidence_max_tokens=self.config.llm_config.max_tokens,
-            section_max_tokens=self.config.llm_config.section_max_tokens,
+            evidence_max_tokens=llm_config.max_tokens,
+            section_max_tokens=llm_config.section_max_tokens,
             progress_callback=progress_callback,
         )
         report = pipeline.generate(
@@ -325,12 +437,38 @@ class MeetingIntelligenceService:
             "events": list(job.events[-12:]),
         }
 
-    def _new_client(self) -> StructuredChatClient:
+    def _current_llm_config(self) -> MeetingLLMConfig:
+        with self._settings_lock:
+            return self._llm_config
+
+    def _new_client(self, llm_config: MeetingLLMConfig | None = None) -> StructuredChatClient:
         if self.client_factory is not None:
             return self.client_factory()
         if self.config.mock_llm:
             return MockMeetingLLMClient()
-        return OpenAICompatibleMeetingClient(self.config.llm_config)
+        return OpenAICompatibleMeetingClient(llm_config or self._current_llm_config())
+
+    @staticmethod
+    def _model_list_headers(llm: MeetingLLMConfig) -> dict[str, str]:
+        headers = {"Accept": "application/json"}
+        if llm.api_key:
+            headers["Authorization"] = f"Bearer {llm.api_key}"
+        return headers
+
+    @staticmethod
+    def _provider_api_key_env_var(provider: str) -> str:
+        option = LLM_PROVIDER_OPTIONS.get(provider) or {}
+        return str(option.get("api_key_env_var") or "")
+
+    @classmethod
+    def _provider_requires_api_key(cls, provider: str) -> bool:
+        return bool(cls._provider_api_key_env_var(provider))
+
+    @classmethod
+    def _provider_api_key_configured(cls, llm: MeetingLLMConfig) -> bool:
+        if not cls._provider_requires_api_key(llm.provider):
+            return True
+        return bool(llm.api_key)
 
     def _cache_path(self, session_id: str) -> Path:
         clean = re.sub(r"[^A-Za-z0-9_.-]+", "-", str(session_id or "").strip()).strip("-")
@@ -466,6 +604,122 @@ def speaker_id_from_name(name: str) -> str:
     return clean[:40] or "speaker"
 
 
+def normalize_provider(value: Any) -> str:
+    provider = str(value or "llama_cpp").strip().lower().replace("-", "_")
+    if provider not in LLM_PROVIDER_OPTIONS:
+        raise ValueError(f"Unsupported meeting LLM provider: {value}")
+    return provider
+
+
+def provider_options_payload() -> list[dict[str, Any]]:
+    return [
+        {
+            "id": provider,
+            "label": str(option["label"]),
+            "default_base_url": str(option["default_base_url"]),
+            "models": list(option["models"]),
+            "requires_api_key": bool(option["requires_api_key"]),
+            "api_key_env_var": str(option["api_key_env_var"]),
+        }
+        for provider, option in LLM_PROVIDER_OPTIONS.items()
+    ]
+
+
+def extract_model_ids(payload: dict[str, Any]) -> list[str]:
+    items = payload.get("data") if isinstance(payload, dict) else []
+    raw_ids: list[str] = []
+    if isinstance(items, list):
+        for item in items:
+            if isinstance(item, dict):
+                raw_ids.append(str(item.get("id") or "").strip())
+            else:
+                raw_ids.append(str(item or "").strip())
+    return sort_model_ids([
+        model_id
+        for model_id in unique_strings(raw_ids)
+        if is_likely_text_generation_model(model_id)
+    ])
+
+
+def unique_strings(values: list[str]) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = str(value or "").strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        result.append(text)
+    return result
+
+
+def is_likely_text_generation_model(model_id: str) -> bool:
+    text = model_id.lower()
+    if not text:
+        return False
+    excluded = (
+        "audio",
+        "dall",
+        "embedding",
+        "image",
+        "moderation",
+        "realtime",
+        "sora",
+        "speech",
+        "transcribe",
+        "tts",
+        "whisper",
+    )
+    if any(part in text for part in excluded):
+        return False
+    return text.startswith(("gpt-", "o1", "o3", "o4"))
+
+
+def sort_model_ids(model_ids: list[str]) -> list[str]:
+    def sort_key(model_id: str) -> tuple[int, str]:
+        text = model_id.lower()
+        if "nano" in text:
+            return (0, text)
+        if "mini" in text:
+            return (1, text)
+        if "luna" in text:
+            return (2, text)
+        if "terra" in text:
+            return (3, text)
+        if "sol" in text:
+            return (4, text)
+        return (5, text)
+
+    return sorted(model_ids, key=sort_key)
+
+
+def load_env_file(path: Path | None = None) -> bool:
+    env_path = (path or DEFAULT_ENV_FILE).expanduser()
+    if not env_path.is_file():
+        return False
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        if line.startswith("export "):
+            line = line[7:].strip()
+        key, value = line.split("=", 1)
+        key = key.strip()
+        if not key or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key):
+            continue
+        value = strip_env_value(value.strip())
+        os.environ.setdefault(key, value)
+    return True
+
+
+def strip_env_value(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        return value[1:-1]
+    if " #" in value:
+        return value.split(" #", 1)[0].rstrip()
+    return value
+
+
 def make_handler(service: MeetingIntelligenceService) -> type[BaseHTTPRequestHandler]:
     class MeetingIntelligenceHandler(BaseHTTPRequestHandler):
         server_version = "WhoSpeaksMeetingIntelligence/1.0"
@@ -478,6 +732,12 @@ def make_handler(service: MeetingIntelligenceService) -> type[BaseHTTPRequestHan
                     return
                 if parsed.path == "/api/config":
                     self._send_json({"config": service.public_config()})
+                    return
+                if parsed.path == "/api/llm-models":
+                    query = parse_qs(parsed.query)
+                    provider = str((query.get("provider") or [""])[0])
+                    base_url = str((query.get("base_url") or [""])[0])
+                    self._send_json(service.list_provider_models(provider, urllib.parse.unquote(base_url)))
                     return
                 if parsed.path == "/api/sessions":
                     self._send_json({"sessions": service.list_sessions()})
@@ -497,10 +757,13 @@ def make_handler(service: MeetingIntelligenceService) -> type[BaseHTTPRequestHan
         def do_POST(self) -> None:
             parsed = urlparse(self.path)
             try:
-                if parsed.path not in {"/api/generate", "/api/generate-async", "/api/delete-report"}:
+                if parsed.path not in {"/api/generate", "/api/generate-async", "/api/delete-report", "/api/llm-config"}:
                     self._send_json({"error": "not_found"}, status=HTTPStatus.NOT_FOUND)
                     return
                 payload = self._read_json_body()
+                if parsed.path == "/api/llm-config":
+                    self._send_json({"config": service.update_llm_config(payload)})
+                    return
                 session_id = str(payload.get("session_id") or "").strip()
                 if parsed.path == "/api/delete-report":
                     self._send_json(service.delete_report(session_id))
@@ -561,6 +824,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--session-dir", type=Path, default=DEFAULT_SESSION_DIR)
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
     parser.add_argument("--demo-transcript", type=Path)
+    parser.add_argument("--env-file", type=Path, default=DEFAULT_ENV_FILE)
     parser.add_argument(
         "--llm-provider",
         default="llama_cpp",
@@ -579,6 +843,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 
 def config_from_args(args: argparse.Namespace) -> MeetingIntelligenceServerConfig:
+    env_file = getattr(args, "env_file", None)
+    if env_file:
+        load_env_file(Path(env_file))
     overrides: dict[str, Any] = {
         "timeout_seconds": args.timeout_seconds,
         "max_tokens": args.max_tokens,
@@ -663,7 +930,8 @@ PAGE_HTML = r"""<!doctype html>
     }
 
     button,
-    input {
+    input,
+    select {
       font: inherit;
     }
 
@@ -720,7 +988,9 @@ PAGE_HTML = r"""<!doctype html>
     .provider {
       margin-top: 16px;
       display: grid;
-      gap: 4px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 4px 8px;
+      align-items: center;
       color: var(--muted);
       font-size: 12px;
       line-height: 1.35;
@@ -732,6 +1002,113 @@ PAGE_HTML = r"""<!doctype html>
 
     .provider strong {
       color: var(--slate);
+    }
+
+    .provider-kicker {
+      color: var(--slate);
+      font-size: 11px;
+      font-weight: 780;
+    }
+
+    .provider-model,
+    .provider-url {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .provider-url {
+      grid-column: 1 / -1;
+    }
+
+    .provider-connected {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      color: var(--accent-strong);
+      font-size: 11px;
+      font-weight: 720;
+    }
+
+    .provider-connected.warn {
+      color: var(--amber);
+    }
+
+    .provider-health {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+    }
+
+    .provider-health.warn {
+      background: var(--amber);
+      box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.12);
+    }
+
+    .provider-controls {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+      color: var(--slate);
+      font-size: 11px;
+      line-height: 1.25;
+      font-weight: 760;
+    }
+
+    .field input,
+    .field select {
+      min-width: 0;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 8px 9px;
+      outline: none;
+      box-shadow: var(--shadow-soft);
+      font-size: 12px;
+      font-weight: 560;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+    }
+
+    .provider-control-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .provider-action-row {
+      display: grid;
+      grid-template-columns: auto auto minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+    }
+
+    .provider-action-row .btn {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+    .provider-hint {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
     }
 
     .toolbar {
@@ -1012,12 +1389,12 @@ PAGE_HTML = r"""<!doctype html>
     }
 
     .topbar {
-      padding: 22px 28px 18px;
+      padding: 20px 28px 16px;
       border-bottom: 1px solid var(--line);
       background: rgba(255, 255, 255, 0.86);
       backdrop-filter: blur(10px);
       display: grid;
-      gap: 10px;
+      gap: 11px;
       position: sticky;
       top: 0;
       z-index: 5;
@@ -1032,10 +1409,18 @@ PAGE_HTML = r"""<!doctype html>
 
     .topbar h2 {
       margin: 0;
-      font-size: 26px;
+      font-size: 25px;
       line-height: 1.2;
       font-weight: 780;
       overflow-wrap: anywhere;
+    }
+
+    .report-meta-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
     }
 
     .status {
@@ -1077,6 +1462,100 @@ PAGE_HTML = r"""<!doctype html>
 
     .status-muted {
       color: var(--muted);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--slate);
+      display: inline-grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-soft);
+      transition: color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+    }
+
+    .icon-btn:hover,
+    .icon-btn:focus {
+      color: var(--accent-strong);
+      border-color: rgba(15, 118, 110, 0.42);
+      box-shadow: 0 5px 14px rgba(15, 118, 110, 0.12);
+      outline: none;
+      transform: translateY(-1px);
+    }
+
+    .icon-btn svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .icon-btn:disabled {
+      cursor: default;
+      opacity: 0.48;
+      transform: none;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .report-stats {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .report-stats[hidden] {
+      display: none;
+    }
+
+    .stat-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+      padding: 8px 10px;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      min-width: 0;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .stat-card svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+    }
+
+    .stat-card strong,
+    .stat-card span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .stat-card strong {
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.2;
+      font-weight: 760;
+    }
+
+    .stat-card span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.2;
+      font-weight: 620;
     }
 
     .progress-panel {
@@ -1157,7 +1636,7 @@ PAGE_HTML = r"""<!doctype html>
       scrollbar-width: none;
       background: rgba(255, 255, 255, 0.84);
       position: sticky;
-      top: 98px;
+      top: 172px;
       z-index: 4;
     }
 
@@ -1197,7 +1676,7 @@ PAGE_HTML = r"""<!doctype html>
     .content {
       min-height: 0;
       overflow: auto;
-      padding: 24px 28px 38px;
+      padding: 22px 28px 38px;
     }
 
     .section-grid {
@@ -1209,7 +1688,7 @@ PAGE_HTML = r"""<!doctype html>
 
     .section-block {
       display: grid;
-      gap: 11px;
+      gap: 10px;
       min-width: 0;
     }
 
@@ -1226,20 +1705,28 @@ PAGE_HTML = r"""<!doctype html>
       gap: 8px;
     }
 
-    .section-heading::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 2px;
-      background: var(--accent);
+    .section-heading svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .section-count {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 720;
+      letter-spacing: 0;
+      text-transform: none;
     }
 
     .item {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
-      box-shadow: var(--shadow-soft);
-      padding: 15px;
+      box-shadow: 0 2px 8px rgba(17, 24, 39, 0.05);
+      padding: 16px;
       display: grid;
       gap: 8px;
       min-width: 0;
@@ -1253,11 +1740,29 @@ PAGE_HTML = r"""<!doctype html>
 
     .item h3 {
       margin: 0;
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1.3;
       color: #111827;
       font-weight: 760;
       overflow-wrap: anywhere;
+    }
+
+    .item-title-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .item-title-row svg {
+      width: 17px;
+      height: 17px;
+      color: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .item-title-row h3 {
+      min-width: 0;
     }
 
     .item p {
@@ -1368,6 +1873,18 @@ PAGE_HTML = r"""<!doctype html>
         align-items: flex-start;
         flex-direction: column;
       }
+
+      .report-meta-row {
+        grid-template-columns: 1fr;
+      }
+
+      .header-actions {
+        justify-content: flex-start;
+      }
+
+      .report-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
   </style>
 </head>
@@ -1380,6 +1897,38 @@ PAGE_HTML = r"""<!doctype html>
           <h1>WhoSpeaks Meeting Intelligence</h1>
         </div>
         <div class="provider" id="provider"></div>
+        <div class="provider-controls" id="providerControls">
+          <div class="provider-control-grid">
+            <label class="field">
+              Provider
+              <select id="llmProviderSelect"></select>
+            </label>
+            <label class="field">
+              Model
+              <select id="llmModelSelect"></select>
+              <input id="llmModelInput" autocomplete="off" placeholder="Custom model id" hidden>
+            </label>
+          </div>
+          <label class="field">
+            Base URL
+            <input id="llmBaseUrlInput" autocomplete="off">
+          </label>
+          <div class="provider-action-row">
+            <button class="btn" id="applyProviderBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Apply</span>
+            </button>
+            <button class="btn" id="loadModelsBtn" type="button" title="Load available models">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>Models</span>
+            </button>
+            <div class="provider-hint" id="providerHint"></div>
+          </div>
+        </div>
       </div>
       <div class="toolbar">
         <input class="search" id="sessionSearch" type="search" placeholder="Filter sessions">
@@ -1411,7 +1960,27 @@ PAGE_HTML = r"""<!doctype html>
           <h2 id="reportTitle">Select a session</h2>
           <div class="badge-row" id="reportBadges"></div>
         </div>
-        <div class="status" id="status"></div>
+        <div class="report-meta-row">
+          <div class="status" id="status"></div>
+          <div class="header-actions" aria-label="Report shortcuts">
+            <button class="icon-btn" id="headerGenerateBtn" type="button" title="Regenerate report" aria-label="Regenerate report">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3ZM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="icon-btn" id="headerTranscriptBtn" type="button" title="Open transcript" aria-label="Open transcript">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 10v4M8 7v10M12 5v14M16 8v8M20 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <button class="icon-btn" id="headerRefreshBtn" type="button" title="Refresh report" aria-label="Refresh report">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="report-stats" id="reportStats" hidden></div>
         <div class="progress-panel" id="progressPanel" hidden>
           <div class="progress-line">
             <span id="progressLabel">Queued</span>
@@ -1452,6 +2021,10 @@ PAGE_HTML = r"""<!doctype html>
       highlightRowIds: [],
       evidenceReturnTab: "",
       confirmDelete: false,
+      providerDraft: {provider: "", model: "", base_url: ""},
+      providerModels: {},
+      loadingModels: false,
+      applyingProvider: false,
       status: ""
     };
 
@@ -1587,12 +2160,111 @@ PAGE_HTML = r"""<!doctype html>
       return parts.join("");
     }
 
+    function providerOptions() {
+      return Array.isArray(state.config.providers) ? state.config.providers : [];
+    }
+
+    function providerOption(provider) {
+      return providerOptions().find((option) => option.id === provider) || providerOptions()[0] || {};
+    }
+
+    function syncProviderDraftFromConfig() {
+      const cfg = state.config || {};
+      state.providerDraft = {
+        provider: cfg.provider || providerOptions()[0]?.id || "llama_cpp",
+        model: cfg.model || "",
+        base_url: cfg.base_url || ""
+      };
+    }
+
+    function selectedProviderOption() {
+      return providerOption(state.providerDraft.provider || state.config.provider);
+    }
+
+    function providerModelOptions(option) {
+      const provider = option.id || state.providerDraft.provider || state.config.provider || "";
+      return uniqueValues([
+        ...(state.providerModels[provider] || []),
+        ...(option.models || []),
+        state.providerDraft.model,
+      ]);
+    }
+
+    function renderProviderControls() {
+      const options = providerOptions();
+      const providerSelect = el("llmProviderSelect");
+      providerSelect.innerHTML = options.map((option) => `
+        <option value="${escapeHtml(option.id)}">${escapeHtml(option.label || option.id)}</option>
+      `).join("");
+      providerSelect.value = state.providerDraft.provider || state.config.provider || options[0]?.id || "";
+      const option = selectedProviderOption();
+      const models = providerModelOptions(option);
+      const modelSelect = el("llmModelSelect");
+      const modelIsPreset = models.includes(state.providerDraft.model);
+      modelSelect.innerHTML = models.map((model) => `
+        <option value="${escapeHtml(model)}">${escapeHtml(model)}</option>
+      `).join("") + '<option value="__custom__">Custom model...</option>';
+      modelSelect.value = modelIsPreset ? state.providerDraft.model : "__custom__";
+      const modelInput = el("llmModelInput");
+      modelInput.hidden = modelIsPreset;
+      modelInput.value = modelIsPreset ? "" : (state.providerDraft.model || "");
+      el("llmBaseUrlInput").value = state.providerDraft.base_url || option.default_base_url || "";
+      const requiresKey = Boolean(option.requires_api_key);
+      const keyOk = !requiresKey || Boolean(state.config.api_key_configured);
+      const modelCount = state.providerModels[option.id]?.length || 0;
+      const keyText = state.loadingModels
+        ? "Loading models..."
+        : requiresKey
+        ? `${escapeHtml(option.api_key_env_var || "API key")}: ${keyOk ? "configured" : "missing"}`
+        : "No API key required";
+      el("providerHint").innerHTML = `${keyText}${modelCount ? ` / ${modelCount} loaded` : ""}`;
+      el("loadModelsBtn").disabled = state.loadingModels || state.generating || state.applyingProvider;
+      el("applyProviderBtn").disabled = state.generating || state.applyingProvider || !state.providerDraft.model.trim();
+    }
+
+    async function loadProviderModels() {
+      if (state.loadingModels) return;
+      const draft = state.providerDraft;
+      const previousModel = draft.model;
+      const previousDefault = selectedProviderOption().models?.[0] || "";
+      state.loadingModels = true;
+      setStatus("Loading models");
+      render();
+      try {
+        const query = new URLSearchParams({
+          provider: draft.provider,
+          base_url: draft.base_url || selectedProviderOption().default_base_url || ""
+        });
+        const data = await api(`/api/llm-models?${query.toString()}`);
+        state.providerModels[data.provider] = data.models || [];
+        if (
+          state.providerModels[data.provider]?.length
+          && (!previousModel || previousModel === previousDefault)
+        ) {
+          state.providerDraft.model = state.providerModels[data.provider][0];
+        }
+        setStatus(state.providerModels[data.provider]?.length ? "Models loaded" : "No models returned");
+      } catch (error) {
+        setStatus(error.message);
+      } finally {
+        state.loadingModels = false;
+        render();
+      }
+    }
+
     function providerLabel() {
       const cfg = state.config || {};
       const mode = cfg.mock_llm ? "mock" : cfg.provider;
+      const option = providerOption(cfg.provider);
+      const requiresKey = Boolean(option.requires_api_key);
+      const keyOk = !requiresKey || Boolean(cfg.api_key_configured);
+      const readyText = cfg.mock_llm ? "Mock" : keyOk ? "Ready" : "Missing key";
+      const warnClass = keyOk ? "" : " warn";
       return `
-        <div><strong>${escapeHtml(mode)}</strong> / ${escapeHtml(cfg.model || "local")}</div>
-        <div>${escapeHtml(cfg.base_url || "no base URL")}</div>
+        <div class="provider-kicker">Provider / Model</div>
+        <div class="provider-connected${warnClass}"><span class="provider-health${warnClass}" aria-hidden="true"></span>${escapeHtml(readyText)}</div>
+        <div class="provider-model"><strong>${escapeHtml(mode)}</strong> / ${escapeHtml(cfg.model || "local")}</div>
+        <div class="provider-url">${escapeHtml(cfg.base_url || "no base URL")}</div>
       `;
     }
 
@@ -1611,9 +2283,42 @@ PAGE_HTML = r"""<!doctype html>
         question: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.1 9a3 3 0 1 1 4.8 2.4c-.9.6-1.4 1.1-1.4 2.1M12 17h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
         shield: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 8v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
         file: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l4 4v14H7V3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 3v5h5M10 13h6M10 17h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+        link: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
         wave: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10v4M8 7v10M12 5v14M16 8v8M20 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
       };
       return icons[name] || "";
+    }
+
+    function sectionIcon(name) {
+      const groups = {
+        executive_summary: "spark",
+        structured_brief: "file",
+        speaker_map: "users",
+        speaker_participation: "wave",
+        discussion_threads: "list",
+        decisions: "check",
+        deadlines: "calendar",
+        disagreements: "alert",
+        action_items: "tasks",
+        open_questions: "question",
+        ask_this_meeting: "question",
+        risks: "shield"
+      };
+      const icons = {
+        alert: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 4.4 2.7 18a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 4.4a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        calendar: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v4M17 3v4M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+        spark: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3ZM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+        users: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+      };
+      return icons[groups[name]] || tabIcon(groups[name] || name);
+    }
+
+    function sectionLabel(name) {
+      return name.replaceAll("_", " ");
+    }
+
+    function pluralLabel(count, singular, plural = `${singular}s`) {
+      return `${count} ${count === 1 ? singular : plural}`;
     }
 
     function renderSessions() {
@@ -1671,6 +2376,45 @@ PAGE_HTML = r"""<!doctype html>
       });
     }
 
+    function sectionItemCount(names) {
+      return names.reduce((total, name) => {
+        const items = getSection(name).items;
+        return total + (Array.isArray(items) ? items.length : 0);
+      }, 0);
+    }
+
+    function statCard(icon, value, label) {
+      return `
+        <div class="stat-card">
+          ${tabIcon(icon)}
+          <div>
+            <strong>${escapeHtml(value)}</strong>
+            <span>${escapeHtml(label)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderReportStats() {
+      const stats = el("reportStats");
+      if (!state.report) {
+        stats.hidden = true;
+        stats.innerHTML = "";
+        return;
+      }
+      const evidenceCount = Array.isArray(state.report.evidence_index) ? state.report.evidence_index.length : 0;
+      const rows = Number(state.transcriptRows?.length || 0);
+      stats.hidden = false;
+      stats.innerHTML = [
+        statCard("check", sectionItemCount(["decisions", "deadlines"]), "Decisions"),
+        statCard("tasks", sectionItemCount(["action_items"]), "Action items"),
+        statCard("question", sectionItemCount(["open_questions", "ask_this_meeting"]), "Questions"),
+        statCard("shield", sectionItemCount(["risks", "disagreements"]), "Risks"),
+        statCard("link", evidenceCount, "Evidence links"),
+        statCard("wave", rows, "Transcript rows")
+      ].join("");
+    }
+
     function renderHeader() {
       const session = state.sessions.find((item) => item.id === state.sessionId) || {};
       const report = state.report || {};
@@ -1680,6 +2424,7 @@ PAGE_HTML = r"""<!doctype html>
       if (report.provider) badges.push(`<span class="badge">${escapeHtml(report.provider)}</span>`);
       if (report.pipeline?.segments) badges.push(`<span class="badge">${report.pipeline.segments} segments</span>`);
       el("reportBadges").innerHTML = badges.join("");
+      renderReportStats();
     }
 
     function renderProgress() {
@@ -1780,7 +2525,7 @@ PAGE_HTML = r"""<!doctype html>
       }
     }
 
-    function itemHtml(item, evidence) {
+    function itemHtml(item, evidence, sectionName = "") {
       const evidenceIds = Array.isArray(item.evidence_ids) ? item.evidence_ids : [];
       const chips = evidenceIds.map((id) => {
         const ev = evidence.get(id);
@@ -1796,7 +2541,10 @@ PAGE_HTML = r"""<!doctype html>
       ].filter(Boolean).map((value) => `<span class="badge">${escapeHtml(value)}</span>`).join("");
       return `
         <article class="item">
-          <h3>${escapeHtml(item.title || "Untitled")}</h3>
+          <div class="item-title-row">
+            ${sectionIcon(sectionName)}
+            <h3>${escapeHtml(item.title || "Untitled")}</h3>
+          </div>
           <p>${escapeHtml(item.body || item.summary || "")}</p>
           <div class="item-footer">${meta}${chips}</div>
         </article>
@@ -1809,11 +2557,15 @@ PAGE_HTML = r"""<!doctype html>
         const section = getSection(name);
         const items = Array.isArray(section.items) ? section.items : [];
         const body = items.length
-          ? items.map((item) => itemHtml(item, evidence)).join("")
-          : `<div class="empty">No ${name.replaceAll("_", " ")} extracted.</div>`;
+          ? items.map((item) => itemHtml(item, evidence, name)).join("")
+          : `<div class="empty">No ${sectionLabel(name)} extracted.</div>`;
         return `
           <div class="section-block">
-            <h3 class="section-heading">${escapeHtml(name.replaceAll("_", " "))}</h3>
+            <h3 class="section-heading">
+              ${sectionIcon(name)}
+              <span>${escapeHtml(sectionLabel(name))}</span>
+              <span class="section-count">${escapeHtml(pluralLabel(items.length, "item"))}</span>
+            </h3>
             ${section.summary ? `<div class="item"><p>${escapeHtml(section.summary)}</p></div>` : ""}
             ${body}
           </div>
@@ -1902,7 +2654,11 @@ PAGE_HTML = r"""<!doctype html>
 
     function render() {
       el("provider").innerHTML = providerLabel();
+      renderProviderControls();
       el("generateBtn").disabled = !state.sessionId || state.generating;
+      el("headerGenerateBtn").disabled = !state.sessionId || state.generating;
+      el("headerTranscriptBtn").disabled = !state.sessionId || !state.transcriptRows.length;
+      el("headerRefreshBtn").disabled = !state.sessionId || state.generating;
       const deleteButton = el("deleteReportBtn");
       deleteButton.disabled = !state.sessionId || !state.reportAvailable || state.generating;
       deleteButton.classList.toggle("confirming", state.confirmDelete && !deleteButton.disabled);
@@ -1917,6 +2673,57 @@ PAGE_HTML = r"""<!doctype html>
       renderContent();
       attachContentHandlers();
       setStatus(state.status);
+    }
+
+    async function refreshSelectedReport() {
+      if (!state.sessionId || state.generating) return;
+      await loadSessions(false);
+      await selectSession(state.sessionId);
+    }
+
+    function openTranscriptTab() {
+      if (!state.sessionId || !state.transcriptRows.length) return;
+      clearEvidenceFocus();
+      state.activeTab = "transcript";
+      render();
+    }
+
+    async function applyProviderConfig() {
+      if (state.generating || state.applyingProvider) return;
+      const draft = state.providerDraft;
+      const model = String(draft.model || "").trim();
+      if (!model) {
+        setStatus("Model is required");
+        render();
+        return;
+      }
+      state.applyingProvider = true;
+      clearDeleteConfirm();
+      setStatus("Switching provider");
+      render();
+      try {
+        const data = await api("/api/llm-config", {
+          method: "POST",
+          body: JSON.stringify({
+            provider: draft.provider,
+            model,
+            base_url: String(draft.base_url || "").trim()
+          })
+        });
+        state.config = data.config || state.config;
+        syncProviderDraftFromConfig();
+        await loadSessions(false);
+        if (state.sessionId) {
+          await selectSession(state.sessionId);
+        } else {
+          setStatus("Provider switched");
+        }
+      } catch (error) {
+        setStatus(error.message);
+      } finally {
+        state.applyingProvider = false;
+        render();
+      }
     }
 
     async function selectSession(sessionId) {
@@ -2044,6 +2851,7 @@ PAGE_HTML = r"""<!doctype html>
     async function boot() {
       try {
         state.config = (await api("/api/config")).config || {};
+        syncProviderDraftFromConfig();
         await loadSessions(true);
         render();
       } catch (error) {
@@ -2054,8 +2862,45 @@ PAGE_HTML = r"""<!doctype html>
 
     el("generateBtn").addEventListener("click", generateReport);
     el("deleteReportBtn").addEventListener("click", deleteReport);
+    el("headerGenerateBtn").addEventListener("click", generateReport);
+    el("headerTranscriptBtn").addEventListener("click", openTranscriptTab);
+    el("headerRefreshBtn").addEventListener("click", () => refreshSelectedReport().catch((error) => setStatus(error.message)));
     el("refreshBtn").addEventListener("click", () => loadSessions(false).then(render).catch((error) => setStatus(error.message)));
     el("sessionSearch").addEventListener("input", renderSessions);
+    el("llmProviderSelect").addEventListener("change", () => {
+      const option = providerOption(el("llmProviderSelect").value);
+      state.providerDraft.provider = option.id || el("llmProviderSelect").value;
+      state.providerDraft.model = option.models?.[0] || "";
+      state.providerDraft.base_url = option.default_base_url || "";
+      renderProviderControls();
+      if (option.id === "openai" || option.id === "openrouter") {
+        loadProviderModels();
+      }
+    });
+    el("llmModelSelect").addEventListener("change", () => {
+      const value = el("llmModelSelect").value;
+      if (value === "__custom__") {
+        if (providerModelOptions(selectedProviderOption()).includes(state.providerDraft.model)) {
+          state.providerDraft.model = "";
+        }
+      } else {
+        state.providerDraft.model = value;
+      }
+      renderProviderControls();
+      if (value === "__custom__") {
+        el("llmModelInput").focus();
+      }
+    });
+    el("llmModelInput").addEventListener("input", () => {
+      state.providerDraft.model = el("llmModelInput").value;
+      renderProviderControls();
+    });
+    el("llmBaseUrlInput").addEventListener("input", () => {
+      state.providerDraft.base_url = el("llmBaseUrlInput").value;
+      renderProviderControls();
+    });
+    el("applyProviderBtn").addEventListener("click", () => applyProviderConfig());
+    el("loadModelsBtn").addEventListener("click", () => loadProviderModels());
     window.addEventListener("popstate", () => {
       if (state.activeEvidenceId) {
         const tab = state.evidenceReturnTab || "summary";

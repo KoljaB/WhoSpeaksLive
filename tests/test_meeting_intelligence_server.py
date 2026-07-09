@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import os
 import sys
 import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +20,9 @@ from window.meeting_intelligence_server import (
     PAGE_HTML,
     MeetingIntelligenceServerConfig,
     MeetingIntelligenceService,
+    default_llm_config,
+    extract_model_ids,
+    load_env_file,
     parse_timecode,
     parse_whospeakslive_transcript,
     speaker_id_from_name,
@@ -122,6 +127,79 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
             self.assertFalse(after_delete["stale"])
             self.assertEqual(len(after_delete["transcript_rows"]), 3)
 
+    def test_load_env_file_sets_missing_values_without_overwriting_existing_env(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            env_path = Path(directory) / ".env"
+            env_path.write_text(
+                "OPENAI_API_KEY='from-file'\nWHOSPEAKS_MI_LLM_MODEL=from-env-file\n",
+                encoding="utf-8",
+            )
+            with patch.dict(os.environ, {"OPENAI_API_KEY": "already-set"}, clear=True):
+                loaded = load_env_file(env_path)
+
+                self.assertTrue(loaded)
+                self.assertEqual(os.environ["OPENAI_API_KEY"], "already-set")
+                self.assertEqual(os.environ["WHOSPEAKS_MI_LLM_MODEL"], "from-env-file")
+
+    def test_service_can_switch_runtime_provider_and_reports_key_status(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            service = MeetingIntelligenceService(
+                MeetingIntelligenceServerConfig(
+                    session_dir=root / "sessions",
+                    cache_dir=root / "reports",
+                    llm_config=default_llm_config("llama_cpp", model="local-before"),
+                )
+            )
+
+            with patch.dict(os.environ, {"OPENAI_API_KEY": ""}):
+                updated = service.update_llm_config({
+                    "provider": "openai",
+                    "model": "gpt-5.6-terra",
+                    "base_url": "https://api.openai.com/v1",
+                })
+
+            self.assertEqual(updated["provider"], "openai")
+            self.assertEqual(updated["model"], "gpt-5.6-terra")
+            self.assertEqual(updated["expected_report_provider"], "openai:gpt-5.6-terra")
+            self.assertEqual(updated["api_key_env_var"], "OPENAI_API_KEY")
+            self.assertFalse(updated["api_key_configured"])
+            self.assertTrue(any(provider["id"] == "openai" for provider in updated["providers"]))
+
+    def test_model_list_filter_keeps_text_models_and_prefers_cheaper_names(self) -> None:
+        models = extract_model_ids({
+            "data": [
+                {"id": "gpt-5.6-luna"},
+                {"id": "text-embedding-3-small"},
+                {"id": "gpt-4.1-mini"},
+                {"id": "gpt-4.1-nano"},
+                {"id": "gpt-4o-audio-preview"},
+                {"id": "dall-e-3"},
+            ]
+        })
+
+        self.assertEqual(models[:2], ["gpt-4.1-nano", "gpt-4.1-mini"])
+        self.assertIn("gpt-5.6-luna", models)
+        self.assertNotIn("text-embedding-3-small", models)
+
+    def test_openai_generation_fails_fast_without_server_side_api_key(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            transcript_path = root / "demo.txt"
+            transcript_path.write_text(DEMO_TEXT, encoding="utf-8")
+            service = MeetingIntelligenceService(
+                MeetingIntelligenceServerConfig(
+                    session_dir=root / "sessions",
+                    cache_dir=root / "reports",
+                    demo_transcript=transcript_path,
+                    llm_config=default_llm_config("openai", api_key="", model="gpt-5.6-luna"),
+                    max_segment_rows=12,
+                )
+            )
+
+            with self.assertRaisesRegex(ValueError, "OPENAI_API_KEY"):
+                service.generate_report(DEMO_SESSION_ID)
+
     def test_helpers_and_page_contract_are_stable(self) -> None:
         self.assertEqual(parse_timecode("01:02.5"), 62.5)
         self.assertEqual(parse_timecode("01:02:03.5"), 3723.5)
@@ -139,6 +217,13 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
         self.assertIn("data-row-aliases", PAGE_HTML)
         self.assertIn("transcript-row", PAGE_HTML)
         self.assertIn("evidence-hit", PAGE_HTML)
+        self.assertIn("/api/llm-config", PAGE_HTML)
+        self.assertIn("/api/llm-models", PAGE_HTML)
+        self.assertIn("llmProviderSelect", PAGE_HTML)
+        self.assertIn("llmModelSelect", PAGE_HTML)
+        self.assertIn("llmModelInput", PAGE_HTML)
+        self.assertIn("loadModelsBtn", PAGE_HTML)
+        self.assertIn("applyProviderConfig", PAGE_HTML)
 
 
 if __name__ == "__main__":

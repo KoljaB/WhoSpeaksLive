@@ -62,6 +62,7 @@ Standalone browser server for generating and reviewing LLM-based meeting intelli
 | Data | `--session-dir` | `DEFAULT_SESSION_DIR` | Directory containing durable WhoSpeaksLive saved sessions. |
 | Data | `--cache-dir` | `DEFAULT_CACHE_DIR` | Directory where generated meeting intelligence reports are cached. |
 | Data | `--demo-transcript` | empty | Add one transcript-only demo session from a WhoSpeaksLive transcript text file. |
+| LLM | `--env-file` | repo `.env` | Local environment file loaded before LLM defaults are resolved. Existing process environment variables are not overwritten. |
 | LLM | `--llm-provider` | `llama_cpp` | OpenAI-compatible provider preset. Choices: `llama_cpp`, `ollama`, `lm_studio`, `openai`, `openrouter`. |
 | LLM | `--llm-base-url` | provider default | OpenAI-compatible base URL, without `/chat/completions`. |
 | LLM | `--llm-model` | provider default | Model name sent to the LLM server. |
@@ -72,6 +73,8 @@ Standalone browser server for generating and reviewing LLM-based meeting intelli
 | Pipeline | `--max-segment-rows` | 80 | Maximum transcript rows per evidence-extraction segment. Values below 12 are raised to 12. |
 | Development | `--mock-llm` | off unless passed | Use deterministic mock responses instead of contacting an LLM server. |
 | Development | `--auto-generate` | off unless passed | Generate a report automatically when a selected session has no current report. |
+
+The provider flags define the initial browser state. The browser can switch provider, model, and base URL at runtime through `/api/llm-config`, and can load account-visible provider models through `/api/llm-models`. API keys remain server-side.
 
 ### `whospeaks-window`
 
@@ -636,6 +639,8 @@ Environment variables set defaults before command-line arguments are parsed. A C
 | `WHOSPEAKS_MI_LLM_API_KEY` | Generic API key fallback for the meeting intelligence server. |
 | `WHOSPEAKS_MI_LLM_BASE_URL` | Default OpenAI-compatible base URL for the meeting intelligence server. |
 | `WHOSPEAKS_MI_LLM_MODEL` | Default model name for the meeting intelligence server. |
+| `OPENAI_API_KEY` | API key used by the meeting intelligence `openai` provider; can come from the process environment or the configured `.env` file. |
+| `OPENROUTER_API_KEY` | API key used by the meeting intelligence `openrouter` provider; can come from the process environment or the configured `.env` file. |
 | `WHOSPEAKS_MODEL_DIR` | Mutable model root under the runtime directory. |
 | `WHOSPEAKS_PROJECT_ROOT` | Override for the repository root used to resolve vendor, tests, and runtime paths. |
 | `WHOSPEAKS_REMOTE_ASR_URL` | Default remote ASR server URL. |

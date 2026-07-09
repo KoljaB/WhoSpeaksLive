@@ -172,3 +172,18 @@ Run:
 ```
 
 Documentation-only changes should not affect runtime tests. If tests fail after docs-only edits, inspect uncommitted code changes before assuming the docs caused it.
+
+## Meeting Intelligence OpenAI Report Fails With HTTP 400
+
+Open the progress panel detail first. Current builds include the provider's HTTP error body when available, so the message should usually name the rejected field, schema, model, or parameter.
+
+For OpenAI and OpenRouter, the meeting intelligence server uses strict structured output schemas. Strict structured output means every returned JSON object must match a closed schema: no undeclared properties, and every declared property is required. The server normalizes report schemas before sending OpenAI `response_format`, so failures mentioning `additionalProperties`, `required`, or nested object schemas should be treated as bugs in the report schema path.
+
+Check these items:
+
+- Confirm the selected model supports chat completions and structured JSON output.
+- Click `Models` in the provider controls and choose a model returned by the account-visible `/models` list.
+- Confirm the server process can see `OPENAI_API_KEY`; restart the server if you added the global environment variable after it started.
+- Regenerate after changing provider or model, because cached reports are provider-aware and may be stale.
+
+For a cheap OpenAI smoke test, select `openai` and a returned `nano` or `mini` model, then generate a short demo report. If the progress reaches evidence extraction but fails on the first section, the likely issue is structured-output schema compatibility.

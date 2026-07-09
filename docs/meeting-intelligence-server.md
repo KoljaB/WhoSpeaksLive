@@ -78,7 +78,7 @@ Supported provider values:
 | `llama_cpp` | `http://127.0.0.1:8081/v1` | `local` | Good for local or SSH-tunneled llama.cpp servers. |
 | `ollama` | `http://127.0.0.1:11434/v1` | `gemma3` | Uses Ollama's OpenAI-compatible endpoint. |
 | `lm_studio` | `http://127.0.0.1:1234/v1` | `local-model` | Uses LM Studio's local OpenAI-compatible server. |
-| `openai` | `https://api.openai.com/v1` | `gpt-4.1-mini` | Requires an API key. |
+| `openai` | `https://api.openai.com/v1` | `gpt-5.6-luna` | Requires an API key. The browser can load the models available to the configured account and select cheaper models such as `gpt-4.1-nano` when available. |
 | `openrouter` | `https://openrouter.ai/api/v1` | `google/gemma-3-12b-it` | Requires an API key. |
 
 Command-line flags override provider defaults:
@@ -89,6 +89,10 @@ Command-line flags override provider defaults:
 --llm-api-key <token>
 ```
 
+The startup provider is only the initial browser state. The browser sidebar also has provider, model, and base URL controls. Click `Models` to ask the selected provider's `/models` endpoint for account-visible model IDs, then click `Apply` to switch the runtime provider without restarting the server.
+
+Switching provider or model does not rewrite old cached reports. The cache is provider-aware, so a report generated with `llama_cpp:gemma-4-12b-it-Q6_K.gguf` becomes stale when the runtime provider is `openai:gpt-4.1-nano`, and becomes current again if you switch back.
+
 Environment variables can also set defaults:
 
 | Variable | What it does |
@@ -98,6 +102,25 @@ Environment variables can also set defaults:
 | `WHOSPEAKS_MI_LLM_API_KEY` | Generic API key fallback for providers that need authentication. |
 | `OPENAI_API_KEY` | API key used by the `openai` provider. |
 | `OPENROUTER_API_KEY` | API key used by the `openrouter` provider. |
+
+The server loads a local `.env` file by default before building the LLM config. This is a convenience for local development; process-level environment variables still win because `.env` values only fill missing keys. Keep real keys in the untracked `.env`, not in docs or committed files:
+
+```env
+OPENAI_API_KEY=sk-...
+OPENROUTER_API_KEY=
+```
+
+Use `--env-file D:\path\to\.env` to load a different file for one run.
+
+## OpenAI Structured Output Compatibility
+
+OpenAI structured output uses strict JSON schemas. A strict schema is a JSON Schema where every object has a closed property set and every declared property is listed as required. The server normalizes schemas sent through OpenAI `response_format` so future report sections do not fail because of nested open-ended objects.
+
+This normalization is provider-path specific:
+
+- OpenAI and OpenRouter receive the normalized strict `response_format` schema.
+- llama.cpp, Ollama, and LM Studio keep the local OpenAI-compatible request shape and can still receive the extra `json_schema` field when configured with schema mode `both`.
+- HTTP 400 errors include the provider's response body when available, so schema or model-capability failures are visible in the browser progress panel instead of only saying `Bad Request`.
 
 ## Inputs And Caches
 
@@ -143,6 +166,8 @@ The browser uses these local endpoints:
 | Endpoint | Method | Purpose |
 | --- | --- | --- |
 | `/api/config` | `GET` | Return provider, model, base URL, and runtime config. |
+| `/api/llm-config` | `POST` | Switch runtime provider, model, and base URL. API keys stay server-side. |
+| `/api/llm-models?provider=...&base_url=...` | `GET` | Return text-generation model IDs from the provider's `/models` endpoint, sorted with cheaper `nano` and `mini` names first when present. |
 | `/api/sessions` | `GET` | List demo and saved sessions. |
 | `/api/report?session_id=...` | `GET` | Return the current cached report and transcript rows. |
 | `/api/generate-async` | `POST` | Start background report generation. |
@@ -163,6 +188,10 @@ If the server cannot connect to the model, verify the base URL:
 ```powershell
 curl.exe -sS http://127.0.0.1:18081/v1/models
 ```
+
+For OpenAI, verify that the server process can see `OPENAI_API_KEY`. If you add a global Windows environment variable after the server has already started, restart the server so the new process inherits it. In the browser, the provider status shows only whether the key is configured; the key value is never sent to the browser.
+
+If OpenAI generation fails with HTTP 400, read the progress-panel detail. Current builds include the OpenAI error message. Common causes are unsupported model capabilities, invalid model IDs, or schema restrictions. The report schemas are normalized for OpenAI strict structured output, so nested open-object schema failures should be treated as bugs and covered by tests.
 
 If evidence opens the Transcript tab but does not highlight a row, regenerate the report. Older reports or sessions without stable row IDs can reference normalized row IDs; current browser builds resolve both stored and normalized IDs.
 

@@ -69,7 +69,7 @@ def default_llm_config(provider: str = "llama_cpp", **overrides: Any) -> Meeting
         },
         "openai": {
             "base_url": os.environ.get("WHOSPEAKS_MI_LLM_BASE_URL", "https://api.openai.com/v1"),
-            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", "gpt-4.1-mini"),
+            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", "gpt-5.6-luna"),
             "schema_mode": "response_format",
             "api_key": os.environ.get("OPENAI_API_KEY", ""),
         },
@@ -165,6 +165,9 @@ class OpenAICompatibleMeetingClient:
             try:
                 with urllib.request.urlopen(request, timeout=self.config.timeout_seconds) as response:
                     response_data = json.loads(response.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                detail = read_http_error_detail(exc)
+                raise RuntimeError(f"Meeting LLM request failed: HTTP {exc.code}: {detail}") from exc
             except urllib.error.URLError as exc:
                 raise RuntimeError(f"Meeting LLM request failed: {exc}") from exc
             try:
@@ -202,12 +205,13 @@ class OpenAICompatibleMeetingClient:
         if self.config.schema_mode in {"json_schema", "both"}:
             payload["json_schema"] = schema
         if self.config.schema_mode in {"response_format", "both"}:
+            response_schema = openai_strict_schema(schema)
             payload["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
                     "name": schema_name,
                     "strict": True,
-                    "schema": schema,
+                    "schema": response_schema,
                 },
             }
         return payload
@@ -327,6 +331,66 @@ def strip_json_fences(value: str) -> str:
         text = re.sub(r"^```(?:json)?\s*", "", text, flags=re.IGNORECASE)
         text = re.sub(r"\s*```$", "", text)
     return text.strip()
+
+
+def read_http_error_detail(exc: urllib.error.HTTPError) -> str:
+    try:
+        body = exc.read().decode("utf-8", errors="replace")
+    except Exception:
+        body = ""
+    if not body:
+        return str(exc.reason or exc)
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        return body[:1200]
+    error = payload.get("error") if isinstance(payload, dict) else None
+    if isinstance(error, dict):
+        message = str(error.get("message") or "").strip()
+        code = str(error.get("code") or "").strip()
+        param = str(error.get("param") or "").strip()
+        parts = [message, f"code={code}" if code else "", f"param={param}" if param else ""]
+        return " / ".join(part for part in parts if part)[:1200]
+    return body[:1200]
+
+
+def openai_strict_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """Return a copy adjusted for OpenAI strict structured outputs."""
+    return _openai_strict_node(schema)
+
+
+def _openai_strict_node(node: Any) -> Any:
+    if isinstance(node, list):
+        return [_openai_strict_node(item) for item in node]
+    if not isinstance(node, dict):
+        return node
+    result = {key: _openai_strict_node(value) for key, value in node.items()}
+    for keyword in ("anyOf", "oneOf", "allOf"):
+        if isinstance(result.get(keyword), list):
+            result[keyword] = [_openai_strict_node(item) for item in result[keyword]]
+    node_type = result.get("type")
+    is_object = node_type == "object" or (
+        isinstance(node_type, list) and "object" in node_type
+    )
+    if is_object:
+        properties = result.get("properties")
+        if not isinstance(properties, dict):
+            properties = {}
+        properties = {
+            str(key): _openai_strict_node(value)
+            for key, value in properties.items()
+            if isinstance(value, dict)
+        }
+        result["properties"] = properties
+        result["additionalProperties"] = False
+        required = [str(value) for value in result.get("required") or []]
+        for key in properties:
+            if key not in required:
+                required.append(key)
+        result["required"] = required
+    if "items" in result:
+        result["items"] = _openai_strict_node(result["items"])
+    return result
 
 
 class MultiPassMeetingIntelligencePipeline:
@@ -680,7 +744,7 @@ def section_schema() -> dict[str, Any]:
             "due": {"type": "string"},
             "confidence": {"type": "string"},
             "evidence_ids": {"type": "array", "items": {"type": "string"}},
-            "metadata": {"type": "object", "additionalProperties": True},
+            "metadata": {"type": "object", "additionalProperties": False, "properties": {}},
         },
         "required": ["id", "title", "body", "status", "owner", "due", "confidence", "evidence_ids", "metadata"],
     }
