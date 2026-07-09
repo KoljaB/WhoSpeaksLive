@@ -6,6 +6,8 @@ WhoSpeaksLive is a local-first speaker diarization app for turning live or repla
 
 https://github.com/user-attachments/assets/2de749e0-6c02-47de-b949-bd90b4f4efbb
 
+For faster realtime ASR preview text like shown in the demo, use [Kroko Pro/commercial streaming models](https://docs.kroko.ai/on-premise/#2-commercial-oem-models); the public Community models work, but Pro/private models must be installed and licensed separately.
+
 ## Current Scope
 
 WhoSpeaksLive performs best on clean recordings where one person speaks at a time into good microphones. Diarization accuracy can degrade with background noise, background music, echo, crosstalk, overlapping speech, or low-quality microphones, and it may become less reliable as the active speaker count grows. The system assumes complete utterances can be assigned to a single speaker, so cases where one speaker starts a sentence and another finishes it are not expected to score well.

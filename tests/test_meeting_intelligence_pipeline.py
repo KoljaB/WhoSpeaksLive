@@ -1,0 +1,118 @@
+from __future__ import annotations
+
+import sys
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+
+from window.meeting_intelligence_pipeline import (
+    PIPELINE_SCHEMA_VERSION,
+    MockMeetingLLMClient,
+    MultiPassMeetingIntelligencePipeline,
+    OpenAICompatibleMeetingClient,
+    default_llm_config,
+    parse_openai_chat_json,
+)
+
+
+def sample_rows(count: int = 30) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    topics = {
+        1: "Agenda review and apologies.",
+        13: "Moving on to finance, we decided to keep the budget unchanged.",
+        25: "Next item is training, Alice will follow up by Tuesday.",
+    }
+    for index in range(1, count + 1):
+        text = topics.get(index, f"Discussion detail {index}.")
+        rows.append({
+            "index": index,
+            "row_id": f"row_{index}",
+            "start": float(index),
+            "end": float(index) + 0.5,
+            "text": text,
+            "assigned_speaker": "S1" if index % 2 else "S2",
+            "speaker_name": "Alice" if index % 2 else "Bob",
+        })
+    return rows
+
+
+class MeetingIntelligencePipelineTests(unittest.TestCase):
+    def test_default_config_supports_openai_compatible_providers(self) -> None:
+        self.assertEqual(default_llm_config("llama-cpp").base_url, "http://127.0.0.1:8081/v1")
+        self.assertEqual(default_llm_config("ollama").base_url, "http://127.0.0.1:11434/v1")
+        self.assertEqual(default_llm_config("lm_studio").base_url, "http://127.0.0.1:1234/v1")
+        self.assertEqual(default_llm_config("openai").base_url, "https://api.openai.com/v1")
+        self.assertEqual(default_llm_config("openrouter").base_url, "https://openrouter.ai/api/v1")
+        with self.assertRaises(ValueError):
+            default_llm_config("unsupported")
+
+    def test_openai_compatible_payload_uses_structured_json_contract(self) -> None:
+        config = default_llm_config(
+            "llama_cpp",
+            base_url="http://llm.test/v1",
+            model="gemma-12b-q6",
+            enable_thinking=False,
+        )
+        client = OpenAICompatibleMeetingClient(config)
+
+        payload = client._build_payload(
+            schema_name="meeting_section",
+            schema={"type": "object"},
+            system_prompt="Return JSON only.",
+            user_payload={"section": "summary"},
+            max_tokens=512,
+        )
+
+        self.assertEqual(payload["model"], "gemma-12b-q6")
+        self.assertEqual(payload["messages"][1]["role"], "user")
+        self.assertIn("json_schema", payload)
+        self.assertEqual(payload["response_format"]["type"], "json_schema")
+        self.assertFalse(payload["chat_template_kwargs"]["enable_thinking"])
+
+    def test_multi_pass_pipeline_chunks_transcript_then_generates_sections(self) -> None:
+        client = MockMeetingLLMClient()
+        progress_events: list[dict[str, object]] = []
+        pipeline = MultiPassMeetingIntelligencePipeline(
+            client,
+            max_segment_rows=12,
+            section_types=("executive_summary", "decisions", "action_items"),
+            progress_callback=progress_events.append,
+        )
+
+        report = pipeline.generate(
+            session_id="pipeline-test",
+            transcript_rows=sample_rows(30),
+            speaker_state={"speakers": [{"id": "S1", "name": "Alice"}, {"id": "S2", "name": "Bob"}]},
+            title="Pipeline test",
+        )
+
+        self.assertEqual(report["schema_version"], PIPELINE_SCHEMA_VERSION)
+        self.assertGreaterEqual(report["pipeline"]["segments"], 2)
+        self.assertEqual(client.calls.count("meeting_evidence_index"), report["pipeline"]["segments"])
+        self.assertEqual(client.calls.count("meeting_section"), 3)
+        self.assertIn("decisions", report["sections"])
+        self.assertTrue(report["evidence_index"])
+        self.assertFalse(report["quality"]["local_first"])
+        self.assertEqual(progress_events[-1]["stage"], "completed")
+        self.assertEqual(progress_events[-1]["percent"], 100)
+        self.assertIn("evidence", {event["stage"] for event in progress_events})
+        self.assertIn("section", {event["stage"] for event in progress_events})
+
+    def test_openai_json_parser_accepts_fenced_content(self) -> None:
+        payload = parse_openai_chat_json({
+            "choices": [
+                {"message": {"content": "```json\n{\"schema_version\":\"meeting_section_v1\",\"items\":[]}\n```"}}
+            ]
+        })
+
+        self.assertEqual(payload["schema_version"], "meeting_section_v1")
+
+
+if __name__ == "__main__":
+    unittest.main()

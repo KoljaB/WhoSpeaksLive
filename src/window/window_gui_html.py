@@ -154,7 +154,7 @@ HTML = r"""<!doctype html>
     .mic-gain-control input { width:100%; accent-color:#17B7FE; }
     .media-card.mode-system .mic-gain-control { display:none; }
     .speaker-panel { min-height:0; padding:0; overflow:hidden; display:grid; grid-template-rows:auto minmax(0,1fr); gap:0; }
-    .speaker-tabs { min-height:38px; display:grid; grid-template-columns:1fr 1fr 1fr; border-bottom:1px solid var(--line); }
+    .speaker-tabs { min-height:38px; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; border-bottom:1px solid var(--line); }
     .speaker-tab { min-height:38px; border:0; border-radius:0; background:transparent; color:#9EAAB6; font-size:13px; }
     .speaker-tab.active { color:#E8EEF5; box-shadow:inset 0 -2px 0 #17B7FE; }
     .speaker-tab-panel { min-width:0; min-height:0; padding:8px; overflow:hidden; }
@@ -201,6 +201,36 @@ HTML = r"""<!doctype html>
     .session-row-menu[hidden] { display:none; }
     .session-row-menu button { justify-content:flex-start; min-height:28px; border-color:#20303E; background:#121C26; color:#C6D0DC; text-align:left; font-size:12px; }
     .session-row-menu .danger { color:#E0A0A0; }
+    .meeting-intelligence-panel:not([hidden]) { display:grid; grid-template-rows:auto auto auto minmax(0,1fr) auto; gap:8px; }
+    .meeting-intelligence-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .meeting-intelligence-title { margin:0; color:#D7DEE8; font-size:13px; font-weight:400; }
+    .meeting-intelligence-generate { min-height:28px; padding:0 9px; border-color:#3DC77C; background:#0F1A14; color:#3DC77C; font-size:12px; white-space:nowrap; }
+    .meeting-intelligence-status { min-height:22px; display:flex; align-items:center; gap:6px; color:#9EAAB6; font-size:12px; }
+    .meeting-intelligence-summary { padding:9px 10px; border:1px solid var(--line); border-radius:7px; background:#0B1015; color:#D7DEE8; font-size:12px; line-height:1.35; overflow-wrap:anywhere; }
+    .meeting-intelligence-stats { display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+    .meeting-chip { display:inline-flex; align-items:center; min-height:20px; padding:0 7px; border:1px solid #20303E; border-radius:999px; color:#AEB9C5; background:#0B1015; font-size:11px; }
+    .meeting-chip.draft { border-color:#3A4654; color:#C6D0DC; }
+    .meeting-chip.accepted { border-color:#2E7D50; color:#3DC77C; }
+    .meeting-chip.rejected { border-color:#7C3434; color:#E0A0A0; }
+    .meeting-chip.edited { border-color:#8A6A2C; color:#F0BE5C; }
+    .meeting-chip.stale { border-color:#A56C24; color:#FFB86B; }
+    .meeting-object-list { min-height:0; display:grid; align-content:start; gap:8px; overflow:auto; padding-right:2px; }
+    .meeting-object-card { display:grid; gap:7px; padding:9px 10px; border:1px solid var(--line); border-radius:7px; background:#0F161F; text-align:left; cursor:pointer; }
+    .meeting-object-card.selected { border-color:#17B7FE; box-shadow:inset 0 0 0 1px rgba(23,183,254,.35); }
+    .meeting-object-top { min-width:0; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .meeting-object-title { min-width:0; flex:1 1 160px; color:#E8EEF5; font-size:13px; font-weight:600; overflow-wrap:anywhere; }
+    .meeting-object-body { color:#C6D0DC; font-size:12px; line-height:1.36; overflow-wrap:anywhere; }
+    .meeting-object-meta { color:#8F9BA8; font-size:11px; line-height:1.3; overflow-wrap:anywhere; }
+    .meeting-object-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .meeting-object-actions button { min-height:25px; padding:0 8px; border-color:#20303E; background:#121C26; color:#C6D0DC; font-size:12px; }
+    .meeting-object-actions .accept { border-color:#2E7D50; color:#3DC77C; }
+    .meeting-object-actions .reject { border-color:#7C3434; color:#E0A0A0; }
+    .meeting-evidence-panel { display:grid; gap:6px; padding-top:2px; border-top:1px solid var(--line); }
+    .meeting-evidence-title { color:#D7DEE8; font-size:12px; }
+    .meeting-evidence-list { display:grid; gap:6px; max-height:150px; overflow:auto; }
+    .meeting-evidence-item { display:grid; gap:3px; padding:7px 8px; border:1px solid #20303E; border-radius:6px; background:#0B1015; color:#AEB9C5; font-size:11px; text-align:left; cursor:pointer; }
+    .meeting-evidence-quote { color:#D7DEE8; overflow-wrap:anywhere; }
+    .row.meeting-evidence-row { border-color:#17B7FE; box-shadow:inset 0 0 0 1px rgba(23,183,254,.42), inset 4px 0 0 #17B7FE; }
     .speaker-item { --speaker-color:transparent; min-width:0; display:grid; border-bottom:1px solid var(--line); background:#0F161F; }
     .speaker-item:last-child { border-bottom:0; }
     .speaker-item.live-speaker { background:color-mix(in srgb, var(--speaker-color) 18%, #0F161F); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--speaker-color) 35%, transparent); }
@@ -674,6 +704,7 @@ HTML = r"""<!doctype html>
         <div class="speaker-tabs" role="tablist" aria-label="Speaker controls">
           <button class="speaker-tab active" type="button" role="tab" aria-selected="true" data-speaker-tab="speakers">Speakers</button>
           <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="sessions">Sessions</button>
+          <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="intelligence">Insights</button>
           <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="settings">Settings</button>
         </div>
         <div class="speaker-tab-panel" data-speaker-panel="speakers">
@@ -728,6 +759,20 @@ HTML = r"""<!doctype html>
             <button class="sessions-filter-button" type="button" data-session-filter="all">All</button>
           </div>
           <div id="sessionList" class="session-list"></div>
+        </div>
+        <div class="speaker-tab-panel meeting-intelligence-panel" data-speaker-panel="intelligence" hidden>
+          <div class="meeting-intelligence-header">
+            <h2 class="meeting-intelligence-title">Meeting intelligence</h2>
+            <button id="meetingIntelligenceGenerate" class="meeting-intelligence-generate" type="button">Generate</button>
+          </div>
+          <div id="meetingIntelligenceStatus" class="meeting-intelligence-status">No report</div>
+          <div id="meetingIntelligenceSummary" class="meeting-intelligence-summary">No meeting intelligence report yet.</div>
+          <div id="meetingIntelligenceStats" class="meeting-intelligence-stats"></div>
+          <div id="meetingIntelligenceObjects" class="meeting-object-list"></div>
+          <div class="meeting-evidence-panel">
+            <div class="meeting-evidence-title">Evidence</div>
+            <div id="meetingIntelligenceEvidence" class="meeting-evidence-list"></div>
+          </div>
         </div>
         <div class="speaker-tab-panel speaker-settings-panel" data-speaker-panel="settings" hidden>
           <label class="sensitivity" title="Controls how easily the diarizer creates a new speaker profile.">
@@ -858,6 +903,12 @@ const speakerTabPanels = Array.from(document.querySelectorAll(".speaker-tab-pane
 const sessionList = document.getElementById("sessionList");
 const newRunSessionButton = document.getElementById("newRunSession");
 const sessionFilterButtons = Array.from(document.querySelectorAll(".sessions-filter-button"));
+const meetingIntelligenceGenerate = document.getElementById("meetingIntelligenceGenerate");
+const meetingIntelligenceStatus = document.getElementById("meetingIntelligenceStatus");
+const meetingIntelligenceSummary = document.getElementById("meetingIntelligenceSummary");
+const meetingIntelligenceStats = document.getElementById("meetingIntelligenceStats");
+const meetingIntelligenceObjects = document.getElementById("meetingIntelligenceObjects");
+const meetingIntelligenceEvidence = document.getElementById("meetingIntelligenceEvidence");
 const referenceSpeakerForm = document.getElementById("referenceSpeakerForm");
 const referenceSpeakerFile = document.getElementById("referenceSpeakerFile");
 const recordReferenceButton = document.getElementById("recordReference");
@@ -969,6 +1020,9 @@ let editingSessionTitleId = "";
 let pendingSessionTitleFocusId = "";
 let savedSessionRefreshTimer = null;
 let savedSessionAutoRefreshTimer = null;
+let meetingIntelligenceReport = null;
+let meetingIntelligenceSelectedObjectId = "";
+let meetingIntelligenceBusy = false;
 if (statusCard && window.matchMedia("(max-width: 900px)").matches) {
   statusCard.open = false;
 }
@@ -1724,6 +1778,7 @@ function leaveSavedSessionReview() {
   if (!openedSavedSessionId) return;
   openedSavedSessionId = "";
   clearTranscriptSelection();
+  setMeetingIntelligenceReport(null);
   setTranscriptTitleLive();
   renderSavedSessions();
 }
@@ -1748,6 +1803,7 @@ function clearSessionReviewForNewSession() {
   mutedSpeakerIds.clear();
   clearLiveSpeakerState();
   resetTranscriptDisplay();
+  setMeetingIntelligenceReport(null);
   setTranscriptTitleLive();
   updateSpeakerState({group_name:"", groups:[], speakers:[]});
   updateMediaMode();
@@ -1769,6 +1825,7 @@ async function createDraftSavedSession(statusLabel = "New") {
   draftSavedSessionId = summary.id || "";
   savedSessionFilter = "active";
   await fetchSavedSessions();
+  renderMeetingIntelligencePanel();
   return draftSavedSessionId;
 }
 async function ensureDraftSavedSession(statusLabel = "Started") {
@@ -2454,6 +2511,266 @@ function setSavedSessionFilter(filter) {
   renderSavedSessions();
   fetchSavedSessions().catch(error => log(`Refresh sessions failed: ${error.message}`));
 }
+function currentMeetingIntelligenceSessionId() {
+  return openedSavedSessionId || draftSavedSessionId || "";
+}
+function setMeetingIntelligenceReport(payload) {
+  const container = payload && payload.meeting_intelligence ? payload.meeting_intelligence : payload;
+  meetingIntelligenceReport = container && container.report ? container.report : null;
+  meetingIntelligenceSelectedObjectId = "";
+  clearMeetingEvidenceHighlight();
+  renderMeetingIntelligencePanel();
+}
+function meetingObjects() {
+  return meetingIntelligenceReport && Array.isArray(meetingIntelligenceReport.objects)
+    ? meetingIntelligenceReport.objects
+    : [];
+}
+function meetingObjectKindLabel(type) {
+  return {
+    summary: "Summary",
+    decision: "Decision",
+    action_item: "Action",
+    open_question: "Question",
+    risk: "Risk",
+    claim: "Claim",
+  }[type] || String(type || "Object");
+}
+function meetingStatusLabel(status) {
+  return String(status || "draft").replace(/_/g, " ");
+}
+function meetingChip(text, status = "") {
+  const chip = document.createElement("span");
+  chip.className = `meeting-chip ${String(status || "").replace(/[^a-z0-9_-]+/gi, "")}`;
+  chip.textContent = text;
+  return chip;
+}
+function meetingEvidenceSpans(object) {
+  return object && Array.isArray(object.evidence_spans) ? object.evidence_spans : [];
+}
+function meetingEvidenceRowIndex(rowRef, rowId = "") {
+  if (rowRef && rowRef.index !== undefined && rowRef.index !== null) return String(rowRef.index);
+  const match = /^row_(\d+)$/.exec(String(rowId || ""));
+  return match ? match[1] : "";
+}
+function findMeetingEvidenceTranscriptRow(rowRef, rowId = "") {
+  const index = meetingEvidenceRowIndex(rowRef, rowId);
+  if (!index) return null;
+  return Array.from(sentences.querySelectorAll(".row")).find(row => (
+    row.dataset.index === index && row.dataset.realtime !== "true"
+  )) || null;
+}
+function clearMeetingEvidenceHighlight() {
+  Array.from(sentences.querySelectorAll(".row.meeting-evidence-row")).forEach(row => {
+    row.classList.remove("meeting-evidence-row");
+  });
+}
+function meetingEvidenceRows(spans) {
+  const rows = [];
+  (Array.isArray(spans) ? spans : []).forEach(span => {
+    const rowIds = Array.isArray(span.row_ids) ? span.row_ids : [];
+    const refs = Array.isArray(span.rows) ? span.rows : [];
+    if (refs.length) {
+      refs.forEach((ref, index) => {
+        const row = findMeetingEvidenceTranscriptRow(ref, rowIds[index] || ref.row_id || "");
+        if (row && !rows.includes(row)) rows.push(row);
+      });
+    } else {
+      rowIds.forEach(rowId => {
+        const row = findMeetingEvidenceTranscriptRow(null, rowId);
+        if (row && !rows.includes(row)) rows.push(row);
+      });
+    }
+  });
+  return rows;
+}
+function scrollToMeetingEvidence(spans) {
+  clearMeetingEvidenceHighlight();
+  const rows = meetingEvidenceRows(spans);
+  rows.forEach(row => row.classList.add("meeting-evidence-row"));
+  if (rows.length) {
+    rows[0].scrollIntoView({block:"center", behavior:"smooth"});
+  }
+}
+function selectedMeetingObject() {
+  return meetingObjects().find(object => object.id === meetingIntelligenceSelectedObjectId) || null;
+}
+function selectMeetingIntelligenceObject(objectId) {
+  meetingIntelligenceSelectedObjectId = objectId || "";
+  renderMeetingIntelligencePanel();
+  const object = selectedMeetingObject();
+  if (object) scrollToMeetingEvidence(meetingEvidenceSpans(object));
+}
+function renderMeetingEvidence(object) {
+  meetingIntelligenceEvidence.textContent = "";
+  if (!object) {
+    const empty = document.createElement("div");
+    empty.className = "meeting-evidence-item";
+    empty.textContent = "Select an object.";
+    meetingIntelligenceEvidence.appendChild(empty);
+    return;
+  }
+  const spans = meetingEvidenceSpans(object);
+  if (!spans.length) {
+    const empty = document.createElement("div");
+    empty.className = "meeting-evidence-item";
+    empty.textContent = "No evidence spans.";
+    meetingIntelligenceEvidence.appendChild(empty);
+    return;
+  }
+  spans.forEach(span => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "meeting-evidence-item";
+    const meta = document.createElement("span");
+    const speaker = span.speaker_name || speakerDisplayLabel(span.speaker_id);
+    meta.textContent = `${speaker} ${secondsLabel(span.start)} - ${secondsLabel(span.end)} ${span.support_type || "direct"}`;
+    const quote = document.createElement("span");
+    quote.className = "meeting-evidence-quote";
+    quote.textContent = span.quote_excerpt || "";
+    item.append(meta, quote);
+    item.addEventListener("click", () => scrollToMeetingEvidence([span]));
+    meetingIntelligenceEvidence.appendChild(item);
+  });
+}
+function renderMeetingObjectCard(object) {
+  const card = document.createElement("div");
+  card.className = "meeting-object-card";
+  card.classList.toggle("selected", object.id === meetingIntelligenceSelectedObjectId);
+  card.setAttribute("role", "button");
+  card.tabIndex = 0;
+  card.addEventListener("click", () => selectMeetingIntelligenceObject(object.id || ""));
+  card.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      selectMeetingIntelligenceObject(object.id || "");
+    }
+  });
+
+  const top = document.createElement("div");
+  top.className = "meeting-object-top";
+  top.appendChild(meetingChip(meetingObjectKindLabel(object.type)));
+  top.appendChild(meetingChip(meetingStatusLabel(object.status), object.status || "draft"));
+  const title = document.createElement("div");
+  title.className = "meeting-object-title";
+  title.textContent = object.title || meetingObjectKindLabel(object.type);
+  top.appendChild(title);
+
+  const body = document.createElement("div");
+  body.className = "meeting-object-body";
+  body.textContent = object.body || "";
+
+  const meta = document.createElement("div");
+  meta.className = "meeting-object-meta";
+  const confidence = Number(object.confidence);
+  const confidenceLabel = Number.isFinite(confidence) ? `${Math.round(confidence * 100)}%` : "n/a";
+  meta.textContent = `Confidence ${confidenceLabel}. ${object.confidence_reason || ""}`.trim();
+
+  const actions = document.createElement("div");
+  actions.className = "meeting-object-actions";
+  ["accepted", "rejected"].forEach(status => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = status === "accepted" ? "accept" : "reject";
+    button.textContent = status === "accepted" ? "Accept" : "Reject";
+    button.disabled = meetingIntelligenceBusy || object.status === status || !currentMeetingIntelligenceSessionId();
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      updateMeetingIntelligenceObjectStatus(object.id || "", status);
+    });
+    actions.appendChild(button);
+  });
+
+  card.append(top, body, meta, actions);
+  return card;
+}
+function renderMeetingIntelligencePanel() {
+  const sessionId = currentMeetingIntelligenceSessionId();
+  meetingIntelligenceGenerate.disabled = meetingIntelligenceBusy || !sessionId;
+  meetingIntelligenceObjects.textContent = "";
+  meetingIntelligenceStats.textContent = "";
+  if (!meetingIntelligenceReport) {
+    meetingIntelligenceStatus.textContent = sessionId ? "No report" : "No saved session";
+    meetingIntelligenceSummary.textContent = sessionId ? "No meeting intelligence report yet." : "Open or create a session.";
+    renderMeetingEvidence(null);
+    return;
+  }
+  const reportStatus = meetingIntelligenceReport.status || "draft";
+  meetingIntelligenceStatus.textContent = `Local ${reportStatus}`;
+  meetingIntelligenceSummary.textContent = meetingIntelligenceReport.summary || "";
+  const objects = meetingObjects();
+  const counts = objects.reduce((acc, object) => {
+    const key = object.status || "draft";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  meetingIntelligenceStats.appendChild(meetingChip(`${objects.length} objects`));
+  Object.entries(counts).forEach(([status, count]) => {
+    meetingIntelligenceStats.appendChild(meetingChip(`${count} ${meetingStatusLabel(status)}`, status));
+  });
+  if (meetingIntelligenceReport.current_transcript_revision_id) {
+    meetingIntelligenceStats.appendChild(meetingChip("needs recheck", "stale"));
+  }
+  objects.forEach(object => {
+    meetingIntelligenceObjects.appendChild(renderMeetingObjectCard(object));
+  });
+  if (!objects.length) {
+    const empty = document.createElement("div");
+    empty.className = "session-empty";
+    empty.textContent = "No objects.";
+    meetingIntelligenceObjects.appendChild(empty);
+  }
+  renderMeetingEvidence(selectedMeetingObject());
+}
+async function refreshMeetingIntelligenceReport() {
+  const sessionId = currentMeetingIntelligenceSessionId();
+  if (!sessionId) {
+    renderMeetingIntelligencePanel();
+    return;
+  }
+  try {
+    const result = await post("/api/meeting-intelligence/report", {session_id: sessionId});
+    if (result.meeting_intelligence) setMeetingIntelligenceReport(result.meeting_intelligence);
+  } catch (error) {
+    log(`Load meeting intelligence failed: ${error.message}`);
+  }
+}
+async function generateMeetingIntelligenceReport() {
+  const sessionId = currentMeetingIntelligenceSessionId();
+  if (!sessionId) {
+    log("Open or create a saved session first.");
+    return;
+  }
+  meetingIntelligenceBusy = true;
+  renderMeetingIntelligencePanel();
+  try {
+    const result = await post("/api/meeting-intelligence/generate", {session_id: sessionId});
+    if (result.meeting_intelligence) setMeetingIntelligenceReport(result.meeting_intelligence);
+    await fetchSavedSessions();
+    log("Meeting intelligence report generated.");
+  } catch (error) {
+    log(`Generate meeting intelligence failed: ${error.message}`);
+  } finally {
+    meetingIntelligenceBusy = false;
+    renderMeetingIntelligencePanel();
+  }
+}
+async function updateMeetingIntelligenceObjectStatus(objectId, status) {
+  const sessionId = currentMeetingIntelligenceSessionId();
+  if (!sessionId || !objectId) return;
+  meetingIntelligenceBusy = true;
+  renderMeetingIntelligencePanel();
+  try {
+    const result = await post("/api/meeting-intelligence/update-object", {session_id: sessionId, object_id: objectId, status});
+    if (result.meeting_intelligence) setMeetingIntelligenceReport(result.meeting_intelligence);
+    await fetchSavedSessions();
+  } catch (error) {
+    log(`Update meeting intelligence failed: ${error.message}`);
+  } finally {
+    meetingIntelligenceBusy = false;
+    renderMeetingIntelligencePanel();
+  }
+}
 function reflectSavedSessionSource(sessionData) {
   const summary = sessionData.summary || {};
   const manifest = sessionData.manifest || {};
@@ -2506,6 +2823,7 @@ function loadSavedSessionReview(sessionData, options = {}) {
   recomputeRenderedSpeakerSentenceCounts();
   refreshSpeakerPanelSentenceCounts();
   refreshTranscriptVisibility();
+  setMeetingIntelligenceReport(sessionData.meeting_intelligence || null);
   renderSpeakerPanel();
   renderSavedSessions();
   setSourceControlsDisabled(false);
@@ -2723,6 +3041,7 @@ function resetTranscriptDisplay() {
   browserLiveObservationBuffer = [];
   sentences.textContent = "";
   statusBox.textContent = "";
+  clearMeetingEvidenceHighlight();
   clearTranscriptSelection();
   transcriptClearBeforeSeconds = 0;
   currentRealtimeGeneration = 0;
@@ -3220,7 +3539,7 @@ function updateSpeakerState(state) {
   syncBulkCorrectionToolbar();
 }
 function setSpeakerTab(tabName) {
-  const nextTab = tabName === "settings" || tabName === "sessions" ? tabName : "speakers";
+  const nextTab = tabName === "settings" || tabName === "sessions" || tabName === "intelligence" ? tabName : "speakers";
   speakerTabButtons.forEach(button => {
     const active = button.dataset.speakerTab === nextTab;
     button.classList.toggle("active", active);
@@ -3233,6 +3552,7 @@ function setSpeakerTab(tabName) {
     fetchSavedSessions().catch(error => log(`Refresh sessions failed: ${error.message}`));
   }
   syncSavedSessionsAutoRefresh();
+  renderMeetingIntelligencePanel();
 }
 function selectedSpeaker() {
   return speakerLibraryState.speakers.find(speaker => speaker.id === editingSpeakerId) || null;
@@ -5354,6 +5674,7 @@ newSpeakerSensitivity.addEventListener("change", () => {
 speakerTabButtons.forEach(button => {
   button.addEventListener("click", () => setSpeakerTab(button.dataset.speakerTab));
 });
+meetingIntelligenceGenerate.addEventListener("click", generateMeetingIntelligenceReport);
 sessionFilterButtons.forEach(button => {
   button.addEventListener("click", () => setSavedSessionFilter(button.dataset.sessionFilter || "active"));
 });
@@ -5699,6 +6020,7 @@ audio.addEventListener("ended", flushPlaybackEnd);
 window.addEventListener("pagehide", () => sendSessionReleaseBeacon("tab closed"));
 window.addEventListener("beforeunload", () => sendSessionReleaseBeacon("tab closed"));
 updateSessionBanner();
+renderMeetingIntelligencePanel();
 fetchSavedSessions().catch(() => {});
 syncSavedSessionsAutoRefresh();
 fetchSessionStatus().catch(() => {});

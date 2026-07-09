@@ -482,6 +482,9 @@ class Handler(BaseHTTPRequestHandler):
             query = parse_qs(parsed.query)
             client_id = str((query.get("client_id") or [""])[0])
             self._send_json({"ok": True, "session": self.server.session_status(client_id)})
+        elif path == "/api/meeting-intelligence/report":
+            query = parse_qs(parsed.query)
+            self._send_json(self.server.meeting_intelligence_report(str((query.get("session_id") or [""])[0])))
         else:
             self.send_error(404)
 
@@ -512,6 +515,18 @@ class Handler(BaseHTTPRequestHandler):
                     str(payload.get("session_id") or ""),
                     str(payload.get("speaker_id") or ""),
                     str(payload.get("name") or ""),
+                ))
+            elif path == "/api/meeting-intelligence/report":
+                self._send_json(self.server.meeting_intelligence_report(str(payload.get("session_id") or "")))
+            elif path == "/api/meeting-intelligence/generate":
+                self._send_json(self.server.generate_meeting_intelligence(str(payload.get("session_id") or "")))
+            elif path == "/api/meeting-intelligence/update-object":
+                self._send_json(self.server.update_meeting_intelligence_object(
+                    str(payload.get("session_id") or ""),
+                    str(payload.get("object_id") or ""),
+                    status=str(payload.get("status") or "") or None,
+                    title=str(payload.get("title")) if "title" in payload else None,
+                    body=str(payload.get("body")) if "body" in payload else None,
                 ))
             elif path == "/api/session/acquire":
                 self._send_json(self.server.acquire_session(str(payload.get("client_id") or "")))
@@ -1001,6 +1016,57 @@ class WindowServer(ThreadingHTTPServer):
 
     def rename_saved_session_speaker(self, session_id: str, speaker_id: str, name: str) -> dict[str, Any]:
         return {"ok": True, "session": self.session_store.rename_speaker(session_id, speaker_id, name)}
+
+    def _meeting_intelligence_session_id(self, session_id: str) -> str:
+        requested = str(session_id or "").strip()
+        snapshot = self.controller.session_snapshot()
+        current_id = str(snapshot.get("id") or "").strip()
+        if requested:
+            if current_id and requested == current_id:
+                self._save_current_session(status_label="Saved", write_audio=False)
+            return requested
+        if current_id:
+            self._save_current_session(status_label="Saved", write_audio=False)
+            return current_id
+        raise ValueError("Choose or create a saved session first.")
+
+    def meeting_intelligence_report(self, session_id: str) -> dict[str, Any]:
+        resolved_session_id = self._meeting_intelligence_session_id(session_id)
+        return {
+            "ok": True,
+            "session_id": resolved_session_id,
+            "meeting_intelligence": self.session_store.meeting_intelligence(resolved_session_id),
+        }
+
+    def generate_meeting_intelligence(self, session_id: str) -> dict[str, Any]:
+        resolved_session_id = self._meeting_intelligence_session_id(session_id)
+        return {
+            "ok": True,
+            "session_id": resolved_session_id,
+            "meeting_intelligence": self.session_store.generate_meeting_intelligence(resolved_session_id),
+        }
+
+    def update_meeting_intelligence_object(
+        self,
+        session_id: str,
+        object_id: str,
+        *,
+        status: str | None = None,
+        title: str | None = None,
+        body: str | None = None,
+    ) -> dict[str, Any]:
+        resolved_session_id = self._meeting_intelligence_session_id(session_id)
+        return {
+            "ok": True,
+            "session_id": resolved_session_id,
+            "meeting_intelligence": self.session_store.update_meeting_intelligence_object(
+                resolved_session_id,
+                object_id,
+                status=status,
+                title=title,
+                body=body,
+            ),
+        }
 
     @property
     def session_lease_enabled(self) -> bool:
