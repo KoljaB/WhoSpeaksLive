@@ -4,15 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "whospeaks"
-version = "0.1.0.dev16"
+version = "0.0.1"
 description = "Local speaker diarization and realtime voice-labeling tools."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 requires-python = ">=3.11"
 dependencies = []
-classifiers = [
-    "License :: OSI Approved :: MIT License",
-]
+
+[project.urls]
+Homepage = "https://github.com/KoljaB/WhoSpeaksLive"
+Repository = "https://github.com/KoljaB/WhoSpeaksLive"
+Documentation = "https://github.com/KoljaB/WhoSpeaksLive/tree/master/docs"
 
 [project.optional-dependencies]
 controller = [

@@ -20,13 +20,13 @@ The image:
 - uses `/data` for sessions/output/work files
 - uses `/models` for Hugging Face and model caches
 
-The default build currently pins the known-good TestPyPI wheel used during Linux validation:
+The default build currently pins the first PyPI release:
 
 ```text
-whospeaks 0.1.0.dev16
+whospeaks 0.0.1
 ```
 
-Override the build arguments when publishing or testing a newer release.
+Override the build arguments when testing a newer release.
 
 ## Build
 
@@ -41,7 +41,7 @@ To build from a normal package index version instead of the pinned wheel URL:
 ```bash
 docker build \
   --build-arg WHOSPEAKS_WHEEL_URL= \
-  --build-arg WHOSPEAKS_VERSION=0.1.0.dev16 \
+  --build-arg WHOSPEAKS_VERSION=0.0.1 \
   -t whospeaks:local .
 ```
 
@@ -133,7 +133,7 @@ The image includes a Docker `HEALTHCHECK` that fetches the root page inside the 
 
 The Docker path was validated on Linux with:
 
-- `whospeaks 0.1.0.dev16`
+- `whospeaks 0.0.1`
 - `torch 2.12.1+cpu`
 - `kroko_onnx 1.12.9`
 - `pip check` with no broken requirements
