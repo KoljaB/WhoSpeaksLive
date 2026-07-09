@@ -131,6 +131,7 @@ whospeaks-realtime = "realtime.realtime_speakerdiarize:main"
 whospeaks-filefeed-replay = "replay.youtube_local_filefeed_replay:main"
 whospeaks-embedding-benchmark = "embeddings.benchmark_voice_embeddings:main"
 whospeaks-browser-live-eval = "window.browser_live_speaker_eval:main"
+whospeaks-meeting-intelligence = "window.meeting_intelligence_server:main"
 
 [tool.setuptools]
 include-package-data = true

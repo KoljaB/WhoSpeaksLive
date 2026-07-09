@@ -15,6 +15,11 @@ from urllib.parse import parse_qs, urlparse
 import numpy as np
 
 from paths import RUNTIME_DIR
+from window.meeting_intelligence import (
+    generate_meeting_report,
+    mark_report_stale_if_needed,
+    update_report_object,
+)
 from window.review_flags import annotate_review
 
 
@@ -132,6 +137,14 @@ def _with_review(row: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
+def _empty_meeting_intelligence_doc(updated_at: str) -> dict[str, Any]:
+    return {
+        "version": SESSION_FORMAT_VERSION,
+        "updated_at": updated_at,
+        "report": None,
+    }
+
+
 def _speaker_display_name(speaker_id: str, name: str = "") -> str:
     if name:
         return name
@@ -172,6 +185,70 @@ class SessionStore:
             return dict(fallback or {})
         value = json.loads(path.read_text(encoding="utf-8"))
         return value if isinstance(value, dict) else dict(fallback or {})
+
+    def _meeting_intelligence_path(self, session_id: str) -> Path:
+        return self._session_dir(session_id) / "meeting_intelligence.json"
+
+    @staticmethod
+    def _meeting_intelligence_doc(report: dict[str, Any] | None, updated_at: str) -> dict[str, Any]:
+        doc = _empty_meeting_intelligence_doc(updated_at)
+        doc["report"] = report if isinstance(report, dict) and report else None
+        return doc
+
+    @staticmethod
+    def _manifest_with_meeting_intelligence(
+        manifest: dict[str, Any],
+        report: dict[str, Any] | None,
+    ) -> dict[str, Any]:
+        next_manifest = dict(manifest)
+        paths = dict(next_manifest.get("paths") or {})
+        paths.setdefault("transcript", "transcript.json")
+        paths.setdefault("speakers", "speakers.json")
+        paths.setdefault("embeddings", "embeddings.json")
+        paths["meeting_intelligence"] = "meeting_intelligence.json"
+        next_manifest["paths"] = paths
+        has_report = isinstance(report, dict) and bool(report)
+        next_manifest["has_meeting_intelligence"] = has_report
+        next_manifest["meeting_intelligence_status"] = str(report.get("status") or "") if has_report else ""
+        return next_manifest
+
+    def _read_meeting_intelligence_report(self, session_id: str) -> dict[str, Any] | None:
+        doc = self._read_json(self._meeting_intelligence_path(session_id), {"report": None})
+        report = doc.get("report")
+        return report if isinstance(report, dict) and report else None
+
+    def _write_meeting_intelligence_report(
+        self,
+        session_id: str,
+        report: dict[str, Any] | None,
+        updated_at: str,
+    ) -> None:
+        self._write_json(
+            self._meeting_intelligence_path(session_id),
+            self._meeting_intelligence_doc(report, updated_at),
+        )
+
+    def _mark_meeting_intelligence_stale_for_rows(
+        self,
+        session_id: str,
+        rows: list[dict[str, Any]],
+        speaker_state: dict[str, Any],
+        updated_at: str,
+    ) -> tuple[dict[str, Any] | None, bool]:
+        report = self._read_meeting_intelligence_report(session_id)
+        if report is None:
+            if not self._meeting_intelligence_path(session_id).is_file():
+                self._write_meeting_intelligence_report(session_id, None, updated_at)
+            return None, False
+        report, changed = mark_report_stale_if_needed(
+            report,
+            transcript_rows=rows,
+            speaker_state=speaker_state,
+            updated_at=updated_at,
+        )
+        if changed:
+            self._write_meeting_intelligence_report(session_id, report, updated_at)
+        return report, changed
 
     @staticmethod
     def _embedding_payload(record: dict[str, Any]) -> dict[str, Any] | None:
@@ -241,6 +318,7 @@ class SessionStore:
             "live_embedding_provider": "",
             "records": [],
         })
+        self._write_json(session_dir / "meeting_intelligence.json", _empty_meeting_intelligence_doc(now))
         manifest = {
             "version": SESSION_FORMAT_VERSION,
             "id": normalized_id,
@@ -263,10 +341,13 @@ class SessionStore:
             "has_transcript": False,
             "has_speakers": False,
             "has_embeddings": False,
+            "has_meeting_intelligence": False,
+            "meeting_intelligence_status": "",
             "paths": {
                 "transcript": "transcript.json",
                 "speakers": "speakers.json",
                 "embeddings": "embeddings.json",
+                "meeting_intelligence": "meeting_intelligence.json",
             },
         }
         self._write_json(session_dir / "manifest.json", manifest)
@@ -292,6 +373,8 @@ class SessionStore:
             "has_transcript": bool(manifest.get("has_transcript")),
             "has_speakers": bool(manifest.get("has_speakers")),
             "has_embeddings": bool(manifest.get("has_embeddings")),
+            "has_meeting_intelligence": bool(manifest.get("has_meeting_intelligence")),
+            "meeting_intelligence_status": str(manifest.get("meeting_intelligence_status") or ""),
         }
 
     def list_sessions(self, filter_mode: str = "active", query: str = "") -> list[dict[str, Any]]:
@@ -376,6 +459,12 @@ class SessionStore:
             "live_embedding_provider": str(snapshot.get("live_embedding_provider") or ""),
             "records": embedding_records,
         })
+        meeting_intelligence_report, _meeting_intelligence_changed = self._mark_meeting_intelligence_stale_for_rows(
+            session_id,
+            rows,
+            speaker_state if isinstance(speaker_state, dict) else {},
+            now,
+        )
 
         audio = dict(existing.get("audio") or {})
         audio_error = ""
@@ -433,12 +522,16 @@ class SessionStore:
             "has_transcript": bool(rows),
             "has_speakers": bool(speaker_names),
             "has_embeddings": bool(embedding_records),
+            "has_meeting_intelligence": bool(meeting_intelligence_report),
+            "meeting_intelligence_status": str(meeting_intelligence_report.get("status") or "") if meeting_intelligence_report else "",
             "paths": {
                 "transcript": "transcript.json",
                 "speakers": "speakers.json",
                 "embeddings": "embeddings.json",
+                "meeting_intelligence": "meeting_intelligence.json",
             },
         }
+        manifest = self._manifest_with_meeting_intelligence(manifest, meeting_intelligence_report)
         self._write_json(session_dir / "manifest.json", manifest)
         return self._summary_from_manifest(manifest)
 
@@ -448,15 +541,34 @@ class SessionStore:
         transcript = self._read_json(session_dir / "transcript.json", {"rows": []})
         speakers = self._read_json(session_dir / "speakers.json", {"speaker_state": {}})
         embeddings = self._read_json(session_dir / "embeddings.json", {"records": []})
+        rows = [_with_review(dict(row)) for row in (transcript.get("rows") or [])]
+        speaker_state = speakers.get("speaker_state") if isinstance(speakers.get("speaker_state"), dict) else {}
+        meeting_intelligence_report, meeting_intelligence_changed = self._mark_meeting_intelligence_stale_for_rows(
+            session_id,
+            rows,
+            speaker_state,
+            _now_iso(),
+        )
+        manifest_with_meeting_intelligence = self._manifest_with_meeting_intelligence(
+            manifest,
+            meeting_intelligence_report,
+        )
+        if meeting_intelligence_changed or manifest_with_meeting_intelligence != manifest:
+            self._write_json(session_dir / "manifest.json", manifest_with_meeting_intelligence)
+            manifest = manifest_with_meeting_intelligence
         return {
             "summary": self._summary_from_manifest(manifest),
             "manifest": manifest,
-            "transcript_rows": [_with_review(dict(row)) for row in (transcript.get("rows") or [])],
-            "speaker_state": speakers.get("speaker_state") if isinstance(speakers.get("speaker_state"), dict) else {},
+            "transcript_rows": rows,
+            "speaker_state": speaker_state,
             "speaker_profiles": list(speakers.get("speaker_profiles") or []),
             "live_speaker_profiles": list(speakers.get("live_speaker_profiles") or []),
             "embedding_count": len(embeddings.get("records") or []),
             "embeddings_available": bool(embeddings.get("records")),
+            "meeting_intelligence": {
+                "available": bool(meeting_intelligence_report),
+                "report": meeting_intelligence_report,
+            },
         }
 
     def rename_session(self, session_id: str, title: str) -> dict[str, Any]:
@@ -532,7 +644,92 @@ class SessionStore:
             for speaker in speakers
             if isinstance(speaker, dict)
         ]
+        meeting_intelligence_report, _meeting_intelligence_changed = self._mark_meeting_intelligence_stale_for_rows(
+            session_id,
+            [_with_review(dict(row)) for row in (transcript_doc.get("rows") or [])],
+            speaker_state,
+            now,
+        )
+        manifest = self._manifest_with_meeting_intelligence(manifest, meeting_intelligence_report)
         self._write_json(session_dir / "speakers.json", speakers_doc)
         self._write_json(session_dir / "transcript.json", transcript_doc)
         self._write_json(session_dir / "manifest.json", manifest)
         return self.open_session(session_id)
+
+    def meeting_intelligence(self, session_id: str) -> dict[str, Any]:
+        session_id = self._validate_session_id(session_id)
+        session_dir = self._session_dir(session_id)
+        manifest = self._load_manifest(session_id)
+        transcript_doc = self._read_json(session_dir / "transcript.json", {"rows": []})
+        speakers_doc = self._read_json(session_dir / "speakers.json", {"speaker_state": {}})
+        rows = [_with_review(dict(row)) for row in (transcript_doc.get("rows") or [])]
+        speaker_state = speakers_doc.get("speaker_state") if isinstance(speakers_doc.get("speaker_state"), dict) else {}
+        report, changed = self._mark_meeting_intelligence_stale_for_rows(session_id, rows, speaker_state, _now_iso())
+        manifest_with_meeting_intelligence = self._manifest_with_meeting_intelligence(manifest, report)
+        if changed or manifest_with_meeting_intelligence != manifest:
+            self._write_json(session_dir / "manifest.json", manifest_with_meeting_intelligence)
+        return {
+            "available": bool(report),
+            "report": report,
+        }
+
+    def generate_meeting_intelligence(self, session_id: str) -> dict[str, Any]:
+        session_id = self._validate_session_id(session_id)
+        session_dir = self._session_dir(session_id)
+        manifest = self._load_manifest(session_id)
+        transcript_doc = self._read_json(session_dir / "transcript.json", {"rows": []})
+        speakers_doc = self._read_json(session_dir / "speakers.json", {"speaker_state": {}})
+        rows = [_with_review(dict(row)) for row in (transcript_doc.get("rows") or [])]
+        speaker_state = speakers_doc.get("speaker_state") if isinstance(speakers_doc.get("speaker_state"), dict) else {}
+        report = generate_meeting_report(
+            session_id=session_id,
+            transcript_rows=rows,
+            speaker_state=speaker_state,
+        )
+        now = _now_iso()
+        self._write_meeting_intelligence_report(session_id, report, now)
+        manifest["updated_at"] = now
+        manifest["status_label"] = "Saved"
+        manifest = self._manifest_with_meeting_intelligence(manifest, report)
+        self._write_json(session_dir / "manifest.json", manifest)
+        return {
+            "available": True,
+            "report": report,
+        }
+
+    def update_meeting_intelligence_object(
+        self,
+        session_id: str,
+        object_id: str,
+        *,
+        status: str | None = None,
+        title: str | None = None,
+        body: str | None = None,
+    ) -> dict[str, Any]:
+        session_id = self._validate_session_id(session_id)
+        session_dir = self._session_dir(session_id)
+        manifest = self._load_manifest(session_id)
+        transcript_doc = self._read_json(session_dir / "transcript.json", {"rows": []})
+        speakers_doc = self._read_json(session_dir / "speakers.json", {"speaker_state": {}})
+        rows = [_with_review(dict(row)) for row in (transcript_doc.get("rows") or [])]
+        speaker_state = speakers_doc.get("speaker_state") if isinstance(speakers_doc.get("speaker_state"), dict) else {}
+        report, _changed = self._mark_meeting_intelligence_stale_for_rows(session_id, rows, speaker_state, _now_iso())
+        if report is None:
+            raise ValueError("Generate meeting intelligence before updating objects.")
+        report = update_report_object(
+            report,
+            object_id=object_id,
+            status=status,
+            title=title,
+            body=body,
+        )
+        now = _now_iso()
+        self._write_meeting_intelligence_report(session_id, report, now)
+        manifest["updated_at"] = now
+        manifest["status_label"] = "Saved"
+        manifest = self._manifest_with_meeting_intelligence(manifest, report)
+        self._write_json(session_dir / "manifest.json", manifest)
+        return {
+            "available": True,
+            "report": report,
+        }

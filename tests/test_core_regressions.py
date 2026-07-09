@@ -1502,6 +1502,22 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("speakerBadge.textContent = speakerLabel;", HTML)
         self.assertIn("row.replaceChildren(top, text);", HTML)
 
+    def test_meeting_intelligence_ui_contract_is_present(self) -> None:
+        self.assertIn('data-speaker-tab="intelligence"', HTML)
+        self.assertIn('id="meetingIntelligenceGenerate"', HTML)
+        self.assertIn("function generateMeetingIntelligenceReport()", HTML)
+        self.assertIn('post("/api/meeting-intelligence/generate"', HTML)
+        self.assertIn('post("/api/meeting-intelligence/update-object"', HTML)
+        self.assertIn("row.classList.add(\"meeting-evidence-row\")", HTML)
+        self.assertIn("setMeetingIntelligenceReport(sessionData.meeting_intelligence || null);", HTML)
+
+    def test_meeting_intelligence_api_routes_are_registered(self) -> None:
+        source = (SRC / "window" / "youtube_window_diarize_gui.py").read_text(encoding="utf-8")
+        self.assertIn('path == "/api/meeting-intelligence/report"', source)
+        self.assertIn('path == "/api/meeting-intelligence/generate"', source)
+        self.assertIn('path == "/api/meeting-intelligence/update-object"', source)
+        self.assertIn("def generate_meeting_intelligence(self, session_id: str)", source)
+
     def test_revised_sentence_refreshes_speaker_counts(self) -> None:
         self.assertIn("let renderedSpeakerSentenceCounts = {};", HTML)
         self.assertIn("let renderedSpeakerSpeakingSeconds = {};", HTML)
