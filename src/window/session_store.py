@@ -15,6 +15,7 @@ from urllib.parse import parse_qs, urlparse
 import numpy as np
 
 from paths import RUNTIME_DIR
+from window.review_flags import annotate_review
 
 
 DEFAULT_SESSION_DIR = RUNTIME_DIR / "sessions"
@@ -121,6 +122,14 @@ def _duration_from_rows(rows: list[dict[str, Any]]) -> float:
         except (TypeError, ValueError):
             continue
     return round(duration, 4)
+
+
+def _with_review(row: dict[str, Any]) -> dict[str, Any]:
+    payload = dict(row)
+    if bool(payload.get("pending")) or bool(payload.get("realtime")):
+        return payload
+    payload["review"] = annotate_review(payload)
+    return payload
 
 
 def _speaker_display_name(speaker_id: str, name: str = "") -> str:
@@ -334,7 +343,7 @@ class SessionStore:
         existing = self._read_json(session_dir / "manifest.json")
         now = _now_iso()
 
-        rows = _json_ready(list(snapshot.get("transcript_rows") or []))
+        rows = _json_ready([_with_review(dict(row)) for row in (snapshot.get("transcript_rows") or [])])
         speaker_state = _json_ready(snapshot.get("speaker_state") or {})
         source = _json_ready(snapshot.get("source") or {})
         speaker_profiles = _json_ready(snapshot.get("speaker_profiles") or [])
@@ -442,7 +451,7 @@ class SessionStore:
         return {
             "summary": self._summary_from_manifest(manifest),
             "manifest": manifest,
-            "transcript_rows": list(transcript.get("rows") or []),
+            "transcript_rows": [_with_review(dict(row)) for row in (transcript.get("rows") or [])],
             "speaker_state": speakers.get("speaker_state") if isinstance(speakers.get("speaker_state"), dict) else {},
             "speaker_profiles": list(speakers.get("speaker_profiles") or []),
             "live_speaker_profiles": list(speakers.get("live_speaker_profiles") or []),

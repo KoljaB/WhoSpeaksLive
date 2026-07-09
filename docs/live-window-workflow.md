@@ -28,6 +28,8 @@ The active Live tag is driven by short, frequent embedding probes over recent au
 
 The live transcript uses the dominant live speaker over the stable part of the sentence. Short pauses do not immediately turn a row gray, and late speaker changes near the end of a long sentence are discounted so the row usually keeps the speaker that dominated most of the sentence.
 
+On a single local GPU, live speaker probes share capacity with final ASR. The default probe cadence includes backpressure so live feedback should not starve final transcription. For transcript-quality tests where timing matters more than live speaker highlighting, launch with `--no-live-speaker-assignment`; realtime text preview stays enabled and final speaker assignment still runs on committed rows.
+
 ## Final Sentence Assignment
 
 Final sentences are assigned after ASR has enough text and timing information. The speaker ID is based on embeddings from the sentence audio and the current speaker memory.
@@ -78,5 +80,6 @@ Use `+ New session` in the Sessions tab to create a new active session immediate
 - Let the full clip finish before saving a speaker group.
 - Use Archive to remove old saved sessions from the default Active list without deleting them.
 - Use a remote GPU server for smoother local UI work when using large ASR and embedding models.
+- Disable live speaker assignment during local bottleneck tests to separate final ASR speed from live embedding contention.
 - If a newly detected speaker appears at the end of a sentence, wait for the sentence split before judging final assignment quality.
 - Use validation runs when comparing parameter changes.

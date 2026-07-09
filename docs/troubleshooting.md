@@ -112,6 +112,30 @@ Start smaller:
 3. Start ASR and embeddings in separate terminals so you can see which process uses VRAM.
 4. Move to provider stacks only after the smoke provider works.
 
+## Final Transcriptions Fall Behind Playback
+
+If final transcript rows get slower after several sentences, first decide whether the delay comes from ASR itself or from other work competing with ASR. ASR means automatic speech recognition: the final model that turns audio into committed transcript text. Live speaker scoring embeds recent audio windows while playback is running, so it can compete with final ASR when both use the same local GPU.
+
+Run the same command with live speaker scoring disabled:
+
+```powershell
+.\.venv\Scripts\whospeaks-window.exe --port 8796 --asr-backend local --model large-v2 --device cuda --compute-type float16 --embeddings-backend local --embedding-provider espnet_ecapa_wavlm_joint --live-speaker-embedding-provider espnet_ecapa_wavlm_joint --embedding-device cuda --vad-backend rms --realtime-preview-engine kroko_onnx --beam-size 5 --interval-seconds 2.5 --min-playback-advance-seconds 2.5 --unstable-tail-seconds 1.1 --no-live-speaker-assignment
+```
+
+If this catches up, the bottleneck is live speaker embedding contention, not large-v2 alone. Keep `--no-live-speaker-assignment` for transcript-quality runs, or re-enable live speaker scoring with conservative timing:
+
+```powershell
+--live-speaker-embedding-min-interval-seconds 0.75 --live-speaker-embedding-target-utilization 0.25 --live-speaker-probe-interval-seconds 0.75 --live-speaker-probe-min-advance-seconds 0.75
+```
+
+If final ASR is still slow with live speaker scoring disabled:
+
+- Check `nvidia-smi` while the run is active and confirm the ASR process is using the GPU.
+- Confirm the command uses `--device cuda --compute-type float16`.
+- Try `--beam-size 1` only as a speed comparison. Use `--beam-size 5` when transcript quality matters.
+- Stop other GPU-heavy processes before testing.
+- Prefer remote ASR and remote embeddings if the local GPU must also run realtime preview and browser work.
+
 ## Loaded Speakers Do Not Assign Immediately
 
 Check whether final and live providers changed.

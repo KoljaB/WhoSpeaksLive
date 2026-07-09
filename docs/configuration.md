@@ -1,6 +1,70 @@
 # Configuration
 
-Most users only need backend URLs and provider choices; deeper timing and clustering flags are available when validating a specific workflow.
+Most users only need backend URLs and provider choices; deeper timing and clustering flags are available when validating a specific workflow. For the complete list, see the [CLI reference](cli-reference.md).
+
+## Starter UI
+
+Run the starter without arguments for the interactive launcher:
+
+```powershell
+whospeaks
+```
+
+Choose `Configuration` to edit the main launch parameters directly. The launcher keeps short, high-contrast summaries on the first line and prints the exact model/provider strings in dimmer detail lines for validation work:
+
+- Language and realtime text
+- Speaker provider quality
+- Backends and remote URLs
+- ASR model, device, and compute type
+- Browser host and port
+- Advanced launch arguments for lower-level flags
+
+The first launcher screen exposes those same controls directly, with launch, doctor, install recommendation, and exact launch-command printing beside them. The `All saved profile fields` editor is still available from the configuration menu for less common saved fields.
+
+The `Language and realtime text` section also exposes the realtime preview Python path. Use it when the main WhoSpeaks environment is Python 3.11 but the installed Kroko native runtime is in a separate Python 3.12 environment:
+
+```powershell
+whospeaks config --realtime-preview-python D:\Projekte\SpeakerDiarization\.venvs\kroko-install-test\Scripts\python.exe
+whospeaks launch --print
+```
+
+## How The Launcher Builds Commands
+
+The saved profile is a small JSON configuration. The launcher converts it into the longer browser-server command when you run:
+
+```powershell
+whospeaks launch --print
+```
+
+or:
+
+```powershell
+whospeaks launch
+```
+
+For example, a local smoke profile becomes a command like:
+
+```powershell
+whospeaks-window --host 127.0.0.1 --port 8796 --language en --model large-v2 --device auto --compute-type float16 --asr-backend local --embeddings-backend local --embedding-provider speechbrain_ecapa --live-speaker-embedding-provider speechbrain_ecapa --vad-backend rms --realtime-preview-engine kroko_onnx --embedding-python C:\Path\To\Python.exe --realtime-preview-python C:\Path\To\Python.exe
+```
+
+This indirection keeps the user command short while preserving a fully inspectable launch command. It also makes repeated runs stable because the profile is saved once and reused until you change it.
+
+Profile locations:
+
+- Windows: `%APPDATA%\WhoSpeaks\config.json`
+- Linux/macOS: `$XDG_CONFIG_HOME/whospeaks/config.json` or `~/.config/whospeaks/config.json`
+- Override: `WHOSPEAKS_CONFIG`
+- Fallback when the user config cannot be written: `.whospeaks/config.json`
+
+Use these commands for non-interactive changes:
+
+```powershell
+whospeaks config --language de
+whospeaks config --provider-preset public_quality
+whospeaks config --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660
+whospeaks launch --print
+```
 
 ## Backends
 
@@ -61,6 +125,24 @@ Final speaker assignment uses `--embedding-provider`.
 
 Live speaker feedback can use `--live-speaker-embedding-provider`. If omitted, the app can use the final provider. If specified differently, the app keeps live profiles compatible with that live provider.
 
+The `whospeaks` starter can manage these as named provider presets:
+
+| Preset ID | Simple label | Final provider | Live provider | Notes |
+| --- | --- | --- | --- | --- |
+| `smoke` | First start | `speechbrain_ecapa` | `speechbrain_ecapa` | Fast setup check, not the highest-accuracy setting. |
+| `single_espnet` | Single ESPnet | `espnet_ecapa_wavlm_joint` | `espnet_ecapa_wavlm_joint` | Validates one provider in isolation. |
+| `smoke_fast_live` | Smoke final + fast live | `speechbrain_ecapa` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Simple final provider with the fast live stack. |
+| `public_quality` | Public high quality | `espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Public multi-provider stack, no RawNet3 artifact. |
+| `promoted_public` | Promoted public stack | `espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Matches the current `whospeaks-window` default final provider stack. |
+| `tuned_private` | Private tuned | `espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Requires the `jungjee_rawnet3` artifact on the embeddings server. |
+
+Use the interactive starter menu, or set a preset explicitly:
+
+```powershell
+whospeaks config --set provider_preset=public_quality
+whospeaks launch --print
+```
+
 Smoke-test stack:
 
 ```text
@@ -89,13 +171,13 @@ pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50
 
 ## Timing Defaults
 
-Recent defaults are tuned for faster live speaker feedback:
+Recent defaults are tuned to keep final ASR responsive while live speaker feedback runs on the same GPU:
 
 - `--interval-seconds 0.7`: final ASR loop delay and post-split cooldown.
-- `--live-speaker-probe-interval-seconds 0.2`: fallback live-speaker probe cadence.
-- `--live-speaker-probe-min-advance-seconds 0.2`: minimum media advance before another probe.
-- `--live-speaker-embedding-min-interval-seconds 0.2`: minimum wall-clock spacing between live embedding requests.
-- `--live-speaker-embedding-target-utilization 1.0`: disables latency backoff from utilization.
+- `--live-speaker-probe-interval-seconds 0.75`: fallback live-speaker probe cadence.
+- `--live-speaker-probe-min-advance-seconds 0.75`: minimum media advance before another probe.
+- `--live-speaker-embedding-min-interval-seconds 0.75`: minimum wall-clock spacing between live embedding requests.
+- `--live-speaker-embedding-target-utilization 0.25`: backs off live embeddings when they start taking too much wall time.
 - `--live-speaker-ema-count 1`: uses the latest live probability snapshot.
 - `--live-speaker-raw-change-snap`: enabled by default.
 - `--live-speaker-raw-change-min-probability 0.70`: raw probability needed for a snap.
@@ -151,12 +233,12 @@ Use these environment variables to move mutable files:
 
 See [Installation](installation.md) for the default path layout.
 
-## Discovering More Flags
+## Complete Parameter Reference
 
-The CLI is the authoritative option list:
+The CLI help shows accepted syntax:
 
 ```powershell
 .\.venv\Scripts\whospeaks-window.exe --help
 ```
 
-Document only the flags you actually rely on in shared workflows. Keep one-off optimization experiments out of public docs until they become repeatable defaults.
+The [CLI reference](cli-reference.md) documents every parser parameter found in the repo, including installed commands, helper modules, and environment variables. Update that reference whenever a new parameter is added.

@@ -7,12 +7,16 @@
 .env
 .env.*
 !.env.example
+install-whospeaks-test.bat
+.whospeaks/
 
 # Python caches
 __pycache__/
 *.py[cod]
 *.pyo
 *.egg-info/
+build/
+dist/
 
 # Local runtime data
 runtime/

@@ -526,6 +526,98 @@ def patch_license_quiet_env(repo_dir):
         print("Patched Kroko license client to honor {0}.".format(KROKO_LICENSE_QUIET_ENV))
 
 
+def patch_linux_free_build_without_openssl_dev(repo_dir):
+    """
+    Lets the free Linux build avoid OpenSSL development headers.
+    """
+
+    cmake_path = repo_dir / "sherpa-onnx" / "csrc" / "CMakeLists.txt"
+    model_path = repo_dir / "sherpa-onnx" / "csrc" / "ModelData.cc"
+    transducer_path = repo_dir / "sherpa-onnx" / "csrc" / "online-transducer-model.cc"
+    extension_path = repo_dir / "cmake" / "cmake_extension.py"
+
+    if cmake_path.exists():
+        text = read_text(cmake_path).replace("\r\n", "\n")
+        text = text.replace(
+            "find_package(OpenSSL REQUIRED)\n",
+            "if(KROKO_LICENSE)\n  find_package(OpenSSL REQUIRED)\nendif()\n",
+        )
+        old_link = (
+            "target_link_libraries(kroko-onnx-core\n"
+            "  kaldi-native-fbank-core\n"
+            "  kaldi-decoder-core\n"
+            "  ssentencepiece_core\n"
+            "  OpenSSL::SSL\n"
+            "  OpenSSL::Crypto\n"
+            ")"
+        )
+        new_link = (
+            "target_link_libraries(kroko-onnx-core\n"
+            "  kaldi-native-fbank-core\n"
+            "  kaldi-decoder-core\n"
+            "  ssentencepiece_core\n"
+            ")\n"
+            "if(KROKO_LICENSE)\n"
+            "  target_link_libraries(kroko-onnx-core\n"
+            "    OpenSSL::SSL\n"
+            "    OpenSSL::Crypto\n"
+            "  )\n"
+            "endif()"
+        )
+        text = text.replace(old_link, new_link)
+        write_text(cmake_path, text)
+
+    if transducer_path.exists():
+        text = read_text(transducer_path).replace("\r\n", "\n")
+        text = text.replace(
+            '#include "sherpa-onnx/csrc/license.h"\n',
+            '#ifdef KROKO_LICENSE\n#include "sherpa-onnx/csrc/license.h"\n#endif\n',
+        )
+        write_text(transducer_path, text)
+
+    if model_path.exists():
+        text = read_text(model_path).replace("\r\n", "\n")
+        text = text.replace(
+            "#include <openssl/aes.h>\n#include <openssl/evp.h>\n#include <openssl/rand.h>\n",
+            "#ifdef KROKO_LICENSE\n"
+            "#include <openssl/aes.h>\n#include <openssl/evp.h>\n#include <openssl/rand.h>\n"
+            "#endif\n",
+        )
+        start = text.find("bool ModelData::decryptPayload")
+        end = text.find("\nbool ModelData::loadPayload()", start)
+        if start != -1 and end != -1:
+            block = text[start:end]
+            if "#ifdef KROKO_LICENSE" not in block:
+                text = (
+                    text[:start]
+                    + "#ifdef KROKO_LICENSE\n"
+                    + block
+                    + "#else\n"
+                    + "bool ModelData::decryptPayload(const std::string&) {\n"
+                    + "    return false;\n"
+                    + "}\n"
+                    + "#endif\n"
+                    + text[end:]
+                )
+        write_text(model_path, text)
+
+    if extension_path.exists():
+        text = read_text(extension_path).replace("\r\n", "\n")
+        needle = "    if enable_alsa():\n        binaries += [\n"
+        insertion = (
+            '    if os.environ.get("SHERPA_ONNX_ENABLE_WEBSOCKET", "ON").upper() in {"0", "OFF", "FALSE", "NO"}:\n'
+            "        binaries = [\n"
+            "            item for item in binaries\n"
+            '            if "websocket" not in item and "kroko-onnx-online-websocket-server" not in item\n'
+            "        ]\n\n"
+        )
+        if insertion not in text and needle in text:
+            text = text.replace(needle, insertion + needle)
+            write_text(extension_path, text)
+
+    print("Patched Kroko free Linux build to avoid OpenSSL development headers.")
+
+
 def prepare_windows_checkout(repo_dir):
     """
     Prepares Windows-specific Kroko build files.
@@ -644,6 +736,15 @@ def install_linux(args, repo_dir):
     env = os.environ.copy()
     if args.variant == "pro":
         env["KROKO_LICENSE"] = "ON"
+    else:
+        patch_linux_free_build_without_openssl_dev(repo_dir)
+        env["SHERPA_ONNX_ENABLE_WEBSOCKET"] = "OFF"
+        cmake_args = env.get("SHERPA_ONNX_CMAKE_ARGS", "").strip()
+        if not cmake_args:
+            cmake_args = "-DCMAKE_BUILD_TYPE=Release"
+        if "SHERPA_ONNX_ENABLE_WEBSOCKET" not in cmake_args:
+            cmake_args = cmake_args + " -DSHERPA_ONNX_ENABLE_WEBSOCKET=OFF"
+        env["SHERPA_ONNX_CMAKE_ARGS"] = cmake_args
 
     if args.skip_install:
         wheel_dir = repo_dir / "release_artifacts" / "linux"

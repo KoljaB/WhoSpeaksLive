@@ -26,8 +26,8 @@ import uuid
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any
-from urllib.parse import parse_qs, urlparse
+from typing import Any, BinaryIO
+from urllib.parse import parse_qs, quote, unquote, urlparse
 
 
 def _configure_console_output() -> None:
@@ -153,6 +153,44 @@ from window.browser_live_speaker_scoring import (  # noqa: E402
     DEFAULT_BROWSER_OBSERVATION_MAX_SAMPLE_GAP_SECONDS,
     BrowserLiveObservationRecorder,
 )
+
+AUDIO_UPLOAD_EXTENSIONS = {
+    ".aac",
+    ".aif",
+    ".aiff",
+    ".flac",
+    ".m4a",
+    ".mp3",
+    ".mp4",
+    ".oga",
+    ".ogg",
+    ".opus",
+    ".wav",
+    ".webm",
+}
+
+
+def _sanitize_upload_filename(filename: str) -> str:
+    name = Path(unquote(str(filename or ""))).name.strip()
+    if not name:
+        name = "audio.wav"
+    suffix = Path(name).suffix.lower()
+    stem = Path(name).stem or "audio"
+    safe_stem = re.sub(r"[^A-Za-z0-9._-]+", "-", stem).strip(".-_")
+    if not safe_stem:
+        safe_stem = "audio"
+    return f"{safe_stem[:96]}{suffix}"
+
+
+def _audio_upload_extension(filename: str, content_type: str = "") -> str:
+    suffix = Path(filename).suffix.lower()
+    if suffix in AUDIO_UPLOAD_EXTENSIONS:
+        return suffix
+    guessed = mimetypes.guess_extension(str(content_type or "").split(";", 1)[0].strip())
+    if guessed and guessed.lower() in AUDIO_UPLOAD_EXTENSIONS:
+        return guessed.lower()
+    allowed = ", ".join(sorted(AUDIO_UPLOAD_EXTENSIONS))
+    raise RuntimeError(f"Unsupported audio file type. Use one of: {allowed}.")
 
 class SessionLeaseError(RuntimeError):
     def __init__(self, message: str, session: dict[str, Any], status: int = 409) -> None:
@@ -450,6 +488,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         try:
             path = urlparse(self.path).path
+            if path == "/api/load-audio-file":
+                self._handle_audio_file_upload()
+                return
             payload = self._read_json_body()
             if path == "/api/sessions/create":
                 self._send_json(self.server.create_saved_session(payload))
@@ -596,11 +637,56 @@ class Handler(BaseHTTPRequestHandler):
                     str(payload.get("name", "")),
                 )
                 self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/corrections/reassign":
+                self._require_session(payload)
+                result = self.server.controller.reassign_sentence(
+                    int(payload.get("index")),
+                    str(payload.get("speaker_id") or ""),
+                    update_memory=bool(payload.get("update_memory", True)),
+                )
+                result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+                self._send_json(result)
+            elif path == "/api/corrections/mark-correct":
+                self._require_session(payload)
+                result = self.server.controller.mark_sentence_correct(int(payload.get("index")))
+                result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+                self._send_json(result)
+            elif path == "/api/corrections/undo":
+                self._require_session(payload)
+                result = self.server.controller.undo_last_correction()
+                result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+                self._send_json(result)
+            elif path == "/api/speakers/merge":
+                self._require_session(payload)
+                result = self.server.controller.merge_speakers(
+                    str(payload.get("source_speaker_id") or ""),
+                    str(payload.get("target_speaker_id") or ""),
+                    update_memory=bool(payload.get("update_memory", True)),
+                )
+                result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+                self._send_json(result)
+            elif path == "/api/speakers/split":
+                self._require_session(payload)
+                raw_indexes = payload.get("sentence_indices")
+                if not isinstance(raw_indexes, list):
+                    raw_indexes = [payload.get("index")]
+                result = self.server.controller.split_speaker(
+                    str(payload.get("speaker_id") or ""),
+                    [int(index) for index in raw_indexes],
+                    name=str(payload.get("name") or ""),
+                    update_memory=bool(payload.get("update_memory", True)),
+                )
+                result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+                self._send_json(result)
             elif path == "/api/speakers/clear":
                 self._require_session(payload)
                 state = self.server.controller.clear_speakers()
                 self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
             elif path == "/api/speakers/save":
+                self._require_session(payload)
+                state = self.server.controller.save_speaker_group(str(payload.get("name", "")))
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/speakers/save-corrected":
                 self._require_session(payload)
                 state = self.server.controller.save_speaker_group(str(payload.get("name", "")))
                 self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
@@ -636,6 +722,32 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json({"error": str(exc), "session": exc.session}, status=exc.status)
         except Exception as exc:
             self._send_json({"error": str(exc)}, status=400)
+
+    def _handle_audio_file_upload(self) -> None:
+        self._require_session({})
+        try:
+            length = int(self.headers.get("Content-Length") or "0")
+        except ValueError:
+            length = 0
+        filename = self.headers.get("X-Whospeaks-Filename") or "audio.wav"
+        media, display_name, byte_count = self.server.load_audio_upload(
+            filename=filename,
+            content_type=self.headers.get("Content-Type") or "",
+            source=self.rfile,
+            length=length,
+        )
+        self._send_json({
+            "ok": True,
+            "url": media.url,
+            "video_id": media.video_id,
+            "audio_file": str(media.audio_file),
+            "video_file": str(media.video_file),
+            "display_name": display_name,
+            "size_bytes": byte_count,
+            "version": self.server.media_version,
+            "speaker_state": self.server.controller.speaker_state(),
+            "session": self.server.session_status(self.headers.get("X-Whospeaks-Client") or ""),
+        })
 
     def _require_session(self, payload: dict[str, Any]) -> str:
         token = str(payload.get("session_token") or self.headers.get("X-Whospeaks-Session") or "")
@@ -754,6 +866,12 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
+def _absolute_path_preserving_symlinks(path: Path) -> Path:
+    """Return an absolute path without dereferencing venv executable symlinks."""
+
+    return Path(os.path.abspath(os.path.expanduser(os.fspath(path))))
+
+
 class WindowServer(ThreadingHTTPServer):
     def __init__(self, address: tuple[str, int], args: argparse.Namespace, media: MediaFiles, bus: EventBus, controller: WindowDiarizer) -> None:
         super().__init__(address, Handler)
@@ -866,7 +984,7 @@ class WindowServer(ThreadingHTTPServer):
 
     @property
     def session_lease_enabled(self) -> bool:
-        return bool(getattr(self.args, "demo_seat_lease", True))
+        return bool(getattr(self.args, "demo_seat_lease", False))
 
     def _disabled_session_state(self, client_id: str = "") -> dict[str, Any]:
         return {
@@ -1020,6 +1138,63 @@ class WindowServer(ThreadingHTTPServer):
         self.controller.set_media(media)
         self.bus.emit("status", {"message": f"Loaded {media.video_id}."})
         return media
+
+    def load_audio_upload(
+        self,
+        *,
+        filename: str,
+        content_type: str,
+        source: BinaryIO,
+        length: int,
+    ) -> tuple[MediaFiles, str, int]:
+        if length <= 0:
+            raise RuntimeError("Uploaded audio file is empty.")
+        max_bytes = max(1, int(float(getattr(self.args, "max_audio_upload_mb", 2048)) * 1024 * 1024))
+        if length > max_bytes:
+            raise RuntimeError(
+                f"Audio file is too large ({length / (1024 * 1024):.1f} MB). "
+                f"Maximum upload size is {max_bytes / (1024 * 1024):.0f} MB."
+            )
+        display_name = _sanitize_upload_filename(filename)
+        suffix = _audio_upload_extension(display_name, content_type)
+        video_id = f"local-audio-{uuid.uuid4().hex[:12]}"
+        upload_dir = self.args.work_dir / "uploads"
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        audio_file = (upload_dir / f"{video_id}{suffix}").resolve()
+        temp_file = audio_file.with_suffix(audio_file.suffix + ".tmp")
+        written = 0
+        try:
+            with temp_file.open("wb") as handle:
+                remaining = length
+                while remaining > 0:
+                    chunk = source.read(min(1024 * 1024, remaining))
+                    if not chunk:
+                        break
+                    handle.write(chunk)
+                    written += len(chunk)
+                    remaining -= len(chunk)
+                    if written > max_bytes:
+                        raise RuntimeError(
+                            f"Audio file is too large. Maximum upload size is {max_bytes / (1024 * 1024):.0f} MB."
+                        )
+            if written != length:
+                raise RuntimeError("Audio upload ended before the full file was received.")
+            temp_file.replace(audio_file)
+        finally:
+            if temp_file.exists():
+                try:
+                    temp_file.unlink()
+                except OSError:
+                    pass
+        url = f"local-audio://{video_id}/{quote(display_name)}"
+        media = MediaFiles(url, video_id, audio_file, audio_file)
+        self.bus.emit("status", {"message": f"Loading uploaded audio file {display_name}."})
+        self.controller.set_media(media)
+        with self._media_lock:
+            self.media = media
+            self.media_version += 1
+        self.bus.emit("status", {"message": f"Loaded uploaded audio file {display_name}."})
+        return media, display_name, written
 
     def start_browser_stream_url(self, url: str) -> MediaFiles:
         self.bus.emit("status", {"message": f"Preparing browser audio stream for {url}"})
@@ -1455,6 +1630,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--audio-file", type=Path, default=None)
     parser.add_argument("--video-file", type=Path, default=None)
     parser.add_argument("--skip-download", action="store_true")
+    parser.add_argument(
+        "--max-audio-upload-mb",
+        type=float,
+        default=2048.0,
+        help="Maximum browser audio-file upload size in MiB.",
+    )
     parser.add_argument("--yt-dlp", type=Path, default=None)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8795)
@@ -1462,7 +1643,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--demo-seat-lease",
         action=argparse.BooleanOptionalAction,
-        default=True,
+        default=False,
         help="Require one browser tab to take the public demo seat before controlling a shared run.",
     )
     parser.add_argument(
@@ -2129,13 +2310,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-embedding-min-interval-seconds",
         type=float,
-        default=0.2,
+        default=0.75,
         help="Minimum wall-clock spacing between live speaker embedding requests from preview/probe paths.",
     )
     parser.add_argument(
         "--live-speaker-embedding-target-utilization",
         type=float,
-        default=1.0,
+        default=0.25,
         help="Target fraction of wall time live speaker embeddings may occupy; use 1.0 to disable latency backoff.",
     )
     parser.add_argument(
@@ -2177,7 +2358,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-probe-interval-seconds",
         type=float,
-        default=0.2,
+        default=0.75,
         help="Seconds between fallback live-speaker probes.",
     )
     parser.add_argument(
@@ -2201,7 +2382,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--live-speaker-probe-min-advance-seconds",
         type=float,
-        default=0.2,
+        default=0.75,
         help="Minimum playback advance before rescoring the fallback live-speaker probe window.",
     )
     parser.add_argument(
@@ -2601,7 +2782,7 @@ def parse_args() -> argparse.Namespace:
     args.work_dir = args.work_dir.resolve()
     args.output_dir = args.output_dir.resolve()
     args.session_dir = args.session_dir.resolve()
-    args.embedding_python = args.embedding_python.resolve()
+    args.embedding_python = _absolute_path_preserving_symlinks(args.embedding_python)
     args.speaker_library_dir = args.speaker_library_dir.resolve()
     args.validation_canonical = args.validation_canonical.resolve()
     args.validation_output = args.validation_output.resolve()
@@ -2626,7 +2807,7 @@ def parse_args() -> argparse.Namespace:
     if args.realtime_preview_download_root is not None:
         args.realtime_preview_download_root = args.realtime_preview_download_root.resolve()
     if args.realtime_preview_python is not None:
-        args.realtime_preview_python = args.realtime_preview_python.resolve()
+        args.realtime_preview_python = _absolute_path_preserving_symlinks(args.realtime_preview_python)
     if args.realtime_preview_realtimestt_root is not None:
         args.realtime_preview_realtimestt_root = args.realtime_preview_realtimestt_root.resolve()
     if args.vad_silero_onnx_model_path is not None:

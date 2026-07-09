@@ -71,10 +71,22 @@ DEFAULT_CUNK_CANONICAL = CUNK_CANONICAL
 SPEAKER_COLORS = SpeakerColorAllocator(max_colors=16, allow_reuse=True).palette()
 DEFAULT_REALTIMESTT_ROOT = Path(os.environ.get("REALTIMESTT_ROOT", str(VENDOR_DIR)))
 DEFAULT_LANGUAGE = default_language_code()
-DEFAULT_KROKO_PREVIEW_PYTHON = Path(os.environ.get(
-    "WHOSPEAKS_KROKO_PREVIEW_PYTHON",
-    str(VENVS_DIR / "kroko-install-test" / "Scripts" / "python.exe"),
-))
+
+
+def default_kroko_preview_python() -> Path:
+    configured = os.environ.get("WHOSPEAKS_KROKO_PREVIEW_PYTHON")
+    if configured:
+        return Path(configured)
+    for candidate in (
+        VENVS_DIR / "kroko-install-test" / "Scripts" / "python.exe",
+        VENVS_DIR / "kroko-install-test" / "bin" / "python",
+    ):
+        if candidate.exists():
+            return candidate
+    return Path(sys.executable)
+
+
+DEFAULT_KROKO_PREVIEW_PYTHON = default_kroko_preview_python()
 DEFAULT_KROKO_COMMUNITY_64L_PREVIEW_MODEL = kroko_preview_model_name("en", "community-64l")
 DEFAULT_KROKO_PRO_16L_PREVIEW_MODEL = kroko_preview_model_name("en", "pro-16l")
 KROKO_PREVIEW_MODEL_REPO = os.environ.get("WHOSPEAKS_KROKO_PREVIEW_MODEL_REPO", "Banafo/Kroko-ASR")

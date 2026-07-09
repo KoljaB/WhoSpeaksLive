@@ -101,10 +101,68 @@ def write_wav(path: Path, audio: np.ndarray, sample_rate: int = SAMPLE_RATE) -> 
         wav_file.writeframes(audio_int16.tobytes())
 
 
+def _audio_frame_to_mono_float(frame: Any) -> np.ndarray:
+    array = np.asarray(frame.to_ndarray())
+    if array.ndim > 1:
+        if array.shape[0] <= array.shape[-1]:
+            array = array.mean(axis=0)
+        else:
+            array = array.mean(axis=1)
+    return audio_to_float_mono(array)
+
+
+def _load_audio_file_with_av(path: Path, sample_rate: int) -> tuple[np.ndarray, int]:
+    import av
+    from av.audio.resampler import AudioResampler
+
+    chunks: list[np.ndarray] = []
+    with av.open(str(path)) as container:
+        stream = next((candidate for candidate in container.streams if candidate.type == "audio"), None)
+        if stream is None:
+            raise ValueError(f"No audio stream found in {path}")
+        resampler = AudioResampler(format="flt", layout="mono", rate=sample_rate)
+        for frame in container.decode(stream):
+            resampled = resampler.resample(frame)
+            if resampled is None:
+                continue
+            if not isinstance(resampled, list):
+                resampled = [resampled]
+            chunks.extend(_audio_frame_to_mono_float(item) for item in resampled)
+        try:
+            flushed = resampler.resample(None)
+        except Exception:
+            flushed = []
+        if flushed is not None:
+            if not isinstance(flushed, list):
+                flushed = [flushed]
+            chunks.extend(_audio_frame_to_mono_float(item) for item in flushed)
+    if not chunks:
+        raise ValueError(f"No audio samples decoded from {path}")
+    return np.concatenate(chunks).astype(np.float32), sample_rate
+
+
+def _load_audio_file_with_librosa(path: Path, sample_rate: int) -> tuple[np.ndarray, int]:
+    import librosa
+
+    audio, source_rate = librosa.load(str(path), sr=sample_rate, mono=True, dtype=np.float32)
+    audio = np.nan_to_num(audio, nan=0.0, posinf=0.0, neginf=0.0)
+    return np.asarray(audio, dtype=np.float32), int(source_rate or sample_rate)
+
+
 def load_audio_file(path: Path, sample_rate: int = SAMPLE_RATE) -> tuple[np.ndarray, int]:
     import soundfile as sf
 
-    audio, source_rate = sf.read(str(path), dtype="float32", always_2d=False)
+    try:
+        audio, source_rate = sf.read(str(path), dtype="float32", always_2d=False)
+    except Exception as soundfile_error:
+        for loader in (_load_audio_file_with_av, _load_audio_file_with_librosa):
+            try:
+                return loader(path, sample_rate)
+            except ModuleNotFoundError:
+                continue
+            except Exception:
+                continue
+        raise soundfile_error
     if getattr(audio, "ndim", 1) > 1:
         audio = audio.mean(axis=1)
     if source_rate != sample_rate:
