@@ -17,7 +17,9 @@ from window.meeting_intelligence_pipeline import (
     MultiPassMeetingIntelligencePipeline,
     OpenAICompatibleMeetingClient,
     default_llm_config,
+    openai_strict_schema,
     parse_openai_chat_json,
+    section_schema,
 )
 
 
@@ -48,6 +50,7 @@ class MeetingIntelligencePipelineTests(unittest.TestCase):
         self.assertEqual(default_llm_config("ollama").base_url, "http://127.0.0.1:11434/v1")
         self.assertEqual(default_llm_config("lm_studio").base_url, "http://127.0.0.1:1234/v1")
         self.assertEqual(default_llm_config("openai").base_url, "https://api.openai.com/v1")
+        self.assertEqual(default_llm_config("openai").model, "gpt-5.6-luna")
         self.assertEqual(default_llm_config("openrouter").base_url, "https://openrouter.ai/api/v1")
         with self.assertRaises(ValueError):
             default_llm_config("unsupported")
@@ -74,6 +77,80 @@ class MeetingIntelligencePipelineTests(unittest.TestCase):
         self.assertIn("json_schema", payload)
         self.assertEqual(payload["response_format"]["type"], "json_schema")
         self.assertFalse(payload["chat_template_kwargs"]["enable_thinking"])
+
+    def test_section_schema_is_openai_strict_compatible(self) -> None:
+        schema = section_schema()
+        item_schema = schema["properties"]["items"]["items"]
+        metadata_schema = item_schema["properties"]["metadata"]
+
+        self.assertFalse(schema["additionalProperties"])
+        self.assertFalse(item_schema["additionalProperties"])
+        self.assertFalse(metadata_schema["additionalProperties"])
+        self.assertEqual(metadata_schema["properties"], {})
+        self.assertIn("metadata", item_schema["required"])
+
+    def test_openai_payload_omits_llama_cpp_specific_fields(self) -> None:
+        config = default_llm_config(
+            "openai",
+            model="gpt-4.1-nano",
+            api_key="test-key",
+        )
+        client = OpenAICompatibleMeetingClient(config)
+
+        payload = client._build_payload(
+            schema_name="meeting_section",
+            schema=section_schema(),
+            system_prompt="Return JSON only.",
+            user_payload={"section": "summary"},
+            max_tokens=512,
+        )
+
+        self.assertEqual(payload["model"], "gpt-4.1-nano")
+        self.assertNotIn("chat_template_kwargs", payload)
+        self.assertNotIn("json_schema", payload)
+        self.assertEqual(payload["response_format"]["json_schema"]["strict"], True)
+
+    def test_openai_payload_normalizes_future_schemas_to_strict_shape(self) -> None:
+        schema = {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": True,
+                    "properties": {"source": {"type": "string"}},
+                },
+            },
+            "required": ["title"],
+        }
+        config = default_llm_config("openai", model="gpt-4.1-nano", api_key="test-key")
+        client = OpenAICompatibleMeetingClient(config)
+
+        payload = client._build_payload(
+            schema_name="future_schema",
+            schema=schema,
+            system_prompt="Return JSON only.",
+            user_payload={},
+            max_tokens=128,
+        )
+
+        strict_schema = payload["response_format"]["json_schema"]["schema"]
+        self.assertFalse(strict_schema["additionalProperties"])
+        self.assertEqual(strict_schema["required"], ["title", "metadata"])
+        self.assertFalse(strict_schema["properties"]["metadata"]["additionalProperties"])
+        self.assertEqual(strict_schema["properties"]["metadata"]["required"], ["source"])
+        self.assertNotIn("json_schema", payload)
+
+    def test_openai_strict_schema_does_not_mutate_original_schema(self) -> None:
+        schema = {
+            "type": "object",
+            "properties": {"metadata": {"type": "object", "additionalProperties": True}},
+        }
+
+        strict_schema = openai_strict_schema(schema)
+
+        self.assertTrue(schema["properties"]["metadata"]["additionalProperties"])
+        self.assertFalse(strict_schema["properties"]["metadata"]["additionalProperties"])
 
     def test_multi_pass_pipeline_chunks_transcript_then_generates_sections(self) -> None:
         client = MockMeetingLLMClient()
