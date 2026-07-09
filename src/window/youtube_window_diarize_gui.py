@@ -639,16 +639,28 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
             elif path == "/api/corrections/reassign":
                 self._require_session(payload)
-                result = self.server.controller.reassign_sentence(
-                    int(payload.get("index")),
-                    str(payload.get("speaker_id") or ""),
-                    update_memory=bool(payload.get("update_memory", True)),
-                )
+                raw_indexes = payload.get("indexes")
+                if isinstance(raw_indexes, list):
+                    result = self.server.controller.reassign_sentences(
+                        [int(index) for index in raw_indexes],
+                        str(payload.get("speaker_id") or ""),
+                        update_memory=bool(payload.get("update_memory", True)),
+                    )
+                else:
+                    result = self.server.controller.reassign_sentence(
+                        int(payload.get("index")),
+                        str(payload.get("speaker_id") or ""),
+                        update_memory=bool(payload.get("update_memory", True)),
+                    )
                 result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
                 self._send_json(result)
             elif path == "/api/corrections/mark-correct":
                 self._require_session(payload)
-                result = self.server.controller.mark_sentence_correct(int(payload.get("index")))
+                raw_indexes = payload.get("indexes")
+                if isinstance(raw_indexes, list):
+                    result = self.server.controller.mark_sentences_correct([int(index) for index in raw_indexes])
+                else:
+                    result = self.server.controller.mark_sentence_correct(int(payload.get("index")))
                 result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
                 self._send_json(result)
             elif path == "/api/corrections/undo":
@@ -661,6 +673,14 @@ class Handler(BaseHTTPRequestHandler):
                 result = self.server.controller.merge_speakers(
                     str(payload.get("source_speaker_id") or ""),
                     str(payload.get("target_speaker_id") or ""),
+                    update_memory=bool(payload.get("update_memory", True)),
+                )
+                result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+                self._send_json(result)
+            elif path == "/api/speakers/delete":
+                self._require_session(payload)
+                result = self.server.controller.delete_speaker(
+                    str(payload.get("speaker_id") or ""),
                     update_memory=bool(payload.get("update_memory", True)),
                 )
                 result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})

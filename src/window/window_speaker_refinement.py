@@ -40,6 +40,61 @@ def speaker_label(row: dict[str, Any]) -> str | None:
     return str(value) if value else None
 
 
+def _clean_rejected_speaker_label(value: Any) -> str:
+    label = str(value or "").strip()
+    return "" if not label or label.upper() == "UNKNOWN" else label
+
+
+def rejected_speaker_labels(row: dict[str, Any]) -> set[str]:
+    correction = row.get("correction")
+    if not isinstance(correction, dict):
+        return set()
+
+    rejected: set[str] = set()
+    values = correction.get("rejected_speakers")
+    if isinstance(values, str):
+        label = _clean_rejected_speaker_label(values)
+        if label:
+            rejected.add(label)
+    elif isinstance(values, (list, tuple, set)):
+        for value in values:
+            label = _clean_rejected_speaker_label(value)
+            if label:
+                rejected.add(label)
+
+    corrected = _clean_rejected_speaker_label(correction.get("corrected_speaker"))
+    if correction.get("status") == "user_corrected":
+        for key in ("previous_speaker", "original_speaker"):
+            label = _clean_rejected_speaker_label(correction.get(key))
+            if label and label != corrected:
+                rejected.add(label)
+
+    if corrected:
+        rejected.discard(corrected)
+    return rejected
+
+
+def user_confirmed_speaker_label(row: dict[str, Any]) -> str | None:
+    correction = row.get("correction")
+    if not isinstance(correction, dict) or correction.get("status") != "user_confirmed":
+        return None
+    current = speaker_label(row)
+    if not current:
+        return None
+    corrected = _clean_rejected_speaker_label(correction.get("corrected_speaker"))
+    if corrected and corrected != current:
+        return None
+    return current
+
+
+def user_deleted_speaker_label(row: dict[str, Any]) -> str | None:
+    correction = row.get("correction")
+    if not isinstance(correction, dict) or correction.get("status") != "speaker_deleted":
+        return None
+    label = _clean_rejected_speaker_label(correction.get("deleted_speaker"))
+    return label or None
+
+
 def normalize_vector(value: Any) -> np.ndarray:
     if hasattr(value, "detach"):
         value = value.detach().cpu().numpy()
@@ -102,6 +157,8 @@ def build_speaker_prototypes(rows: list[dict[str, Any]], config: SpeakerRefineme
         top_similarity = _optional_float(row.get("top_similarity"))
         if top_similarity is not None:
             quality += max(0.0, top_similarity)
+        if user_confirmed_speaker_label(row) == label:
+            quality += 1_000_000.0
         candidates[label].append((quality, embedding))
 
     prototypes: dict[str, np.ndarray] = {}
@@ -155,12 +212,23 @@ def find_speaker_prototype_revisions(
             continue
         current = speaker_label(row)
         duration = _row_duration(row)
+        if current is None and user_deleted_speaker_label(row):
+            continue
+        if current and user_confirmed_speaker_label(row) == current:
+            continue
         if current and not allow_known_reassignment:
             continue
         if current and duration > config.known_max_duration:
             continue
 
         scores = _score_against_prototypes(embedding, prototypes, config)
+        rejected = rejected_speaker_labels(row)
+        if rejected:
+            scores = {
+                label: score
+                for label, score in scores.items()
+                if label not in rejected
+            }
         if not scores:
             continue
         ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)
