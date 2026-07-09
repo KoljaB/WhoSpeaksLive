@@ -9,7 +9,7 @@ The repository contains Modal-related code for the window diarization flow:
 - `src/window/modal_youtube_window_diarize_gui.py`
 - `src/window/modal_asr_server.py`
 
-Older internal Modal notes were moved to ignored `docs-private/`. This public document keeps only stable operational guidance.
+This public document keeps only stable operational guidance.
 
 ## When Modal Helps
 

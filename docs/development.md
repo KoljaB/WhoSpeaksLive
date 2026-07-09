@@ -11,7 +11,6 @@ Develop against small, repeatable checks first, then validate full media workflo
 - `vendor/remote_servers/`: ASR and embeddings server snapshots copied from the Linux GPU host.
 - `runtime/`: local mutable data, ignored by Git.
 - `docs/`: public documentation.
-- `docs-private/`: local private/internal documentation archive, ignored by Git.
 
 ## Common Checks
 
@@ -47,14 +46,12 @@ Public docs should explain stable workflows, concepts, and supported commands.
 
 When adding or renaming a command-line flag, update [CLI reference](cli-reference.md) in the same change. The reference is intentionally complete so a reader can understand any parameter they see in `--help`, launch profiles, validation commands, or helper scripts.
 
-Keep these out of public docs:
+Keep these out of committed docs:
 
 - One-off optimization logs.
-- Private screenshots and drafts.
+- Local screenshots and drafts.
 - Machine-specific debugging transcripts.
 - Experimental scores without enough context to reproduce them.
-
-Put private or internal notes under `docs-private/`. That directory is ignored by Git.
 
 ## Commit Hygiene
 

@@ -32,10 +32,6 @@ SMOKE_PROVIDER = "speechbrain_ecapa"
 SINGLE_ESPNET_PROVIDER = "espnet_ecapa_wavlm_joint"
 PUBLIC_PROVIDER = "espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12"
 PROMOTED_PUBLIC_PROVIDER = "espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37"
-PRIVATE_TUNED_PROVIDER = (
-    "espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+"
-    "speechbrain_resnet=0.38+resemblyzer=0.12"
-)
 FAST_LIVE_PROVIDER = "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50"
 COMPLETE_EXTRA = "complete"
 LOCAL_EXTRA = "complete,preview"
@@ -102,8 +98,7 @@ PROVIDER_PRESETS: dict[str, ProviderPreset] = {
         name="Single ESPnet",
         summary="One ESPnet embedding provider for both final and live speaker assignment.",
         details=(
-            "Useful when validating one provider in isolation. It does not use the weighted public or private "
-            "multi-provider stacks."
+            "Useful when validating one provider in isolation. It does not use the weighted multi-provider stacks."
         ),
         embedding_provider=SINGLE_ESPNET_PROVIDER,
         live_speaker_embedding_provider=SINGLE_ESPNET_PROVIDER,
@@ -127,11 +122,11 @@ PROVIDER_PRESETS: dict[str, ProviderPreset] = {
         summary="Public multi-provider final stack plus fast live speaker feedback.",
         details=(
             "Uses the documented public stack with ESPnet, WeSpeaker CAM++, SpeechBrain ResNet, and Resemblyzer. "
-            "Avoids the private RawNet3 artifact."
+            "All providers are available through the public setup path."
         ),
         embedding_provider=PUBLIC_PROVIDER,
         live_speaker_embedding_provider=FAST_LIVE_PROVIDER,
-        score_note="Public quality candidate. It avoids private artifacts, so it is the safest public comparison target.",
+        score_note="Public quality candidate for reproducible comparisons.",
     ),
     "promoted_public": ProviderPreset(
         id="promoted_public",
@@ -144,19 +139,6 @@ PROVIDER_PRESETS: dict[str, ProviderPreset] = {
         embedding_provider=PROMOTED_PUBLIC_PROVIDER,
         live_speaker_embedding_provider=FAST_LIVE_PROVIDER,
         score_note="Current promoted public default. Keep this and public_quality visible until validation decides the winner.",
-    ),
-    "tuned_private": ProviderPreset(
-        id="tuned_private",
-        name="Private tuned",
-        summary="Highest tuned stack when the private RawNet3 artifact is provisioned.",
-        details=(
-            "Uses ESPnet, jungjee RawNet3, WeSpeaker CAM++, SpeechBrain ResNet, and Resemblyzer for final "
-            "assignment, with the fast pyannote/wespeaker ONNX live stack."
-        ),
-        embedding_provider=PRIVATE_TUNED_PROVIDER,
-        live_speaker_embedding_provider=FAST_LIVE_PROVIDER,
-        requirements="Requires the jungjee_rawnet3 source/model artifact on the embeddings server.",
-        score_note="Tuned private stack. Do not present it as public-reproducible unless RawNet3 is provisioned.",
     ),
 }
 PROVIDER_PRESET_CHOICES = tuple(PROVIDER_PRESETS.keys()) + ("custom",)
@@ -225,8 +207,6 @@ def normalize_provider_preset_id(value: str | None) -> str:
         "public_high_quality": "public_quality",
         "high_quality": "public_quality",
         "promoted": "promoted_public",
-        "private": "tuned_private",
-        "tuned": "tuned_private",
     }
     normalized = aliases.get(normalized, normalized)
     if normalized in PROVIDER_PRESETS or normalized == "custom":

@@ -194,7 +194,8 @@ class WhoSpeaksCliTests(unittest.TestCase):
     def test_provider_presets_include_validation_notes(self) -> None:
         self.assertIn("Baseline smoke setting", cli.PROVIDER_PRESETS["smoke"].score_note)
         self.assertIn("until validation decides", cli.PROVIDER_PRESETS["promoted_public"].score_note)
-        self.assertIn("RawNet3", cli.PROVIDER_PRESETS["tuned_private"].score_note)
+        self.assertNotIn("tuned_private", cli.PROVIDER_PRESETS)
+        self.assertEqual(cli.normalize_provider_preset_id("tuned_private"), "custom")
 
     def test_dashboard_summarizes_problems_without_full_ok_list(self) -> None:
         profile = cli.Profile()

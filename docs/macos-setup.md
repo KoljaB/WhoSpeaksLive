@@ -95,5 +95,4 @@ brew install portaudio
 
 - **CTranslate2 has no MPS backend.** ASR (faster-whisper) always runs on CPU on macOS; use `int8` compute type and/or the MLX server above for speed.
 - **Gated pyannote models** (`pyannote_wespeaker_resnet34_lm`, `pyannote_embedding`) need a Hugging Face token that has accepted the model terms. Set `HF_TOKEN` before starting the embeddings server (see [External Servers](external-servers.md)); without it these providers are blocked, not broken.
-- **`jungjee_rawnet3`** is not provisioned in the public source snapshot (its RawNet3 artifact isn't included) — same limitation as on Linux, see [External Servers](external-servers.md).
 - **No WASAPI-equivalent loopback API.** Live capture depends on the BlackHole virtual device and manual Multi-Output Device routing described above; there's no automatic system-audio tap on macOS.

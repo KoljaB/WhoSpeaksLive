@@ -136,8 +136,6 @@ To add a transcript-only demo session, pass:
 --demo-transcript D:\path\to\whospeakslive_transcript.txt
 ```
 
-For the private repository demo data used during local development, this may point to `docs-private\demo-meeting\whospeakslive_transcript.txt`.
-
 Generated reports are cached locally. Override the cache directory when you want an isolated test cache:
 
 ```powershell
