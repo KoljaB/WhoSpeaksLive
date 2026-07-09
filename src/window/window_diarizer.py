@@ -80,6 +80,9 @@ from window.window_text import (
 from window.window_speaker_refinement import (
     SpeakerRefinementConfig,
     find_speaker_prototype_revisions,
+    rejected_speaker_labels,
+    user_deleted_speaker_label,
+    user_confirmed_speaker_label,
 )
 
 
@@ -836,6 +839,7 @@ class WindowDiarizer:
             group_name = self._speaker_group_name
             seed_profiles = copy.deepcopy(self._seed_profiles)
             seed_live_profiles = copy.deepcopy(getattr(self, "_seed_live_profiles", []))
+            speaker_last_media_end = copy.deepcopy(getattr(self, "_speaker_last_media_end", {}))
         self._correction_history.append({
             "action": str(action or "correction"),
             "records": self._copy_sentence_records(),
@@ -844,6 +848,7 @@ class WindowDiarizer:
             "speaker_group_name": group_name,
             "seed_profiles": seed_profiles,
             "seed_live_profiles": seed_live_profiles,
+            "speaker_last_media_end": speaker_last_media_end,
         })
         if len(self._correction_history) > 50:
             self._correction_history = self._correction_history[-50:]
@@ -861,6 +866,7 @@ class WindowDiarizer:
                 self._speaker_group_name = str(snapshot.get("speaker_group_name") or "")
                 self._seed_profiles = copy.deepcopy(snapshot.get("seed_profiles") or [])
                 self._seed_live_profiles = copy.deepcopy(snapshot.get("seed_live_profiles") or [])
+                self._speaker_last_media_end = copy.deepcopy(snapshot.get("speaker_last_media_end") or {})
             self._reset_live_speaker_memory()
         with self._sentence_refinement_lock:
             self._sentence_refinement_records = copy.deepcopy(snapshot.get("records") or {})
@@ -960,6 +966,15 @@ class WindowDiarizer:
         if "automatic_assigned_speaker" not in record:
             record["automatic_assigned_speaker"] = previous_speaker
             record["automatic_assignment_source"] = str(record.get("assignment_source") or "")
+        rejected_speakers = rejected_speaker_labels(record)
+        previous_label = str(previous_speaker or "").strip()
+        if previous_label and previous_label.upper() != "UNKNOWN" and previous_label != speaker_id:
+            rejected_speakers.add(previous_label)
+        original_label = str(record.get("automatic_assigned_speaker") or "").strip()
+        if original_label and original_label.upper() != "UNKNOWN" and original_label != speaker_id:
+            rejected_speakers.add(original_label)
+        if speaker_id:
+            rejected_speakers.discard(speaker_id)
         record["assigned_speaker"] = speaker_id
         record["created_speaker"] = False
         if speaker_id:
@@ -981,6 +996,7 @@ class WindowDiarizer:
             "original_speaker": record.get("automatic_assigned_speaker"),
             "previous_speaker": previous_speaker,
             "corrected_speaker": speaker_id,
+            "rejected_speakers": sorted(rejected_speakers),
             "corrected_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
             "updates_memory": bool(updates_memory),
         }
@@ -996,63 +1012,95 @@ class WindowDiarizer:
         *,
         update_memory: bool = True,
     ) -> dict[str, Any]:
+        return self.reassign_sentences([index], speaker_id, update_memory=update_memory)
+
+    def reassign_sentences(
+        self,
+        indices: list[int],
+        speaker_id: str | None,
+        *,
+        update_memory: bool = True,
+    ) -> dict[str, Any]:
         target = self._normalized_speaker_label(speaker_id)
         if target and not self._speaker_exists(target):
             raise ValueError(f"Unknown speaker {target}.")
-        row_index = int(index)
+        indexes = sorted({int(index) for index in indices})
+        if not indexes:
+            raise ValueError("Choose at least one sentence to reassign.")
         with self._sentence_refinement_lock:
-            if row_index not in self._sentence_refinement_records:
-                raise ValueError(f"Unknown transcript row {index}.")
-        self._push_correction_history("reassign_sentence")
+            for row_index in indexes:
+                if row_index not in self._sentence_refinement_records:
+                    raise ValueError(f"Unknown transcript row {row_index}.")
+        self._push_correction_history("reassign_sentence" if len(indexes) == 1 else "reassign_sentences")
         changed: list[dict[str, Any]] = []
         with self._live_memory_update_lock_obj():
             with self._sentence_refinement_lock:
-                record = self._sentence_refinement_records.get(row_index)
-                if record is None:
-                    raise ValueError(f"Unknown transcript row {index}.")
-                self._set_user_assignment(
-                    record,
-                    target,
-                    action="reassign",
-                    updates_memory=update_memory,
-                )
-                changed.append(copy.deepcopy(record))
+                for row_index in indexes:
+                    record = self._sentence_refinement_records.get(row_index)
+                    if record is None:
+                        raise ValueError(f"Unknown transcript row {row_index}.")
+                    self._set_user_assignment(
+                        record,
+                        target,
+                        action="reassign",
+                        updates_memory=update_memory,
+                    )
+                    changed.append(copy.deepcopy(record))
                 records_copy = copy.deepcopy(self._sentence_refinement_records)
             if update_memory:
                 self._rebuild_speaker_memory_from_records(records_copy)
             if target:
-                self._remove_unknown_sentence(row_index)
+                for row_index in indexes:
+                    self._remove_unknown_sentence(row_index)
         self._emit_records(changed)
         state = self.emit_speaker_state()
-        self.bus.emit("status", {"message": f"Reassigned sentence {index} to {target or 'UNKNOWN'}."})
+        if len(indexes) == 1:
+            message = f"Reassigned sentence {indexes[0]} to {target or 'UNKNOWN'}."
+        else:
+            message = f"Reassigned {len(indexes)} sentences to {target or 'UNKNOWN'}."
+        self.bus.emit("status", {"message": message})
         return {"speaker_state": state, "rows": [self._record_to_sentence_payload(record) for record in changed]}
 
     def mark_sentence_correct(self, index: int) -> dict[str, Any]:
-        row_index = int(index)
+        return self.mark_sentences_correct([index])
+
+    def mark_sentences_correct(self, indices: list[int]) -> dict[str, Any]:
+        indexes = sorted({int(index) for index in indices})
+        if not indexes:
+            raise ValueError("Choose at least one sentence to mark correct.")
         with self._sentence_refinement_lock:
-            if row_index not in self._sentence_refinement_records:
-                raise ValueError(f"Unknown transcript row {index}.")
-        self._push_correction_history("mark_sentence_correct")
-        with self._sentence_refinement_lock:
-            record = self._sentence_refinement_records.get(row_index)
-            if record is None:
-                raise ValueError(f"Unknown transcript row {index}.")
-            if "automatic_assigned_speaker" not in record:
-                record["automatic_assigned_speaker"] = record.get("assigned_speaker")
-                record["automatic_assignment_source"] = str(record.get("assignment_source") or "")
-            record["correction"] = {
-                "status": "user_confirmed",
-                "action": "mark_correct",
-                "original_speaker": record.get("automatic_assigned_speaker"),
-                "corrected_speaker": record.get("assigned_speaker"),
-                "corrected_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
-                "updates_memory": False,
-            }
-            changed = copy.deepcopy(record)
-        row = self._record_to_sentence_payload(changed)
-        self.bus.emit("sentence", row)
-        self.bus.emit("status", {"message": f"Marked sentence {index} correct."})
-        return {"speaker_state": self.speaker_state(), "rows": [row]}
+            for row_index in indexes:
+                if row_index not in self._sentence_refinement_records:
+                    raise ValueError(f"Unknown transcript row {row_index}.")
+        self._push_correction_history("mark_sentence_correct" if len(indexes) == 1 else "mark_sentences_correct")
+        changed: list[dict[str, Any]] = []
+        with self._live_memory_update_lock_obj():
+            with self._sentence_refinement_lock:
+                for row_index in indexes:
+                    record = self._sentence_refinement_records.get(row_index)
+                    if record is None:
+                        raise ValueError(f"Unknown transcript row {row_index}.")
+                    if "automatic_assigned_speaker" not in record:
+                        record["automatic_assigned_speaker"] = record.get("assigned_speaker")
+                        record["automatic_assignment_source"] = str(record.get("assignment_source") or "")
+                    record["correction"] = {
+                        "status": "user_confirmed",
+                        "action": "mark_correct",
+                        "original_speaker": record.get("automatic_assigned_speaker"),
+                        "corrected_speaker": record.get("assigned_speaker"),
+                        "corrected_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+                        "updates_memory": True,
+                    }
+                    changed.append(copy.deepcopy(record))
+                records_copy = copy.deepcopy(self._sentence_refinement_records)
+            self._rebuild_speaker_memory_from_records(records_copy)
+        self._emit_records(changed)
+        if len(indexes) == 1:
+            message = f"Marked sentence {indexes[0]} correct."
+        else:
+            message = f"Marked {len(indexes)} sentences correct."
+        self.bus.emit("status", {"message": message})
+        return {"speaker_state": self.speaker_state(), "rows": [self._record_to_sentence_payload(record) for record in changed]}
 
     def split_speaker(
         self,
@@ -1106,7 +1154,10 @@ class WindowDiarizer:
                 self._rebuild_speaker_memory_from_records(records_copy)
         self._emit_records(changed)
         state = self.emit_speaker_state()
-        self.bus.emit("status", {"message": f"Split {len(indexes)} sentence(s) from {source} to {new_label}."})
+        self.bus.emit(
+            "status",
+            {"message": f"Created {new_label} from {len(indexes)} sentence(s) previously assigned to {source}."},
+        )
         return {
             "speaker_state": state,
             "new_speaker_id": new_label,
@@ -1155,6 +1206,60 @@ class WindowDiarizer:
         self._emit_records(changed)
         state = self.emit_speaker_state()
         self.bus.emit("status", {"message": f"Merged {source} into {target}."})
+        return {"speaker_state": state, "rows": [self._record_to_sentence_payload(record) for record in changed]}
+
+    def delete_speaker(self, speaker_id: str, *, update_memory: bool = True) -> dict[str, Any]:
+        target = self._normalized_speaker_label(speaker_id)
+        if not target or not self._speaker_exists(target):
+            raise ValueError(f"Unknown speaker {speaker_id}.")
+        self._push_correction_history("delete_speaker")
+        changed: list[dict[str, Any]] = []
+        with self._live_memory_update_lock_obj():
+            with self._sentence_refinement_lock:
+                for record in self._sentence_refinement_records.values():
+                    previous_speaker = str(record.get("assigned_speaker") or "").strip().upper()
+                    if previous_speaker != target:
+                        continue
+                    if "automatic_assigned_speaker" not in record:
+                        record["automatic_assigned_speaker"] = record.get("assigned_speaker")
+                        record["automatic_assignment_source"] = str(record.get("assignment_source") or "")
+                    record["assigned_speaker"] = None
+                    record["created_speaker"] = False
+                    record["probabilities"] = {"unknown": 1.0}
+                    record["similarities"] = {}
+                    record["unknown_probability"] = 1.0
+                    record["top_similarity"] = None
+                    record["margin"] = None
+                    record["assignment_source"] = "user_deleted_speaker"
+                    record["correction"] = {
+                        "status": "speaker_deleted",
+                        "action": "delete_speaker",
+                        "deleted_speaker": target,
+                        "previous_speaker": previous_speaker,
+                        "corrected_speaker": None,
+                        "corrected_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+                        "updates_memory": bool(update_memory),
+                    }
+                    changed.append(copy.deepcopy(record))
+                records_copy = copy.deepcopy(self._sentence_refinement_records)
+            with self._speaker_lock:
+                self._speaker_metadata.pop(target, None)
+            self._speaker_last_media_end.pop(target, None)
+            if update_memory:
+                self._rebuild_speaker_memory_from_records(records_copy, remove_labels={target})
+            else:
+                profiles = [profile for profile in self.memory.export_profiles() if profile.get("label") != target]
+                self.memory.replace_profiles(profiles)
+                self._sync_metadata_with_memory()
+                self._reset_live_speaker_memory()
+        self._emit_records(changed)
+        state = self.emit_speaker_state()
+        row_count = len(changed)
+        if row_count:
+            message = f"Deleted {target} and moved {row_count} sentence{'' if row_count == 1 else 's'} to UNKNOWN."
+        else:
+            message = f"Deleted empty speaker {target}."
+        self.bus.emit("status", {"message": message})
         return {"speaker_state": state, "rows": [self._record_to_sentence_payload(record) for record in changed]}
 
     def undo_last_correction(self) -> dict[str, Any]:
@@ -2975,6 +3080,12 @@ class WindowDiarizer:
             if record is None:
                 return False
             if record.get("assigned_speaker") != revision.previous_speaker:
+                return False
+            if is_provisional_unknown and user_deleted_speaker_label(record):
+                return False
+            if revision.previous_speaker and user_confirmed_speaker_label(record) == revision.previous_speaker:
+                return False
+            if revision.assigned_speaker in rejected_speaker_labels(record):
                 return False
             previous_provisional = str(record.get("provisional_assigned_speaker") or "")
             if is_provisional_unknown and previous_provisional == revision.assigned_speaker:

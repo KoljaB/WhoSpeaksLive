@@ -27,6 +27,11 @@ from window.review_flags import annotate_review
 from window.session_store import SessionStore
 from window.window_diarizer import WindowDiarizer
 from window.window_events import RecordingEventBus
+from window.window_speaker_refinement import (
+    SpeakerRefinementConfig,
+    build_speaker_prototypes,
+    find_speaker_prototype_revisions,
+)
 
 
 def _unit(values: list[float]) -> np.ndarray:
@@ -173,12 +178,65 @@ class CorrectionControllerTests(unittest.TestCase):
 
         self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
         self.assertEqual(result["rows"][0]["correction"]["status"], "user_corrected")
+        self.assertEqual(result["rows"][0]["correction"]["rejected_speakers"], ["S1"])
         self.assertFalse(result["rows"][0]["review"]["needs_review"])
 
         undo = diarizer.undo_last_correction()
 
         self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S1")
         self.assertEqual(undo["rows"][0]["assigned_speaker"], "S1")
+
+    def test_reassign_sentence_does_not_keep_current_target_rejected(self) -> None:
+        diarizer = _fake_diarizer()
+
+        diarizer.reassign_sentence(1, "S2")
+        result = diarizer.reassign_sentence(1, "S1")
+
+        correction = result["rows"][0]["correction"]
+        self.assertEqual(correction["corrected_speaker"], "S1")
+        self.assertEqual(correction["rejected_speakers"], ["S2"])
+
+    def test_bulk_reassign_sentences_updates_rows_with_single_undo(self) -> None:
+        diarizer = _fake_diarizer()
+
+        result = diarizer.reassign_sentences([1, 2], "S1")
+
+        self.assertEqual([row["assigned_speaker"] for row in result["rows"]], ["S1", "S1"])
+        self.assertEqual(diarizer._sentence_refinement_records[2]["assigned_speaker"], "S1")
+
+        undo = diarizer.undo_last_correction()
+
+        restored = {row["index"]: row["assigned_speaker"] for row in undo["rows"]}
+        self.assertEqual(restored[1], "S1")
+        self.assertEqual(restored[2], "S2")
+
+    def test_bulk_mark_sentences_correct_updates_rows_with_single_undo(self) -> None:
+        diarizer = _fake_diarizer()
+
+        result = diarizer.mark_sentences_correct([1, 2])
+
+        self.assertEqual([row["correction"]["status"] for row in result["rows"]], ["user_confirmed", "user_confirmed"])
+        self.assertEqual([row["correction"]["corrected_speaker"] for row in result["rows"]], ["S1", "S2"])
+        self.assertEqual([row["correction"]["updates_memory"] for row in result["rows"]], [True, True])
+
+        undo = diarizer.undo_last_correction()
+
+        self.assertNotIn("correction", diarizer._sentence_refinement_records[1])
+        self.assertNotIn("correction", diarizer._sentence_refinement_records[2])
+        self.assertEqual({row["index"] for row in undo["rows"]}, {1, 2})
+
+    def test_mark_correct_refreshes_speaker_memory_from_confirmed_records(self) -> None:
+        diarizer = _fake_diarizer()
+        confirmed_embedding = _unit([0.6, 0.8])
+        diarizer._sentence_refinement_records[1]["embedding"] = confirmed_embedding
+
+        diarizer.mark_sentence_correct(1)
+
+        profiles = {
+            profile["label"]: np.asarray(profile["centroid"], dtype=np.float32)
+            for profile in diarizer.memory.export_profiles()
+        }
+        self.assertTrue(np.allclose(profiles["S1"], confirmed_embedding))
 
     def test_merge_speakers_reassigns_source_rows_and_removes_source_profile(self) -> None:
         diarizer = _fake_diarizer()
@@ -190,6 +248,129 @@ class CorrectionControllerTests(unittest.TestCase):
         self.assertIn("S2", labels)
         self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
 
+    def test_delete_speaker_moves_rows_to_unknown_and_removes_profile(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer._speaker_last_media_end["S1"] = 2.0
+
+        result = diarizer.delete_speaker("S1")
+
+        labels = {speaker["id"] for speaker in result["speaker_state"]["speakers"]}
+        self.assertNotIn("S1", labels)
+        self.assertIn("S2", labels)
+        self.assertEqual(len(result["rows"]), 1)
+        row = result["rows"][0]
+        self.assertIsNone(row["assigned_speaker"])
+        self.assertEqual(row["probabilities"], {"unknown": 1.0})
+        self.assertEqual(row["unknown_probability"], 1.0)
+        self.assertEqual(row["assignment_source"], "user_deleted_speaker")
+        self.assertEqual(row["correction"]["status"], "speaker_deleted")
+        self.assertEqual(row["correction"]["deleted_speaker"], "S1")
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], None)
+        self.assertNotIn("S1", {profile["label"] for profile in diarizer.memory.export_profiles()})
+        self.assertNotIn("S1", diarizer._speaker_last_media_end)
+
+        undo = diarizer.undo_last_correction()
+
+        restored = {speaker["id"] for speaker in undo["speaker_state"]["speakers"]}
+        self.assertIn("S1", restored)
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S1")
+        self.assertEqual(diarizer._speaker_last_media_end["S1"], 2.0)
+
+    def test_delete_empty_speaker_removes_profile_and_is_undoable(self) -> None:
+        diarizer = _fake_diarizer()
+        empty_label = diarizer.memory.add_profile(_unit([1.0, 1.0]), duration_seconds=0.1, sentence_count=1)
+        self.assertEqual(empty_label, "S3")
+        diarizer._speaker_metadata[empty_label] = {
+            "name": "Empty",
+            "source": "detected",
+            "locked": False,
+            "reference_audio": "",
+        }
+
+        result = diarizer.delete_speaker(empty_label)
+
+        self.assertEqual(result["rows"], [])
+        labels = {speaker["id"] for speaker in result["speaker_state"]["speakers"]}
+        self.assertNotIn(empty_label, labels)
+
+        undo = diarizer.undo_last_correction()
+
+        restored = {speaker["id"] for speaker in undo["speaker_state"]["speakers"]}
+        self.assertIn(empty_label, restored)
+
+    def test_delete_speaker_clears_marked_correct_confirmation_on_rows(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer.mark_sentence_correct(1)
+
+        result = diarizer.delete_speaker("S1")
+
+        row = result["rows"][0]
+        self.assertIsNone(row["assigned_speaker"])
+        self.assertEqual(row["correction"]["status"], "speaker_deleted")
+        self.assertNotEqual(row["correction"]["status"], "user_confirmed")
+
+    def test_deleted_speaker_rows_are_not_prototype_assigned_from_unknown(self) -> None:
+        config = SpeakerRefinementConfig(
+            prototype_min_duration=0.0,
+            unknown_min_similarity=-1.0,
+            unknown_min_margin=0.0,
+        )
+        rows = [
+            {
+                "index": 1,
+                "assigned_speaker": None,
+                "embedding": _unit([1.0, 0.0]),
+                "duration_seconds": 1.0,
+                "unknown_probability": 1.0,
+            },
+            {
+                "index": 2,
+                "assigned_speaker": "S1",
+                "embedding": _unit([1.0, 0.0]),
+                "duration_seconds": 2.0,
+                "unknown_probability": 0.0,
+            },
+            {
+                "index": 3,
+                "assigned_speaker": "S2",
+                "embedding": _unit([0.0, 1.0]),
+                "duration_seconds": 2.0,
+                "unknown_probability": 0.0,
+            },
+        ]
+
+        baseline = find_speaker_prototype_revisions(rows, config)
+        self.assertEqual([(revision.index, revision.assigned_speaker) for revision in baseline], [(1, "S1")])
+
+        rows[0]["correction"] = {
+            "status": "speaker_deleted",
+            "action": "delete_speaker",
+            "deleted_speaker": "S3",
+            "corrected_speaker": None,
+        }
+
+        revisions = find_speaker_prototype_revisions(rows, config)
+
+        self.assertEqual(revisions, [])
+
+    def test_stale_prototype_unknown_revision_cannot_change_deleted_speaker_row(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer.delete_speaker("S1")
+        revision = SimpleNamespace(
+            index=1,
+            previous_speaker=None,
+            assigned_speaker="S2",
+            prototype_score=1.0,
+            prototype_margin=1.0,
+            prototype_scores={"S2": 1.0},
+            assignment_source="prototype_unknown_assign",
+        )
+
+        applied = diarizer._apply_prototype_revision(revision)
+
+        self.assertFalse(applied)
+        self.assertIsNone(diarizer._sentence_refinement_records[1]["assigned_speaker"])
+
     def test_split_speaker_moves_sentence_to_new_profile(self) -> None:
         diarizer = _fake_diarizer()
 
@@ -200,6 +381,155 @@ class CorrectionControllerTests(unittest.TestCase):
         self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S3")
         labels = {speaker["id"] for speaker in result["speaker_state"]["speakers"]}
         self.assertIn("S3", labels)
+
+    def test_prototype_reassignment_skips_user_rejected_speaker(self) -> None:
+        config = SpeakerRefinementConfig(
+            prototype_min_duration=0.0,
+            known_min_similarity=-1.0,
+            known_min_delta=0.0,
+        )
+        rows = [
+            {
+                "index": 1,
+                "assigned_speaker": "S2",
+                "embedding": _unit([1.0, 0.0]),
+                "duration_seconds": 1.0,
+                "unknown_probability": 0.0,
+                "top_similarity": 1.0,
+                "margin": 1.0,
+            },
+            {
+                "index": 2,
+                "assigned_speaker": "S1",
+                "embedding": _unit([1.0, 0.0]),
+                "duration_seconds": 2.0,
+                "unknown_probability": 0.0,
+            },
+            {
+                "index": 3,
+                "assigned_speaker": "S2",
+                "embedding": _unit([0.0, 1.0]),
+                "duration_seconds": 2.0,
+                "unknown_probability": 0.0,
+            },
+        ]
+
+        baseline = find_speaker_prototype_revisions(rows, config, allow_known_reassignment=True)
+        self.assertEqual([(revision.index, revision.assigned_speaker) for revision in baseline], [(1, "S1")])
+
+        rows[0]["correction"] = {
+            "status": "user_corrected",
+            "action": "reassign",
+            "previous_speaker": "S1",
+            "corrected_speaker": "S2",
+            "rejected_speakers": ["S1"],
+        }
+
+        revisions = find_speaker_prototype_revisions(rows, config, allow_known_reassignment=True)
+
+        self.assertEqual(revisions, [])
+
+    def test_stale_prototype_revision_cannot_apply_user_rejected_speaker(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer.reassign_sentence(1, "S2")
+        revision = SimpleNamespace(
+            index=1,
+            previous_speaker="S2",
+            assigned_speaker="S1",
+        )
+
+        applied = diarizer._apply_prototype_revision(revision)
+
+        self.assertFalse(applied)
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
+
+    def test_mark_correct_blocks_known_prototype_reassignment(self) -> None:
+        config = SpeakerRefinementConfig(
+            prototype_min_duration=0.0,
+            known_min_similarity=-1.0,
+            known_min_delta=0.0,
+        )
+        rows = [
+            {
+                "index": 1,
+                "assigned_speaker": "S2",
+                "embedding": _unit([1.0, 0.0]),
+                "duration_seconds": 1.0,
+                "unknown_probability": 0.0,
+            },
+            {
+                "index": 2,
+                "assigned_speaker": "S1",
+                "embedding": _unit([1.0, 0.0]),
+                "duration_seconds": 2.0,
+                "unknown_probability": 0.0,
+            },
+            {
+                "index": 3,
+                "assigned_speaker": "S2",
+                "embedding": _unit([0.0, 1.0]),
+                "duration_seconds": 2.0,
+                "unknown_probability": 0.0,
+            },
+        ]
+
+        baseline = find_speaker_prototype_revisions(rows, config, allow_known_reassignment=True)
+        self.assertEqual([(revision.index, revision.assigned_speaker) for revision in baseline], [(1, "S1")])
+
+        rows[0]["correction"] = {
+            "status": "user_confirmed",
+            "action": "mark_correct",
+            "corrected_speaker": "S2",
+        }
+
+        revisions = find_speaker_prototype_revisions(rows, config, allow_known_reassignment=True)
+
+        self.assertEqual(revisions, [])
+
+    def test_stale_prototype_revision_cannot_change_marked_correct_row(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer.mark_sentence_correct(1)
+        revision = SimpleNamespace(
+            index=1,
+            previous_speaker="S1",
+            assigned_speaker="S2",
+        )
+
+        applied = diarizer._apply_prototype_revision(revision)
+
+        self.assertFalse(applied)
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S1")
+
+    def test_mark_correct_rows_are_preferred_as_prototype_evidence(self) -> None:
+        config = SpeakerRefinementConfig(
+            max_per_profile=1,
+            prototype_min_duration=0.0,
+        )
+        rows = [
+            {
+                "index": 1,
+                "assigned_speaker": "S1",
+                "embedding": _unit([0.0, 1.0]),
+                "duration_seconds": 100.0,
+                "unknown_probability": 0.0,
+            },
+            {
+                "index": 2,
+                "assigned_speaker": "S1",
+                "embedding": _unit([1.0, 0.0]),
+                "duration_seconds": 0.1,
+                "unknown_probability": 0.0,
+                "correction": {
+                    "status": "user_confirmed",
+                    "action": "mark_correct",
+                    "corrected_speaker": "S1",
+                },
+            },
+        ]
+
+        prototypes = build_speaker_prototypes(rows, config)
+
+        self.assertTrue(np.allclose(prototypes["S1"][0], _unit([1.0, 0.0])))
 
 
 class SessionReviewMetadataTests(unittest.TestCase):

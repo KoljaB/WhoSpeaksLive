@@ -273,6 +273,15 @@ HTML = r"""<!doctype html>
     .review-filter-button.active { background:#102436; color:#E8EEF5; box-shadow:inset 0 0 0 1px #17B7FE; }
     .undo-correction-button { min-height:24px; border-color:#20303E; background:#121C26; color:#C6D0DC; padding:0 8px; font-size:12px; }
     .undo-correction-button:disabled { opacity:.45; }
+    .selection-toolbar { position:absolute; top:88px; right:16px; z-index:35; min-width:min(610px, calc(100% - 32px)); max-width:calc(100% - 32px); display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid #304255; border-radius:8px; background:rgba(11,16,21,.92); box-shadow:0 18px 48px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08); backdrop-filter:blur(10px); }
+    .selection-toolbar[hidden] { display:none; }
+    .selection-count { flex:0 0 auto; min-width:78px; color:#E8EEF5; font-size:13px; }
+    .selection-toolbar select { flex:1 1 190px; min-width:180px; max-width:260px; min-height:34px; border:1px solid #304255; border-radius:7px; padding:0 32px 0 10px; background:#0F161F; color:#D7DEE8; color-scheme:dark; font-size:13px; }
+    .selection-toolbar button { min-height:34px; border-color:#304255; background:#121C26; color:#C6D0DC; padding:0 11px; font-size:13px; white-space:nowrap; }
+    .selection-toolbar .primary-selection-action { border-color:#17B7FE; color:#17B7FE; background:#102436; }
+    .selection-toolbar button:disabled, .selection-toolbar select:disabled { opacity:.45; }
+    .selection-toolbar .clear-selection-button { flex:0 0 auto; width:34px; display:grid; place-items:center; padding:0; border-color:transparent; background:transparent; color:#D7DEE8; font-size:26px; line-height:1; }
+    .selection-toolbar .clear-selection-button:hover { border-color:#304255; background:#121C26; }
     .follow-live-toggle { min-height:22px; display:inline-flex; align-items:center; gap:7px; color:#C6D0DC; font-size:12px; }
     .follow-live-toggle input { position:absolute; opacity:0; pointer-events:none; }
     .follow-live-track { position:relative; width:38px; height:20px; border-radius:999px; background:#22313E; box-shadow:inset 0 0 0 1px #20303E; }
@@ -289,6 +298,9 @@ HTML = r"""<!doctype html>
     .transcript-settings-panel input { width:14px; height:14px; accent-color:#17B7FE; }
     .sentences { min-height:0; overflow:auto; padding:8px; }
     .row { border-bottom:1px solid var(--line); padding:7px 10px; transition:background-color .18s ease, border-color .18s ease, box-shadow .18s ease, opacity .18s ease, transform .18s ease; }
+    .row.selectable { cursor:pointer; }
+    .row.selected { background:#102436; border-bottom-color:#26506A; box-shadow:inset 3px 0 0 #17B7FE, inset 0 0 0 1px rgba(23,183,254,.42); }
+    .row.selected.needs-review, .row.selected.user-corrected { box-shadow:inset 3px 0 0 #17B7FE, inset 0 0 0 1px rgba(23,183,254,.42); }
     .top { display:flex; gap:8px; align-items:flex-start; justify-content:space-between; margin-bottom:4px; color:var(--muted); font-size:11px; }
     .top-left { min-width:0; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
     .badge { font-weight:400; border-radius:999px; padding:2px 8px; border:1px solid currentColor; background:#0B1015; }
@@ -314,13 +326,11 @@ HTML = r"""<!doctype html>
     .review-reasons { display:inline-flex; align-items:center; flex-wrap:wrap; gap:4px; min-width:0; }
     .review-chip { border:1px solid #6B4A12; border-radius:999px; padding:1px 6px; color:#F8D38A; background:#1C1609; font-size:11px; line-height:1.45; }
     .review-chip.corrected { border-color:#1F6F3C; color:#9EE6B2; background:#091A10; }
-    .correction-actions { margin-left:auto; display:flex; align-items:center; gap:4px; min-width:0; }
-    .correction-speaker-select { max-width:120px; min-height:24px; border:1px solid #20303E; border-radius:5px; background:#0B1015; color:#D7DEE8; font-size:12px; }
-    .correction-button { min-height:24px; border:1px solid #20303E; border-radius:5px; background:#121C26; color:#C6D0DC; padding:0 7px; font-size:12px; }
-    .correction-button:disabled, .correction-speaker-select:disabled { opacity:.45; }
-    .speaker-merge-controls { display:flex; gap:4px; align-items:center; margin-top:5px; }
+    .speaker-edit-controls { display:flex; gap:4px; align-items:center; flex-wrap:wrap; margin-top:5px; }
+    .speaker-merge-controls { display:flex; gap:4px; align-items:center; flex:1 1 180px; min-width:0; }
     .speaker-merge-controls select { min-width:0; flex:1 1 auto; height:24px; border:1px solid #20303E; border-radius:5px; background:#0B1015; color:#D7DEE8; font-size:12px; }
     .speaker-merge-controls button { min-height:24px; flex:0 0 auto; border-color:#20303E; background:#121C26; color:#C6D0DC; padding:0 7px; font-size:12px; }
+    .speaker-delete-button { min-height:24px; flex:0 0 auto; border-color:#3A2428; background:#1A0F12; color:#E0A0A0; padding:0 7px; font-size:12px; }
     .prob { flex:0 0 min(180px, 24vw); display:flex; width:min(180px, 24vw); height:6px; overflow:hidden; border:1px solid var(--line); border-radius:4px; background:#0B1015; margin-top:4px; }
     .prob span { display:block; height:100%; min-width:0; }
     @media (max-width: 900px) {
@@ -359,8 +369,8 @@ HTML = r"""<!doctype html>
       .transcript-header { grid-template-columns:1fr; gap:8px; padding:9px; }
       .transcript-left-tools, .transcript-right-tools { justify-content:flex-start; }
       .review-filter { width:100%; overflow:auto; }
-      .correction-actions { width:100%; margin-left:0; flex-wrap:wrap; }
-      .correction-speaker-select { flex:1 1 140px; max-width:none; }
+      .selection-toolbar { top:116px; left:16px; right:16px; min-width:0; flex-wrap:wrap; }
+      .selection-toolbar select { flex:1 1 160px; max-width:none; }
       .sentences { overflow:visible; padding:8px; }
       .status { max-height:130px; }
       .speaker-list { max-height:none; }
@@ -647,6 +657,15 @@ HTML = r"""<!doctype html>
             </div>
           </div>
         </div>
+        <div id="selectionToolbar" class="selection-toolbar" hidden>
+          <span id="selectionCount" class="selection-count">0 selected</span>
+          <select id="bulkCorrectionSpeaker" aria-label="Assign selected rows to speaker">
+            <option value="">Assign speaker...</option>
+          </select>
+          <button id="bulkReassign" class="primary-selection-action" type="button" disabled>Reassign</button>
+          <button id="bulkMarkCorrect" type="button" disabled>Mark correct</button>
+          <button id="clearSelection" class="clear-selection-button" type="button" title="Clear selection" aria-label="Clear selection">&times;</button>
+        </div>
         <section id="sentences" class="sentences"></section>
       </section>
     </section>
@@ -806,6 +825,12 @@ const showTranscriptTime = document.getElementById("showTranscriptTime");
 const showTranscriptSpeechRate = document.getElementById("showTranscriptSpeechRate");
 const showTranscriptProbabilities = document.getElementById("showTranscriptProbabilities");
 const undoCorrectionButton = document.getElementById("undoCorrection");
+const selectionToolbar = document.getElementById("selectionToolbar");
+const selectionCount = document.getElementById("selectionCount");
+const bulkCorrectionSpeaker = document.getElementById("bulkCorrectionSpeaker");
+const bulkReassignButton = document.getElementById("bulkReassign");
+const bulkMarkCorrectButton = document.getElementById("bulkMarkCorrect");
+const clearSelectionButton = document.getElementById("clearSelection");
 const reviewFilterButtons = Array.from(document.querySelectorAll(".review-filter-button"));
 const inputMode = document.getElementById("inputMode");
 const newSpeakerSensitivity = document.getElementById("newSpeakerSensitivity");
@@ -847,6 +872,7 @@ const liveSpeakerConfig = __LIVE_SPEAKER_JSON__;
 const sessionLeaseEnabled = liveSpeakerConfig.session_lease_enabled !== false;
 const initialSpeakerLibrary = __SPEAKER_LIBRARY_JSON__;
 const svgNamespace = "http://www.w3.org/2000/svg";
+const createSpeakerOptionValue = "__create_speaker__";
 const targetCaptureSampleRate = 16000;
 const captureStartRmsThreshold = 0.003;
 const capturePreRollSeconds = 0.7;
@@ -894,6 +920,8 @@ let followLiveEnabled = true;
 let transcriptSearchText = "";
 let transcriptReviewFilter = "all";
 let hasUndoableCorrection = false;
+let selectedTranscriptRowIndexes = new Set();
+let lastSelectedTranscriptRowIndex = "";
 let transcriptClearBeforeSeconds = 0;
 let currentLiveSpeakerId = "";
 let transcriptLiveSpeakerId = "";
@@ -1695,6 +1723,7 @@ function setTranscriptTitleSaved(title) {
 function leaveSavedSessionReview() {
   if (!openedSavedSessionId) return;
   openedSavedSessionId = "";
+  clearTranscriptSelection();
   setTranscriptTitleLive();
   renderSavedSessions();
 }
@@ -2694,6 +2723,7 @@ function resetTranscriptDisplay() {
   browserLiveObservationBuffer = [];
   sentences.textContent = "";
   statusBox.textContent = "";
+  clearTranscriptSelection();
   transcriptClearBeforeSeconds = 0;
   currentRealtimeGeneration = 0;
   clearLiveSpeakerState();
@@ -2726,6 +2756,7 @@ function clearDisplayedTranscript() {
   }
   transcriptClearBeforeSeconds = currentTranscriptClearBoundarySeconds();
   sentences.textContent = "";
+  clearTranscriptSelection();
   renderedSpeakerSentenceCounts = {};
   renderedSpeakerSpeakingSeconds = {};
   hasRenderedFinalSentenceRows = false;
@@ -2940,6 +2971,208 @@ function syncCorrectionUndoState(enabled = hasUndoableCorrection) {
   hasUndoableCorrection = Boolean(enabled);
   undoCorrectionButton.disabled = !hasUndoableCorrection || sessionControlsLocked() || savedSessionReviewOpen();
 }
+function transcriptRowSelectionKey(row) {
+  if (!row || row.dataset.realtime === "true" || row.dataset.selectable !== "true") return "";
+  return String(row.dataset.index || "");
+}
+function selectableTranscriptRows() {
+  return Array.from(sentences.querySelectorAll(".row[data-selectable='true']")).filter(row => row.dataset.realtime !== "true");
+}
+function selectedTranscriptRows() {
+  return selectableTranscriptRows().filter(row => selectedTranscriptRowIndexes.has(transcriptRowSelectionKey(row)));
+}
+function selectedTranscriptIndexes() {
+  return selectedTranscriptRows()
+    .map(row => Number(row.dataset.index))
+    .filter(index => Number.isFinite(index));
+}
+function pruneTranscriptSelection() {
+  const available = new Set(selectableTranscriptRows().map(row => transcriptRowSelectionKey(row)).filter(Boolean));
+  selectedTranscriptRowIndexes.forEach(key => {
+    if (!available.has(key)) selectedTranscriptRowIndexes.delete(key);
+  });
+  if (lastSelectedTranscriptRowIndex && !available.has(lastSelectedTranscriptRowIndex)) {
+    lastSelectedTranscriptRowIndex = "";
+  }
+}
+function setTranscriptSelectionRange(anchorKey, targetKey, selected) {
+  const rows = selectableTranscriptRows();
+  const anchorIndex = rows.findIndex(row => transcriptRowSelectionKey(row) === anchorKey);
+  const targetIndex = rows.findIndex(row => transcriptRowSelectionKey(row) === targetKey);
+  if (anchorIndex < 0 || targetIndex < 0) {
+    if (selected) selectedTranscriptRowIndexes.add(targetKey);
+    else selectedTranscriptRowIndexes.delete(targetKey);
+    return;
+  }
+  const startIndex = Math.min(anchorIndex, targetIndex);
+  const endIndex = Math.max(anchorIndex, targetIndex);
+  rows.slice(startIndex, endIndex + 1).forEach(row => {
+    const key = transcriptRowSelectionKey(row);
+    if (!key) return;
+    if (selected) selectedTranscriptRowIndexes.add(key);
+    else selectedTranscriptRowIndexes.delete(key);
+  });
+}
+function disableFollowLiveForTranscriptSelection() {
+  if (!followLiveEnabled && !followLive.checked) return;
+  followLiveEnabled = false;
+  followLive.checked = false;
+}
+function setTranscriptRowSelected(row, selected, options = {}) {
+  const key = transcriptRowSelectionKey(row);
+  if (!key) return;
+  if (selected) {
+    disableFollowLiveForTranscriptSelection();
+  }
+  if (options.range && lastSelectedTranscriptRowIndex) {
+    setTranscriptSelectionRange(lastSelectedTranscriptRowIndex, key, selected);
+  } else if (selected) {
+    selectedTranscriptRowIndexes.add(key);
+  } else {
+    selectedTranscriptRowIndexes.delete(key);
+  }
+  lastSelectedTranscriptRowIndex = key;
+  syncTranscriptSelectionState();
+}
+function clearTranscriptSelection() {
+  selectedTranscriptRowIndexes.clear();
+  lastSelectedTranscriptRowIndex = "";
+  syncTranscriptSelectionState();
+}
+function commonSelectedSpeakerId(rows) {
+  let speakerId = "";
+  for (const row of rows) {
+    const rowSpeaker = row.dataset.speaker || "";
+    if (!rowSpeaker || rowSpeaker === "UNKNOWN") return "";
+    if (!speakerId) {
+      speakerId = rowSpeaker;
+    } else if (speakerId !== rowSpeaker) {
+      return "";
+    }
+  }
+  return speakerId;
+}
+function selectedRowsNeedSpeakerChange(rows, speakerId) {
+  if (!speakerId) return false;
+  return rows.some(row => (row.dataset.speaker || "") !== speakerId);
+}
+function selectedRowsHaveUnconfirmed(rows) {
+  return rows.some(row => row.dataset.corrected !== "true");
+}
+function syncBulkCorrectionSpeakerOptions(rows = selectedTranscriptRows()) {
+  const speakers = Array.isArray(speakerLibraryState.speakers) ? speakerLibraryState.speakers : [];
+  const createSpeakerAllowed = Boolean(commonSelectedSpeakerId(rows));
+  const previousValue = bulkCorrectionSpeaker.value || "";
+  bulkCorrectionSpeaker.textContent = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Assign speaker...";
+  bulkCorrectionSpeaker.appendChild(placeholder);
+  speakers.forEach(speaker => {
+    if (!speaker.id) return;
+    const option = document.createElement("option");
+    option.value = speaker.id;
+    option.textContent = speakerPanelName(speaker);
+    bulkCorrectionSpeaker.appendChild(option);
+  });
+  const separator = document.createElement("option");
+  separator.value = "";
+  separator.disabled = true;
+  separator.textContent = "--------";
+  bulkCorrectionSpeaker.appendChild(separator);
+  const createOption = document.createElement("option");
+  createOption.value = createSpeakerOptionValue;
+  createOption.textContent = createSpeakerAllowed ? "Create new speaker" : "Create new speaker (select one speaker)";
+  createOption.disabled = !createSpeakerAllowed;
+  bulkCorrectionSpeaker.appendChild(createOption);
+  if (speakers.some(speaker => speaker.id === previousValue)) {
+    bulkCorrectionSpeaker.value = previousValue;
+  } else if (previousValue === createSpeakerOptionValue && createSpeakerAllowed) {
+    bulkCorrectionSpeaker.value = createSpeakerOptionValue;
+  } else {
+    bulkCorrectionSpeaker.value = "";
+  }
+}
+function syncBulkCorrectionToolbar() {
+  const rows = selectedTranscriptRows();
+  const count = rows.length;
+  syncBulkCorrectionSpeakerOptions(rows);
+  const locked = sessionControlsLocked() || savedSessionReviewOpen();
+  const speakers = Array.isArray(speakerLibraryState.speakers) ? speakerLibraryState.speakers : [];
+  const selectedSpeakerId = bulkCorrectionSpeaker.value || "";
+  const createSpeakerSelected = selectedSpeakerId === createSpeakerOptionValue;
+  const canCreateSpeaker = Boolean(commonSelectedSpeakerId(rows));
+  selectionToolbar.hidden = count <= 0;
+  selectionCount.textContent = `${count} selected`;
+  bulkCorrectionSpeaker.disabled = locked || count <= 0 || (!speakers.length && !canCreateSpeaker);
+  bulkReassignButton.textContent = createSpeakerSelected ? "Create speaker" : "Reassign";
+  bulkReassignButton.disabled = locked
+    || count <= 0
+    || !selectedSpeakerId
+    || (createSpeakerSelected ? !canCreateSpeaker : !selectedRowsNeedSpeakerChange(rows, selectedSpeakerId));
+  bulkReassignButton.title = createSpeakerSelected && !canCreateSpeaker
+    ? "Create new speaker requires selected rows from one known speaker."
+    : "";
+  bulkMarkCorrectButton.disabled = locked || count <= 0 || !selectedRowsHaveUnconfirmed(rows);
+  clearSelectionButton.disabled = count <= 0;
+}
+function syncTranscriptSelectionState() {
+  pruneTranscriptSelection();
+  Array.from(sentences.querySelectorAll(".row")).forEach(row => {
+    const key = transcriptRowSelectionKey(row);
+    const selected = Boolean(key && selectedTranscriptRowIndexes.has(key));
+    row.classList.toggle("selected", selected);
+    if (row.dataset.selectable === "true") {
+      row.classList.add("selectable");
+      row.setAttribute("role", "option");
+      row.setAttribute("aria-selected", selected ? "true" : "false");
+      row.tabIndex = 0;
+    } else {
+      row.classList.remove("selectable", "selected");
+      row.removeAttribute("role");
+      row.removeAttribute("aria-selected");
+      row.removeAttribute("tabindex");
+    }
+  });
+  syncBulkCorrectionToolbar();
+}
+function transcriptRowClickIsControl(target) {
+  return target instanceof Element && Boolean(target.closest("button, input, select, textarea, a"));
+}
+function configureSentenceRowSelection(row) {
+  if (!row || row.dataset.selectable !== "true") {
+    if (row) {
+      selectedTranscriptRowIndexes.delete(String(row.dataset.index || ""));
+      row.onclick = null;
+      row.onkeydown = null;
+      row.classList.remove("selectable", "selected");
+      row.removeAttribute("role");
+      row.removeAttribute("aria-selected");
+      row.removeAttribute("tabindex");
+    }
+    return;
+  }
+  const selected = selectedTranscriptRowIndexes.has(transcriptRowSelectionKey(row));
+  row.classList.add("selectable");
+  row.classList.toggle("selected", selected);
+  row.setAttribute("role", "option");
+  row.setAttribute("aria-selected", selected ? "true" : "false");
+  row.tabIndex = 0;
+  row.onclick = event => {
+    if (transcriptRowClickIsControl(event.target)) return;
+    const selection = window.getSelection ? String(window.getSelection() || "") : "";
+    if (selection.trim()) return;
+    const key = transcriptRowSelectionKey(row);
+    setTranscriptRowSelected(row, !selectedTranscriptRowIndexes.has(key), {range: event.shiftKey});
+  };
+  row.onkeydown = event => {
+    if (transcriptRowClickIsControl(event.target)) return;
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    const key = transcriptRowSelectionKey(row);
+    setTranscriptRowSelected(row, !selectedTranscriptRowIndexes.has(key), {range: event.shiftKey});
+  };
+}
 function setSpeakerFilter(speakerId, mode, active) {
   if (!speakerId) return;
   const target = mode === "mute" ? mutedSpeakerIds : soloSpeakerIds;
@@ -2984,6 +3217,7 @@ function updateSpeakerState(state) {
   updateSpeakerCount();
   renderSpeakerPanel();
   refreshSpeakerRows();
+  syncBulkCorrectionToolbar();
 }
 function setSpeakerTab(tabName) {
   const nextTab = tabName === "settings" || tabName === "sessions" ? tabName : "speakers";
@@ -3618,42 +3852,50 @@ function applyCorrectionResult(result) {
   syncCorrectionUndoState(true);
   scheduleSavedSessionsRefresh();
 }
-async function reassignSentenceRow(row, select) {
-  const index = Number(row.dataset.index);
-  const speakerId = select.value || "";
-  if (!Number.isFinite(index) || !speakerId || speakerId === row.dataset.speaker) return;
+async function reassignSelectedSentences() {
+  const indexes = selectedTranscriptIndexes();
+  const speakerId = bulkCorrectionSpeaker.value || "";
+  if (!indexes.length || !speakerId) return;
+  if (speakerId === createSpeakerOptionValue) {
+    await createSpeakerFromSelectedSentences();
+    return;
+  }
   try {
     await ensureSessionOwner("correct speaker labels");
-    const result = await post("/api/corrections/reassign", {index, speaker_id: speakerId, update_memory: true});
+    const result = await post("/api/corrections/reassign", {indexes, speaker_id: speakerId, update_memory: true});
     applyCorrectionResult(result);
-    log(`Reassigned sentence ${index} to ${speakerDisplayLabel(speakerId)}.`);
+    clearTranscriptSelection();
+    log(`Reassigned ${indexes.length} sentence${indexes.length === 1 ? "" : "s"} to ${speakerDisplayLabel(speakerId)}.`);
   } catch (error) {
     log(`Reassign failed: ${error.message}`);
   }
 }
-async function markSentenceCorrect(row) {
-  const index = Number(row.dataset.index);
-  if (!Number.isFinite(index)) return;
+async function markSelectedSentencesCorrect() {
+  const indexes = selectedTranscriptIndexes();
+  if (!indexes.length) return;
   try {
     await ensureSessionOwner("mark speaker labels correct");
-    const result = await post("/api/corrections/mark-correct", {index});
+    const result = await post("/api/corrections/mark-correct", {indexes});
     applyCorrectionResult(result);
-    log(`Marked sentence ${index} correct.`);
+    clearTranscriptSelection();
+    log(`Marked ${indexes.length} sentence${indexes.length === 1 ? "" : "s"} correct.`);
   } catch (error) {
     log(`Mark correct failed: ${error.message}`);
   }
 }
-async function splitSentenceToNewSpeaker(row) {
-  const index = Number(row.dataset.index);
-  const speakerId = row.dataset.speaker || "";
-  if (!Number.isFinite(index) || !speakerId || speakerId === "UNKNOWN") return;
+async function createSpeakerFromSelectedSentences() {
+  const rows = selectedTranscriptRows();
+  const indexes = selectedTranscriptIndexes();
+  const speakerId = commonSelectedSpeakerId(rows);
+  if (!indexes.length || !speakerId) return;
   try {
-    await ensureSessionOwner("split speaker profiles");
-    const result = await post("/api/speakers/split", {speaker_id: speakerId, sentence_indices: [index], update_memory: true});
+    await ensureSessionOwner("create speaker profiles");
+    const result = await post("/api/speakers/split", {speaker_id: speakerId, sentence_indices: indexes, update_memory: true});
     applyCorrectionResult(result);
-    log(`Split sentence ${index} to ${speakerDisplayLabel(result.new_speaker_id)}.`);
+    clearTranscriptSelection();
+    log(`Created ${speakerDisplayLabel(result.new_speaker_id)} from ${indexes.length} selected sentence${indexes.length === 1 ? "" : "s"}.`);
   } catch (error) {
-    log(`Split failed: ${error.message}`);
+    log(`Create speaker failed: ${error.message}`);
   }
 }
 async function mergeSpeakerInto(sourceSpeakerId, targetSpeakerId) {
@@ -3672,9 +3914,31 @@ async function mergeSpeakerInto(sourceSpeakerId, targetSpeakerId) {
     log(`Merge failed: ${error.message}`);
   }
 }
+async function deleteSpeakerProfile(speaker) {
+  if (!speaker || !speaker.id) return;
+  const speakerId = speaker.id;
+  const sentenceTotal = speakerCurrentSessionSentenceCount(speakerId);
+  const label = speakerPanelName(speaker);
+  const message = sentenceTotal > 0
+    ? `Delete ${label} and move ${sentenceTotal} sentence${sentenceTotal === 1 ? "" : "s"} to UNKNOWN?`
+    : `Delete empty speaker ${label}?`;
+  if (!confirm(message)) return;
+  try {
+    await ensureSessionOwner("delete speaker profiles");
+    const result = await post("/api/speakers/delete", {speaker_id: speakerId, update_memory: true});
+    applyCorrectionResult(result);
+    editingSpeakerId = "";
+    const movedCount = Array.isArray(result.rows) ? result.rows.length : sentenceTotal;
+    log(movedCount > 0
+      ? `Deleted ${label} and moved ${movedCount} sentence${movedCount === 1 ? "" : "s"} to UNKNOWN.`
+      : `Deleted empty speaker ${label}.`);
+  } catch (error) {
+    log(`Delete speaker failed: ${error.message}`);
+  }
+}
 function createSpeakerMergeControls(speaker) {
   const controls = document.createElement("span");
-  controls.className = "speaker-merge-controls";
+  controls.className = "speaker-merge-controls speaker-profile-action";
   const select = document.createElement("select");
   select.setAttribute("aria-label", `Merge ${speakerPanelName(speaker)} into`);
   const placeholder = document.createElement("option");
@@ -3703,6 +3967,19 @@ function createSpeakerMergeControls(speaker) {
   controls.appendChild(button);
   return controls;
 }
+function createSpeakerDeleteButton(speaker) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "speaker-delete-button speaker-profile-action";
+  button.textContent = "Delete";
+  button.disabled = sessionControlsLocked() || savedSessionReviewOpen();
+  button.addEventListener("click", event => {
+    event.stopPropagation();
+    deleteSpeakerProfile(speaker);
+  });
+  button.addEventListener("keydown", event => event.stopPropagation());
+  return button;
+}
 function createReviewReasonGroup(reasons, item) {
   const group = document.createElement("span");
   group.className = "review-reasons";
@@ -3728,60 +4005,6 @@ function createReviewReasonGroup(reasons, item) {
   }
   return group;
 }
-function createSentenceCorrectionControls(row, item, displaySpeakerId) {
-  if (item.realtime || item.pending || savedSessionReviewOpen()) return null;
-  const speakers = Array.isArray(speakerLibraryState.speakers) ? speakerLibraryState.speakers : [];
-  if (!speakers.length) return null;
-  const controlsLocked = sessionControlsLocked();
-  const controls = document.createElement("span");
-  controls.className = "correction-actions";
-  const select = document.createElement("select");
-  select.className = "correction-speaker-select";
-  select.setAttribute("aria-label", "Reassign sentence speaker");
-  speakers.forEach(speaker => {
-    const option = document.createElement("option");
-    option.value = speaker.id || "";
-    option.textContent = speakerPanelName(speaker);
-    if (speaker.id === displaySpeakerId) option.selected = true;
-    select.appendChild(option);
-  });
-  select.disabled = controlsLocked;
-  const reassign = document.createElement("button");
-  reassign.type = "button";
-  reassign.className = "correction-button";
-  reassign.textContent = "Reassign";
-  reassign.disabled = controlsLocked;
-  reassign.addEventListener("click", event => {
-    event.stopPropagation();
-    reassignSentenceRow(row, select);
-  });
-  const correct = document.createElement("button");
-  correct.type = "button";
-  correct.className = "correction-button";
-  correct.textContent = "Correct";
-  correct.disabled = controlsLocked || rowIsCorrected(item);
-  correct.addEventListener("click", event => {
-    event.stopPropagation();
-    markSentenceCorrect(row);
-  });
-  const split = document.createElement("button");
-  split.type = "button";
-  split.className = "correction-button";
-  split.textContent = "Split";
-  split.disabled = controlsLocked || !displaySpeakerId;
-  split.addEventListener("click", event => {
-    event.stopPropagation();
-    splitSentenceToNewSpeaker(row);
-  });
-  [select, reassign, correct, split].forEach(control => {
-    control.addEventListener("keydown", event => event.stopPropagation());
-  });
-  controls.appendChild(select);
-  controls.appendChild(reassign);
-  controls.appendChild(correct);
-  controls.appendChild(split);
-  return controls;
-}
 function createSpeakerLiveIndicator() {
   const indicator = document.createElement("span");
   indicator.className = "speaker-live-indicator";
@@ -3800,7 +4023,7 @@ function createSpeakerLiveIndicator() {
   return indicator;
 }
 function isSpeakerRowControl(target) {
-  return target instanceof Element && target.closest(".speaker-row-name-input, .speaker-filter-toggle, .speaker-transcript-action");
+  return target instanceof Element && target.closest(".speaker-row-name-input, .speaker-filter-toggle, .speaker-transcript-action, .speaker-profile-action");
 }
 function setEditingSpeaker(speakerId, options = {}) {
   const requestedId = speakerId || "";
@@ -4039,8 +4262,14 @@ function renderSpeakerPanel() {
       referenceStatus.appendChild(referenceText);
       body.appendChild(referenceStatus);
     }
-    if (isEditing && speakerLibraryState.speakers.length > 1 && !reviewMode) {
-      body.appendChild(createSpeakerMergeControls(speaker));
+    if (isEditing && !reviewMode) {
+      const editControls = document.createElement("span");
+      editControls.className = "speaker-edit-controls";
+      if (speakerLibraryState.speakers.length > 1) {
+        editControls.appendChild(createSpeakerMergeControls(speaker));
+      }
+      editControls.appendChild(createSpeakerDeleteButton(speaker));
+      body.appendChild(editControls);
     }
 
     const tail = document.createElement("span");
@@ -4703,6 +4932,10 @@ function renderSentence(item) {
   row.className = item.realtime ? "row realtime" : "row";
   row.dataset.index = item.index;
   row.dataset.realtime = item.realtime ? "true" : "false";
+  row.dataset.selectable = (!item.realtime && !item.pending && !savedSessionReviewOpen()) ? "true" : "false";
+  if (row.dataset.selectable !== "true") {
+    selectedTranscriptRowIndexes.delete(String(row.dataset.index || ""));
+  }
   if (item.realtime) {
     clearSettlingRealtimeState(row);
   }
@@ -4752,6 +4985,7 @@ function renderSentence(item) {
   row.classList.toggle("live-speaker-row", item.realtime && Boolean(displaySpeakerId));
   row.classList.toggle("needs-review", row.dataset.needsReview === "true");
   row.classList.toggle("user-corrected", corrected);
+  configureSentenceRowSelection(row);
   const speakerLabel = speakerDisplayLabel(displaySpeakerId);
   const color = speakerColor(displaySpeakerId);
   const speakerClass = displaySpeakerId ? "badge" : "badge unknown";
@@ -4821,10 +5055,6 @@ function renderSentence(item) {
   const prob = document.createElement("div");
   prob.className = "prob";
   top.appendChild(topLeft);
-  const correctionControls = createSentenceCorrectionControls(row, item, displaySpeakerId);
-  if (correctionControls) {
-    top.appendChild(correctionControls);
-  }
   top.appendChild(prob);
 
   const text = document.createElement("div");
@@ -4854,6 +5084,9 @@ function renderSentence(item) {
   updateCurrentLiveSpeakerFromRealtimeRows();
   refreshSpeakerPanelSentenceCounts();
   refreshTranscriptVisibility();
+  if (!item.realtime) {
+    syncBulkCorrectionToolbar();
+  }
   if (!item.realtime && !item.pending && !item.provisional_assignment) {
     scheduleSavedSessionsRefresh();
   }
@@ -4933,6 +5166,10 @@ undoCorrectionButton.addEventListener("click", async () => {
     log(`Undo failed: ${error.message}`);
   }
 });
+bulkCorrectionSpeaker.addEventListener("change", syncBulkCorrectionToolbar);
+bulkReassignButton.addEventListener("click", () => reassignSelectedSentences());
+bulkMarkCorrectButton.addEventListener("click", () => markSelectedSentencesCorrect());
+clearSelectionButton.addEventListener("click", clearTranscriptSelection);
 applyTranscriptDisplaySettings();
 start.addEventListener("click", async () => {
   leaveSavedSessionReview();
