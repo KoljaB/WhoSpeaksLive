@@ -149,7 +149,7 @@ Main browser app for media download/playback, final ASR, speaker assignment, liv
 | Embedding backend and speaker library | `--embedding-provider` | `DEFAULT_WINDOW_EMBEDDING_PROVIDER` | Provider or weighted provider stack used for final speaker assignment. |
 | Embedding backend and speaker library | `--embedding-python` | `default_embedding_python()` | Python executable used by the local embedding helper process. |
 | Embedding backend and speaker library | `--embedding-device` | `cuda` | Device used by local speaker embedding models. |
-| Embedding backend and speaker library | `--live-speaker-embedding-provider` | `jungjee_rawnet3` | Single provider used only for fast live speaker assignment. Empty uses --embedding-provider. |
+| Embedding backend and speaker library | `--live-speaker-embedding-provider` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Provider or weighted provider stack used only for fast live speaker assignment. Empty uses --embedding-provider. |
 | Embedding backend and speaker library | `--live-speaker-assignment`<br>`--no-live-speaker-assignment` | true | Enable live speaker highlighting/scoring during realtime preview. Use --no-live-speaker-assignment to keep live text preview without live speaker scoring. |
 | Embedding backend and speaker library | `--embeddings-backend`<br>`--embedding-backend`<br>`-embeddings-backend` | `local` | Speaker embedding backend. Use remote to send embedding requests to the Linux GPU server. Choices: `local`, `remote`. |
 | Embedding backend and speaker library | `--remote-embeddings-url`<br>`--remote-embedding-url` | `DEFAULT_REMOTE_EMBEDDINGS_URL` | Base URL of the remote voice embeddings server. |

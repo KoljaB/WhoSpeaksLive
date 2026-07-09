@@ -100,7 +100,7 @@ If provider loading fails:
 - Check the Linux server terminal for the real Python exception.
 - Use `speechbrain_ecapa` before trying provider stacks.
 - Set `HF_TOKEN` for pyannote providers.
-- Use the public high-quality stack if `jungjee_rawnet3` is missing.
+- Use the public high-quality stack after the smoke provider loads successfully.
 - Restart the embeddings process after changing Python packages.
 
 ## CUDA Out Of Memory

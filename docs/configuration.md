@@ -132,9 +132,8 @@ The `whospeaks` starter can manage these as named provider presets:
 | `smoke` | First start | `speechbrain_ecapa` | `speechbrain_ecapa` | Fast setup check, not the highest-accuracy setting. |
 | `single_espnet` | Single ESPnet | `espnet_ecapa_wavlm_joint` | `espnet_ecapa_wavlm_joint` | Validates one provider in isolation. |
 | `smoke_fast_live` | Smoke final + fast live | `speechbrain_ecapa` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Simple final provider with the fast live stack. |
-| `public_quality` | Public high quality | `espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Public multi-provider stack, no RawNet3 artifact. |
+| `public_quality` | Public high quality | `espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Public multi-provider stack. |
 | `promoted_public` | Promoted public stack | `espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Matches the current `whospeaks-window` default final provider stack. |
-| `tuned_private` | Private tuned | `espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Requires the `jungjee_rawnet3` artifact on the embeddings server. |
 
 Use the interactive starter menu, or set a preset explicitly:
 
@@ -154,14 +153,6 @@ Public high-quality final stack:
 ```text
 espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12
 ```
-
-Tuned best final stack:
-
-```text
-espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12
-```
-
-The tuned best stack requires `jungjee_rawnet3`, which is not fully provisioned by the public source snapshot. Use the public high-quality stack until the RawNet3 artifact is installed on the embeddings server.
 
 Recommended fast live stack:
 

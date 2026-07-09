@@ -151,11 +151,8 @@ Use these stacks in order while bringing up a new server:
 | Level | Provider string | Notes |
 | --- | --- | --- |
 | Smoke | `speechbrain_ecapa` | Good first test. Smaller and easier to load. |
-| Public high quality | `espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12` | Avoids the private RawNet3 artifact. |
-| Tuned best | `espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12` | Requires the `jungjee_rawnet3` source/model artifact under the embeddings server cache. |
+| Public high quality | `espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12` | Recommended public quality stack. |
 | Fast live | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Recommended for live speaker assignment. |
-
-`jungjee_rawnet3` is not fully provisioned by the public snapshot. The server expects RawNet3-compatible source/model files under its `.cache/source/RawNet/python/RawNet3` path. If those files are not present, use the public high-quality stack instead.
 
 ## Windows Launch With Remote Services
 
@@ -165,7 +162,7 @@ After both health checks pass:
 .\.venv\Scripts\whospeaks-window.exe --port 8796 --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660 --embedding-provider "speechbrain_ecapa" --live-speaker-embedding-provider "speechbrain_ecapa" --vad-backend rms --realtime-preview-engine off
 ```
 
-Then switch to the tuned command in [Quickstart](quickstart.md).
+Then switch to the public high-quality command in [Quickstart](quickstart.md).
 
 ## Keeping Servers Running
 
@@ -179,4 +176,4 @@ For daily use, run each service under `systemd`, `tmux`, `screen`, or your deskt
 - Connection refused: the service is not running, the port is blocked, or `--host` is not `0.0.0.0`.
 - CUDA out of memory: unload other models, reduce providers, or use the smoke provider first.
 - Hugging Face authorization errors: set `HF_TOKEN` and accept gated model terms.
-- `jungjee_rawnet3` not found: use the public high-quality stack or provision the RawNet3 artifact.
+- Provider not found: use the smoke provider first, then switch to the public high-quality stack after dependencies load successfully.

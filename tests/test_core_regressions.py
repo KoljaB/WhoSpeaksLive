@@ -3303,7 +3303,7 @@ class RepositoryStructureTests(unittest.TestCase):
             "speaker_refinement_long_low_confidence_retro_max_splits": 1,
             "min_embed_seconds": 0.5,
             "min_speech_audio_ratio": 0.0,
-            "live_speaker_embedding_provider": "jungjee_rawnet3",
+            "live_speaker_embedding_provider": "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50",
             "unstable_tail_seconds": 1.35,
             "vad_silence_seconds": 1.1,
             "vad_final_window_post_silence_seconds": 0.75,

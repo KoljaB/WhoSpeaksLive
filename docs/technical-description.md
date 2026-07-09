@@ -37,7 +37,7 @@ An embedding provider stack combines multiple providers in one vector.
 Example:
 
 ```text
-espnet_ecapa_wavlm_joint=0.74+jungjee_rawnet3=0.99
+espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34
 ```
 
 Each provider produces its own normalized vector. The app weights each component, concatenates them, and normalizes the combined vector. All profiles made with that stack should be compared only with embeddings made by the same stack.

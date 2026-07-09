@@ -2021,8 +2021,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--embedding-device", default="cuda")
     parser.add_argument(
         "--live-speaker-embedding-provider",
-        default="jungjee_rawnet3",
-        help="Single provider used only for fast live speaker assignment. Empty uses --embedding-provider.",
+        default="pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50",
+        help="Provider or weighted provider stack used only for fast live speaker assignment. Empty uses --embedding-provider.",
     )
     parser.add_argument(
         "--live-speaker-assignment",
