@@ -629,17 +629,22 @@ PAGE_HTML = r"""<!doctype html>
   <title>WhoSpeaks Meeting Intelligence</title>
   <style>
     :root {
-      --paper: #f7f5ef;
-      --panel: #fffefa;
-      --ink: #17211f;
-      --muted: #66706c;
-      --line: #d8d8cf;
+      --paper: #f3f5f2;
+      --panel: #ffffff;
+      --panel-soft: #f8faf8;
+      --ink: #111827;
+      --muted: #64706b;
+      --line: #d7ddd8;
+      --line-strong: #bdc9c2;
       --accent: #0f766e;
       --accent-strong: #0b5d55;
+      --accent-quiet: #e5f3ef;
+      --slate: #334155;
       --amber: #b45309;
       --red: #b91c1c;
-      --soft: #edf3f1;
-      --shadow: 0 16px 40px rgba(23, 33, 31, 0.08);
+      --soft: #eef6f3;
+      --shadow: 0 10px 26px rgba(17, 24, 39, 0.08);
+      --shadow-soft: 0 1px 2px rgba(17, 24, 39, 0.06);
     }
 
     * {
@@ -649,7 +654,9 @@ PAGE_HTML = r"""<!doctype html>
     body {
       margin: 0;
       min-height: 100vh;
-      background: var(--paper);
+      background:
+        linear-gradient(180deg, #f7f9f7 0%, var(--paper) 280px),
+        var(--paper);
       color: var(--ink);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       letter-spacing: 0;
@@ -663,53 +670,90 @@ PAGE_HTML = r"""<!doctype html>
     .app {
       min-height: 100vh;
       display: grid;
-      grid-template-columns: 340px minmax(0, 1fr);
+      grid-template-columns: 360px minmax(0, 1fr);
     }
 
     .sidebar {
       border-right: 1px solid var(--line);
-      background: #fbfaf5;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(12px);
       display: grid;
       grid-template-rows: auto auto minmax(0, 1fr);
       min-height: 100vh;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .brand {
-      padding: 22px 22px 18px;
+      padding: 20px 20px 16px;
       border-bottom: 1px solid var(--line);
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #2563eb);
+      box-shadow: 0 8px 18px rgba(15, 118, 110, 0.22);
+      font-weight: 800;
+      letter-spacing: 0;
     }
 
     .brand h1 {
       margin: 0;
-      font-size: 22px;
-      line-height: 1.2;
-      font-weight: 720;
+      font-size: 18px;
+      line-height: 1.15;
+      font-weight: 760;
     }
 
     .provider {
-      margin-top: 14px;
+      margin-top: 16px;
       display: grid;
-      gap: 6px;
+      gap: 4px;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
       line-height: 1.35;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+      padding: 10px 11px;
+    }
+
+    .provider strong {
+      color: var(--slate);
     }
 
     .toolbar {
-      padding: 16px 18px;
+      padding: 14px 14px;
       border-bottom: 1px solid var(--line);
       display: grid;
       gap: 12px;
+      min-width: 0;
     }
 
     .search {
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 10px 12px;
+      padding: 10px 12px 10px 34px;
       background: var(--panel);
       color: var(--ink);
       outline: none;
+      box-shadow: var(--shadow-soft);
+      background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z' stroke='%2364706b' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 12px 50%;
     }
 
     .search:focus {
@@ -719,12 +763,14 @@ PAGE_HTML = r"""<!doctype html>
 
     .button-row {
       display: grid;
-      grid-template-columns: 1fr auto auto;
+      grid-template-columns: minmax(0, 1fr) auto 42px;
       gap: 8px;
+      min-width: 0;
     }
 
     .btn {
       min-height: 38px;
+      min-width: 0;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
@@ -736,6 +782,15 @@ PAGE_HTML = r"""<!doctype html>
       padding: 8px 12px;
       cursor: pointer;
       white-space: nowrap;
+      box-shadow: var(--shadow-soft);
+      font-weight: 680;
+      transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+    }
+
+    .btn span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .btn svg {
@@ -752,6 +807,8 @@ PAGE_HTML = r"""<!doctype html>
 
     .btn:hover {
       border-color: var(--accent);
+      box-shadow: 0 5px 14px rgba(15, 118, 110, 0.12);
+      transform: translateY(-1px);
     }
 
     .btn.primary:hover {
@@ -782,40 +839,114 @@ PAGE_HTML = r"""<!doctype html>
 
     .sessions {
       overflow: auto;
-      padding: 10px;
+      padding: 10px 10px 18px;
       display: grid;
       align-content: start;
-      gap: 6px;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .sessions-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--slate);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 8px 4px 4px;
     }
 
     .session {
       width: 100%;
+      max-width: 100%;
       text-align: left;
       border: 1px solid transparent;
       border-radius: 8px;
       background: transparent;
       color: var(--ink);
-      padding: 12px;
+      padding: 12px 12px 12px 14px;
       display: grid;
-      gap: 7px;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 10px;
       cursor: pointer;
+      position: relative;
+      transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .session::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 3px;
+      border-radius: 999px;
+      background: transparent;
     }
 
     .session:hover,
     .session.active {
       background: var(--panel);
       border-color: var(--line);
-      box-shadow: 0 4px 14px rgba(23, 33, 31, 0.06);
+      box-shadow: 0 6px 18px rgba(17, 24, 39, 0.07);
     }
 
     .session.active {
-      border-color: rgba(15, 118, 110, 0.45);
+      border-color: rgba(15, 118, 110, 0.42);
+      background: linear-gradient(90deg, #ffffff 0%, #fbfdfc 100%);
+    }
+
+    .session.active::before {
+      background: var(--accent);
     }
 
     .session-title {
-      font-weight: 680;
+      font-weight: 740;
       line-height: 1.25;
       overflow-wrap: anywhere;
+    }
+
+    .session-title-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 8px;
+    }
+
+    .session-time {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+      text-align: right;
+      white-space: nowrap;
+      max-width: 78px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-top: 1px;
+    }
+
+    .session-icon {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+      background: #fbfdfc;
+    }
+
+    .session-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .session-main {
+      min-width: 0;
+      display: grid;
+      gap: 6px;
     }
 
     .meta {
@@ -833,17 +964,18 @@ PAGE_HTML = r"""<!doctype html>
     .badge {
       border: 1px solid var(--line);
       border-radius: 999px;
-      padding: 3px 8px;
+      padding: 4px 8px;
       color: var(--muted);
-      background: #f4f0e7;
+      background: #f6f8f6;
       font-size: 12px;
       line-height: 1.2;
+      font-weight: 620;
     }
 
     .badge.hot {
       color: var(--accent-strong);
       border-color: rgba(15, 118, 110, 0.35);
-      background: var(--soft);
+      background: var(--accent-quiet);
     }
 
     .badge.warn {
@@ -868,6 +1000,7 @@ PAGE_HTML = r"""<!doctype html>
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
       outline: none;
+      background: #dff1ec;
     }
 
     main {
@@ -875,15 +1008,19 @@ PAGE_HTML = r"""<!doctype html>
       display: grid;
       grid-template-rows: auto auto minmax(0, 1fr);
       min-height: 100vh;
+      background: #eef2ef;
     }
 
     .topbar {
-      padding: 20px 28px 16px;
+      padding: 22px 28px 18px;
       border-bottom: 1px solid var(--line);
-      background: rgba(255, 254, 250, 0.72);
+      background: rgba(255, 255, 255, 0.86);
       backdrop-filter: blur(10px);
       display: grid;
-      gap: 8px;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
     }
 
     .title-line {
@@ -895,9 +1032,9 @@ PAGE_HTML = r"""<!doctype html>
 
     .topbar h2 {
       margin: 0;
-      font-size: 24px;
+      font-size: 26px;
       line-height: 1.2;
-      font-weight: 720;
+      font-weight: 780;
       overflow-wrap: anywhere;
     }
 
@@ -906,16 +1043,51 @@ PAGE_HTML = r"""<!doctype html>
       font-size: 13px;
       line-height: 1.35;
       min-height: 18px;
+      font-weight: 560;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .status-state {
+      color: var(--accent-strong);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 680;
+    }
+
+    .status-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      display: inline-grid;
+      place-items: center;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    .status-separator {
+      color: #9aa6a0;
+    }
+
+    .status-muted {
+      color: var(--muted);
     }
 
     .progress-panel {
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: var(--panel);
+      background: var(--panel-soft);
       padding: 12px;
       display: grid;
       gap: 9px;
       max-width: 980px;
+      box-shadow: var(--shadow-soft);
     }
 
     .progress-panel[hidden] {
@@ -943,7 +1115,7 @@ PAGE_HTML = r"""<!doctype html>
     .progress-track {
       height: 8px;
       border-radius: 999px;
-      background: #e6e1d6;
+      background: #dce4df;
       overflow: hidden;
     }
 
@@ -977,80 +1149,121 @@ PAGE_HTML = r"""<!doctype html>
     }
 
     .tabbar {
-      padding: 0 28px;
+      padding: 9px 28px 0;
       border-bottom: 1px solid var(--line);
       display: flex;
-      gap: 4px;
+      gap: 6px;
       overflow-x: auto;
-      background: #fbfaf5;
+      scrollbar-width: none;
+      background: rgba(255, 255, 255, 0.84);
+      position: sticky;
+      top: 98px;
+      z-index: 4;
+    }
+
+    .tabbar::-webkit-scrollbar {
+      display: none;
     }
 
     .tab {
-      border: 0;
-      border-bottom: 3px solid transparent;
+      border: 1px solid transparent;
+      border-bottom: 0;
+      border-radius: 8px 8px 0 0;
       background: transparent;
       color: var(--muted);
-      padding: 14px 12px 11px;
+      padding: 10px 13px 11px;
       cursor: pointer;
       font-weight: 650;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+    }
+
+    .tab svg {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 auto;
     }
 
     .tab.active {
       color: var(--ink);
-      border-bottom-color: var(--accent);
+      border-color: var(--line);
+      background: #eef2ef;
+      box-shadow: inset 0 3px 0 var(--accent);
     }
 
     .content {
       min-height: 0;
       overflow: auto;
-      padding: 24px 28px 36px;
+      padding: 24px 28px 38px;
     }
 
     .section-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
+      gap: 18px;
       align-items: start;
     }
 
     .section-block {
       display: grid;
-      gap: 10px;
+      gap: 11px;
       min-width: 0;
     }
 
     .section-heading {
       margin: 0;
-      font-size: 15px;
+      font-size: 12px;
       line-height: 1.25;
       text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 760;
+      color: var(--slate);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-heading::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      background: var(--accent);
     }
 
     .item {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
-      box-shadow: var(--shadow);
-      padding: 14px;
+      box-shadow: var(--shadow-soft);
+      padding: 15px;
       display: grid;
       gap: 8px;
       min-width: 0;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .item:hover {
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow);
     }
 
     .item h3 {
       margin: 0;
       font-size: 16px;
       line-height: 1.3;
+      color: #111827;
+      font-weight: 760;
       overflow-wrap: anywhere;
     }
 
     .item p {
       margin: 0;
-      color: #283532;
-      line-height: 1.45;
+      color: #26332f;
+      line-height: 1.48;
       overflow-wrap: anywhere;
     }
 
@@ -1060,6 +1273,7 @@ PAGE_HTML = r"""<!doctype html>
       gap: 6px;
       color: var(--muted);
       font-size: 12px;
+      padding-top: 2px;
     }
 
     .evidence-list,
@@ -1113,6 +1327,10 @@ PAGE_HTML = r"""<!doctype html>
       color: #2f3a37;
       border-left: 3px solid var(--accent);
       padding-left: 10px;
+      background: #f8faf8;
+      border-radius: 0 8px 8px 0;
+      padding-top: 8px;
+      padding-bottom: 8px;
     }
 
     .empty {
@@ -1120,7 +1338,7 @@ PAGE_HTML = r"""<!doctype html>
       border-radius: 8px;
       padding: 20px;
       color: var(--muted);
-      background: rgba(255, 254, 250, 0.66);
+      background: rgba(255, 255, 255, 0.72);
     }
 
     @media (max-width: 880px) {
@@ -1157,7 +1375,10 @@ PAGE_HTML = r"""<!doctype html>
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
-        <h1>WhoSpeaks Meeting Intelligence</h1>
+        <div class="brand-mark">
+          <div class="logo" aria-hidden="true">WS</div>
+          <h1>WhoSpeaks Meeting Intelligence</h1>
+        </div>
         <div class="provider" id="provider"></div>
       </div>
       <div class="toolbar">
@@ -1209,13 +1430,13 @@ PAGE_HTML = r"""<!doctype html>
   </div>
   <script>
     const tabs = [
-      ["summary", "Summary"],
-      ["decisions", "Decisions"],
-      ["action_items", "Action items"],
-      ["questions", "Questions"],
-      ["risks", "Risks"],
-      ["evidence", "Evidence"],
-      ["transcript", "Transcript"]
+      ["summary", "Summary", "list"],
+      ["decisions", "Decisions", "check"],
+      ["action_items", "Action items", "tasks"],
+      ["questions", "Questions", "question"],
+      ["risks", "Risks", "shield"],
+      ["evidence", "Evidence", "file"],
+      ["transcript", "Transcript", "wave"]
     ];
     const state = {
       config: {},
@@ -1328,7 +1549,42 @@ PAGE_HTML = r"""<!doctype html>
 
     function setStatus(value) {
       state.status = value || "";
-      el("status").textContent = state.status;
+      el("status").innerHTML = reportStatusHtml();
+    }
+
+    function formatDateTime(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+      return date.toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function reportStatusHtml() {
+      const session = state.sessions.find((item) => item.id === state.sessionId) || {};
+      const report = state.report || {};
+      const status = state.status || (state.sessionId ? "Ready" : "Select a session");
+      const parts = [
+        `<span class="status-state"><span class="status-dot" aria-hidden="true">&#10003;</span>${escapeHtml(status)}</span>`
+      ];
+      const generated = formatDateTime(report.generated_at || report.updated_at);
+      if (generated) {
+        parts.push(`<span class="status-separator">/</span><span class="status-muted">Generated ${escapeHtml(generated)}</span>`);
+      }
+      const rows = Number(state.transcriptRows?.length || session.transcript_rows || 0);
+      const speakers = Number(session.speaker_count || 0);
+      if (rows || speakers) {
+        const label = [
+          rows ? `${rows} transcript rows` : "",
+          speakers ? `${speakers} speakers` : ""
+        ].filter(Boolean).join(" / ");
+        parts.push(`<span class="status-separator">/</span><span class="status-muted">${escapeHtml(label)}</span>`);
+      }
+      return parts.join("");
     }
 
     function providerLabel() {
@@ -1340,37 +1596,66 @@ PAGE_HTML = r"""<!doctype html>
       `;
     }
 
+    function sessionIcon(kind) {
+      if (kind === "demo_transcript") {
+        return '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l4 4v14H7V3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 3v5h5M10 12h6M10 16h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+      }
+      return '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 5h10a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3Z" stroke="currentColor" stroke-width="2"/><path d="m10 9 5 3-5 3V9Z" fill="currentColor"/></svg>';
+    }
+
+    function tabIcon(name) {
+      const icons = {
+        list: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+        check: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        tasks: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        question: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.1 9a3 3 0 1 1 4.8 2.4c-.9.6-1.4 1.1-1.4 2.1M12 17h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+        shield: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 8v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+        file: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l4 4v14H7V3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 3v5h5M10 13h6M10 17h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+        wave: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10v4M8 7v10M12 5v14M16 8v8M20 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+      };
+      return icons[name] || "";
+    }
+
     function renderSessions() {
       const query = el("sessionSearch").value.trim().toLowerCase();
       const filtered = state.sessions.filter((session) => {
         const text = `${session.title || ""} ${(session.speaker_names || []).join(" ")}`.toLowerCase();
         return !query || text.includes(query);
       });
-      el("sessions").innerHTML = filtered.length ? filtered.map((session) => {
+      const heading = `<div class="sessions-heading"><span>Sessions</span><span>${filtered.length}</span></div>`;
+      el("sessions").innerHTML = heading + (filtered.length ? filtered.map((session) => {
         const active = session.id === state.sessionId ? " active" : "";
         const rows = Number(session.transcript_rows || 0);
         const speakers = Number(session.speaker_count || 0);
         const source = session.source_kind === "demo_transcript" ? "Demo" : "Saved";
         const cached = session.has_cached_report || session.has_meeting_intelligence;
+        const sessionTime = formatDateTime(session.updated_at || session.created_at);
         return `
           <button class="session${active}" type="button" data-session-id="${escapeHtml(session.id)}">
-            <span class="session-title">${escapeHtml(session.title || session.id)}</span>
-            <span class="meta">${rows} rows / ${speakers} speakers</span>
-            <span class="badge-row">
-              <span class="badge">${escapeHtml(source)}</span>
-              ${cached ? '<span class="badge hot">Report</span>' : '<span class="badge warn">No report</span>'}
+            <span class="session-icon">${sessionIcon(session.source_kind)}</span>
+            <span class="session-main">
+              <span class="session-title-row">
+                <span class="session-title">${escapeHtml(session.title || session.id)}</span>
+                ${sessionTime ? `<span class="session-time">${escapeHtml(sessionTime)}</span>` : ""}
+              </span>
+              <span class="meta">${rows} rows / ${speakers} speakers</span>
+              <span class="badge-row">
+                <span class="badge">${escapeHtml(source)}</span>
+                ${cached ? '<span class="badge hot">Report</span>' : '<span class="badge warn">No report</span>'}
+              </span>
             </span>
           </button>
         `;
-      }).join("") : '<div class="empty">No sessions found.</div>';
+      }).join("") : '<div class="empty">No sessions found.</div>');
       document.querySelectorAll(".session").forEach((button) => {
         button.addEventListener("click", () => selectSession(button.dataset.sessionId));
       });
     }
 
     function renderTabs() {
-      el("tabs").innerHTML = tabs.map(([id, label]) => `
+      el("tabs").innerHTML = tabs.map(([id, label, icon]) => `
         <button class="tab ${id === state.activeTab ? "active" : ""}" type="button" data-tab="${id}">
+          ${tabIcon(icon)}
           ${escapeHtml(label)}
         </button>
       `).join("");

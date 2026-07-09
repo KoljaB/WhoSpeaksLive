@@ -51,6 +51,28 @@ Starter command for setup, health checks, saved profiles, and launching `whospea
 | config | `--set` | `[]` | Save one profile field as `NAME=VALUE`; repeat the flag to set multiple fields. |
 | config | `--reset` | off unless passed | Reset the saved starter profile to defaults before applying any `--set` values. |
 
+### `whospeaks-meeting-intelligence`
+
+Standalone browser server for generating and reviewing LLM-based meeting intelligence reports from saved sessions or a demo transcript. See [Meeting intelligence server](meeting-intelligence-server.md) for the workflow and examples.
+
+| Area | Parameter | Default | What it does |
+| --- | --- | --- | --- |
+| Server | `--host` | `127.0.0.1` | Interface address the report server binds to. |
+| Server | `--port` | 8798 | TCP port for the report browser UI. |
+| Data | `--session-dir` | `DEFAULT_SESSION_DIR` | Directory containing durable WhoSpeaksLive saved sessions. |
+| Data | `--cache-dir` | `DEFAULT_CACHE_DIR` | Directory where generated meeting intelligence reports are cached. |
+| Data | `--demo-transcript` | empty | Add one transcript-only demo session from a WhoSpeaksLive transcript text file. |
+| LLM | `--llm-provider` | `llama_cpp` | OpenAI-compatible provider preset. Choices: `llama_cpp`, `ollama`, `lm_studio`, `openai`, `openrouter`. |
+| LLM | `--llm-base-url` | provider default | OpenAI-compatible base URL, without `/chat/completions`. |
+| LLM | `--llm-model` | provider default | Model name sent to the LLM server. |
+| LLM | `--llm-api-key` | empty | API key for providers that require authentication. |
+| LLM | `--timeout-seconds` | 900.0 | HTTP timeout for one report-generation LLM request. |
+| LLM | `--max-tokens` | 4096 | Maximum tokens for evidence-extraction calls. |
+| LLM | `--section-max-tokens` | 4096 | Maximum tokens for per-section report calls. |
+| Pipeline | `--max-segment-rows` | 80 | Maximum transcript rows per evidence-extraction segment. Values below 12 are raised to 12. |
+| Development | `--mock-llm` | off unless passed | Use deterministic mock responses instead of contacting an LLM server. |
+| Development | `--auto-generate` | off unless passed | Generate a report automatically when a selected session has no current report. |
+
 ### `whospeaks-window`
 
 Main browser app for media download/playback, final ASR, speaker assignment, live feedback, and validation.
@@ -611,6 +633,9 @@ Environment variables set defaults before command-line arguments are parsed. A C
 | `WHOSPEAKS_MODAL_GPU` | GPU type requested by the Modal deployment. |
 | `WHOSPEAKS_MODAL_LANGUAGE` | Language passed to the Modal window deployment. |
 | `WHOSPEAKS_MODAL_SCALEDOWN_WINDOW_SECONDS` | Idle scale-down window for the Modal deployment. |
+| `WHOSPEAKS_MI_LLM_API_KEY` | Generic API key fallback for the meeting intelligence server. |
+| `WHOSPEAKS_MI_LLM_BASE_URL` | Default OpenAI-compatible base URL for the meeting intelligence server. |
+| `WHOSPEAKS_MI_LLM_MODEL` | Default model name for the meeting intelligence server. |
 | `WHOSPEAKS_MODEL_DIR` | Mutable model root under the runtime directory. |
 | `WHOSPEAKS_PROJECT_ROOT` | Override for the repository root used to resolve vendor, tests, and runtime paths. |
 | `WHOSPEAKS_REMOTE_ASR_URL` | Default remote ASR server URL. |

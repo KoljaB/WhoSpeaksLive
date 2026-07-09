@@ -22,6 +22,7 @@ Follow these in order for a new machine:
 ## User Workflows
 
 - [Live window workflow](live-window-workflow.md): run a media session, watch live speaker labels, and export results.
+- [Meeting intelligence server](meeting-intelligence-server.md): generate LLM meeting reports from saved transcripts, review evidence, and recreate cached reports.
 - [Speaker libraries](speaker-libraries.md): save, load, import, export, and reuse known speakers.
 - [Public diarization events](public-events.md): subscribe to stable transcript and speaker-change events from Python tools.
 - [Validation and scoring](validation-and-scoring.md): evaluate diarization and live-speaker behavior.
@@ -39,6 +40,7 @@ Follow these in order for a new machine:
 ## Technical Reference
 
 - [CLI reference](cli-reference.md): complete parameter reference for installed commands and helper modules.
+- [Meeting intelligence server](meeting-intelligence-server.md): standalone report-generation server, LLM setup, cache behavior, and evidence links.
 - [Technical description](technical-description.md): the concepts behind ASR windows, embeddings, live speakers, and final speakers.
 - [Architecture](architecture.md): how audio, ASR, embeddings, memory, and the browser UI interact.
 - [Troubleshooting](troubleshooting.md): common failures and concrete checks.
