@@ -61,11 +61,11 @@ from window.window_domain import (
 from window.window_events import EventBus
 from window.window_media import resolve_browser_stream_id
 from window.window_preview import (
-    KrokoRealtimePreviewTranscriber,
-    KrokoSubprocessPreviewTranscriber,
-    MockRealtimePreviewTranscriber,
     RealtimePreviewTranscriber,
+    create_realtime_preview_transcriber,
 )
+from window.realtime_preview_backends import normalize_preview_engine
+from window.sherpa_onnx_models import ensure_sherpa_onnx_model, validate_sherpa_onnx_model_dir
 from window.review_flags import annotate_review
 from window.window_remote_asr import RemoteWindowAsrClient
 from window.window_text import (
@@ -1749,6 +1749,28 @@ class WindowDiarizer:
                 setattr(self.memory, key, preset[key])
 
     def _ensure_realtime_preview_model(self) -> None:
+        engine = normalize_preview_engine(getattr(self.args, "realtime_preview_engine", "off"))
+        if engine in {"off", "mock"}:
+            return
+        if engine == "sherpa_onnx":
+            model_dir = getattr(self.args, "realtime_preview_model_dir", None)
+            if model_dir is None:
+                raise RuntimeError("Nemotron realtime preview requires a model directory.")
+            try:
+                self.args.realtime_preview_model_dir = validate_sherpa_onnx_model_dir(Path(model_dir))
+                return
+            except RuntimeError:
+                if not bool(getattr(self.args, "realtime_preview_auto_download", True)):
+                    raise
+            preset = str(getattr(self.args, "realtime_preview_model_preset", "") or "")
+            self.bus.emit(
+                "status",
+                {"message": f"Nemotron preview model {preset} not found locally; downloading verified upstream archive."},
+            )
+            self.args.realtime_preview_model_dir = ensure_sherpa_onnx_model(preset, target_dir=Path(model_dir))
+            self.bus.emit("status", {"message": f"Nemotron preview model ready: {self.args.realtime_preview_model_dir}."})
+            return
+
         model_path = getattr(self.args, "realtime_preview_model_path", None)
         if model_path is not None:
             if Path(model_path).is_file():
@@ -1769,16 +1791,12 @@ class WindowDiarizer:
 
     def _load_realtime_preview(self) -> None:
         self._preview_transcriber = None
-        engine = str(self.args.realtime_preview_engine or "off").strip().lower().replace("-", "_")
-        if engine in {"", "off", "none", "false"}:
+        engine = normalize_preview_engine(self.args.realtime_preview_engine)
+        if engine == "off":
             self.bus.emit("status", {"message": "Realtime preview disabled."})
             return
         started = time.monotonic()
         try:
-            if engine == "mock":
-                self._preview_transcriber = MockRealtimePreviewTranscriber()
-                self.bus.emit("status", {"message": "Mock realtime preview ready."})
-                return
             self.bus.emit(
                 "status",
                 {
@@ -1788,17 +1806,20 @@ class WindowDiarizer:
                     )
                 },
             )
-            self._ensure_realtime_preview_model()
-            if self.args.realtime_preview_python is not None and self.args.realtime_preview_python.is_file():
-                self._preview_transcriber = KrokoSubprocessPreviewTranscriber(self.args)
-            else:
-                self._preview_transcriber = KrokoRealtimePreviewTranscriber(self.args)
+            if engine != "mock":
+                self._ensure_realtime_preview_model()
+            self._preview_transcriber = create_realtime_preview_transcriber(self.args)
+            location = getattr(self.args, "realtime_preview_model_dir", None) or getattr(
+                self.args, "realtime_preview_model_path", None
+            )
             self.bus.emit(
                 "status",
                 {
                     "message": (
                         f"Realtime preview ready in {time.monotonic() - started:.2f}s "
-                        f"({self.args.realtime_preview_engine})."
+                        f"({engine}, {self.args.realtime_preview_model_preset}, "
+                        f"{self.args.realtime_preview_language}, CPU x{self.args.realtime_preview_num_threads}"
+                        f"{', ' + str(location) if location else ''})."
                     )
                 },
             )

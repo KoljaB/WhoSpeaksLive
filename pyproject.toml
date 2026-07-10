@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "whospeaks"
-version = "0.0.1.dev26"
+version = "0.0.1.dev27"
 description = "Local speaker diarization and realtime voice-labeling tools."
 readme = "README.md"
 license = "MIT"
@@ -54,6 +54,8 @@ local = [
 ]
 preview = [
     "numpy>=2,<3",
+    "sherpa-onnx>=1.13.4,<1.14",
+    "sherpa-onnx-bin>=1.13.4,<1.14",
     "webrtcvad==2.0.10",
 ]
 server = [
@@ -71,6 +73,8 @@ server = [
     "pyannote.audio>=3.1,<4",
     "python-multipart>=0.0.9",
     "resemblyzer>=0.1.4",
+    "sherpa-onnx>=1.13.4,<1.14",
+    "sherpa-onnx-bin>=1.13.4,<1.14",
     "soundfile>=0.12.1",
     "speechbrain>=1.0.0",
     "torch>=2.2",
@@ -93,6 +97,8 @@ complete = [
     "onnxruntime>=1.17",
     "pyannote.audio>=3.1,<4",
     "resemblyzer>=0.1.4",
+    "sherpa-onnx>=1.13.4,<1.14",
+    "sherpa-onnx-bin>=1.13.4,<1.14",
     "soundfile>=0.12.1",
     "speechbrain>=1.0.0",
     "stanza>=1.13.0",
