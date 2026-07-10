@@ -10,6 +10,7 @@ import sys
 import tempfile
 import tomllib
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -23,11 +24,80 @@ from whospeaks_cli import main as cli
 
 class WhoSpeaksCliTests(unittest.TestCase):
     def test_install_command_uses_local_preview_extra(self) -> None:
-        command = cli.build_install_command()
+        with mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1"):
+            command = cli.build_install_command()
 
         self.assertEqual(command[:3], [sys.executable, "-m", "pip"])
-        self.assertEqual(command[-2:], ["install", "whospeaks[complete,preview]"])
-        self.assertIn("whospeaks[complete,preview]", cli.format_command(command))
+        self.assertEqual(command[-2:], ["install", "whospeaks[complete,preview]==0.0.1"])
+        self.assertIn("whospeaks[complete,preview]==0.0.1", cli.format_command(command))
+
+    def test_install_command_for_dev_build_keeps_testpypi_available(self) -> None:
+        with mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1.dev18"):
+            command = cli.build_install_command()
+
+        self.assertIn("--extra-index-url", command)
+        self.assertIn(cli.TESTPYPI_SIMPLE_URL, command)
+        self.assertIn("whospeaks[complete,preview]==0.0.1.dev18", command)
+
+    def test_kroko_install_command_uses_realtimestt_builder(self) -> None:
+        command = cli.build_kroko_install_command("python", variant="free", work_dir=Path("kroko-work"))
+
+        self.assertEqual(command, [
+            "python",
+            "-m",
+            "RealtimeSTT.install_kroko",
+            "--build",
+            "--variant",
+            "free",
+            "--work-dir",
+            "kroko-work",
+        ])
+
+    def test_kroko_sidecar_dry_run_prints_config_step(self) -> None:
+        original_venv = os.environ.get(cli.KROKO_PREVIEW_VENV_ENV)
+        with tempfile.TemporaryDirectory() as directory:
+            os.environ[cli.KROKO_PREVIEW_VENV_ENV] = str(Path(directory) / "preview-venv")
+            stdout = io.StringIO()
+            try:
+                with mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1.dev19"):
+                    with contextlib.redirect_stdout(stdout):
+                        code = cli.install_kroko_sidecar(
+                            cli.Profile(),
+                            ["py", "-3.12"],
+                            assume_yes=True,
+                            dry_run=True,
+                        )
+            finally:
+                if original_venv is None:
+                    os.environ.pop(cli.KROKO_PREVIEW_VENV_ENV, None)
+                else:
+                    os.environ[cli.KROKO_PREVIEW_VENV_ENV] = original_venv
+
+        self.assertEqual(code, 0)
+        output = stdout.getvalue()
+        self.assertIn("Kroko native runtime setup", output)
+        self.assertIn("RealtimeSTT.install_kroko", output)
+        self.assertIn(cli.TESTPYPI_SIMPLE_URL, output)
+        self.assertIn("whospeaks[preview]==0.0.1.dev19", output)
+        self.assertIn("config", output)
+        self.assertIn("realtime-preview-python", output)
+
+    def test_windows_python312_command_falls_back_to_common_install_path(self) -> None:
+        fake_path = Path(r"C:\Python\Python312\python.exe")
+
+        def fake_info(command: list[str]) -> dict[str, object] | None:
+            if command == [str(fake_path)]:
+                return {"version": [3, 12, 4], "bits": 64, "machine": "AMD64", "executable": str(fake_path)}
+            return None
+
+        with (
+            mock.patch.object(cli.shutil, "which", return_value=None),
+            mock.patch.object(cli.Path, "is_file", lambda self: str(self) == str(fake_path)),
+            mock.patch.object(cli, "query_python_command_info", side_effect=fake_info),
+        ):
+            command = cli.windows_python312_command()
+
+        self.assertEqual(command, [str(fake_path)])
 
     def test_local_setup_dry_run_offers_complete_preview_install(self) -> None:
         original_config = os.environ.get("WHOSPEAKS_CONFIG")
@@ -36,8 +106,9 @@ class WhoSpeaksCliTests(unittest.TestCase):
             os.environ["WHOSPEAKS_CONFIG"] = str(config_path)
             stdout = io.StringIO()
             try:
-                with contextlib.redirect_stdout(stdout):
-                    code = cli.main(["setup", "--mode", "local", "--install", "--dry-run", "--yes"])
+                with mock.patch.object(cli, "windows_python312_command", return_value=None):
+                    with contextlib.redirect_stdout(stdout):
+                        code = cli.main(["setup", "--mode", "local", "--install", "--dry-run", "--yes"])
             finally:
                 if original_config is None:
                     os.environ.pop("WHOSPEAKS_CONFIG", None)
@@ -49,6 +120,96 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn("Dry run: would save local profile", output)
         self.assertIn("whospeaks[complete,preview]", output)
         self.assertFalse(config_path.exists())
+
+    def test_install_local_without_kroko_uses_complete_plan(self) -> None:
+        original_config = os.environ.get("WHOSPEAKS_CONFIG")
+        with tempfile.TemporaryDirectory() as directory:
+            config_path = Path(directory) / "config.json"
+            os.environ["WHOSPEAKS_CONFIG"] = str(config_path)
+            stdout = io.StringIO()
+            try:
+                with (
+                    mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1.dev21"),
+                    mock.patch.object(cli, "run_doctor", return_value=cli.DoctorReport("local", [])),
+                    contextlib.redirect_stdout(stdout),
+                ):
+                    code = cli.main([
+                        "install",
+                        "--target",
+                        "local",
+                        "--without-kroko",
+                        "--dry-run",
+                        "--yes",
+                    ])
+            finally:
+                if original_config is None:
+                    os.environ.pop("WHOSPEAKS_CONFIG", None)
+                else:
+                    os.environ["WHOSPEAKS_CONFIG"] = original_config
+
+        self.assertEqual(code, 0)
+        output = stdout.getvalue()
+        self.assertIn("Full local installation", output)
+        self.assertIn("Realtime text: disabled", output)
+        self.assertIn("Run the installer again and choose Kroko", output)
+        self.assertNotIn("Run with --with-kroko", output)
+        self.assertIn("whospeaks[complete]==0.0.1.dev21", output)
+        self.assertNotIn("whospeaks[complete,preview]==0.0.1.dev21", output)
+        self.assertFalse(config_path.exists())
+
+    def test_install_local_with_kroko_prints_sidecar_plan(self) -> None:
+        original_config = os.environ.get("WHOSPEAKS_CONFIG")
+        report = cli.DoctorReport(
+            "local",
+            [cli.CheckResult("Kroko ONNX runtime", "warn", "missing")],
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            config_path = Path(directory) / "config.json"
+            os.environ["WHOSPEAKS_CONFIG"] = str(config_path)
+            stdout = io.StringIO()
+            try:
+                with (
+                    mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1.dev21"),
+                    mock.patch.object(cli, "run_doctor", return_value=report),
+                    mock.patch.object(cli, "windows_python312_command", return_value=["py", "-3.12"]),
+                    contextlib.redirect_stdout(stdout),
+                ):
+                    code = cli.main([
+                        "install",
+                        "--target",
+                        "local",
+                        "--with-kroko",
+                        "--dry-run",
+                        "--yes",
+                    ])
+            finally:
+                if original_config is None:
+                    os.environ.pop("WHOSPEAKS_CONFIG", None)
+                else:
+                    os.environ["WHOSPEAKS_CONFIG"] = original_config
+
+        self.assertEqual(code, 0)
+        output = stdout.getvalue()
+        self.assertIn("whospeaks[complete,preview]==0.0.1.dev21", output)
+        self.assertIn("whospeaks[preview]==0.0.1.dev21", output)
+        self.assertIn("RealtimeSTT.install_kroko", output)
+        self.assertFalse(config_path.exists())
+
+    def test_install_core_without_kroko_uses_controller_plan(self) -> None:
+        plan = cli.install_plan_for_target("core", install_kroko=False)
+
+        self.assertEqual(plan.mode, "remote")
+        self.assertEqual(plan.extra, cli.CONTROLLER_EXTRA)
+        self.assertFalse(plan.install_kroko)
+
+    def test_install_server_profile_disables_realtime_preview(self) -> None:
+        plan = cli.install_plan_for_target("server", install_kroko=True)
+        profile = cli.configure_profile_for_install(cli.Profile(), plan)
+
+        self.assertEqual(plan.extra, cli.SERVER_EXTRA)
+        self.assertFalse(plan.install_kroko)
+        self.assertEqual(profile.mode, "server")
+        self.assertEqual(profile.realtime_preview_engine, "off")
 
     def test_remote_launch_command_includes_remote_urls(self) -> None:
         profile = cli.configure_profile_for_mode(cli.Profile(), "remote")
@@ -161,14 +322,50 @@ class WhoSpeaksCliTests(unittest.TestCase):
     def test_default_dashboard_uses_simple_menu_labels(self) -> None:
         output = cli.main_menu_text()
 
-        self.assertIn("1. Launch browser UI", output)
-        self.assertIn("3. Install recommended dependency group", output)
+        self.assertIn("1. Install or repair WhoSpeaks", output)
+        self.assertIn("2. Launch browser UI", output)
+        self.assertIn("3. Doctor / complete diagnostics", output)
         self.assertIn("4. Language and realtime text", output)
         self.assertIn("5. Speaker provider quality", output)
         self.assertIn("p. Print exact launch command", output)
-        self.assertIn("s. First-time full local setup", output)
         self.assertIn("r. Remote/server profiles", output)
+        self.assertEqual(output.count("Install or repair WhoSpeaks"), 1)
+        self.assertNotIn("Guided install", output)
         self.assertNotIn("Controller + remote GPU services profile", output)
+
+    def test_classic_whospeaks_menu_starts_installer_from_option_one(self) -> None:
+        profile = cli.Profile()
+        report = cli.DoctorReport("local", [])
+        stdout = io.StringIO()
+
+        with (
+            mock.patch.object(cli.sys.stdin, "isatty", return_value=True),
+            mock.patch.object(cli, "load_profile", return_value=profile),
+            mock.patch.object(cli, "run_doctor", return_value=report),
+            mock.patch.object(cli, "render_dashboard"),
+            mock.patch.object(cli, "recommended_install_extra", return_value=None),
+            mock.patch.object(cli, "install_components_interactively", return_value=None) as installer,
+            mock.patch.object(cli, "read_input", side_effect=["1", "q"]),
+            contextlib.redirect_stdout(stdout),
+        ):
+            code = cli.main(["--classic"])
+
+        self.assertEqual(code, 0)
+        installer.assert_called_once_with(profile)
+        self.assertIn("1. Install or repair WhoSpeaks", stdout.getvalue())
+
+    def test_plain_whospeaks_starts_textual_dashboard(self) -> None:
+        profile = cli.Profile()
+
+        with (
+            mock.patch.object(cli.sys.stdin, "isatty", return_value=True),
+            mock.patch.object(cli, "load_profile", return_value=profile),
+            mock.patch.object(cli, "run_textual_dashboard", return_value=0) as dashboard,
+        ):
+            code = cli.main([])
+
+        self.assertEqual(code, 0)
+        dashboard.assert_called_once_with(profile)
 
     def test_configuration_menu_exposes_important_launcher_parameters(self) -> None:
         output = cli.configuration_menu_text(cli.Profile(language="de"))
@@ -391,7 +588,9 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertNotIn("RealTimeSTT==0.1.13", extras["complete"])
         self.assertNotIn("RealTimeSTT==0.1.13", extras["preview"])
         self.assertNotIn("RealTimeSTT==0.1.13", extras["all"])
+        self.assertIn("numpy>=2,<3", extras["preview"])
         self.assertIn("webrtcvad==2.0.10", extras["preview"])
+        self.assertIn("textual>=8.2,<9", pyproject["project"]["dependencies"])
 
 
 if __name__ == "__main__":

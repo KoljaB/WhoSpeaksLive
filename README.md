@@ -35,7 +35,9 @@ pip install whospeaks
 whospeaks
 ```
 
-The `whospeaks` starter shows the current component state and gives direct controls for language, realtime text, provider quality, backend URLs, ASR runtime, browser port, diagnostics, installation, exact launch-command printing, and launching the browser UI.
+The full-screen setup application opens on the Setup tab. Select the full local stack, the core/controller for remote ASR and embeddings servers, or the ASR/embeddings server packages, then choose whether to include Kroko realtime text. Kroko remains optional because its native runtime may require Python 3.12, Docker Desktop on Windows, or a prebuilt `kroko_onnx` wheel.
+
+The `whospeaks` setup application keeps component readiness, diagnostics, settings, installation progress, logs, cancellation, and browser launch in one terminal interface. Run `whospeaks --classic` when the full-screen terminal interface is unavailable or you prefer the numbered menu.
 
 The short `whospeaks` command is a setup and launcher wrapper. It saves a small profile, runs doctor checks, and expands that profile into the longer `whospeaks-window ...` browser-server command when you launch.
 

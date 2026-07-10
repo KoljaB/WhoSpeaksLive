@@ -37,8 +37,16 @@ COMPLETE_EXTRA = "complete"
 LOCAL_EXTRA = "complete,preview"
 CONTROLLER_EXTRA = "controller"
 PREVIEW_EXTRA = "preview"
+SERVER_EXTRA = "server"
 PACKAGE_NAME = "whospeaks"
+KROKO_INSTALL_MODULE = "RealtimeSTT.install_kroko"
+KROKO_PREVIEW_VENV_ENV = "WHOSPEAKS_KROKO_PREVIEW_VENV"
+TESTPYPI_SIMPLE_URL = "https://test.pypi.org/simple/"
+PIP_INDEX_URL_ENV = "WHOSPEAKS_PIP_INDEX_URL"
+PIP_EXTRA_INDEX_URL_ENV = "WHOSPEAKS_PIP_EXTRA_INDEX_URL"
+PIP_FIND_LINKS_ENV = "WHOSPEAKS_PIP_FIND_LINKS"
 KROKO_LANGUAGE_MENU_CODES = ("en", "de", "es", "fr", "it", "nl", "pt", "sv", "tr", "he")
+INSTALL_TARGET_CHOICES = ("local", "core", "server")
 EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("mode", "Profile mode", "local, remote, or server. Mode also aligns the ASR and embeddings backends."),
     ("language", "Language", "Shared by final ASR, realtime preview model selection, and sentence splitting."),
@@ -347,6 +355,16 @@ class DoctorReport:
         return any(item.status == "warn" for item in self.checks)
 
 
+@dataclasses.dataclass(frozen=True)
+class InstallPlan:
+    target: str
+    title: str
+    mode: str
+    extra: str
+    install_kroko: bool
+    summary: str
+
+
 def normalize_mode(mode: str | None) -> str:
     value = str(mode or "local").strip().lower().replace("-", "_")
     aliases = {
@@ -522,7 +540,7 @@ def check_import_group(name: str, modules: list[tuple[str, str]], required: bool
         name,
         status,
         "Missing: " + ", ".join(missing),
-        "Run the setup installer from this CLI or install the matching whospeaks extra.",
+        "Open `whospeaks` and use Install / repair on the Setup tab.",
     )
 
 
@@ -643,7 +661,7 @@ def detect_torch_cuda() -> CheckResult:
             "CUDA visibility",
             "warn",
             "torch is not importable, so CUDA availability cannot be checked.",
-            "Install the local or complete dependency set before local GPU checks.",
+            "Open `whospeaks` and use Install / repair on the Setup tab before local GPU checks.",
         )
     try:
         import torch  # type: ignore
@@ -958,9 +976,113 @@ def print_report(report: DoctorReport) -> None:
         print("Result: ready.")
 
 
+def package_extra_spec(extra: str) -> str:
+    version = installed_distribution_version(PACKAGE_NAME)
+    if version:
+        return f"{PACKAGE_NAME}[{extra}]=={version}"
+    return f"{PACKAGE_NAME}[{extra}]"
+
+
+def normalize_install_target(value: str | None) -> str:
+    normalized = str(value or "local").strip().lower().replace("-", "_").replace(" ", "_")
+    aliases = {
+        "all": "local",
+        "full": "local",
+        "full_local": "local",
+        "local_all_in_one": "local",
+        "controller": "core",
+        "controller_remote": "core",
+        "remote": "core",
+        "browser": "core",
+        "core_controller": "core",
+        "gpu": "server",
+        "gpu_server": "server",
+        "services": "server",
+        "asr_embeddings_server": "server",
+        "asr_server": "server",
+        "embeddings_server": "server",
+    }
+    normalized = aliases.get(normalized, normalized)
+    if normalized not in INSTALL_TARGET_CHOICES:
+        raise SystemExit(
+            "Unknown install target {0!r}. Choose one of: {1}.".format(
+                value,
+                ", ".join(INSTALL_TARGET_CHOICES),
+            )
+        )
+    return normalized
+
+
+def install_plan_for_target(target: str, install_kroko: bool = False) -> InstallPlan:
+    selected = normalize_install_target(target)
+    if selected == "local":
+        return InstallPlan(
+            target=selected,
+            title="Full local installation",
+            mode="local",
+            extra=LOCAL_EXTRA if install_kroko else COMPLETE_EXTRA,
+            install_kroko=install_kroko,
+            summary="Browser controller, local final ASR, and local speaker embeddings on this machine.",
+        )
+    if selected == "core":
+        return InstallPlan(
+            target=selected,
+            title="Core/controller for remote ASR and embeddings servers",
+            mode="remote",
+            extra=f"{CONTROLLER_EXTRA},{PREVIEW_EXTRA}" if install_kroko else CONTROLLER_EXTRA,
+            install_kroko=install_kroko,
+            summary="Browser controller on this machine with final ASR and embeddings served over HTTP.",
+        )
+    return InstallPlan(
+        target=selected,
+        title="ASR and embeddings server packages",
+        mode="server",
+        extra=SERVER_EXTRA,
+        install_kroko=False,
+        summary="Service-side dependencies for the remote faster-whisper ASR and embeddings endpoints.",
+    )
+
+
+def configure_profile_for_install(profile: Profile, plan: InstallPlan) -> Profile:
+    configure_profile_for_mode(profile, plan.mode)
+    if plan.target in {"local", "core"}:
+        profile.realtime_preview_engine = "kroko_onnx" if plan.install_kroko else "off"
+    else:
+        profile.realtime_preview_engine = "off"
+    return profile
+
+
+def version_is_prerelease(version: str | None) -> bool:
+    normalized = str(version or "").lower()
+    return any(marker in normalized for marker in ("a", "b", "rc", "dev"))
+
+
+def pip_index_args_for_installed_package() -> list[str]:
+    args: list[str] = []
+    index_url = os.environ.get(PIP_INDEX_URL_ENV, "").strip()
+    extra_index_url = os.environ.get(PIP_EXTRA_INDEX_URL_ENV, "").strip()
+    find_links = os.environ.get(PIP_FIND_LINKS_ENV, "").strip()
+    if index_url:
+        args.extend(["--index-url", index_url])
+    if extra_index_url:
+        args.extend(["--extra-index-url", extra_index_url])
+    elif version_is_prerelease(installed_distribution_version(PACKAGE_NAME)):
+        args.extend(["--extra-index-url", TESTPYPI_SIMPLE_URL])
+    if find_links:
+        args.extend(["--find-links", find_links])
+    return args
+
+
 def build_install_command(extra: str = LOCAL_EXTRA) -> list[str]:
     extra = str(extra or LOCAL_EXTRA).strip()
-    return [sys.executable, "-m", "pip", "install", f"{PACKAGE_NAME}[{extra}]"]
+    return [
+        sys.executable,
+        "-m",
+        "pip",
+        "install",
+        *pip_index_args_for_installed_package(),
+        package_extra_spec(extra),
+    ]
 
 
 def format_command(command: list[str]) -> str:
@@ -1014,6 +1136,350 @@ def install_extra(extra: str, assume_yes: bool = False, dry_run: bool = False) -
     return int(completed.returncode)
 
 
+def print_install_plan(plan: InstallPlan, profile: Profile) -> None:
+    print("WhoSpeaks install plan")
+    print("=" * 72)
+    print(f"Target: {plan.title}")
+    print(f"Profile: {plan.mode}")
+    print_wrapped(plan.summary, initial_indent="Summary: ", subsequent_indent="         ", style=detail_text)
+    if plan.install_kroko:
+        print("Realtime text: enabled; Kroko native runtime will be offered after Python packages.")
+    elif plan.target in {"local", "core"}:
+        print("Realtime text: disabled for this install. Run the installer again and choose Kroko to try native live text.")
+    else:
+        print("Realtime text: not part of the server package install.")
+    print(f"Language: {language_summary(profile.language)}")
+    print(f"Internal dependency set: {plan.extra}")
+    print("Underlying pip command:")
+    print(f"  {format_command(build_install_command(plan.extra))}")
+    print("=" * 72)
+
+
+def prompt_install_target() -> str:
+    print(textwrap.dedent(
+        """
+        What do you want to install?
+          1. Full local installation
+          2. Core/controller for remote ASR and embeddings servers
+          3. ASR and embeddings server packages
+        """
+    ).strip())
+    while True:
+        choice = read_input("> ", "1").strip().lower()
+        if choice in {"1", "local", "full", "full local"}:
+            return "local"
+        if choice in {"2", "core", "controller", "remote"}:
+            return "core"
+        if choice in {"3", "server", "gpu", "services"}:
+            return "server"
+        print("Choose 1, 2, or 3.")
+
+
+def prompt_kroko_install(target: str) -> bool:
+    if normalize_install_target(target) not in {"local", "core"}:
+        return False
+    print()
+    print("Live preview text uses Kroko native ASR.")
+    print_wrapped(
+        "This can require a Python 3.12 sidecar, Docker Desktop on Windows, or a prebuilt kroko_onnx wheel. "
+        "Final ASR and speaker diarization can still run without it.",
+        initial_indent="",
+        subsequent_indent="",
+        style=detail_text,
+    )
+    answer = read_input("Install/try Kroko live preview text now? [y/N] ", "n").strip().lower()
+    return answer in {"y", "yes"}
+
+
+def confirm_install_start(assume_yes: bool, dry_run: bool) -> bool:
+    if assume_yes or dry_run:
+        return True
+    if not sys.stdin.isatty():
+        print("Use --yes to run the installer non-interactively.")
+        return False
+    answer = read_input("Start this install now? [Y/n] ", "y").strip().lower()
+    return answer in {"", "y", "yes"}
+
+
+def preview_engine_uses_kroko(profile: Profile) -> bool:
+    engine = str(profile.realtime_preview_engine or "off").strip().lower().replace("-", "_")
+    return engine not in {"off", "mock", "none", "false", "0"}
+
+
+def build_kroko_install_command(
+    python_executable: str | Path = sys.executable,
+    *,
+    variant: str = "free",
+    work_dir: str | Path | None = None,
+) -> list[str]:
+    command = [str(python_executable), "-m", KROKO_INSTALL_MODULE, "--build", "--variant", str(variant)]
+    if work_dir:
+        command.extend(["--work-dir", str(work_dir)])
+    return command
+
+
+def default_kroko_preview_venv_path() -> Path:
+    override = os.environ.get(KROKO_PREVIEW_VENV_ENV)
+    if override:
+        return Path(override).expanduser()
+    if os.name == "nt":
+        root = Path(os.environ.get("LOCALAPPDATA") or config_path().parent)
+        return root / "WhoSpeaks" / "kroko-preview-py312"
+    root = Path(os.environ.get("XDG_DATA_HOME") or (Path.home() / ".local" / "share"))
+    return root / "whospeaks" / "kroko-preview-py312"
+
+
+def venv_python_path(venv_dir: Path) -> Path:
+    if os.name == "nt":
+        return venv_dir / "Scripts" / "python.exe"
+    return venv_dir / "bin" / "python"
+
+
+def query_python_command_info(command: list[str]) -> dict[str, Any] | None:
+    script = (
+        "import json, platform, sys; "
+        "print(json.dumps({"
+        "'executable': sys.executable, "
+        "'version': list(sys.version_info[:3]), "
+        "'bits': 64 if sys.maxsize > 2**32 else 32, "
+        "'machine': platform.machine()"
+        "}, sort_keys=True))"
+    )
+    try:
+        completed = subprocess.run(
+            [*command, "-c", script],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+    except Exception:
+        return None
+    if completed.returncode != 0:
+        return None
+    try:
+        payload = json.loads((completed.stdout or "{}").strip().splitlines()[-1])
+    except Exception:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def windows_python312_command() -> list[str] | None:
+    launcher = shutil.which("py")
+    candidates: list[list[str]] = []
+    if launcher:
+        candidates.append([launcher, "-3.12"])
+    for path in (
+        Path("C:/Python/Python312/python.exe"),
+        Path("C:/Python312/python.exe"),
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Python" / "Python312" / "python.exe",
+    ):
+        if path.is_file():
+            candidates.append([str(path)])
+    for name in ("python3.12", "python"):
+        executable = shutil.which(name)
+        if executable:
+            candidates.append([executable])
+    seen: set[tuple[str, ...]] = set()
+    for command in candidates:
+        key = tuple(command)
+        if key in seen:
+            continue
+        seen.add(key)
+        info = query_python_command_info(command)
+        if not info:
+            continue
+        version = info.get("version") or []
+        bits = int(info.get("bits") or 0)
+        if len(version) >= 2 and version[0] == 3 and version[1] == 12 and bits == 64:
+            return command
+    return None
+
+
+def report_suggests_kroko_install(profile: Profile, report: DoctorReport) -> bool:
+    if normalize_mode(profile.mode) != "local":
+        return False
+    if not preview_engine_uses_kroko(profile):
+        return False
+    relevant_names = {"Realtime preview", "Realtime preview Python", "Kroko ONNX runtime"}
+    for check in report.checks:
+        if check.name in relevant_names and check.status in {"warn", "fail"}:
+            return True
+    return False
+
+
+def run_command_sequence(commands: list[list[str]]) -> int:
+    for command in commands:
+        print(f"+ {format_command(command)}")
+        completed = subprocess.run(command, check=False)
+        if completed.returncode != 0:
+            return int(completed.returncode)
+    return 0
+
+
+def install_kroko_in_python(
+    python_executable: str | Path,
+    *,
+    assume_yes: bool = False,
+    dry_run: bool = False,
+    variant: str = "free",
+    work_dir: str | Path | None = None,
+    soft_fail: bool = False,
+) -> int:
+    command = build_kroko_install_command(python_executable, variant=variant, work_dir=work_dir)
+    print("Kroko native runtime install command:")
+    print(f"  {format_command(command)}")
+    if dry_run:
+        return 0
+    if not assume_yes:
+        answer = read_input("Build/install Kroko native runtime now? [y/N] ", "n").strip().lower()
+        if answer not in {"y", "yes"}:
+            print("Kroko native runtime install skipped.")
+            return 0
+    code = run_command_sequence([command])
+    if code and soft_fail:
+        print("Kroko native runtime install did not complete. Final ASR can still run without realtime preview text.")
+        return 0
+    return code
+
+
+def install_kroko_sidecar(
+    profile: Profile,
+    python312_command: list[str],
+    *,
+    assume_yes: bool = False,
+    dry_run: bool = False,
+    variant: str = "free",
+    work_dir: str | Path | None = None,
+    soft_fail: bool = False,
+) -> int:
+    venv_dir = default_kroko_preview_venv_path()
+    preview_python = venv_python_path(venv_dir)
+    commands = [
+        [*python312_command, "-m", "venv", str(venv_dir)],
+        [str(preview_python), "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"],
+        [
+            str(preview_python),
+            "-m",
+            "pip",
+            "install",
+            *pip_index_args_for_installed_package(),
+            package_extra_spec(PREVIEW_EXTRA),
+        ],
+        build_kroko_install_command(preview_python, variant=variant, work_dir=work_dir),
+    ]
+    config_command = [
+        sys.executable,
+        "-m",
+        "whospeaks_cli",
+        "config",
+        "--realtime-preview-python",
+        str(preview_python),
+    ]
+    print("Kroko native runtime setup will use a Python 3.12 realtime-preview sidecar:")
+    for command in commands:
+        print(f"  {format_command(command)}")
+    print(f"  {format_command(config_command)}")
+    if dry_run:
+        return 0
+    if not assume_yes:
+        answer = read_input("Create sidecar and build/install Kroko now? [y/N] ", "n").strip().lower()
+        if answer not in {"y", "yes"}:
+            print("Kroko native runtime install skipped.")
+            return 0
+    try:
+        venv_dir.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        print(f"Could not create sidecar parent directory: {exc}")
+        return 0 if soft_fail else 1
+    code = run_command_sequence(commands)
+    if code:
+        if soft_fail:
+            print("Kroko sidecar setup did not complete. Final ASR can still run without realtime preview text.")
+            return 0
+        return code
+    profile.realtime_preview_python = str(preview_python)
+    save_path = save_profile(profile)
+    print(f"Saved realtime preview Python to {save_path}.")
+    return 0
+
+
+def install_kroko_runtime(
+    profile: Profile,
+    *,
+    assume_yes: bool = False,
+    dry_run: bool = False,
+    variant: str = "free",
+    work_dir: str | Path | None = None,
+    soft_fail: bool = False,
+) -> int:
+    if not preview_engine_uses_kroko(profile):
+        print("Kroko native runtime install skipped because realtime preview is disabled.")
+        return 0
+    if profile.realtime_preview_python:
+        return install_kroko_in_python(
+            profile.realtime_preview_python,
+            assume_yes=assume_yes,
+            dry_run=dry_run,
+            variant=variant,
+            work_dir=work_dir,
+            soft_fail=soft_fail,
+        )
+    if os.name == "nt" and sys.version_info[:2] != (3, 12):
+        python312 = windows_python312_command()
+        if python312:
+            return install_kroko_sidecar(
+                profile,
+                python312,
+                assume_yes=assume_yes,
+                dry_run=dry_run,
+                variant=variant,
+                work_dir=work_dir,
+                soft_fail=soft_fail,
+            )
+        print(
+            "Kroko realtime preview on Windows currently needs CPython 3.12 x64 for the native build path. "
+            "Install Python 3.12 x64 or set realtime_preview_python to a prepared Python 3.12 environment, "
+            "then open `whospeaks`, enable Kroko on the Setup tab, and install again."
+        )
+        return 0 if (soft_fail or dry_run) else 1
+    return install_kroko_in_python(
+        sys.executable,
+        assume_yes=assume_yes,
+        dry_run=dry_run,
+        variant=variant,
+        work_dir=work_dir,
+        soft_fail=soft_fail,
+    )
+
+
+def install_extra_and_maybe_kroko(
+    profile: Profile,
+    extra: str,
+    *,
+    assume_yes: bool = False,
+    dry_run: bool = False,
+    install_kroko: bool = True,
+    kroko_assume_yes: bool | None = None,
+) -> int:
+    code = install_extra(extra, assume_yes=assume_yes, dry_run=dry_run)
+    if code:
+        return code
+    if not install_kroko:
+        return 0
+    report = run_doctor(profile)
+    if not report_suggests_kroko_install(profile, report):
+        return 0
+    print("Kroko native runtime is required for realtime preview text.")
+    return install_kroko_runtime(
+        profile,
+        assume_yes=assume_yes if kroko_assume_yes is None else kroko_assume_yes,
+        dry_run=dry_run,
+        soft_fail=True,
+    )
+
+
 def configure_profile_for_mode(profile: Profile, mode: str) -> Profile:
     selected = normalize_mode(mode)
     profile.mode = selected
@@ -1034,6 +1500,7 @@ def configure_profile_for_mode(profile: Profile, mode: str) -> Profile:
     elif selected == "server":
         profile.asr_backend = "remote"
         profile.embeddings_backend = "remote"
+        profile.realtime_preview_engine = "off"
     return profile
 
 
@@ -1708,13 +2175,13 @@ def select_profile_interactively(profile: Profile, mode: str) -> int | None:
     report = run_doctor(profile)
     extra = recommended_install_extra(profile, report)
     if extra is None:
-        print("No pip-installable dependency group is missing for this profile.")
+        print("No Python package install action is missing for this profile.")
         return None
     print(f"Next installer action: {format_command(build_install_command(extra))}")
-    answer = read_input("Install that dependency group now? [y/N] ", "n").strip().lower()
+    answer = read_input("Install the required Python packages now? [y/N] ", "n").strip().lower()
     if answer in {"y", "yes"}:
-        return install_extra(extra, assume_yes=True)
-    print("Install skipped. Choose action 2 later to run it.")
+        return install_extra_and_maybe_kroko(profile, extra, assume_yes=True, kroko_assume_yes=False)
+    print("Install skipped. Choose the install action later to run it.")
     return None
 
 
@@ -1722,9 +2189,29 @@ def install_missing_group_interactively(profile: Profile, report: DoctorReport |
     current_report = report or run_doctor(profile)
     extra = recommended_install_extra(profile, current_report)
     if extra is None:
-        print("No pip-installable dependency group is missing for this profile.")
+        print("No Python package install action is missing for this profile.")
         return None
-    return install_extra(extra)
+    return install_extra_and_maybe_kroko(profile, extra)
+
+
+def install_components_interactively(profile: Profile) -> int | None:
+    target = prompt_install_target()
+    install_kroko = prompt_kroko_install(target)
+    plan = install_plan_for_target(target, install_kroko)
+    configure_profile_for_install(profile, plan)
+    save_path = save_profile(profile)
+    print(f"Saved {profile.mode} profile to {save_path}")
+    print_install_plan(plan, profile)
+    if not confirm_install_start(False, False):
+        print("Install skipped.")
+        return None
+    return install_extra_and_maybe_kroko(
+        profile,
+        plan.extra,
+        assume_yes=True,
+        install_kroko=plan.install_kroko,
+        kroko_assume_yes=True if plan.install_kroko else False,
+    )
 
 
 def advanced_setup_menu(profile: Profile) -> int | None:
@@ -1761,9 +2248,9 @@ def main_menu_text() -> str:
     return textwrap.dedent(
         """
         Actions
-          1. Launch browser UI
-          2. Doctor / complete diagnostics
-          3. Install recommended dependency group
+          1. Install or repair WhoSpeaks
+          2. Launch browser UI
+          3. Doctor / complete diagnostics
           4. Language and realtime text
           5. Speaker provider quality
           6. Backends and remote URLs
@@ -1771,11 +2258,21 @@ def main_menu_text() -> str:
           8. Browser host and port
           9. All configuration fields
           p. Print exact launch command
-          s. First-time full local setup
           r. Remote/server profiles
           q. Quit
         """
     ).strip()
+
+
+def launch_profile(profile: Profile) -> int:
+    if profile.mode == "server":
+        print("Start each server command in its own shell:")
+        for line in build_server_launch_lines():
+            print(f"  {line}")
+        return 0
+    command = build_launch_command(profile)
+    print(format_command(command))
+    return int(subprocess.run(command, check=False).returncode)
 
 
 def interactive_dashboard(profile: Profile) -> int:
@@ -1784,24 +2281,17 @@ def interactive_dashboard(profile: Profile) -> int:
         render_dashboard(profile, report)
         extra = recommended_install_extra(profile, report)
         if extra:
-            print(f"Recommended installer action: {format_command(build_install_command(extra))}")
+            print(f"Recommended package action: {format_command(build_install_command(extra))}")
         print(main_menu_text())
         choice = read_input("> ", "q").strip().lower()
-        if choice == "1":
-            if profile.mode == "server":
-                print("Start each server command in its own shell:")
-                for line in build_server_launch_lines():
-                    print(f"  {line}")
-                return 0
-            command = build_launch_command(profile)
-            print(format_command(command))
-            return subprocess.run(command, check=False).returncode
-        elif choice == "2":
-            print_report(run_doctor(profile, deep=True))
-        elif choice == "3":
-            code = install_missing_group_interactively(profile, report)
+        if choice in {"1", "i", "install", "s", "setup"}:
+            code = install_components_interactively(profile)
             if code:
                 return code
+        elif choice == "2":
+            return launch_profile(profile)
+        elif choice == "3":
+            print_report(run_doctor(profile, deep=True))
         elif choice == "4":
             language_menu(profile)
         elif choice == "5":
@@ -1816,16 +2306,88 @@ def interactive_dashboard(profile: Profile) -> int:
             configuration_menu(profile)
         elif choice in {"p", "print"}:
             print_launch_command(profile)
-        elif choice in {"s", "setup"}:
-            code = select_profile_interactively(profile, "local")
-            if code:
-                return code
         elif choice in {"r", "remote", "server"}:
             code = advanced_setup_menu(profile)
             if code:
                 return code
         elif choice in {"q", "quit", "exit"}:
             return 0
+
+
+def run_textual_dashboard(profile: Profile) -> int:
+    try:
+        from .tui import run_setup_app
+    except ImportError as exc:
+        if not str(exc.name or "").startswith("textual"):
+            raise
+        print("Textual is unavailable; opening the classic terminal interface.")
+        return interactive_dashboard(profile)
+
+    result = run_setup_app(profile)
+    if result == "launch":
+        return launch_profile(load_profile())
+    return 0
+
+
+def cmd_install(args: argparse.Namespace) -> int:
+    if args.with_kroko and args.without_kroko:
+        raise SystemExit("Choose either --with-kroko or --without-kroko, not both.")
+
+    if args.target:
+        target = normalize_install_target(args.target)
+    elif sys.stdin.isatty():
+        target = prompt_install_target()
+    else:
+        target = "local"
+        print("No install target was supplied; defaulting to full local installation.")
+
+    if target == "server":
+        install_kroko = False
+        if args.with_kroko:
+            print("Kroko live preview text is not installed on server-only targets.")
+    elif args.with_kroko:
+        install_kroko = True
+    elif args.without_kroko:
+        install_kroko = False
+    elif sys.stdin.isatty() and not args.yes:
+        install_kroko = prompt_kroko_install(target)
+    else:
+        install_kroko = False
+        print("Kroko live preview text is not selected. Pass --with-kroko to include it.")
+
+    plan = install_plan_for_target(target, install_kroko)
+    profile = load_profile()
+    configure_profile_for_install(profile, plan)
+    if args.language:
+        profile = apply_profile_updates(profile, [("language", args.language)])
+    if args.provider_preset:
+        apply_provider_preset(profile, args.provider_preset)
+
+    if args.dry_run:
+        print(f"Dry run: would save {profile.mode} profile to {config_path()}")
+    else:
+        save_path = save_profile(profile)
+        print(f"Saved {profile.mode} profile to {save_path}")
+
+    print_install_plan(plan, profile)
+    if not confirm_install_start(args.yes, args.dry_run):
+        print("Install skipped.")
+        return 0
+
+    code = install_extra_and_maybe_kroko(
+        profile,
+        plan.extra,
+        assume_yes=True,
+        dry_run=args.dry_run,
+        install_kroko=plan.install_kroko,
+        kroko_assume_yes=True if plan.install_kroko else False,
+    )
+    if code:
+        return code
+
+    report = run_doctor(profile, profile.mode, deep=args.deep)
+    print_report(report)
+    return 0
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
@@ -1852,7 +2414,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
             if code:
                 return code
         else:
-            print("No pip-installable dependency group was recommended for the current failures.")
+            print("No Python package install action was recommended for the current failures.")
     return 1 if args.strict and report.has_failures else 0
 
 
@@ -1880,10 +2442,32 @@ def cmd_setup(args: argparse.Namespace) -> int:
         if extra is None and profile.mode == "remote":
             extra = "controller"
         if extra is not None:
-            return install_extra(extra, assume_yes=args.yes, dry_run=args.dry_run)
+            return install_extra_and_maybe_kroko(
+                profile,
+                extra,
+                assume_yes=args.yes,
+                dry_run=args.dry_run,
+                install_kroko=not args.skip_kroko,
+            )
     print("Launch command:")
     print(f"  {format_command(build_launch_command(profile))}")
     return 0
+
+
+def cmd_install_kroko(args: argparse.Namespace) -> int:
+    profile = load_profile()
+    if args.python:
+        profile.realtime_preview_python = args.python
+    if args.engine:
+        profile.realtime_preview_engine = args.engine
+    return install_kroko_runtime(
+        profile,
+        assume_yes=args.yes,
+        dry_run=args.dry_run,
+        variant=args.variant,
+        work_dir=args.work_dir,
+        soft_fail=False,
+    )
 
 
 def cmd_launch(args: argparse.Namespace) -> int:
@@ -1970,6 +2554,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print the dashboard once and exit instead of opening the interactive starter CLI.",
     )
+    parser.add_argument(
+        "--classic",
+        action="store_true",
+        help="Open the classic numbered interface instead of the Textual setup application.",
+    )
     subparsers = parser.add_subparsers(dest="command")
 
     doctor = subparsers.add_parser("doctor", help="Run setup and component checks.")
@@ -1986,15 +2575,64 @@ def build_parser() -> argparse.ArgumentParser:
     doctor.add_argument("--dry-run", action="store_true", help="Print installer commands without running them.")
     doctor.set_defaults(func=cmd_doctor)
 
+    install = subparsers.add_parser(
+        "install",
+        help="Guided installer for full local, core/controller, or server packages.",
+    )
+    install.add_argument(
+        "--target",
+        choices=INSTALL_TARGET_CHOICES,
+        default="",
+        help="Install target: local, core, or server. Omit for an interactive choice.",
+    )
+    install.add_argument("--language", default="", help="Save the setup profile with this language code, for example de.")
+    install.add_argument("--provider-preset", choices=PROVIDER_PRESET_CHOICES, default="")
+    kroko_group = install.add_mutually_exclusive_group()
+    kroko_group.add_argument(
+        "--with-kroko",
+        action="store_true",
+        help="Enable realtime preview text and run the native Kroko setup after Python packages.",
+    )
+    kroko_group.add_argument(
+        "--without-kroko",
+        action="store_true",
+        help="Disable realtime preview text for this install.",
+    )
+    install.add_argument("--deep", action="store_true", help="Run expensive provider/cache checks after installation.")
+    install.add_argument("--yes", action="store_true", help="Do not prompt before running installer actions.")
+    install.add_argument("--dry-run", action="store_true", help="Print installer actions without running them.")
+    install.set_defaults(func=cmd_install)
+
     setup = subparsers.add_parser("setup", help="Choose a setup mode and optionally install dependencies.")
     setup.add_argument("--mode", choices=("local", "remote", "server"), default="local")
     setup.add_argument("--language", default="", help="Save the setup profile with this language code, for example de.")
     setup.add_argument("--provider-preset", choices=PROVIDER_PRESET_CHOICES, default="")
-    setup.add_argument("--install", action="store_true", help="Run the recommended pip extra installer.")
+    setup.add_argument("--install", action="store_true", help="Run the recommended package installer for this mode.")
+    setup.add_argument(
+        "--skip-kroko",
+        action="store_true",
+        help="Do not offer/build the native Kroko realtime preview runtime after installing extras.",
+    )
     setup.add_argument("--deep", action="store_true", help="Run expensive provider/cache checks during setup.")
-    setup.add_argument("--yes", action="store_true", help="Do not prompt before running the pip install action.")
-    setup.add_argument("--dry-run", action="store_true", help="Print installer commands without running them.")
+    setup.add_argument("--yes", action="store_true", help="Do not prompt before running installer actions.")
+    setup.add_argument("--dry-run", action="store_true", help="Print installer actions without running them.")
     setup.set_defaults(func=cmd_setup)
+
+    install_kroko = subparsers.add_parser(
+        "install-kroko",
+        help="Build/install the native Kroko realtime preview runtime.",
+    )
+    install_kroko.add_argument("--python", default="", help="Python executable that should receive kroko_onnx.")
+    install_kroko.add_argument(
+        "--engine",
+        default="kroko_onnx",
+        help="Realtime preview engine to enable while installing. Use off to skip.",
+    )
+    install_kroko.add_argument("--variant", choices=("free", "pro"), default="free")
+    install_kroko.add_argument("--work-dir", type=Path, default=None)
+    install_kroko.add_argument("--yes", action="store_true", help="Do not prompt before building/installing Kroko.")
+    install_kroko.add_argument("--dry-run", action="store_true", help="Print Kroko installer commands without running them.")
+    install_kroko.set_defaults(func=cmd_install_kroko)
 
     launch = subparsers.add_parser("launch", help="Print or run the current whospeaks-window launch command.")
     launch.add_argument("--print", dest="print_only", action="store_true", help="Print the launch command and exit.")
@@ -2043,7 +2681,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.no_interactive or not sys.stdin.isatty():
         report = run_doctor(profile)
         render_dashboard(profile, report)
-        print("Run `whospeaks setup --mode local --install` for a full local setup.")
+        print("Run `whospeaks` in an interactive terminal to open the setup application.")
+        print("For automation, run `whospeaks install --target local --without-kroko --yes`.")
         print("Run `whospeaks launch --print` to see the exact browser command.")
         return 0
-    return interactive_dashboard(profile)
+    if args.classic:
+        return interactive_dashboard(profile)
+    return run_textual_dashboard(profile)

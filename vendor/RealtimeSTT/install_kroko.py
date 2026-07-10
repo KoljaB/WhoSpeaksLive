@@ -361,7 +361,103 @@ def patch_windows_bat(repo_dir):
     print("Patched build_windows.bat version parsing for cmd.exe.")
 
 
-def patch_windows_dockerfile(repo_dir):
+def patch_windows_free_wheel_only_build(repo_dir):
+    """
+    Makes the Windows free build produce only the Python wheel.
+    """
+
+    script_path = repo_dir / "in_windows_container.sh"
+    batch_path = repo_dir / "build_windows.bat"
+    if not script_path.exists():
+        raise KrokoInstallError("Missing Kroko container build script: {0}".format(script_path))
+    if not batch_path.exists():
+        raise KrokoInstallError("Missing Kroko Windows build script: {0}".format(batch_path))
+
+    script = read_text(script_path).replace("\r\n", "\n")
+    script_original = script
+    flag_marker = "WhoSpeaks patch: free Windows build is wheel-only."
+    if flag_marker not in script:
+        needle = (
+            'echo "    Variant: $BUILD_VARIANT (KROKO_LICENSE=$KROKO_LICENSE_FLAG)"\n'
+            "echo\n"
+        )
+        insertion = (
+            "\n"
+            "# {0}\n"
+            "KROKO_WHEEL_ONLY=0\n"
+            "KROKO_WEBSOCKET_FLAG=ON\n"
+            'if [ "$BUILD_VARIANT" = "free" ]; then\n'
+            "    KROKO_WHEEL_ONLY=1\n"
+            "    KROKO_WEBSOCKET_FLAG=OFF\n"
+            "fi\n"
+        ).format(flag_marker)
+        if needle in script:
+            script = script.replace(needle, needle + insertion, 1)
+        else:
+            print("Could not identify Kroko variant logging in in_windows_container.sh; leaving wheel-only flag unchanged.")
+
+    script = script.replace(
+        "-DSHERPA_ONNX_ENABLE_WEBSOCKET=ON \\",
+        "-DSHERPA_ONNX_ENABLE_WEBSOCKET=$KROKO_WEBSOCKET_FLAG \\",
+    )
+
+    wrap_marker = 'if [ "$KROKO_WHEEL_ONLY" = "1" ]; then'
+    if wrap_marker not in script:
+        start = script.find("# Configure. The websocket server is gated by SHERPA_ONNX_ENABLE_WEBSOCKET")
+        missing = 'kroko-onnx-online-websocket-server.exe missing from build output'
+        missing_pos = script.find(missing, start)
+        end = -1
+        if missing_pos != -1:
+            end_marker = "\nfi\n\n"
+            end = script.find(end_marker, missing_pos)
+            if end != -1:
+                end += len(end_marker)
+        if start != -1 and end != -1:
+            server_block = script[start:end]
+            replacement = (
+                'if [ "$KROKO_WHEEL_ONLY" = "1" ]; then\n'
+                '    echo "Skipping Windows websocket-server build for free wheel-only runtime."\n'
+                '    mkdir -p "$INSTALL_DIR/bin"\n'
+                "else\n"
+                + server_block
+                + "fi\n\n"
+            )
+            script = script[:start] + replacement + script[end:]
+        else:
+            print("Could not identify Kroko websocket-server build block; leaving it unchanged.")
+
+    if script != script_original:
+        write_text(script_path, script)
+        print("Patched in_windows_container.sh for a free Windows wheel-only build.")
+
+    batch = read_text(batch_path)
+    batch_original = batch
+    batch_marker = "WhoSpeaks patch: skip NSIS for free wheel-only build"
+    if batch_marker not in batch:
+        step_marker = "REM -- Step 3: build the NSIS installer ---------------------------------------"
+        newline = "\r\n" if "\r\n" in batch else "\n"
+        insertion = newline.join(
+            [
+                "REM {0}".format(batch_marker),
+                'if /I "%VARIANT%"=="free" (',
+                "    echo.",
+                "    echo [3/3] Skipping NSIS installer (free wheel-only build)",
+                "    exit /b 0",
+                ")",
+                "",
+            ]
+        )
+        if step_marker in batch:
+            batch = batch.replace(step_marker, insertion + step_marker, 1)
+        else:
+            print("Could not identify NSIS build step in build_windows.bat; leaving it unchanged.")
+
+    if batch != batch_original:
+        write_text(batch_path, batch)
+        print("Patched build_windows.bat to skip the free NSIS installer.")
+
+
+def patch_windows_dockerfile(repo_dir, install_openssl=True):
     """
     Patches the Kroko Windows Dockerfile.
     """
@@ -371,8 +467,7 @@ def patch_windows_dockerfile(repo_dir):
         raise KrokoInstallError("Missing Kroko Windows Dockerfile: {0}".format(path))
 
     text = read_text(path)
-    if "sed -i 's/\\r$//'" in text:
-        return
+    original = text
 
     old_lf = (
         "COPY in_windows_container.sh /usr/local/bin/in_windows_container.sh\n"
@@ -386,11 +481,142 @@ def patch_windows_dockerfile(repo_dir):
     old_crlf = old_lf.replace("\n", "\r\n")
     new_crlf = new_lf.replace("\n", "\r\n")
     if old_lf in text:
-        write_text(path, text.replace(old_lf, new_lf))
+        text = text.replace(old_lf, new_lf)
         print("Patched Dockerfile.windows to tolerate CRLF shell scripts.")
     elif old_crlf in text:
-        write_text(path, text.replace(old_crlf, new_crlf))
+        text = text.replace(old_crlf, new_crlf)
         print("Patched Dockerfile.windows to tolerate CRLF shell scripts.")
+
+    if install_openssl:
+        patched_text = patch_windows_dockerfile_openssl_extraction(text)
+    else:
+        patched_text = patch_windows_dockerfile_skip_openssl_install(text)
+    if patched_text != text:
+        text = patched_text
+        if install_openssl:
+            print("Patched Dockerfile.windows OpenSSL extraction for current Slproweb MSI layout.")
+        else:
+            print("Patched Dockerfile.windows to skip OpenSSL download for the free build.")
+
+    if text != original:
+        write_text(path, text)
+
+
+def patch_windows_dockerfile_openssl_extraction(text):
+    """
+    Replaces the brittle OpenSSL extraction block in Kroko's Windows Dockerfile.
+    """
+
+    marker = "WhoSpeaks patch: robust OpenSSL extraction"
+    if marker in text:
+        return text
+
+    start_marker = (
+        "RUN apt-get update && apt-get install -y --no-install-recommends \\\n"
+        "        msitools innoextract"
+    )
+    start = text.find(start_marker)
+    if start == -1 and "\r\n" in text:
+        start_marker = start_marker.replace("\n", "\r\n")
+        start = text.find(start_marker)
+    if start == -1:
+        print("Could not identify Dockerfile.windows OpenSSL install block; leaving it unchanged.")
+        return text
+
+    end_marker = " && rm -rf /tmp/openssl-msi /tmp/openssl-final /tmp/openssl.msi"
+    end = text.find(end_marker, start)
+    if end == -1:
+        print("Could not identify Dockerfile.windows OpenSSL cleanup line; leaving it unchanged.")
+        return text
+    newline = "\r\n" if "\r\n" in text else "\n"
+    line_end = text.find(newline, end)
+    if line_end == -1:
+        line_end = len(text)
+    else:
+        line_end += len(newline)
+
+    replacement = newline.join(
+        [
+            "# WhoSpeaks patch: robust OpenSSL extraction for Slproweb MSI layouts.",
+            "RUN apt-get update && apt-get install -y --no-install-recommends \\",
+            "        msitools innoextract \\",
+            " && rm -rf /var/lib/apt/lists/* \\",
+            " && mkdir -p /tmp/openssl-msi /tmp/openssl-final /opt/openssl-win64/app/bin \\",
+            "        /opt/openssl-win64/app/lib /opt/openssl-win64/app/include \\",
+            " && cd /tmp \\",
+            " && for v in 3_6_2 3_6_1 3_5_4 3_5_3; do \\",
+            "        if curl -sLf \"https://slproweb.com/download/Win64OpenSSL-${v}.msi\" \\",
+            "                -o openssl.msi; then \\",
+            "            echo \"Downloaded Win64OpenSSL-${v}.msi\"; \\",
+            "            break; \\",
+            "        fi; \\",
+            "        rm -f openssl.msi; \\",
+            "    done \\",
+            " && test -s openssl.msi \\",
+            " && msiextract -C /tmp/openssl-msi openssl.msi \\",
+            " && (find /tmp/openssl-msi -name \"*.exe\" -exec sh -c 'for exe do innoextract -d /tmp/openssl-final \"$exe\" || 7z x -y -o/tmp/openssl-final \"$exe\"; done' sh {} + || true) \\",
+            " && for source in /tmp/openssl-msi /tmp/openssl-final /tmp/openssl-final/app; do \\",
+            "        if test -d \"$source\"; then \\",
+            "            find \"$source\" -iname \"libcrypto*.dll\" -exec cp -v {} /opt/openssl-win64/app/bin/ \\; || true; \\",
+            "            find \"$source\" -iname \"libssl*.dll\" -exec cp -v {} /opt/openssl-win64/app/bin/ \\; || true; \\",
+            "            find \"$source\" -iname \"libcrypto*.lib\" -exec cp -v {} /opt/openssl-win64/app/lib/ \\; || true; \\",
+            "            find \"$source\" -iname \"libssl*.lib\" -exec cp -v {} /opt/openssl-win64/app/lib/ \\; || true; \\",
+            "            find \"$source\" -type d -iname \"openssl\" -exec sh -c 'for dir do case \"$dir\" in */include/*|*/Include/*|*/INCLUDE/*) mkdir -p /opt/openssl-win64/app/include/openssl; cp -rv \"$dir\"/* /opt/openssl-win64/app/include/openssl/ ;; esac; done' sh {} + || true; \\",
+            "        fi; \\",
+            "    done \\",
+            " && if test -d /opt/openssl-win64/app/lib/VC/x64/MT; then cp -v /opt/openssl-win64/app/lib/VC/x64/MT/* /opt/openssl-win64/app/lib/; fi \\",
+            " && if test ! -f /opt/openssl-win64/app/lib/libcrypto.lib; then first=$(find /opt/openssl-win64/app/lib -maxdepth 1 -iname \"libcrypto*.lib\" | head -n 1); test -n \"$first\" && cp -v \"$first\" /opt/openssl-win64/app/lib/libcrypto.lib; fi \\",
+            " && if test ! -f /opt/openssl-win64/app/lib/libssl.lib; then first=$(find /opt/openssl-win64/app/lib -maxdepth 1 -iname \"libssl*.lib\" | head -n 1); test -n \"$first\" && cp -v \"$first\" /opt/openssl-win64/app/lib/libssl.lib; fi \\",
+            " && test -f /opt/openssl-win64/app/lib/libcrypto.lib \\",
+            " && test -f /opt/openssl-win64/app/lib/libssl.lib \\",
+            " && test -f /opt/openssl-win64/app/include/openssl/ssl.h \\",
+            " && rm -rf /tmp/openssl-msi /tmp/openssl-final /tmp/openssl.msi",
+        ]
+    ) + newline
+    return text[:start] + replacement + text[line_end:]
+
+
+def patch_windows_dockerfile_skip_openssl_install(text):
+    """
+    Replaces the OpenSSL download block with a no-op directory setup.
+    """
+
+    marker = "WhoSpeaks patch: free Windows build skips OpenSSL download"
+    if marker in text:
+        return text
+
+    start_marker = (
+        "RUN apt-get update && apt-get install -y --no-install-recommends \\\n"
+        "        msitools innoextract"
+    )
+    start = text.find(start_marker)
+    if start == -1 and "\r\n" in text:
+        start_marker = start_marker.replace("\n", "\r\n")
+        start = text.find(start_marker)
+    if start == -1:
+        print("Could not identify Dockerfile.windows OpenSSL install block; leaving it unchanged.")
+        return text
+
+    end_marker = " && rm -rf /tmp/openssl-msi /tmp/openssl-final /tmp/openssl.msi"
+    end = text.find(end_marker, start)
+    if end == -1:
+        print("Could not identify Dockerfile.windows OpenSSL cleanup line; leaving it unchanged.")
+        return text
+    newline = "\r\n" if "\r\n" in text else "\n"
+    line_end = text.find(newline, end)
+    if line_end == -1:
+        line_end = len(text)
+    else:
+        line_end += len(newline)
+
+    replacement = newline.join(
+        [
+            "# WhoSpeaks patch: free Windows build skips OpenSSL download.",
+            "RUN mkdir -p /opt/openssl-win64/app/bin \\",
+            "        /opt/openssl-win64/app/lib /opt/openssl-win64/app/include",
+        ]
+    ) + newline
+    return text[:start] + replacement + text[line_end:]
 
 
 def _insert_after_line(text, line_text, insertion):
@@ -618,7 +844,7 @@ def patch_linux_free_build_without_openssl_dev(repo_dir):
     print("Patched Kroko free Linux build to avoid OpenSSL development headers.")
 
 
-def prepare_windows_checkout(repo_dir):
+def prepare_windows_checkout(repo_dir, variant="free"):
     """
     Prepares Windows-specific Kroko build files.
     """
@@ -629,7 +855,10 @@ def prepare_windows_checkout(repo_dir):
     normalize_lf(script)
     patch_windows_bat(repo_dir)
     sanitize_batch_ascii(repo_dir / "build_windows.bat")
-    patch_windows_dockerfile(repo_dir)
+    if variant == "free":
+        patch_linux_free_build_without_openssl_dev(repo_dir)
+        patch_windows_free_wheel_only_build(repo_dir)
+    patch_windows_dockerfile(repo_dir, install_openssl=(variant != "free"))
     patch_license_quiet_env(repo_dir)
 
 
@@ -718,7 +947,7 @@ def install_windows(args, repo_dir):
     """
 
     ensure_windows_host()
-    prepare_windows_checkout(repo_dir)
+    prepare_windows_checkout(repo_dir, args.variant)
     run(["cmd.exe", "/c", str(repo_dir / "build_windows.bat"), "--variant", args.variant], cwd=repo_dir)
     wheel = find_windows_wheel(repo_dir, args.variant)
     print("Built Kroko-ONNX wheel: {0}".format(wheel))
