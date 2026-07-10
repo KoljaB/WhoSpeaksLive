@@ -289,6 +289,19 @@ This path is slower to install and more likely to hit CUDA, PyTorch, model-cache
 
 Realtime preview text is optional. Final transcript diarization and live speaker probing still work if preview is disabled or if Kroko fails to install, but the live text row depends on the `kroko_onnx` native Python extension and a Kroko model file.
 
+### Nemotron 3.5 (experimental)
+
+Nemotron 3.5 is an opt-in CPU-only preview backend. It uses `sherpa-onnx` in a separate process and does not replace final ASR. The 560 ms int8 preset is the initial balance of text quality and update latency; the 160 ms preset is available for comparison.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install "sherpa-onnx>=1.13.4,<1.14" "sherpa-onnx-bin>=1.13.4,<1.14"
+.\.venv\Scripts\whospeaks-window.exe --language de --realtime-preview-engine sherpa_onnx --realtime-preview-model-preset nemotron-3.5-560ms-int8
+```
+
+On first start, WhoSpeaks downloads the selected 453 MB archive from the upstream `k2-fsa/sherpa-onnx` release, verifies its pinned SHA-256 checksum, and installs it under `runtime/models/sherpa-onnx/`. Use `--no-realtime-preview-auto-download` to require a preinstalled model or `--realtime-preview-model-dir` to select one manually. Nemotron supports `en`, `de`, `es`, `fr`, `it`, `nl`, `pt`, `tr`, and `sv`; Swedish is broad-coverage, while Hebrew should remain on Kroko or have preview disabled.
+
+Nemotron model weights use NVIDIA Open Model Development and Weight License 1.1, not the project MIT license. It remains experimental and Kroko remains available. See [Third-Party Model Licenses](third-party-model-licenses.md).
+
 The `--language` flag selects the matching community model name for supported realtime languages, for example `--language de` selects `Kroko-DE-Community-64-L-Streaming-001.data`. Missing public Community model files are downloaded automatically to `runtime/models/kroko-onnx/`; use `--no-realtime-preview-auto-download` to require preinstalled files. If doctor reports `Kroko ONNX runtime` as missing, install a `kroko_onnx` wheel matching the active Python or run the Kroko setup wrapper:
 
 ```powershell

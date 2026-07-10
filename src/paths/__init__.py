@@ -22,6 +22,7 @@ CACHE_DIR = _path_from_env("WHOSPEAKS_CACHE_DIR", RUNTIME_DIR / "cache")
 MODEL_DIR = _path_from_env("WHOSPEAKS_MODEL_DIR", RUNTIME_DIR / "models")
 MODEL_HUB_DIR = MODEL_DIR / "hub"
 KROKO_MODEL_DIR = MODEL_DIR / "kroko-onnx"
+SHERPA_ONNX_MODEL_DIR = MODEL_DIR / "sherpa-onnx"
 MEDIA_DIR = RUNTIME_DIR / "media"
 LOCAL_FILEFEED_MEDIA_DIR = MEDIA_DIR / "local-filefeed"
 OUTPUTS_DIR = RUNTIME_DIR / "outputs"
@@ -48,6 +49,7 @@ def ensure_runtime_dirs() -> None:
         MODEL_DIR,
         MODEL_HUB_DIR,
         KROKO_MODEL_DIR,
+        SHERPA_ONNX_MODEL_DIR,
         LOCAL_FILEFEED_MEDIA_DIR,
         OUTPUTS_DIR,
         WINDOW_OUTPUT_DIR,

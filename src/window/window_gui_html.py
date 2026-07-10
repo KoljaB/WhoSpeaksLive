@@ -935,6 +935,7 @@ const playbackClockSlackSeconds = 3.0;
 let currentRealtimeGeneration = 0;
 let mediaVersion = 0;
 let browserStreamMode = false;
+let resumePlaybackPending = false;
 let browserStreamPrepared = false;
 let browserStreamPreparedUrl = "";
 let localAudioFileName = "";
@@ -3105,6 +3106,7 @@ function syncSpeakerSessionBaselines(state = speakerLibraryState) {
   speakerSessionBaselineSpeakingSeconds = speakingSeconds;
 }
 function refreshMediaElements(version) {
+  resumePlaybackPending = false;
   setBrowserStreamMode(false);
   mediaVersion = Number(version || Date.now());
   video.pause();
@@ -3148,6 +3150,34 @@ function logRejectedPlayback(results) {
       log(`${playbackElementLabel(entry && entry.element, index)} playback blocked: ${result.reason?.name || result.reason}`);
     }
   });
+}
+async function startSynchronizedPlaybackFromGesture() {
+  const playbackElements = currentPlaybackElements();
+  playbackElements.forEach(element => {
+    element.currentTime = 0;
+    if (element === video) element.muted = true;
+    if (element === audio) element.volume = 1.0;
+  });
+  // Invoke play before the first await so a second Start click retains user activation.
+  const playbackPromises = playbackElements.map(element => element.play());
+  const playbackResults = await Promise.allSettled(playbackPromises);
+  const results = playbackResults.map((result, index) => ({result, element: playbackElements[index], index}));
+  logRejectedPlayback(results);
+  if (results.some(entry => entry.result.status === "rejected")) {
+    resumePlaybackPending = true;
+    start.disabled = false;
+    stop.disabled = false;
+    start.textContent = "Resume playback";
+    setState("Playback paused");
+    log("Playback needs one direct Resume playback click after backend warmup.");
+    return false;
+  }
+  resumePlaybackPending = false;
+  start.textContent = "Start transcription";
+  startPlaybackClock();
+  startBrowserLiveObservation();
+  setState("Playing");
+  return true;
 }
 function scrollSentencesToBottom() {
   if (!followLiveEnabled) return;
@@ -5492,6 +5522,11 @@ bulkMarkCorrectButton.addEventListener("click", () => markSelectedSentencesCorre
 clearSelectionButton.addEventListener("click", clearTranscriptSelection);
 applyTranscriptDisplaySettings();
 start.addEventListener("click", async () => {
+  if (resumePlaybackPending && !browserStreamMode) {
+    start.disabled = true;
+    await startSynchronizedPlaybackFromGesture();
+    return;
+  }
   leaveSavedSessionReview();
   let playbackUnlockResults = null;
   if (!browserStreamMode) {
@@ -5546,24 +5581,14 @@ start.addEventListener("click", async () => {
     return;
   }
   setState("Starting playback");
-  const playbackElements = currentPlaybackElements();
-  playbackElements.forEach(element => {
-    element.currentTime = 0;
-    if (element === video) element.muted = true;
-    if (element === audio) element.volume = 1.0;
-  });
-  const playbackResults = await Promise.allSettled(playbackElements.map(element => element.play()));
-  logRejectedPlayback(playbackResults.map((result, index) => ({result, element: playbackElements[index], index})));
-  startPlaybackClock();
-  startBrowserLiveObservation();
-  setState("Playing");
+  await startSynchronizedPlaybackFromGesture();
 });
 stop.addEventListener("click", async () => {
   if (!sessionOwnerActive()) {
     log("Only the active demo seat can stop the shared run.");
     return;
   }
-  stop.disabled = true; start.disabled = false; setSourceControlsDisabled(false); setState("Stopping"); stopPlaybackClock(); stopBrowserAudioCapture(); video.pause(); audio.pause(); await stopBrowserLiveObservation("stop"); await post("/api/stop");
+  resumePlaybackPending = false; start.textContent = "Start transcription"; stop.disabled = true; start.disabled = false; setSourceControlsDisabled(false); setState("Stopping"); stopPlaybackClock(); stopBrowserAudioCapture(); video.pause(); audio.pause(); await stopBrowserLiveObservation("stop"); await post("/api/stop");
 });
 preset.addEventListener("change", () => {
   if (preset.value) {

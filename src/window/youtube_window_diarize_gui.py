@@ -130,22 +130,30 @@ from window.window_config import (  # noqa: E402
     default_silero_vad_backend,
     default_silero_vad_model_path,
     new_speaker_sensitivity_config,
-    normalize_kroko_preview_model_preset,
 )
 from window.language_config import (  # noqa: E402
     default_language_code,
     default_sentence_language,
     default_sentence_tokenizer,
     infer_language_from_kroko_model_name,
-    is_kroko_preview_language,
-    kroko_preview_model_name,
     language_arg,
     sentence_tokenizer_arg,
+)
+from window.realtime_preview_backends import (  # noqa: E402
+    apply_preview_timing_defaults,
+    default_preview_model,
+    normalize_preview_engine,
+    normalize_preview_model_preset,
+    preview_language_error,
+)
+from window.sherpa_onnx_models import (  # noqa: E402
+    DEFAULT_SHERPA_ONNX_PREVIEW_MODEL_PRESET,
+    default_sherpa_onnx_model_dir,
+    sherpa_onnx_model_preset,
 )
 from window.window_diarizer import WindowDiarizer  # noqa: E402
 from window.window_events import EventBus, RecordingEventBus  # noqa: E402
 from window.window_gui_html import HTML  # noqa: E402
-from window.window_preview import infer_kroko_preview_chunk_seconds  # noqa: E402
 from window.public_events import PublicEventNormalizer  # noqa: E402
 from window.browser_live_speaker_scoring import (  # noqa: E402
     DEFAULT_BROWSER_OBSERVATION_FLICKER_GAP_SECONDS,
@@ -1699,6 +1707,7 @@ def parse_args() -> argparse.Namespace:
     raw_argv = sys.argv[1:]
     preview_model_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model")
     preview_model_path_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model-path")
+    preview_model_dir_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model-dir")
     preview_model_preset_was_explicit = _argv_has_option(raw_argv, "--realtime-preview-model-preset")
     language_was_explicit = _argv_has_option(raw_argv, "--language")
     language_was_from_env = bool(os.environ.get("WHOSPEAKS_LANGUAGE") or os.environ.get("WHOSPEAKS_ASR_LANGUAGE"))
@@ -2286,29 +2295,31 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--realtime-preview-engine",
         default="kroko_onnx",
-        help="Realtime preview engine: kroko_onnx, mock, or off.",
+        help="Realtime preview engine: kroko_onnx, sherpa_onnx (Nemotron 3.5), mock, or off.",
     )
     parser.add_argument(
         "--realtime-preview-model",
         default=None,
-        help="Kroko/Banafo model name for replace-only realtime preview text. Overrides --realtime-preview-model-preset.",
+        help="Backend model name or named preset. For sherpa_onnx use a Nemotron preset.",
     )
     parser.add_argument(
         "--realtime-preview-model-preset",
-        type=normalize_kroko_preview_model_preset,
-        default=DEFAULT_KROKO_PREVIEW_MODEL_PRESET,
-        metavar="{community-64l,pro-16l}",
-        help="Named Kroko preview model preset. Use pro-16l for Kroko-EN-Pro-16-L-Streaming-001.data.",
+        default=None,
+        help=(
+            "Named model preset. Kroko: community-64l or pro-16l. "
+            "Nemotron: nemotron-3.5-160ms-int8 or nemotron-3.5-560ms-int8."
+        ),
     )
     parser.add_argument("--realtime-preview-model-path", type=Path, default=None)
+    parser.add_argument("--realtime-preview-model-dir", type=Path, default=None)
     parser.add_argument(
         "--realtime-preview-auto-download",
         action=argparse.BooleanOptionalAction,
         default=DEFAULT_KROKO_PREVIEW_AUTO_DOWNLOAD,
-        help="Download missing public Kroko Community preview models from Hugging Face before starting preview.",
+        help="Download a missing supported preview model before starting preview.",
     )
     parser.add_argument("--realtime-preview-download-root", type=Path, default=None)
-    parser.add_argument("--realtime-preview-python", type=Path, default=DEFAULT_KROKO_PREVIEW_PYTHON)
+    parser.add_argument("--realtime-preview-python", type=Path, default=None)
     parser.add_argument("--realtime-preview-realtimestt-root", type=Path, default=DEFAULT_REALTIMESTT_ROOT)
     parser.add_argument("--realtime-preview-provider", default="cpu")
     parser.add_argument("--realtime-preview-num-threads", type=int, default=2)
@@ -2316,7 +2327,7 @@ def parse_args() -> argparse.Namespace:
         "--realtime-preview-startup-timeout-seconds",
         type=float,
         default=None,
-        help="Maximum time to wait for the realtime preview engine before disabling preview. Defaults to 45s for pro-16l and 12s otherwise.",
+        help="Maximum time to wait for the realtime preview engine before disabling preview.",
     )
     parser.add_argument(
         "--realtime-preview-request-timeout-seconds",
@@ -2840,31 +2851,48 @@ def parse_args() -> argparse.Namespace:
     args.sentence_tokenizer = default_sentence_tokenizer(args.language, args.sentence_tokenizer)
     args.sentence_language = default_sentence_language(args.language)
     args.realtime_preview_language = args.language
-    preview_engine = str(args.realtime_preview_engine or "off").strip().lower().replace("-", "_")
-    preview_uses_kroko = preview_engine not in {"off", "mock"}
-    language_has_kroko_preview = is_kroko_preview_language(args.language)
-    if preview_uses_kroko and not language_has_kroko_preview:
-        parser.error(
-            f"{args.language!r} is supported for final ASR and sentence splitting, but not for Kroko realtime "
-            "preview; use --realtime-preview-engine off or choose a Kroko preview language."
-        )
-    if args.realtime_preview_model is None:
-        if language_has_kroko_preview:
-            try:
-                args.realtime_preview_model = kroko_preview_model_name(
-                    args.language,
-                    args.realtime_preview_model_preset,
+    try:
+        args.realtime_preview_engine = normalize_preview_engine(args.realtime_preview_engine)
+        language_error = preview_language_error(args.realtime_preview_engine, args.language)
+        if language_error:
+            parser.error(language_error)
+        if preview_model_path_was_explicit and preview_model_dir_was_explicit:
+            parser.error("--realtime-preview-model-path and --realtime-preview-model-dir cannot be used together.")
+        if args.realtime_preview_engine == "kroko_onnx":
+            if preview_model_dir_was_explicit:
+                parser.error("--realtime-preview-model-dir is only valid for sherpa_onnx realtime preview.")
+            requested_preset = args.realtime_preview_model_preset or DEFAULT_KROKO_PREVIEW_MODEL_PRESET
+            args.realtime_preview_model_preset = normalize_preview_model_preset("kroko_onnx", requested_preset)
+            if args.realtime_preview_model is None:
+                args.realtime_preview_model = default_preview_model(
+                    "kroko_onnx", args.language, args.realtime_preview_model_preset
                 )
-            except ValueError as exc:
-                parser.error(str(exc))
+            else:
+                args.realtime_preview_model_preset = "custom"
+            args.realtime_preview_model_dir = None
+            if args.realtime_preview_startup_timeout_seconds is None:
+                args.realtime_preview_startup_timeout_seconds = default_kroko_preview_startup_timeout_seconds(
+                    args.realtime_preview_model_preset
+                )
+        elif args.realtime_preview_engine == "sherpa_onnx":
+            if preview_model_path_was_explicit:
+                parser.error("--realtime-preview-model-path is only valid for Kroko; use --realtime-preview-model-dir.")
+            requested_preset = args.realtime_preview_model or args.realtime_preview_model_preset or DEFAULT_SHERPA_ONNX_PREVIEW_MODEL_PRESET
+            args.realtime_preview_model_preset = normalize_preview_model_preset("sherpa_onnx", requested_preset)
+            args.realtime_preview_model = args.realtime_preview_model_preset
+            if args.realtime_preview_startup_timeout_seconds is None:
+                args.realtime_preview_startup_timeout_seconds = sherpa_onnx_model_preset(
+                    args.realtime_preview_model_preset
+                ).startup_timeout_seconds
         else:
             args.realtime_preview_model = ""
-    else:
-        args.realtime_preview_model_preset = "custom"
-    if args.realtime_preview_startup_timeout_seconds is None:
-        args.realtime_preview_startup_timeout_seconds = default_kroko_preview_startup_timeout_seconds(
-            args.realtime_preview_model_preset
-        )
+            args.realtime_preview_model_preset = ""
+            args.realtime_preview_model_path = None
+            args.realtime_preview_model_dir = None
+            if args.realtime_preview_startup_timeout_seconds is None:
+                args.realtime_preview_startup_timeout_seconds = 12.0
+    except ValueError as exc:
+        parser.error(str(exc))
     args.work_dir = args.work_dir.resolve()
     args.output_dir = args.output_dir.resolve()
     args.session_dir = args.session_dir.resolve()
@@ -2878,7 +2906,7 @@ def parse_args() -> argparse.Namespace:
         args.browser_live_observation_output = args.browser_live_observation_output.resolve()
     if args.download_root is not None:
         args.download_root = args.download_root.resolve()
-    if args.realtime_preview_model_path is None and args.realtime_preview_model:
+    if args.realtime_preview_engine == "kroko_onnx" and args.realtime_preview_model_path is None and args.realtime_preview_model:
         use_env_model_path = not (
             preview_model_was_explicit
             or preview_model_path_was_explicit
@@ -2890,23 +2918,22 @@ def parse_args() -> argparse.Namespace:
         )
     if args.realtime_preview_model_path is not None:
         args.realtime_preview_model_path = args.realtime_preview_model_path.resolve()
+    if args.realtime_preview_engine == "sherpa_onnx":
+        args.realtime_preview_model_dir = (
+            args.realtime_preview_model_dir or default_sherpa_onnx_model_dir(args.realtime_preview_model_preset)
+        ).resolve()
     if args.realtime_preview_download_root is not None:
         args.realtime_preview_download_root = args.realtime_preview_download_root.resolve()
-    if args.realtime_preview_python is not None:
-        args.realtime_preview_python = _absolute_path_preserving_symlinks(args.realtime_preview_python)
+    if args.realtime_preview_python is None:
+        args.realtime_preview_python = (
+            DEFAULT_KROKO_PREVIEW_PYTHON if args.realtime_preview_engine == "kroko_onnx" else Path(sys.executable)
+        )
+    args.realtime_preview_python = _absolute_path_preserving_symlinks(args.realtime_preview_python)
     if args.realtime_preview_realtimestt_root is not None:
         args.realtime_preview_realtimestt_root = args.realtime_preview_realtimestt_root.resolve()
     if args.vad_silero_onnx_model_path is not None:
         args.vad_silero_onnx_model_path = args.vad_silero_onnx_model_path.resolve()
-    preview_chunk_seconds = infer_kroko_preview_chunk_seconds(args.realtime_preview_model_path or args.realtime_preview_model)
-    if args.realtime_preview_interval_seconds is None:
-        args.realtime_preview_interval_seconds = preview_chunk_seconds
-    if args.realtime_preview_min_audio_seconds is None:
-        args.realtime_preview_min_audio_seconds = preview_chunk_seconds
-    if args.realtime_preview_min_advance_seconds is None:
-        args.realtime_preview_min_advance_seconds = preview_chunk_seconds
-    if args.realtime_preview_feed_chunk_seconds is None:
-        args.realtime_preview_feed_chunk_seconds = preview_chunk_seconds
+    apply_preview_timing_defaults(args)
     if args.new_speaker_sensitivity is not None:
         apply_new_speaker_sensitivity(args, args.new_speaker_sensitivity)
     else:
@@ -2926,11 +2953,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Parsing command line.", flush=True)
     args = parse_args()
-    preview_model_display = (
-        args.realtime_preview_model_path.name
-        if args.realtime_preview_model_path is not None
-        else args.realtime_preview_model
-    )
+    preview_model_location = args.realtime_preview_model_dir or args.realtime_preview_model_path
+    preview_model_display = preview_model_location.name if preview_model_location is not None else args.realtime_preview_model
     print(
         f"[{datetime.now().strftime('%H:%M:%S')}] Startup config: "
         f"url={args.url} port={args.port} asr_backend={args.asr_backend} "
