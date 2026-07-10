@@ -11,26 +11,47 @@ pip install whospeaks
 whospeaks
 ```
 
-The base install is intentionally small. It installs the starter CLI, doctor checks, profile storage, and launch-command generator. On first run, choose `Full local setup` for a one-machine install. The CLI checks what is missing and offers the matching installer. For a full local setup, it can run the internal command:
+The base install includes the Textual setup interface, doctor checks, profile storage, and launch-command generator. The Setup tab asks what you want on this machine:
+
+- Full local installation: browser controller, final ASR, and speaker embeddings on one machine.
+- Core/controller: browser UI on this machine, with ASR and embeddings served by remote HTTP services.
+- ASR and embeddings server packages: service-side dependencies for a remote GPU/server machine.
+
+For local or core/controller installs, use the Kroko realtime text switch to include or exclude the native Kroko setup. Leave it off when you want the cleanest install first; final ASR and speaker diarization can still run without live preview text.
+
+The interface has four operational views:
+
+- Setup: installation target, Kroko selection, component readiness, install/repair, and launch.
+- Diagnostics: quick and complete doctor reports with remediation details.
+- Settings: language, speaker provider, ASR runtime, browser address, and remote service URLs.
+- Activity: live installer output and cancellation for a running operation.
+
+Use the classic numbered interface when needed:
 
 ```powershell
-python -m pip install "whospeaks[complete,preview]"
+whospeaks --classic
 ```
 
-You can also run the same path non-interactively:
+The `whospeaks install` subcommand exposes the same installer for automation and advanced use:
 
 ```powershell
-whospeaks setup --mode local --install
-whospeaks doctor --mode local
-whospeaks doctor --mode local --deep
-whospeaks launch --print
+whospeaks install --target local --without-kroko --yes
+whospeaks install --target local --with-kroko --yes
+whospeaks install --target core --without-kroko --yes
+whospeaks install --target server --yes
 ```
 
-The guided full local setup installs the `complete` and `preview` extras together. `complete` covers the Python-side controller, local ASR, and local embeddings dependency set; `preview` adds lightweight realtime preview support without pulling the older RealtimeSTT dependency chain. System prerequisites such as GPU drivers, `ffmpeg`, native Kroko runtime installation, model downloads, and Hugging Face access are still verified by `whospeaks doctor` because they cannot be safely guaranteed by pip alone. Use `--deep` when you want checks that may touch provider parsing or load endpoints; plain doctor avoids expensive model startup.
+Internally, the installer still uses PyPI optional dependency sets to install the right Python packages, but users should treat those as implementation details. For a full local install without Kroko, it installs the local Python stack. With Kroko selected, it also installs lightweight preview support and then checks whether realtime preview still lacks the native `kroko_onnx` runtime. If it is missing, the CLI offers a separate Kroko install/build step using the vendored RealtimeSTT installer:
+
+```powershell
+whospeaks install-kroko
+```
+
+The native Kroko runtime is handled as a post-install setup step instead of a PyPI dependency because it may need an upstream source build, Docker, or a Python 3.12 sidecar on Windows. System prerequisites such as GPU drivers, `ffmpeg`, model downloads, Hugging Face access, and native build tooling are still verified by `whospeaks doctor` because they cannot be safely guaranteed by pip alone. Use `--deep` when you want checks that may touch provider parsing or load endpoints; plain doctor avoids expensive model startup.
 
 ## How The Short `whospeaks` Command Works
 
-The short command is a launcher and setup assistant; the browser app itself is started by the longer `whospeaks-window` command that the launcher builds from your saved profile.
+The short command opens the Textual setup and launcher application; the browser app itself is started by the longer `whospeaks-window` command that the launcher builds from your saved profile. The scriptable subcommands do not start Textual.
 
 `pip install whospeaks` installs console scripts from the package metadata. A console script is a command-line wrapper that imports a Python function. In this package:
 
@@ -58,13 +79,15 @@ The launcher stores a profile in:
 
 Set `WHOSPEAKS_CONFIG` to use a specific config file. If the user config location is not writable, the launcher falls back to `.whospeaks/config.json` in the current directory.
 
-The normal flow is:
+The normal interactive flow is:
 
-1. `whospeaks setup --mode local --install` saves a local profile and installs the recommended extras.
-2. `whospeaks doctor --mode local` checks packages, ffmpeg, ports, helper Python paths, and model/cache state.
-3. `whospeaks config ...` changes saved fields such as language, provider preset, backend URLs, helper Python paths, and port.
-4. `whospeaks launch --print` prints the exact `whospeaks-window ...` command.
-5. `whospeaks launch` runs that command.
+1. Run `whospeaks` and select the installation target on the Setup tab.
+2. Select whether to include Kroko realtime text.
+3. Review the plan and start installation; live output appears on the Activity tab.
+4. Use Diagnostics to verify the resulting component state.
+5. Launch the browser UI from Setup.
+
+The equivalent automation interfaces remain `whospeaks install`, `whospeaks doctor`, `whospeaks config`, and `whospeaks launch`.
 
 For local embeddings and realtime preview, the launcher passes explicit helper interpreters with `--embedding-python` and `--realtime-preview-python`. This prevents helper subprocesses from accidentally using the wrong Python environment.
 
@@ -246,12 +269,12 @@ $env:WHOSPEAKS_SPEAKER_LIBRARY_DIR = "C:\whospeaks-runtime\speakers"
 The guided path is:
 
 ```powershell
-.\.venv\Scripts\whospeaks.exe setup --mode local --install
+.\.venv\Scripts\whospeaks.exe
 .\.venv\Scripts\whospeaks.exe doctor --mode local
 .\.venv\Scripts\whospeaks.exe doctor --mode local --deep
 ```
 
-The launcher uses `--device auto` for this path. If pip installed a CPU-only PyTorch build, speaker embeddings fall back to CPU instead of crashing; install a CUDA-enabled PyTorch build when you need GPU embeddings. It also enables `--realtime-preview-engine kroko_onnx` so live text is available after the preview dependencies and public Kroko model are installed.
+Select Full local on the Setup tab, then use Install / repair. The launcher uses `--device auto` for this path. If pip installed a CPU-only PyTorch build, speaker embeddings fall back to CPU instead of crashing; install a CUDA-enabled PyTorch build when you need GPU embeddings. The Kroko realtime text switch controls whether the native Kroko setup is included.
 
 The older manual path installs the larger historical environment directly:
 
@@ -264,23 +287,23 @@ This path is slower to install and more likely to hit CUDA, PyTorch, model-cache
 
 ## Realtime Preview
 
-The guided full local setup enables local realtime preview with `--realtime-preview-engine kroko_onnx`. Final transcript diarization and live speaker probing still work if preview fails, but the live text row depends on the `kroko_onnx` native Python extension and a Kroko model file.
+Realtime preview text is optional. Final transcript diarization and live speaker probing still work if preview is disabled or if Kroko fails to install, but the live text row depends on the `kroko_onnx` native Python extension and a Kroko model file.
 
-The `--language` flag selects the matching community model name for supported realtime languages, for example `--language de` selects `Kroko-DE-Community-64-L-Streaming-001.data`. Missing public Community model files are downloaded automatically to `runtime/models/kroko-onnx/`; use `--no-realtime-preview-auto-download` to require preinstalled files. If doctor reports `Kroko ONNX runtime` as missing, install a `kroko_onnx` wheel matching the active Python or run `python -m RealtimeSTT.install_kroko --build` on a supported build environment.
+The `--language` flag selects the matching community model name for supported realtime languages, for example `--language de` selects `Kroko-DE-Community-64-L-Streaming-001.data`. Missing public Community model files are downloaded automatically to `runtime/models/kroko-onnx/`; use `--no-realtime-preview-auto-download` to require preinstalled files. If doctor reports `Kroko ONNX runtime` as missing, install a `kroko_onnx` wheel matching the active Python or run the Kroko setup wrapper:
 
-On Windows, Kroko builds may be available only for Python 3.12 while the main WhoSpeaks install uses Python 3.11. In that case, create or reuse a Python 3.12 realtime-preview venv with `kroko_onnx` installed and save that interpreter in the launcher:
+```powershell
+whospeaks install-kroko
+```
+
+That wrapper runs `python -m RealtimeSTT.install_kroko --build` where the active environment can build Kroko directly.
+
+On Windows, Kroko builds may be available only for Python 3.12 while the main WhoSpeaks install uses Python 3.11. If `py -3.12` is available, `whospeaks install-kroko` can create a Python 3.12 realtime-preview sidecar, install the preview package there, build/install `kroko_onnx`, and save that interpreter in the launcher. You can also create or reuse a Python 3.12 realtime-preview venv yourself and save it explicitly:
 
 ```powershell
 whospeaks config --realtime-preview-python D:\Projekte\SpeakerDiarization\.venvs\kroko-install-test\Scripts\python.exe
 ```
 
-The launcher passes the installed WhoSpeaks package path to that subprocess, so the Python 3.12 environment only needs the preview runtime packages and native `kroko_onnx` wheel.
-
-The standalone package extra for this path is:
-
-```powershell
-python -m pip install "whospeaks[preview]"
-```
+The launcher passes the installed WhoSpeaks package path to that subprocess, so the Python 3.12 environment only needs the preview runtime packages and native `kroko_onnx` wheel. Normal users should open `whospeaks`, enable Kroko on the Setup tab, and use Install / repair instead of installing preview internals by hand. The `install` and `install-kroko` subcommands remain available for automation and troubleshooting.
 
 ## Next Step
 
