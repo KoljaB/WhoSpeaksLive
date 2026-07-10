@@ -161,6 +161,7 @@ class WindowDiarizer:
         self._embedding_warmed_at: float | None = None
         self._asr_probe_warmed_at: float | None = None
         self._speaker_generation = 0
+        self._speaker_label_generations: dict[str, int] = {}
         self._final_sentence_count = 0
         self._last_final_sentence_ended_strong = True
 
@@ -424,7 +425,7 @@ class WindowDiarizer:
             seed_profiles = [dict(item) for item in self._seed_profiles]
             seed_live_profiles = [dict(item) for item in getattr(self, "_seed_live_profiles", [])]
         seed_metadata = {
-            f"S{index}": dict(item.get("metadata") or {})
+            str(item.get("label") or f"S{index}"): dict(item.get("metadata") or {})
             for index, item in enumerate(seed_profiles, 1)
             if isinstance(item.get("metadata"), dict)
         }
@@ -800,6 +801,13 @@ class WindowDiarizer:
 
     def _speaker_exists(self, label: str) -> bool:
         return any(str(profile.get("label") or "") == label for profile in self.memory.export_profiles())
+
+    def _live_update_speaker_exists(self, label: str) -> bool:
+        memory = getattr(self, "memory", None)
+        export_profiles = getattr(memory, "export_profiles", None)
+        if not callable(export_profiles):
+            return True
+        return any(str(profile.get("label") or "") == label for profile in export_profiles())
 
     def _next_speaker_label(self) -> str:
         indexes: set[int] = set()
@@ -1368,6 +1376,7 @@ class WindowDiarizer:
             self._speaker_group_name = group_name
             self._seed_profiles = [
                 {
+                    "label": profile["label"],
                     "centroid": profile["centroid"],
                     "sentence_count": profile["sentence_count"],
                     "speech_seconds": profile["speech_seconds"],
@@ -1426,6 +1435,7 @@ class WindowDiarizer:
                 "reference_audio": reference_audio,
             }
             seed_profiles.append({
+                "label": label,
                 "centroid": item["centroid"],
                 "sentence_count": max(1, int(item.get("sentence_count") or 1)),
                 "speech_seconds": float(item.get("speech_seconds") or 0.0),
@@ -1581,6 +1591,7 @@ class WindowDiarizer:
                 "reference_audio": reference_audio,
             }
             seed_profiles.append({
+                "label": label,
                 "centroid": self._centroid_from_payload(item),
                 "sentence_count": max(1, int(item.get("sentence_count") or 1)),
                 "speech_seconds": float(item.get("speech_seconds") or 0.0),
@@ -1649,6 +1660,7 @@ class WindowDiarizer:
                 "reference_audio": str(reference_path),
             }
             self._seed_profiles.append({
+                "label": label,
                 "centroid": embedding.astype(float).tolist(),
                 "sentence_count": 1,
                 "speech_seconds": duration_seconds,
@@ -3164,6 +3176,119 @@ class WindowDiarizer:
         })
         return True
 
+    def _current_speaker_profile_labels(self) -> set[str]:
+        memory = getattr(self, "memory", None)
+        export_profiles = getattr(memory, "export_profiles", None)
+        if not callable(export_profiles):
+            return set()
+        return {
+            str(profile.get("label") or "").strip().upper()
+            for profile in export_profiles()
+            if str(profile.get("label") or "").strip()
+        }
+
+    def _remove_empty_detected_speaker_profiles(self, candidate_labels: set[str]) -> list[str]:
+        candidates = {
+            str(label or "").strip().upper()
+            for label in candidate_labels
+            if str(label or "").strip()
+        }
+        if not candidates:
+            return []
+        memory = getattr(self, "memory", None)
+        if not callable(getattr(memory, "export_profiles", None)):
+            return []
+
+        with self._live_memory_update_lock_obj():
+            with self._sentence_refinement_lock:
+                occupied_labels: set[str] = set()
+                for record in self._sentence_refinement_records.values():
+                    label = record.get("assigned_speaker")
+                    if not label:
+                        label = record.get("provisional_assigned_speaker")
+                    if label:
+                        occupied_labels.add(str(label).strip().upper())
+
+            current_profiles = memory.export_profiles()
+            profiles_by_label = {
+                str(profile.get("label") or "").strip().upper(): dict(profile)
+                for profile in current_profiles
+                if str(profile.get("label") or "").strip()
+            }
+            with self._speaker_lock:
+                metadata_by_label = {
+                    str(label).strip().upper(): dict(metadata)
+                    for label, metadata in self._speaker_metadata.items()
+                }
+                seed_labels = {
+                    str(profile.get("label") or f"S{index}").strip().upper()
+                    for index, profile in enumerate(getattr(self, "_seed_profiles", []), 1)
+                }
+
+            removable: set[str] = set()
+            for label in candidates - occupied_labels:
+                profile = profiles_by_label.get(label)
+                if profile is None or label in seed_labels:
+                    continue
+                metadata = metadata_by_label.get(label, {})
+                if (
+                    bool(profile.get("locked"))
+                    or bool(metadata.get("locked"))
+                    or str(metadata.get("source") or "detected").strip().lower() == "reference"
+                    or bool(metadata.get("reference_audio"))
+                ):
+                    continue
+                removable.add(label)
+
+            if not removable:
+                return []
+
+            with self._speaker_lock:
+                for label in removable:
+                    self._speaker_metadata.pop(label, None)
+            for label in removable:
+                self._speaker_last_media_end.pop(label, None)
+            label_generations = getattr(self, "_speaker_label_generations", None)
+            if label_generations is None:
+                label_generations = {}
+                self._speaker_label_generations = label_generations
+            for label in removable:
+                label_generations[label] = int(label_generations.get(label, 0)) + 1
+            remove_profiles = getattr(memory, "remove_profiles", None)
+            if callable(remove_profiles):
+                remove_profiles(removable)
+            else:
+                memory.replace_profiles([
+                    profile
+                    for profile in current_profiles
+                    if str(profile.get("label") or "").strip().upper() not in removable
+                ])
+            live_memory = getattr(self, "live_memory", None)
+            if getattr(self, "_live_embedding_separate", False) and live_memory is not memory:
+                remove_live_profiles = getattr(live_memory, "remove_profiles", None)
+                if callable(remove_live_profiles):
+                    remove_live_profiles(removable)
+                else:
+                    export_live_profiles = getattr(live_memory, "export_profiles", None)
+                    replace_live_profiles = getattr(live_memory, "replace_profiles", None)
+                    if callable(export_live_profiles) and callable(replace_live_profiles):
+                        replace_live_profiles([
+                            profile
+                            for profile in export_live_profiles()
+                            if str(profile.get("label") or "").strip().upper() not in removable
+                        ])
+            history = getattr(self, "_live_probability_history", None)
+            if history is not None:
+                history.clear()
+            self._live_speaker_verify_next_at = 0.0
+            self._sync_metadata_with_memory()
+
+        self.emit_speaker_state()
+        return sorted(removable, key=self._speaker_label_sort_key)
+
+    def _remove_empty_reassigned_speaker_profiles(self, candidate_labels: set[str]) -> list[str]:
+        return self._remove_empty_detected_speaker_profiles(candidate_labels)
+
     @staticmethod
     def _speaker_probability_key(label: str) -> str:
         if label.startswith("S") and label[1:].isdigit():
@@ -3879,6 +4004,7 @@ class WindowDiarizer:
         try:
             applied = 0
             known_revisions = 0
+            reassigned_source_labels: set[str] = set()
             if allow_unknown_tentative or allow_known:
                 with self._sentence_refinement_lock:
                     records = [
@@ -3900,14 +4026,25 @@ class WindowDiarizer:
                             applied += 1
                             if revision.previous_speaker is not None:
                                 known_revisions += 1
+                                reassigned_source_labels.add(str(revision.previous_speaker))
+            removed_empty_speakers = self._remove_empty_reassigned_speaker_profiles(
+                reassigned_source_labels,
+            )
             small_island_merges = self._merge_small_speaker_islands()
             if applied:
+                removed_message = ""
+                if removed_empty_speakers:
+                    noun = "speaker" if len(removed_empty_speakers) == 1 else "speakers"
+                    removed_message = (
+                        f" Deleted empty {noun} {', '.join(removed_empty_speakers)} after reassignment."
+                    )
                 self.bus.emit(
                     "status",
                     {
                         "message": (
                             f"Prototype speaker refinement applied {applied} revision(s)"
                             f"{' including ' + str(known_revisions) + ' known-speaker change(s)' if known_revisions else ''}."
+                            f"{removed_message}"
                         )
                     },
                 )
@@ -3924,71 +4061,83 @@ class WindowDiarizer:
             self._sentence_refinement_run_lock.release()
 
     def _finalize_speaker_refinement(self) -> None:
-        if not bool(getattr(self.args, "speaker_refinement", True)):
-            return
-        try:
-            passes = max(0, int(getattr(self.args, "speaker_refinement_final_passes", 1)))
-        except (TypeError, ValueError):
-            return
-        for _ in range(passes):
-            self._refine_speaker_assignments()
-        tiny_fragmented_merges = self._merge_tiny_fragmented_speaker_profiles()
-        if tiny_fragmented_merges:
+        if bool(getattr(self.args, "speaker_refinement", True)):
+            try:
+                passes = max(0, int(getattr(self.args, "speaker_refinement_final_passes", 1)))
+            except (TypeError, ValueError):
+                passes = 0
+            for _ in range(passes):
+                self._refine_speaker_assignments()
+            tiny_fragmented_merges = self._merge_tiny_fragmented_speaker_profiles()
+            if tiny_fragmented_merges:
+                self.bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            f"Speaker refinement merged {tiny_fragmented_merges} tiny fragmented speaker segment(s)."
+                        )
+                    },
+                )
+            terminal_outro_merges = self._merge_terminal_promotional_outro()
+            if terminal_outro_merges:
+                self.bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            f"Speaker refinement merged {terminal_outro_merges} terminal promotional outro segment(s)."
+                        )
+                    },
+                )
+            long_retro_splits = self._split_long_low_confidence_retro_assignments()
+            if long_retro_splits:
+                self.bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            f"Speaker refinement split {long_retro_splits} long low-confidence retro segment(s)."
+                        )
+                    },
+                )
+            unknown_same_speaker_fills = self._fill_unknown_same_speaker_islands()
+            if unknown_same_speaker_fills:
+                self.bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            f"Speaker refinement filled {unknown_same_speaker_fills} short unknown same-speaker segment(s)."
+                        )
+                    },
+                )
+            unknown_previous_speaker_fills = self._fill_unknown_previous_speaker_tails()
+            if unknown_previous_speaker_fills:
+                self.bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            f"Speaker refinement filled {unknown_previous_speaker_fills} short unknown previous-speaker segment(s)."
+                        )
+                    },
+                )
+            unknown_next_speaker_fills = self._fill_unknown_next_speaker_heads()
+            if unknown_next_speaker_fills:
+                self.bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            f"Speaker refinement filled {unknown_next_speaker_fills} short unknown next-speaker segment(s)."
+                        )
+                    },
+                )
+        removed_empty_speakers = self._remove_empty_detected_speaker_profiles(
+            self._current_speaker_profile_labels(),
+        )
+        if removed_empty_speakers:
+            noun = "speaker" if len(removed_empty_speakers) == 1 else "speakers"
             self.bus.emit(
                 "status",
                 {
                     "message": (
-                        f"Speaker refinement merged {tiny_fragmented_merges} tiny fragmented speaker segment(s)."
-                    )
-                },
-            )
-        terminal_outro_merges = self._merge_terminal_promotional_outro()
-        if terminal_outro_merges:
-            self.bus.emit(
-                "status",
-                {
-                    "message": (
-                        f"Speaker refinement merged {terminal_outro_merges} terminal promotional outro segment(s)."
-                    )
-                },
-            )
-        long_retro_splits = self._split_long_low_confidence_retro_assignments()
-        if long_retro_splits:
-            self.bus.emit(
-                "status",
-                {
-                    "message": (
-                        f"Speaker refinement split {long_retro_splits} long low-confidence retro segment(s)."
-                    )
-                },
-            )
-        unknown_same_speaker_fills = self._fill_unknown_same_speaker_islands()
-        if unknown_same_speaker_fills:
-            self.bus.emit(
-                "status",
-                {
-                    "message": (
-                        f"Speaker refinement filled {unknown_same_speaker_fills} short unknown same-speaker segment(s)."
-                    )
-                },
-            )
-        unknown_previous_speaker_fills = self._fill_unknown_previous_speaker_tails()
-        if unknown_previous_speaker_fills:
-            self.bus.emit(
-                "status",
-                {
-                    "message": (
-                        f"Speaker refinement filled {unknown_previous_speaker_fills} short unknown previous-speaker segment(s)."
-                    )
-                },
-            )
-        unknown_next_speaker_fills = self._fill_unknown_next_speaker_heads()
-        if unknown_next_speaker_fills:
-            self.bus.emit(
-                "status",
-                {
-                    "message": (
-                        f"Speaker refinement filled {unknown_next_speaker_fills} short unknown next-speaker segment(s)."
+                        f"Deleted empty {noun} {', '.join(removed_empty_speakers)} after final review."
                     )
                 },
             )
@@ -4871,6 +5020,9 @@ class WindowDiarizer:
                 if speaker_generation is None
                 else int(speaker_generation)
             ),
+            speaker_label_generation=int(
+                getattr(self, "_speaker_label_generations", {}).get(str(speaker_id), 0)
+            ),
         )
         jobs = getattr(self, "_live_memory_update_jobs", None)
         if jobs is None:
@@ -4897,13 +5049,25 @@ class WindowDiarizer:
                     {"message": "Skipped live speaker profile update because the queue is still full."},
                 )
 
+    def _live_memory_update_job_is_current(self, job: LiveSpeakerMemoryUpdateJob) -> bool:
+        if job.speaker_generation != getattr(self, "_speaker_generation", 0):
+            return False
+        label_generations = getattr(self, "_speaker_label_generations", {})
+        return int(getattr(job, "speaker_label_generation", 0)) == int(
+            label_generations.get(job.speaker_id, 0)
+        )
+
     def _process_live_speaker_memory_update(self, job: LiveSpeakerMemoryUpdateJob) -> None:
         try:
-            if job.speaker_generation != getattr(self, "_speaker_generation", 0):
+            if not self._live_memory_update_job_is_current(job):
+                return
+            if not self._live_update_speaker_exists(job.speaker_id):
                 return
             embedding = self._embed_live_audio_chunk(job.audio, job.sample_rate, job.suffix)
             with self._live_memory_update_lock_obj():
-                if job.speaker_generation != getattr(self, "_speaker_generation", 0):
+                if not self._live_memory_update_job_is_current(job):
+                    return
+                if not self._live_update_speaker_exists(job.speaker_id):
                     return
                 self.live_memory.upsert_profile(
                     job.speaker_id,

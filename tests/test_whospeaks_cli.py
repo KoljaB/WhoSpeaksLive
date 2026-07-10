@@ -39,6 +39,67 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn(cli.TESTPYPI_SIMPLE_URL, command)
         self.assertIn("whospeaks[complete,preview]==0.0.1.dev18", command)
 
+    def test_torch_auto_installs_cuda_when_nvidia_driver_is_visible(self) -> None:
+        completed = subprocess.CompletedProcess(
+            ["nvidia-smi"],
+            0,
+            stdout="NVIDIA GeForce RTX 4090, 555.99\n",
+            stderr="",
+        )
+        with (
+            mock.patch.object(cli.shutil, "which", return_value="nvidia-smi"),
+            mock.patch.object(cli.subprocess, "run", return_value=completed),
+            mock.patch.object(cli.platform, "system", return_value="Windows"),
+        ):
+            command, selection = cli.build_torch_install_command("auto")
+
+        self.assertEqual(selection.mode, "cuda")
+        self.assertEqual(selection.build, "cu128")
+        self.assertIn(cli.PYTORCH_CUDA_INDEX_URLS["cu128"], command)
+        self.assertIn("torch>=2.2", command)
+        self.assertIn("torchaudio>=2.2", command)
+        self.assertIn('"torch>=2.2"', cli.format_command(command))
+
+    def test_torch_auto_falls_back_to_cpu_without_nvidia_smi(self) -> None:
+        with (
+            mock.patch.object(cli.shutil, "which", return_value=None),
+            mock.patch.object(cli.platform, "system", return_value="Windows"),
+        ):
+            command, selection = cli.build_torch_install_command("auto")
+
+        self.assertEqual(selection.mode, "cpu")
+        self.assertIn(cli.PYTORCH_CPU_INDEX_URL, command)
+        self.assertIn("nvidia-smi was not found", selection.reason)
+
+    def test_torch_skip_policy_returns_no_command(self) -> None:
+        command, selection = cli.build_torch_install_command("skip")
+
+        self.assertEqual(command, [])
+        self.assertEqual(selection.mode, "skip")
+
+    def test_install_extra_runs_torch_preinstall_before_whospeaks_extra(self) -> None:
+        torch_command = ["python", "-m", "pip", "install", "torch"]
+        package_command = ["python", "-m", "pip", "install", "whospeaks[complete]"]
+        selection = cli.TorchInstallSelection("cuda", cli.PYTORCH_CUDA_INDEX_URLS["cu128"], "CUDA test", "cu128")
+        calls: list[list[str]] = []
+
+        def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+            calls.append(command)
+            if command[1:2] == ["-c"]:
+                return subprocess.CompletedProcess(command, 0, stdout='{"cuda_available": true}\n', stderr="")
+            return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+        with (
+            mock.patch.object(cli, "build_torch_install_command", return_value=(torch_command, selection)),
+            mock.patch.object(cli, "build_install_command", return_value=package_command),
+            mock.patch.object(cli.subprocess, "run", side_effect=fake_run),
+        ):
+            code = cli.install_extra("complete", assume_yes=True, torch_policy="cuda")
+
+        self.assertEqual(code, 0)
+        self.assertEqual(calls[0], torch_command)
+        self.assertEqual(calls[2], package_command)
+
     def test_kroko_install_command_uses_realtimestt_builder(self) -> None:
         command = cli.build_kroko_install_command("python", variant="free", work_dir=Path("kroko-work"))
 
@@ -99,7 +160,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
 
         self.assertEqual(command, [str(fake_path)])
 
-    def test_local_setup_dry_run_offers_complete_preview_install(self) -> None:
+    def test_local_setup_dry_run_offers_complete_nemotron_install(self) -> None:
         original_config = os.environ.get("WHOSPEAKS_CONFIG")
         with tempfile.TemporaryDirectory() as directory:
             config_path = Path(directory) / "config.json"
@@ -118,7 +179,8 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         output = stdout.getvalue()
         self.assertIn("Dry run: would save local profile", output)
-        self.assertIn("whospeaks[complete,preview]", output)
+        self.assertIn("whospeaks[complete]", output)
+        self.assertNotIn("whospeaks[complete,preview]", output)
         self.assertFalse(config_path.exists())
 
     def test_install_local_without_kroko_uses_complete_plan(self) -> None:
@@ -155,6 +217,47 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertNotIn("Run with --with-kroko", output)
         self.assertIn("whospeaks[complete]==0.0.1.dev21", output)
         self.assertNotIn("whospeaks[complete,preview]==0.0.1.dev21", output)
+        self.assertFalse(config_path.exists())
+
+    def test_install_local_with_nemotron_dry_run_uses_complete_and_model_preset(self) -> None:
+        original_config = os.environ.get("WHOSPEAKS_CONFIG")
+        with tempfile.TemporaryDirectory() as directory:
+            config_path = Path(directory) / "config.json"
+            os.environ["WHOSPEAKS_CONFIG"] = str(config_path)
+            stdout = io.StringIO()
+            try:
+                with (
+                    mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1.dev27"),
+                    mock.patch.object(cli, "run_doctor", return_value=cli.DoctorReport("local", [])),
+                    contextlib.redirect_stdout(stdout),
+                ):
+                    code = cli.main([
+                        "install",
+                        "--target",
+                        "local",
+                        "--language",
+                        "de",
+                        "--realtime-preview-engine",
+                        "sherpa_onnx",
+                        "--realtime-preview-model-preset",
+                        "nemotron-3.5-160ms-int8",
+                        "--realtime-preview-model-dir",
+                        str(Path(directory) / "nemotron"),
+                        "--dry-run",
+                        "--yes",
+                    ])
+            finally:
+                if original_config is None:
+                    os.environ.pop("WHOSPEAKS_CONFIG", None)
+                else:
+                    os.environ["WHOSPEAKS_CONFIG"] = original_config
+
+        self.assertEqual(code, 0)
+        output = stdout.getvalue()
+        self.assertIn("Nemotron 3.5 (nemotron-3.5-160ms-int8; lower latency)", output)
+        self.assertIn("verified model downloads on first launch", output)
+        self.assertIn("whospeaks[complete]==0.0.1.dev27", output)
+        self.assertNotIn("whospeaks[complete,preview]==0.0.1.dev27", output)
         self.assertFalse(config_path.exists())
 
     def test_install_local_with_kroko_prints_sidecar_plan(self) -> None:
@@ -202,6 +305,29 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertEqual(plan.extra, cli.CONTROLLER_EXTRA)
         self.assertFalse(plan.install_kroko)
 
+    def test_install_local_with_nemotron_uses_complete_plan_without_kroko_sidecar(self) -> None:
+        plan = cli.install_plan_for_target(
+            "local",
+            realtime_preview_engine="sherpa_onnx",
+            realtime_preview_model_preset="nemotron-3.5-160ms-int8",
+        )
+
+        self.assertEqual(plan.extra, cli.COMPLETE_EXTRA)
+        self.assertEqual(plan.realtime_preview_engine, "sherpa_onnx")
+        self.assertEqual(plan.realtime_preview_model_preset, "nemotron-3.5-160ms-int8")
+        self.assertFalse(plan.install_kroko)
+
+    def test_profile_migrates_kroko_engine_to_its_own_default_preset(self) -> None:
+        profile = cli.Profile.from_mapping(
+            {
+                "realtime_preview_engine": "kroko_onnx",
+                "realtime_preview_model_preset": "nemotron-3.5-560ms-int8",
+            }
+        )
+
+        self.assertEqual(profile.realtime_preview_engine, "kroko_onnx")
+        self.assertEqual(profile.realtime_preview_model_preset, "community-64l")
+
     def test_install_server_profile_disables_realtime_preview(self) -> None:
         plan = cli.install_plan_for_target("server", install_kroko=True)
         profile = cli.configure_profile_for_install(cli.Profile(), plan)
@@ -234,13 +360,16 @@ class WhoSpeaksCliTests(unittest.TestCase):
 
         self.assertEqual(profile.device, "auto")
 
-    def test_local_profile_enables_kroko_preview_by_default(self) -> None:
+    def test_local_profile_enables_nemotron_preview_by_default(self) -> None:
         profile = cli.configure_profile_for_mode(cli.Profile(realtime_preview_engine="off"), "local")
 
-        self.assertEqual(profile.realtime_preview_engine, "kroko_onnx")
+        self.assertEqual(profile.realtime_preview_engine, "sherpa_onnx")
+        self.assertEqual(profile.realtime_preview_model_preset, "nemotron-3.5-560ms-int8")
         command = cli.build_launch_command(profile)
         self.assertIn("--realtime-preview-engine", command)
-        self.assertIn("kroko_onnx", command)
+        self.assertIn("sherpa_onnx", command)
+        self.assertIn("--realtime-preview-model-preset", command)
+        self.assertIn("nemotron-3.5-560ms-int8", command)
         self.assertIn("--realtime-preview-python", command)
         self.assertEqual(command[command.index("--realtime-preview-python") + 1], sys.executable)
 

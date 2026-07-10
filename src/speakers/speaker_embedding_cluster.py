@@ -172,6 +172,7 @@ class SpeakerMemory:
         self.gray_zone_promote_max_similarity = gray_zone_promote_max_similarity
         self._profiles: list[SpeakerProfile] = []
         self._new_speaker_candidates: list[NewSpeakerCandidate] = []
+        self._next_profile_index = 1
         self.locked_labels: set[str] = set()
         self._lock = threading.Lock()
 
@@ -225,6 +226,7 @@ class SpeakerMemory:
             )
             self._profiles.append(profile)
             self._profiles.sort(key=lambda item: item.index)
+            self._next_profile_index = max(self._next_profile_index, index + 1)
             if locked:
                 self.locked_labels.add(profile.label)
             return profile.label
@@ -264,6 +266,26 @@ class SpeakerMemory:
                 if bool(item.get("locked")):
                     self.locked_labels.add(profile.label)
             self._profiles.sort(key=lambda item: item.index)
+            self._next_profile_index = max(
+                self._next_profile_index,
+                max(used_indexes, default=0) + 1,
+            )
+
+    def remove_profiles(self, labels: set[str]) -> list[str]:
+        indexes = {
+            index
+            for label in labels
+            if (index := speaker_label_index(label)) is not None
+        }
+        if not indexes:
+            return []
+        with self._lock:
+            removed = [profile.label for profile in self._profiles if profile.index in indexes]
+            if not removed:
+                return []
+            self._profiles = [profile for profile in self._profiles if profile.index not in indexes]
+            self.locked_labels.difference_update(removed)
+            return removed
 
     def export_profiles(self) -> list[dict[str, Any]]:
         with self._lock:
@@ -680,8 +702,10 @@ class SpeakerMemory:
         sentence_count: int = 1,
     ) -> SpeakerProfile:
         now = time.time()
+        next_index = self._next_profile_index
+        self._next_profile_index += 1
         profile = SpeakerProfile(
-            index=len(self._profiles) + 1,
+            index=next_index,
             centroid=embedding.astype(np.float32),
             sentence_count=sentence_count,
             speech_seconds=max(0.0, duration_seconds),

@@ -38,8 +38,43 @@ def word_ends_sentence(text: str) -> bool:
 LEFT_ATTACHING_TOKEN_STARTS = set(".,?!;:%)]}…")
 
 
+STRONG_SENTENCE_ENDINGS = (".", "?", "!", "\u2026")
+ELLIPSIS_BOUNDARY_RE = re.compile(r"\.{3,}|\u2026")
+
+
 def text_ends_sentence(text: str) -> bool:
-    return bool(text.strip().rstrip("\"')]}").endswith((".", "?", "!")))
+    return bool(text.strip().rstrip("\"')]}").endswith(STRONG_SENTENCE_ENDINGS))
+
+
+def text_has_content(text: str) -> bool:
+    return any(character.isalnum() for character in text)
+
+
+def split_text_on_ellipsis_boundaries(text: str) -> list[str]:
+    """Treat an interior ellipsis as a hard sentence boundary."""
+    if not text:
+        return []
+    parts: list[str] = []
+    start = 0
+    for match in ELLIPSIS_BOUNDARY_RE.finditer(text):
+        end = match.end()
+        if not text_has_content(text[start:end]) or not text_has_content(text[end:]):
+            continue
+        part = text[start:end].strip()
+        if part:
+            parts.append(part)
+        start = end
+    tail = text[start:].strip()
+    if tail:
+        parts.append(tail)
+    return parts
+
+
+def force_ellipsis_sentence_boundaries(sentence_texts: list[str]) -> list[str]:
+    forced: list[str] = []
+    for sentence_text in sentence_texts:
+        forced.extend(split_text_on_ellipsis_boundaries(sentence_text))
+    return forced
 
 
 def sentence_initial_uppercase_after_strong_boundary(text: str) -> str:
@@ -176,6 +211,7 @@ def split_words_with_stream2sentence(
         context_size=12,
         context_size_look_overhead=64,
     ))
+    sentence_texts = force_ellipsis_sentence_boundaries(sentence_texts)
 
     parts: list[SentencePart] = []
     search_start = 0

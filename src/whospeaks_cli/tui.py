@@ -18,7 +18,6 @@ from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
-    Checkbox,
     DataTable,
     Input,
     Label,
@@ -42,6 +41,18 @@ STATUS_STYLES = {
 }
 
 
+def realtime_plan_label(plan: backend.InstallPlan) -> str:
+    """Return a short, user-facing label for the selected realtime engine."""
+
+    if plan.realtime_preview_engine == "sherpa_onnx":
+        if plan.realtime_preview_model_preset == "nemotron-3.5-160ms-int8":
+            return "Nemotron 3.5 live text (160 ms)"
+        return "Nemotron 3.5 live text (560 ms)"
+    if plan.realtime_preview_engine == "kroko_onnx":
+        return "Kroko / Banafo live text"
+    return "Live text disabled"
+
+
 class ConfirmInstallScreen(ModalScreen[bool]):
     """Confirm a concrete installation plan before starting subprocesses."""
 
@@ -53,7 +64,7 @@ class ConfirmInstallScreen(ModalScreen[bool]):
         self.command = command
 
     def compose(self) -> ComposeResult:
-        realtime = "Enabled with Kroko" if self.plan.install_kroko else "Disabled"
+        realtime = realtime_plan_label(self.plan)
         with Vertical(id="confirm-dialog"):
             yield Label("Confirm installation", id="confirm-title")
             yield Static(self.plan.title, classes="confirm-value", markup=False)
@@ -92,7 +103,7 @@ class WhoSpeaksSetupApp(App[str]):
 
     CSS = """
     Screen {
-        background: #101416;
+        background: #0d1117;
         color: #e9eef0;
     }
 
@@ -101,36 +112,49 @@ class WhoSpeaksSetupApp(App[str]):
     }
 
     #title-bar {
-        height: 1;
-        padding: 0 1;
-        background: #153f42;
+        height: 3;
+        padding: 1 2 0 2;
+        background: #0d1117;
         color: #ffffff;
     }
 
     #app-title {
-        width: 20;
-        height: 1;
-        text-style: bold;
-    }
-
-    #readiness-text {
         width: 1fr;
         height: 1;
-        color: #d3e2e2;
-        text-align: center;
+        text-style: bold;
     }
 
     #app-meta {
         width: auto;
         height: 1;
-        color: #b9d6d5;
+        color: #8292b4;
+    }
+
+    #status-row {
+        height: 2;
+        padding: 0 2 1 2;
+        background: #0d1117;
+    }
+
+    #mode-pill, #readiness-text {
+        width: auto;
+        height: 1;
+        margin-right: 1;
+        padding: 0 1;
+        color: #64f1c4;
+        background: #132b2d;
+    }
+
+    #readiness-text {
+        color: #ffb845;
+        background: #2a2419;
     }
 
     #operation-banner {
-        height: 3;
-        padding: 0 1;
-        background: #1a2226;
-        border-bottom: solid #3d4a50;
+        height: 0;
+        padding: 0;
+        background: #0d1117;
+        border: none;
     }
 
     #operation-primary, #operation-secondary {
@@ -147,8 +171,8 @@ class WhoSpeaksSetupApp(App[str]):
     }
 
     #operation-banner.status-running {
-        background: #123d40;
-        border-bottom: solid #51b9b0;
+        background: #0d1117;
+        border: none;
     }
 
     #operation-banner.status-running #operation-primary {
@@ -156,8 +180,8 @@ class WhoSpeaksSetupApp(App[str]):
     }
 
     #operation-banner.status-success {
-        background: #183527;
-        border-bottom: solid #5eae78;
+        background: #0d1117;
+        border: none;
     }
 
     #operation-banner.status-success #operation-primary {
@@ -165,8 +189,8 @@ class WhoSpeaksSetupApp(App[str]):
     }
 
     #operation-banner.status-warning {
-        background: #3a3019;
-        border-bottom: solid #d3a642;
+        background: #0d1117;
+        border: none;
     }
 
     #operation-banner.status-warning #operation-primary {
@@ -174,8 +198,8 @@ class WhoSpeaksSetupApp(App[str]):
     }
 
     #operation-banner.status-error {
-        background: #3b2024;
-        border-bottom: solid #cc6570;
+        background: #0d1117;
+        border: none;
     }
 
     #operation-banner.status-error #operation-primary {
@@ -192,19 +216,23 @@ class WhoSpeaksSetupApp(App[str]):
     }
 
     Tabs {
-        height: 2;
-        background: #151b1e;
-        color: #aab7bc;
+        height: 3;
+        padding: 0 2;
+        background: #0d1117;
+        color: #8292b4;
+        border-bottom: solid #222a32;
     }
 
     Tab {
-        height: 2;
+        height: 3;
         padding: 0 2;
+        background: #0d1117;
     }
 
     Tab.-active {
         color: #ffffff;
-        background: #246066;
+        background: #0d1117;
+        border-bottom: solid #5798f2;
         text-style: bold;
     }
 
@@ -215,25 +243,25 @@ class WhoSpeaksSetupApp(App[str]):
     }
 
     #setup-options {
-        height: 2;
-        background: #171d20;
-        border-bottom: solid #3d4a50;
+        height: 4;
+        layout: vertical;
+        padding: 0 2;
+        background: #0d1117;
     }
 
-    #target-row {
+    #target-row, #realtime-row {
         width: 1fr;
         height: 2;
         align-vertical: middle;
     }
 
-    #target-label {
-        width: 9;
+    #target-label, #realtime-label {
+        width: 10;
         height: 1;
-        margin-left: 1;
-        color: #b9c5c9;
+        color: #8f9db8;
     }
 
-    #target-select {
+    #target-select, #realtime-select {
         width: 1fr;
         height: 2;
         layout: horizontal;
@@ -242,34 +270,51 @@ class WhoSpeaksSetupApp(App[str]):
         border: none;
     }
 
-    #target-select RadioButton {
+    #target-select RadioButton, #realtime-select RadioButton {
         width: auto;
         height: 1;
         padding-right: 1;
     }
 
-    #kroko-row {
-        width: 20;
-        height: 2;
-        padding: 0 1;
-        background: #20282c;
-        border-left: solid #3d4a50;
-        align-vertical: middle;
-    }
-
-    #kroko-switch {
-        width: 1fr;
-        height: 1;
-        margin-left: 1;
-    }
-
     #compact-plan {
         display: none;
-        height: 3;
-        padding: 0 1;
-        background: #141a1d;
-        color: #bdc9cd;
-        border-bottom: solid #3d4a50;
+        height: 6;
+        margin: 1 2 1 2;
+        padding: 0 2;
+        background: #101824;
+        color: #9eb0cd;
+        border: solid #27466f;
+    }
+
+    #compact-plan.status-running {
+        display: block;
+        background: #101824;
+        color: #78b8ff;
+        border: solid #315d93;
+    }
+
+    #compact-plan.status-success {
+        display: block;
+        height: 4;
+        background: #183527;
+        color: #d8f1df;
+        border: solid #5eae78;
+    }
+
+    #compact-plan.status-warning {
+        display: block;
+        height: 4;
+        background: #3a3019;
+        color: #f8e1a9;
+        border: solid #d3a642;
+    }
+
+    #compact-plan.status-error {
+        display: block;
+        height: 4;
+        background: #3b2024;
+        color: #ffd0d5;
+        border: solid #cc6570;
     }
 
     #setup-workspace {
@@ -279,7 +324,7 @@ class WhoSpeaksSetupApp(App[str]):
     #setup-state {
         width: 1fr;
         height: 1fr;
-        padding-top: 1;
+        padding: 1 2 0 2;
     }
 
     #setup-side {
@@ -310,11 +355,19 @@ class WhoSpeaksSetupApp(App[str]):
         color: #bdc9cd;
     }
 
+    #operation-summary.status-running {
+        background: #123d40;
+        border: solid #51b9b0;
+        color: #d7f5f0;
+    }
+
     #setup-actions, #doctor-actions, #settings-actions, #activity-actions {
         dock: bottom;
         height: 3;
         align-horizontal: right;
-        background: #101416;
+        padding: 0 2;
+        background: #0d1117;
+        border-top: solid #222a32;
     }
 
     #setup-actions Button {
@@ -358,8 +411,8 @@ class WhoSpeaksSetupApp(App[str]):
 
     DataTable {
         height: 1fr;
-        background: #13191c;
-        border: solid #3d4a50;
+        background: #0d1117;
+        border: none;
     }
 
     #settings-scroll {
@@ -372,8 +425,7 @@ class WhoSpeaksSetupApp(App[str]):
         grid-columns: 1fr 1fr;
         grid-gutter: 1 2;
         height: auto;
-        padding-top: 1;
-        padding-bottom: 4;
+        padding: 1 1 4 0;
     }
 
     .field {
@@ -385,13 +437,40 @@ class WhoSpeaksSetupApp(App[str]):
         color: #b8c4ca;
     }
 
-    Input, Select {
+    Input {
         height: 3;
         background: #1b2227;
         border: solid #46545d;
     }
 
-    Input:focus, Select:focus {
+    Select {
+        height: 3;
+        background: transparent;
+        border: none;
+    }
+
+    SelectCurrent {
+        height: 3;
+        color: #e9eef0;
+        background: #1b2227;
+        border: solid #46545d;
+    }
+
+    SelectCurrent.-has-value Static#label {
+        color: #e9eef0;
+    }
+
+    SelectCurrent .arrow {
+        color: #65d1c8;
+    }
+
+    Select > SelectOverlay {
+        color: #e9eef0;
+        background: #1b2227;
+        border: solid #46545d;
+    }
+
+    Input:focus, Select:focus > SelectCurrent {
         border: solid #65d1c8;
     }
 
@@ -448,28 +527,14 @@ class WhoSpeaksSetupApp(App[str]):
         display: none;
     }
 
-    Screen.compact #compact-plan {
-        display: block;
-    }
-
     Screen.compact #settings-grid {
         grid-size: 1;
         grid-columns: 1fr;
     }
 
-    Screen.narrow #setup-options {
-        layout: vertical;
-        height: 4;
-    }
-
-    Screen.narrow #target-row, Screen.narrow #kroko-row {
+    Screen.narrow #target-row, Screen.narrow #realtime-row {
         width: 1fr;
         height: 2;
-    }
-
-    Screen.narrow #kroko-row {
-        border-left: none;
-        border-top: solid #3d4a50;
     }
 
     Screen.narrow Tab {
@@ -505,7 +570,10 @@ class WhoSpeaksSetupApp(App[str]):
 
     def compose(self) -> ComposeResult:
         target = {"local": "local", "remote": "core", "server": "server"}.get(self.profile.mode, "local")
-        preview_enabled = backend.preview_engine_uses_kroko(self.profile)
+        preview_engine = backend.normalize_preview_engine(self.profile.realtime_preview_engine)
+        preview_preset = self.profile.realtime_preview_model_preset
+        if preview_preset not in {"nemotron-3.5-560ms-int8", "nemotron-3.5-160ms-int8"}:
+            preview_preset = "nemotron-3.5-560ms-int8"
         language_options = [
             (config.display_name, code)
             for code, config in backend.SUPPORTED_LANGUAGE_CONFIGS.items()
@@ -518,14 +586,16 @@ class WhoSpeaksSetupApp(App[str]):
         with Vertical(id="app-body"):
             with Horizontal(id="title-bar"):
                 yield Static("WhoSpeaks Setup", id="app-title", markup=False)
-                yield Static("Readiness not checked", id="readiness-text", markup=False)
                 yield Static(f"v{backend.__version__}", id="app-meta", markup=False)
+            with Horizontal(id="status-row"):
+                yield Static("full local", id="mode-pill", markup=False)
+                yield Static("not checked", id="readiness-text", markup=False)
             with Vertical(id="operation-banner", classes="status-idle"):
                 yield Static(id="operation-primary", markup=False)
                 yield Static(id="operation-secondary", markup=False)
             with TabbedContent(initial="setup-tab", id="main-tabs"):
                 with TabPane("Setup", id="setup-tab"):
-                    with Horizontal(id="setup-options"):
+                    with Vertical(id="setup-options"):
                         with Horizontal(id="target-row"):
                             yield Label("Install:", id="target-label")
                             with RadioSet(
@@ -535,13 +605,15 @@ class WhoSpeaksSetupApp(App[str]):
                                 id="target-select",
                             ):
                                 pass
-                        with Horizontal(id="kroko-row"):
-                            yield Checkbox(
-                                "Kroko text",
-                                preview_enabled,
-                                id="kroko-switch",
-                                compact=True,
-                            )
+                        with Horizontal(id="realtime-row"):
+                            yield Label("Live ASR:", id="realtime-label")
+                            with RadioSet(
+                                RadioButton("Nemotron", id="realtime-nemotron", value=preview_engine == "sherpa_onnx", compact=True),
+                                RadioButton("Kroko", id="realtime-kroko", value=preview_engine == "kroko_onnx", compact=True),
+                                RadioButton("Off", id="realtime-off", value=preview_engine not in {"sherpa_onnx", "kroko_onnx"}, compact=True),
+                                id="realtime-select",
+                            ):
+                                pass
                     yield Static(id="compact-plan", markup=False)
                     with Horizontal(id="setup-workspace"):
                         with Vertical(id="setup-state"):
@@ -573,6 +645,36 @@ class WhoSpeaksSetupApp(App[str]):
                                     value=self.profile.language,
                                     allow_blank=False,
                                     id="language-select",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Realtime text")
+                                yield Select(
+                                    [
+                                        ("Nemotron 3.5 (recommended)", "sherpa_onnx"),
+                                        ("Kroko / Banafo", "kroko_onnx"),
+                                        ("Disabled", "off"),
+                                    ],
+                                    value=preview_engine if preview_engine in {"sherpa_onnx", "kroko_onnx", "off"} else "off",
+                                    allow_blank=False,
+                                    id="realtime-engine-select",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Nemotron model")
+                                yield Select(
+                                    [
+                                        ("560 ms: stable", "nemotron-3.5-560ms-int8"),
+                                        ("160 ms: lower latency", "nemotron-3.5-160ms-int8"),
+                                    ],
+                                    value=preview_preset,
+                                    allow_blank=False,
+                                    id="realtime-preset-select",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Nemotron model folder")
+                                yield Input(
+                                    self.profile.realtime_preview_model_dir,
+                                    placeholder="Automatic download on first use",
+                                    id="realtime-model-dir-input",
                                 )
                             with Vertical(classes="field"):
                                 yield Label("Speaker provider")
@@ -619,6 +721,7 @@ class WhoSpeaksSetupApp(App[str]):
     def on_mount(self) -> None:
         self._configure_tables()
         self._apply_size_classes(self.size.width)
+        self._sync_realtime_settings()
         self._update_plan(announce=False)
         self._render_report(self.report)
         self._render_operation()
@@ -661,19 +764,51 @@ class WhoSpeaksSetupApp(App[str]):
             "target-server": "server",
         }.get(selected.id or "", "local")
 
+    def _selected_realtime_engine(self) -> str:
+        selected = self.query_one("#realtime-select", RadioSet).pressed_button
+        if selected is None:
+            return "sherpa_onnx"
+        return {
+            "realtime-kroko": "kroko_onnx",
+            "realtime-off": "off",
+        }.get(selected.id or "", "sherpa_onnx")
+
+    def _select_realtime_engine(self, engine: str) -> None:
+        """Synchronize the compact RadioSet with an engine selected elsewhere."""
+
+        radio_set = self.query_one("#realtime-select", RadioSet)
+        button_id = {
+            "sherpa_onnx": "#realtime-nemotron",
+            "kroko_onnx": "#realtime-kroko",
+        }.get(engine, "#realtime-off")
+        button = self.query_one(button_id, RadioButton)
+        if radio_set.pressed_button is button:
+            return
+        if radio_set.pressed_button is not None:
+            radio_set.pressed_button.value = False
+        button.value = True
+        # Textual exposes the current button as read-only; keep its model state
+        # aligned with the programmatic selection used for the server target.
+        radio_set._pressed_button = button
+
     def _selected_plan(self) -> backend.InstallPlan:
         target = self._selected_target()
-        install_kroko = self.query_one("#kroko-switch", Checkbox).value and target != "server"
-        return backend.install_plan_for_target(target, install_kroko)
+        engine = "off" if target == "server" else self._selected_realtime_engine()
+        preset = self.query_one("#realtime-preset-select", Select).value if engine == "sherpa_onnx" else ""
+        return backend.install_plan_for_target(
+            target,
+            realtime_preview_engine=engine,
+            realtime_preview_model_preset=str(preset or ""),
+        )
 
     def _update_plan(self, *, announce: bool = True) -> None:
         target = self._selected_target()
-        kroko_switch = self.query_one("#kroko-switch", Checkbox)
-        kroko_switch.disabled = target == "server"
-        if target == "server" and kroko_switch.value:
-            kroko_switch.value = False
+        realtime_select = self.query_one("#realtime-select", RadioSet)
+        if target == "server":
+            self._select_realtime_engine("off")
+        realtime_select.disabled = target == "server" or bool(self.active_operation)
         plan = self._selected_plan()
-        realtime = "Kroko live text enabled" if plan.install_kroko else "Live text disabled"
+        realtime = realtime_plan_label(plan)
         component_lines, compact_components = self._plan_components(plan)
         summary = "\n".join(
             (
@@ -681,12 +816,19 @@ class WhoSpeaksSetupApp(App[str]):
                 "",
                 *component_lines,
                 "",
-                f"Realtime text: {'Kroko enabled' if plan.install_kroko else 'disabled'}",
+                f"Realtime text: {realtime}",
             )
+        )
+        self.query_one("#mode-pill", Static).update(
+            {
+                "local": "full local",
+                "core": "remote core",
+                "server": "server",
+            }.get(plan.target, plan.target)
         )
         self.query_one("#plan-summary", Static).update(summary)
         self.query_one("#compact-plan", Static).update(
-            f"Plan: {plan.title}\n{'Kroko text on' if plan.install_kroko else 'Kroko text off'} | {compact_components}"
+            f"Plan: {plan.title}\n{realtime} | {compact_components}"
         )
         if announce and not self.active_operation:
             self._set_feedback(
@@ -733,6 +875,8 @@ class WhoSpeaksSetupApp(App[str]):
             "Realtime preview",
             "Realtime preview Python",
             "Kroko ONNX runtime",
+            "Nemotron sherpa-onnx runtime",
+            "Nemotron model folder",
             "Browser UI port",
             "Launch profile",
         }
@@ -803,11 +947,26 @@ class WhoSpeaksSetupApp(App[str]):
             return normalized
         return f"{normalized[: limit - 3]}..."
 
+    def _progress_bar(self) -> str:
+        width = min(64, max(24, self.size.width - 14))
+        filled = width // 3
+        offset = self.spinner_index % max(1, width - filled)
+        cells = ["-"] * width
+        for index in range(offset, min(width, offset + filled)):
+            cells[index] = "="
+        return "[" + "".join(cells) + "]"
+
     def _render_operation(self) -> None:
         banner = self.query_one("#operation-banner", Vertical)
+        compact_status = self.query_one("#compact-plan", Static)
+        operation_summary = self.query_one("#operation-summary", Static)
         for state in ("idle", "running", "success", "warning", "error"):
             banner.remove_class(f"status-{state}")
+            compact_status.remove_class(f"status-{state}")
+            operation_summary.remove_class(f"status-{state}")
         banner.add_class(f"status-{self.operation_status}")
+        compact_status.add_class(f"status-{self.operation_status}")
+        operation_summary.add_class(f"status-{self.operation_status}")
 
         prefixes = {
             "idle": "READY",
@@ -840,7 +999,35 @@ class WhoSpeaksSetupApp(App[str]):
                 self.operation_latest,
             )
         )
-        self.query_one("#operation-summary", Static).update(summary)
+        operation_summary.update(summary)
+        if self.operation_status != "idle":
+            compact_status.update(self._compact_operation_status())
+
+    def _compact_operation_status(self) -> str:
+        """Render durable, main-screen progress in compact terminal layouts."""
+
+        if self.operation_status == "running":
+            elapsed = self._elapsed_text() or "00:00"
+            step = self.operation_step or "Starting installer"
+            return "\n".join(
+                (
+                    self._fit_line(f"INSTALLING | Installing python packages  {elapsed}"),
+                    self._progress_bar(),
+                    self._fit_line(step),
+                    self._fit_line(self.operation_latest),
+                )
+            )
+        prefix = {
+            "success": "DONE",
+            "warning": "CHECK",
+            "error": "FAILED",
+        }.get(self.operation_status, "READY")
+        return "\n".join(
+            (
+                self._fit_line(f"{prefix}  {self.operation_title}"),
+                self._fit_line(self.operation_latest),
+            )
+        )
 
     def _sync_action_buttons(self) -> None:
         operation = self.active_operation
@@ -858,9 +1045,12 @@ class WhoSpeaksSetupApp(App[str]):
         self.query_one("#view-activity-button", Button).disabled = False
 
         install = self.query_one("#install-button", Button)
-        install.label = "Installing..." if installing else "Install"
+        install.label = "Installing" if installing else "Install"
         install.disabled = bool(operation)
 
+        self.query_one("#target-select", RadioSet).disabled = bool(operation)
+        self.query_one("#realtime-select", RadioSet).disabled = bool(operation) or self._selected_target() == "server"
+        self.query_one("#save-settings", Button).disabled = bool(operation)
         self.query_one("#quick-doctor", Button).disabled = bool(operation)
         self.query_one("#deep-doctor", Button).disabled = bool(operation)
         cancel = self.query_one("#cancel-operation", Button)
@@ -876,6 +1066,10 @@ class WhoSpeaksSetupApp(App[str]):
 
     def _install_step_for_line(self, line: str) -> str:
         lowered = line.lower()
+        if any(token in lowered for token in ("pytorch", "torch", "torchaudio", "cuda")):
+            return "Installing PyTorch runtime"
+        if any(token in lowered for token in ("sherpa", "nemotron", "model download", "model archive")):
+            return "Preparing Nemotron realtime ASR"
         if any(token in lowered for token in ("kroko", "docker", "cmake", "native runtime")):
             return "Preparing Kroko realtime ASR"
         if any(
@@ -907,7 +1101,13 @@ class WhoSpeaksSetupApp(App[str]):
             "--yes",
         ]
         if plan.target != "server":
-            command.append("--with-kroko" if plan.install_kroko else "--without-kroko")
+            command.extend(["--realtime-preview-engine", plan.realtime_preview_engine])
+            if plan.realtime_preview_model_preset:
+                command.extend(["--realtime-preview-model-preset", plan.realtime_preview_model_preset])
+            if plan.realtime_preview_engine == "sherpa_onnx":
+                model_dir = self.query_one("#realtime-model-dir-input", Input).value.strip()
+                if model_dir:
+                    command.extend(["--realtime-preview-model-dir", model_dir])
         return command
 
     def _save_settings(self, *, notify: bool = True) -> bool:
@@ -921,6 +1121,9 @@ class WhoSpeaksSetupApp(App[str]):
             ("port", self.query_one("#port-input", Input).value),
             ("remote_asr_url", self.query_one("#asr-url-input", Input).value),
             ("remote_embeddings_url", self.query_one("#embeddings-url-input", Input).value),
+            ("realtime_preview_engine", self.query_one("#realtime-engine-select", Select).value),
+            ("realtime_preview_model_preset", self.query_one("#realtime-preset-select", Select).value),
+            ("realtime_preview_model_dir", self.query_one("#realtime-model-dir-input", Input).value),
         ]
         try:
             updated = backend.apply_profile_updates(self.profile, updates)
@@ -946,9 +1149,22 @@ class WhoSpeaksSetupApp(App[str]):
     def target_changed(self) -> None:
         self._update_plan()
 
-    @on(Checkbox.Changed, "#kroko-switch")
-    def kroko_changed(self) -> None:
+    @on(RadioSet.Changed, "#realtime-select")
+    def realtime_changed(self) -> None:
         self._update_plan()
+
+    @on(Select.Changed, "#realtime-engine-select")
+    def realtime_engine_changed(self, event: Select.Changed) -> None:
+        engine = str(event.value or "off")
+        self._sync_realtime_settings()
+        self._select_realtime_engine(engine)
+        self._update_plan()
+
+    def _sync_realtime_settings(self) -> None:
+        engine = str(self.query_one("#realtime-engine-select", Select).value or "off")
+        enabled = engine == "sherpa_onnx"
+        self.query_one("#realtime-preset-select", Select).disabled = not enabled
+        self.query_one("#realtime-model-dir-input", Input).disabled = not enabled
 
     @on(Button.Pressed)
     def handle_button(self, event: Button.Pressed) -> None:
@@ -1029,6 +1245,7 @@ class WhoSpeaksSetupApp(App[str]):
 
     def _show_activity(self) -> None:
         self.query_one("#main-tabs", TabbedContent).active = "activity-tab"
+        self.call_after_refresh(self.query_one("#clear-log", Button).focus)
 
     def run_doctor_worker(self, deep: bool) -> None:
         if self.active_operation:
@@ -1094,7 +1311,7 @@ class WhoSpeaksSetupApp(App[str]):
             process = self.popen_factory(command, **kwargs)
             self.install_process = process
             if self.install_cancelled and process.poll() is None:
-                process.terminate()
+                self._terminate_process_tree(process)
             if process.stdout is not None:
                 for line in process.stdout:
                     self.call_from_thread(self._append_log, line.rstrip())
@@ -1151,6 +1368,9 @@ class WhoSpeaksSetupApp(App[str]):
         process = self.install_process
         if process is None or process.poll() is not None:
             return
+        self._terminate_process_tree(process)
+
+    def _terminate_process_tree(self, process: subprocess.Popen[str]) -> None:
         try:
             if os.name == "nt":
                 subprocess.run(
