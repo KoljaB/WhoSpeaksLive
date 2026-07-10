@@ -24,6 +24,16 @@ from urllib.request import urlopen
 
 from . import __version__
 from window.language_config import SUPPORTED_LANGUAGE_CONFIGS, get_language_config, normalize_language_code
+from window.realtime_preview_backends import (
+    get_preview_backend_spec,
+    normalize_preview_engine,
+    normalize_preview_model_preset,
+    preview_language_error,
+)
+from window.sherpa_onnx_models import (
+    default_sherpa_onnx_model_dir,
+    missing_sherpa_onnx_model_files,
+)
 
 
 DEFAULT_REMOTE_ASR_URL = "http://127.0.0.1:8650"
@@ -45,8 +55,21 @@ TESTPYPI_SIMPLE_URL = "https://test.pypi.org/simple/"
 PIP_INDEX_URL_ENV = "WHOSPEAKS_PIP_INDEX_URL"
 PIP_EXTRA_INDEX_URL_ENV = "WHOSPEAKS_PIP_EXTRA_INDEX_URL"
 PIP_FIND_LINKS_ENV = "WHOSPEAKS_PIP_FIND_LINKS"
+TORCH_INSTALL_POLICY_ENV = "WHOSPEAKS_TORCH_INSTALL"
+PYTORCH_CUDA_BUILD_ENV = "WHOSPEAKS_PYTORCH_CUDA_BUILD"
+PYTORCH_CUDA_INDEX_URL_ENV = "WHOSPEAKS_PYTORCH_CUDA_INDEX_URL"
+PYTORCH_CPU_INDEX_URL_ENV = "WHOSPEAKS_PYTORCH_CPU_INDEX_URL"
+DEFAULT_PYTORCH_CUDA_BUILD = "cu128"
+PYTORCH_CUDA_INDEX_URLS = {
+    "cu118": "https://download.pytorch.org/whl/cu118",
+    "cu126": "https://download.pytorch.org/whl/cu126",
+    "cu128": "https://download.pytorch.org/whl/cu128",
+}
+PYTORCH_CPU_INDEX_URL = "https://download.pytorch.org/whl/cpu"
+TORCH_PACKAGE_SPECS = ("torch>=2.2", "torchaudio>=2.2")
 KROKO_LANGUAGE_MENU_CODES = ("en", "de", "es", "fr", "it", "nl", "pt", "sv", "tr", "he")
 INSTALL_TARGET_CHOICES = ("local", "core", "server")
+TORCH_INSTALL_POLICY_CHOICES = ("auto", "cuda", "cpu", "skip")
 EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("mode", "Profile mode", "local, remote, or server. Mode also aligns the ASR and embeddings backends."),
     ("language", "Language", "Shared by final ASR, realtime preview model selection, and sentence splitting."),
@@ -54,8 +77,10 @@ EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("embedding_provider", "Final provider", "Exact provider string used for committed speaker assignment."),
     ("live_speaker_embedding_provider", "Live provider", "Exact provider string used for live speaker feedback."),
     ("embedding_python", "Embedding helper Python", "Optional Python executable for local speaker-embedding helper subprocesses."),
-    ("realtime_preview_engine", "Realtime text engine", "Use kroko_onnx for live text, or off to disable preview text."),
-    ("realtime_preview_python", "Realtime preview Python", "Optional Python executable for the Kroko/RealtimeSTT worker."),
+    ("realtime_preview_engine", "Realtime text engine", "Use sherpa_onnx for Nemotron, kroko_onnx for Kroko/Banafo, or off."),
+    ("realtime_preview_model_preset", "Realtime model preset", "Nemotron: 560ms stable or 160ms low-latency. Kroko: a Kroko model preset."),
+    ("realtime_preview_model_dir", "Nemotron model folder", "Optional explicit folder for the unpacked sherpa-onnx/Nemotron model."),
+    ("realtime_preview_python", "Realtime preview Python", "Optional Python executable for the realtime worker. Nemotron uses the current environment by default."),
     ("asr_backend", "ASR backend", "local or remote."),
     ("embeddings_backend", "Embeddings backend", "local or remote."),
     ("remote_asr_url", "Remote ASR URL", "Base URL for a remote faster-whisper service."),
@@ -170,7 +195,9 @@ class Profile:
     live_speaker_embedding_provider: str = SMOKE_PROVIDER
     embedding_python: str = ""
     vad_backend: str = "rms"
-    realtime_preview_engine: str = "kroko_onnx"
+    realtime_preview_engine: str = "sherpa_onnx"
+    realtime_preview_model_preset: str = "nemotron-3.5-560ms-int8"
+    realtime_preview_model_dir: str = ""
     realtime_preview_python: str = ""
     advanced_args: str = ""
 
@@ -196,6 +223,23 @@ class Profile:
         elif profile.mode == "local":
             profile.asr_backend = "local"
             profile.embeddings_backend = "local"
+        try:
+            profile.realtime_preview_engine = normalize_preview_engine(profile.realtime_preview_engine)
+        except ValueError:
+            profile.realtime_preview_engine = "off"
+        if profile.realtime_preview_engine in {"kroko_onnx", "sherpa_onnx"}:
+            default_preset = get_preview_backend_spec(profile.realtime_preview_engine).default_preset or ""
+            try:
+                profile.realtime_preview_model_preset = normalize_preview_model_preset(
+                    profile.realtime_preview_engine,
+                    profile.realtime_preview_model_preset or default_preset,
+                )
+            except (ValueError, argparse.ArgumentTypeError):
+                profile.realtime_preview_model_preset = default_preset
+        else:
+            profile.realtime_preview_model_preset = ""
+        if profile.realtime_preview_engine != "sherpa_onnx":
+            profile.realtime_preview_model_dir = ""
         return profile
 
     def as_dict(self) -> dict[str, Any]:
@@ -363,6 +407,20 @@ class InstallPlan:
     extra: str
     install_kroko: bool
     summary: str
+    realtime_preview_engine: str = "off"
+    realtime_preview_model_preset: str = ""
+
+
+@dataclasses.dataclass(frozen=True)
+class TorchInstallSelection:
+    mode: str
+    index_url: str
+    reason: str
+    build: str = ""
+
+    @property
+    def should_install(self) -> bool:
+        return self.mode in {"cuda", "cpu"}
 
 
 def normalize_mode(mode: str | None) -> str:
@@ -914,9 +972,52 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
         checks.append(CheckResult("Remote embeddings providers", "skip", "Remote embeddings are not required in this profile."))
         checks.append(CheckResult("Remote provider load", "skip", "Remote embeddings are not required in this profile."))
 
-    preview_engine = str(profile.realtime_preview_engine or "off").strip().lower().replace("-", "_")
+    preview_engine = normalize_preview_engine(profile.realtime_preview_engine)
     if preview_engine in {"off", "mock"}:
         checks.append(CheckResult("Realtime preview", "skip", f"Preview engine is {preview_engine}."))
+    elif preview_engine == "sherpa_onnx":
+        try:
+            preset = normalize_preview_model_preset("sherpa_onnx", profile.realtime_preview_model_preset)
+            model_dir = Path(profile.realtime_preview_model_dir).expanduser() if profile.realtime_preview_model_dir else default_sherpa_onnx_model_dir(preset)
+            missing_model_files = missing_sherpa_onnx_model_files(model_dir)
+        except (OSError, ValueError) as exc:
+            checks.append(CheckResult("Nemotron model folder", "warn", str(exc)))
+        else:
+            if model_dir.exists() and missing_model_files:
+                checks.append(CheckResult(
+                    "Nemotron model folder",
+                    "warn",
+                    f"{model_dir} is incomplete: missing {', '.join(missing_model_files)}.",
+                    "Remove the incomplete folder, or select a complete unpacked Nemotron model folder.",
+                ))
+            elif missing_model_files:
+                checks.append(CheckResult(
+                    "Nemotron model folder",
+                    "skip",
+                    f"{preset} will download to {model_dir} on first realtime-preview start.",
+                ))
+            else:
+                checks.append(CheckResult("Nemotron model folder", "ok", f"{preset} is ready at {model_dir}."))
+        if profile.realtime_preview_python:
+            checks.append(check_python_imports(
+                "Nemotron preview Python",
+                profile.realtime_preview_python,
+                [
+                    ("workers.sherpa_onnx_realtime_preview_worker", "WhoSpeaks Nemotron worker"),
+                    ("sherpa_onnx", "sherpa-onnx"),
+                    ("numpy", "numpy"),
+                ],
+                required=False,
+            ))
+        elif module_available("sherpa_onnx"):
+            checks.append(CheckResult("Nemotron sherpa-onnx runtime", "ok", "sherpa_onnx is importable."))
+        else:
+            checks.append(CheckResult(
+                "Nemotron sherpa-onnx runtime",
+                "warn",
+                "sherpa_onnx is not importable, so Nemotron live text cannot start yet.",
+                "Run the WhoSpeaks installer with Nemotron selected, or install sherpa-onnx and sherpa-onnx-bin in this Python environment.",
+            ))
     else:
         checks.append(check_import_group(
             "Realtime preview",
@@ -1013,25 +1114,54 @@ def normalize_install_target(value: str | None) -> str:
     return normalized
 
 
-def install_plan_for_target(target: str, install_kroko: bool = False) -> InstallPlan:
+def install_plan_for_target(
+    target: str,
+    install_kroko: bool = False,
+    *,
+    realtime_preview_engine: str | None = None,
+    realtime_preview_model_preset: str | None = None,
+) -> InstallPlan:
     selected = normalize_install_target(target)
+    if selected == "server":
+        engine = "off"
+    elif realtime_preview_engine is None:
+        engine = "kroko_onnx" if install_kroko else "off"
+    else:
+        try:
+            engine = normalize_preview_engine(realtime_preview_engine)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
+    if engine in {"kroko_onnx", "sherpa_onnx"}:
+        default_preset = get_preview_backend_spec(engine).default_preset or ""
+        try:
+            preset = normalize_preview_model_preset(engine, realtime_preview_model_preset or default_preset)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
+    else:
+        preset = ""
+    kroko_selected = engine == "kroko_onnx"
+    preview_selected = engine in {"kroko_onnx", "sherpa_onnx"}
     if selected == "local":
         return InstallPlan(
             target=selected,
             title="Full local installation",
             mode="local",
-            extra=LOCAL_EXTRA if install_kroko else COMPLETE_EXTRA,
-            install_kroko=install_kroko,
+            extra=LOCAL_EXTRA if kroko_selected else COMPLETE_EXTRA,
+            install_kroko=kroko_selected,
             summary="Browser controller, local final ASR, and local speaker embeddings on this machine.",
+            realtime_preview_engine=engine,
+            realtime_preview_model_preset=preset,
         )
     if selected == "core":
         return InstallPlan(
             target=selected,
             title="Core/controller for remote ASR and embeddings servers",
             mode="remote",
-            extra=f"{CONTROLLER_EXTRA},{PREVIEW_EXTRA}" if install_kroko else CONTROLLER_EXTRA,
-            install_kroko=install_kroko,
+            extra=f"{CONTROLLER_EXTRA},{PREVIEW_EXTRA}" if preview_selected else CONTROLLER_EXTRA,
+            install_kroko=kroko_selected,
             summary="Browser controller on this machine with final ASR and embeddings served over HTTP.",
+            realtime_preview_engine=engine,
+            realtime_preview_model_preset=preset,
         )
     return InstallPlan(
         target=selected,
@@ -1040,15 +1170,21 @@ def install_plan_for_target(target: str, install_kroko: bool = False) -> Install
         extra=SERVER_EXTRA,
         install_kroko=False,
         summary="Service-side dependencies for the remote faster-whisper ASR and embeddings endpoints.",
+        realtime_preview_engine="off",
     )
 
 
 def configure_profile_for_install(profile: Profile, plan: InstallPlan) -> Profile:
     configure_profile_for_mode(profile, plan.mode)
     if plan.target in {"local", "core"}:
-        profile.realtime_preview_engine = "kroko_onnx" if plan.install_kroko else "off"
+        profile.realtime_preview_engine = plan.realtime_preview_engine
+        profile.realtime_preview_model_preset = plan.realtime_preview_model_preset
+        if plan.realtime_preview_engine != "sherpa_onnx":
+            profile.realtime_preview_model_dir = ""
     else:
         profile.realtime_preview_engine = "off"
+        profile.realtime_preview_model_preset = ""
+        profile.realtime_preview_model_dir = ""
     return profile
 
 
@@ -1085,11 +1221,174 @@ def build_install_command(extra: str = LOCAL_EXTRA) -> list[str]:
     ]
 
 
+def normalize_torch_install_policy(value: str | None) -> str:
+    normalized = str(value or "auto").strip().lower().replace("-", "_")
+    aliases = {
+        "": "auto",
+        "gpu": "cuda",
+        "nvidia": "cuda",
+        "cu118": "cuda",
+        "cu126": "cuda",
+        "cu128": "cuda",
+        "none": "skip",
+        "off": "skip",
+        "no": "skip",
+    }
+    normalized = aliases.get(normalized, normalized)
+    if normalized not in TORCH_INSTALL_POLICY_CHOICES:
+        raise SystemExit(
+            "Unknown Torch install policy {0!r}. Choose one of: {1}.".format(
+                value,
+                ", ".join(TORCH_INSTALL_POLICY_CHOICES),
+            )
+        )
+    return normalized
+
+
+def normalize_pytorch_cuda_build(value: str | None) -> str:
+    normalized = str(value or DEFAULT_PYTORCH_CUDA_BUILD).strip().lower().replace(".", "")
+    aliases = {
+        "cuda": DEFAULT_PYTORCH_CUDA_BUILD,
+        "gpu": DEFAULT_PYTORCH_CUDA_BUILD,
+        "12": DEFAULT_PYTORCH_CUDA_BUILD,
+        "128": "cu128",
+        "12_8": "cu128",
+        "12-8": "cu128",
+        "126": "cu126",
+        "12_6": "cu126",
+        "12-6": "cu126",
+        "118": "cu118",
+        "11_8": "cu118",
+        "11-8": "cu118",
+    }
+    normalized = aliases.get(normalized, normalized)
+    if normalized not in PYTORCH_CUDA_INDEX_URLS:
+        raise SystemExit(
+            "Unknown PyTorch CUDA build {0!r}. Choose one of: {1}.".format(
+                value,
+                ", ".join(PYTORCH_CUDA_INDEX_URLS),
+            )
+        )
+    return normalized
+
+
+def extra_needs_torch(extra: str) -> bool:
+    tokens = {item.strip() for item in str(extra or "").split(",") if item.strip()}
+    return bool(tokens & {"all", "complete", "local", "server"})
+
+
+def detect_nvidia_cuda() -> tuple[bool, str]:
+    nvidia_smi = shutil.which("nvidia-smi")
+    if not nvidia_smi:
+        return False, "nvidia-smi was not found; assuming CPU PyTorch."
+    command = [
+        nvidia_smi,
+        "--query-gpu=name,driver_version",
+        "--format=csv,noheader",
+    ]
+    try:
+        completed = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+    except Exception as exc:
+        return False, f"nvidia-smi could not be executed ({type(exc).__name__}: {exc}); assuming CPU PyTorch."
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout or "").strip()
+        if detail:
+            return False, f"nvidia-smi returned {completed.returncode}: {detail}; assuming CPU PyTorch."
+        return False, f"nvidia-smi returned {completed.returncode}; assuming CPU PyTorch."
+    first_line = next((line.strip() for line in (completed.stdout or "").splitlines() if line.strip()), "")
+    if not first_line:
+        return False, "nvidia-smi did not report an NVIDIA GPU; assuming CPU PyTorch."
+    return True, f"NVIDIA GPU/driver detected: {first_line}."
+
+
+def select_torch_install(policy: str | None = None) -> TorchInstallSelection:
+    selected_policy = normalize_torch_install_policy(
+        policy if policy is not None else os.environ.get(TORCH_INSTALL_POLICY_ENV, "auto")
+    )
+    if selected_policy == "skip":
+        return TorchInstallSelection("skip", "", "Torch preinstall disabled.")
+    cuda_build = normalize_pytorch_cuda_build(os.environ.get(PYTORCH_CUDA_BUILD_ENV, DEFAULT_PYTORCH_CUDA_BUILD))
+    cuda_index = os.environ.get(PYTORCH_CUDA_INDEX_URL_ENV, "").strip() or PYTORCH_CUDA_INDEX_URLS[cuda_build]
+    if selected_policy == "cuda":
+        return TorchInstallSelection("cuda", cuda_index, f"CUDA PyTorch forced with {cuda_build}.", cuda_build)
+    if selected_policy == "cpu":
+        cpu_index = os.environ.get(PYTORCH_CPU_INDEX_URL_ENV, "").strip() or (
+            "" if platform.system() == "Darwin" else PYTORCH_CPU_INDEX_URL
+        )
+        return TorchInstallSelection("cpu", cpu_index, "CPU PyTorch forced.")
+    has_cuda, detail = detect_nvidia_cuda()
+    if has_cuda and platform.system() in {"Windows", "Linux"}:
+        return TorchInstallSelection("cuda", cuda_index, f"{detail} Installing PyTorch {cuda_build}.", cuda_build)
+    cpu_index = os.environ.get(PYTORCH_CPU_INDEX_URL_ENV, "").strip() or (
+        "" if platform.system() == "Darwin" else PYTORCH_CPU_INDEX_URL
+    )
+    return TorchInstallSelection("cpu", cpu_index, detail)
+
+
+def build_torch_install_command(policy: str | None = None) -> tuple[list[str], TorchInstallSelection]:
+    selection = select_torch_install(policy)
+    if not selection.should_install:
+        return [], selection
+    command = [
+        sys.executable,
+        "-m",
+        "pip",
+        "install",
+        "--upgrade",
+    ]
+    if selection.index_url:
+        command.extend(["--index-url", selection.index_url])
+    command.extend(TORCH_PACKAGE_SPECS)
+    return command, selection
+
+
+def report_torch_runtime(selection: TorchInstallSelection) -> int:
+    if not selection.should_install:
+        return 0
+    script = (
+        "import json, torch; "
+        "print(json.dumps({"
+        "'version': getattr(torch, '__version__', ''), "
+        "'cuda_runtime': getattr(getattr(torch, 'version', None), 'cuda', None), "
+        "'cuda_available': bool(torch.cuda.is_available()), "
+        "'device_count': int(torch.cuda.device_count()) if torch.cuda.is_available() else 0"
+        "}, sort_keys=True))"
+    )
+    completed = subprocess.run(
+        [sys.executable, "-c", script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout or "").strip()
+        print(f"PyTorch verification failed: {detail}")
+        return int(completed.returncode)
+    detail = (completed.stdout or "").strip().splitlines()[-1]
+    print(f"PyTorch verification: {detail}")
+    if selection.mode == "cuda":
+        try:
+            payload = json.loads(detail)
+        except Exception:
+            payload = {}
+        if not payload.get("cuda_available"):
+            print("Warning: CUDA PyTorch installed, but torch.cuda.is_available() is false. The launcher can still fall back to CPU.")
+    return 0
+
+
 def format_command(command: list[str]) -> str:
     if os.name == "nt":
         rendered: list[str] = []
         for arg in command:
-            if "[" in arg or "]" in arg:
+            if any(token in arg for token in ("[", "]", "<", ">", "&", "|")):
                 rendered.append('"' + arg.replace('"', '\\"') + '"')
             else:
                 rendered.append(subprocess.list2cmdline([arg]))
@@ -1121,17 +1420,42 @@ def recommended_install_extra(profile: Profile, report: DoctorReport) -> str | N
     return None
 
 
-def install_extra(extra: str, assume_yes: bool = False, dry_run: bool = False) -> int:
+def install_extra(
+    extra: str,
+    assume_yes: bool = False,
+    dry_run: bool = False,
+    *,
+    torch_policy: str | None = None,
+) -> int:
     command = build_install_command(extra)
-    print("Install command:")
+    torch_command: list[str] = []
+    torch_selection = TorchInstallSelection("skip", "", "Torch is not needed for this dependency set.")
+    if extra_needs_torch(extra):
+        torch_command, torch_selection = build_torch_install_command(torch_policy)
+        print("PyTorch install selection:")
+        print(f"  {torch_selection.reason}")
+        if torch_command:
+            print("PyTorch install command:")
+            print(f"  {format_command(torch_command)}")
+        else:
+            print("PyTorch install command:")
+            print("  skipped")
+    print("WhoSpeaks package install command:")
     print(f"  {format_command(command)}")
     if dry_run:
         return 0
     if not assume_yes:
-        answer = read_input("Run this command now? [y/N] ", "n").strip().lower()
+        answer = read_input("Run these install commands now? [y/N] ", "n").strip().lower()
         if answer not in {"y", "yes"}:
             print("Install skipped.")
             return 0
+    if torch_command:
+        completed = subprocess.run(torch_command, check=False)
+        if completed.returncode != 0:
+            return int(completed.returncode)
+        code = report_torch_runtime(torch_selection)
+        if code:
+            return code
     completed = subprocess.run(command, check=False)
     return int(completed.returncode)
 
@@ -1142,7 +1466,12 @@ def print_install_plan(plan: InstallPlan, profile: Profile) -> None:
     print(f"Target: {plan.title}")
     print(f"Profile: {plan.mode}")
     print_wrapped(plan.summary, initial_indent="Summary: ", subsequent_indent="         ", style=detail_text)
-    if plan.install_kroko:
+    if plan.realtime_preview_engine == "sherpa_onnx":
+        preset = plan.realtime_preview_model_preset
+        latency_note = "higher stability" if "560ms" in preset else "lower latency"
+        print(f"Realtime text: Nemotron 3.5 ({preset}; {latency_note}).")
+        print("               sherpa-onnx packages install with WhoSpeaks; the verified model downloads on first launch.")
+    elif plan.install_kroko:
         print("Realtime text: enabled; Kroko native runtime will be offered after Python packages.")
     elif plan.target in {"local", "core"}:
         print("Realtime text: disabled for this install. Run the installer again and choose Kroko to try native live text.")
@@ -1175,20 +1504,38 @@ def prompt_install_target() -> str:
         print("Choose 1, 2, or 3.")
 
 
-def prompt_kroko_install(target: str) -> bool:
+def prompt_realtime_preview(target: str) -> tuple[str, str]:
     if normalize_install_target(target) not in {"local", "core"}:
-        return False
+        return "off", ""
     print()
-    print("Live preview text uses Kroko native ASR.")
+    print("Realtime preview text")
     print_wrapped(
-        "This can require a Python 3.12 sidecar, Docker Desktop on Windows, or a prebuilt kroko_onnx wheel. "
-        "Final ASR and speaker diarization can still run without it.",
+        "1. Nemotron 3.5 (recommended on Windows): installs sherpa-onnx packages normally and downloads a verified model on first use. "
+        "2. Nemotron 3.5 low latency: 160ms model, less robust. "
+        "3. Kroko/Banafo: native setup that can need Python 3.12 and Docker Desktop on Windows. "
+        "4. Disable realtime text. Final ASR and speaker diarization work independently.",
         initial_indent="",
         subsequent_indent="",
         style=detail_text,
     )
-    answer = read_input("Install/try Kroko live preview text now? [y/N] ", "n").strip().lower()
-    return answer in {"y", "yes"}
+    while True:
+        answer = read_input("Choose realtime preview [1/2/3/4] ", "1").strip().lower()
+        if answer in {"1", "nemotron", "nemotron-560", "560"}:
+            return "sherpa_onnx", "nemotron-3.5-560ms-int8"
+        if answer in {"2", "nemotron-160", "160"}:
+            return "sherpa_onnx", "nemotron-3.5-160ms-int8"
+        if answer in {"3", "kroko", "banafo"}:
+            return "kroko_onnx", "community-64l"
+        if answer in {"4", "off", "none", "no"}:
+            return "off", ""
+        print("Choose 1, 2, 3, or 4.")
+
+
+def prompt_kroko_install(target: str) -> bool:
+    """Legacy prompt helper retained for classic callers and integrations."""
+
+    engine, _preset = prompt_realtime_preview(target)
+    return engine == "kroko_onnx"
 
 
 def confirm_install_start(assume_yes: bool, dry_run: bool) -> bool:
@@ -1201,9 +1548,18 @@ def confirm_install_start(assume_yes: bool, dry_run: bool) -> bool:
     return answer in {"", "y", "yes"}
 
 
+def preview_engine_is_enabled(profile: Profile) -> bool:
+    return normalize_preview_engine(profile.realtime_preview_engine) not in {"off", "mock"}
+
+
 def preview_engine_uses_kroko(profile: Profile) -> bool:
-    engine = str(profile.realtime_preview_engine or "off").strip().lower().replace("-", "_")
-    return engine not in {"off", "mock", "none", "false", "0"}
+    return normalize_preview_engine(profile.realtime_preview_engine) == "kroko_onnx"
+
+
+def validate_realtime_preview_language(profile: Profile) -> None:
+    error = preview_language_error(profile.realtime_preview_engine, profile.language)
+    if error:
+        raise SystemExit(error)
 
 
 def build_kroko_install_command(
@@ -1462,11 +1818,22 @@ def install_extra_and_maybe_kroko(
     dry_run: bool = False,
     install_kroko: bool = True,
     kroko_assume_yes: bool | None = None,
+    torch_policy: str | None = None,
 ) -> int:
-    code = install_extra(extra, assume_yes=assume_yes, dry_run=dry_run)
+    code = install_extra(extra, assume_yes=assume_yes, dry_run=dry_run, torch_policy=torch_policy)
     if code:
         return code
+    preview_engine = normalize_preview_engine(profile.realtime_preview_engine)
+    if preview_engine == "sherpa_onnx":
+        preset = profile.realtime_preview_model_preset or "nemotron-3.5-560ms-int8"
+        print(
+            f"Nemotron realtime preview is configured with {preset}. "
+            "The verified model downloads automatically on first preview start."
+        )
+        return 0
     if not install_kroko:
+        return 0
+    if preview_engine != "kroko_onnx":
         return 0
     report = run_doctor(profile)
     if not report_suggests_kroko_install(profile, report):
@@ -1489,7 +1856,9 @@ def configure_profile_for_mode(profile: Profile, mode: str) -> Profile:
         profile.device = "auto"
         apply_provider_preset(profile, "smoke")
         profile.vad_backend = "rms"
-        profile.realtime_preview_engine = "kroko_onnx"
+        profile.realtime_preview_engine = "sherpa_onnx"
+        profile.realtime_preview_model_preset = "nemotron-3.5-560ms-int8"
+        profile.realtime_preview_model_dir = ""
     elif selected == "remote":
         profile.asr_backend = "remote"
         profile.embeddings_backend = "remote"
@@ -1497,10 +1866,14 @@ def configure_profile_for_mode(profile: Profile, mode: str) -> Profile:
         apply_provider_preset(profile, "smoke")
         profile.vad_backend = "rms"
         profile.realtime_preview_engine = "off"
+        profile.realtime_preview_model_preset = ""
+        profile.realtime_preview_model_dir = ""
     elif selected == "server":
         profile.asr_backend = "remote"
         profile.embeddings_backend = "remote"
         profile.realtime_preview_engine = "off"
+        profile.realtime_preview_model_preset = ""
+        profile.realtime_preview_model_dir = ""
     return profile
 
 
@@ -1538,7 +1911,11 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
     ])
     if profile.embeddings_backend == "local":
         command.extend(["--embedding-python", str(profile.embedding_python or sys.executable)])
-    preview_engine = str(profile.realtime_preview_engine or "off").strip().lower().replace("-", "_")
+    preview_engine = normalize_preview_engine(profile.realtime_preview_engine)
+    if preview_engine in {"kroko_onnx", "sherpa_onnx"} and profile.realtime_preview_model_preset:
+        command.extend(["--realtime-preview-model-preset", str(profile.realtime_preview_model_preset)])
+    if preview_engine == "sherpa_onnx" and profile.realtime_preview_model_dir:
+        command.extend(["--realtime-preview-model-dir", str(profile.realtime_preview_model_dir)])
     if profile.realtime_preview_python or preview_engine not in {"off", "none", "false", "0"}:
         command.extend(["--realtime-preview-python", str(profile.realtime_preview_python or sys.executable)])
     if profile.asr_backend == "remote":
@@ -1741,7 +2118,12 @@ def language_summary(language: str) -> str:
         config = get_language_config(language)
     except ValueError:
         return str(language)
-    preview = f"Kroko {config.kroko_code}" if config.kroko_code else "no Kroko preview"
+    preview_support = []
+    if config.kroko_code:
+        preview_support.append(f"Kroko {config.kroko_code}")
+    if preview_language_error("sherpa_onnx", config.code) is None:
+        preview_support.append("Nemotron")
+    preview = ", ".join(preview_support) or "no realtime preview"
     return f"{config.display_name} ({config.code}, {preview})"
 
 
@@ -1756,7 +2138,8 @@ def profile_summary_lines(profile: Profile) -> list[str]:
         f"Live provider:  {profile.live_speaker_embedding_provider}",
         f"Embedding Python: {profile.embedding_python or 'auto/current'}",
         f"ASR model/device: {profile.model} / {profile.device} / {profile.compute_type}",
-        f"Realtime text: {profile.realtime_preview_engine}",
+        f"Realtime text: {profile.realtime_preview_engine} / {profile.realtime_preview_model_preset or 'default'}",
+        f"Realtime model folder: {profile.realtime_preview_model_dir or 'automatic'}",
         f"Realtime Python: {profile.realtime_preview_python or 'auto/default'}",
         f"Browser: {profile.host}:{profile.port}",
     ]
@@ -2196,9 +2579,14 @@ def install_missing_group_interactively(profile: Profile, report: DoctorReport |
 
 def install_components_interactively(profile: Profile) -> int | None:
     target = prompt_install_target()
-    install_kroko = prompt_kroko_install(target)
-    plan = install_plan_for_target(target, install_kroko)
+    preview_engine, preview_preset = prompt_realtime_preview(target)
+    plan = install_plan_for_target(
+        target,
+        realtime_preview_engine=preview_engine,
+        realtime_preview_model_preset=preview_preset,
+    )
     configure_profile_for_install(profile, plan)
+    validate_realtime_preview_language(profile)
     save_path = save_profile(profile)
     print(f"Saved {profile.mode} profile to {save_path}")
     print_install_plan(plan, profile)
@@ -2341,27 +2729,46 @@ def cmd_install(args: argparse.Namespace) -> int:
         target = "local"
         print("No install target was supplied; defaulting to full local installation.")
 
-    if target == "server":
-        install_kroko = False
-        if args.with_kroko:
-            print("Kroko live preview text is not installed on server-only targets.")
-    elif args.with_kroko:
-        install_kroko = True
-    elif args.without_kroko:
-        install_kroko = False
-    elif sys.stdin.isatty() and not args.yes:
-        install_kroko = prompt_kroko_install(target)
-    else:
-        install_kroko = False
-        print("Kroko live preview text is not selected. Pass --with-kroko to include it.")
+    requested_engine = str(getattr(args, "realtime_preview_engine", "") or "").strip()
+    requested_preset = str(getattr(args, "realtime_preview_model_preset", "") or "").strip()
+    requested_model_dir = getattr(args, "realtime_preview_model_dir", None)
+    if requested_engine and (args.with_kroko or args.without_kroko):
+        raise SystemExit("Choose --realtime-preview-engine or the legacy Kroko switches, not both.")
+    if requested_preset and not requested_engine:
+        raise SystemExit("--realtime-preview-model-preset requires --realtime-preview-engine.")
+    if requested_model_dir is not None and requested_engine not in {"sherpa_onnx", "sherpa-onnx", "nemotron", "sherpa"}:
+        raise SystemExit("--realtime-preview-model-dir is only valid with --realtime-preview-engine sherpa_onnx.")
 
-    plan = install_plan_for_target(target, install_kroko)
+    if target == "server":
+        preview_engine, preview_preset = "off", ""
+        if requested_engine or args.with_kroko:
+            print("Realtime preview text is not installed on server-only targets.")
+    elif requested_engine:
+        preview_engine, preview_preset = requested_engine, requested_preset
+    elif args.with_kroko:
+        preview_engine, preview_preset = "kroko_onnx", "community-64l"
+    elif args.without_kroko:
+        preview_engine, preview_preset = "off", ""
+    elif sys.stdin.isatty() and not args.yes:
+        preview_engine, preview_preset = prompt_realtime_preview(target)
+    else:
+        preview_engine, preview_preset = "off", ""
+        print("Realtime preview text is not selected. Pass --realtime-preview-engine sherpa_onnx to include Nemotron.")
+
+    plan = install_plan_for_target(
+        target,
+        realtime_preview_engine=preview_engine,
+        realtime_preview_model_preset=preview_preset,
+    )
     profile = load_profile()
     configure_profile_for_install(profile, plan)
     if args.language:
         profile = apply_profile_updates(profile, [("language", args.language)])
     if args.provider_preset:
         apply_provider_preset(profile, args.provider_preset)
+    if requested_model_dir is not None:
+        profile.realtime_preview_model_dir = str(requested_model_dir)
+    validate_realtime_preview_language(profile)
 
     if args.dry_run:
         print(f"Dry run: would save {profile.mode} profile to {config_path()}")
@@ -2381,6 +2788,7 @@ def cmd_install(args: argparse.Namespace) -> int:
         dry_run=args.dry_run,
         install_kroko=plan.install_kroko,
         kroko_assume_yes=True if plan.install_kroko else False,
+        torch_policy=getattr(args, "torch", None),
     )
     if code:
         return code
@@ -2410,7 +2818,12 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     if args.fix:
         extra = recommended_install_extra(profile, report)
         if extra:
-            code = install_extra(extra, assume_yes=args.yes, dry_run=args.dry_run)
+            code = install_extra(
+                extra,
+                assume_yes=args.yes,
+                dry_run=args.dry_run,
+                torch_policy=getattr(args, "torch", None),
+            )
             if code:
                 return code
         else:
@@ -2425,6 +2838,31 @@ def cmd_setup(args: argparse.Namespace) -> int:
         profile = apply_profile_updates(profile, [("language", args.language)])
     if args.provider_preset:
         apply_provider_preset(profile, args.provider_preset)
+    if getattr(args, "realtime_preview_engine", ""):
+        profile.realtime_preview_engine = normalize_preview_engine(args.realtime_preview_engine)
+        if profile.realtime_preview_engine in {"kroko_onnx", "sherpa_onnx"}:
+            default_preset = get_preview_backend_spec(profile.realtime_preview_engine).default_preset or ""
+            try:
+                profile.realtime_preview_model_preset = normalize_preview_model_preset(
+                    profile.realtime_preview_engine,
+                    profile.realtime_preview_model_preset or default_preset,
+                )
+            except (ValueError, argparse.ArgumentTypeError):
+                profile.realtime_preview_model_preset = default_preset
+        else:
+            profile.realtime_preview_model_preset = ""
+        if profile.realtime_preview_engine != "sherpa_onnx":
+            profile.realtime_preview_model_dir = ""
+    if getattr(args, "realtime_preview_model_preset", ""):
+        profile.realtime_preview_model_preset = normalize_preview_model_preset(
+            profile.realtime_preview_engine,
+            args.realtime_preview_model_preset,
+        )
+    if getattr(args, "realtime_preview_model_dir", None) is not None:
+        if profile.realtime_preview_engine != "sherpa_onnx":
+            raise SystemExit("--realtime-preview-model-dir is only valid with sherpa_onnx.")
+        profile.realtime_preview_model_dir = str(args.realtime_preview_model_dir)
+    validate_realtime_preview_language(profile)
     if args.dry_run:
         save_path = config_path()
         print(f"Dry run: would save {profile.mode} profile to {save_path}")
@@ -2435,8 +2873,12 @@ def cmd_setup(args: argparse.Namespace) -> int:
     print_report(report)
     if args.install:
         extra = recommended_install_extra(profile, report)
-        if extra is None and profile.mode == "local":
-            extra = LOCAL_EXTRA
+        if profile.mode == "local":
+            extra = install_plan_for_target(
+                "local",
+                realtime_preview_engine=profile.realtime_preview_engine,
+                realtime_preview_model_preset=profile.realtime_preview_model_preset,
+            ).extra
         if extra is None and profile.mode == "server":
             extra = "server"
         if extra is None and profile.mode == "remote":
@@ -2447,7 +2889,8 @@ def cmd_setup(args: argparse.Namespace) -> int:
                 extra,
                 assume_yes=args.yes,
                 dry_run=args.dry_run,
-                install_kroko=not args.skip_kroko,
+                install_kroko=preview_engine_uses_kroko(profile) and not args.skip_kroko,
+                torch_policy=getattr(args, "torch", None),
             )
     print("Launch command:")
     print(f"  {format_command(build_launch_command(profile))}")
@@ -2516,6 +2959,8 @@ def cmd_config(args: argparse.Namespace) -> int:
         "embedding_python",
         "vad_backend",
         "realtime_preview_engine",
+        "realtime_preview_model_preset",
+        "realtime_preview_model_dir",
         "realtime_preview_python",
         "advanced_args",
     )
@@ -2573,6 +3018,12 @@ def build_parser() -> argparse.ArgumentParser:
     doctor.add_argument("--fix", action="store_true", help="Offer the recommended pip install action after checks.")
     doctor.add_argument("--yes", action="store_true", help="Do not prompt before running the pip install action.")
     doctor.add_argument("--dry-run", action="store_true", help="Print installer commands without running them.")
+    doctor.add_argument(
+        "--torch",
+        choices=TORCH_INSTALL_POLICY_CHOICES,
+        default="auto",
+        help="Torch wheel policy for --fix: auto-detect CUDA, force cuda/cpu, or skip Torch preinstall.",
+    )
     doctor.set_defaults(func=cmd_doctor)
 
     install = subparsers.add_parser(
@@ -2598,9 +3049,31 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Disable realtime preview text for this install.",
     )
+    install.add_argument(
+        "--realtime-preview-engine",
+        default="",
+        help="Realtime text engine: sherpa_onnx (Nemotron), kroko_onnx, or off.",
+    )
+    install.add_argument(
+        "--realtime-preview-model-preset",
+        default="",
+        help="Realtime model preset, for example nemotron-3.5-560ms-int8.",
+    )
+    install.add_argument(
+        "--realtime-preview-model-dir",
+        type=Path,
+        default=None,
+        help="Optional directory containing an unpacked Nemotron model.",
+    )
     install.add_argument("--deep", action="store_true", help="Run expensive provider/cache checks after installation.")
     install.add_argument("--yes", action="store_true", help="Do not prompt before running installer actions.")
     install.add_argument("--dry-run", action="store_true", help="Print installer actions without running them.")
+    install.add_argument(
+        "--torch",
+        choices=TORCH_INSTALL_POLICY_CHOICES,
+        default="auto",
+        help="Torch wheel policy: auto-detect CUDA, force cuda/cpu, or skip Torch preinstall.",
+    )
     install.set_defaults(func=cmd_install)
 
     setup = subparsers.add_parser("setup", help="Choose a setup mode and optionally install dependencies.")
@@ -2613,9 +3086,31 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Do not offer/build the native Kroko realtime preview runtime after installing extras.",
     )
+    setup.add_argument(
+        "--realtime-preview-engine",
+        default="",
+        help="Realtime text engine: sherpa_onnx (Nemotron), kroko_onnx, or off.",
+    )
+    setup.add_argument(
+        "--realtime-preview-model-preset",
+        default="",
+        help="Realtime model preset, for example nemotron-3.5-560ms-int8.",
+    )
+    setup.add_argument(
+        "--realtime-preview-model-dir",
+        type=Path,
+        default=None,
+        help="Optional directory containing an unpacked Nemotron model.",
+    )
     setup.add_argument("--deep", action="store_true", help="Run expensive provider/cache checks during setup.")
     setup.add_argument("--yes", action="store_true", help="Do not prompt before running installer actions.")
     setup.add_argument("--dry-run", action="store_true", help="Print installer actions without running them.")
+    setup.add_argument(
+        "--torch",
+        choices=TORCH_INSTALL_POLICY_CHOICES,
+        default="auto",
+        help="Torch wheel policy: auto-detect CUDA, force cuda/cpu, or skip Torch preinstall.",
+    )
     setup.set_defaults(func=cmd_setup)
 
     install_kroko = subparsers.add_parser(
@@ -2665,6 +3160,8 @@ def build_parser() -> argparse.ArgumentParser:
     config.add_argument("--embedding-python", dest="embedding_python", default=None)
     config.add_argument("--vad-backend", dest="vad_backend", default=None)
     config.add_argument("--realtime-preview-engine", dest="realtime_preview_engine", default=None)
+    config.add_argument("--realtime-preview-model-preset", dest="realtime_preview_model_preset", default=None)
+    config.add_argument("--realtime-preview-model-dir", dest="realtime_preview_model_dir", type=Path, default=None)
     config.add_argument("--realtime-preview-python", dest="realtime_preview_python", default=None)
     config.add_argument("--advanced-args", dest="advanced_args", default=None)
     config.set_defaults(func=cmd_config)

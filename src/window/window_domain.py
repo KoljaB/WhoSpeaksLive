@@ -105,3 +105,4 @@ class LiveSpeakerMemoryUpdateJob:
     duration_seconds: float
     suffix: str = ".live-profile.wav"
     speaker_generation: int = 0
+    speaker_label_generation: int = 0

@@ -8,6 +8,7 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 
@@ -442,6 +443,201 @@ class CorrectionControllerTests(unittest.TestCase):
 
         self.assertFalse(applied)
         self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
+
+    def test_known_prototype_reassignment_deletes_source_when_last_sentence_moves(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer.args.speaker_refinement = True
+        diarizer.args.speaker_refinement_unknown_tentative = False
+        diarizer.args.allow_speaker_reassignment = True
+        diarizer.args.speaker_refinement_small_island_merge = False
+        diarizer._speaker_last_media_end["S1"] = 2.0
+        diarizer._seed_profiles = [{"label": "S2"}]
+        revision = SimpleNamespace(
+            index=1,
+            previous_speaker="S1",
+            assigned_speaker="S2",
+            prototype_score=0.9,
+            prototype_margin=0.8,
+            prototype_delta=0.8,
+            prototype_scores={"S1": 0.1, "S2": 0.9},
+            assignment_source="prototype_reassign",
+        )
+
+        with mock.patch(
+            "window.window_diarizer.find_speaker_prototype_revisions",
+            return_value=[revision],
+        ):
+            diarizer._refine_speaker_assignments()
+
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
+        profiles = {
+            profile["label"]: profile
+            for profile in diarizer.memory.export_profiles()
+        }
+        self.assertNotIn("S1", profiles)
+        self.assertEqual(profiles["S2"]["sentence_count"], 1)
+        self.assertEqual(profiles["S2"]["speech_seconds"], 2.0)
+        self.assertTrue(np.allclose(profiles["S2"]["centroid"], _unit([0.0, 1.0])))
+        self.assertNotIn("S1", diarizer._speaker_metadata)
+        self.assertNotIn("S1", diarizer._speaker_last_media_end)
+        speaker_events = [
+            record["payload"]
+            for record in diarizer.bus.records
+            if record["event"] == "speakers"
+        ]
+        self.assertTrue(speaker_events)
+        self.assertNotIn("S1", {speaker["id"] for speaker in speaker_events[-1]["speakers"]})
+
+    def test_known_prototype_reassignment_keeps_persistent_empty_source(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer.args.speaker_refinement = True
+        diarizer.args.speaker_refinement_unknown_tentative = False
+        diarizer.args.allow_speaker_reassignment = True
+        diarizer.args.speaker_refinement_small_island_merge = False
+        diarizer._speaker_metadata["S1"].update({
+            "source": "reference",
+            "locked": True,
+            "reference_audio": "alice.wav",
+        })
+        revision = SimpleNamespace(
+            index=1,
+            previous_speaker="S1",
+            assigned_speaker="S2",
+            prototype_score=0.9,
+            prototype_margin=0.8,
+            prototype_delta=0.8,
+            prototype_scores={"S1": 0.1, "S2": 0.9},
+            assignment_source="prototype_reassign",
+        )
+
+        with mock.patch(
+            "window.window_diarizer.find_speaker_prototype_revisions",
+            return_value=[revision],
+        ):
+            diarizer._refine_speaker_assignments()
+
+        self.assertIn("S1", {profile["label"] for profile in diarizer.memory.export_profiles()})
+        self.assertIn("S1", diarizer._speaker_metadata)
+
+    def test_empty_reassignment_cleanup_preserves_live_profiles_and_rejects_stale_update(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer._live_embedding_separate = True
+        diarizer.live_memory = SpeakerMemory(min_first_speaker_seconds=0.1)
+        diarizer.live_memory.upsert_profile("S1", _unit([1.0, 0.0]), duration_seconds=2.0)
+        diarizer.live_memory.upsert_profile("S2", _unit([0.0, 1.0]), duration_seconds=2.0)
+        diarizer._sentence_refinement_records[1]["assigned_speaker"] = "S2"
+        diarizer._sentence_refinement_records[1]["provisional_assigned_speaker"] = "S1"
+
+        removed = diarizer._remove_empty_reassigned_speaker_profiles({"S1"})
+
+        self.assertEqual(removed, ["S1"])
+        self.assertEqual(
+            {profile["label"] for profile in diarizer.live_memory.export_profiles()},
+            {"S2"},
+        )
+        live_s2 = diarizer.live_memory.export_profiles()[0]
+        self.assertEqual(live_s2["sentence_count"], 1)
+        self.assertTrue(np.allclose(live_s2["centroid"], _unit([0.0, 1.0])))
+
+        diarizer.memory.upsert_profile("S1", _unit([1.0, 0.0]), duration_seconds=0.1)
+        diarizer._embed_live_audio_chunk = mock.Mock(return_value=_unit([1.0, 0.0]))
+        diarizer._process_live_speaker_memory_update(SimpleNamespace(
+            speaker_id="S1",
+            audio=np.zeros(1600, dtype=np.float32),
+            sample_rate=16000,
+            duration_seconds=0.1,
+            suffix=".live-profile.wav",
+            speaker_generation=diarizer._speaker_generation,
+        ))
+
+        diarizer._embed_live_audio_chunk.assert_not_called()
+        self.assertEqual(
+            {profile["label"] for profile in diarizer.live_memory.export_profiles()},
+            {"S2"},
+        )
+
+    def test_empty_reassignment_cleanup_keeps_preloaded_detected_speaker(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer._seed_profiles = [{"label": "S1"}]
+        diarizer._sentence_refinement_records[1]["assigned_speaker"] = "S2"
+
+        removed = diarizer._remove_empty_reassigned_speaker_profiles({"S1"})
+
+        self.assertEqual(removed, [])
+        self.assertIn("S1", {profile["label"] for profile in diarizer.memory.export_profiles()})
+
+    def test_known_prototype_reassignment_cleans_up_after_complete_batch(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer.args.speaker_refinement = True
+        diarizer.args.speaker_refinement_unknown_tentative = False
+        diarizer.args.allow_speaker_reassignment = True
+        diarizer.args.speaker_refinement_small_island_merge = False
+        revisions = [
+            SimpleNamespace(
+                index=1,
+                previous_speaker="S1",
+                assigned_speaker="S2",
+                prototype_score=0.9,
+                prototype_margin=0.8,
+                prototype_delta=0.8,
+                prototype_scores={"S1": 0.1, "S2": 0.9},
+                assignment_source="prototype_reassign",
+            ),
+            SimpleNamespace(
+                index=2,
+                previous_speaker="S2",
+                assigned_speaker="S1",
+                prototype_score=0.9,
+                prototype_margin=0.8,
+                prototype_delta=0.8,
+                prototype_scores={"S1": 0.9, "S2": 0.1},
+                assignment_source="prototype_reassign",
+            ),
+        ]
+
+        with mock.patch(
+            "window.window_diarizer.find_speaker_prototype_revisions",
+            return_value=revisions,
+        ):
+            diarizer._refine_speaker_assignments()
+
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
+        self.assertEqual(diarizer._sentence_refinement_records[2]["assigned_speaker"], "S1")
+        self.assertEqual(
+            {profile["label"] for profile in diarizer.memory.export_profiles()},
+            {"S1", "S2"},
+        )
+
+    def test_final_review_deletes_empty_detected_profile(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer.args.speaker_refinement = False
+        diarizer.memory.upsert_profile("S5", _unit([1.0, 1.0]), duration_seconds=0.1)
+        diarizer._speaker_metadata["S5"] = {
+            "name": "",
+            "source": "detected",
+            "locked": False,
+            "reference_audio": "",
+        }
+        diarizer._speaker_last_media_end["S5"] = 4.1
+
+        diarizer._finalize_speaker_refinement()
+
+        self.assertNotIn("S5", {profile["label"] for profile in diarizer.memory.export_profiles()})
+        self.assertNotIn("S5", diarizer._speaker_metadata)
+        self.assertNotIn("S5", diarizer._speaker_last_media_end)
+        speaker_events = [
+            record["payload"]
+            for record in diarizer.bus.records
+            if record["event"] == "speakers"
+        ]
+        self.assertTrue(speaker_events)
+        self.assertNotIn("S5", {speaker["id"] for speaker in speaker_events[-1]["speakers"]})
+        status_messages = [
+            str(record["payload"].get("message") or "")
+            for record in diarizer.bus.records
+            if record["event"] == "status"
+        ]
+        self.assertTrue(any("Deleted empty speaker S5 after final review." in message for message in status_messages))
 
     def test_mark_correct_blocks_known_prototype_reassignment(self) -> None:
         config = SpeakerRefinementConfig(

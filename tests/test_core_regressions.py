@@ -80,6 +80,20 @@ class SpeakerDecisionContractTests(unittest.TestCase):
         self.assertEqual(label, "S3")
         self.assertEqual(decision.assigned_speaker, "S3")
 
+    def test_cluster_memory_allocates_after_highest_remaining_speaker_label(self) -> None:
+        memory = ClusterSpeakerMemory(min_first_speaker_seconds=0.1)
+        memory.upsert_profile("S1", np.array([1.0, 0.0, 0.0], dtype=np.float32), 1.0)
+        memory.upsert_profile("S3", np.array([0.0, 1.0, 0.0], dtype=np.float32), 1.0)
+        self.assertEqual(memory.remove_profiles({"S3"}), ["S3"])
+
+        label = memory.add_profile(np.array([0.0, 0.0, 1.0], dtype=np.float32), 1.0)
+
+        self.assertEqual(label, "S4")
+        self.assertEqual(
+            [profile["label"] for profile in memory.export_profiles()],
+            ["S1", "S4"],
+        )
+
 
 class WindowEventBusTests(unittest.TestCase):
     def test_recording_event_bus_records_json_safe_payloads(self) -> None:
@@ -276,6 +290,52 @@ class WindowSentenceTextTests(unittest.TestCase):
             )
 
         self.assertEqual(transcript.sentences[0].text, "Was Beethoven good at music?")
+
+    def test_stream2sentence_result_is_split_at_ellipsis_boundary(self) -> None:
+        import window.window_text as window_text
+
+        words = [
+            TimedWord("Many", 0.0, 0.2),
+            TimedWord("people", 0.25, 0.55),
+            TimedWord("do", 0.6, 0.75),
+            TimedWord("this...", 0.8, 1.1),
+            TimedWord("Mia,", 1.2, 1.35),
+            TimedWord("I", 1.4, 1.5),
+            TimedWord("must", 1.55, 1.75),
+            TimedWord("interrupt.", 1.8, 2.1),
+        ]
+
+        with mock.patch.object(
+            window_text,
+            "generate_sentences",
+            return_value=["Many people do this... Mia, I must interrupt."],
+        ):
+            parts = window_text.split_words_with_stream2sentence(
+                words,
+                left=0.0,
+                right=2.5,
+                unstable_tail_seconds=0.0,
+                final_flush=True,
+            )
+
+        self.assertEqual([part.text for part in parts], ["Many people do this...", "Mia, I must interrupt."])
+        self.assertEqual(parts[0].words[-1]["text"], "this...")
+        self.assertEqual(parts[1].words[0]["text"], "Mia,")
+
+        with mock.patch.object(
+            window_text,
+            "generate_sentences",
+            return_value=["Many people do this... Mia, I must interrupt"],
+        ):
+            live_parts = window_text.split_words_with_stream2sentence(
+                words,
+                left=0.0,
+                right=2.5,
+                unstable_tail_seconds=0.0,
+                final_flush=False,
+            )
+
+        self.assertEqual([part.text for part in live_parts], ["Many people do this..."])
 
     def test_realtime_preview_capitalizes_session_start_and_after_strong_sentence(self) -> None:
         diarizer = WindowDiarizer.__new__(WindowDiarizer)
@@ -1501,6 +1561,11 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertNotIn("${speakerLabel}</span>", HTML)
         self.assertIn("speakerBadge.textContent = speakerLabel;", HTML)
         self.assertIn("row.replaceChildren(top, text);", HTML)
+
+    def test_transcript_turn_grouping_defaults_to_enabled(self) -> None:
+        self.assertIn('id="groupTranscriptTurns" type="checkbox" checked', HTML)
+        self.assertIn('const transcriptGroupTurnsStorageKey = "whospeaks.demo.group_transcript_turns.v2";', HTML)
+        self.assertIn("groupTranscriptTurns.checked = storedBooleanValue(transcriptGroupTurnsStorageKey, true);", HTML)
 
     def test_meeting_intelligence_ui_contract_is_present(self) -> None:
         self.assertIn('data-speaker-tab="intelligence"', HTML)
@@ -2740,6 +2805,7 @@ class WindowStreamingAudioTests(unittest.TestCase):
         self.assertEqual(job.duration_seconds, 1.25)
         self.assertEqual(job.suffix, ".live-sentence.wav")
         self.assertEqual(job.speaker_generation, 4)
+        self.assertEqual(job.speaker_label_generation, 0)
 
     def test_live_speaker_memory_update_reembeds_with_live_provider(self) -> None:
         class Bus:

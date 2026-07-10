@@ -331,16 +331,26 @@ HTML = r"""<!doctype html>
     .row.selectable { cursor:pointer; }
     .row.selected { background:#102436; border-bottom-color:#26506A; box-shadow:inset 3px 0 0 #17B7FE, inset 0 0 0 1px rgba(23,183,254,.42); }
     .row.selected.needs-review, .row.selected.user-corrected { box-shadow:inset 3px 0 0 #17B7FE, inset 0 0 0 1px rgba(23,183,254,.42); }
+    .row.group-leader { background:rgba(16,36,54,.24); }
+    .row.group-hidden { display:none; }
+    .row.group-needs-review { box-shadow:inset 3px 0 0 #F59E0B; }
+    .row.group-corrected { box-shadow:inset 3px 0 0 #22C55E; }
     .top { display:flex; gap:8px; align-items:flex-start; justify-content:space-between; margin-bottom:4px; color:var(--muted); font-size:11px; }
     .top-left { min-width:0; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
     .badge { font-weight:400; border-radius:999px; padding:2px 8px; border:1px solid currentColor; background:#0B1015; }
     .badge.unknown { color:#c3ccd6; border-color:#7d8997; background:#0B1015; }
     .badge.new { color:var(--text); border-color:#ef4444; background:#b91c1c; text-transform:uppercase; letter-spacing:0; }
     .badge.state { color:#d7dee8; border-color:var(--line); background:#0B1015; font-weight:400; }
-    .transcript-panel.hide-tags .badge.new, .transcript-panel.hide-tags .badge.state { display:none; }
+    .badge.group-count { color:#C6D0DC; border-color:#304255; background:#121C26; }
+    .transcript-panel.hide-tags .badge.new, .transcript-panel.hide-tags .badge.state, .transcript-panel.hide-tags .badge.group-count { display:none; }
     .transcript-panel.hide-time .sentence-duration, .transcript-panel.hide-time .sentence-range { display:none; }
     .transcript-panel.hide-speech-rate .sentence-speech-rate { display:none; }
     .transcript-panel.hide-probabilities .prob { display:none; }
+    .transcript-panel.hide-review-hints .row.needs-review,
+    .transcript-panel.hide-review-hints .row.group-needs-review { box-shadow:none; }
+    .transcript-panel.hide-review-hints .row.selected.needs-review,
+    .transcript-panel.hide-review-hints .row.selected.group-needs-review { box-shadow:inset 3px 0 0 #17B7FE, inset 0 0 0 1px rgba(23,183,254,.42); }
+    .transcript-panel.hide-review-hints .review-reasons.needs-review-hints { display:none; }
     .speaker-name, .speaker-row-title { font-weight:600; }
     .row.provisional-assignment .speaker-name { opacity:.5; }
     .text { font-size:15px; line-height:1.34; }
@@ -681,6 +691,8 @@ HTML = r"""<!doctype html>
               <div id="transcriptSettingsPanel" class="transcript-settings-panel" hidden>
                 <label><input id="showTranscriptTags" type="checkbox" checked> Show tags</label>
                 <label><input id="showTranscriptTime" type="checkbox" checked> Show time information</label>
+                <label title="Display only; original sentence boundaries are preserved."><input id="groupTranscriptTurns" type="checkbox" checked> Group consecutive same-speaker sentences</label>
+                <label><input id="showTranscriptReviewHints" type="checkbox"> Show review hints</label>
                 <label><input id="showTranscriptSpeechRate" type="checkbox" checked> Show speech/audio rate</label>
                 <label><input id="showTranscriptProbabilities" type="checkbox" checked> Show probabilities</label>
               </div>
@@ -867,6 +879,8 @@ const transcriptSettingsButton = document.getElementById("transcriptSettings");
 const transcriptSettingsPanel = document.getElementById("transcriptSettingsPanel");
 const showTranscriptTags = document.getElementById("showTranscriptTags");
 const showTranscriptTime = document.getElementById("showTranscriptTime");
+const groupTranscriptTurns = document.getElementById("groupTranscriptTurns");
+const showTranscriptReviewHints = document.getElementById("showTranscriptReviewHints");
 const showTranscriptSpeechRate = document.getElementById("showTranscriptSpeechRate");
 const showTranscriptProbabilities = document.getElementById("showTranscriptProbabilities");
 const undoCorrectionButton = document.getElementById("undoCorrection");
@@ -971,6 +985,8 @@ let mutedSpeakerIds = new Set();
 let followLiveEnabled = true;
 let transcriptSearchText = "";
 let transcriptReviewFilter = "all";
+const transcriptGroupTurnsStorageKey = "whospeaks.demo.group_transcript_turns.v2";
+const transcriptReviewHintsStorageKey = "whospeaks.demo.show_transcript_review_hints";
 let hasUndoableCorrection = false;
 let selectedTranscriptRowIndexes = new Set();
 let lastSelectedTranscriptRowIndex = "";
@@ -1044,6 +1060,22 @@ function storeSessionValue(key, value) {
     else localStorage.removeItem(key);
   } catch (_) {}
 }
+function storedBooleanValue(key, fallback = false) {
+  try {
+    const value = localStorage.getItem(key);
+    if (value === null) return Boolean(fallback);
+    return value === "true";
+  } catch (_) {
+    return Boolean(fallback);
+  }
+}
+function storeBooleanValue(key, value) {
+  try {
+    localStorage.setItem(key, value ? "true" : "false");
+  } catch (_) {}
+}
+groupTranscriptTurns.checked = storedBooleanValue(transcriptGroupTurnsStorageKey, true);
+showTranscriptReviewHints.checked = storedBooleanValue(transcriptReviewHintsStorageKey, false);
 function initializeSessionIdentity() {
   sessionClientId = storedSessionValue(sessionClientIdStorageKey);
   if (!sessionClientId) {
@@ -2557,9 +2589,13 @@ function meetingEvidenceRowIndex(rowRef, rowId = "") {
 function findMeetingEvidenceTranscriptRow(rowRef, rowId = "") {
   const index = meetingEvidenceRowIndex(rowRef, rowId);
   if (!index) return null;
-  return Array.from(sentences.querySelectorAll(".row")).find(row => (
+  const row = Array.from(sentences.querySelectorAll(".row")).find(row => (
     row.dataset.index === index && row.dataset.realtime !== "true"
   )) || null;
+  if (row && row.dataset.groupHidden === "true" && row.dataset.groupLeader) {
+    return findFinalSentenceRow(row.dataset.groupLeader) || row;
+  }
+  return row;
 }
 function clearMeetingEvidenceHighlight() {
   Array.from(sentences.querySelectorAll(".row.meeting-evidence-row")).forEach(row => {
@@ -3281,13 +3317,147 @@ function transcriptSearchVisible(row) {
   return query.split(/\s+/).every(term => searchable.includes(term));
 }
 function transcriptReviewVisible(row) {
-  if (transcriptReviewFilter === "needs-review") return row.dataset.needsReview === "true";
-  if (transcriptReviewFilter === "corrected") return row.dataset.corrected === "true";
+  if (transcriptReviewFilter === "needs-review") return row.dataset.needsReview === "true" || row.dataset.groupNeedsReview === "true";
+  if (transcriptReviewFilter === "corrected") return row.dataset.corrected === "true" || row.dataset.groupCorrected === "true";
   return true;
+}
+function transcriptGroupTurnsEnabled() {
+  return Boolean(groupTranscriptTurns && groupTranscriptTurns.checked);
+}
+function transcriptRowsInDisplayOrder() {
+  return Array.from(sentences.querySelectorAll(".row")).sort((a, b) => {
+    if (rowShouldSortBefore(a, b)) return -1;
+    if (rowShouldSortBefore(b, a)) return 1;
+    return 0;
+  });
+}
+function cleanedTranscriptGroupText(rows) {
+  return rows
+    .map(row => row.dataset.text || "")
+    .map(text => text.trim())
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+function removeTranscriptGroupCount(row) {
+  const badge = row && row.querySelector(".group-count");
+  if (badge) badge.remove();
+}
+function setTranscriptGroupCount(row, count) {
+  const topLeft = row && row.querySelector(".top-left");
+  if (!topLeft) return;
+  let badge = topLeft.querySelector(".group-count");
+  if (!badge) {
+    badge = document.createElement("span");
+    badge.className = "badge group-count";
+    topLeft.appendChild(badge);
+  }
+  badge.textContent = `${count} sentence${count === 1 ? "" : "s"}`;
+}
+function updateSentenceRowVisibleTextRange(row, textValue, startValue, endValue, durationValue = null) {
+  if (!row) return;
+  const text = String(textValue || "");
+  const start = finiteAudioSecond(startValue, 0);
+  const end = finiteAudioSecond(endValue, start);
+  const duration = durationValue === null ? Math.max(0, end - start) : Math.max(0, Number(durationValue || 0));
+  const textNode = row.querySelector(".text");
+  if (textNode) textNode.textContent = text;
+  const durationNode = row.querySelector(".sentence-duration");
+  if (durationNode) durationNode.textContent = secondsLabel(duration);
+  const rangeNode = row.querySelector(".sentence-range");
+  if (rangeNode) rangeNode.textContent = `(${secondsLabel(start)} - ${secondsLabel(end)})`;
+}
+function resetTranscriptGroupingRows() {
+  Array.from(sentences.querySelectorAll(".row")).forEach(row => {
+    row.classList.remove("group-leader", "group-hidden", "group-needs-review", "group-corrected");
+    delete row.dataset.groupHidden;
+    delete row.dataset.groupLeader;
+    delete row.dataset.groupSize;
+    delete row.dataset.groupIndexes;
+    delete row.dataset.groupText;
+    delete row.dataset.groupStart;
+    delete row.dataset.groupEnd;
+    delete row.dataset.groupDuration;
+    delete row.dataset.groupNeedsReview;
+    delete row.dataset.groupCorrected;
+    row.dataset.searchText = row.dataset.text || "";
+    row.title = "";
+    removeTranscriptGroupCount(row);
+    updateSentenceRowVisibleTextRange(row, row.dataset.text || "", row.dataset.start, row.dataset.end);
+  });
+}
+function transcriptRowCanGroup(row) {
+  if (!row || row.dataset.realtime === "true") return false;
+  if (row.dataset.pending === "true" || row.dataset.provisionalAssignment === "true") return false;
+  if (row.dataset.provisionalSplit === "true") return false;
+  const speakerId = row.dataset.speaker || "";
+  if (!speakerId || speakerId === "UNKNOWN") return false;
+  return Boolean((row.dataset.text || "").trim());
+}
+function applyTranscriptGroupRows(rows) {
+  if (!Array.isArray(rows) || rows.length < 2) return;
+  const leader = rows[0];
+  const speakerId = leader.dataset.speaker || "";
+  const text = cleanedTranscriptGroupText(rows);
+  const start = finiteAudioSecond(leader.dataset.start, 0);
+  const end = finiteAudioSecond(rows[rows.length - 1].dataset.end, start);
+  const duration = rows.reduce((total, row) => {
+    const rowStart = finiteAudioSecond(row.dataset.start, 0);
+    const rowEnd = finiteAudioSecond(row.dataset.end, rowStart);
+    return total + Math.max(0, rowEnd - rowStart);
+  }, 0);
+  const indexes = rows.map(row => String(row.dataset.index || "")).filter(Boolean);
+  const hasReview = rows.some(row => row.dataset.needsReview === "true");
+  const hasCorrection = rows.some(row => row.dataset.corrected === "true");
+  leader.classList.add("group-leader");
+  leader.classList.toggle("group-needs-review", hasReview);
+  leader.classList.toggle("group-corrected", hasCorrection && !hasReview);
+  leader.dataset.groupLeader = String(leader.dataset.index || "");
+  leader.dataset.groupSize = String(rows.length);
+  leader.dataset.groupIndexes = JSON.stringify(indexes);
+  leader.dataset.groupText = text;
+  leader.dataset.groupStart = String(start);
+  leader.dataset.groupEnd = String(end);
+  leader.dataset.groupDuration = String(duration);
+  leader.dataset.groupNeedsReview = hasReview ? "true" : "false";
+  leader.dataset.groupCorrected = hasCorrection ? "true" : "false";
+  leader.dataset.searchText = text;
+  leader.title = "Grouped display; turn grouping can be switched off in transcript settings.";
+  updateSentenceRowVisibleTextRange(leader, text, start, end, duration);
+  setTranscriptGroupCount(leader, rows.length);
+  rows.slice(1).forEach(row => {
+    row.classList.add("group-hidden");
+    row.dataset.groupHidden = "true";
+    row.dataset.groupLeader = speakerId ? String(leader.dataset.index || "") : "";
+  });
+}
+function refreshTranscriptGrouping() {
+  resetTranscriptGroupingRows();
+  if (transcriptGroupTurnsEnabled()) {
+    let currentGroup = [];
+    transcriptRowsInDisplayOrder().forEach(row => {
+      if (!transcriptRowCanGroup(row)) {
+        applyTranscriptGroupRows(currentGroup);
+        currentGroup = [];
+        return;
+      }
+      if (!currentGroup.length || currentGroup[0].dataset.speaker === row.dataset.speaker) {
+        currentGroup.push(row);
+      } else {
+        applyTranscriptGroupRows(currentGroup);
+        currentGroup = [row];
+      }
+    });
+    applyTranscriptGroupRows(currentGroup);
+  }
+  refreshTranscriptVisibility();
+  syncTranscriptSelectionState();
 }
 function refreshTranscriptVisibility() {
   Array.from(sentences.querySelectorAll(".row")).forEach(row => {
-    row.hidden = !speakerTranscriptVisible(row.dataset.speaker) || !transcriptSearchVisible(row) || !transcriptReviewVisible(row);
+    const hiddenByGroup = row.dataset.groupHidden === "true";
+    row.hidden = hiddenByGroup || !speakerTranscriptVisible(row.dataset.speaker) || !transcriptSearchVisible(row) || !transcriptReviewVisible(row);
   });
 }
 function setTranscriptReviewFilter(filter) {
@@ -3322,10 +3492,12 @@ function syncCorrectionUndoState(enabled = hasUndoableCorrection) {
 }
 function transcriptRowSelectionKey(row) {
   if (!row || row.dataset.realtime === "true" || row.dataset.selectable !== "true") return "";
+  if (row.dataset.groupHidden === "true") return "";
+  if (Number(row.dataset.groupSize || 1) > 1) return "";
   return String(row.dataset.index || "");
 }
 function selectableTranscriptRows() {
-  return Array.from(sentences.querySelectorAll(".row[data-selectable='true']")).filter(row => row.dataset.realtime !== "true");
+  return Array.from(sentences.querySelectorAll(".row[data-selectable='true']")).filter(row => Boolean(transcriptRowSelectionKey(row)));
 }
 function selectedTranscriptRows() {
   return selectableTranscriptRows().filter(row => selectedTranscriptRowIndexes.has(transcriptRowSelectionKey(row)));
@@ -3471,16 +3643,15 @@ function syncTranscriptSelectionState() {
     const key = transcriptRowSelectionKey(row);
     const selected = Boolean(key && selectedTranscriptRowIndexes.has(key));
     row.classList.toggle("selected", selected);
-    if (row.dataset.selectable === "true") {
-      row.classList.add("selectable");
-      row.setAttribute("role", "option");
-      row.setAttribute("aria-selected", selected ? "true" : "false");
-      row.tabIndex = 0;
+    if (key) {
+      configureSentenceRowSelection(row);
     } else {
       row.classList.remove("selectable", "selected");
       row.removeAttribute("role");
       row.removeAttribute("aria-selected");
       row.removeAttribute("tabindex");
+      row.onclick = null;
+      row.onkeydown = null;
     }
   });
   syncBulkCorrectionToolbar();
@@ -3540,6 +3711,7 @@ function setTranscriptSettingsOpen(open) {
 function applyTranscriptDisplaySettings() {
   transcriptPanel.classList.toggle("hide-tags", !showTranscriptTags.checked);
   transcriptPanel.classList.toggle("hide-time", !showTranscriptTime.checked);
+  transcriptPanel.classList.toggle("hide-review-hints", !showTranscriptReviewHints.checked);
   transcriptPanel.classList.toggle("hide-speech-rate", !showTranscriptSpeechRate.checked);
   transcriptPanel.classList.toggle("hide-probabilities", !showTranscriptProbabilities.checked);
 }
@@ -4332,15 +4504,16 @@ function createSpeakerDeleteButton(speaker) {
 }
 function createReviewReasonGroup(reasons, item) {
   const group = document.createElement("span");
-  group.className = "review-reasons";
   const status = correctionStatus(item);
   if (status === "user_corrected" || status === "user_confirmed") {
+    group.className = "review-reasons correction-hints";
     const chip = document.createElement("span");
     chip.className = "review-chip corrected";
     chip.textContent = status === "user_confirmed" ? "marked correct" : "corrected";
     group.appendChild(chip);
     return group;
   }
+  group.className = "review-reasons needs-review-hints";
   reasons.slice(0, 3).forEach(reason => {
     const chip = document.createElement("span");
     chip.className = "review-chip";
@@ -4913,10 +5086,9 @@ function optionalNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
-function transcriptExportRows(speakerId = null) {
+function transcriptAtomicExportRows() {
   return Array.from(sentences.querySelectorAll(".row"))
     .filter(row => row.dataset.realtime !== "true")
-    .filter(row => !speakerId || row.dataset.speaker === speakerId)
     .map(row => ({
       index: row.dataset.index || "",
       speaker_id: row.dataset.speaker === "UNKNOWN" ? null : row.dataset.speaker,
@@ -4930,14 +5102,85 @@ function transcriptExportRows(speakerId = null) {
       top_similarity: optionalNumber(row.dataset.topSimilarity),
       margin: optionalNumber(row.dataset.margin),
       unknown_probability: optionalNumber(row.dataset.unknownProbability),
+      pending: row.dataset.pending === "true",
+      provisional_assignment: row.dataset.provisionalAssignment === "true",
       needs_review: row.dataset.needsReview === "true",
       review_reasons: (row.dataset.reviewReasons || "").split("|").filter(Boolean),
       correction_status: row.dataset.correctionStatus || "",
     }))
     .filter(row => row.text.trim());
 }
+function transcriptExportRows(speakerId = null) {
+  return transcriptAtomicExportRows().filter(row => !speakerId || row.speaker_id === speakerId);
+}
+function transcriptExportRowCanGroup(row) {
+  return Boolean(
+    row
+    && row.speaker_id
+    && !row.pending
+    && !row.provisional_assignment
+    && row.text
+    && row.text.trim()
+  );
+}
+function mergeTranscriptExportRows(rows) {
+  const startRow = rows[0];
+  const endRow = rows[rows.length - 1];
+  const text = rows.map(row => row.text.trim()).filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+  const reviewReasons = Array.from(new Set(rows.flatMap(row => row.review_reasons || [])));
+  const assignmentSources = Array.from(new Set(rows.map(row => row.assignment_source || "").filter(Boolean)));
+  const correctionStatuses = Array.from(new Set(rows.map(row => row.correction_status || "").filter(Boolean)));
+  return {
+    ...startRow,
+    index: rows.map(row => row.index).filter(Boolean).join(","),
+    sentence_indexes: rows.map(row => row.index).filter(Boolean),
+    sentence_count: rows.length,
+    start: startRow.start,
+    end: endRow.end,
+    start_seconds: startRow.start_seconds,
+    end_seconds: endRow.end_seconds,
+    text,
+    assignment_source: assignmentSources.length === 1 ? assignmentSources[0] : (assignmentSources.length ? "mixed" : ""),
+    top_similarity: null,
+    margin: null,
+    unknown_probability: null,
+    pending: false,
+    provisional_assignment: false,
+    needs_review: rows.some(row => row.needs_review),
+    review_reasons: reviewReasons,
+    correction_status: correctionStatuses.length === 1 ? correctionStatuses[0] : (correctionStatuses.length ? "mixed" : ""),
+  };
+}
+function transcriptGroupedExportRows() {
+  const result = [];
+  let currentGroup = [];
+  transcriptAtomicExportRows().forEach(row => {
+    if (!transcriptExportRowCanGroup(row)) {
+      if (currentGroup.length) {
+        result.push(currentGroup.length > 1 ? mergeTranscriptExportRows(currentGroup) : currentGroup[0]);
+      }
+      currentGroup = [];
+      result.push(row);
+      return;
+    }
+    if (!currentGroup.length || currentGroup[0].speaker_id === row.speaker_id) {
+      currentGroup.push(row);
+    } else {
+      result.push(currentGroup.length > 1 ? mergeTranscriptExportRows(currentGroup) : currentGroup[0]);
+      currentGroup = [row];
+    }
+  });
+  if (currentGroup.length) {
+    result.push(currentGroup.length > 1 ? mergeTranscriptExportRows(currentGroup) : currentGroup[0]);
+  }
+  return result;
+}
+function transcriptTextExportRows(speakerId = null) {
+  const rows = transcriptGroupTurnsEnabled() ? transcriptGroupedExportRows() : transcriptAtomicExportRows();
+  return rows.filter(row => !speakerId || row.speaker_id === speakerId);
+}
 function transcriptExportText(speakerId = null) {
-  const rows = transcriptExportRows(speakerId);
+  const rows = transcriptTextExportRows(speakerId);
   return rows.map(row => `[${row.start} - ${row.end}] ${row.speaker}: ${row.text}`).join("\n");
 }
 function transcriptExportFilename(speakerId = null) {
@@ -5322,6 +5565,8 @@ function renderSentence(item) {
   row.dataset.fullEnd = item.realtime ? String(endSeconds) : "";
   row.dataset.fullText = item.realtime ? (item.text || "") : "";
   row.dataset.speaker = displaySpeakerId || "UNKNOWN";
+  row.dataset.pending = item.pending ? "true" : "false";
+  row.dataset.provisionalAssignment = item.provisional_assignment ? "true" : "false";
   row.dataset.needsReview = (!item.realtime && !item.pending && reviewReasons.length > 0) ? "true" : "false";
   row.dataset.reviewReasons = reviewReasons.join("|");
   row.dataset.corrected = corrected ? "true" : "false";
@@ -5433,7 +5678,7 @@ function renderSentence(item) {
   removeOverlappingSettlingRealtimeRows(item, row);
   updateCurrentLiveSpeakerFromRealtimeRows();
   refreshSpeakerPanelSentenceCounts();
-  refreshTranscriptVisibility();
+  refreshTranscriptGrouping();
   if (!item.realtime) {
     syncBulkCorrectionToolbar();
   }
@@ -5489,8 +5734,15 @@ transcriptSettingsButton.addEventListener("click", event => {
   setTranscriptSettingsOpen(transcriptSettingsPanel.hidden);
 });
 transcriptSettingsPanel.addEventListener("click", event => event.stopPropagation());
-[showTranscriptTags, showTranscriptTime, showTranscriptSpeechRate, showTranscriptProbabilities].forEach(control => {
+[showTranscriptTags, showTranscriptTime, showTranscriptReviewHints, showTranscriptSpeechRate, showTranscriptProbabilities].forEach(control => {
   control.addEventListener("change", applyTranscriptDisplaySettings);
+});
+showTranscriptReviewHints.addEventListener("change", () => {
+  storeBooleanValue(transcriptReviewHintsStorageKey, showTranscriptReviewHints.checked);
+});
+groupTranscriptTurns.addEventListener("change", () => {
+  storeBooleanValue(transcriptGroupTurnsStorageKey, groupTranscriptTurns.checked);
+  refreshTranscriptGrouping();
 });
 releaseSessionButton.addEventListener("click", () => {
   releaseSession("released").catch(error => log(`Release failed: ${error.message}`));
