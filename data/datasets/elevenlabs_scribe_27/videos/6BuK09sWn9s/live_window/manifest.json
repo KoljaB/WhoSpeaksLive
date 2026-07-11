@@ -1,0 +1,13 @@
+{
+  "name": "6BuK09sWn9s_livewindow_saved_session",
+  "video_id": "6BuK09sWn9s",
+  "source_url": "https://www.youtube.com/watch?v=6BuK09sWn9s",
+  "sentence_count": 58,
+  "embedding_provider": "espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37",
+  "embedding_providers": [
+    "espnet_ecapa_wavlm_joint",
+    "speechbrain_resnet",
+    "wespeaker_campplus"
+  ],
+  "source_session": "D:\\Projekte\\SpeakerDiarization\\runtime\\sessions\\f22cf4eb4580463b99fdffb11bf58262"
+}

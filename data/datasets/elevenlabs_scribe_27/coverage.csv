@@ -1,6 +1,7 @@
 video_id,baseline_key,baseline_segments,baseline_embedding_providers,live_sentences,live_audio_clips,live_embedding_providers,live_source_kind,complete_live_embeddings,title
 1NBVQB-Srpw,1NBVQB-Srpw,85,15,105,105,15,repo_complete_23,true,Interview with drug dealer - Louis Theroux - BBC
 20v1OxUXcQY,20v1OxUXcQY,98,15,138,138,15,repo_complete_23,true,Simon Pegg: The truth about Benedict Cumberbatch
+6BuK09sWn9s,6BuK09sWn9s,24,0,58,0,3,saved_live_session,false,YouTube 6BuK09sWn9s - Jul 10 16:32
 acbnyagl8jo,acbnyagl8jo,94,15,115,115,15,repo_complete_23,true,Margin Call meeting scene
 aHGd6LqAVzw,aHGd6LqAVzw,57,15,92,92,15,repo_complete_23,true,When Elon Musk realised China's richest man is an idiot
 blcKeLDDzSM,blcKeLDDzSM,61,15,116,116,15,repo_complete_23,true,Barbie Instagram - SNL

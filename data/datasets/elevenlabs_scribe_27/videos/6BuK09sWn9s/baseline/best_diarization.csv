@@ -1,0 +1,25 @@
+segment_id,speaker_id,start_sec,end_sec,duration_sec,text
+SEGMENT_0001,SPEAKER_1,2.98,19.58,16.6,"Ja, vielen Dank für euer Kommen. Schade, dass Eva Schilling und Anne Lindner nicht anwesend sein können. Mia, ich möchte dir gerne meine neue Assistentin vorstellen, Vera Becker. Sie wird uns von nun an tatkräftig unterstützen. Frau Becker, das ist unsere Designerin Mia Storm."
+SEGMENT_0002,SPEAKER_2,19.8,20.22,0.42,Hallo.
+SEGMENT_0003,SPEAKER_2,20.32,21.6,1.28,Herzlich willkommen im Team.
+SEGMENT_0004,SPEAKER_3,22.2,23.86,1.66,"Danke. Schön, Sie kennenzulernen."
+SEGMENT_0005,SPEAKER_1,24.68,40.4,15.72,"Gut, dann denke ich, dass wir beginnen können. Frau Becker, führen Sie bitte Protokoll und schicken es später per E-Mail an uns und die Kollegin Lindner und Schilling. Ein Ergebnisprotokoll genügt. Fassen Sie also bitte nur die Ergebnisse zusammen. Sie müssen nicht den ganzen Ablauf dokumentieren."
+SEGMENT_0006,SPEAKER_3,40.44,41.76,1.32,Gut.
+SEGMENT_0007,SPEAKER_1,42.03,55.68,13.65,"Die Agenda hatte ich ja zur Vorbereitung bereits per E-Mail geschickt. Hier noch mal stichwortartig die Punkte für heute. Erstens: Verteilung der wichtigsten Aufgaben hinsichtlich der Produktion unserer neuen Kollektion. Zweitens: Vertrieb, Besuch von Simon Götz."
+SEGMENT_0008,SPEAKER_1,57.26,63.02,5.76,"Ich habe etwa fünfundvierzig Minuten für das Meeting eingeplant. Ich denke, in der Zeit sollten wir alle Punkte besprochen haben."
+SEGMENT_0009,SPEAKER_1,64.92,76.94,12.02,"Gut. Dann möchte ich nun mit dem ersten Punkt der Tagesordnung beginnen. Zunächst müssen wir klären, welche Stoffe wir für die neue Kollektion verwenden. Mia, hast du dich schon entschieden, welche Textilien du bevorzugst?"
+SEGMENT_0010,SPEAKER_2,77.02,94.66,17.64,"Ja, ich habe mich entschieden. Ich möchte diesmal mit verschiedensten Baumwollstoffen arbeiten. Ich finde, Baumwolle passt perfekt zu meinen Entwürfen. Also, ich habe nämlich von der Konkurrenz gehört, dass derzeit fast alle mit Seide arbeiten. Das finde ich langweilig und völlig unkreativ. Außerdem machen viele-"
+SEGMENT_0011,SPEAKER_1,94.7,120.7,26.0,"Mia, ich muss dich leider unterbrechen. Wir können jetzt kein Gespräch über Textile oder die Kollektion der Konkurrenz führen. Hier und heute geht es darum, die Aufgaben für die nächsten Wochen zu verteilen, damit wir unsere eigene Kollektion fertigstellen können. Dazu gehört unter anderem, dass wir uns bei unserem neuen Lieferanten Stoffmuster bestellen und die aktuellen Preise erfragen. Von daher genügt mir fürs Erste die Information, dass du dich grundsätzlich für Baumwollstoff entschieden hast."
+SEGMENT_0012,SPEAKER_1,121.92,123.72,1.8,Bis wann genau brauchst du die Stoffe?
+SEGMENT_0013,SPEAKER_2,124.8,128.62,3.82,"Ach, ich denke, es reicht, wenn wir die Stoffe bis Ende nächster Woche bestellen."
+SEGMENT_0014,SPEAKER_1,129.66,140.96,11.3,"Diese Antwort ist mir zu vage. Wir wissen noch gar nicht, wie lange die Lieferfristen des neuen Lieferanten sind. Bitte sag uns, bis wann du die Stoffe spätestens benötigst, damit wir rechtzeitig mit der Produktion beginnen können."
+SEGMENT_0015,SPEAKER_2,141.1,149.12,8.02,"Nu, ich schätze, dass wir mindestens drei Monate benötigen. Ich brauche die Stoffe also spätestens Mitte nächsten Monats."
+SEGMENT_0016,SPEAKER_1,149.44,167.4,17.96,"Prima. Das ist eine wichtige Information. Um die Stoffbestellungen kümmert sich bei uns Eva Schilling. Frau Becker, bitte geben Sie diese Information an Frau Schilling weiter. Sie soll den neuen Lieferanten kontaktieren, um Stoffmuster für Baumwollstoffe anzufordern und Angebote und Informationen über Mengenrabatte einzuholen."
+SEGMENT_0017,SPEAKER_3,167.46,168.78,1.32,"Ja, gut."
+SEGMENT_0018,SPEAKER_3,170.32,171.98,1.66,"Oh, Entschuldigung."
+SEGMENT_0019,SPEAKER_3,176.69,177.6,0.91,Entschuldigung.
+SEGMENT_0020,SPEAKER_1,177.64,184.16,6.52,Bitte schalten Sie das Handy aus oder auf lautlos. Beim nächsten Klingeln während einer Besprechung müssen Sie fünf Euro in die Kaffeekasse bezahlen.
+SEGMENT_0021,SPEAKER_3,186.2,188.42,2.22,Es wird nicht mehr vorkommen.
+SEGMENT_0022,SPEAKER_1,188.46,193.079,4.619,"Also gut, ich denke, damit haben wir den ersten Punkt auf der Agenda auch abgeschlossen. Oder gibt es noch Fragen dazu?"
+SEGMENT_0023,SPEAKER_2,193.66,193.96,0.3,Nein.
+SEGMENT_0024,SPEAKER_3,195.42,196.04,0.62,Von mir auch nicht.

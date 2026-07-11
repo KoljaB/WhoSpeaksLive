@@ -2214,6 +2214,33 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--speaker-refinement-known-min-similarity", type=float, default=-0.039)
     parser.add_argument("--speaker-refinement-known-min-delta", type=float, default=0.04)
     parser.add_argument(
+        "--delayed-multirow-clustering",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Split a polluted speaker profile only after multiple uncertain rows across time "
+            "jointly support a stable second voice cluster."
+        ),
+    )
+    parser.add_argument("--delayed-clustering-core-max-unknown", type=float, default=0.50)
+    parser.add_argument("--delayed-clustering-core-min-duration", type=float, default=0.80)
+    parser.add_argument("--delayed-clustering-min-core-rows", type=int, default=4)
+    parser.add_argument("--delayed-clustering-min-core-duration", type=float, default=8.0)
+    parser.add_argument("--delayed-clustering-candidate-min-unknown", type=float, default=0.50)
+    parser.add_argument("--delayed-clustering-candidate-min-duration", type=float, default=0.35)
+    parser.add_argument("--delayed-clustering-candidate-max-core-similarity", type=float, default=0.45)
+    parser.add_argument("--delayed-clustering-candidate-min-similarity", type=float, default=0.20)
+    parser.add_argument("--delayed-clustering-candidate-min-gain", type=float, default=0.02)
+    parser.add_argument("--delayed-clustering-min-candidate-rows", type=int, default=4)
+    parser.add_argument("--delayed-clustering-min-candidate-duration", type=float, default=8.0)
+    parser.add_argument("--delayed-clustering-min-candidate-span", type=float, default=12.0)
+    parser.add_argument("--delayed-clustering-min-candidate-time-groups", type=int, default=2)
+    parser.add_argument("--delayed-clustering-time-group-gap", type=float, default=8.0)
+    parser.add_argument("--delayed-clustering-min-average-gain", type=float, default=0.22)
+    parser.add_argument("--delayed-clustering-min-leave-one-out-similarity", type=float, default=0.16)
+    parser.add_argument("--delayed-clustering-max-core-centroid-similarity", type=float, default=0.58)
+    parser.add_argument("--delayed-clustering-max-new-speakers", type=int, default=2)
+    parser.add_argument(
         "--speaker-refinement-final-passes",
         type=int,
         default=1,

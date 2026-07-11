@@ -1,21 +1,21 @@
-# ElevenLabs Scribe 27-Video Dataset
+# ElevenLabs Scribe Regression Dataset
 
-This is the canonical local dataset root for the 27-video ElevenLabs Scribe baseline corpus.
+This is the canonical local regression corpus for ElevenLabs references and live-compatible cached replay.
 
 ## Quick Facts
 
 | Item | Value |
 | --- | ---: |
-| Videos | 27 |
-| Baseline videos with canonical diarization | 27 |
+| Videos | 28 |
+| Baseline videos with canonical diarization | 28 |
 | Baseline videos with all provider embeddings | 27 |
-| Baseline segments | 2586 |
-| Live videos with sentence/audio caches | 27 |
+| Baseline segments | 2610 |
+| Live videos with sentence/audio caches | 28 |
 | Live videos with all provider embeddings | 27 |
-| Live videos still missing provider embeddings | 0 |
-| Live sentences | 3889 |
+| Live videos still missing provider embeddings | 1 |
+| Live sentences | 3947 |
 | Embedding providers | 15 |
-| Default optimizer evaluation videos | 21 |
+| Default optimizer evaluation videos | 22 |
 | Evaluation blacklist entries | 6 |
 
 ## Layout
@@ -53,7 +53,7 @@ Every folder under `videos/` is named by canonical YouTube video ID. Source alia
 
 ## Current Live Embedding Gaps
 
-No live embedding gaps remain.
+`6BuK09sWn9s` intentionally carries the three providers from the current live stack (`espnet_ecapa_wavlm_joint`, `speechbrain_resnet`, and `wespeaker_campplus`); the other historical provider caches are not required for its regression score.
 
 ## Evaluation Blacklist
 
@@ -74,8 +74,9 @@ No live embedding gaps remain.
 
 ## Rebuild
 
-Run this from the repo root to regenerate the normalized corpus from the current source folders:
+Run the first command from the repo root to regenerate the original normalized corpus. The second command restores the German saved-session regression when its local source session is available:
 
 ```powershell
 python data\datasets\_build_elevenlabs_scribe_27.py
+python data\datasets\_add_session_regression_video.py --video-id 6BuK09sWn9s --source-url https://www.youtube.com/watch?v=6BuK09sWn9s --session-dir runtime\sessions\f22cf4eb4580463b99fdffb11bf58262 --reference-md runtime\outputs\elevenlabs_scribe\6BuK09sWn9s\6BuK09sWn9s.elevenlabs_best_diarization.md
 ```

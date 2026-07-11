@@ -30,6 +30,7 @@ from speakers.speaker_embedding_cluster import (
     SpeakerDecision,
     SpeakerMemory,
     cosine_similarity,
+    normalize_vector,
 )
 from window.window_config import (
     DEFAULT_KROKO_PREVIEW_AUTO_DOWNLOAD,
@@ -78,7 +79,9 @@ from window.window_text import (
     word_attr,
 )
 from window.window_speaker_refinement import (
+    DelayedClusteringConfig,
     SpeakerRefinementConfig,
+    find_delayed_speaker_splits,
     find_speaker_prototype_revisions,
     rejected_speaker_labels,
     user_deleted_speaker_label,
@@ -3084,6 +3087,43 @@ class WindowDiarizer:
             candidate.duration_seconds,
             payload,
         )
+
+    def _delayed_clustering_config(self) -> DelayedClusteringConfig:
+        return DelayedClusteringConfig(
+            core_max_unknown=float(getattr(self.args, "delayed_clustering_core_max_unknown", 0.50)),
+            core_min_duration=float(getattr(self.args, "delayed_clustering_core_min_duration", 0.80)),
+            min_core_rows=int(getattr(self.args, "delayed_clustering_min_core_rows", 4)),
+            min_core_duration=float(getattr(self.args, "delayed_clustering_min_core_duration", 8.0)),
+            candidate_min_unknown=float(
+                getattr(self.args, "delayed_clustering_candidate_min_unknown", 0.50)
+            ),
+            candidate_min_duration=float(
+                getattr(self.args, "delayed_clustering_candidate_min_duration", 0.35)
+            ),
+            candidate_max_core_similarity=float(
+                getattr(self.args, "delayed_clustering_candidate_max_core_similarity", 0.45)
+            ),
+            candidate_min_similarity=float(
+                getattr(self.args, "delayed_clustering_candidate_min_similarity", 0.20)
+            ),
+            candidate_min_gain=float(getattr(self.args, "delayed_clustering_candidate_min_gain", 0.02)),
+            min_candidate_rows=int(getattr(self.args, "delayed_clustering_min_candidate_rows", 4)),
+            min_candidate_duration=float(
+                getattr(self.args, "delayed_clustering_min_candidate_duration", 8.0)
+            ),
+            min_candidate_span=float(getattr(self.args, "delayed_clustering_min_candidate_span", 12.0)),
+            min_candidate_time_groups=int(
+                getattr(self.args, "delayed_clustering_min_candidate_time_groups", 2)
+            ),
+            time_group_gap=float(getattr(self.args, "delayed_clustering_time_group_gap", 8.0)),
+            min_average_gain=float(getattr(self.args, "delayed_clustering_min_average_gain", 0.22)),
+            min_leave_one_out_similarity=float(
+                getattr(self.args, "delayed_clustering_min_leave_one_out_similarity", 0.16)
+            ),
+            max_core_centroid_similarity=float(
+                getattr(self.args, "delayed_clustering_max_core_centroid_similarity", 0.58)
+            ),
+        )
         self._emit_transcript_sentence(payload)
 
     @staticmethod
@@ -4060,6 +4100,121 @@ class WindowDiarizer:
         finally:
             self._sentence_refinement_run_lock.release()
 
+    def _apply_delayed_multirow_clustering(self) -> int:
+        if not bool(getattr(self.args, "delayed_multirow_clustering", True)):
+            return 0
+        if not bool(getattr(self.args, "allow_speaker_reassignment", False)):
+            return 0
+        try:
+            max_new_speakers = max(0, int(getattr(self.args, "delayed_clustering_max_new_speakers", 2)))
+        except (TypeError, ValueError):
+            return 0
+        if max_new_speakers <= 0 or self.memory.profile_count() >= int(self.args.max_speakers):
+            return 0
+
+        with self._sentence_refinement_lock:
+            records = [
+                dict(record)
+                for _, record in sorted(self._sentence_refinement_records.items())
+            ]
+        proposals = find_delayed_speaker_splits(records, self._delayed_clustering_config())
+        if not proposals:
+            return 0
+
+        applied = 0
+        for proposal in proposals[:max_new_speakers]:
+            if self.memory.profile_count() >= int(self.args.max_speakers):
+                break
+            new_label = self._next_detected_speaker_label()
+            with self._sentence_refinement_lock:
+                selected = []
+                for index in proposal.indexes:
+                    record = self._sentence_refinement_records.get(int(index))
+                    if record is None or record.get("assigned_speaker") != proposal.previous_speaker:
+                        selected = []
+                        break
+                    if user_confirmed_speaker_label(record) or rejected_speaker_labels(record):
+                        selected = []
+                        break
+                    selected.append(record)
+                if not selected:
+                    continue
+
+            self.memory.upsert_profile(
+                new_label,
+                proposal.centroid,
+                duration_seconds=proposal.speech_seconds,
+                sentence_count=len(selected),
+            )
+            self._ensure_speaker_metadata(new_label)
+            speaker_key = self._speaker_probability_key(new_label)
+            emitted: list[dict[str, Any]] = []
+            with self._sentence_refinement_lock:
+                for record in selected:
+                    vector = normalize_vector(record["embedding"])
+                    new_similarity = float(np.dot(vector, proposal.centroid))
+                    old_similarity = float(
+                        (record.get("similarities") or {}).get(proposal.previous_speaker, 0.0) or 0.0
+                    )
+                    original_unknown = max(
+                        0.0,
+                        min(1.0, float(record.get("unknown_probability") or 0.0)),
+                    )
+                    probabilities = {
+                        "unknown": round(original_unknown, 4),
+                        speaker_key: round(1.0 - original_unknown, 4),
+                    }
+                    similarities = dict(record.get("similarities") or {})
+                    similarities[new_label] = round(new_similarity, 4)
+                    record["assigned_speaker"] = new_label
+                    record["created_speaker"] = False
+                    record["probabilities"] = probabilities
+                    record["similarities"] = similarities
+                    record["top_similarity"] = round(new_similarity, 4)
+                    record["margin"] = round(new_similarity - old_similarity, 4)
+                    record["assignment_source"] = "delayed_multirow_split"
+                    emitted.append({
+                        **dict(record["base_payload"]),
+                        "pending": False,
+                        "revision": True,
+                        "delayed_multirow_split": True,
+                        "revision_from": proposal.previous_speaker,
+                        "revision_to": new_label,
+                        "assigned_speaker": new_label,
+                        **self._speaker_info_for_payload(new_label),
+                        "created_speaker": False,
+                        "probabilities": probabilities,
+                        "similarities": similarities,
+                        "unknown_probability": round(original_unknown, 4),
+                        "top_similarity": round(new_similarity, 4),
+                        "margin": round(new_similarity - old_similarity, 4),
+                        "quality": record.get("quality"),
+                        "assignment_source": "delayed_multirow_split",
+                        "delayed_cluster_average_gain": round(proposal.average_gain, 4),
+                        "delayed_cluster_leave_one_out_similarity": round(
+                            proposal.leave_one_out_similarity, 4
+                        ),
+                        "delayed_cluster_core_similarity": round(proposal.core_similarity, 4),
+                        "delayed_cluster_time_groups": proposal.time_groups,
+                    })
+            for payload in emitted:
+                self._emit_transcript_sentence(payload)
+            applied += len(emitted)
+            self.bus.emit(
+                "status",
+                {
+                    "message": (
+                        f"Delayed multi-row clustering split {len(emitted)} sentence(s) "
+                        f"from {proposal.previous_speaker} into {new_label} "
+                        f"(gain={proposal.average_gain:.3f}, "
+                        f"loo={proposal.leave_one_out_similarity:.3f})."
+                    )
+                },
+            )
+        if applied:
+            self.emit_speaker_state()
+        return applied
+
     def _finalize_speaker_refinement(self) -> None:
         if bool(getattr(self.args, "speaker_refinement", True)):
             try:
@@ -4067,6 +4222,9 @@ class WindowDiarizer:
             except (TypeError, ValueError):
                 passes = 0
             for _ in range(passes):
+                self._refine_speaker_assignments()
+            delayed_splits = self._apply_delayed_multirow_clustering()
+            if delayed_splits:
                 self._refine_speaker_assignments()
             tiny_fragmented_merges = self._merge_tiny_fragmented_speaker_profiles()
             if tiny_fragmented_merges:

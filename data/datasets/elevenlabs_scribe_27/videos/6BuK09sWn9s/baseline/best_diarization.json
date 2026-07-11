@@ -1,0 +1,194 @@
+[
+  {
+    "segment_id": "SEGMENT_0001",
+    "speaker_id": "SPEAKER_1",
+    "start_sec": 2.98,
+    "end_sec": 19.58,
+    "duration_sec": 16.6,
+    "text": "Ja, vielen Dank für euer Kommen. Schade, dass Eva Schilling und Anne Lindner nicht anwesend sein können. Mia, ich möchte dir gerne meine neue Assistentin vorstellen, Vera Becker. Sie wird uns von nun an tatkräftig unterstützen. Frau Becker, das ist unsere Designerin Mia Storm."
+  },
+  {
+    "segment_id": "SEGMENT_0002",
+    "speaker_id": "SPEAKER_2",
+    "start_sec": 19.8,
+    "end_sec": 20.22,
+    "duration_sec": 0.42,
+    "text": "Hallo."
+  },
+  {
+    "segment_id": "SEGMENT_0003",
+    "speaker_id": "SPEAKER_2",
+    "start_sec": 20.32,
+    "end_sec": 21.6,
+    "duration_sec": 1.28,
+    "text": "Herzlich willkommen im Team."
+  },
+  {
+    "segment_id": "SEGMENT_0004",
+    "speaker_id": "SPEAKER_3",
+    "start_sec": 22.2,
+    "end_sec": 23.86,
+    "duration_sec": 1.66,
+    "text": "Danke. Schön, Sie kennenzulernen."
+  },
+  {
+    "segment_id": "SEGMENT_0005",
+    "speaker_id": "SPEAKER_1",
+    "start_sec": 24.68,
+    "end_sec": 40.4,
+    "duration_sec": 15.72,
+    "text": "Gut, dann denke ich, dass wir beginnen können. Frau Becker, führen Sie bitte Protokoll und schicken es später per E-Mail an uns und die Kollegin Lindner und Schilling. Ein Ergebnisprotokoll genügt. Fassen Sie also bitte nur die Ergebnisse zusammen. Sie müssen nicht den ganzen Ablauf dokumentieren."
+  },
+  {
+    "segment_id": "SEGMENT_0006",
+    "speaker_id": "SPEAKER_3",
+    "start_sec": 40.44,
+    "end_sec": 41.76,
+    "duration_sec": 1.32,
+    "text": "Gut."
+  },
+  {
+    "segment_id": "SEGMENT_0007",
+    "speaker_id": "SPEAKER_1",
+    "start_sec": 42.03,
+    "end_sec": 55.68,
+    "duration_sec": 13.65,
+    "text": "Die Agenda hatte ich ja zur Vorbereitung bereits per E-Mail geschickt. Hier noch mal stichwortartig die Punkte für heute. Erstens: Verteilung der wichtigsten Aufgaben hinsichtlich der Produktion unserer neuen Kollektion. Zweitens: Vertrieb, Besuch von Simon Götz."
+  },
+  {
+    "segment_id": "SEGMENT_0008",
+    "speaker_id": "SPEAKER_1",
+    "start_sec": 57.26,
+    "end_sec": 63.02,
+    "duration_sec": 5.76,
+    "text": "Ich habe etwa fünfundvierzig Minuten für das Meeting eingeplant. Ich denke, in der Zeit sollten wir alle Punkte besprochen haben."
+  },
+  {
+    "segment_id": "SEGMENT_0009",
+    "speaker_id": "SPEAKER_1",
+    "start_sec": 64.92,
+    "end_sec": 76.94,
+    "duration_sec": 12.02,
+    "text": "Gut. Dann möchte ich nun mit dem ersten Punkt der Tagesordnung beginnen. Zunächst müssen wir klären, welche Stoffe wir für die neue Kollektion verwenden. Mia, hast du dich schon entschieden, welche Textilien du bevorzugst?"
+  },
+  {
+    "segment_id": "SEGMENT_0010",
+    "speaker_id": "SPEAKER_2",
+    "start_sec": 77.02,
+    "end_sec": 94.66,
+    "duration_sec": 17.64,
+    "text": "Ja, ich habe mich entschieden. Ich möchte diesmal mit verschiedensten Baumwollstoffen arbeiten. Ich finde, Baumwolle passt perfekt zu meinen Entwürfen. Also, ich habe nämlich von der Konkurrenz gehört, dass derzeit fast alle mit Seide arbeiten. Das finde ich langweilig und völlig unkreativ. Außerdem machen viele-"
+  },
+  {
+    "segment_id": "SEGMENT_0011",
+    "speaker_id": "SPEAKER_1",
+    "start_sec": 94.7,
+    "end_sec": 120.7,
+    "duration_sec": 26.0,
+    "text": "Mia, ich muss dich leider unterbrechen. Wir können jetzt kein Gespräch über Textile oder die Kollektion der Konkurrenz führen. Hier und heute geht es darum, die Aufgaben für die nächsten Wochen zu verteilen, damit wir unsere eigene Kollektion fertigstellen können. Dazu gehört unter anderem, dass wir uns bei unserem neuen Lieferanten Stoffmuster bestellen und die aktuellen Preise erfragen. Von daher genügt mir fürs Erste die Information, dass du dich grundsätzlich für Baumwollstoff entschieden hast."
+  },
+  {
+    "segment_id": "SEGMENT_0012",
+    "speaker_id": "SPEAKER_1",
+    "start_sec": 121.92,
+    "end_sec": 123.72,
+    "duration_sec": 1.8,
+    "text": "Bis wann genau brauchst du die Stoffe?"
+  },
+  {
+    "segment_id": "SEGMENT_0013",
+    "speaker_id": "SPEAKER_2",
+    "start_sec": 124.8,
+    "end_sec": 128.62,
+    "duration_sec": 3.82,
+    "text": "Ach, ich denke, es reicht, wenn wir die Stoffe bis Ende nächster Woche bestellen."
+  },
+  {
+    "segment_id": "SEGMENT_0014",
+    "speaker_id": "SPEAKER_1",
+    "start_sec": 129.66,
+    "end_sec": 140.96,
+    "duration_sec": 11.3,
+    "text": "Diese Antwort ist mir zu vage. Wir wissen noch gar nicht, wie lange die Lieferfristen des neuen Lieferanten sind. Bitte sag uns, bis wann du die Stoffe spätestens benötigst, damit wir rechtzeitig mit der Produktion beginnen können."
+  },
+  {
+    "segment_id": "SEGMENT_0015",
+    "speaker_id": "SPEAKER_2",
+    "start_sec": 141.1,
+    "end_sec": 149.12,
+    "duration_sec": 8.02,
+    "text": "Nu, ich schätze, dass wir mindestens drei Monate benötigen. Ich brauche die Stoffe also spätestens Mitte nächsten Monats."
+  },
+  {
+    "segment_id": "SEGMENT_0016",
+    "speaker_id": "SPEAKER_1",
+    "start_sec": 149.44,
+    "end_sec": 167.4,
+    "duration_sec": 17.96,
+    "text": "Prima. Das ist eine wichtige Information. Um die Stoffbestellungen kümmert sich bei uns Eva Schilling. Frau Becker, bitte geben Sie diese Information an Frau Schilling weiter. Sie soll den neuen Lieferanten kontaktieren, um Stoffmuster für Baumwollstoffe anzufordern und Angebote und Informationen über Mengenrabatte einzuholen."
+  },
+  {
+    "segment_id": "SEGMENT_0017",
+    "speaker_id": "SPEAKER_3",
+    "start_sec": 167.46,
+    "end_sec": 168.78,
+    "duration_sec": 1.32,
+    "text": "Ja, gut."
+  },
+  {
+    "segment_id": "SEGMENT_0018",
+    "speaker_id": "SPEAKER_3",
+    "start_sec": 170.32,
+    "end_sec": 171.98,
+    "duration_sec": 1.66,
+    "text": "Oh, Entschuldigung."
+  },
+  {
+    "segment_id": "SEGMENT_0019",
+    "speaker_id": "SPEAKER_3",
+    "start_sec": 176.69,
+    "end_sec": 177.6,
+    "duration_sec": 0.91,
+    "text": "Entschuldigung."
+  },
+  {
+    "segment_id": "SEGMENT_0020",
+    "speaker_id": "SPEAKER_1",
+    "start_sec": 177.64,
+    "end_sec": 184.16,
+    "duration_sec": 6.52,
+    "text": "Bitte schalten Sie das Handy aus oder auf lautlos. Beim nächsten Klingeln während einer Besprechung müssen Sie fünf Euro in die Kaffeekasse bezahlen."
+  },
+  {
+    "segment_id": "SEGMENT_0021",
+    "speaker_id": "SPEAKER_3",
+    "start_sec": 186.2,
+    "end_sec": 188.42,
+    "duration_sec": 2.22,
+    "text": "Es wird nicht mehr vorkommen."
+  },
+  {
+    "segment_id": "SEGMENT_0022",
+    "speaker_id": "SPEAKER_1",
+    "start_sec": 188.46,
+    "end_sec": 193.079,
+    "duration_sec": 4.619,
+    "text": "Also gut, ich denke, damit haben wir den ersten Punkt auf der Agenda auch abgeschlossen. Oder gibt es noch Fragen dazu?"
+  },
+  {
+    "segment_id": "SEGMENT_0023",
+    "speaker_id": "SPEAKER_2",
+    "start_sec": 193.66,
+    "end_sec": 193.96,
+    "duration_sec": 0.3,
+    "text": "Nein."
+  },
+  {
+    "segment_id": "SEGMENT_0024",
+    "speaker_id": "SPEAKER_3",
+    "start_sec": 195.42,
+    "end_sec": 196.04,
+    "duration_sec": 0.62,
+    "text": "Von mir auch nicht."
+  }
+]

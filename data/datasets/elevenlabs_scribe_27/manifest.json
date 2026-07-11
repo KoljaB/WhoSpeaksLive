@@ -28,16 +28,16 @@
     "wespeaker_campplus",
     "wespeaker_resnet34_lm_onnx"
   ],
-  "video_count": 27,
-  "default_evaluation_video_count": 21,
+  "video_count": 28,
+  "default_evaluation_video_count": 22,
   "evaluation_blacklist_count": 6,
-  "baseline_video_count": 27,
+  "baseline_video_count": 28,
   "baseline_embedding_complete_video_count": 27,
-  "live_sentence_cache_video_count": 27,
+  "live_sentence_cache_video_count": 28,
   "live_embedding_complete_video_count": 27,
-  "live_embedding_incomplete_video_count": 0,
-  "total_baseline_segments": 2586,
-  "total_live_sentences": 3889,
+  "live_embedding_incomplete_video_count": 1,
+  "total_baseline_segments": 2610,
+  "total_live_sentences": 3947,
   "aliases": [
     {
       "canonical_video_id": "JWS-qfR6K3w",
@@ -161,6 +161,36 @@
           "wespeaker_resnet34_lm_onnx"
         ],
         "complete_provider_embeddings": true
+      }
+    },
+    {
+      "canonical_video_id": "6BuK09sWn9s",
+      "baseline_key": "6BuK09sWn9s",
+      "source_url": "https://www.youtube.com/watch?v=6BuK09sWn9s",
+      "title": "YouTube 6BuK09sWn9s - Jul 10 16:32",
+      "duration_sec": 206.1654,
+      "baseline": {
+        "canonical_diarization": "baseline/canonical_diarization.json",
+        "source_files": "baseline/source_files",
+        "segment_count": 24,
+        "speaker_count": 3,
+        "embedding_provider_count": 0,
+        "embedding_providers": []
+      },
+      "live_window": {
+        "source_kind": "saved_live_session",
+        "source_path": "D:\\Projekte\\SpeakerDiarization\\runtime\\sessions\\f22cf4eb4580463b99fdffb11bf58262",
+        "sentences": "live_window/sentences.jsonl",
+        "audio_dir": null,
+        "sentence_count": 58,
+        "audio_clip_count": 0,
+        "embedding_provider_count": 3,
+        "embedding_providers": [
+          "espnet_ecapa_wavlm_joint",
+          "speechbrain_resnet",
+          "wespeaker_campplus"
+        ],
+        "complete_provider_embeddings": false
       }
     },
     {
