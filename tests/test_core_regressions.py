@@ -71,6 +71,63 @@ class SpeakerDecisionContractTests(unittest.TestCase):
         decision = memory.classify(np.array([1.0, 0.0, 0.0], dtype=np.float32), 1.2)
         self.assert_created_speaker_probability_contract(decision)
 
+    def test_cluster_memory_keeps_short_first_speaker_provisional_until_confirmed(self) -> None:
+        memory = ClusterSpeakerMemory(
+            min_first_speaker_seconds=1.0,
+            first_speaker_immediate_min_seconds=4.0,
+            min_new_speaker_seconds=2.0,
+            new_speaker_confirmation_count=1,
+            new_speaker_confirmation_similarity=0.58,
+        )
+        voice = np.array([0.4, 0.9, 0.1], dtype=np.float32)
+        corroborating_voice = np.array([0.42, 0.88, 0.12], dtype=np.float32)
+
+        provisional = memory.classify(voice, 1.5)
+        confirmed = memory.classify(corroborating_voice, 1.5)
+
+        self.assertIsNone(provisional.assigned_speaker)
+        self.assertEqual(provisional.assignment_source, "first_speaker_pending")
+        self.assertEqual(memory.profile_count(), 1)
+        self.assertEqual(confirmed.assigned_speaker, "S1")
+        self.assertTrue(confirmed.created_speaker)
+        self.assertEqual(memory.export_profiles()[0]["sentence_count"], 2)
+
+    def test_cluster_memory_does_not_anchor_short_startup_outlier_as_speaker_one(self) -> None:
+        memory = ClusterSpeakerMemory(
+            same_speaker_similarity=0.43,
+            min_first_speaker_seconds=1.8373,
+            first_speaker_immediate_min_seconds=4.0,
+            min_new_speaker_seconds=2.0358,
+            new_speaker_confirmation_similarity=0.5801,
+        )
+        startup_outlier = np.array([1.0, 0.0, 0.0], dtype=np.float32)
+        main_voice = np.array([0.43, 0.90, 0.05], dtype=np.float32)
+        main_voice_long = np.array([0.44, 0.88, 0.08], dtype=np.float32)
+        main_voice_followup = np.array([0.41, 0.91, 0.03], dtype=np.float32)
+
+        first = memory.classify(startup_outlier, 1.89)
+        second = memory.classify(main_voice, 1.89)
+        anchor = memory.classify(main_voice_long, 4.51)
+        followup = memory.classify(main_voice_followup, 4.95)
+
+        self.assertIsNone(first.assigned_speaker)
+        self.assertIsNone(second.assigned_speaker)
+        self.assertEqual(anchor.assigned_speaker, "S1")
+        self.assertTrue(anchor.created_speaker)
+        self.assertEqual(followup.assigned_speaker, "S1")
+        self.assertFalse(followup.created_speaker)
+        self.assertEqual(memory.profile_count(), 1)
+
+    def test_cluster_memory_long_first_sentence_still_creates_speaker_immediately(self) -> None:
+        memory = ClusterSpeakerMemory(
+            min_first_speaker_seconds=1.0,
+            first_speaker_immediate_min_seconds=4.0,
+        )
+
+        decision = memory.classify(np.array([1.0, 0.0, 0.0], dtype=np.float32), 8.1)
+
+        self.assert_created_speaker_probability_contract(decision)
+
     def test_cluster_memory_upsert_keeps_explicit_speaker_label(self) -> None:
         memory = ClusterSpeakerMemory(min_first_speaker_seconds=0.1)
 
@@ -130,6 +187,21 @@ class LanguageConfigTests(unittest.TestCase):
         self.assertEqual(default_sentence_tokenizer("nn"), "stanza")
         with self.assertRaisesRegex(ValueError, "Kroko realtime preview"):
             kroko_preview_model_name("pl")
+
+    def test_every_supported_language_has_a_bundled_flag_asset(self) -> None:
+        from window.language_config import (
+            LANGUAGE_FLAG_COUNTRY_CODES,
+            SUPPORTED_LANGUAGE_CODES,
+            language_flag_country_code,
+        )
+
+        self.assertEqual(set(LANGUAGE_FLAG_COUNTRY_CODES), set(SUPPORTED_LANGUAGE_CODES))
+        flag_dir = SRC / "window" / "assets" / "flags" / "4x3"
+        missing = [
+            code for code in SUPPORTED_LANGUAGE_CODES
+            if not (flag_dir / f"{language_flag_country_code(code)}.svg").is_file()
+        ]
+        self.assertEqual(missing, [])
 
 
 class WindowParserTests(unittest.TestCase):
@@ -525,6 +597,7 @@ class ScoreParityTests(unittest.TestCase):
         with mock.patch.object(sys, "argv", ["youtube_window_diarize_gui"]):
             args = parse_args()
         args.min_embed_seconds = 0.0
+        args.first_speaker_immediate_min_seconds = 3.0
         args.section_gap_new_speaker = False
         args.unknown_pair_new_speaker = False
         args.speaker_refinement = True
@@ -612,6 +685,7 @@ class ScoreParityTests(unittest.TestCase):
             args = parse_args()
         args.min_embed_seconds = 0.0
         args.min_first_speaker_seconds = 0.1
+        args.first_speaker_immediate_min_seconds = 0.1
         args.min_new_speaker_seconds = 0.1
         args.late_new_speaker_min_seconds = 0.1
         args.min_new_speaker_words = 3
@@ -1567,6 +1641,19 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn('const transcriptGroupTurnsStorageKey = "whospeaks.demo.group_transcript_turns.v2";', HTML)
         self.assertIn("groupTranscriptTurns.checked = storedBooleanValue(transcriptGroupTurnsStorageKey, true);", HTML)
 
+    def test_saved_sessions_support_bulk_selection_and_actions(self) -> None:
+        self.assertIn('id="selectAllSessions"', HTML)
+        self.assertIn('id="unselectAllSessions"', HTML)
+        self.assertIn('id="archiveSelectedSessions"', HTML)
+        self.assertIn('id="restoreSelectedSessions"', HTML)
+        self.assertIn('id="deleteSelectedSessions"', HTML)
+        self.assertIn('selector.type = "checkbox";', HTML)
+        self.assertIn("let selectedSavedSessionIds = new Set();", HTML)
+        self.assertIn("async function bulkSavedSessionAction(action)", HTML)
+        self.assertIn('bulkSavedSessionAction("archive")', HTML)
+        self.assertIn('bulkSavedSessionAction("restore")', HTML)
+        self.assertIn('bulkSavedSessionAction("delete")', HTML)
+
     def test_meeting_intelligence_ui_contract_is_present(self) -> None:
         self.assertIn('data-speaker-tab="intelligence"', HTML)
         self.assertIn('id="meetingIntelligenceGenerate"', HTML)
@@ -1706,7 +1793,7 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn("if (mutedSpeakerIds.has(speakerId)) return false;", HTML)
         self.assertIn("if (soloSpeakerIds.size > 0) return soloSpeakerIds.has(speakerId);", HTML)
         self.assertIn(
-            "row.hidden = !speakerTranscriptVisible(row.dataset.speaker) || !transcriptSearchVisible(row) || !transcriptReviewVisible(row);",
+            "row.hidden = hiddenByGroup || !speakerTranscriptVisible(row.dataset.speaker) || !transcriptSearchVisible(row) || !transcriptReviewVisible(row);",
             HTML,
         )
         self.assertIn("function setSpeakerFilter(speakerId, mode, active)", HTML)
@@ -1771,7 +1858,11 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertIn('id="showTranscriptTime" type="checkbox" checked', HTML)
         self.assertIn('id="showTranscriptSpeechRate" type="checkbox" checked', HTML)
         self.assertIn('id="showTranscriptProbabilities" type="checkbox" checked', HTML)
-        self.assertIn(".transcript-panel.hide-tags .badge.new, .transcript-panel.hide-tags .badge.state { display:none; }", HTML)
+        self.assertIn(
+            ".transcript-panel.hide-tags .badge.new, .transcript-panel.hide-tags .badge.state, "
+            ".transcript-panel.hide-tags .badge.group-count { display:none; }",
+            HTML,
+        )
         self.assertIn(".transcript-panel.hide-time .sentence-duration, .transcript-panel.hide-time .sentence-range { display:none; }", HTML)
         self.assertIn(".transcript-panel.hide-speech-rate .sentence-speech-rate { display:none; }", HTML)
         self.assertIn(".transcript-panel.hide-probabilities .prob { display:none; }", HTML)
@@ -1813,6 +1904,19 @@ class WindowHtmlSafetyTests(unittest.TestCase):
         self.assertLess(header.index('id="speakerCountNumber"'), header.index('id="speakerCountLabel"'))
         self.assertLess(header.index('id="speakerCount"'), transport_divider)
         self.assertLess(transport_divider, header.index('class="transport"'))
+
+    def test_live_header_shows_configured_language_with_local_flag(self) -> None:
+        self.assertIn('id="languageSummary" class="language-summary"', HTML)
+        self.assertIn('id="languageFlag" class="language-flag"', HTML)
+        self.assertIn('id="languageName" class="language-name"', HTML)
+        self.assertIn("const languageConfig = __LANGUAGE_JSON__;", HTML)
+        self.assertIn("function updateLanguageIndicator()", HTML)
+        header = HTML[HTML.index('<header class="topbar">'):HTML.index("</header>")]
+        self.assertLess(header.index('id="state"'), header.index('id="languageSummary"'))
+        self.assertLess(header.index('id="languageSummary"'), header.index('id="speakerCount"'))
+        server_source = (SRC / "window" / "youtube_window_diarize_gui.py").read_text(encoding="utf-8")
+        self.assertIn('"__LANGUAGE_JSON__"', server_source)
+        self.assertIn(r'/assets/flags/4x3/[a-z]{2}\.svg', server_source)
 
     def test_media_area_matches_draft_contract(self) -> None:
         self.assertIn("#0B1015", HTML)
@@ -3318,6 +3422,7 @@ class RepositoryStructureTests(unittest.TestCase):
             "duplicate_profile_similarity": 0.4247,
             "unknown_short_threshold": 0.287,
             "min_first_speaker_seconds": 1.8373,
+            "first_speaker_immediate_min_seconds": 4.0,
             "min_new_speaker_seconds": 2.0358,
             "late_new_speaker_min_seconds": 3.1604,
             "max_speakers": 12,

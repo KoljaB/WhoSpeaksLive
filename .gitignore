@@ -31,6 +31,9 @@ realtime_output/
 benchmarks/
 youtube2transcripts/
 assets/
+!src/window/assets/
+!src/window/assets/flags/
+!src/window/assets/flags/**
 *.wav
 data/live_sentence_boundaries/**/_logs/
 

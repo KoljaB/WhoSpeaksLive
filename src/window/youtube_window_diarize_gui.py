@@ -135,8 +135,10 @@ from window.language_config import (  # noqa: E402
     default_language_code,
     default_sentence_language,
     default_sentence_tokenizer,
+    get_language_config,
     infer_language_from_kroko_model_name,
     language_arg,
+    language_flag_country_code,
     sentence_tokenizer_arg,
 )
 from window.realtime_preview_backends import (  # noqa: E402
@@ -430,11 +432,21 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/":
             media = self.server.current_media()
             speaker_state = self.server.controller.initial_speaker_state()
+            language = get_language_config(getattr(self.server.args, "language", "en"))
+            flag_country = language_flag_country_code(language.code)
             html = (
                 HTML
                 .replace("__SOURCE_JSON__", json_dumps(media.url))
                 .replace("__PRESET_VIDEOS__", json_dumps(PRESET_YOUTUBE_VIDEOS))
                 .replace("__SPEAKER_COLORS__", json_dumps(SPEAKER_COLORS))
+                .replace(
+                    "__LANGUAGE_JSON__",
+                    json_dumps({
+                        "code": language.code,
+                        "name": language.display_name,
+                        "flag_url": f"/assets/flags/4x3/{flag_country}.svg",
+                    }),
+                )
                 .replace(
                     "__NEW_SPEAKER_SENSITIVITY_JSON__",
                     json_dumps(new_speaker_sensitivity_config(getattr(self.server.args, "new_speaker_sensitivity", 3))),
@@ -479,6 +491,12 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_file(self.server.current_media().video_file)
         elif path == "/media/audio":
             self._serve_file(self.server.current_media().audio_file)
+        elif re.fullmatch(r"/assets/flags/4x3/[a-z]{2}\.svg", path):
+            flag_path = Path(__file__).resolve().parent / "assets" / path.removeprefix("/assets/")
+            if flag_path.is_file():
+                self._serve_file(flag_path)
+            else:
+                self.send_error(404)
         elif path == "/api/speakers":
             self._send_json({"ok": True, "speaker_state": self.server.controller.speaker_state()})
         elif path == "/api/sessions":
@@ -1461,6 +1479,7 @@ def run_window_replay_validation(args: argparse.Namespace) -> int:
             "duplicate_profile_similarity": args.duplicate_profile_similarity,
             "unknown_short_threshold": args.unknown_short_threshold,
             "min_first_speaker_seconds": args.min_first_speaker_seconds,
+            "first_speaker_immediate_min_seconds": args.first_speaker_immediate_min_seconds,
             "min_new_speaker_seconds": args.min_new_speaker_seconds,
             "late_new_speaker_min_seconds": args.late_new_speaker_min_seconds,
             "max_speakers": args.max_speakers,
@@ -2100,6 +2119,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--duplicate-profile-similarity", type=float, default=0.4247)
     parser.add_argument("--unknown-short-threshold", type=float, default=0.287)
     parser.add_argument("--min-first-speaker-seconds", type=float, default=1.8373)
+    parser.add_argument(
+        "--first-speaker-immediate-min-seconds",
+        type=float,
+        default=4.0,
+        help=(
+            "Create the first speaker immediately only from a sentence at least this long. "
+            "Shorter eligible sentences remain provisional until a similar sentence confirms them."
+        ),
+    )
     parser.add_argument("--min-new-speaker-seconds", type=float, default=2.0358)
     parser.add_argument("--late-new-speaker-min-seconds", type=float, default=3.1604)
     parser.add_argument("--max-speakers", type=int, default=12)

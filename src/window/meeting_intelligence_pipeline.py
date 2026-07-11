@@ -13,6 +13,7 @@ from typing import Any, Callable, Iterable, Protocol
 import urllib.error
 import urllib.request
 
+from window.language_config import get_language_config
 from window.meeting_intelligence import TranscriptRow, normalize_transcript_rows, transcript_revision_id
 
 
@@ -31,6 +32,13 @@ DEFAULT_SECTION_TYPES = (
     "speaker_participation",
     "ask_this_meeting",
 )
+
+
+def normalize_report_language(value: str | None) -> tuple[str, str]:
+    """Return the project's canonical language code and name for report prompts."""
+
+    config = get_language_config(value or "en")
+    return config.code, config.display_name
 
 
 @dataclass(frozen=True)
@@ -222,6 +230,7 @@ class MockMeetingLLMClient:
 
     def __init__(self) -> None:
         self.calls: list[str] = []
+        self.payloads: list[dict[str, Any]] = []
 
     def chat_json(
         self,
@@ -233,15 +242,23 @@ class MockMeetingLLMClient:
         max_tokens: int,
     ) -> dict[str, Any]:
         self.calls.append(schema_name)
+        self.payloads.append(dict(user_payload))
+        report_language, _report_language_label = normalize_report_language(user_payload.get("report_language"))
         if schema_name == "meeting_evidence_index":
             rows = user_payload.get("transcript_rows") or []
+            title = "Señal de reunión simulada" if report_language == "es" else "Mock meeting signal"
+            summary = (
+                "La transcripción contiene una decisión, tarea, pregunta o riesgo."
+                if report_language == "es"
+                else "The transcript contains a decision, task, question, or risk."
+            )
             return {
                 "schema_version": "meeting_evidence_index_v1",
                 "items": [
                     {
                         "id": "EV-MOCK-001",
-                        "title": "Mock meeting signal",
-                        "summary": "The transcript contains a decision, task, question, or risk.",
+                        "title": title,
+                        "summary": summary,
                         "row_ids": [str(item.get("row_id")) for item in rows[:3] if isinstance(item, dict)],
                         "support_type": "direct",
                         "confidence": "High",
@@ -249,17 +266,23 @@ class MockMeetingLLMClient:
                 ],
             }
         section = str(user_payload.get("section") or "summary")
-        return mock_section_payload(section)
+        return mock_section_payload(section, report_language=report_language)
 
 
-def mock_section_payload(section: str) -> dict[str, Any]:
+def mock_section_payload(section: str, *, report_language: str = "en") -> dict[str, Any]:
+    spanish = report_language == "es"
     if section == "executive_summary":
+        body = (
+            "Borrador de resumen ejecutivo basado en la transcripción seleccionada."
+            if spanish
+            else "Draft executive summary from the selected transcript."
+        )
         return {
             "schema_version": "meeting_section_v1",
             "section": section,
-            "summary": "Draft executive summary from the selected transcript.",
+            "summary": body,
             "items": [
-                common_item("SUMMARY-001", "Executive summary", "Draft executive summary from the selected transcript.", "EV-MOCK-001")
+                common_item("SUMMARY-001", "Resumen ejecutivo" if spanish else "Executive summary", body, "EV-MOCK-001")
             ],
         }
     if section == "structured_brief":
@@ -402,6 +425,7 @@ class MultiPassMeetingIntelligencePipeline:
         section_types: Iterable[str] = DEFAULT_SECTION_TYPES,
         evidence_max_tokens: int = 4096,
         section_max_tokens: int = 4096,
+        report_language: str = "en",
         progress_callback: Callable[[dict[str, Any]], None] | None = None,
     ) -> None:
         self.client = client
@@ -409,6 +433,7 @@ class MultiPassMeetingIntelligencePipeline:
         self.section_types = tuple(section_types)
         self.evidence_max_tokens = int(evidence_max_tokens)
         self.section_max_tokens = int(section_max_tokens)
+        self.report_language, self.report_language_label = normalize_report_language(report_language)
         self.progress_callback = progress_callback
 
     def generate(
@@ -511,6 +536,7 @@ class MultiPassMeetingIntelligencePipeline:
             "updated_at": generated_at,
             "transcript_revision_id": revision_id,
             "provider": getattr(self.client, "name", "structured_chat_client"),
+            "report_language": self.report_language,
             "pipeline": {
                 "mode": "multi_pass",
                 "segments": len(segments),
@@ -554,7 +580,9 @@ class MultiPassMeetingIntelligencePipeline:
                 "Create compact evidence anchors for this transcript segment.",
                 "Use row_ids exactly as supplied.",
                 "Prefer items that can support later decisions, actions, risks, open questions, disagreements, deadlines, speaker identity, and summary claims.",
+                f"Write all generated titles and summaries in {self.report_language_label}.",
             ],
+            "report_language": self.report_language,
             "transcript_rows": [row_to_prompt_dict(row) for row in segment["rows"]],
         }
         result = self.client.chat_json(
@@ -584,7 +612,9 @@ class MultiPassMeetingIntelligencePipeline:
                 "Use no more items than max_items.",
                 "Keep each body under 45 words.",
                 "Use only evidence_ids from evidence_index.",
+                f"Write every generated title, summary, body, status, owner, and due value in {self.report_language_label}; preserve quoted transcript text as-is.",
             ],
+            "report_language": self.report_language,
         }
         result = self.client.chat_json(
             schema_name="meeting_section",
@@ -646,7 +676,7 @@ def evidence_system_prompt() -> str:
     return (
         "You build evidence anchors from a speaker-labeled meeting transcript segment. "
         "Return JSON only. Evidence is an auditable support span with row_ids, not a conclusion. "
-        "Do not invent row_ids or facts not present in the segment."
+        "Do not invent row_ids or facts not present in the segment. Follow the requested report language exactly."
     )
 
 
@@ -656,7 +686,7 @@ def section_system_prompt(section: str) -> str:
         "Return JSON only. Cite evidence_ids on every material item. Preserve uncertainty: "
         "separate decided, suggested, unclear, and unresolved. Do not invent owners or dates. "
         "Be concise: no more than the requested max_items, short titles, and short bodies. "
-        f"Current section: {section}."
+        f"Current section: {section}. Follow the requested report language exactly."
     )
 
 

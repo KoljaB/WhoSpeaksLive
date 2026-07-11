@@ -35,6 +35,9 @@ HTML = r"""<!doctype html>
     .status-pill { flex:0 0 auto; min-height:23px; display:flex; align-items:center; gap:6px; padding:0 9px; border-radius:999px; background:rgba(61,199,124,.08); color:#3DC77C; font-size:13px; font-weight:400; white-space:nowrap; }
     .status-dot { width:9px; height:9px; border-radius:50%; background:#3DC77C; box-shadow:0 0 14px rgba(61,199,124,.45); }
     .runtime-state { max-width:30vw; color:#3DC77C; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .language-summary { flex:0 0 auto; min-height:23px; display:flex; align-items:center; gap:7px; color:#D7DEE8; font-size:13px; white-space:nowrap; }
+    .language-flag { width:22px; height:16px; display:block; object-fit:cover; border:1px solid rgba(255,255,255,.18); border-radius:2px; box-shadow:0 1px 4px rgba(0,0,0,.3); }
+    .language-name { max-width:130px; overflow:hidden; text-overflow:ellipsis; }
     .speaker-summary { flex:0 0 auto; min-height:23px; display:flex; align-items:center; gap:4px; color:var(--text); font-size:13px; white-space:nowrap; }
     .speaker-summary svg { color:#BA79EF; }
     #speakerCount { display:inline-flex; align-items:baseline; gap:7px; color:var(--text); }
@@ -170,7 +173,7 @@ HTML = r"""<!doctype html>
     .manual-speaker-composer[hidden] { display:none; }
     .speaker-list { min-height:0; display:grid; align-content:start; gap:0; max-height:none; overflow:auto; border:1px solid var(--line); border-radius:7px; background:#0B1015; }
     .speaker-empty { padding:12px; color:var(--muted); font-size:11px; }
-    .sessions-panel:not([hidden]) { display:grid; grid-template-rows:auto auto minmax(0,1fr); gap:8px; }
+    .sessions-panel:not([hidden]) { display:grid; grid-template-rows:auto auto auto minmax(0,1fr); gap:8px; }
     .sessions-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .sessions-title { margin:0; color:#D7DEE8; font-size:13px; font-weight:400; }
     .sessions-header-actions { flex:0 0 auto; display:flex; align-items:center; gap:6px; }
@@ -179,13 +182,19 @@ HTML = r"""<!doctype html>
     .sessions-filter { display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; padding:3px; border:1px solid var(--line); border-radius:7px; background:#0B1015; }
     .sessions-filter-button { min-height:27px; border:0; border-radius:5px; padding:0 8px; background:transparent; color:#9EAAB6; font-size:12px; }
     .sessions-filter-button.active { background:#102436; color:#E8EEF5; box-shadow:inset 0 0 0 1px #17B7FE; }
+    .sessions-selection { display:flex; flex-wrap:wrap; align-items:center; gap:5px; padding:7px; border:1px solid var(--line); border-radius:7px; background:#0B1015; }
+    .sessions-selection button { min-height:26px; padding:0 8px; border-color:#20303E; background:#121C26; color:#C6D0DC; font-size:11px; }
+    .sessions-selection .danger { color:#E0A0A0; }
+    .sessions-selection-status { flex:1 0 100%; color:#9EAAB6; font-size:11px; }
     .session-list { min-height:0; display:grid; align-content:start; gap:8px; overflow:auto; padding-right:2px; }
     .session-empty { min-height:48px; display:flex; align-items:center; padding:10px 12px; border:1px solid var(--line); border-radius:7px; background:#0B1015; color:#9EAAB6; font-size:12px; }
     .session-row { position:relative; display:grid; gap:8px; padding:10px 10px 9px 12px; border:1px solid var(--line); border-radius:7px; background:#0F161F; box-shadow:inset 0 1px 0 rgba(255,255,255,.035); }
     .session-row.open { border-color:#17B7FE; box-shadow:inset 0 0 0 1px rgba(23,183,254,.42), inset 0 1px 0 rgba(255,255,255,.05); }
+    .session-row.selected { border-color:#3A7E9F; background:#10202C; }
     .session-row.editing { border-color:#20303E; }
     .session-row.archived { opacity:.78; }
-    .session-row-main { min-width:0; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:8px; }
+    .session-row-main { min-width:0; display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:start; gap:8px; }
+    .session-row-select { width:16px; height:16px; margin:2px 0 0; accent-color:#17B7FE; cursor:pointer; }
     .session-row-title { min-width:0; color:#E8EEF5; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:text; }
     .session-row-title:focus-visible { outline:1px solid #17B7FE; outline-offset:2px; border-radius:4px; }
     .session-row-title-input { min-width:0; width:100%; height:24px; margin:-2px -5px; border:1px solid #20303E; border-radius:5px; padding:0 4px; background:#0B1015; color:#E8EEF5; font:inherit; font-size:13px; font-weight:600; outline:none; }
@@ -467,6 +476,10 @@ HTML = r"""<!doctype html>
       <div class="status-pill" aria-live="polite">
         <span class="status-dot" aria-hidden="true"></span>
         <span id="state" class="runtime-state">Ready</span>
+      </div>
+      <div id="languageSummary" class="language-summary" title="Transcription language">
+        <img id="languageFlag" class="language-flag" alt="">
+        <span id="languageName" class="language-name"></span>
       </div>
       <span class="topbar-divider" aria-hidden="true"></span>
       <div class="speaker-summary">
@@ -770,6 +783,14 @@ HTML = r"""<!doctype html>
             <button class="sessions-filter-button" type="button" data-session-filter="archived">Archived</button>
             <button class="sessions-filter-button" type="button" data-session-filter="all">All</button>
           </div>
+          <div class="sessions-selection" aria-label="Bulk session actions">
+            <button id="selectAllSessions" type="button">Select all</button>
+            <button id="unselectAllSessions" type="button">Unselect all</button>
+            <button id="archiveSelectedSessions" type="button">Archive</button>
+            <button id="restoreSelectedSessions" type="button">Restore</button>
+            <button id="deleteSelectedSessions" class="danger" type="button">Delete</button>
+            <span id="sessionSelectionStatus" class="sessions-selection-status" aria-live="polite">0 selected</span>
+          </div>
           <div id="sessionList" class="session-list"></div>
         </div>
         <div class="speaker-tab-panel meeting-intelligence-panel" data-speaker-panel="intelligence" hidden>
@@ -833,6 +854,9 @@ const sessionBannerMessage = document.getElementById("sessionBannerMessage");
 const releaseSessionButton = document.getElementById("releaseSession");
 const preset = document.getElementById("preset");
 const state = document.getElementById("state");
+const languageSummary = document.getElementById("languageSummary");
+const languageFlag = document.getElementById("languageFlag");
+const languageName = document.getElementById("languageName");
 const source = document.getElementById("source");
 const mediaCard = document.getElementById("mediaCard");
 const sourceKind = document.getElementById("sourceKind");
@@ -917,6 +941,12 @@ const speakerTabPanels = Array.from(document.querySelectorAll(".speaker-tab-pane
 const sessionList = document.getElementById("sessionList");
 const newRunSessionButton = document.getElementById("newRunSession");
 const sessionFilterButtons = Array.from(document.querySelectorAll(".sessions-filter-button"));
+const selectAllSessionsButton = document.getElementById("selectAllSessions");
+const unselectAllSessionsButton = document.getElementById("unselectAllSessions");
+const archiveSelectedSessionsButton = document.getElementById("archiveSelectedSessions");
+const restoreSelectedSessionsButton = document.getElementById("restoreSelectedSessions");
+const deleteSelectedSessionsButton = document.getElementById("deleteSelectedSessions");
+const sessionSelectionStatus = document.getElementById("sessionSelectionStatus");
 const meetingIntelligenceGenerate = document.getElementById("meetingIntelligenceGenerate");
 const meetingIntelligenceStatus = document.getElementById("meetingIntelligenceStatus");
 const meetingIntelligenceSummary = document.getElementById("meetingIntelligenceSummary");
@@ -934,6 +964,7 @@ const presetVideos = __PRESET_VIDEOS__;
 const speakerSensitivityConfig = __NEW_SPEAKER_SENSITIVITY_JSON__;
 const speakerRefinementConfig = __SPEAKER_REFINEMENT_JSON__;
 const liveSpeakerConfig = __LIVE_SPEAKER_JSON__;
+const languageConfig = __LANGUAGE_JSON__;
 const sessionLeaseEnabled = liveSpeakerConfig.session_lease_enabled !== false;
 const initialSpeakerLibrary = __SPEAKER_LIBRARY_JSON__;
 const svgNamespace = "http://www.w3.org/2000/svg";
@@ -1029,6 +1060,8 @@ let sessionHeartbeatTimer = null;
 let sessionStatusTimer = null;
 let sessionCompletionReleaseTimer = null;
 let savedSessions = [];
+let selectedSavedSessionIds = new Set();
+let savedSessionBulkActionBusy = false;
 let savedSessionFilter = "active";
 let openedSavedSessionId = "";
 let draftSavedSessionId = "";
@@ -1086,6 +1119,16 @@ function initializeSessionIdentity() {
 }
 initializeSessionIdentity();
 function setState(text) { state.textContent = text; }
+function updateLanguageIndicator() {
+  const code = String(languageConfig.code || "").trim();
+  const name = String(languageConfig.name || code || "Language").trim();
+  languageName.textContent = name;
+  languageFlag.src = String(languageConfig.flag_url || "");
+  languageFlag.alt = "";
+  languageSummary.title = `Transcription language: ${name}${code ? ` (${code})` : ""}`;
+  languageSummary.setAttribute("aria-label", languageSummary.title);
+}
+updateLanguageIndicator();
 function updateSpeakerCount() {
   const count = Array.isArray(speakerLibraryState.speakers) ? speakerLibraryState.speakers.length : 0;
   speakerCountNumber.textContent = String(count);
@@ -2314,14 +2357,43 @@ function createSessionMenuIcon() {
   });
   return svg;
 }
+function selectedSavedSessions() {
+  return savedSessions.filter(item => selectedSavedSessionIds.has(item.id));
+}
+function syncSavedSessionSelectionControls() {
+  const selected = selectedSavedSessions();
+  const selectedCount = selected.length;
+  const allSelected = savedSessions.length > 0 && selectedCount === savedSessions.length;
+  sessionSelectionStatus.textContent = `${selectedCount} selected`;
+  selectAllSessionsButton.disabled = savedSessionBulkActionBusy || !savedSessions.length || allSelected;
+  unselectAllSessionsButton.disabled = savedSessionBulkActionBusy || !selectedCount;
+  archiveSelectedSessionsButton.disabled = savedSessionBulkActionBusy || !selected.some(item => !item.archived);
+  restoreSelectedSessionsButton.disabled = savedSessionBulkActionBusy || !selected.some(item => item.archived);
+  deleteSelectedSessionsButton.disabled = savedSessionBulkActionBusy || !selectedCount;
+}
+function selectAllSavedSessions() {
+  savedSessions.forEach(item => {
+    if (item.id) selectedSavedSessionIds.add(item.id);
+  });
+  renderSavedSessions();
+}
+function clearSavedSessionSelection() {
+  selectedSavedSessionIds.clear();
+  renderSavedSessions();
+}
 function renderSavedSessions() {
   if (!sessionList) return;
+  const availableSessionIds = new Set(savedSessions.map(item => item.id).filter(Boolean));
+  selectedSavedSessionIds.forEach(sessionId => {
+    if (!availableSessionIds.has(sessionId)) selectedSavedSessionIds.delete(sessionId);
+  });
   updateNewRunButtonState();
   sessionFilterButtons.forEach(button => {
     const active = button.dataset.sessionFilter === savedSessionFilter;
     button.classList.toggle("active", active);
     button.setAttribute("aria-selected", active ? "true" : "false");
   });
+  syncSavedSessionSelectionControls();
   sessionList.textContent = "";
   if (editingSessionTitleId && !savedSessions.some(item => item.id === editingSessionTitleId)) {
     editingSessionTitleId = "";
@@ -2339,11 +2411,24 @@ function renderSavedSessions() {
     row.className = "session-row";
     row.classList.toggle("open", item.id === openedSavedSessionId);
     row.classList.toggle("archived", Boolean(item.archived));
+    row.classList.toggle("selected", selectedSavedSessionIds.has(item.id));
     row.classList.toggle("editing", item.id === editingSessionTitleId);
     row.dataset.sessionId = item.id || "";
 
     const main = document.createElement("div");
     main.className = "session-row-main";
+    const selector = document.createElement("input");
+    selector.type = "checkbox";
+    selector.className = "session-row-select";
+    selector.checked = selectedSavedSessionIds.has(item.id);
+    selector.disabled = savedSessionBulkActionBusy;
+    selector.setAttribute("aria-label", `Select ${savedSessionDisplayTitle(item)}`);
+    selector.addEventListener("click", event => event.stopPropagation());
+    selector.addEventListener("change", () => {
+      if (selector.checked) selectedSavedSessionIds.add(item.id);
+      else selectedSavedSessionIds.delete(item.id);
+      renderSavedSessions();
+    });
     const copy = document.createElement("div");
     copy.className = "session-row-copy";
     let title;
@@ -2426,6 +2511,7 @@ function renderSavedSessions() {
       openSessionMenuId = openSessionMenuId === item.id ? "" : item.id;
       renderSavedSessions();
     });
+    main.appendChild(selector);
     main.appendChild(copy);
     main.appendChild(menuButton);
     row.appendChild(main);
@@ -2540,6 +2626,7 @@ function setSavedSessionFilter(filter) {
     return;
   }
   savedSessionFilter = nextFilter;
+  selectedSavedSessionIds.clear();
   openSessionMenuId = "";
   renderSavedSessions();
   fetchSavedSessions().catch(error => log(`Refresh sessions failed: ${error.message}`));
@@ -2900,6 +2987,59 @@ async function restoreSavedSession(sessionId) {
     log(`Restore failed: ${error.message}`);
   }
 }
+function reflectDeletedSavedSession(sessionId) {
+  selectedSavedSessionIds.delete(sessionId);
+  if (draftSavedSessionId === sessionId) draftSavedSessionId = "";
+  if (openedSavedSessionId === sessionId) {
+    openedSavedSessionId = "";
+    setTranscriptTitleLive();
+    resetTranscriptDisplay();
+    setState("Ready");
+  }
+}
+async function bulkSavedSessionAction(action) {
+  if (savedSessionBulkActionBusy) return;
+  const selected = selectedSavedSessions();
+  const targets = selected.filter(item => {
+    if (action === "archive") return !item.archived;
+    if (action === "restore") return Boolean(item.archived);
+    return action === "delete";
+  });
+  if (!targets.length) return;
+  if (action === "delete" && !confirm(`Delete ${targets.length} selected session${targets.length === 1 ? "" : "s"} permanently?`)) {
+    return;
+  }
+  const endpoint = {
+    archive: "/api/sessions/archive",
+    restore: "/api/sessions/restore",
+    delete: "/api/sessions/delete",
+  }[action];
+  savedSessionBulkActionBusy = true;
+  renderSavedSessions();
+  let completed = 0;
+  const failures = [];
+  for (const item of targets) {
+    try {
+      await post(endpoint, {session_id: item.id});
+      completed += 1;
+      selectedSavedSessionIds.delete(item.id);
+      if (action === "delete") reflectDeletedSavedSession(item.id);
+    } catch (error) {
+      failures.push(`${savedSessionDisplayTitle(item)}: ${error.message}`);
+    }
+  }
+  try {
+    await fetchSavedSessions();
+  } catch (error) {
+    failures.push(`Refresh: ${error.message}`);
+  } finally {
+    savedSessionBulkActionBusy = false;
+    renderSavedSessions();
+  }
+  const actionLabel = {archive:"Archived", restore:"Restored", delete:"Deleted"}[action];
+  if (completed) log(`${actionLabel} ${completed} session${completed === 1 ? "" : "s"}.`);
+  if (failures.length) log(`Some sessions could not be updated: ${failures.join("; ")}`);
+}
 async function commitSessionTitleInput(item, input) {
   if (!item || !input || input.dataset.saving === "1") return;
   const sessionId = item.id || "";
@@ -2942,13 +3082,7 @@ async function deleteSavedSession(item) {
   }
   try {
     await post("/api/sessions/delete", {session_id: item.id});
-    if (draftSavedSessionId === item.id) draftSavedSessionId = "";
-    if (openedSavedSessionId === item.id) {
-      openedSavedSessionId = "";
-      setTranscriptTitleLive();
-      resetTranscriptDisplay();
-      setState("Ready");
-    }
+    reflectDeletedSavedSession(item.id);
     await fetchSavedSessions();
   } catch (error) {
     log(`Delete session failed: ${error.message}`);
@@ -5955,6 +6089,11 @@ meetingIntelligenceGenerate.addEventListener("click", generateMeetingIntelligenc
 sessionFilterButtons.forEach(button => {
   button.addEventListener("click", () => setSavedSessionFilter(button.dataset.sessionFilter || "active"));
 });
+selectAllSessionsButton.addEventListener("click", selectAllSavedSessions);
+unselectAllSessionsButton.addEventListener("click", clearSavedSessionSelection);
+archiveSelectedSessionsButton.addEventListener("click", () => bulkSavedSessionAction("archive"));
+restoreSelectedSessionsButton.addEventListener("click", () => bulkSavedSessionAction("restore"));
+deleteSelectedSessionsButton.addEventListener("click", () => bulkSavedSessionAction("delete"));
 newRunSessionButton.addEventListener("click", createNewSession);
 addReferenceSpeakerButton.addEventListener("click", () => {
   manualSpeakerComposerOpen = !manualSpeakerComposerOpen;

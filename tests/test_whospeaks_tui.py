@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from textual.widgets import Button, DataTable, Input, RadioSet, Static, TabbedContent
+from textual.widgets import Button, Checkbox, DataTable, Input, RadioSet, Select, Static, TabbedContent
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,7 +23,7 @@ from whospeaks_cli.tui import ConfirmInstallScreen, WhoSpeaksSetupApp
 
 class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
     async def test_setup_layout_fits_measured_terminal_sizes(self) -> None:
-        for size in ((80, 28), (100, 32), (140, 42)):
+        for size in ((80, 28), (100, 32), (140, 32), (140, 42)):
             with self.subTest(size=size):
                 app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
                 async with app.run_test(size=size) as pilot:
@@ -38,11 +38,43 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(app.query_one("#status-row").region.height, 2)
                     self.assertEqual(app.query_one("#operation-banner").region.height, 0)
                     self.assertEqual(app.query_one("#setup-options").region.height, 4)
-                    self.assertEqual(app.query_one("#setup-actions").region.height, 3)
+                    self.assertEqual(app.query_one("#setup-actions").region.height, 4)
+                    actions = app.query_one("#setup-actions").region
+                    self.assertLessEqual(app.query_one("#install-button", Button).region.bottom, actions.bottom)
+                    self.assertEqual(app.query_one("#quick-language-select", Select).value, "en")
+                    self.assertTrue(app.query_one("#live-speakers-checkbox", Checkbox).value)
+                    self.assertGreaterEqual(
+                        app.query_one("#language-label").region.x,
+                        app.query_one("#target-select").region.right,
+                    )
+                    self.assertGreaterEqual(
+                        app.query_one("#live-speakers-checkbox", Checkbox).region.x,
+                        app.query_one("#realtime-select").region.right,
+                    )
+                    self.assertEqual(str(app.query_one("#live-speakers-checkbox", Checkbox).label), "Live speaker labels")
                     self.assertEqual(app.screen.has_class("compact"), size[0] < 112)
+                    self.assertEqual(app.screen.has_class("short"), size[1] < 38)
+                    side_is_hidden = app.query_one("#setup-side").styles.display == "none"
+                    self.assertEqual(side_is_hidden, size[0] < 112 or size[1] < 38)
+                    compact_plan_is_visible = app.query_one("#compact-plan").styles.display != "none"
+                    self.assertEqual(compact_plan_is_visible, size[1] < 38)
                     self.assertFalse(app.screen.has_class("narrow"))
                     self.assertEqual(list(app.query("Header")), [])
                     self.assertEqual(list(app.query("LoadingIndicator")), [])
+
+    async def test_short_layout_expands_to_detailed_layout_after_vertical_resize(self) -> None:
+        app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
+        async with app.run_test(size=(140, 32)) as pilot:
+            await pilot.pause()
+            self.assertTrue(app.screen.has_class("short"))
+            self.assertEqual(app.query_one("#setup-side").styles.display, "none")
+            self.assertNotEqual(app.query_one("#compact-plan").styles.display, "none")
+
+            await pilot.resize_terminal(140, 42)
+            await pilot.pause()
+            self.assertFalse(app.screen.has_class("short"))
+            self.assertNotEqual(app.query_one("#setup-side").styles.display, "none")
+            self.assertEqual(app.query_one("#compact-plan").styles.display, "none")
 
     async def test_server_target_disables_realtime_selection_and_gives_visible_plan_feedback(self) -> None:
         app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
@@ -72,6 +104,71 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertEqual(app.query_one("#realtime-select", RadioSet).pressed_button.id, "realtime-kroko")
             self.assertIn("Kroko / Banafo live text", str(app.query_one("#plan-summary", Static).content))
+
+    async def test_main_runtime_controls_drive_saved_launch_settings(self) -> None:
+        original_config = os.environ.get("WHOSPEAKS_CONFIG")
+        with tempfile.TemporaryDirectory() as directory:
+            config_path = Path(directory) / "config.json"
+            os.environ["WHOSPEAKS_CONFIG"] = str(config_path)
+            try:
+                app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
+                async with app.run_test(size=(100, 32)) as pilot:
+                    app.query_one("#quick-language-select", Select).value = "de"
+                    await pilot.click("#realtime-off")
+                    app.query_one("#live-speakers-checkbox", Checkbox).value = False
+                    await pilot.pause()
+
+                    self.assertEqual(app.query_one("#language-select", Select).value, "de")
+                    self.assertEqual(app.query_one("#realtime-engine-select", Select).value, "off")
+                    self.assertTrue(app._save_settings(notify=False))
+
+                    payload = json.loads(config_path.read_text(encoding="utf-8"))
+                    self.assertEqual(payload["language"], "de")
+                    self.assertEqual(payload["realtime_preview_engine"], "off")
+                    self.assertFalse(payload["live_speaker_assignment"])
+                    command = backend.build_launch_command(app.profile)
+                    self.assertIn("--no-live-speaker-assignment", command)
+            finally:
+                if original_config is None:
+                    os.environ.pop("WHOSPEAKS_CONFIG", None)
+                else:
+                    os.environ["WHOSPEAKS_CONFIG"] = original_config
+
+    async def test_language_selection_prefers_nemotron_then_kroko_then_off(self) -> None:
+        app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
+        async with app.run_test(size=(140, 32)) as pilot:
+            language = app.query_one("#quick-language-select", Select)
+
+            language.value = "he"
+            await pilot.pause()
+            self.assertEqual(app.query_one("#realtime-select", RadioSet).pressed_button.id, "realtime-kroko")
+
+            language.value = "cy"
+            await pilot.pause()
+            self.assertEqual(app.query_one("#realtime-select", RadioSet).pressed_button.id, "realtime-off")
+
+            language.value = "de"
+            await pilot.pause()
+            self.assertEqual(app.query_one("#realtime-select", RadioSet).pressed_button.id, "realtime-nemotron")
+
+    async def test_explicit_incompatible_live_text_keeps_language_warns_and_blocks_actions(self) -> None:
+        app = WhoSpeaksSetupApp(backend.Profile(language="cy", realtime_preview_engine="off"), auto_doctor=False)
+        async with app.run_test(size=(140, 32)) as pilot:
+            await pilot.click("#realtime-nemotron")
+            await pilot.pause()
+
+            self.assertEqual(app.query_one("#quick-language-select", Select).value, "cy")
+            self.assertEqual(app.query_one("#language-select", Select).value, "cy")
+            self.assertTrue(app.screen.has_class("preview-incompatible"))
+            self.assertIn("Nemotron does not support Welsh", str(app.query_one("#compatibility-note", Static).content))
+            self.assertTrue(app.query_one("#launch-button", Button).disabled)
+            self.assertTrue(app.query_one("#install-button", Button).disabled)
+
+            await pilot.click("#realtime-off")
+            await pilot.pause()
+            self.assertFalse(app.screen.has_class("preview-incompatible"))
+            self.assertFalse(app.query_one("#launch-button", Button).disabled)
+            self.assertFalse(app.query_one("#install-button", Button).disabled)
 
     async def test_install_confirmation_can_be_cancelled_without_starting_process(self) -> None:
         original_config = os.environ.get("WHOSPEAKS_CONFIG")
@@ -125,6 +222,112 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(payload["port"], 8899)
                     self.assertIn("Settings saved", str(app.query_one("#operation-primary", Static).content))
                     self.assertIn(str(config_path), str(app.query_one("#operation-secondary", Static).content))
+            finally:
+                if original_config is None:
+                    os.environ.pop("WHOSPEAKS_CONFIG", None)
+                else:
+                    os.environ["WHOSPEAKS_CONFIG"] = original_config
+
+    async def test_reports_tab_saves_profile_and_starts_report_server(self) -> None:
+        original_config = os.environ.get("WHOSPEAKS_CONFIG")
+        calls: list[tuple[list[str], dict[str, object]]] = []
+
+        def popen_factory(command: list[str], **kwargs: object) -> object:
+            calls.append((command, kwargs))
+            return object()
+
+        with tempfile.TemporaryDirectory() as directory:
+            config_path = Path(directory) / "config.json"
+            os.environ["WHOSPEAKS_CONFIG"] = str(config_path)
+            try:
+                app = WhoSpeaksSetupApp(
+                    backend.Profile(language="es"),
+                    auto_doctor=False,
+                    popen_factory=popen_factory,
+                )
+                async with app.run_test(size=(100, 32)) as pilot:
+                    app.query_one("#main-tabs", TabbedContent).active = "reports-tab"
+                    await pilot.pause()
+                    app.query_one("#reports-enabled-checkbox", Checkbox).value = True
+                    app.query_one("#report-language-select", Select).value = "es"
+                    app.query_one("#report-llm-provider-select", Select).value = "openai"
+                    app.query_one("#report-llm-model-input", Input).value = "gpt-4.1-nano"
+                    await pilot.click("#save-reports-settings")
+                    await pilot.pause()
+
+                    payload = json.loads(config_path.read_text(encoding="utf-8"))
+                    self.assertTrue(payload["reports_enabled"])
+                    self.assertEqual(payload["report_language"], "es")
+                    self.assertEqual(payload["report_llm_provider"], "openai")
+
+                    await pilot.click("#start-reports-button")
+                    await pilot.pause()
+                    self.assertEqual(len(calls), 1)
+                    command = calls[0][0]
+                    self.assertEqual(command[command.index("--report-language") + 1], "es")
+                    self.assertEqual(command[command.index("--llm-model") + 1], "gpt-4.1-nano")
+            finally:
+                if original_config is None:
+                    os.environ.pop("WHOSPEAKS_CONFIG", None)
+                else:
+                    os.environ["WHOSPEAKS_CONFIG"] = original_config
+
+    async def test_launcher_stays_open_and_tracks_servers_started_in_new_consoles(self) -> None:
+        class FakeServerProcess:
+            def __init__(self) -> None:
+                self.return_code: int | None = None
+
+            def poll(self) -> int | None:
+                return self.return_code
+
+        original_config = os.environ.get("WHOSPEAKS_CONFIG")
+        calls: list[tuple[list[str], dict[str, object], FakeServerProcess]] = []
+
+        def popen_factory(command: list[str], **kwargs: object) -> FakeServerProcess:
+            process = FakeServerProcess()
+            calls.append((command, kwargs, process))
+            return process
+
+        with tempfile.TemporaryDirectory() as directory:
+            os.environ["WHOSPEAKS_CONFIG"] = str(Path(directory) / "config.json")
+            try:
+                app = WhoSpeaksSetupApp(
+                    backend.Profile(reports_enabled=True),
+                    auto_doctor=False,
+                    popen_factory=popen_factory,
+                )
+                app._server_port_accepting = mock.Mock(return_value=False)
+                async with app.run_test(size=(100, 32)) as pilot:
+                    await pilot.click("#launch-button")
+                    await pilot.pause()
+
+                    self.assertEqual(len(calls), 2)
+                    reports_call, live_call = calls
+                    self.assertIn("--report-language", reports_call[0])
+                    self.assertIn("--language", live_call[0])
+                    if os.name == "nt":
+                        self.assertEqual(reports_call[1]["creationflags"], subprocess.CREATE_NEW_CONSOLE)
+                        self.assertEqual(live_call[1]["creationflags"], subprocess.CREATE_NEW_CONSOLE)
+                    else:
+                        self.assertTrue(reports_call[1]["start_new_session"])
+                        self.assertTrue(live_call[1]["start_new_session"])
+                    self.assertIn("Live: starting", str(app.query_one("#live-server-state", Static).content))
+                    self.assertIn("Reports: starting", str(app.query_one("#reports-server-state", Static).content))
+                    self.assertEqual(str(app.query_one("#launch-button", Button).label), "Live running")
+                    self.assertTrue(app.query_one("#launch-button", Button).disabled)
+
+                    with mock.patch.object(app, "_server_port_accepting", return_value=True):
+                        app.last_server_probe_at = 0.0
+                        app._refresh_server_states()
+                    self.assertIn("Live: running", str(app.query_one("#live-server-state", Static).content))
+                    self.assertIn("Reports: running", str(app.query_one("#reports-server-state", Static).content))
+
+                    live_call[2].return_code = 3
+                    app._refresh_server_states()
+                    await pilot.pause()
+
+                    self.assertIn("Live: failed", str(app.query_one("#live-server-state", Static).content))
+                    self.assertFalse(app.query_one("#launch-button", Button).disabled)
             finally:
                 if original_config is None:
                     os.environ.pop("WHOSPEAKS_CONFIG", None)

@@ -130,6 +130,7 @@ class SpeakerMemory:
         duplicate_profile_similarity: float = 0.40,
         unknown_short_threshold: float = 0.86,
         min_first_speaker_seconds: float = 1.2,
+        first_speaker_immediate_min_seconds: float | None = None,
         min_new_speaker_seconds: float = 2.0,
         late_new_speaker_min_seconds: float = 3.5,
         max_speakers: int = 10,
@@ -154,6 +155,11 @@ class SpeakerMemory:
         self.duplicate_profile_similarity = duplicate_profile_similarity
         self.unknown_short_threshold = unknown_short_threshold
         self.min_first_speaker_seconds = min_first_speaker_seconds
+        self.first_speaker_immediate_min_seconds = (
+            min_first_speaker_seconds
+            if first_speaker_immediate_min_seconds is None
+            else max(min_first_speaker_seconds, float(first_speaker_immediate_min_seconds))
+        )
         self.min_new_speaker_seconds = min_new_speaker_seconds
         self.late_new_speaker_min_seconds = late_new_speaker_min_seconds
         self.max_speakers = max_speakers
@@ -315,7 +321,19 @@ class SpeakerMemory:
             if not self._profiles:
                 if not allow_new_speaker or duration_seconds < self.min_first_speaker_seconds:
                     return SpeakerDecision(None, False, {"unknown": 1.0}, {}, 1.0, None, None, quality)
-                profile = self._create_profile_locked(embedding, duration_seconds)
+                profile = self._create_or_stage_first_profile_locked(embedding, duration_seconds)
+                if profile is None:
+                    return SpeakerDecision(
+                        None,
+                        False,
+                        {"unknown": 1.0},
+                        {},
+                        1.0,
+                        None,
+                        None,
+                        quality,
+                        assignment_source="first_speaker_pending",
+                    )
                 return self._created_profile_decision(profile, quality)
             return self._score_locked(embedding, duration_seconds, quality, allow_new_speaker)
 
@@ -621,6 +639,37 @@ class SpeakerMemory:
                 sentence_count=candidate.sentence_count,
             )
         return None
+
+    def _create_or_stage_first_profile_locked(
+        self,
+        embedding: np.ndarray,
+        duration_seconds: float,
+    ) -> SpeakerProfile | None:
+        if duration_seconds >= self.first_speaker_immediate_min_seconds:
+            self._new_speaker_candidates = []
+            return self._create_profile_locked(embedding, duration_seconds)
+
+        candidate = self._best_new_speaker_candidate_locked(embedding)
+        if candidate is None:
+            self._add_new_speaker_candidate_locked(embedding, duration_seconds)
+            return None
+
+        candidate.update(embedding, duration_seconds)
+        required_count = max(2, self.new_speaker_confirmation_count)
+        if (
+            candidate.sentence_count < required_count
+            or candidate.speech_seconds < self.min_new_speaker_seconds
+        ):
+            return None
+
+        # Candidates gathered before S1 exists include uncorroborated startup
+        # outliers. Do not allow those leftovers to become false later speakers.
+        self._new_speaker_candidates = []
+        return self._create_profile_locked(
+            candidate.centroid,
+            candidate.speech_seconds,
+            sentence_count=candidate.sentence_count,
+        )
 
     def _create_or_stage_uncertain_profile_locked(
         self,

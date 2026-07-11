@@ -29,6 +29,33 @@ whospeaks-meeting-intelligence `
   --mock-llm
 ```
 
+## Spanish Executive-Meeting Reports
+
+For a Spanish meeting, start the live window with `--language es` and start this server with `--report-language es`. The language setting is an explicit contract for all generated report content: evidence labels, executive summary, decisions, action items, questions, risks, and deadlines. It does not translate quoted transcript text.
+
+```powershell
+whospeaks-meeting-intelligence `
+  --host 127.0.0.1 `
+  --port 8798 `
+  --report-language es `
+  --auto-generate `
+  --llm-provider llama_cpp `
+  --llm-base-url http://127.0.0.1:18081/v1 `
+  --llm-model YOUR_SPANISH_CAPABLE_MODEL
+```
+
+Reports generated in another language are treated as stale, so a previously cached English report cannot be shown as the current Spanish report. `--report-language` accepts every language code supported by WhoSpeaks final transcription, including `de`, `en`, `es`, `fr`, `it`, `pt`, and the broader Whisper-language set listed in [Configuration](configuration.md#language). The server resolves aliases and regional codes through the shared language configuration, so `German` and `de-AT` both select `de`.
+
+With `--auto-generate`, the server checks saved sessions every 10 seconds and queues a report as soon as the live window finalizes a new one with status `Saved`. Existing saved sessions are deliberately ignored when the server starts, so historical meetings are never unexpectedly sent to the LLM. No report-page selection or Generate click is needed. Change the cadence with `--auto-generate-poll-seconds`.
+
+The `whospeaks` launcher can start both services from one command. It inherits the report language from the live profile unless `--report-language` is supplied:
+
+```powershell
+whospeaks launch --with-reports --report-llm-provider openai --report-llm-model gpt-4.1-nano
+```
+
+Use `whospeaks reports --print` to inspect or run only the report-server command.
+
 Open:
 
 ```text

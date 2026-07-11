@@ -29,6 +29,7 @@ from window.realtime_preview_backends import (
     normalize_preview_engine,
     normalize_preview_model_preset,
     preview_language_error,
+    recommended_preview_engine,
 )
 from window.sherpa_onnx_models import (
     default_sherpa_onnx_model_dir,
@@ -76,11 +77,19 @@ EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("provider_preset", "Provider preset", "Named final/live speaker embedding stack, or custom."),
     ("embedding_provider", "Final provider", "Exact provider string used for committed speaker assignment."),
     ("live_speaker_embedding_provider", "Live provider", "Exact provider string used for live speaker feedback."),
+    ("live_speaker_assignment", "Live speaker labels", "Show provisional speaker labels while speech is in progress."),
     ("embedding_python", "Embedding helper Python", "Optional Python executable for local speaker-embedding helper subprocesses."),
     ("realtime_preview_engine", "Realtime text engine", "Use sherpa_onnx for Nemotron, kroko_onnx for Kroko/Banafo, or off."),
     ("realtime_preview_model_preset", "Realtime model preset", "Nemotron: 560ms stable or 160ms low-latency. Kroko: a Kroko model preset."),
     ("realtime_preview_model_dir", "Nemotron model folder", "Optional explicit folder for the unpacked sherpa-onnx/Nemotron model."),
     ("realtime_preview_python", "Realtime preview Python", "Optional Python executable for the realtime worker. Nemotron uses the current environment by default."),
+    ("reports_enabled", "Start reports with live window", "Open the meeting-intelligence server in a second terminal whenever the live window launches."),
+    ("reports_port", "Reports browser port", "Port for the meeting-intelligence browser UI."),
+    ("report_language", "Report language", "Blank follows the live transcription language; otherwise use a WhoSpeaks language code."),
+    ("report_llm_provider", "Reports LLM provider", "llama_cpp, ollama, lm_studio, openai, or openrouter."),
+    ("report_llm_base_url", "Reports LLM base URL", "Optional override for the report LLM OpenAI-compatible base URL."),
+    ("report_llm_model", "Reports LLM model", "Optional model ID used for report generation."),
+    ("report_auto_generate", "Auto-generate reports", "Generate a report automatically when a newly saved meeting session is finalized."),
     ("asr_backend", "ASR backend", "local or remote."),
     ("embeddings_backend", "Embeddings backend", "local or remote."),
     ("remote_asr_url", "Remote ASR URL", "Base URL for a remote faster-whisper service."),
@@ -193,12 +202,20 @@ class Profile:
     remote_embeddings_url: str = DEFAULT_REMOTE_EMBEDDINGS_URL
     embedding_provider: str = SMOKE_PROVIDER
     live_speaker_embedding_provider: str = SMOKE_PROVIDER
+    live_speaker_assignment: bool = True
     embedding_python: str = ""
     vad_backend: str = "rms"
     realtime_preview_engine: str = "sherpa_onnx"
     realtime_preview_model_preset: str = "nemotron-3.5-560ms-int8"
     realtime_preview_model_dir: str = ""
     realtime_preview_python: str = ""
+    reports_enabled: bool = False
+    reports_port: int = 8798
+    report_language: str = ""
+    report_llm_provider: str = "llama_cpp"
+    report_llm_base_url: str = ""
+    report_llm_model: str = ""
+    report_auto_generate: bool = True
     advanced_args: str = ""
 
     @classmethod
@@ -207,6 +224,7 @@ class Profile:
         kwargs: dict[str, Any] = {key: item for key, item in value.items() if key in allowed}
         profile = cls(**kwargs)
         profile.port = int(profile.port)
+        profile.reports_port = int(profile.reports_port)
         profile.mode = normalize_mode(profile.mode)
         try:
             profile.language = normalize_language_code(profile.language)
@@ -240,6 +258,10 @@ class Profile:
             profile.realtime_preview_model_preset = ""
         if profile.realtime_preview_engine != "sherpa_onnx":
             profile.realtime_preview_model_dir = ""
+        profile.report_language = normalize_language_code(profile.report_language) if profile.report_language else ""
+        profile.report_llm_provider = str(profile.report_llm_provider or "llama_cpp").strip().lower().replace("-", "_")
+        if profile.report_llm_provider not in {"llama_cpp", "ollama", "lm_studio", "openai", "openrouter"}:
+            profile.report_llm_provider = "llama_cpp"
         return profile
 
     def as_dict(self) -> dict[str, Any]:
@@ -1909,6 +1931,7 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
         "--realtime-preview-engine",
         str(profile.realtime_preview_engine or "off"),
     ])
+    command.append("--live-speaker-assignment" if profile.live_speaker_assignment else "--no-live-speaker-assignment")
     if profile.embeddings_backend == "local":
         command.extend(["--embedding-python", str(profile.embedding_python or sys.executable)])
     preview_engine = normalize_preview_engine(profile.realtime_preview_engine)
@@ -1926,6 +1949,77 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
     if advanced:
         command.extend(shlex.split(advanced))
     return command
+
+
+def build_reports_command(
+    profile: Profile,
+    *,
+    port: int = 8798,
+    report_language: str = "",
+    llm_provider: str = "llama_cpp",
+    llm_base_url: str = "",
+    llm_model: str = "",
+    auto_generate: bool = True,
+) -> list[str]:
+    """Build the standalone meeting-intelligence command from the live profile."""
+
+    executable = shutil.which("whospeaks-meeting-intelligence")
+    command = [executable] if executable else [sys.executable, "-m", "window.meeting_intelligence_server"]
+    language = normalize_language_code(report_language or profile.language)
+    command.extend([
+        "--host",
+        str(profile.host),
+        "--port",
+        str(int(port)),
+        "--report-language",
+        language,
+        "--llm-provider",
+        str(llm_provider),
+    ])
+    if llm_base_url:
+        command.extend(["--llm-base-url", str(llm_base_url)])
+    if llm_model:
+        command.extend(["--llm-model", str(llm_model)])
+    if auto_generate:
+        command.append("--auto-generate")
+    return command
+
+
+def report_launch_values(profile: Profile, args: argparse.Namespace) -> dict[str, Any]:
+    """Resolve CLI overrides while using the saved reports configuration by default."""
+
+    return {
+        "port": args.reports_port if getattr(args, "reports_port", None) is not None else profile.reports_port,
+        "report_language": getattr(args, "report_language", None) if getattr(args, "report_language", None) is not None else profile.report_language,
+        "llm_provider": getattr(args, "report_llm_provider", None) or profile.report_llm_provider,
+        "llm_base_url": getattr(args, "report_llm_base_url", None) if getattr(args, "report_llm_base_url", None) is not None else profile.report_llm_base_url,
+        "llm_model": getattr(args, "report_llm_model", None) if getattr(args, "report_llm_model", None) is not None else profile.report_llm_model,
+        "auto_generate": getattr(args, "report_auto_generate", None) if getattr(args, "report_auto_generate", None) is not None else profile.report_auto_generate,
+    }
+
+
+def launch_profile_with_reports(profile: Profile) -> int:
+    """Start reports in a second terminal, then keep the live window in this terminal."""
+
+    reports_command = build_reports_command(
+        profile,
+        port=profile.reports_port,
+        report_language=profile.report_language,
+        llm_provider=profile.report_llm_provider,
+        llm_base_url=profile.report_llm_base_url,
+        llm_model=profile.report_llm_model,
+        auto_generate=profile.report_auto_generate,
+    )
+    live_command = build_launch_command(profile)
+    print("Meeting reports command:")
+    print(format_command(reports_command))
+    print("Live window command:")
+    print(format_command(live_command))
+    popen_kwargs: dict[str, Any] = {}
+    if os.name == "nt":
+        popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+    subprocess.Popen(reports_command, **popen_kwargs)
+    return int(subprocess.run(live_command, check=False).returncode)
 
 
 def build_server_launch_lines() -> list[str]:
@@ -2055,6 +2149,10 @@ def coerce_profile_value(profile: Profile, key: str, value: str) -> Any:
     current = getattr(profile, key)
     if key == "language":
         return normalize_language_code(value)
+    if key == "report_language":
+        return normalize_language_code(value) if str(value).strip() else ""
+    if isinstance(current, bool):
+        return str(value).strip().lower() in {"1", "true", "yes", "on"}
     if isinstance(current, int):
         return int(value)
     return value
@@ -2714,6 +2812,8 @@ def run_textual_dashboard(profile: Profile) -> int:
     result = run_setup_app(profile)
     if result == "launch":
         return launch_profile(load_profile())
+    if result == "launch_with_reports":
+        return launch_profile_with_reports(load_profile())
     return 0
 
 
@@ -2932,6 +3032,27 @@ def cmd_launch(args: argparse.Namespace) -> int:
             print("Start each command in a separate shell so both services stay running.")
         return 0
     command = build_launch_command(profile, args.extra_args or "")
+    reports_command: list[str] | None = None
+    if args.with_reports:
+        reports_command = build_reports_command(profile, **report_launch_values(profile, args))
+        print("Meeting reports command:")
+        print(format_command(reports_command))
+        print("Live window command:")
+    print(format_command(command))
+    if args.print_only or args.dry_run:
+        return 0
+    if reports_command is not None:
+        popen_kwargs: dict[str, Any] = {}
+        if os.name == "nt":
+            popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+        subprocess.Popen(reports_command, **popen_kwargs)
+    return subprocess.run(command, check=False).returncode
+
+
+def cmd_reports(args: argparse.Namespace) -> int:
+    profile = load_profile()
+    values = report_launch_values(profile, args)
+    command = build_reports_command(profile, **values)
     print(format_command(command))
     if args.print_only or args.dry_run:
         return 0
@@ -2956,12 +3077,20 @@ def cmd_config(args: argparse.Namespace) -> int:
         "remote_embeddings_url",
         "embedding_provider",
         "live_speaker_embedding_provider",
+        "live_speaker_assignment",
         "embedding_python",
         "vad_backend",
         "realtime_preview_engine",
         "realtime_preview_model_preset",
         "realtime_preview_model_dir",
         "realtime_preview_python",
+        "reports_enabled",
+        "reports_port",
+        "report_language",
+        "report_llm_provider",
+        "report_llm_base_url",
+        "report_llm_model",
+        "report_auto_generate",
         "advanced_args",
     )
     for field_name in direct_fields:
@@ -3136,7 +3265,35 @@ def build_parser() -> argparse.ArgumentParser:
     launch.add_argument("--port", type=int, default=None, help="Temporarily override the saved browser UI port.")
     launch.add_argument("--provider-preset", choices=PROVIDER_PRESET_CHOICES, default="")
     launch.add_argument("--extra-args", default="", help="Additional whospeaks-window arguments appended to the profile.")
+    launch.add_argument("--with-reports", action="store_true", help="Also start the meeting-intelligence report server in a new console.")
+    launch.add_argument("--reports-port", type=int, default=None, help="Meeting-intelligence report server port.")
+    launch.add_argument("--report-language", default=None, help="Report language; defaults to the saved reports setting or live profile language.")
+    launch.add_argument(
+        "--report-llm-provider",
+        choices=("llama_cpp", "ollama", "lm_studio", "openai", "openrouter"),
+        default=None,
+        help="LLM provider used by --with-reports.",
+    )
+    launch.add_argument("--report-llm-base-url", default=None, help="Optional report LLM base URL.")
+    launch.add_argument("--report-llm-model", default=None, help="Optional report LLM model id.")
+    launch.add_argument("--no-report-auto-generate", dest="report_auto_generate", action="store_false", default=None, help="Do not automatically generate reports for newly saved sessions.")
     launch.set_defaults(func=cmd_launch)
+
+    reports = subparsers.add_parser("reports", help="Print or run the meeting-intelligence report server from the saved live profile.")
+    reports.add_argument("--print", dest="print_only", action="store_true", help="Print the report-server command and exit.")
+    reports.add_argument("--dry-run", action="store_true", help="Alias for --print.")
+    reports.add_argument("--port", dest="reports_port", type=int, default=None, help="Meeting-intelligence report server port.")
+    reports.add_argument("--report-language", default=None, help="Report language; defaults to the saved reports setting or live profile language.")
+    reports.add_argument(
+        "--llm-provider",
+        choices=("llama_cpp", "ollama", "lm_studio", "openai", "openrouter"),
+        dest="report_llm_provider",
+        default=None,
+    )
+    reports.add_argument("--llm-base-url", dest="report_llm_base_url", default=None)
+    reports.add_argument("--llm-model", dest="report_llm_model", default=None)
+    reports.add_argument("--no-auto-generate", dest="report_auto_generate", action="store_false", default=None, help="Do not automatically generate reports for newly saved sessions.")
+    reports.set_defaults(func=cmd_reports)
 
     config = subparsers.add_parser("config", help="Show or update the saved starter profile.")
     config.add_argument("--set", action="append", default=[], metavar="NAME=VALUE", help="Set any saved profile field.")
@@ -3157,12 +3314,25 @@ def build_parser() -> argparse.ArgumentParser:
     config.add_argument("--remote-embeddings-url", dest="remote_embeddings_url", default=None)
     config.add_argument("--embedding-provider", dest="embedding_provider", default=None)
     config.add_argument("--live-speaker-embedding-provider", dest="live_speaker_embedding_provider", default=None)
+    config.add_argument(
+        "--live-speaker-assignment",
+        dest="live_speaker_assignment",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+    )
     config.add_argument("--embedding-python", dest="embedding_python", default=None)
     config.add_argument("--vad-backend", dest="vad_backend", default=None)
     config.add_argument("--realtime-preview-engine", dest="realtime_preview_engine", default=None)
     config.add_argument("--realtime-preview-model-preset", dest="realtime_preview_model_preset", default=None)
     config.add_argument("--realtime-preview-model-dir", dest="realtime_preview_model_dir", type=Path, default=None)
     config.add_argument("--realtime-preview-python", dest="realtime_preview_python", default=None)
+    config.add_argument("--reports-enabled", dest="reports_enabled", action="store_true", default=None)
+    config.add_argument("--reports-port", dest="reports_port", type=int, default=None)
+    config.add_argument("--report-language", dest="report_language", default=None)
+    config.add_argument("--report-llm-provider", dest="report_llm_provider", choices=("llama_cpp", "ollama", "lm_studio", "openai", "openrouter"), default=None)
+    config.add_argument("--report-llm-base-url", dest="report_llm_base_url", default=None)
+    config.add_argument("--report-llm-model", dest="report_llm_model", default=None)
+    config.add_argument("--report-auto-generate", dest="report_auto_generate", action="store_true", default=None)
     config.add_argument("--advanced-args", dest="advanced_args", default=None)
     config.set_defaults(func=cmd_config)
 

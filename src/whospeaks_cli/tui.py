@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import socket
 import signal
 import subprocess
 import sys
@@ -18,6 +19,7 @@ from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
+    Checkbox,
     DataTable,
     Input,
     Label,
@@ -51,6 +53,18 @@ def realtime_plan_label(plan: backend.InstallPlan) -> str:
     if plan.realtime_preview_engine == "kroko_onnx":
         return "Kroko / Banafo live text"
     return "Live text disabled"
+
+
+def provider_preset_label(preset_id: str, preset: backend.ProviderPreset) -> str:
+    """Describe an embedding stack by its user-visible tradeoff, not its raw provider expression."""
+
+    return {
+        "smoke": "Low VRAM - SpeechBrain ECAPA",
+        "single_espnet": "Single model - ESPnet ECAPA",
+        "smoke_fast_live": "Low VRAM final + fast live",
+        "public_quality": "High quality - public ensemble",
+        "promoted_public": "Recommended - public ensemble",
+    }.get(preset_id, preset.name)
 
 
 class ConfirmInstallScreen(ModalScreen[bool]):
@@ -136,7 +150,7 @@ class WhoSpeaksSetupApp(App[str]):
         background: #0d1117;
     }
 
-    #mode-pill, #readiness-text {
+    #mode-pill, #readiness-text, .server-state {
         width: auto;
         height: 1;
         margin-right: 1;
@@ -148,6 +162,31 @@ class WhoSpeaksSetupApp(App[str]):
     #readiness-text {
         color: #ffb845;
         background: #2a2419;
+    }
+
+    #server-status-spacer {
+        width: 1fr;
+        height: 1;
+    }
+
+    .server-state {
+        color: #91a0ad;
+        background: #171d20;
+    }
+
+    .server-state.running {
+        color: #8dd4a3;
+        background: #183527;
+    }
+
+    .server-state.starting {
+        color: #78b8ff;
+        background: #172b42;
+    }
+
+    .server-state.failed {
+        color: #ff929b;
+        background: #3b2024;
     }
 
     #operation-banner {
@@ -256,7 +295,7 @@ class WhoSpeaksSetupApp(App[str]):
     }
 
     #target-label, #realtime-label {
-        width: 10;
+        width: 12;
         height: 1;
         color: #8f9db8;
     }
@@ -274,6 +313,47 @@ class WhoSpeaksSetupApp(App[str]):
         width: auto;
         height: 1;
         padding-right: 1;
+    }
+
+    #quick-language-select {
+        width: 28;
+        height: 2;
+    }
+
+    #language-label {
+        width: 10;
+        height: 1;
+        color: #8f9db8;
+    }
+
+    #quick-language-select SelectCurrent {
+        height: 2;
+        border: none;
+        background: #1b2227;
+    }
+
+    #live-speakers-checkbox {
+        width: auto;
+        height: 1;
+    }
+
+    #compatibility-note {
+        display: none;
+        height: 1;
+        padding-left: 12;
+        color: #ffb845;
+    }
+
+    Screen.preview-incompatible #setup-options {
+        height: 5;
+    }
+
+    Screen.preview-incompatible #compatibility-note {
+        display: block;
+    }
+
+    Screen.compact #quick-language-select {
+        width: 18;
     }
 
     #compact-plan {
@@ -324,14 +404,14 @@ class WhoSpeaksSetupApp(App[str]):
     #setup-state {
         width: 1fr;
         height: 1fr;
-        padding: 1 2 0 2;
+        padding: 0 2;
     }
 
     #setup-side {
         width: 39;
         min-width: 34;
         height: 1fr;
-        padding: 1 0 0 1;
+        padding: 0 0 0 1;
         margin-left: 1;
         border-left: solid #3d4a50;
     }
@@ -361,9 +441,9 @@ class WhoSpeaksSetupApp(App[str]):
         color: #d7f5f0;
     }
 
-    #setup-actions, #doctor-actions, #settings-actions, #activity-actions {
+    #setup-actions, #doctor-actions, #settings-actions, #reports-actions, #activity-actions {
         dock: bottom;
-        height: 3;
+        height: 4;
         align-horizontal: right;
         padding: 0 2;
         background: #0d1117;
@@ -380,6 +460,7 @@ class WhoSpeaksSetupApp(App[str]):
         height: 3;
         margin-left: 1;
         border: none;
+        content-align: center middle;
     }
 
     #setup-actions Button:first-of-type {
@@ -523,8 +604,17 @@ class WhoSpeaksSetupApp(App[str]):
         margin-top: 1;
     }
 
-    Screen.compact #setup-side {
+    Screen.compact #setup-side, Screen.short #setup-side {
         display: none;
+    }
+
+    Screen.short #compact-plan {
+        margin: 0 2;
+    }
+
+    Screen.short #compact-plan.status-idle {
+        display: block;
+        height: 4;
     }
 
     Screen.compact #settings-grid {
@@ -557,6 +647,11 @@ class WhoSpeaksSetupApp(App[str]):
         self.popen_factory = popen_factory
         self.report = backend.DoctorReport(self.profile.mode, [])
         self.install_process: subprocess.Popen[str] | None = None
+        self.live_server_process: subprocess.Popen[str] | None = None
+        self.reports_server_process: subprocess.Popen[str] | None = None
+        self.live_server_state = "stopped"
+        self.reports_server_state = "stopped"
+        self.last_server_probe_at = 0.0
         self.install_cancelled = False
         self.active_operation = ""
         self.pending_install_command: list[str] | None = None
@@ -567,6 +662,7 @@ class WhoSpeaksSetupApp(App[str]):
         self.operation_latest = "Choose a target, review the plan, then select Install."
         self.operation_started_at: float | None = None
         self.spinner_index = 0
+        self.language_selection_changed = False
 
     def compose(self) -> ComposeResult:
         target = {"local": "local", "remote": "core", "server": "server"}.get(self.profile.mode, "local")
@@ -579,8 +675,16 @@ class WhoSpeaksSetupApp(App[str]):
             for code, config in backend.SUPPORTED_LANGUAGE_CONFIGS.items()
         ]
         provider_options = [
-            (preset.name, preset_id)
+            (provider_preset_label(preset_id, preset), preset_id)
             for preset_id, preset in backend.PROVIDER_PRESETS.items()
+        ]
+        report_language_options = [("Follow live language", ""), *language_options]
+        report_provider_options = [
+            ("llama.cpp", "llama_cpp"),
+            ("Ollama", "ollama"),
+            ("LM Studio", "lm_studio"),
+            ("OpenAI", "openai"),
+            ("OpenRouter", "openrouter"),
         ]
 
         with Vertical(id="app-body"):
@@ -590,6 +694,9 @@ class WhoSpeaksSetupApp(App[str]):
             with Horizontal(id="status-row"):
                 yield Static("full local", id="mode-pill", markup=False)
                 yield Static("not checked", id="readiness-text", markup=False)
+                yield Static("", id="server-status-spacer", markup=False)
+                yield Static("Live: stopped", id="live-server-state", classes="server-state", markup=False)
+                yield Static("Reports: stopped", id="reports-server-state", classes="server-state", markup=False)
             with Vertical(id="operation-banner", classes="status-idle"):
                 yield Static(id="operation-primary", markup=False)
                 yield Static(id="operation-secondary", markup=False)
@@ -597,7 +704,7 @@ class WhoSpeaksSetupApp(App[str]):
                 with TabPane("Setup", id="setup-tab"):
                     with Vertical(id="setup-options"):
                         with Horizontal(id="target-row"):
-                            yield Label("Install:", id="target-label")
+                            yield Label("Deployment:", id="target-label")
                             with RadioSet(
                                 RadioButton("Full local", id="target-local", value=target == "local", compact=True),
                                 RadioButton("Remote core", id="target-core", value=target == "core", compact=True),
@@ -605,8 +712,15 @@ class WhoSpeaksSetupApp(App[str]):
                                 id="target-select",
                             ):
                                 pass
+                            yield Label("Language:", id="language-label")
+                            yield Select(
+                                language_options,
+                                value=self.profile.language,
+                                allow_blank=False,
+                                id="quick-language-select",
+                            )
                         with Horizontal(id="realtime-row"):
-                            yield Label("Live ASR:", id="realtime-label")
+                            yield Label("Live text:", id="realtime-label")
                             with RadioSet(
                                 RadioButton("Nemotron", id="realtime-nemotron", value=preview_engine == "sherpa_onnx", compact=True),
                                 RadioButton("Kroko", id="realtime-kroko", value=preview_engine == "kroko_onnx", compact=True),
@@ -614,6 +728,13 @@ class WhoSpeaksSetupApp(App[str]):
                                 id="realtime-select",
                             ):
                                 pass
+                            yield Checkbox(
+                                "Live speaker labels",
+                                value=self.profile.live_speaker_assignment,
+                                id="live-speakers-checkbox",
+                                compact=True,
+                            )
+                        yield Static("", id="compatibility-note", markup=False)
                     yield Static(id="compact-plan", markup=False)
                     with Horizontal(id="setup-workspace"):
                         with Vertical(id="setup-state"):
@@ -677,7 +798,7 @@ class WhoSpeaksSetupApp(App[str]):
                                     id="realtime-model-dir-input",
                                 )
                             with Vertical(classes="field"):
-                                yield Label("Speaker provider")
+                                yield Label("Speaker model preset")
                                 yield Select(
                                     provider_options,
                                     value=self.profile.provider_preset if self.profile.provider_preset in backend.PROVIDER_PRESETS else "smoke",
@@ -712,6 +833,51 @@ class WhoSpeaksSetupApp(App[str]):
                                 yield Input(self.profile.remote_embeddings_url, id="embeddings-url-input")
                     with Horizontal(id="settings-actions"):
                         yield Button("Save settings", id="save-settings", variant="primary")
+                with TabPane("Reports", id="reports-tab"):
+                    with VerticalScroll(id="reports-scroll"):
+                        with Vertical(id="settings-grid"):
+                            with Vertical(classes="field"):
+                                yield Label("Start reports with live window")
+                                yield Checkbox(
+                                    "Open the report server automatically",
+                                    value=self.profile.reports_enabled,
+                                    id="reports-enabled-checkbox",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Report browser port")
+                                yield Input(str(self.profile.reports_port), type="integer", id="reports-port-input")
+                            with Vertical(classes="field"):
+                                yield Label("Report language")
+                                yield Select(
+                                    report_language_options,
+                                    value=self.profile.report_language,
+                                    allow_blank=False,
+                                    id="report-language-select",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Report LLM provider")
+                                yield Select(
+                                    report_provider_options,
+                                    value=self.profile.report_llm_provider,
+                                    allow_blank=False,
+                                    id="report-llm-provider-select",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Report LLM base URL")
+                                yield Input(self.profile.report_llm_base_url, placeholder="Provider default", id="report-llm-base-url-input")
+                            with Vertical(classes="field"):
+                                yield Label("Report LLM model")
+                                yield Input(self.profile.report_llm_model, placeholder="Provider default", id="report-llm-model-input")
+                            with Vertical(classes="field"):
+                                yield Label("Automatic reports")
+                                yield Checkbox(
+                                    "Generate when a new meeting is saved",
+                                    value=self.profile.report_auto_generate,
+                                    id="report-auto-generate-checkbox",
+                                )
+                    with Horizontal(id="reports-actions"):
+                        yield Button("Save report settings", id="save-reports-settings", variant="primary")
+                        yield Button("Start reports now", id="start-reports-button")
                 with TabPane("Activity", id="activity-tab"):
                     yield RichLog(id="activity-log", wrap=True, markup=False, max_lines=5000)
                     with Horizontal(id="activity-actions"):
@@ -720,11 +886,13 @@ class WhoSpeaksSetupApp(App[str]):
 
     def on_mount(self) -> None:
         self._configure_tables()
-        self._apply_size_classes(self.size.width)
+        self._apply_size_classes(self.size.width, self.size.height)
         self._sync_realtime_settings()
         self._update_plan(announce=False)
+        self._sync_preview_compatibility()
         self._render_report(self.report)
         self._render_operation()
+        self._render_server_states()
         self._sync_action_buttons()
         self.set_interval(0.25, self._tick_operation)
         self._append_log(f"WhoSpeaks {backend.__version__}")
@@ -735,10 +903,10 @@ class WhoSpeaksSetupApp(App[str]):
             self.query_one("#readiness-text", Static).update("Readiness not checked")
 
     def on_resize(self, event: events.Resize) -> None:
-        self._apply_size_classes(event.size.width)
+        self._apply_size_classes(event.size.width, event.size.height)
         self._render_operation()
 
-    def _apply_size_classes(self, width: int) -> None:
+    def _apply_size_classes(self, width: int, height: int) -> None:
         if width < 112:
             self.screen.add_class("compact")
         else:
@@ -747,6 +915,10 @@ class WhoSpeaksSetupApp(App[str]):
             self.screen.add_class("narrow")
         else:
             self.screen.remove_class("narrow")
+        if height < 38:
+            self.screen.add_class("short")
+        else:
+            self.screen.remove_class("short")
 
     def _configure_tables(self) -> None:
         for table_id in ("#component-table", "#doctor-table"):
@@ -790,6 +962,44 @@ class WhoSpeaksSetupApp(App[str]):
         # Textual exposes the current button as read-only; keep its model state
         # aligned with the programmatic selection used for the server target.
         radio_set._pressed_button = button
+
+    def _language_value(self) -> str:
+        return str(self.query_one("#quick-language-select", Select).value or self.profile.language)
+
+    def _preview_compatibility_error(self) -> str | None:
+        return backend.preview_language_error(self._selected_realtime_engine(), self._language_value())
+
+    def _sync_preview_compatibility(self) -> str | None:
+        error = self._preview_compatibility_error()
+        note = self.query_one("#compatibility-note", Static)
+        if error:
+            language = backend.SUPPORTED_LANGUAGE_CONFIGS[self._language_value()].display_name
+            engine = {
+                "sherpa_onnx": "Nemotron",
+                "kroko_onnx": "Kroko",
+            }.get(self._selected_realtime_engine(), "Live text")
+            recommendation = backend.recommended_preview_engine(self._language_value())
+            alternative = {
+                "sherpa_onnx": "Nemotron",
+                "kroko_onnx": "Kroko",
+            }.get(recommendation, "Off")
+            note.update(f"{engine} does not support {language}. Choose {alternative} or Off.")
+            self.screen.add_class("preview-incompatible")
+        else:
+            note.update("")
+            self.screen.remove_class("preview-incompatible")
+        return error
+
+    def _select_recommended_engine(self, language: str) -> None:
+        engine = backend.recommended_preview_engine(language)
+        settings_select = self.query_one("#realtime-engine-select", Select)
+        if settings_select.value != engine:
+            settings_select.value = engine
+        self._select_realtime_engine(engine)
+        self._sync_realtime_settings()
+        self._update_plan()
+        self._sync_preview_compatibility()
+        self._sync_action_buttons()
 
     def _selected_plan(self) -> backend.InstallPlan:
         target = self._selected_target()
@@ -933,6 +1143,114 @@ class WhoSpeaksSetupApp(App[str]):
         if self.active_operation:
             self.spinner_index += 1
             self._render_operation()
+        self._refresh_server_states()
+
+    @staticmethod
+    def _process_return_code(process: object | None) -> int | None:
+        if process is None:
+            return None
+        poll = getattr(process, "poll", None)
+        if not callable(poll):
+            return None
+        return poll()
+
+    def _process_is_running(self, process: object | None) -> bool:
+        return process is not None and self._process_return_code(process) is None
+
+    def _render_server_state(self, selector: str, label: str, state: str) -> None:
+        matches = list(self.query(selector))
+        if not matches:
+            return
+        widget = matches[0]
+        for state_class in ("running", "starting", "failed"):
+            widget.remove_class(state_class)
+        if state in {"running", "starting", "failed"}:
+            widget.add_class(state)
+        widget.update(f"{label}: {state}")
+
+    def _render_server_states(self) -> None:
+        self._render_server_state("#live-server-state", "Live", self.live_server_state)
+        self._render_server_state("#reports-server-state", "Reports", self.reports_server_state)
+
+    def _refresh_server_states(self) -> None:
+        if not list(self.query("#live-server-state")):
+            return
+        changed = False
+        now = time.monotonic()
+        probe_due = now - self.last_server_probe_at >= 0.75
+        listening: dict[str, bool] = {}
+        if probe_due:
+            self.last_server_probe_at = now
+            listening = {
+                "live": self._server_port_accepting(self.profile.host, self.profile.port),
+                "reports": self._server_port_accepting(self.profile.host, self.profile.reports_port),
+            }
+        for kind in ("live", "reports"):
+            process_attr = f"{kind}_server_process"
+            state_attr = f"{kind}_server_state"
+            process = getattr(self, process_attr)
+            return_code = self._process_return_code(process)
+            if process is not None and return_code is None:
+                if probe_due:
+                    next_state = "running" if listening[kind] else "starting"
+                else:
+                    next_state = getattr(self, state_attr)
+            elif process is None:
+                if not probe_due:
+                    continue
+                current_state = getattr(self, state_attr)
+                next_state = "running" if listening[kind] else ("failed" if current_state == "failed" else "stopped")
+            else:
+                next_state = "stopped" if return_code == 0 else "failed"
+                setattr(self, process_attr, None)
+                label = "Live server" if kind == "live" else "Reports server"
+                self._append_log(f"{label} exited with code {return_code}.")
+            if getattr(self, state_attr) != next_state:
+                setattr(self, state_attr, next_state)
+                changed = True
+        if changed:
+            self._render_server_states()
+            self._sync_action_buttons()
+
+    @staticmethod
+    def _server_port_accepting(host: str, port: int) -> bool:
+        probe_host = str(host or "127.0.0.1").strip()
+        if probe_host in {"0.0.0.0", "::", "[::]"}:
+            probe_host = "127.0.0.1"
+        try:
+            with socket.create_connection((probe_host, int(port)), timeout=0.08):
+                return True
+        except (OSError, TypeError, ValueError):
+            return False
+
+    @staticmethod
+    def _new_server_console_kwargs() -> dict[str, Any]:
+        if os.name == "nt":
+            return {"creationflags": subprocess.CREATE_NEW_CONSOLE}
+        return {"start_new_session": True}
+
+    def _start_server_process(self, kind: str, command: list[str]) -> bool:
+        process_attr = f"{kind}_server_process"
+        state_attr = f"{kind}_server_state"
+        if self._process_is_running(getattr(self, process_attr)) or getattr(self, state_attr) == "running":
+            label = "Live server" if kind == "live" else "Reports server"
+            self.notify(f"{label} is already running", severity="warning")
+            return False
+        label = "Live server" if kind == "live" else "Reports server"
+        try:
+            process = self.popen_factory(command, **self._new_server_console_kwargs())
+        except OSError as exc:
+            setattr(self, state_attr, "failed")
+            self._render_server_states()
+            self._append_log(f"Could not start {label.lower()}: {exc}")
+            self._set_feedback("error", f"{label} failed to start", str(exc))
+            return False
+        setattr(self, process_attr, process)
+        setattr(self, state_attr, "starting")
+        self._render_server_states()
+        self._sync_action_buttons()
+        self._append_log(f"Started {label.lower()}: {backend.format_command(command)}")
+        return True
 
     def _elapsed_text(self) -> str:
         if self.operation_started_at is None:
@@ -1041,16 +1359,28 @@ class WhoSpeaksSetupApp(App[str]):
         refresh = self.query_one("#refresh-button", Button)
         refresh.label = "Checking..." if checking else "Refresh"
         refresh.disabled = bool(operation)
-        self.query_one("#launch-button", Button).disabled = bool(operation)
+        launch = self.query_one("#launch-button", Button)
+        reports_enabled = self.query_one("#reports-enabled-checkbox", Checkbox).value
+        live_running = self._process_is_running(self.live_server_process) or self.live_server_state == "running"
+        reports_running = self._process_is_running(self.reports_server_process) or self.reports_server_state == "running"
+        incompatible = self._preview_compatibility_error() is not None
+        launch.label = "Live running" if live_running else ("Launch + reports" if reports_enabled else "Launch")
+        launch.disabled = bool(operation) or live_running or incompatible
         self.query_one("#view-activity-button", Button).disabled = False
 
         install = self.query_one("#install-button", Button)
         install.label = "Installing" if installing else "Install"
-        install.disabled = bool(operation)
+        install.disabled = bool(operation) or incompatible
 
         self.query_one("#target-select", RadioSet).disabled = bool(operation)
         self.query_one("#realtime-select", RadioSet).disabled = bool(operation) or self._selected_target() == "server"
+        self.query_one("#quick-language-select", Select).disabled = bool(operation)
+        self.query_one("#live-speakers-checkbox", Checkbox).disabled = bool(operation)
         self.query_one("#save-settings", Button).disabled = bool(operation)
+        self.query_one("#save-reports-settings", Button).disabled = bool(operation)
+        reports_button = self.query_one("#start-reports-button", Button)
+        reports_button.label = "Reports running" if reports_running else "Start reports now"
+        reports_button.disabled = bool(operation) or reports_running
         self.query_one("#quick-doctor", Button).disabled = bool(operation)
         self.query_one("#deep-doctor", Button).disabled = bool(operation)
         cancel = self.query_one("#cancel-operation", Button)
@@ -1114,6 +1444,7 @@ class WhoSpeaksSetupApp(App[str]):
         updates: list[tuple[str, Any]] = [
             ("language", self.query_one("#language-select", Select).value),
             ("provider_preset", self.query_one("#provider-select", Select).value),
+            ("live_speaker_assignment", self.query_one("#live-speakers-checkbox", Checkbox).value),
             ("model", self.query_one("#model-input", Input).value),
             ("device", self.query_one("#device-select", Select).value),
             ("compute_type", self.query_one("#compute-input", Input).value),
@@ -1145,13 +1476,103 @@ class WhoSpeaksSetupApp(App[str]):
             self.notify("Settings saved", title="WhoSpeaks")
         return True
 
+    def _save_reports_settings(self, *, notify: bool = True) -> bool:
+        updates: list[tuple[str, Any]] = [
+            ("reports_enabled", self.query_one("#reports-enabled-checkbox", Checkbox).value),
+            ("reports_port", self.query_one("#reports-port-input", Input).value),
+            ("report_language", self.query_one("#report-language-select", Select).value),
+            ("report_llm_provider", self.query_one("#report-llm-provider-select", Select).value),
+            ("report_llm_base_url", self.query_one("#report-llm-base-url-input", Input).value),
+            ("report_llm_model", self.query_one("#report-llm-model-input", Input).value),
+            ("report_auto_generate", self.query_one("#report-auto-generate-checkbox", Checkbox).value),
+        ]
+        try:
+            updated = backend.apply_profile_updates(self.profile, updates)
+        except SystemExit as exc:
+            self._set_feedback("error", "Report settings were not saved", str(exc))
+            self.notify(str(exc), title="Invalid report settings", severity="error")
+            return False
+        backend.update_profile_in_place(self.profile, updated)
+        try:
+            path = backend.save_profile(self.profile)
+        except OSError as exc:
+            self._append_log(f"Could not save report settings: {exc}")
+            self._set_feedback("error", "Report settings were not saved", str(exc))
+            self.notify(str(exc), title="Could not save report settings", severity="error")
+            return False
+        self._append_log(f"Saved report settings: {path}")
+        self._sync_action_buttons()
+        if notify:
+            self._set_feedback("success", "Report settings saved", str(path))
+            self.notify("Report settings saved", title="WhoSpeaks")
+        return True
+
+    def _start_reports_server(self, *, save_settings: bool = True) -> None:
+        if self.active_operation:
+            self.notify("Wait for the current operation or cancel it", severity="warning")
+            return
+        if save_settings and not self._save_reports_settings(notify=False):
+            return
+        command = backend.build_reports_command(
+            self.profile,
+            port=self.profile.reports_port,
+            report_language=self.profile.report_language,
+            llm_provider=self.profile.report_llm_provider,
+            llm_base_url=self.profile.report_llm_base_url,
+            llm_model=self.profile.report_llm_model,
+            auto_generate=self.profile.report_auto_generate,
+        )
+        if self._start_server_process("reports", command):
+            self._set_feedback(
+                "success",
+                "Reports server starting in another window",
+                f"Open http://{self.profile.host}:{self.profile.reports_port}/",
+            )
+
+    def _start_live_server(self) -> bool:
+        command = backend.build_launch_command(self.profile)
+        if not self._start_server_process("live", command):
+            return False
+        self._set_feedback(
+            "success",
+            "Live server starting in another window",
+            f"Open http://{self.profile.host}:{self.profile.port}/",
+        )
+        return True
+
     @on(RadioSet.Changed, "#target-select")
     def target_changed(self) -> None:
         self._update_plan()
 
     @on(RadioSet.Changed, "#realtime-select")
     def realtime_changed(self) -> None:
+        engine = self._selected_realtime_engine()
+        settings_select = self.query_one("#realtime-engine-select", Select)
+        if settings_select.value != engine:
+            settings_select.value = engine
         self._update_plan()
+        self._sync_preview_compatibility()
+        self._sync_action_buttons()
+
+    @on(Select.Changed, "#quick-language-select")
+    def quick_language_changed(self, event: Select.Changed) -> None:
+        language = str(event.value or self.profile.language)
+        settings_select = self.query_one("#language-select", Select)
+        if settings_select.value != language:
+            settings_select.value = language
+        if self.language_selection_changed or language != self.profile.language:
+            self.language_selection_changed = True
+            self._select_recommended_engine(language)
+
+    @on(Select.Changed, "#language-select")
+    def settings_language_changed(self, event: Select.Changed) -> None:
+        language = str(event.value or self.profile.language)
+        quick_select = self.query_one("#quick-language-select", Select)
+        if quick_select.value != language:
+            quick_select.value = language
+        if self.language_selection_changed or language != self.profile.language:
+            self.language_selection_changed = True
+            self._select_recommended_engine(language)
 
     @on(Select.Changed, "#realtime-engine-select")
     def realtime_engine_changed(self, event: Select.Changed) -> None:
@@ -1159,6 +1580,12 @@ class WhoSpeaksSetupApp(App[str]):
         self._sync_realtime_settings()
         self._select_realtime_engine(engine)
         self._update_plan()
+        self._sync_preview_compatibility()
+        self._sync_action_buttons()
+
+    @on(Checkbox.Changed, "#reports-enabled-checkbox")
+    def reports_enabled_changed(self) -> None:
+        self._sync_action_buttons()
 
     def _sync_realtime_settings(self) -> None:
         engine = str(self.query_one("#realtime-engine-select", Select).value or "off")
@@ -1175,6 +1602,10 @@ class WhoSpeaksSetupApp(App[str]):
             self.run_doctor_worker(True)
         elif button_id == "save-settings":
             self._save_settings()
+        elif button_id == "save-reports-settings":
+            self._save_reports_settings()
+        elif button_id == "start-reports-button":
+            self._start_reports_server()
         elif button_id == "install-button":
             self._request_install()
         elif button_id == "launch-button":
@@ -1193,6 +1624,10 @@ class WhoSpeaksSetupApp(App[str]):
             self._set_feedback("idle", "Activity cleared", "The activity log is now empty.")
 
     def _request_install(self) -> None:
+        compatibility_error = self._sync_preview_compatibility()
+        if compatibility_error:
+            self.notify(compatibility_error, title="Unsupported live text language", severity="warning")
+            return
         if self.active_operation:
             self.notify("Another operation is already running", severity="warning")
             return
@@ -1237,11 +1672,18 @@ class WhoSpeaksSetupApp(App[str]):
         self.run_doctor_worker(False)
 
     def action_launch(self) -> None:
+        compatibility_error = self._sync_preview_compatibility()
+        if compatibility_error:
+            self.notify(compatibility_error, title="Unsupported live text language", severity="warning")
+            return
         if self.active_operation:
             self.notify("Wait for the current operation or cancel it", severity="warning")
             return
-        if self._save_settings(notify=False):
-            self.exit("launch")
+        if not (self._save_settings(notify=False) and self._save_reports_settings(notify=False)):
+            return
+        if self.profile.reports_enabled and not self._process_is_running(self.reports_server_process):
+            self._start_reports_server(save_settings=False)
+        self._start_live_server()
 
     def _show_activity(self) -> None:
         self.query_one("#main-tabs", TabbedContent).active = "activity-tab"

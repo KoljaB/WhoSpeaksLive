@@ -82,13 +82,13 @@ Use remote backends when ASR and embeddings run on a GPU server:
 
 ## Language
 
-Use `--language` to keep final ASR, realtime Kroko/Banafo preview, and stream2sentence sentence splitting on the same language:
+Use `--language` to keep final ASR, realtime preview, and stream2sentence sentence splitting on the same language:
 
 ```powershell
 .\.venv\Scripts\whospeaks-window.exe --language de --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660
 ```
 
-Supported realtime language codes are `de`, `en`, `es`, `fr`, `it`, `he`/`iw`, `nl`, `pt`, `sv`, and `tr`. The app maps these to Kroko model files such as `Kroko-DE-Community-64-L-Streaming-001.data`; English can still explicitly select the legacy `pro-16l` preset if that model is installed locally.
+Kroko preview supports `de`, `en`, `es`, `fr`, `it`, `he`/`iw`, `nl`, `pt`, `sv`, and `tr`. The app maps these to Kroko model files such as `Kroko-DE-Community-64-L-Streaming-001.data`; English can still explicitly select the legacy `pro-16l` preset if that model is installed locally.
 
 | Language | CLI code | Kroko Community model code |
 | --- | --- | --- |
@@ -103,7 +103,34 @@ Supported realtime language codes are `de`, `en`, `es`, `fr`, `it`, `he`/`iw`, `
 | Swedish | `sv` | `SV` |
 | Turkish | `tr` | `TR` |
 
-Missing public Kroko Community models are downloaded automatically from `Banafo/Kroko-ASR` into `runtime/models/kroko-onnx/` when realtime preview starts. Disable this with `--no-realtime-preview-auto-download` if you need strictly offline startup. Pro/private models are not auto-downloaded; pass an existing `.data` file with `--realtime-preview-model-path`.
+Missing public Kroko Community models are downloaded automatically from `Banafo/Kroko-ASR` into `runtime/models/kroko-onnx/` when Kroko preview starts. Disable this with `--no-realtime-preview-auto-download` if you need strictly offline startup. Pro/private models are not auto-downloaded; pass an existing `.data` file with `--realtime-preview-model-path`.
+
+### Nemotron 3.5 Preview Languages
+
+Nemotron 3.5 preview is enabled with `--realtime-preview-engine sherpa_onnx`. It currently exposes these realtime language codes:
+
+| Language | CLI code | Status |
+| --- | --- | --- |
+| English | `en` | Supported |
+| German | `de` | Supported |
+| Spanish | `es` | Supported |
+| French | `fr` | Supported |
+| Italian | `it` | Supported |
+| Dutch | `nl` | Supported |
+| Portuguese | `pt` | Supported |
+| Turkish | `tr` | Supported |
+| Swedish | `sv` | Broad coverage |
+
+Hebrew is not exposed for Nemotron preview in WhoSpeaksLive; use Kroko Hebrew preview or disable realtime preview text. The underlying model may produce text for more languages, but they are not treated as supported until validated in the app's realtime path.
+
+Install the Nemotron runtime packages in the active venv first:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install "sherpa-onnx>=1.13.4,<1.14" "sherpa-onnx-bin>=1.13.4,<1.14"
+.\.venv\Scripts\whospeaks-window.exe --language de --realtime-preview-engine sherpa_onnx --realtime-preview-model-preset nemotron-3.5-560ms-int8
+```
+
+Use `--realtime-preview-model-preset nemotron-3.5-160ms-int8` for the lower-latency comparison model. Use `--realtime-preview-model-dir <path>` only when selecting a preinstalled Nemotron model directory manually.
 
 By default stream2sentence uses `nltk+rule-based` for the Latin-script supported languages and `rule-based` for Hebrew. Override this only for a validated setup:
 

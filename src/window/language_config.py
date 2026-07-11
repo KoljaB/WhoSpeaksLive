@@ -113,6 +113,24 @@ SUPPORTED_LANGUAGE_CONFIGS: dict[str, LanguageConfig] = {
     "zh": LanguageConfig("zh", "Chinese", "", "stanza", "zh-hans", None, ("chinese", "mandarin")),
 }
 
+# A representative flag for each supported language. Languages are not
+# countries, so multilingual languages intentionally use one conventional
+# representative flag while the visible language name remains authoritative.
+LANGUAGE_FLAG_COUNTRY_CODES: dict[str, str] = {
+    "af": "za", "ar": "sa", "be": "by", "bg": "bg", "ca": "es",
+    "cs": "cz", "cy": "gb", "da": "dk", "de": "de", "el": "gr",
+    "en": "gb", "es": "es", "et": "ee", "eu": "es", "fa": "ir",
+    "fi": "fi", "fo": "fo", "fr": "fr", "gl": "es", "he": "il",
+    "hi": "in", "hr": "hr", "hu": "hu", "hy": "am", "id": "id",
+    "is": "is", "it": "it", "ja": "jp", "ka": "ge", "kk": "kz",
+    "ko": "kr", "la": "va", "lt": "lt", "lv": "lv", "ml": "in",
+    "mr": "in", "mt": "mt", "my": "mm", "nl": "nl", "nn": "no",
+    "no": "no", "pl": "pl", "pt": "pt", "ro": "ro", "ru": "ru",
+    "sa": "in", "sd": "pk", "sk": "sk", "sl": "si", "sq": "al",
+    "sr": "rs", "sv": "se", "ta": "in", "te": "in", "th": "th",
+    "tr": "tr", "uk": "ua", "ur": "pk", "vi": "vn", "zh": "cn",
+}
+
 SUPPORTED_LANGUAGE_CODES = tuple(SUPPORTED_LANGUAGE_CONFIGS)
 SUPPORTED_KROKO_CODES = tuple(config.kroko_code for config in SUPPORTED_LANGUAGE_CONFIGS.values() if config.kroko_code)
 SUPPORTED_SENTENCE_TOKENIZERS = ("auto", "nltk", "nltk+rule-based", "rule-based", "stanza")
@@ -168,6 +186,12 @@ def default_language_code() -> str:
 
 def get_language_config(value: Any) -> LanguageConfig:
     return SUPPORTED_LANGUAGE_CONFIGS[normalize_language_code(value)]
+
+
+def language_flag_country_code(value: Any) -> str:
+    """Return the bundled representative flag asset code for a language."""
+
+    return LANGUAGE_FLAG_COUNTRY_CODES[normalize_language_code(value)]
 
 
 def is_kroko_preview_language(value: Any) -> bool:
