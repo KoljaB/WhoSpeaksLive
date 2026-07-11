@@ -93,6 +93,15 @@ class PublicEventNormalizer:
             return self._normalize_speakers(payload)
         if event == "live_speaker":
             return self._normalize_live_speaker(payload)
+        if event == "translation":
+            status = str(payload.get("status") or "updated").strip().lower()
+            event_type = {
+                "queued": "translation.queued",
+                "translating": "translation.started",
+                "complete": "translation.completed",
+                "error": "translation.failed",
+            }.get(status, "translation.updated")
+            return [self._envelope(event_type, dict(payload), event)]
         if event == "status":
             return [self._envelope("system.status", {"message": str(payload.get("message") or ""), "raw": dict(payload)}, event)]
         if event == "error":

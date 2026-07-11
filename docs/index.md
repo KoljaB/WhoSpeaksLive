@@ -23,6 +23,7 @@ Follow these in order for a new machine:
 
 - [Live window workflow](live-window-workflow.md): run a media session, watch live speaker labels, and export results.
 - [Meeting intelligence server](meeting-intelligence-server.md): generate LLM meeting reports from saved transcripts, review evidence, and recreate cached reports.
+- [Live translation](translation.md): configure compact multi-language transcript views and local, sidecar, or LLM translation providers.
 - [Spanish executive meeting](spanish-executive-meeting.md): operate a six-person weekly leadership meeting with live Spanish transcription and an automatic Spanish report.
 - [Speaker libraries](speaker-libraries.md): save, load, import, export, and reuse known speakers.
 - [Public diarization events](public-events.md): subscribe to stable transcript and speaker-change events from Python tools.
@@ -34,6 +35,7 @@ Follow these in order for a new machine:
 - [External servers](external-servers.md): run ASR and embeddings services on a Linux GPU machine.
 - [macOS setup](macos-setup.md): run the controller and both servers locally on Apple Silicon.
 - [Configuration](configuration.md): choose the most important runtime flags.
+- [Speaker model presets](speaker-model-presets.md): compare the exact final/live embedding stacks exposed by the launcher.
 - [Docker](docker.md): container build/run path, volumes, and validation commands.
 - [CLI reference](cli-reference.md): look up every command-line parameter and environment variable.
 - [Modal deployment](modal-deployment.md): deploy supported remote components on Modal.

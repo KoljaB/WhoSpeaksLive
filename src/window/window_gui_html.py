@@ -304,7 +304,29 @@ HTML = r"""<!doctype html>
     .status { max-height:180px; overflow:auto; color:var(--muted); font-size:12px; line-height:1.3; padding-top:2px; }
     .transcript-panel { min-height:0; margin:0 8px 8px; display:grid; grid-template-rows:auto minmax(0,1fr); position:relative; }
     .transcript-header { display:grid; grid-template-columns:auto minmax(240px,1fr) auto; gap:8px 14px; align-items:center; padding:10px; border-bottom:1px solid var(--line); }
-    .transcript-title { grid-column:1 / -1; min-width:0; margin:0; color:#E8EEF5; font-size:15px; line-height:1.2; font-weight:400; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .transcript-heading { grid-column:1 / -1; min-width:0; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .transcript-title { min-width:0; margin:0; color:#E8EEF5; font-size:15px; line-height:1.2; font-weight:400; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .translation-controls { position:relative; flex:0 0 auto; }
+    .translation-controls[hidden], .translation-menu-panel[hidden] { display:none; }
+    .translation-menu-button { min-height:27px; max-width:210px; display:flex; align-items:center; gap:6px; padding:0 8px; border-color:#20303E; background:#121C26; color:#C6D0DC; font-size:12px; }
+    .translation-menu-button svg { width:14px; height:14px; flex:0 0 auto; color:#17B7FE; }
+    .translation-menu-summary { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .translation-activity { width:6px; height:6px; flex:0 0 auto; border-radius:50%; background:#536271; }
+    .translation-activity[data-state="active"] { background:#17B7FE; box-shadow:0 0 8px rgba(23,183,254,.5); }
+    .translation-activity[data-state="pending"] { background:#F59E0B; }
+    .translation-activity[data-state="error"] { background:#DF6B66; }
+    .translation-menu-panel { position:absolute; right:0; top:calc(100% + 6px); z-index:31; width:min(310px, calc(100vw - 32px)); display:grid; gap:9px; padding:10px; border:1px solid #304255; border-radius:8px; background:#0F161F; box-shadow:0 18px 46px rgba(0,0,0,.46); }
+    .translation-menu-heading { min-width:0; display:flex; align-items:baseline; justify-content:space-between; gap:10px; color:#E8EEF5; font-size:13px; }
+    .translation-provider { min-width:0; color:#8392A2; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .translation-menu-field { display:grid; grid-template-columns:86px minmax(0,1fr); align-items:center; gap:8px; color:#9EAAB6; font-size:12px; }
+    .translation-menu-field select { min-width:0; min-height:29px; border:1px solid #20303E; border-radius:6px; padding:0 28px 0 8px; background:#0B1015; color:#D7DEE8; color-scheme:dark; font-size:12px; }
+    .translation-include-original { min-height:24px; display:flex; align-items:center; gap:7px; color:#C6D0DC; font-size:12px; }
+    .translation-include-original input, .translation-target input { width:14px; height:14px; accent-color:#17B7FE; }
+    .translation-target-heading { color:#9EAAB6; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+    .translation-target-list { max-height:158px; overflow:auto; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:3px 8px; padding-right:2px; }
+    .translation-target { min-width:0; min-height:25px; display:flex; align-items:center; gap:6px; color:#C6D0DC; font-size:12px; }
+    .translation-target span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .translation-menu-hint { min-height:15px; color:#718192; font-size:11px; }
     .transcript-left-tools, .transcript-right-tools { display:flex; align-items:center; gap:8px; }
     .transcript-right-tools { justify-content:flex-end; }
     .review-filter { display:flex; align-items:center; gap:2px; padding:2px; border:1px solid var(--line); border-radius:7px; background:#0B1015; }
@@ -363,6 +385,17 @@ HTML = r"""<!doctype html>
     .speaker-name, .speaker-row-title { font-weight:600; }
     .row.provisional-assignment .speaker-name { opacity:.5; }
     .text { font-size:15px; line-height:1.34; }
+    .text.translation-secondary { color:#8392A2; font-size:12.5px; line-height:1.3; margin-bottom:3px; }
+    .text.translation-secondary::before { content:attr(data-language-label); display:inline; margin-right:6px; color:#647586; font-size:10px; text-transform:uppercase; letter-spacing:.035em; }
+    .translation-lines { display:grid; gap:3px; }
+    .translation-lines[hidden] { display:none; }
+    .translation-line { min-width:0; color:#E8EEF5; font-size:15px; line-height:1.34; }
+    .translation-line.translation-additional { color:#D7DEE8; }
+    .translation-language { display:inline-flex; align-items:center; gap:4px; max-width:110px; margin-right:6px; color:#718192; font-size:10px; text-transform:uppercase; letter-spacing:.035em; overflow:hidden; text-overflow:ellipsis; vertical-align:baseline; white-space:nowrap; }
+    .translation-language-flag { width:14px; height:10.5px; flex:0 0 auto; border-radius:1px; object-fit:cover; box-shadow:0 0 0 1px rgba(255,255,255,.12); }
+    .translation-line.translation-pending { color:#8392A2; font-size:12.5px; }
+    .translation-line.translation-error { color:#B98A87; font-size:12.5px; }
+    .translation-inline-state { margin-left:6px; color:#8392A2; font-size:11px; white-space:nowrap; }
     .row.realtime { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 10%, #0B1015); }
     .row.realtime.live-speaker-row { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, #0B1015); border-bottom-color:color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, var(--line)); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, transparent), inset 7px 0 14px color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, transparent); }
     .row.provisional-split-source { border-bottom-color:color-mix(in srgb, var(--live-row-color, #8F9BA8) 24%, var(--line)); }
@@ -416,6 +449,9 @@ HTML = r"""<!doctype html>
       .capture-panel { min-height:0; padding:10px; grid-template-columns:1fr; }
       .transcript-panel { margin:0 8px 8px; min-height:45vh; display:block; }
       .transcript-header { grid-template-columns:1fr; gap:8px; padding:9px; }
+      .transcript-heading { align-items:flex-start; }
+      .translation-menu-button { max-width:155px; }
+      .translation-menu-panel { position:fixed; right:16px; top:72px; }
       .transcript-left-tools, .transcript-right-tools { justify-content:flex-start; }
       .review-filter { width:100%; overflow:auto; }
       .selection-toolbar { top:116px; left:16px; right:16px; min-width:0; flex-wrap:wrap; }
@@ -642,7 +678,47 @@ HTML = r"""<!doctype html>
       </section>
       <section class="transcript-panel">
         <div class="transcript-header">
-          <h2 id="transcriptTitle" class="transcript-title">Live transcript</h2>
+          <div class="transcript-heading">
+            <h2 id="transcriptTitle" class="transcript-title">Live transcript</h2>
+            <div id="translationControls" class="translation-controls" hidden>
+              <button id="translationMenuButton" class="translation-menu-button" type="button" title="Translation display" aria-label="Translation display" aria-haspopup="true" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 5h10"></path>
+                  <path d="M9 3v2c0 4-2 7-6 9"></path>
+                  <path d="M5 9c1.5 2.5 3.5 4.3 6 5.5"></path>
+                  <path d="m14 19 3.5-8 3.5 8"></path>
+                  <path d="M15.2 16h4.6"></path>
+                </svg>
+                <span id="translationMenuSummary" class="translation-menu-summary">Original</span>
+                <span id="translationActivity" class="translation-activity" data-state="off" aria-hidden="true"></span>
+              </button>
+              <div id="translationMenuPanel" class="translation-menu-panel" hidden>
+                <div class="translation-menu-heading">
+                  <span>Translation</span>
+                  <span id="translationProvider" class="translation-provider"></span>
+                </div>
+                <label class="translation-menu-field">
+                  <span>Display</span>
+                  <select id="translationDisplayMode" aria-label="Translation display mode">
+                    <option value="original">Original</option>
+                    <option value="single">One translation</option>
+                    <option value="all">All translations</option>
+                  </select>
+                </label>
+                <label id="translationPrimaryField" class="translation-menu-field">
+                  <span>Show language</span>
+                  <select id="translationPrimaryTarget" aria-label="Translation shown in single-language mode"></select>
+                </label>
+                <label class="translation-include-original">
+                  <input id="translationIncludeOriginal" type="checkbox">
+                  <span>Also show original</span>
+                </label>
+                <div class="translation-target-heading">Translate into</div>
+                <div id="translationTargetList" class="translation-target-list"></div>
+                <div id="translationMenuHint" class="translation-menu-hint"></div>
+              </div>
+            </div>
+          </div>
           <div class="transcript-left-tools">
             <label class="follow-live-toggle">
               <input id="followLive" type="checkbox" checked>
@@ -901,6 +977,18 @@ const downloadTranscriptButton = document.getElementById("downloadTranscript");
 const downloadTranscriptJsonButton = document.getElementById("downloadTranscriptJson");
 const transcriptSettingsButton = document.getElementById("transcriptSettings");
 const transcriptSettingsPanel = document.getElementById("transcriptSettingsPanel");
+const translationControls = document.getElementById("translationControls");
+const translationMenuButton = document.getElementById("translationMenuButton");
+const translationMenuSummary = document.getElementById("translationMenuSummary");
+const translationActivity = document.getElementById("translationActivity");
+const translationMenuPanel = document.getElementById("translationMenuPanel");
+const translationProvider = document.getElementById("translationProvider");
+const translationDisplayModeControl = document.getElementById("translationDisplayMode");
+const translationPrimaryField = document.getElementById("translationPrimaryField");
+const translationPrimaryTargetControl = document.getElementById("translationPrimaryTarget");
+const translationIncludeOriginalControl = document.getElementById("translationIncludeOriginal");
+const translationTargetList = document.getElementById("translationTargetList");
+const translationMenuHint = document.getElementById("translationMenuHint");
 const showTranscriptTags = document.getElementById("showTranscriptTags");
 const showTranscriptTime = document.getElementById("showTranscriptTime");
 const groupTranscriptTurns = document.getElementById("groupTranscriptTurns");
@@ -965,6 +1053,7 @@ const speakerSensitivityConfig = __NEW_SPEAKER_SENSITIVITY_JSON__;
 const speakerRefinementConfig = __SPEAKER_REFINEMENT_JSON__;
 const liveSpeakerConfig = __LIVE_SPEAKER_JSON__;
 const languageConfig = __LANGUAGE_JSON__;
+const translationConfig = __TRANSLATION_JSON__;
 const sessionLeaseEnabled = liveSpeakerConfig.session_lease_enabled !== false;
 const initialSpeakerLibrary = __SPEAKER_LIBRARY_JSON__;
 const svgNamespace = "http://www.w3.org/2000/svg";
@@ -1018,6 +1107,14 @@ let transcriptSearchText = "";
 let transcriptReviewFilter = "all";
 const transcriptGroupTurnsStorageKey = "whospeaks.demo.group_transcript_turns.v2";
 const transcriptReviewHintsStorageKey = "whospeaks.demo.show_transcript_review_hints";
+const translationDisplayModeStorageKey = "whospeaks.demo.translation_display_mode.v1";
+const translationPrimaryTargetStorageKey = "whospeaks.demo.translation_primary_target.v1";
+const translationIncludeOriginalStorageKey = "whospeaks.demo.translation_include_original.v1";
+let translationDisplayMode = "original";
+let translationPrimaryTarget = "";
+let translationSelectedTargets = new Set();
+let translationStatesBySentence = new Map();
+let translationConfigureTimer = null;
 let hasUndoableCorrection = false;
 let selectedTranscriptRowIndexes = new Set();
 let lastSelectedTranscriptRowIndex = "";
@@ -1109,6 +1206,7 @@ function storeBooleanValue(key, value) {
 }
 groupTranscriptTurns.checked = storedBooleanValue(transcriptGroupTurnsStorageKey, true);
 showTranscriptReviewHints.checked = storedBooleanValue(transcriptReviewHintsStorageKey, false);
+initializeTranslationControls();
 function initializeSessionIdentity() {
   sessionClientId = storedSessionValue(sessionClientIdStorageKey);
   if (!sessionClientId) {
@@ -2941,6 +3039,7 @@ function loadSavedSessionReview(sessionData, options = {}) {
   const previousFollowLiveEnabled = followLiveEnabled;
   followLiveEnabled = false;
   rows.forEach(row => renderSentence({...row, realtime:false, pending:false}));
+  applyTranslationCollection(sessionData.translations, {refresh:true});
   followLiveEnabled = previousFollowLiveEnabled;
   speakerSessionBaselineSentenceCounts = {};
   speakerSessionBaselineSpeakingSeconds = {};
@@ -3211,6 +3310,8 @@ function resetTranscriptDisplay() {
   browserLiveObservationStarted = false;
   browserLiveObservationBuffer = [];
   sentences.textContent = "";
+  translationStatesBySentence.clear();
+  renderTranslationMenu();
   statusBox.textContent = "";
   clearMeetingEvidenceHighlight();
   clearTranscriptSelection();
@@ -3246,6 +3347,8 @@ function clearDisplayedTranscript() {
   }
   transcriptClearBeforeSeconds = currentTranscriptClearBoundarySeconds();
   sentences.textContent = "";
+  translationStatesBySentence.clear();
+  renderTranslationMenu();
   clearTranscriptSelection();
   renderedSpeakerSentenceCounts = {};
   renderedSpeakerSpeakingSeconds = {};
@@ -3444,6 +3547,489 @@ function speakerTranscriptVisible(speakerId) {
   if (soloSpeakerIds.size > 0) return soloSpeakerIds.has(speakerId);
   return true;
 }
+function normalizedTranslationLanguageCode(value) {
+  const raw = value && typeof value === "object" ? (value.code || value.id || value.language) : value;
+  return String(raw || "").trim().toLowerCase();
+}
+function translationLanguageOptions() {
+  const candidates = [
+    translationConfig && translationConfig.languages,
+    translationConfig && translationConfig.supported_languages,
+    translationConfig && translationConfig.available_languages,
+  ].find(value => Array.isArray(value)) || [];
+  const result = [];
+  const seen = new Set();
+  candidates.forEach(item => {
+    const code = normalizedTranslationLanguageCode(item);
+    if (!code || seen.has(code)) return;
+    seen.add(code);
+    const name = item && typeof item === "object"
+      ? String(item.name || item.label || item.display_name || code)
+      : String(item || code);
+    const flagUrl = item && typeof item === "object" ? String(item.flag_url || "") : "";
+    result.push({code, name, flag_url:flagUrl});
+  });
+  return result;
+}
+function translationConfiguredTargets() {
+  const candidates = translationConfig && (
+    translationConfig.selected_targets
+    || translationConfig.target_languages
+  );
+  if (!Array.isArray(candidates)) return [];
+  return candidates.map(normalizedTranslationLanguageCode).filter(Boolean);
+}
+function translationProviderLabel() {
+  const provider = translationConfig && translationConfig.provider;
+  if (provider && typeof provider === "object") {
+    return String(provider.label || provider.display_name || provider.name || provider.id || provider.provider || "Translation");
+  }
+  return String(provider || (translationConfig && translationConfig.provider_label) || "Translation");
+}
+function translationProviderLicense() {
+  const provider = translationConfig && translationConfig.provider;
+  if (!provider || typeof provider !== "object") return null;
+  const metadata = provider.model_metadata && typeof provider.model_metadata === "object"
+    ? provider.model_metadata
+    : null;
+  const license = (metadata && metadata.license) || provider.license;
+  return license && typeof license === "object" ? license : null;
+}
+function translationProviderNotice() {
+  const provider = translationConfig && translationConfig.provider;
+  if (!provider || typeof provider !== "object") return "";
+  const metadata = provider.model_metadata && typeof provider.model_metadata === "object"
+    ? provider.model_metadata
+    : null;
+  const license = translationProviderLicense();
+  return [
+    metadata && metadata.intended_use_notice,
+    license && license.notice,
+    license && license.url,
+  ].filter(Boolean).join(" ");
+}
+function translationLanguageName(code) {
+  const normalized = normalizedTranslationLanguageCode(code);
+  const option = translationLanguageOptions().find(item => item.code === normalized);
+  return option ? option.name : String(code || normalized || "Translation");
+}
+function translationLanguageFlagUrl(code) {
+  const normalized = normalizedTranslationLanguageCode(code);
+  const option = translationLanguageOptions().find(item => item.code === normalized);
+  return option ? String(option.flag_url || "") : "";
+}
+function translationFeatureAvailable() {
+  return Boolean(
+    translationConfig
+    && translationConfig.available !== false
+    && translationLanguageOptions().length
+  );
+}
+function translationMaximumTargets() {
+  const configured = Number(translationConfig && translationConfig.max_targets);
+  return Number.isFinite(configured) && configured > 0
+    ? Math.floor(configured)
+    : translationLanguageOptions().length;
+}
+function effectiveTranslationDisplayMode() {
+  if (!translationFeatureAvailable() || !translationSelectedTargets.size) return "original";
+  return ["single", "all"].includes(translationDisplayMode) ? translationDisplayMode : "original";
+}
+function selectedTranslationCodesForDisplay() {
+  const selected = Array.from(translationSelectedTargets);
+  if (effectiveTranslationDisplayMode() === "single") {
+    const primary = selected.includes(translationPrimaryTarget) ? translationPrimaryTarget : (selected[0] || "");
+    return primary ? [primary] : [];
+  }
+  return effectiveTranslationDisplayMode() === "all" ? selected : [];
+}
+function translationSentenceKey(item) {
+  if (!item || typeof item !== "object") return "";
+  for (const value of [item.sentence_index, item.segment_id, item.index]) {
+    if (value !== undefined && value !== null && String(value).trim()) return String(value);
+  }
+  return "";
+}
+function translationTargetCode(item) {
+  if (!item || typeof item !== "object") return "";
+  return normalizedTranslationLanguageCode(
+    item.target_language || item.target_language_code || item.language || item.language_code
+  );
+}
+function normalizedTranslationStatus(value, textValue = "") {
+  const status = String(value || "").trim().toLowerCase();
+  if (["complete", "completed", "ready", "success", "succeeded"].includes(status)) return "complete";
+  if (["error", "failed", "failure", "cancelled", "canceled", "superseded"].includes(status)) return "error";
+  if (["translating", "running", "processing", "in_progress"].includes(status)) return "translating";
+  if (["queued", "pending", "waiting"].includes(status)) return "queued";
+  return String(textValue || "").trim() ? "complete" : "queued";
+}
+function translationStateMatchesRow(state, row) {
+  if (!state || !row) return true;
+  const eventHash = String(state.source_text_hash || "");
+  const rowHash = String(row.dataset.sourceTextHash || "");
+  if (eventHash && rowHash && eventHash !== rowHash) return false;
+  const eventRevision = String(state.source_revision === undefined || state.source_revision === null ? "" : state.source_revision);
+  const rowRevision = String(row.dataset.sourceRevision || "");
+  return !(eventRevision && rowRevision && eventRevision !== rowRevision);
+}
+function translationStateMap(sentenceKey, create = false) {
+  const key = String(sentenceKey || "");
+  if (!key) return null;
+  if (!translationStatesBySentence.has(key) && create) {
+    translationStatesBySentence.set(key, new Map());
+  }
+  return translationStatesBySentence.get(key) || null;
+}
+function forgetSentenceTranslations(sentenceKey) {
+  translationStatesBySentence.delete(String(sentenceKey || ""));
+}
+function applyTranslationEvent(item, options = {}) {
+  if (!item || typeof item !== "object") return false;
+  const sentenceKey = translationSentenceKey(item);
+  const targetCode = translationTargetCode(item);
+  if (!sentenceKey || !targetCode) return false;
+  const row = findFinalSentenceRow(sentenceKey);
+  const translatedText = item.text === undefined || item.text === null ? item.translated_text : item.text;
+  const state = {
+    sentence_index: item.sentence_index,
+    segment_id: item.segment_id,
+    source_revision: item.source_revision,
+    source_text_hash: String(item.source_text_hash || item.source_hash || ""),
+    target_language: targetCode,
+    target_language_name: String(item.target_language_name || translationLanguageName(targetCode)),
+    status: normalizedTranslationStatus(item.status, translatedText),
+    text: String(translatedText || ""),
+    error: String(item.error || item.message || ""),
+    provider: String(item.provider && typeof item.provider === "object" ? (item.provider.id || item.provider.name || "") : (item.provider || "")),
+  };
+  if (row && !translationStateMatchesRow(state, row)) return false;
+  translationStateMap(sentenceKey, true).set(targetCode, state);
+  if (options.refresh !== false) refreshTranslationPresentation();
+  return true;
+}
+function applyTranslationCollection(collection, options = {}) {
+  if (!collection) return;
+  const defaultSentenceKey = String(options.sentence_index || options.segment_id || "");
+  const events = [];
+  if (Array.isArray(collection)) {
+    collection.forEach(item => events.push(item));
+  } else if (collection && typeof collection === "object") {
+    const nested = Array.isArray(collection.items)
+      ? collection.items
+      : (Array.isArray(collection.translations) ? collection.translations : null);
+    if (nested) {
+      nested.forEach(item => events.push(item));
+    } else if (translationTargetCode(collection)) {
+      events.push(collection);
+    } else if (defaultSentenceKey) {
+      Object.entries(collection).forEach(([languageCode, state]) => {
+        if (state && typeof state === "object") {
+          events.push({...state, sentence_index:state.sentence_index === undefined ? defaultSentenceKey : state.sentence_index, target_language:state.target_language || languageCode});
+        } else if (typeof state === "string") {
+          events.push({sentence_index:defaultSentenceKey, target_language:languageCode, status:"complete", text:state});
+        }
+      });
+    } else {
+      Object.entries(collection).forEach(([outerKey, outerValue]) => {
+        if (Array.isArray(outerValue)) {
+          outerValue.forEach(item => events.push({...item, sentence_index:item.sentence_index === undefined ? outerKey : item.sentence_index}));
+          return;
+        }
+        if (!outerValue || typeof outerValue !== "object") return;
+        if (translationTargetCode(outerValue)) {
+          events.push({...outerValue, sentence_index:outerValue.sentence_index === undefined ? (defaultSentenceKey || outerKey) : outerValue.sentence_index});
+          return;
+        }
+        Object.entries(outerValue).forEach(([languageCode, state]) => {
+          if (state && typeof state === "object") {
+            events.push({...state, sentence_index:state.sentence_index === undefined ? (defaultSentenceKey || outerKey) : state.sentence_index, target_language:state.target_language || languageCode});
+          } else if (typeof state === "string") {
+            events.push({sentence_index:defaultSentenceKey || outerKey, target_language:languageCode, status:"complete", text:state});
+          }
+        });
+      });
+    }
+  }
+  events.forEach(item => {
+    const withSentence = defaultSentenceKey && translationSentenceKey(item) === ""
+      ? {...item, sentence_index:defaultSentenceKey}
+      : item;
+    applyTranslationEvent(withSentence, {refresh:false});
+  });
+  if (options.refresh !== false) refreshTranslationPresentation();
+}
+function transcriptRowSentenceKeys(row) {
+  if (!row) return [];
+  if (row.dataset.groupIndexes) {
+    try {
+      const values = JSON.parse(row.dataset.groupIndexes);
+      if (Array.isArray(values) && values.length) return values.map(String);
+    } catch (_) {}
+  }
+  return row.dataset.index ? [String(row.dataset.index)] : [];
+}
+function translationStateForRow(row, languageCode) {
+  const code = normalizedTranslationLanguageCode(languageCode);
+  const keys = transcriptRowSentenceKeys(row);
+  const states = keys.map(key => {
+    const map = translationStateMap(key);
+    const state = map && map.get(code);
+    const sourceRow = findFinalSentenceRow(key);
+    return state && translationStateMatchesRow(state, sourceRow) ? state : null;
+  });
+  const completedText = states
+    .filter(state => state && state.status === "complete" && state.text.trim())
+    .map(state => state.text.trim())
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (states.length && states.every(state => state && state.status === "complete" && state.text.trim())) {
+    return {status:"complete", text:completedText, error:""};
+  }
+  const errors = states.filter(state => state && state.status === "error");
+  const waiting = states.some(state => !state || state.status === "queued" || state.status === "translating");
+  if (savedSessionReviewOpen() && waiting) {
+    return {status:"error", text:completedText, error:"This language was not translated during the saved session."};
+  }
+  if (!waiting && errors.length) {
+    return {status:"error", text:completedText, error:errors.map(state => state.error).filter(Boolean).join(" | ")};
+  }
+  return {status:"translating", text:completedText, error:""};
+}
+function createTranslationLine(languageCode, state, options = {}) {
+  const line = document.createElement("div");
+  line.className = "translation-line";
+  line.lang = normalizedTranslationLanguageCode(languageCode);
+  if (options.additional) line.classList.add("translation-additional");
+  const showLabel = options.show_label || state.status !== "complete";
+  if (showLabel) {
+    const label = document.createElement("span");
+    label.className = "translation-language";
+    const flagUrl = translationLanguageFlagUrl(languageCode);
+    if (flagUrl) {
+      const flag = document.createElement("img");
+      flag.className = "translation-language-flag";
+      flag.src = flagUrl;
+      flag.alt = "";
+      flag.setAttribute("aria-hidden", "true");
+      label.appendChild(flag);
+    }
+    label.appendChild(document.createTextNode(translationLanguageName(languageCode)));
+    line.appendChild(label);
+  }
+  if (state.status === "complete") {
+    line.appendChild(document.createTextNode(state.text));
+    return line;
+  }
+  if (state.status === "error") {
+    line.classList.add("translation-error");
+    line.appendChild(document.createTextNode(state.text || "Translation unavailable"));
+    if (state.error) line.title = state.error;
+    return line;
+  }
+  line.classList.add("translation-pending");
+  if (state.text) {
+    line.appendChild(document.createTextNode(state.text));
+    const pending = document.createElement("span");
+    pending.className = "translation-inline-state";
+    pending.textContent = "Translating…";
+    line.appendChild(pending);
+  } else {
+    line.appendChild(document.createTextNode("Translating…"));
+  }
+  return line;
+}
+function refreshTranslationRow(row) {
+  if (!row) return;
+  const source = row.querySelector(".text");
+  let lines = row.querySelector(".translation-lines");
+  if (!lines) {
+    lines = document.createElement("div");
+    lines.className = "translation-lines";
+    row.appendChild(lines);
+  }
+  const sourceSearchText = String(row.dataset.groupText || row.dataset.text || "");
+  const translatedSearchText = Array.from(translationSelectedTargets)
+    .map(code => translationStateForRow(row, code))
+    .filter(state => state.status === "complete")
+    .map(state => state.text);
+  row.dataset.searchText = [sourceSearchText, ...translatedSearchText].filter(Boolean).join(" ");
+  const mode = row.dataset.realtime === "true" ? "original" : effectiveTranslationDisplayMode();
+  const targetCodes = mode === "original" ? [] : selectedTranslationCodesForDisplay();
+  const includeOriginal = mode !== "original" && Boolean(translationIncludeOriginalControl.checked);
+  const displayStates = targetCodes.map(code => translationStateForRow(row, code));
+  const showPendingSource = mode === "single"
+    && displayStates.length === 1
+    && displayStates[0].status === "translating"
+    && !displayStates[0].text;
+  const showErrorFallback = displayStates.length > 0
+    && displayStates.every(state => state.status === "error" && !state.text);
+  if (source) {
+    source.lang = String(languageConfig.code || "");
+    source.hidden = mode !== "original" && !includeOriginal && !showErrorFallback && !showPendingSource;
+    source.classList.toggle("translation-secondary", includeOriginal || showErrorFallback);
+    source.dataset.languageLabel = includeOriginal || showErrorFallback
+      ? `${showErrorFallback && !includeOriginal ? "Original fallback" : "Original"} · ${String(languageConfig.name || languageConfig.code || "Source")}`
+      : "";
+  }
+  lines.replaceChildren();
+  if (!targetCodes.length || showPendingSource) {
+    lines.hidden = true;
+    return;
+  }
+  targetCodes.forEach((code, index) => {
+    lines.appendChild(createTranslationLine(code, displayStates[index], {
+      additional:index > 0,
+      show_label:mode === "all",
+    }));
+  });
+  lines.hidden = false;
+}
+function translationActivityState() {
+  if (!translationSelectedTargets.size) return "off";
+  let pending = false;
+  let failed = false;
+  Array.from(sentences.querySelectorAll(".row[data-realtime='false']")).forEach(row => {
+    translationSelectedTargets.forEach(code => {
+      const state = translationStateForRow(row, code);
+      if (state.status === "error") failed = true;
+      if (state.status === "translating") pending = true;
+    });
+  });
+  return pending ? "pending" : (failed ? "error" : "active");
+}
+function refreshTranslationPresentation(options = {}) {
+  Array.from(sentences.querySelectorAll(".row")).forEach(refreshTranslationRow);
+  refreshTranscriptVisibility();
+  if (options.menu) renderTranslationMenu();
+  else refreshTranslationMenuStatus();
+}
+function translationMenuSummaryText() {
+  const mode = effectiveTranslationDisplayMode();
+  if (mode === "original") return "Original";
+  const selected = selectedTranslationCodesForDisplay();
+  const suffix = translationIncludeOriginalControl.checked ? " + original" : "";
+  if (mode === "single") return `${translationLanguageName(selected[0])}${suffix}`;
+  return `${selected.length} translation${selected.length === 1 ? "" : "s"}${suffix}`;
+}
+function refreshTranslationMenuStatus() {
+  if (!translationFeatureAvailable()) return;
+  translationMenuSummary.textContent = translationMenuSummaryText();
+  translationActivity.dataset.state = translationActivityState();
+  translationMenuButton.title = `${translationMenuSummary.textContent} · ${translationProviderLabel()}`;
+}
+function renderTranslationMenu() {
+  if (!translationControls) return;
+  const available = translationFeatureAvailable();
+  translationControls.hidden = !available;
+  if (!available) return;
+  translationDisplayModeControl.value = translationDisplayMode;
+  const providerLicense = translationProviderLicense();
+  const licenseLabel = providerLicense && (providerLicense.identifier || providerLicense.display_name);
+  translationProvider.textContent = [translationProviderLabel(), licenseLabel].filter(Boolean).join(" · ");
+  translationProvider.title = translationProviderNotice();
+  refreshTranslationMenuStatus();
+  const selectedCodes = Array.from(translationSelectedTargets);
+  translationPrimaryTargetControl.replaceChildren();
+  selectedCodes.forEach(code => {
+    const option = document.createElement("option");
+    option.value = code;
+    option.textContent = translationLanguageName(code);
+    translationPrimaryTargetControl.appendChild(option);
+  });
+  if (!selectedCodes.includes(translationPrimaryTarget)) {
+    translationPrimaryTarget = selectedCodes[0] || "";
+  }
+  translationPrimaryTargetControl.value = translationPrimaryTarget;
+  translationPrimaryField.hidden = effectiveTranslationDisplayMode() !== "single";
+  translationIncludeOriginalControl.disabled = effectiveTranslationDisplayMode() === "original";
+  const maximum = translationMaximumTargets();
+  translationTargetList.replaceChildren();
+  translationLanguageOptions().forEach(language => {
+    const label = document.createElement("label");
+    label.className = "translation-target";
+    label.title = language.name;
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = language.code;
+    input.checked = translationSelectedTargets.has(language.code);
+    input.disabled = !input.checked && translationSelectedTargets.size >= maximum;
+    const name = document.createElement("span");
+    name.textContent = language.name;
+    label.append(input, name);
+    input.addEventListener("change", () => setTranslationTargetSelected(language.code, input.checked));
+    translationTargetList.appendChild(label);
+  });
+  translationMenuHint.textContent = selectedCodes.length
+    ? `${selectedCodes.length} of ${maximum} target language${maximum === 1 ? "" : "s"} selected`
+    : "Choose at least one target language.";
+}
+function setTranslationMenuOpen(open) {
+  if (!translationFeatureAvailable()) return;
+  translationMenuPanel.hidden = !open;
+  translationMenuButton.setAttribute("aria-expanded", open ? "true" : "false");
+}
+function translationTargetPayloadCodes() {
+  return translationLanguageOptions()
+    .filter(language => translationSelectedTargets.has(language.code))
+    .map(language => language.code);
+}
+function scheduleTranslationConfiguration() {
+  if (translationConfigureTimer) clearTimeout(translationConfigureTimer);
+  translationConfigureTimer = setTimeout(() => {
+    translationConfigureTimer = null;
+    const targetLanguages = translationTargetPayloadCodes();
+    post("/api/translation/configure", {target_languages:targetLanguages})
+      .catch(error => log(`Translation configuration failed: ${error.message}`));
+  }, 180);
+}
+function setTranslationTargetSelected(codeValue, selected) {
+  const code = normalizedTranslationLanguageCode(codeValue);
+  if (!code) return;
+  const hadTargets = translationSelectedTargets.size > 0;
+  if (selected) {
+    if (translationSelectedTargets.size >= translationMaximumTargets()) return;
+    translationSelectedTargets.add(code);
+  } else {
+    translationSelectedTargets.delete(code);
+  }
+  if (selected && !hadTargets && translationDisplayMode === "original") {
+    translationDisplayMode = "single";
+    storeSessionValue(translationDisplayModeStorageKey, translationDisplayMode);
+  }
+  if (!translationSelectedTargets.has(translationPrimaryTarget)) {
+    translationPrimaryTarget = Array.from(translationSelectedTargets)[0] || "";
+    storeSessionValue(translationPrimaryTargetStorageKey, translationPrimaryTarget);
+  }
+  if (!translationSelectedTargets.size && translationDisplayMode !== "original") {
+    translationDisplayMode = "original";
+    storeSessionValue(translationDisplayModeStorageKey, translationDisplayMode);
+  }
+  refreshTranslationPresentation({menu:true});
+  scheduleTranslationConfiguration();
+}
+function initializeTranslationControls() {
+  if (!translationControls) return;
+  const validCodes = new Set(translationLanguageOptions().map(language => language.code));
+  translationSelectedTargets = new Set(translationConfiguredTargets().filter(code => validCodes.has(code)));
+  const configuredMode = String((translationConfig && translationConfig.display_mode) || "original").toLowerCase();
+  const storedMode = storedSessionValue(translationDisplayModeStorageKey);
+  translationDisplayMode = ["original", "single", "all"].includes(storedMode)
+    ? storedMode
+    : (["original", "single", "all"].includes(configuredMode) ? configuredMode : "original");
+  const configuredPrimary = normalizedTranslationLanguageCode(translationConfig && translationConfig.primary_target);
+  const storedPrimary = normalizedTranslationLanguageCode(storedSessionValue(translationPrimaryTargetStorageKey));
+  translationPrimaryTarget = translationSelectedTargets.has(storedPrimary)
+    ? storedPrimary
+    : (translationSelectedTargets.has(configuredPrimary) ? configuredPrimary : (Array.from(translationSelectedTargets)[0] || ""));
+  translationIncludeOriginalControl.checked = storedBooleanValue(
+    translationIncludeOriginalStorageKey,
+    Boolean(translationConfig && (translationConfig.include_original || translationConfig.show_original_with_translations))
+  );
+  if (!translationSelectedTargets.size) translationDisplayMode = "original";
+  renderTranslationMenu();
+}
 function transcriptSearchVisible(row) {
   const query = transcriptSearchText.trim().toLowerCase();
   if (!query) return true;
@@ -3585,6 +4171,8 @@ function refreshTranscriptGrouping() {
     });
     applyTranscriptGroupRows(currentGroup);
   }
+  Array.from(sentences.querySelectorAll(".row")).forEach(refreshTranslationRow);
+  refreshTranslationMenuStatus();
   refreshTranscriptVisibility();
   syncTranscriptSelectionState();
 }
@@ -5220,6 +5808,25 @@ function optionalNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
+function transcriptTranslationExportStates(row) {
+  const result = {};
+  const key = String(row && row.dataset.index || "");
+  const states = translationStateMap(key);
+  if (!states) return result;
+  states.forEach((state, code) => {
+    if (!translationStateMatchesRow(state, row)) return;
+    result[code] = {
+      language: state.target_language_name || translationLanguageName(code),
+      status: state.status,
+      text: state.text || "",
+      error: state.error || "",
+      provider: state.provider || "",
+      source_revision: state.source_revision === undefined ? null : state.source_revision,
+      source_text_hash: state.source_text_hash || "",
+    };
+  });
+  return result;
+}
 function transcriptAtomicExportRows() {
   return Array.from(sentences.querySelectorAll(".row"))
     .filter(row => row.dataset.realtime !== "true")
@@ -5232,6 +5839,9 @@ function transcriptAtomicExportRows() {
       start_seconds: optionalNumber(row.dataset.start),
       end_seconds: optionalNumber(row.dataset.end),
       text: row.dataset.text || "",
+      source_revision: row.dataset.sourceRevision || "",
+      source_text_hash: row.dataset.sourceTextHash || "",
+      translations: transcriptTranslationExportStates(row),
       assignment_source: row.dataset.assignmentSource || "",
       top_similarity: optionalNumber(row.dataset.topSimilarity),
       margin: optionalNumber(row.dataset.margin),
@@ -5264,6 +5874,20 @@ function mergeTranscriptExportRows(rows) {
   const reviewReasons = Array.from(new Set(rows.flatMap(row => row.review_reasons || [])));
   const assignmentSources = Array.from(new Set(rows.map(row => row.assignment_source || "").filter(Boolean)));
   const correctionStatuses = Array.from(new Set(rows.map(row => row.correction_status || "").filter(Boolean)));
+  const translationCodes = Array.from(new Set(rows.flatMap(row => Object.keys(row.translations || {}))));
+  const translations = {};
+  translationCodes.forEach(code => {
+    const states = rows.map(row => (row.translations || {})[code] || null);
+    const completed = states.filter(state => state && state.status === "complete" && state.text).map(state => state.text.trim());
+    const complete = states.length === rows.length && states.every(state => state && state.status === "complete" && state.text);
+    const failed = states.filter(state => state && state.status === "error");
+    translations[code] = {
+      language: translationLanguageName(code),
+      status: complete ? "complete" : (failed.length && completed.length + failed.length === rows.length ? "error" : "translating"),
+      text: completed.join(" ").replace(/\s+/g, " ").trim(),
+      error: failed.map(state => state.error || "").filter(Boolean).join(" | "),
+    };
+  });
   return {
     ...startRow,
     index: rows.map(row => row.index).filter(Boolean).join(","),
@@ -5274,6 +5898,7 @@ function mergeTranscriptExportRows(rows) {
     start_seconds: startRow.start_seconds,
     end_seconds: endRow.end_seconds,
     text,
+    translations,
     assignment_source: assignmentSources.length === 1 ? assignmentSources[0] : (assignmentSources.length ? "mixed" : ""),
     top_similarity: null,
     margin: null,
@@ -5315,7 +5940,26 @@ function transcriptTextExportRows(speakerId = null) {
 }
 function transcriptExportText(speakerId = null) {
   const rows = transcriptTextExportRows(speakerId);
-  return rows.map(row => `[${row.start} - ${row.end}] ${row.speaker}: ${row.text}`).join("\n");
+  if (effectiveTranslationDisplayMode() === "original") {
+    return rows.map(row => `[${row.start} - ${row.end}] ${row.speaker}: ${row.text}`).join("\n");
+  }
+  const targetCodes = selectedTranslationCodesForDisplay();
+  const includeOriginal = Boolean(translationIncludeOriginalControl.checked);
+  return rows.map(row => {
+    const translated = targetCodes
+      .map(code => ({code, state:(row.translations || {})[code]}))
+      .filter(item => item.state && item.state.status === "complete" && String(item.state.text || "").trim());
+    if (effectiveTranslationDisplayMode() === "single" && translated.length && !includeOriginal) {
+      return `[${row.start} - ${row.end}] ${row.speaker}: ${translated[0].state.text}`;
+    }
+    if (!translated.length) {
+      return `[${row.start} - ${row.end}] ${row.speaker}: ${row.text}`;
+    }
+    const lines = [];
+    if (includeOriginal) lines.push(`[Original · ${String(languageConfig.name || languageConfig.code || "Source")}] ${row.text}`);
+    translated.forEach(item => lines.push(`[${translationLanguageName(item.code)}] ${item.state.text}`));
+    return `[${row.start} - ${row.end}] ${row.speaker}:\n  ${lines.join("\n  ")}`;
+  }).join("\n");
 }
 function transcriptExportFilename(speakerId = null) {
   const suffix = speakerId ? `-${speakerDisplayLabel(speakerId).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}` : "";
@@ -5371,6 +6015,11 @@ function downloadTranscriptJson(speakerId = null) {
     format: "whospeaks-transcript",
     version: 1,
     exported_at: new Date().toISOString(),
+    translation_display: {
+      mode: effectiveTranslationDisplayMode(),
+      target_languages: selectedTranslationCodesForDisplay(),
+      include_original: Boolean(translationIncludeOriginalControl.checked),
+    },
     rows,
   });
 }
@@ -5651,6 +6300,8 @@ function renderSentence(item) {
   const adoptedLiveSpeakerId = !item.realtime && row && row.dataset.realtime === "true"
     ? normalizedLiveSpeakerId(row.dataset.speaker)
     : "";
+  const previousCanonicalText = row && row.dataset.realtime !== "true" ? String(row.dataset.text || "") : "";
+  const previousSourceTextHash = row && row.dataset.realtime !== "true" ? String(row.dataset.sourceTextHash || "") : "";
   const isNewRow = !row;
   if (!row) {
     row = document.createElement("div");
@@ -5691,6 +6342,13 @@ function renderSentence(item) {
   const visualSplit = provisionalRealtimeVisualSplit(item, displaySpeakerId, startSeconds, endSeconds);
   const displayEndSeconds = visualSplit ? visualSplit.splitStart : endSeconds;
   const displayText = visualSplit ? visualSplit.prefixText : (item.text || "");
+  const nextSourceTextHash = String(item.source_text_hash || "");
+  if (!item.realtime && (
+    (previousCanonicalText && previousCanonicalText !== String(item.text || ""))
+    || (previousSourceTextHash && nextSourceTextHash && previousSourceTextHash !== nextSourceTextHash)
+  )) {
+    forgetSentenceTranslations(item.index);
+  }
   const durationSeconds = Math.max(0, displayEndSeconds - startSeconds);
   row.dataset.rawSpeaker = item.realtime ? (visualSplit ? displaySpeakerId : rawSpeakerId) : "";
   row.dataset.rawSpeakerProbability = item.realtime ? String(rawSpeakerProbability) : "";
@@ -5709,6 +6367,10 @@ function renderSentence(item) {
   row.dataset.topSimilarity = item.top_similarity === undefined || item.top_similarity === null ? "" : String(item.top_similarity);
   row.dataset.unknownProbability = item.unknown_probability === undefined || item.unknown_probability === null ? "" : String(item.unknown_probability);
   row.dataset.correctionStatus = correctionStatus(item);
+  row.dataset.sourceTextHash = item.realtime ? "" : nextSourceTextHash;
+  row.dataset.sourceRevision = item.realtime || item.source_revision === undefined || item.source_revision === null
+    ? ""
+    : String(item.source_revision);
   row.classList.toggle("provisional-assignment", Boolean(item.provisional_assignment));
   row.classList.toggle("provisional-split-source", Boolean(visualSplit));
   row.classList.toggle("live-speaker-row", item.realtime && Boolean(displaySpeakerId));
@@ -5790,6 +6452,10 @@ function renderSentence(item) {
   text.className = "text";
   text.textContent = displayText;
   row.replaceChildren(top, text);
+  const translationLines = document.createElement("div");
+  translationLines.className = "translation-lines";
+  translationLines.hidden = true;
+  row.appendChild(translationLines);
   placeSentenceRowChronologically(row);
   if (visualSplit) {
     renderProvisionalRealtimeSplitRow(row, visualSplit);
@@ -5808,6 +6474,9 @@ function renderSentence(item) {
   });
   if (item.error) {
     prob.title = item.error;
+  }
+  if (!item.realtime && item.translations) {
+    applyTranslationCollection(item.translations, {sentence_index:item.index, refresh:false});
   }
   removeOverlappingSettlingRealtimeRows(item, row);
   updateCurrentLiveSpeakerFromRealtimeRows();
@@ -5834,6 +6503,7 @@ function connect() {
   es.addEventListener("speakers", e => updateSpeakerState(JSON.parse(e.data)));
   es.addEventListener("sentence", e => renderSentence(JSON.parse(e.data)));
   es.addEventListener("realtime", e => renderSentence(JSON.parse(e.data)));
+  es.addEventListener("translation", e => applyTranslationEvent(JSON.parse(e.data)));
   es.addEventListener("live_speaker", e => applyFallbackLiveSpeaker(JSON.parse(e.data)));
   es.addEventListener("live_speaker_clear", e => clearFallbackLiveSpeakerFromProbe(JSON.parse(e.data)));
   es.addEventListener("realtime_clear", e => clearRealtimeRows(JSON.parse(e.data).generation));
@@ -5868,6 +6538,30 @@ transcriptSettingsButton.addEventListener("click", event => {
   setTranscriptSettingsOpen(transcriptSettingsPanel.hidden);
 });
 transcriptSettingsPanel.addEventListener("click", event => event.stopPropagation());
+translationMenuButton.addEventListener("click", event => {
+  event.stopPropagation();
+  setTranslationMenuOpen(translationMenuPanel.hidden);
+});
+translationMenuPanel.addEventListener("click", event => event.stopPropagation());
+translationDisplayModeControl.addEventListener("change", () => {
+  translationDisplayMode = ["original", "single", "all"].includes(translationDisplayModeControl.value)
+    ? translationDisplayModeControl.value
+    : "original";
+  storeSessionValue(translationDisplayModeStorageKey, translationDisplayMode);
+  refreshTranslationPresentation({menu:true});
+});
+translationPrimaryTargetControl.addEventListener("change", () => {
+  const code = normalizedTranslationLanguageCode(translationPrimaryTargetControl.value);
+  if (translationSelectedTargets.has(code)) {
+    translationPrimaryTarget = code;
+    storeSessionValue(translationPrimaryTargetStorageKey, translationPrimaryTarget);
+    refreshTranslationPresentation();
+  }
+});
+translationIncludeOriginalControl.addEventListener("change", () => {
+  storeBooleanValue(translationIncludeOriginalStorageKey, translationIncludeOriginalControl.checked);
+  refreshTranslationPresentation();
+});
 [showTranscriptTags, showTranscriptTime, showTranscriptReviewHints, showTranscriptSpeechRate, showTranscriptProbabilities].forEach(control => {
   control.addEventListener("change", applyTranscriptDisplaySettings);
 });
@@ -6046,6 +6740,9 @@ document.addEventListener("click", event => {
   }
   if (!transcriptSettingsButton.contains(event.target) && !transcriptSettingsPanel.contains(event.target)) {
     setTranscriptSettingsOpen(false);
+  }
+  if (!translationMenuButton.contains(event.target) && !translationMenuPanel.contains(event.target)) {
+    setTranslationMenuOpen(false);
   }
   if (openSessionMenuId && !(event.target instanceof Element && event.target.closest(".session-row-menu, .session-menu-button"))) {
     openSessionMenuId = "";

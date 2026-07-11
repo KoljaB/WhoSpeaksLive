@@ -13,7 +13,7 @@ whospeaks
 Choose `Configuration` to edit the main launch parameters directly. The launcher keeps short, high-contrast summaries on the first line and prints the exact model/provider strings in dimmer detail lines for validation work:
 
 - Language and realtime text
-- Speaker provider quality
+- Speaker model preset (named final/live embedding stacks)
 - Backends and remote URLs
 - ASR model, device, and compute type
 - Browser host and port
@@ -146,26 +146,18 @@ Additional Whisper languages can be used for final ASR and sentence splitting wh
 
 Automatic sentence-tokenizer selection prefers NLTK whenever both NLTK and Stanza support the language. Languages supported only by Stanza, such as Chinese, use `stanza`; Hebrew keeps the lightweight rule-based splitter used by the realtime Kroko path.
 
-## Embedding Providers
+## Speaker Model Presets and Embedding Providers
 
 Final speaker assignment uses `--embedding-provider`.
 
 Live speaker feedback can use `--live-speaker-embedding-provider`. If omitted, the app can use the final provider. If specified differently, the app keeps live profiles compatible with that live provider.
 
-The `whospeaks` starter can manage these as named provider presets:
-
-| Preset ID | Simple label | Final provider | Live provider | Notes |
-| --- | --- | --- | --- | --- |
-| `smoke` | First start | `speechbrain_ecapa` | `speechbrain_ecapa` | Fast setup check, not the highest-accuracy setting. |
-| `single_espnet` | Single ESPnet | `espnet_ecapa_wavlm_joint` | `espnet_ecapa_wavlm_joint` | Validates one provider in isolation. |
-| `smoke_fast_live` | Smoke final + fast live | `speechbrain_ecapa` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Simple final provider with the fast live stack. |
-| `public_quality` | Public high quality | `espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Public multi-provider stack. |
-| `promoted_public` | Promoted public stack | `espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Matches the current `whospeaks-window` default final provider stack. |
+The launcher's **Settings** tab exposes five named **Speaker model preset** choices. Each choice sets both the final and live provider expressions. See [Speaker model presets](speaker-model-presets.md) for the exact launcher labels, stable IDs, complete provider strings, weight semantics, memory trade-offs, and compatibility cautions.
 
 Use the interactive starter menu, or set a preset explicitly:
 
 ```powershell
-whospeaks config --set provider_preset=public_quality
+whospeaks config --provider-preset public_quality
 whospeaks launch --print
 ```
 
@@ -239,6 +231,18 @@ Speaker detection balances two errors:
 - Splitting one person into multiple speakers.
 
 The app exposes a new-speaker sensitivity preset in the browser UI and lower-level command flags for experiments. Prefer the UI preset for normal use, then use validation before changing low-level thresholds.
+
+## Translation
+
+Translation is off by default and never changes the canonical transcript. The recommended local configuration uses the isolated sidecar:
+
+```powershell
+whospeaks config --translation-enabled --translation-provider sidecar `
+  --translation-model-profile translate-gemma-4b `
+  --translation-target-languages "en,de" --translation-max-targets 4
+```
+
+Use `--translation-provider transformers` for in-process local inference, `reports_llm` to reuse the report LLM, or `openai_compatible` for a separate `/v1/chat/completions` endpoint. See [Live translation](translation.md) for installation, model-license constraints, browser display modes, capacity behavior, and the sidecar/API reference.
 
 ## Runtime Directories
 

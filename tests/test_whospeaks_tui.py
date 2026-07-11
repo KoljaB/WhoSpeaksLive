@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import socket
 import subprocess
 import tempfile
 import threading
@@ -21,7 +22,25 @@ from whospeaks_cli import main as backend
 from whospeaks_cli.tui import ConfirmInstallScreen, WhoSpeaksSetupApp
 
 
+def unused_local_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+        listener.bind(("127.0.0.1", 0))
+        return int(listener.getsockname()[1])
+
+
 class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
+    async def test_language_dropdowns_are_sorted_by_display_name(self) -> None:
+        app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
+        async with app.run_test(size=(140, 42)) as pilot:
+            await pilot.pause()
+            expected = sorted(
+                (config.display_name for config in backend.SUPPORTED_LANGUAGE_CONFIGS.values()),
+                key=str.casefold,
+            )
+            for selector in ("#quick-language-select", "#language-select"):
+                options = [str(label) for label, value in app.query_one(selector, Select)._options if value is not Select.NULL]
+                self.assertEqual(options, expected)
+
     async def test_setup_layout_fits_measured_terminal_sizes(self) -> None:
         for size in ((80, 28), (100, 32), (140, 32), (140, 42)):
             with self.subTest(size=size):
@@ -152,7 +171,10 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(app.query_one("#realtime-select", RadioSet).pressed_button.id, "realtime-nemotron")
 
     async def test_explicit_incompatible_live_text_keeps_language_warns_and_blocks_actions(self) -> None:
-        app = WhoSpeaksSetupApp(backend.Profile(language="cy", realtime_preview_engine="off"), auto_doctor=False)
+        app = WhoSpeaksSetupApp(
+            backend.Profile(language="cy", realtime_preview_engine="off", port=unused_local_port()),
+            auto_doctor=False,
+        )
         async with app.run_test(size=(140, 32)) as pilot:
             await pilot.click("#realtime-nemotron")
             await pilot.pause()
@@ -241,7 +263,7 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
             os.environ["WHOSPEAKS_CONFIG"] = str(config_path)
             try:
                 app = WhoSpeaksSetupApp(
-                    backend.Profile(language="es"),
+                    backend.Profile(language="es", reports_port=unused_local_port()),
                     auto_doctor=False,
                     popen_factory=popen_factory,
                 )

@@ -441,7 +441,7 @@ class WhoSpeaksSetupApp(App[str]):
         color: #d7f5f0;
     }
 
-    #setup-actions, #doctor-actions, #settings-actions, #reports-actions, #activity-actions {
+    #setup-actions, #doctor-actions, #settings-actions, #reports-actions, #translation-actions, #activity-actions {
         dock: bottom;
         height: 4;
         align-horizontal: right;
@@ -649,8 +649,10 @@ class WhoSpeaksSetupApp(App[str]):
         self.install_process: subprocess.Popen[str] | None = None
         self.live_server_process: subprocess.Popen[str] | None = None
         self.reports_server_process: subprocess.Popen[str] | None = None
+        self.translation_server_process: subprocess.Popen[str] | None = None
         self.live_server_state = "stopped"
         self.reports_server_state = "stopped"
+        self.translation_server_state = "stopped"
         self.last_server_probe_at = 0.0
         self.install_cancelled = False
         self.active_operation = ""
@@ -670,10 +672,13 @@ class WhoSpeaksSetupApp(App[str]):
         preview_preset = self.profile.realtime_preview_model_preset
         if preview_preset not in {"nemotron-3.5-560ms-int8", "nemotron-3.5-160ms-int8"}:
             preview_preset = "nemotron-3.5-560ms-int8"
-        language_options = [
-            (config.display_name, code)
-            for code, config in backend.SUPPORTED_LANGUAGE_CONFIGS.items()
-        ]
+        language_options = sorted(
+            (
+                (config.display_name, code)
+                for code, config in backend.SUPPORTED_LANGUAGE_CONFIGS.items()
+            ),
+            key=lambda option: option[0].casefold(),
+        )
         provider_options = [
             (provider_preset_label(preset_id, preset), preset_id)
             for preset_id, preset in backend.PROVIDER_PRESETS.items()
@@ -686,6 +691,18 @@ class WhoSpeaksSetupApp(App[str]):
             ("OpenAI", "openai"),
             ("OpenRouter", "openrouter"),
         ]
+        translation_provider_options = [
+            ("Local sidecar (recommended)", "sidecar"),
+            ("Local model in live process", "transformers"),
+            ("Reuse reports LLM", "reports_llm"),
+            ("OpenAI-compatible API", "openai_compatible"),
+            ("Mock (testing)", "mock"),
+        ]
+        translation_model_options = [
+            ("TranslateGemma 4B (recommended)", "translate-gemma-4b"),
+            ("NLLB-200 600M (CC-BY-NC)", "nllb-200-600m"),
+            ("MADLAD-400 3B (Apache-2.0)", "madlad-400-3b"),
+        ]
 
         with Vertical(id="app-body"):
             with Horizontal(id="title-bar"):
@@ -697,6 +714,7 @@ class WhoSpeaksSetupApp(App[str]):
                 yield Static("", id="server-status-spacer", markup=False)
                 yield Static("Live: stopped", id="live-server-state", classes="server-state", markup=False)
                 yield Static("Reports: stopped", id="reports-server-state", classes="server-state", markup=False)
+                yield Static("Translation: stopped", id="translation-server-state", classes="server-state", markup=False)
             with Vertical(id="operation-banner", classes="status-idle"):
                 yield Static(id="operation-primary", markup=False)
                 yield Static(id="operation-secondary", markup=False)
@@ -878,6 +896,85 @@ class WhoSpeaksSetupApp(App[str]):
                     with Horizontal(id="reports-actions"):
                         yield Button("Save report settings", id="save-reports-settings", variant="primary")
                         yield Button("Start reports now", id="start-reports-button")
+                with TabPane("Translation", id="translation-tab"):
+                    with VerticalScroll(id="translation-scroll"):
+                        with Vertical(id="settings-grid"):
+                            with Vertical(classes="field"):
+                                yield Label("Translate stable transcript text")
+                                yield Checkbox(
+                                    "Enable translation with live window",
+                                    value=self.profile.translation_enabled,
+                                    id="translation-enabled-checkbox",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Translation provider")
+                                yield Select(
+                                    translation_provider_options,
+                                    value=self.profile.translation_provider,
+                                    allow_blank=False,
+                                    id="translation-provider-select",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Target language codes")
+                                yield Input(
+                                    self.profile.translation_target_languages,
+                                    placeholder="de, fr, ja",
+                                    id="translation-targets-input",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Maximum simultaneous targets")
+                                yield Input(
+                                    str(self.profile.translation_max_targets),
+                                    type="integer",
+                                    id="translation-max-targets-input",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Local model profile")
+                                yield Select(
+                                    translation_model_options,
+                                    value=self.profile.translation_model_profile,
+                                    allow_blank=False,
+                                    id="translation-model-profile-select",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Model override (optional)")
+                                yield Input(
+                                    self.profile.translation_model,
+                                    placeholder="Hugging Face or API model ID",
+                                    id="translation-model-input",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("API / sidecar base URL (optional)")
+                                yield Input(
+                                    self.profile.translation_base_url,
+                                    placeholder="Provider default",
+                                    id="translation-base-url-input",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Translation Python (optional)")
+                                yield Input(
+                                    self.profile.translation_python,
+                                    placeholder="Use the WhoSpeaks Python",
+                                    id="translation-python-input",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Local sidecar port")
+                                yield Input(
+                                    str(self.profile.translation_port),
+                                    type="integer",
+                                    id="translation-port-input",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Local translation device")
+                                yield Select(
+                                    [("Automatic", "auto"), ("CUDA", "cuda"), ("CPU", "cpu")],
+                                    value=self.profile.translation_device,
+                                    allow_blank=False,
+                                    id="translation-device-select",
+                                )
+                    with Horizontal(id="translation-actions"):
+                        yield Button("Save translation settings", id="save-translation-settings", variant="primary")
+                        yield Button("Start translation now", id="start-translation-button")
                 with TabPane("Activity", id="activity-tab"):
                     yield RichLog(id="activity-log", wrap=True, markup=False, max_lines=5000)
                     with Horizontal(id="activity-actions"):
@@ -888,6 +985,7 @@ class WhoSpeaksSetupApp(App[str]):
         self._configure_tables()
         self._apply_size_classes(self.size.width, self.size.height)
         self._sync_realtime_settings()
+        self._sync_translation_settings()
         self._update_plan(announce=False)
         self._sync_preview_compatibility()
         self._render_report(self.report)
@@ -1171,6 +1269,7 @@ class WhoSpeaksSetupApp(App[str]):
     def _render_server_states(self) -> None:
         self._render_server_state("#live-server-state", "Live", self.live_server_state)
         self._render_server_state("#reports-server-state", "Reports", self.reports_server_state)
+        self._render_server_state("#translation-server-state", "Translation", self.translation_server_state)
 
     def _refresh_server_states(self) -> None:
         if not list(self.query("#live-server-state")):
@@ -1181,11 +1280,22 @@ class WhoSpeaksSetupApp(App[str]):
         listening: dict[str, bool] = {}
         if probe_due:
             self.last_server_probe_at = now
+            translation_should_probe = (
+                self._process_is_running(self.translation_server_process)
+                or (
+                    self.profile.translation_enabled
+                    and self.profile.translation_provider == "sidecar"
+                )
+            )
             listening = {
                 "live": self._server_port_accepting(self.profile.host, self.profile.port),
                 "reports": self._server_port_accepting(self.profile.host, self.profile.reports_port),
+                "translation": (
+                    translation_should_probe
+                    and self._server_port_accepting(self.profile.host, self.profile.translation_port)
+                ),
             }
-        for kind in ("live", "reports"):
+        for kind in ("live", "reports", "translation"):
             process_attr = f"{kind}_server_process"
             state_attr = f"{kind}_server_state"
             process = getattr(self, process_attr)
@@ -1203,7 +1313,7 @@ class WhoSpeaksSetupApp(App[str]):
             else:
                 next_state = "stopped" if return_code == 0 else "failed"
                 setattr(self, process_attr, None)
-                label = "Live server" if kind == "live" else "Reports server"
+                label = self._server_label(kind)
                 self._append_log(f"{label} exited with code {return_code}.")
             if getattr(self, state_attr) != next_state:
                 setattr(self, state_attr, next_state)
@@ -1233,10 +1343,10 @@ class WhoSpeaksSetupApp(App[str]):
         process_attr = f"{kind}_server_process"
         state_attr = f"{kind}_server_state"
         if self._process_is_running(getattr(self, process_attr)) or getattr(self, state_attr) == "running":
-            label = "Live server" if kind == "live" else "Reports server"
+            label = self._server_label(kind)
             self.notify(f"{label} is already running", severity="warning")
             return False
-        label = "Live server" if kind == "live" else "Reports server"
+        label = self._server_label(kind)
         try:
             process = self.popen_factory(command, **self._new_server_console_kwargs())
         except OSError as exc:
@@ -1251,6 +1361,14 @@ class WhoSpeaksSetupApp(App[str]):
         self._sync_action_buttons()
         self._append_log(f"Started {label.lower()}: {backend.format_command(command)}")
         return True
+
+    @staticmethod
+    def _server_label(kind: str) -> str:
+        return {
+            "live": "Live server",
+            "reports": "Reports server",
+            "translation": "Translation server",
+        }.get(kind, f"{kind.title()} server")
 
     def _elapsed_text(self) -> str:
         if self.operation_started_at is None:
@@ -1361,10 +1479,26 @@ class WhoSpeaksSetupApp(App[str]):
         refresh.disabled = bool(operation)
         launch = self.query_one("#launch-button", Button)
         reports_enabled = self.query_one("#reports-enabled-checkbox", Checkbox).value
+        translation_enabled = self.query_one("#translation-enabled-checkbox", Checkbox).value
+        translation_provider = str(self.query_one("#translation-provider-select", Select).value or "sidecar")
+        translation_sidecar_enabled = translation_enabled and translation_provider == "sidecar"
         live_running = self._process_is_running(self.live_server_process) or self.live_server_state == "running"
         reports_running = self._process_is_running(self.reports_server_process) or self.reports_server_state == "running"
+        translation_running = (
+            self._process_is_running(self.translation_server_process)
+            or self.translation_server_state == "running"
+        )
         incompatible = self._preview_compatibility_error() is not None
-        launch.label = "Live running" if live_running else ("Launch + reports" if reports_enabled else "Launch")
+        if live_running:
+            launch.label = "Live running"
+        elif reports_enabled and translation_sidecar_enabled:
+            launch.label = "Launch + services"
+        elif reports_enabled:
+            launch.label = "Launch + reports"
+        elif translation_sidecar_enabled:
+            launch.label = "Launch + translation"
+        else:
+            launch.label = "Launch"
         launch.disabled = bool(operation) or live_running or incompatible
         self.query_one("#view-activity-button", Button).disabled = False
 
@@ -1378,9 +1512,17 @@ class WhoSpeaksSetupApp(App[str]):
         self.query_one("#live-speakers-checkbox", Checkbox).disabled = bool(operation)
         self.query_one("#save-settings", Button).disabled = bool(operation)
         self.query_one("#save-reports-settings", Button).disabled = bool(operation)
+        self.query_one("#save-translation-settings", Button).disabled = bool(operation)
         reports_button = self.query_one("#start-reports-button", Button)
         reports_button.label = "Reports running" if reports_running else "Start reports now"
         reports_button.disabled = bool(operation) or reports_running
+        translation_button = self.query_one("#start-translation-button", Button)
+        translation_button.label = "Translation running" if translation_running else "Start translation now"
+        translation_button.disabled = (
+            bool(operation)
+            or translation_running
+            or not translation_sidecar_enabled
+        )
         self.query_one("#quick-doctor", Button).disabled = bool(operation)
         self.query_one("#deep-doctor", Button).disabled = bool(operation)
         cancel = self.query_one("#cancel-operation", Button)
@@ -1507,6 +1649,43 @@ class WhoSpeaksSetupApp(App[str]):
             self.notify("Report settings saved", title="WhoSpeaks")
         return True
 
+    def _save_translation_settings(self, *, notify: bool = True) -> bool:
+        updates: list[tuple[str, Any]] = [
+            ("translation_enabled", self.query_one("#translation-enabled-checkbox", Checkbox).value),
+            ("translation_provider", self.query_one("#translation-provider-select", Select).value),
+            ("translation_target_languages", self.query_one("#translation-targets-input", Input).value),
+            ("translation_max_targets", self.query_one("#translation-max-targets-input", Input).value),
+            ("translation_model_profile", self.query_one("#translation-model-profile-select", Select).value),
+            ("translation_model", self.query_one("#translation-model-input", Input).value),
+            ("translation_base_url", self.query_one("#translation-base-url-input", Input).value),
+            ("translation_python", self.query_one("#translation-python-input", Input).value),
+            ("translation_port", self.query_one("#translation-port-input", Input).value),
+            ("translation_device", self.query_one("#translation-device-select", Select).value),
+        ]
+        try:
+            updated = backend.apply_profile_updates(self.profile, updates)
+        except SystemExit as exc:
+            self._set_feedback("error", "Translation settings were not saved", str(exc))
+            self.notify(str(exc), title="Invalid translation settings", severity="error")
+            return False
+        backend.update_profile_in_place(self.profile, updated)
+        try:
+            path = backend.save_profile(self.profile)
+        except OSError as exc:
+            self._append_log(f"Could not save translation settings: {exc}")
+            self._set_feedback("error", "Translation settings were not saved", str(exc))
+            self.notify(str(exc), title="Could not save translation settings", severity="error")
+            return False
+        self.query_one("#translation-targets-input", Input).value = self.profile.translation_target_languages
+        self.query_one("#translation-max-targets-input", Input).value = str(self.profile.translation_max_targets)
+        self._append_log(f"Saved translation settings: {path}")
+        self._sync_translation_settings()
+        self._sync_action_buttons()
+        if notify:
+            self._set_feedback("success", "Translation settings saved", str(path))
+            self.notify("Translation settings saved", title="WhoSpeaks")
+        return True
+
     def _start_reports_server(self, *, save_settings: bool = True) -> None:
         if self.active_operation:
             self.notify("Wait for the current operation or cancel it", severity="warning")
@@ -1528,6 +1707,28 @@ class WhoSpeaksSetupApp(App[str]):
                 "Reports server starting in another window",
                 f"Open http://{self.profile.host}:{self.profile.reports_port}/",
             )
+
+    def _start_translation_server(self, *, save_settings: bool = True) -> bool:
+        if self.active_operation:
+            self.notify("Wait for the current operation or cancel it", severity="warning")
+            return False
+        if save_settings and not self._save_translation_settings(notify=False):
+            return False
+        if not self.profile.translation_enabled:
+            self.notify("Enable translation before starting its local server", severity="warning")
+            return False
+        if self.profile.translation_provider != "sidecar":
+            self.notify("The selected provider runs through the live server and has no sidecar", severity="warning")
+            return False
+        command = backend.build_translation_command(self.profile)
+        if not self._start_server_process("translation", command):
+            return False
+        self._set_feedback(
+            "success",
+            "Translation server starting in another window",
+            f"Translation API on http://{self.profile.host}:{self.profile.translation_port}/",
+        )
+        return True
 
     def _start_live_server(self) -> bool:
         command = backend.build_launch_command(self.profile)
@@ -1587,11 +1788,32 @@ class WhoSpeaksSetupApp(App[str]):
     def reports_enabled_changed(self) -> None:
         self._sync_action_buttons()
 
+    @on(Checkbox.Changed, "#translation-enabled-checkbox")
+    def translation_enabled_changed(self) -> None:
+        self._sync_translation_settings()
+        self._sync_action_buttons()
+
+    @on(Select.Changed, "#translation-provider-select")
+    def translation_provider_changed(self) -> None:
+        self._sync_translation_settings()
+        self._sync_action_buttons()
+
     def _sync_realtime_settings(self) -> None:
         engine = str(self.query_one("#realtime-engine-select", Select).value or "off")
         enabled = engine == "sherpa_onnx"
         self.query_one("#realtime-preset-select", Select).disabled = not enabled
         self.query_one("#realtime-model-dir-input", Input).disabled = not enabled
+
+    def _sync_translation_settings(self) -> None:
+        provider = str(self.query_one("#translation-provider-select", Select).value or "sidecar")
+        local_model = provider in {"sidecar", "transformers"}
+        sidecar = provider == "sidecar"
+        self.query_one("#translation-model-profile-select", Select).disabled = not local_model
+        self.query_one("#translation-device-select", Select).disabled = not local_model
+        self.query_one("#translation-port-input", Input).disabled = not sidecar
+        self.query_one("#translation-python-input", Input).disabled = not sidecar
+        self.query_one("#translation-base-url-input", Input).disabled = provider in {"transformers", "mock"}
+        self.query_one("#translation-model-input", Input).disabled = provider == "mock"
 
     @on(Button.Pressed)
     def handle_button(self, event: Button.Pressed) -> None:
@@ -1604,8 +1826,12 @@ class WhoSpeaksSetupApp(App[str]):
             self._save_settings()
         elif button_id == "save-reports-settings":
             self._save_reports_settings()
+        elif button_id == "save-translation-settings":
+            self._save_translation_settings()
         elif button_id == "start-reports-button":
             self._start_reports_server()
+        elif button_id == "start-translation-button":
+            self._start_translation_server()
         elif button_id == "install-button":
             self._request_install()
         elif button_id == "launch-button":
@@ -1679,10 +1905,20 @@ class WhoSpeaksSetupApp(App[str]):
         if self.active_operation:
             self.notify("Wait for the current operation or cancel it", severity="warning")
             return
-        if not (self._save_settings(notify=False) and self._save_reports_settings(notify=False)):
+        if not (
+            self._save_settings(notify=False)
+            and self._save_reports_settings(notify=False)
+            and self._save_translation_settings(notify=False)
+        ):
             return
         if self.profile.reports_enabled and not self._process_is_running(self.reports_server_process):
             self._start_reports_server(save_settings=False)
+        if (
+            self.profile.translation_enabled
+            and self.profile.translation_provider == "sidecar"
+            and not self._process_is_running(self.translation_server_process)
+        ):
+            self._start_translation_server(save_settings=False)
         self._start_live_server()
 
     def _show_activity(self) -> None:

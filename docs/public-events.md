@@ -43,6 +43,11 @@ transcript.speaker_cleared
 transcript.updated
 live_speaker.changed
 live_speaker.updated
+translation.queued
+translation.started
+translation.completed
+translation.failed
+translation.updated
 system.status
 system.error
 session.stopped
@@ -51,6 +56,8 @@ session.stopped
 Transcript consumers should store rows by `payload.id` or `payload.index`.
 Speaker labels can be revised after a final row arrives, so treat transcript
 events as upserts rather than append-only messages.
+
+Translation payloads identify `segment_id`, `target_language`, `source_text_hash`, and `source_revision`. Consumers must treat them as per-language upserts and ignore a result whose source hash/revision no longer matches the canonical transcript row.
 
 Minimal Python client:
 

@@ -9,6 +9,7 @@ import importlib.util
 import json
 import os
 import platform
+import re
 import shlex
 import shutil
 import socket
@@ -90,6 +91,16 @@ EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("report_llm_base_url", "Reports LLM base URL", "Optional override for the report LLM OpenAI-compatible base URL."),
     ("report_llm_model", "Reports LLM model", "Optional model ID used for report generation."),
     ("report_auto_generate", "Auto-generate reports", "Generate a report automatically when a newly saved meeting session is finalized."),
+    ("translation_enabled", "Enable translation", "Translate stable transcript sentences without changing the original transcript."),
+    ("translation_provider", "Translation provider", "sidecar (recommended local isolation), transformers, reports_llm, or openai_compatible."),
+    ("translation_port", "Translation server port", "Port used by the optional local translation sidecar."),
+    ("translation_target_languages", "Translation targets", "Comma-separated WhoSpeaks language codes; the browser can change these while running."),
+    ("translation_max_targets", "Maximum translation targets", "Capacity guard for simultaneous target languages."),
+    ("translation_model_profile", "Translation model profile", "translate-gemma-4b, nllb-200-600m, or madlad-400-3b."),
+    ("translation_model", "Translation model override", "Optional Hugging Face or OpenAI-compatible model ID override."),
+    ("translation_base_url", "Translation base URL", "Optional sidecar or OpenAI-compatible base URL."),
+    ("translation_python", "Translation sidecar Python", "Optional Python executable for an isolated translation environment."),
+    ("translation_device", "Translation device", "auto, cuda, or cpu for an in-process/sidecar local model."),
     ("asr_backend", "ASR backend", "local or remote."),
     ("embeddings_backend", "Embeddings backend", "local or remote."),
     ("remote_asr_url", "Remote ASR URL", "Base URL for a remote faster-whisper service."),
@@ -216,6 +227,16 @@ class Profile:
     report_llm_base_url: str = ""
     report_llm_model: str = ""
     report_auto_generate: bool = True
+    translation_enabled: bool = False
+    translation_provider: str = "sidecar"
+    translation_port: int = 8799
+    translation_target_languages: str = ""
+    translation_max_targets: int = 4
+    translation_model_profile: str = "translate-gemma-4b"
+    translation_model: str = ""
+    translation_base_url: str = ""
+    translation_python: str = ""
+    translation_device: str = "auto"
     advanced_args: str = ""
 
     @classmethod
@@ -225,6 +246,8 @@ class Profile:
         profile = cls(**kwargs)
         profile.port = int(profile.port)
         profile.reports_port = int(profile.reports_port)
+        profile.translation_port = int(profile.translation_port)
+        profile.translation_max_targets = min(16, max(1, int(profile.translation_max_targets)))
         profile.mode = normalize_mode(profile.mode)
         try:
             profile.language = normalize_language_code(profile.language)
@@ -262,6 +285,24 @@ class Profile:
         profile.report_llm_provider = str(profile.report_llm_provider or "llama_cpp").strip().lower().replace("-", "_")
         if profile.report_llm_provider not in {"llama_cpp", "ollama", "lm_studio", "openai", "openrouter"}:
             profile.report_llm_provider = "llama_cpp"
+        profile.translation_provider = str(profile.translation_provider or "sidecar").strip().lower().replace("-", "_")
+        if profile.translation_provider not in {"sidecar", "transformers", "reports_llm", "openai_compatible", "mock"}:
+            profile.translation_provider = "sidecar"
+        if profile.translation_model_profile not in {"translate-gemma-4b", "nllb-200-600m", "madlad-400-3b"}:
+            profile.translation_model_profile = "translate-gemma-4b"
+        if profile.translation_device not in {"auto", "cuda", "cpu"}:
+            profile.translation_device = "auto"
+        normalized_targets: list[str] = []
+        for raw_target in re.split(r"[,;\s]+", str(profile.translation_target_languages or "")):
+            if not raw_target:
+                continue
+            try:
+                target = normalize_language_code(raw_target)
+            except ValueError:
+                continue
+            if target != profile.language and target not in normalized_targets:
+                normalized_targets.append(target)
+        profile.translation_target_languages = ",".join(normalized_targets[:profile.translation_max_targets])
         return profile
 
     def as_dict(self) -> dict[str, Any]:
@@ -1945,6 +1986,43 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
         command.extend(["--remote-asr-url", str(profile.remote_asr_url)])
     if profile.embeddings_backend == "remote":
         command.extend(["--remote-embeddings-url", str(profile.remote_embeddings_url)])
+    translation_provider = profile.translation_provider if profile.translation_enabled else "off"
+    translation_base_url = str(profile.translation_base_url or "").strip()
+    translation_model = str(profile.translation_model or "").strip()
+    translation_api_key_env = "OPENAI_API_KEY"
+    if translation_provider == "sidecar":
+        translation_base_url = translation_base_url or f"http://127.0.0.1:{int(profile.translation_port)}"
+    elif translation_provider == "reports_llm":
+        report_defaults = {
+            "llama_cpp": ("http://127.0.0.1:8081/v1", "local", ""),
+            "ollama": ("http://127.0.0.1:11434/v1", "gemma3", ""),
+            "lm_studio": ("http://127.0.0.1:1234/v1", "local-model", ""),
+            "openai": ("https://api.openai.com/v1", "", "OPENAI_API_KEY"),
+            "openrouter": ("https://openrouter.ai/api/v1", "", "OPENROUTER_API_KEY"),
+        }
+        default_url, default_model, translation_api_key_env = report_defaults[profile.report_llm_provider]
+        translation_provider = "openai_compatible"
+        translation_base_url = translation_base_url or profile.report_llm_base_url or default_url
+        translation_model = translation_model or profile.report_llm_model or default_model
+    command.extend([
+        "--translation-provider",
+        translation_provider,
+        "--translation-max-targets",
+        str(int(profile.translation_max_targets)),
+        "--translation-model-profile",
+        str(profile.translation_model_profile),
+        "--translation-device",
+        str(profile.translation_device),
+    ])
+    if translation_base_url:
+        command.extend(["--translation-base-url", translation_base_url])
+    if translation_model:
+        command.extend(["--translation-model", translation_model])
+    if translation_api_key_env:
+        command.extend(["--translation-api-key-env", translation_api_key_env])
+    for target in str(profile.translation_target_languages or "").split(","):
+        if target:
+            command.extend(["--translation-target-language", target])
     advanced = " ".join(item for item in [profile.advanced_args, extra_args] if item)
     if advanced:
         command.extend(shlex.split(advanced))
@@ -1985,6 +2063,30 @@ def build_reports_command(
     return command
 
 
+def build_translation_command(profile: Profile) -> list[str]:
+    """Build the optional local translation sidecar command."""
+
+    executable = shutil.which("whospeaks-translation-server") if not profile.translation_python else None
+    command = (
+        [executable]
+        if executable
+        else [str(profile.translation_python or sys.executable), "-m", "window.translation_server"]
+    )
+    command.extend([
+        "--host",
+        str(profile.host),
+        "--port",
+        str(int(profile.translation_port)),
+        "--model-profile",
+        str(profile.translation_model_profile),
+        "--device",
+        str(profile.translation_device),
+    ])
+    if profile.translation_model:
+        command.extend(["--model", str(profile.translation_model)])
+    return command
+
+
 def report_launch_values(profile: Profile, args: argparse.Namespace) -> dict[str, Any]:
     """Resolve CLI overrides while using the saved reports configuration by default."""
 
@@ -1999,7 +2101,7 @@ def report_launch_values(profile: Profile, args: argparse.Namespace) -> dict[str
 
 
 def launch_profile_with_reports(profile: Profile) -> int:
-    """Start reports in a second terminal, then keep the live window in this terminal."""
+    """Start optional sidecars, then keep the live window in this terminal."""
 
     reports_command = build_reports_command(
         profile,
@@ -2019,6 +2121,11 @@ def launch_profile_with_reports(profile: Profile) -> int:
     if os.name == "nt":
         popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
     subprocess.Popen(reports_command, **popen_kwargs)
+    if profile.translation_enabled and profile.translation_provider == "sidecar":
+        translation_command = build_translation_command(profile)
+        print("Translation sidecar command:")
+        print(format_command(translation_command))
+        subprocess.Popen(translation_command, **popen_kwargs)
     return int(subprocess.run(live_command, check=False).returncode)
 
 
@@ -2151,6 +2258,15 @@ def coerce_profile_value(profile: Profile, key: str, value: str) -> Any:
         return normalize_language_code(value)
     if key == "report_language":
         return normalize_language_code(value) if str(value).strip() else ""
+    if key == "translation_target_languages":
+        targets: list[str] = []
+        for raw_target in re.split(r"[,;\s]+", str(value or "")):
+            if not raw_target:
+                continue
+            target = normalize_language_code(raw_target)
+            if target != profile.language and target not in targets:
+                targets.append(target)
+        return ",".join(targets)
     if isinstance(current, bool):
         return str(value).strip().lower() in {"1", "true", "yes", "on"}
     if isinstance(current, int):
@@ -2757,6 +2873,13 @@ def launch_profile(profile: Profile) -> int:
             print(f"  {line}")
         return 0
     command = build_launch_command(profile)
+    if profile.translation_enabled and profile.translation_provider == "sidecar":
+        translation_command = build_translation_command(profile)
+        print(f"Translation sidecar: {format_command(translation_command)}")
+        popen_kwargs: dict[str, Any] = {}
+        if os.name == "nt":
+            popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+        subprocess.Popen(translation_command, **popen_kwargs)
     print(format_command(command))
     return int(subprocess.run(command, check=False).returncode)
 
@@ -3024,6 +3147,8 @@ def cmd_launch(args: argparse.Namespace) -> int:
         profile = apply_profile_updates(profile, updates)
     if args.provider_preset:
         apply_provider_preset(profile, args.provider_preset)
+    if getattr(args, "translation", None) is not None:
+        profile.translation_enabled = bool(args.translation)
     if profile.mode == "server":
         print("Server profile service commands:")
         for line in build_server_launch_lines():
@@ -3033,10 +3158,16 @@ def cmd_launch(args: argparse.Namespace) -> int:
         return 0
     command = build_launch_command(profile, args.extra_args or "")
     reports_command: list[str] | None = None
+    translation_command: list[str] | None = None
     if args.with_reports:
         reports_command = build_reports_command(profile, **report_launch_values(profile, args))
         print("Meeting reports command:")
         print(format_command(reports_command))
+        print("Live window command:")
+    if profile.translation_enabled and profile.translation_provider == "sidecar":
+        translation_command = build_translation_command(profile)
+        print("Translation sidecar command:")
+        print(format_command(translation_command))
         print("Live window command:")
     print(format_command(command))
     if args.print_only or args.dry_run:
@@ -3046,6 +3177,11 @@ def cmd_launch(args: argparse.Namespace) -> int:
         if os.name == "nt":
             popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
         subprocess.Popen(reports_command, **popen_kwargs)
+    if translation_command is not None:
+        popen_kwargs = {}
+        if os.name == "nt":
+            popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+        subprocess.Popen(translation_command, **popen_kwargs)
     return subprocess.run(command, check=False).returncode
 
 
@@ -3053,6 +3189,22 @@ def cmd_reports(args: argparse.Namespace) -> int:
     profile = load_profile()
     values = report_launch_values(profile, args)
     command = build_reports_command(profile, **values)
+    print(format_command(command))
+    if args.print_only or args.dry_run:
+        return 0
+    return subprocess.run(command, check=False).returncode
+
+
+def cmd_translation(args: argparse.Namespace) -> int:
+    profile = load_profile()
+    updates: list[tuple[str, Any]] = []
+    for field_name in ("translation_port", "translation_model_profile", "translation_model", "translation_python", "translation_device"):
+        value = getattr(args, field_name, None)
+        if value is not None and value != "":
+            updates.append((field_name, value))
+    if updates:
+        profile = apply_profile_updates(profile, updates)
+    command = build_translation_command(profile)
     print(format_command(command))
     if args.print_only or args.dry_run:
         return 0
@@ -3091,6 +3243,16 @@ def cmd_config(args: argparse.Namespace) -> int:
         "report_llm_base_url",
         "report_llm_model",
         "report_auto_generate",
+        "translation_enabled",
+        "translation_provider",
+        "translation_port",
+        "translation_target_languages",
+        "translation_max_targets",
+        "translation_model_profile",
+        "translation_model",
+        "translation_base_url",
+        "translation_python",
+        "translation_device",
         "advanced_args",
     )
     for field_name in direct_fields:
@@ -3266,6 +3428,12 @@ def build_parser() -> argparse.ArgumentParser:
     launch.add_argument("--provider-preset", choices=PROVIDER_PRESET_CHOICES, default="")
     launch.add_argument("--extra-args", default="", help="Additional whospeaks-window arguments appended to the profile.")
     launch.add_argument("--with-reports", action="store_true", help="Also start the meeting-intelligence report server in a new console.")
+    launch.add_argument(
+        "--translation",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Temporarily enable or disable the saved translation configuration.",
+    )
     launch.add_argument("--reports-port", type=int, default=None, help="Meeting-intelligence report server port.")
     launch.add_argument("--report-language", default=None, help="Report language; defaults to the saved reports setting or live profile language.")
     launch.add_argument(
@@ -3294,6 +3462,16 @@ def build_parser() -> argparse.ArgumentParser:
     reports.add_argument("--llm-model", dest="report_llm_model", default=None)
     reports.add_argument("--no-auto-generate", dest="report_auto_generate", action="store_false", default=None, help="Do not automatically generate reports for newly saved sessions.")
     reports.set_defaults(func=cmd_reports)
+
+    translation = subparsers.add_parser("translation", help="Print or run the optional local translation sidecar.")
+    translation.add_argument("--print", dest="print_only", action="store_true")
+    translation.add_argument("--dry-run", action="store_true")
+    translation.add_argument("--port", dest="translation_port", type=int, default=None)
+    translation.add_argument("--model-profile", dest="translation_model_profile", choices=("translate-gemma-4b", "nllb-200-600m", "madlad-400-3b"), default=None)
+    translation.add_argument("--model", dest="translation_model", default=None)
+    translation.add_argument("--python", dest="translation_python", default=None)
+    translation.add_argument("--device", dest="translation_device", choices=("auto", "cuda", "cpu"), default=None)
+    translation.set_defaults(func=cmd_translation)
 
     config = subparsers.add_parser("config", help="Show or update the saved starter profile.")
     config.add_argument("--set", action="append", default=[], metavar="NAME=VALUE", help="Set any saved profile field.")
@@ -3333,6 +3511,16 @@ def build_parser() -> argparse.ArgumentParser:
     config.add_argument("--report-llm-base-url", dest="report_llm_base_url", default=None)
     config.add_argument("--report-llm-model", dest="report_llm_model", default=None)
     config.add_argument("--report-auto-generate", dest="report_auto_generate", action="store_true", default=None)
+    config.add_argument("--translation-enabled", dest="translation_enabled", action=argparse.BooleanOptionalAction, default=None)
+    config.add_argument("--translation-provider", dest="translation_provider", choices=("sidecar", "transformers", "reports_llm", "openai_compatible", "mock"), default=None)
+    config.add_argument("--translation-port", dest="translation_port", type=int, default=None)
+    config.add_argument("--translation-target-languages", dest="translation_target_languages", default=None)
+    config.add_argument("--translation-max-targets", dest="translation_max_targets", type=int, default=None)
+    config.add_argument("--translation-model-profile", dest="translation_model_profile", choices=("translate-gemma-4b", "nllb-200-600m", "madlad-400-3b"), default=None)
+    config.add_argument("--translation-model", dest="translation_model", default=None)
+    config.add_argument("--translation-base-url", dest="translation_base_url", default=None)
+    config.add_argument("--translation-python", dest="translation_python", default=None)
+    config.add_argument("--translation-device", dest="translation_device", choices=("auto", "cuda", "cpu"), default=None)
     config.add_argument("--advanced-args", dest="advanced_args", default=None)
     config.set_defaults(func=cmd_config)
 
