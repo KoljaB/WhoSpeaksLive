@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import base64
 import copy
+import hashlib
 from collections import Counter, deque
 from datetime import datetime
 import json
@@ -764,6 +765,11 @@ class WindowDiarizer:
             "embedding_provider": str(self.args.embedding_provider),
             "live_embedding_provider": self._current_live_embedding_provider(),
         }
+
+    def current_session_id(self) -> str:
+        """Return the active durable-session id without constructing a full snapshot."""
+
+        return str(self._session_id or "")
 
     def write_session_audio(self, path: Path) -> bool:
         with self._audio_lock:
@@ -5917,9 +5923,12 @@ class WindowDiarizer:
         window_left: float,
         window_right: float,
     ) -> dict[str, Any]:
+        source_text_hash = hashlib.sha256(sentence.text.encode("utf-8")).hexdigest()
         return {
             "index": index,
             "text": sentence.text,
+            "source_text_hash": source_text_hash,
+            "source_revision": source_text_hash,
             "start": round(sentence.start, 4),
             "end": round(sentence.end, 4),
             "spoken_word_seconds": round(float(sentence.spoken_word_seconds), 4),

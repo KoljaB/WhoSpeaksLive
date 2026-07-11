@@ -13,6 +13,7 @@ The core diarization and transcription stack can run entirely on hardware you co
 - **Meeting intelligence, not just transcription:** turn saved speaker-labeled transcripts into evidence-grounded summaries, decisions, action items, questions, and risks.
 - **Private by design:** run locally or on self-hosted servers; no third-party cloud service is required for the core pipeline or local meeting-report generation.
 - **Useful while it happens:** see live speaker labels and optional low-latency draft text while the meeting is still in progress.
+- **Optional sentence-live translation:** translate stable transcript rows into one or several target languages with compact original, single-language, or multi-language views.
 - **Fast now, stable when final:** a low-latency live path gives immediate feedback, while a separate final path uses more context for speaker-labeled transcripts.
 - **Built for review and correction:** manage speaker libraries, correct assignments, and trace report evidence back to the supporting transcript rows.
 
@@ -92,6 +93,8 @@ WhoSpeaksLive's own code is licensed under the [MIT License](LICENSE).
 
 Optional realtime preview support uses separately licensed upstream components and model files. Missing public Kroko Community preview models are downloaded automatically from Hugging Face when Kroko preview starts. Nemotron 3.5 model archives are downloaded from the upstream `k2-fsa/sherpa-onnx` release and verified with pinned SHA-256 checksums when Nemotron preview starts. This repository's MIT license does not relicense Kroko/Banafo or Nemotron assets; before downloading, bundling, or deploying them, review and respect the current terms from [Kroko by Banafo](https://kroko.ai/), the [Banafo/Kroko-ASR model card](https://huggingface.co/Banafo/Kroko-ASR), the [kroko-ai/kroko-onnx repository](https://github.com/kroko-ai/kroko-onnx), and [Third-Party Model Licenses](docs/third-party-model-licenses.md).
 
+Optional translation weights are also downloaded separately and retain their own terms: TranslateGemma uses the Gemma terms, NLLB-200 uses CC-BY-NC-4.0, and MADLAD-400 identifies Apache-2.0. See [Live translation](docs/translation.md) and [Third-Party Model Licenses](docs/third-party-model-licenses.md).
+
 ## Documentation
 
 | Topic | Document |
@@ -102,11 +105,13 @@ Optional realtime preview support uses separately licensed upstream components a
 | macOS setup | [docs/macos-setup.md](docs/macos-setup.md) |
 | Quickstart | [docs/quickstart.md](docs/quickstart.md) |
 | Live window workflow | [docs/live-window-workflow.md](docs/live-window-workflow.md) |
+| Live translation | [docs/translation.md](docs/translation.md) |
 | Meeting intelligence server | [docs/meeting-intelligence-server.md](docs/meeting-intelligence-server.md) |
 | Speaker libraries | [docs/speaker-libraries.md](docs/speaker-libraries.md) |
 | External ASR and embeddings servers | [docs/external-servers.md](docs/external-servers.md) |
 | Docker server image | [docs/docker.md](docs/docker.md) |
 | Configuration guide | [docs/configuration.md](docs/configuration.md) |
+| Speaker model presets | [docs/speaker-model-presets.md](docs/speaker-model-presets.md) |
 | Technical description | [docs/technical-description.md](docs/technical-description.md) |
 | Technical architecture | [docs/architecture.md](docs/architecture.md) |
 | Validation and scoring | [docs/validation-and-scoring.md](docs/validation-and-scoring.md) |

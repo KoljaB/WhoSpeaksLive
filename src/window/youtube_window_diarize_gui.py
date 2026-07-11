@@ -103,6 +103,7 @@ from window.window_media import (  # noqa: E402
 )
 from window.window_remote_asr import RemoteWindowAsrClient  # noqa: E402
 from window.session_store import DEFAULT_SESSION_DIR, SessionStore  # noqa: E402
+from window.live_translation import LiveTranslationCoordinator  # noqa: E402
 
 
 from window.window_config import (  # noqa: E402
@@ -447,6 +448,7 @@ class Handler(BaseHTTPRequestHandler):
                         "flag_url": f"/assets/flags/4x3/{flag_country}.svg",
                     }),
                 )
+                .replace("__TRANSLATION_JSON__", json_dumps(self.server.translation.public_config()))
                 .replace(
                     "__NEW_SPEAKER_SENSITIVITY_JSON__",
                     json_dumps(new_speaker_sensitivity_config(getattr(self.server.args, "new_speaker_sensitivity", 3))),
@@ -499,6 +501,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_error(404)
         elif path == "/api/speakers":
             self._send_json({"ok": True, "speaker_state": self.server.controller.speaker_state()})
+        elif path == "/api/translation/status":
+            self._send_json({"ok": True, "translation": self.server.translation.public_config()})
         elif path == "/api/sessions":
             query = parse_qs(parsed.query)
             filter_mode = str((query.get("filter") or ["active"])[0])
@@ -521,7 +525,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._handle_audio_file_upload()
                 return
             payload = self._read_json_body()
-            if path == "/api/sessions/create":
+            if path == "/api/translation/configure":
+                self._require_session(payload)
+                self._send_json({"ok": True, "translation": self.server.translation.configure(payload)})
+            elif path == "/api/sessions/create":
                 self._send_json(self.server.create_saved_session(payload))
             elif path == "/api/sessions/open":
                 self._send_json(self.server.open_saved_session(str(payload.get("session_id") or "")))
@@ -573,6 +580,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.server.controller.set_session_source_title(str(payload.get("source_title") or ""))
                 self.server.controller.set_next_session_id(str(payload.get("session_id") or ""))
                 speaker_state = self.server.controller.start()
+                self.server.translation.begin_session(self.server.controller.current_session_id())
                 self.server.mark_session_running(session_token)
                 saved_session = self.server._save_current_session(status_label="Started", write_audio=False)
                 self._send_json({
@@ -942,6 +950,10 @@ class WindowServer(ThreadingHTTPServer):
         self.bus = bus
         self.controller = controller
         self.session_store = SessionStore(Path(getattr(args, "session_dir", DEFAULT_SESSION_DIR)))
+        self.translation = LiveTranslationCoordinator(args, bus)
+        translation_error = str(self.translation.public_config(refresh_status=False).get("error") or "")
+        if translation_error:
+            self.bus.emit("status", {"message": f"Translation is unavailable: {translation_error}"})
         self._session_save_lock = threading.Lock()
         self._session_save_timer: threading.Timer | None = None
         self.public_event_session_id = uuid.uuid4().hex
@@ -968,9 +980,13 @@ class WindowServer(ThreadingHTTPServer):
 
     def _record_session_event(self, event: str, payload: dict[str, Any]) -> None:
         if event == "sentence":
+            self.translation.handle_sentence(payload, self.controller.current_session_id())
             if payload.get("pending") or payload.get("realtime") or payload.get("provisional_assignment"):
                 return
             self._schedule_session_autosave()
+        elif event == "translation":
+            if str(payload.get("status") or "") in {"complete", "error"}:
+                self._schedule_session_autosave()
         elif event == "speakers":
             self._schedule_session_autosave()
         elif event == "done":
@@ -1001,12 +1017,23 @@ class WindowServer(ThreadingHTTPServer):
         snapshot = self.controller.session_snapshot()
         if not snapshot.get("id"):
             return None
+        snapshot["translations"] = self.translation.snapshot()
         return self.session_store.save_snapshot(
             snapshot,
             status_label=status_label,
             write_audio=write_audio,
             audio_writer=self.controller.write_session_audio,
         )
+
+    def server_close(self) -> None:
+        try:
+            self.translation.shutdown()
+        finally:
+            self._cancel_session_autosave()
+            try:
+                self._save_current_session(status_label="Saved", write_audio=False)
+            finally:
+                super().server_close()
 
     def list_saved_sessions(self, filter_mode: str = "active", query: str = "") -> dict[str, Any]:
         return {
@@ -1808,6 +1835,51 @@ def parse_args() -> argparse.Namespace:
         default=default_language_code(),
         help="Realtime language for final ASR, Kroko preview model selection, and sentence splitting.",
     )
+    parser.add_argument(
+        "--translation-provider",
+        choices=("off", "sidecar", "transformers", "openai_compatible", "mock"),
+        default=os.environ.get("WHOSPEAKS_TRANSLATION_PROVIDER", "off"),
+        help=(
+            "Optional sentence translation backend. 'sidecar' is recommended for local models so its "
+            "dependencies and GPU memory stay isolated from transcription."
+        ),
+    )
+    parser.add_argument(
+        "--translation-target-language",
+        action="append",
+        type=language_arg,
+        default=[],
+        help="Initial translation target language. Repeat for simultaneous targets; targets can also be changed in the browser.",
+    )
+    parser.add_argument(
+        "--translation-max-targets",
+        type=int,
+        default=4,
+        help="Maximum simultaneous target languages accepted from the browser.",
+    )
+    parser.add_argument(
+        "--translation-base-url",
+        default=os.environ.get("WHOSPEAKS_TRANSLATION_BASE_URL", "http://127.0.0.1:8799"),
+        help="Translation sidecar URL, or OpenAI-compatible /v1 base URL for the LLM provider.",
+    )
+    parser.add_argument(
+        "--translation-model-profile",
+        choices=("translate-gemma-4b", "nllb-200-600m", "madlad-400-3b"),
+        default="translate-gemma-4b",
+        help="Local translation model profile. TranslateGemma is the recommended quality-first default.",
+    )
+    parser.add_argument("--translation-model", default="", help="Optional model id override for the selected provider/profile.")
+    parser.add_argument("--translation-device", choices=("auto", "cuda", "cpu"), default="auto")
+    parser.add_argument("--translation-dtype", default="auto")
+    parser.add_argument("--translation-api-key-env", default="OPENAI_API_KEY")
+    parser.add_argument(
+        "--translation-timeout-seconds",
+        type=float,
+        default=600.0,
+        help="Provider request timeout. The long default allows a sidecar's first model download/load to finish.",
+    )
+    parser.add_argument("--translation-queue-size", type=int, default=256)
+    parser.add_argument("--translation-context-sentences", type=int, default=2)
     parser.add_argument(
         "--sentence-tokenizer",
         type=sentence_tokenizer_arg,
@@ -2906,6 +2978,18 @@ def parse_args() -> argparse.Namespace:
     args.sentence_tokenizer = default_sentence_tokenizer(args.language, args.sentence_tokenizer)
     args.sentence_language = default_sentence_language(args.language)
     args.realtime_preview_language = args.language
+    if not 1 <= int(args.translation_max_targets) <= 16:
+        parser.error("--translation-max-targets must be between 1 and 16.")
+    translation_targets: list[str] = []
+    for target in args.translation_target_language:
+        if target != args.language and target not in translation_targets:
+            translation_targets.append(target)
+    if len(translation_targets) > int(args.translation_max_targets):
+        parser.error("Initial translation targets exceed --translation-max-targets.")
+    args.translation_target_language = translation_targets
+    args.translation_queue_size = max(1, int(args.translation_queue_size))
+    args.translation_context_sentences = max(0, int(args.translation_context_sentences))
+    args.translation_timeout_seconds = max(1.0, float(args.translation_timeout_seconds))
     try:
         args.realtime_preview_engine = normalize_preview_engine(args.realtime_preview_engine)
         language_error = preview_language_error(args.realtime_preview_engine, args.language)
@@ -3018,7 +3102,9 @@ def main() -> int:
         f"embedding_provider={args.embedding_provider} "
         f"embedding_timeout={args.embedding_helper_response_timeout_seconds:.0f}s "
         f"realtime_preview={args.realtime_preview_engine} "
-        f"preview_model={args.realtime_preview_model_preset}:{preview_model_display}.",
+        f"preview_model={args.realtime_preview_model_preset}:{preview_model_display} "
+        f"translation={args.translation_provider}:{args.translation_model_profile} "
+        f"translation_targets={','.join(args.translation_target_language) or '-'}.",
         flush=True,
     )
     if args.validate_window_replay:

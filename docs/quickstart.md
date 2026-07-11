@@ -39,7 +39,7 @@ The launcher reads the saved profile, expands it into a full `whospeaks-window .
 
 Use a smoke provider first. This proves the UI, media loading, ASR route, embedding route, and speaker assignment pipeline work:
 
-In the starter CLI, choose `Speaker provider quality` -> `First start`, or run:
+In the full-screen starter, open **Settings** and choose **Speaker model preset** -> **Low VRAM - SpeechBrain ECAPA**, or run:
 
 ```powershell
 .\.venv\Scripts\whospeaks.exe config --set provider_preset=smoke
@@ -84,7 +84,7 @@ If final transcript rows still fall behind playback, isolate live speaker scorin
 
 After the smoke provider works, use this public provider stack:
 
-In the starter CLI, choose `Speaker provider quality` -> `Public high quality`, or run:
+In the full-screen starter, open **Settings** and choose **Speaker model preset** -> **High quality - public ensemble**, or run:
 
 ```powershell
 .\.venv\Scripts\whospeaks.exe config --set provider_preset=public_quality

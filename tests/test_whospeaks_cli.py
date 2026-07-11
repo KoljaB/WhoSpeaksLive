@@ -20,9 +20,19 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from whospeaks_cli import main as cli
+from whospeaks_cli.tui import provider_preset_label
 
 
 class WhoSpeaksCliTests(unittest.TestCase):
+    def test_speaker_model_preset_documentation_matches_launcher_definitions(self) -> None:
+        documentation = (ROOT / "docs" / "speaker-model-presets.md").read_text(encoding="utf-8")
+        for preset_id, preset in cli.PROVIDER_PRESETS.items():
+            row_prefix = (
+                f"| **{provider_preset_label(preset_id, preset)}** | `{preset_id}` | "
+                f"`{preset.embedding_provider}` | `{preset.live_speaker_embedding_provider}` |"
+            )
+            self.assertIn(row_prefix, documentation)
+
     def test_recommended_preview_engine_prefers_nemotron_then_kroko_then_off(self) -> None:
         self.assertEqual(cli.recommended_preview_engine("en"), "sherpa_onnx")
         self.assertEqual(cli.recommended_preview_engine("he"), "kroko_onnx")
