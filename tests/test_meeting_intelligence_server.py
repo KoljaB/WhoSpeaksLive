@@ -20,6 +20,8 @@ from window.meeting_intelligence_server import (
     PAGE_HTML,
     MeetingIntelligenceServerConfig,
     MeetingIntelligenceService,
+    config_from_args,
+    build_arg_parser,
     default_llm_config,
     extract_model_ids,
     load_env_file,
@@ -73,6 +75,33 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
             self.assertTrue(cached["available"])
             self.assertTrue(any((root / "reports").iterdir()))
 
+    def test_spanish_report_language_is_public_and_cache_aware(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            transcript_path = root / "demo.txt"
+            transcript_path.write_text(DEMO_TEXT, encoding="utf-8")
+            english = MeetingIntelligenceService(MeetingIntelligenceServerConfig(
+                session_dir=root / "sessions", cache_dir=root / "reports", demo_transcript=transcript_path, mock_llm=True,
+            ))
+            english.generate_report(DEMO_SESSION_ID)
+            spanish = MeetingIntelligenceService(MeetingIntelligenceServerConfig(
+                session_dir=root / "sessions", cache_dir=root / "reports", demo_transcript=transcript_path,
+                mock_llm=True, report_language="es",
+            ))
+
+            self.assertEqual(spanish.public_config()["report_language"], "es")
+            self.assertFalse(spanish.get_report(DEMO_SESSION_ID)["available"])
+            generated = spanish.generate_report(DEMO_SESSION_ID)
+            self.assertEqual(generated["report"]["report_language"], "es")
+            self.assertIn("Borrador de resumen ejecutivo", generated["report"]["summary"])
+
+    def test_report_language_accepts_german_and_regional_aliases(self) -> None:
+        args = build_arg_parser().parse_args(["--report-language", "de-AT"])
+        config = config_from_args(args)
+        service = MeetingIntelligenceService(config)
+
+        self.assertEqual(service.public_config()["report_language"], "de")
+
     def test_async_generation_job_exposes_progress_and_finishes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -101,6 +130,38 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
             self.assertEqual(job["percent"], 100)
             self.assertTrue(job["events"])
             self.assertTrue(service.get_report(DEMO_SESSION_ID)["available"])
+
+    def test_auto_generation_queues_saved_session_without_browser_selection(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            transcript_path = root / "demo.txt"
+            transcript_path.write_text(DEMO_TEXT, encoding="utf-8")
+            session_dir = root / "sessions"
+            service = MeetingIntelligenceService(
+                MeetingIntelligenceServerConfig(
+                    session_dir=session_dir,
+                    cache_dir=root / "reports",
+                    demo_transcript=transcript_path,
+                    mock_llm=True,
+                    auto_generate=True,
+                    max_segment_rows=12,
+                )
+            )
+            self.assertEqual(service.auto_generate_ready_sessions(), [])
+            saved = service.store.create_session(session_id="weekly-executive", status_label="Saved")
+            service.store.save_snapshot({
+                "id": saved["id"],
+                "transcript_rows": parse_whospeakslive_transcript(transcript_path),
+                "speaker_state": {"speakers": []},
+            }, status_label="Saved")
+
+            queued = service.auto_generate_ready_sessions()
+            deadline = time.monotonic() + 5.0
+            while time.monotonic() < deadline and not service.get_report(saved["id"])["available"]:
+                time.sleep(0.02)
+
+            self.assertEqual(len(queued), 1)
+            self.assertTrue(service.get_report(saved["id"])["available"])
 
     def test_delete_report_removes_cached_report_only(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -164,7 +164,8 @@ Main browser app for media download/playback, final ASR, speaker assignment, liv
 | Speaker assignment thresholds | `--new-speaker-threshold` | 0.4309 | Unknown-speaker probability needed before creating a new speaker. |
 | Speaker assignment thresholds | `--duplicate-profile-similarity` | 0.4247 | Similarity above which a candidate new profile is treated as an existing speaker duplicate. |
 | Speaker assignment thresholds | `--unknown-short-threshold` | 0.287 | Unknown probability above which short uncertain fragments stay UNKNOWN. |
-| Speaker assignment thresholds | `--min-first-speaker-seconds` | 1.8373 | Minimum speech duration required before creating the first speaker profile. |
+| Speaker assignment thresholds | `--min-first-speaker-seconds` | 1.8373 | Minimum duration required before retaining a provisional first-speaker candidate. |
+| Speaker assignment thresholds | `--first-speaker-immediate-min-seconds` | 4.0 | Minimum duration that may create the first speaker immediately; shorter candidates require a mutually similar confirmation. |
 | Speaker assignment thresholds | `--min-new-speaker-seconds` | 2.0358 | Minimum sentence duration required before creating an additional speaker. |
 | Speaker assignment thresholds | `--late-new-speaker-min-seconds` | 3.1604 | Longer duration required for late new-speaker creation after profiles already exist. |
 | Speaker assignment thresholds | `--max-speakers` | 12 | Maximum number of speaker profiles the run may create automatically. |

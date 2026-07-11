@@ -1,17 +1,20 @@
 # WhoSpeaksLive
 
-**See who is speaking while the conversation is still happening.**
+**Private, speaker-aware transcripts and meeting summaries on hardware you control.**
 
-WhoSpeaksLive is a private, real-time speaker diarization suite. Speaker diarization means identifying which speaker talked when. The core diarization and transcription stack can run entirely on hardware you control, so sensitive meeting audio does not need to be uploaded to a hosted transcription service.
+WhoSpeaksLive identifies speakers while a conversation is still happening, produces a stable speaker-labeled transcript, and can turn a saved session into a structured meeting report with a summary, decisions, action items, open questions, risks, and links to supporting transcript evidence.
 
-Live speaker labels appear as audio arrives. Completed sentences then receive more stable final speaker labels once the system has enough context.
+Speaker diarization means identifying who spoke when. WhoSpeaksLive combines a fast live path for immediate speaker labels and optional draft text with a separate final path that uses more context for stable sentence-level results.
+
+The core diarization and transcription stack can run entirely on hardware you control. Meeting reports can also use a local or self-hosted large language model (LLM), so sensitive audio, voice profiles, transcripts, and summaries can remain inside your environment.
 
 ## Why WhoSpeaksLive
 
-- **Private by design:** run locally or on self-hosted GPU servers; no third-party cloud service is required for the core pipeline.
-- **Real-time by default:** see who is speaking during the meeting, not only after the recording is finished.
+- **Meeting intelligence, not just transcription:** turn saved speaker-labeled transcripts into evidence-grounded summaries, decisions, action items, questions, and risks.
+- **Private by design:** run locally or on self-hosted servers; no third-party cloud service is required for the core pipeline or local meeting-report generation.
+- **Useful while it happens:** see live speaker labels and optional low-latency draft text while the meeting is still in progress.
 - **Fast now, stable when final:** a low-latency live path gives immediate feedback, while a separate final path uses more context for speaker-labeled transcripts.
-- **Built for review and iteration:** manage speaker libraries, correct assignments, and validate diarization behavior from the browser UI.
+- **Built for review and correction:** manage speaker libraries, correct assignments, and trace report evidence back to the supporting transcript rows.
 
 Use it when the audio is sensitive, the answer is needed immediately, or both: internal meetings, research interviews, legal or medical workflows, local media analysis, and any environment where sending raw conversation audio to another company is not acceptable.
 
@@ -19,7 +22,7 @@ Use it when the audio is sensitive, the answer is needed immediately, or both: i
 
 https://github.com/user-attachments/assets/2de749e0-6c02-47de-b949-bd90b4f4efbb
 
-For faster realtime ASR preview text like shown in the demo, use [Kroko Pro/commercial streaming models](https://docs.kroko.ai/on-premise/#2-commercial-oem-models); the public Community models work, but Pro/private models must be installed and licensed separately.
+For faster realtime ASR preview text like shown in the demo, WhoSpeaksLive supports two optional preview backends: Kroko/Banafo streaming models and experimental CPU-only Nemotron 3.5 through `sherpa-onnx`. Kroko Pro/private models must be installed and licensed separately; Nemotron downloads verified upstream model weights on first use and has separate NVIDIA model-license terms.
 
 ## Start Here
 
@@ -30,7 +33,7 @@ pip install whospeaks
 whospeaks
 ```
 
-The full-screen setup application opens on the Setup tab. Select the full local stack, the core/controller for remote ASR and embeddings servers, or the ASR/embeddings server packages, then choose whether to include Kroko realtime text. Kroko remains optional because its native runtime may require Python 3.12, Docker Desktop on Windows, or a prebuilt `kroko_onnx` wheel.
+The full-screen setup application opens on the Setup tab. Select the full local stack, the core/controller for remote ASR and embeddings servers, or the ASR/embeddings server packages, then choose whether to include optional realtime preview text. Kroko remains optional because its native runtime may require Python 3.12, Docker Desktop on Windows, or a prebuilt `kroko_onnx` wheel. Nemotron 3.5 is available as a manual CPU preview option while the installer flow is being integrated.
 
 The `whospeaks` setup application keeps component readiness, diagnostics, settings, installation progress, logs, cancellation, and browser launch in one terminal interface. Run `whospeaks --classic` when the full-screen terminal interface is unavailable or you prefer the numbered menu.
 
@@ -55,19 +58,39 @@ For a manual full working setup, follow these in order:
 
 WhoSpeaksLive performs best on clean recordings where one person speaks at a time into good microphones. Diarization accuracy can degrade with background noise, background music, echo, crosstalk, overlapping speech, or low-quality microphones, and it may become less reliable as the active speaker count grows. The system assumes complete utterances can be assigned to a single speaker, so cases where one speaker starts a sentence and another finishes it are not expected to score well.
 
-All Kroko languages supported by this integration work with realtime preview text: German, English, Spanish, French, Italian, Hebrew, Dutch, Portuguese, Swedish, and Turkish. Set `--language` or `WHOSPEAKS_LANGUAGE` to keep final ASR, Kroko/Banafo preview model selection, and stream2sentence sentence splitting on the same language. See the [configuration guide](docs/configuration.md#language) for language codes and model details.
-
-Without realtime preview text, WhoSpeaksLive can also work with additional languages. The key requirement is that the language is supported by Whisper and by at least one configured sentence segmenter, meaning NLTK or Stanza.
-
-That currently makes these additional languages principally supported without realtime preview text: Afrikaans, Arabic, Belarusian, Bulgarian, Catalan, Czech, Welsh, Danish, Greek, Estonian, Basque, Persian, Finnish, Faroese, Galician, Hindi, Croatian, Hungarian, Armenian, Indonesian, Icelandic, Japanese, Georgian, Kazakh, Korean, Latin, Lithuanian, Latvian, Malayalam, Marathi, Maltese, Myanmar/Burmese, Norwegian, Norwegian Nynorsk, Polish, Romanian, Russian, Sanskrit, Sindhi, Slovak, Slovenian, Albanian, Serbian, Tamil, Telugu, Thai, Ukrainian, Urdu, Vietnamese, and Chinese.
-
 CPU-only operation is not the recommended path for the current stack. The system is GPU-heavy today; a CPU-only setup may be possible, but should be treated as a separate optimization target and will likely require engineering work, slower processing, and some accuracy or throughput tradeoffs.
+
+## Realtime Preview Languages
+
+Realtime preview text is the optional, low-latency draft transcript shown before final ASR results arrive. Choose one of the following three modes. Set `--language` or `WHOSPEAKS_LANGUAGE` to select the language for final ASR and sentence splitting; when preview is enabled, it also selects the preview language.
+
+### No realtime preview text
+
+Use `--realtime-preview-engine off` for the widest language coverage. Live speaker detection and the final speaker-labeled transcript still work; only the rapidly updating draft text is disabled.
+
+**Languages:** Afrikaans (`af`), Albanian (`sq`), Arabic (`ar`), Armenian (`hy`), Basque (`eu`), Belarusian (`be`), Bulgarian (`bg`), Catalan (`ca`), Chinese (`zh`), Croatian (`hr`), Czech (`cs`), Danish (`da`), Dutch (`nl`), English (`en`), Estonian (`et`), Faroese (`fo`), Finnish (`fi`), French (`fr`), Galician (`gl`), Georgian (`ka`), German (`de`), Greek (`el`), Hebrew (`he` or `iw`), Hindi (`hi`), Hungarian (`hu`), Icelandic (`is`), Indonesian (`id`), Italian (`it`), Japanese (`ja`), Kazakh (`kk`), Korean (`ko`), Latin (`la`), Latvian (`lv`), Lithuanian (`lt`), Malayalam (`ml`), Maltese (`mt`), Marathi (`mr`), Myanmar/Burmese (`my`), Norwegian (`no`), Norwegian Nynorsk (`nn`), Persian (`fa`), Polish (`pl`), Portuguese (`pt`), Romanian (`ro`), Russian (`ru`), Sanskrit (`sa`), Serbian (`sr`), Sindhi (`sd`), Slovak (`sk`), Slovenian (`sl`), Spanish (`es`), Swedish (`sv`), Tamil (`ta`), Telugu (`te`), Thai (`th`), Turkish (`tr`), Ukrainian (`uk`), Urdu (`ur`), Vietnamese (`vi`), and Welsh (`cy`). These are the languages currently configured for final ASR and at least one sentence segmenter in WhoSpeaksLive.
+
+### Kroko
+
+Use `--realtime-preview-engine kroko_onnx` for Kroko/Banafo streaming preview text.
+
+**Languages:** German (`de`), English (`en`), Spanish (`es`), French (`fr`), Italian (`it`), Hebrew (`he` or `iw`), Dutch (`nl`), Portuguese (`pt`), Swedish (`sv`), and Turkish (`tr`).
+
+### Nemotron 3.5
+
+Use `--realtime-preview-engine sherpa_onnx` for CPU-based Nemotron 3.5 preview text.
+
+**Languages:** English (`en`), German (`de`), Spanish (`es`), French (`fr`), Italian (`it`), Dutch (`nl`), Portuguese (`pt`), Turkish (`tr`), and Swedish (`sv`). Swedish is available as broad coverage; the other eight are the main supported languages.
+
+Hebrew is not supported by the Nemotron integration; use Kroko or disable realtime preview text. The underlying model may decode more languages, but WhoSpeaksLive treats only the languages above as supported until more have been validated in the realtime path.
+
+See the [configuration guide](docs/configuration.md#language) for model selection, downloads, and sentence-segmentation details.
 
 ## License
 
 WhoSpeaksLive's own code is licensed under the [MIT License](LICENSE).
 
-Optional Kroko/Banafo preview support uses separately licensed upstream components and model files. Missing public Community preview models are downloaded automatically from Hugging Face when realtime preview starts. This repository's MIT license does not relicense Kroko/Banafo assets; before downloading, bundling, or deploying them, review and respect the current terms from [Kroko by Banafo](https://kroko.ai/), the [Banafo/Kroko-ASR model card](https://huggingface.co/Banafo/Kroko-ASR), and the [kroko-ai/kroko-onnx repository](https://github.com/kroko-ai/kroko-onnx).
+Optional realtime preview support uses separately licensed upstream components and model files. Missing public Kroko Community preview models are downloaded automatically from Hugging Face when Kroko preview starts. Nemotron 3.5 model archives are downloaded from the upstream `k2-fsa/sherpa-onnx` release and verified with pinned SHA-256 checksums when Nemotron preview starts. This repository's MIT license does not relicense Kroko/Banafo or Nemotron assets; before downloading, bundling, or deploying them, review and respect the current terms from [Kroko by Banafo](https://kroko.ai/), the [Banafo/Kroko-ASR model card](https://huggingface.co/Banafo/Kroko-ASR), the [kroko-ai/kroko-onnx repository](https://github.com/kroko-ai/kroko-onnx), and [Third-Party Model Licenses](docs/third-party-model-licenses.md).
 
 ## Documentation
 

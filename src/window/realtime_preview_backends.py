@@ -104,6 +104,15 @@ def preview_language_error(engine: object, language: object) -> str | None:
     )
 
 
+def recommended_preview_engine(language: object) -> str:
+    """Return the preferred realtime engine for a language, or off when none supports it."""
+
+    for engine in ("sherpa_onnx", "kroko_onnx"):
+        if preview_language_support(engine, language) is not None:
+            return engine
+    return "off"
+
+
 def normalize_preview_model_preset(engine: object, value: object) -> str:
     normalized = normalize_preview_engine(engine)
     if normalized == "sherpa_onnx":

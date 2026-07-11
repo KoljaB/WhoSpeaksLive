@@ -23,6 +23,11 @@ from whospeaks_cli import main as cli
 
 
 class WhoSpeaksCliTests(unittest.TestCase):
+    def test_recommended_preview_engine_prefers_nemotron_then_kroko_then_off(self) -> None:
+        self.assertEqual(cli.recommended_preview_engine("en"), "sherpa_onnx")
+        self.assertEqual(cli.recommended_preview_engine("he"), "kroko_onnx")
+        self.assertEqual(cli.recommended_preview_engine("cy"), "off")
+
     def test_install_command_uses_local_preview_extra(self) -> None:
         with mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1"):
             command = cli.build_install_command()
@@ -354,6 +359,44 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn("http://gpu.example:8650", command)
         self.assertIn("--remote-embeddings-url", command)
         self.assertIn("http://gpu.example:8660", command)
+
+    def test_reports_command_inherits_the_live_profile_language(self) -> None:
+        profile = cli.Profile(language="de", host="127.0.0.1")
+
+        command = cli.build_reports_command(
+            profile,
+            llm_provider="openai",
+            llm_model="gpt-4.1-nano",
+        )
+
+        self.assertIn("--report-language", command)
+        self.assertEqual(command[command.index("--report-language") + 1], "de")
+        self.assertIn("--auto-generate", command)
+        self.assertEqual(command[command.index("--llm-provider") + 1], "openai")
+
+    def test_launch_with_reports_prints_both_commands(self) -> None:
+        profile = cli.Profile(language="es")
+        stdout = io.StringIO()
+        with (
+            mock.patch.object(cli, "load_profile", return_value=profile),
+            contextlib.redirect_stdout(stdout),
+        ):
+            code = cli.main([
+                "launch",
+                "--with-reports",
+                "--report-llm-provider",
+                "openai",
+                "--report-llm-model",
+                "gpt-4.1-nano",
+                "--print",
+            ])
+
+        self.assertEqual(code, 0)
+        output = stdout.getvalue()
+        self.assertIn("Meeting reports command:", output)
+        self.assertIn("--report-language es", output)
+        self.assertIn("--llm-model gpt-4.1-nano", output)
+        self.assertIn("Live window command:", output)
 
     def test_local_profile_uses_auto_device_by_default(self) -> None:
         profile = cli.configure_profile_for_mode(cli.Profile(device="cuda"), "local")

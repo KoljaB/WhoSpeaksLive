@@ -365,6 +365,11 @@ class WindowDiarizer:
             duplicate_profile_similarity=self.args.duplicate_profile_similarity,
             unknown_short_threshold=self.args.unknown_short_threshold,
             min_first_speaker_seconds=self.args.min_first_speaker_seconds,
+            first_speaker_immediate_min_seconds=getattr(
+                self.args,
+                "first_speaker_immediate_min_seconds",
+                self.args.min_first_speaker_seconds,
+            ),
             min_new_speaker_seconds=self.args.min_new_speaker_seconds,
             late_new_speaker_min_seconds=self.args.late_new_speaker_min_seconds,
             max_speakers=self.args.max_speakers,

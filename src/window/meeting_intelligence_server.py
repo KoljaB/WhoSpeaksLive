@@ -28,6 +28,7 @@ from window.meeting_intelligence_pipeline import (
     OpenAICompatibleMeetingClient,
     StructuredChatClient,
     default_llm_config,
+    normalize_report_language,
     stable_hash,
 )
 from window.session_store import DEFAULT_SESSION_DIR, SessionStore
@@ -89,6 +90,8 @@ class MeetingIntelligenceServerConfig:
     mock_llm: bool = False
     max_segment_rows: int = 80
     auto_generate: bool = False
+    auto_generate_poll_seconds: float = 10.0
+    report_language: str = "en"
 
 
 @dataclass
@@ -117,12 +120,15 @@ class MeetingIntelligenceService:
         client_factory: Callable[[], StructuredChatClient] | None = None,
     ) -> None:
         self.config = config
+        self.report_language, self.report_language_label = normalize_report_language(config.report_language)
         self.store = SessionStore(config.session_dir)
         self.client_factory = client_factory
         self._llm_config = config.llm_config
         self._settings_lock = threading.Lock()
         self._jobs: dict[str, GenerationJob] = {}
         self._jobs_lock = threading.Lock()
+        self._auto_generation_baseline_complete = False
+        self._auto_generation_existing_saved_ids: set[str] = set()
 
     def public_config(self) -> dict[str, Any]:
         llm = self._current_llm_config()
@@ -133,7 +139,9 @@ class MeetingIntelligenceService:
             "schema_mode": llm.schema_mode,
             "mock_llm": self.config.mock_llm,
             "auto_generate": self.config.auto_generate,
+            "auto_generate_poll_seconds": self.config.auto_generate_poll_seconds,
             "max_segment_rows": self.config.max_segment_rows,
+            "report_language": self.report_language,
             "expected_report_provider": self.expected_report_provider(),
             "api_key_configured": self._provider_api_key_configured(llm),
             "api_key_env_var": self._provider_api_key_env_var(llm.provider),
@@ -240,6 +248,7 @@ class MeetingIntelligenceService:
             isinstance(report, dict)
             and report.get("transcript_revision_id") == revision_id
             and report.get("provider") == self.expected_report_provider()
+            and report.get("report_language") == self.report_language
         )
         return {
             "available": available,
@@ -272,6 +281,7 @@ class MeetingIntelligenceService:
             max_segment_rows=self.config.max_segment_rows,
             evidence_max_tokens=llm_config.max_tokens,
             section_max_tokens=llm_config.section_max_tokens,
+            report_language=self.report_language,
             progress_callback=progress_callback,
         )
         report = pipeline.generate(
@@ -331,6 +341,40 @@ class MeetingIntelligenceService:
         )
         thread.start()
         return snapshot
+
+    def auto_generate_ready_sessions(self) -> list[dict[str, Any]]:
+        """Queue reports for newly finalized saved sessions that have no current report yet."""
+
+        if not self.config.auto_generate:
+            return []
+        summaries = self.store.list_sessions("all")
+        if not self._auto_generation_baseline_complete:
+            self._auto_generation_existing_saved_ids = {
+                str(summary.get("id") or "").strip()
+                for summary in summaries
+                if str(summary.get("status_label") or "").casefold() == "saved"
+            }
+            self._auto_generation_baseline_complete = True
+            return []
+        queued: list[dict[str, Any]] = []
+        for summary in summaries:
+            if str(summary.get("status_label") or "").casefold() != "saved":
+                continue
+            if not bool(summary.get("has_transcript")):
+                continue
+            session_id = str(summary.get("id") or "").strip()
+            if not session_id or session_id in self._auto_generation_existing_saved_ids:
+                continue
+            try:
+                if self.get_report(session_id)["available"]:
+                    self._auto_generation_existing_saved_ids.add(session_id)
+                    continue
+                queued.append(self.start_generate_report(session_id))
+                self._auto_generation_existing_saved_ids.add(session_id)
+            except (FileNotFoundError, ValueError, OSError):
+                # A session may be edited or removed while the monitor scans it.
+                continue
+        return queued
 
     def get_generation_job(self, job_id: str) -> dict[str, Any]:
         job_id = str(job_id or "").strip()
@@ -839,6 +883,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-segment-rows", type=int, default=80)
     parser.add_argument("--mock-llm", action="store_true")
     parser.add_argument("--auto-generate", action="store_true")
+    parser.add_argument(
+        "--auto-generate-poll-seconds",
+        type=float,
+        default=10.0,
+        help="How often --auto-generate checks for newly saved sessions.",
+    )
+    parser.add_argument(
+        "--report-language",
+        default="en",
+        help="Language for generated report content; accepts every WhoSpeaks language code, for example es or de.",
+    )
     return parser
 
 
@@ -865,6 +920,8 @@ def config_from_args(args: argparse.Namespace) -> MeetingIntelligenceServerConfi
         mock_llm=bool(args.mock_llm),
         max_segment_rows=max(12, int(args.max_segment_rows)),
         auto_generate=bool(args.auto_generate),
+        auto_generate_poll_seconds=max(1.0, float(args.auto_generate_poll_seconds)),
+        report_language=args.report_language,
     )
 
 
@@ -874,12 +931,37 @@ def run_server(args: argparse.Namespace) -> None:
     handler = make_handler(service)
     httpd = ThreadingHTTPServer((args.host, args.port), handler)
     print(f"Meeting intelligence server: http://{args.host}:{args.port}/", flush=True)
+    monitor_stop = threading.Event()
+    monitor: threading.Thread | None = None
+    if config.auto_generate:
+        monitor = threading.Thread(
+            target=_run_auto_generation_monitor,
+            args=(service, monitor_stop),
+            name="meeting-intelligence-auto-generate",
+            daemon=True,
+        )
+        monitor.start()
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
+        monitor_stop.set()
+        if monitor is not None:
+            monitor.join(timeout=1.0)
         httpd.server_close()
+
+
+def _run_auto_generation_monitor(service: MeetingIntelligenceService, stop: threading.Event) -> None:
+    """Watch saved sessions so a report starts as soon as the live run is finalized."""
+
+    interval = max(1.0, float(service.config.auto_generate_poll_seconds))
+    while not stop.is_set():
+        try:
+            service.auto_generate_ready_sessions()
+        except Exception as exc:
+            print(f"Meeting intelligence auto-generation scan failed: {exc}", flush=True)
+        stop.wait(interval)
 
 
 def main(argv: list[str] | None = None) -> int:

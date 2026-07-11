@@ -98,7 +98,7 @@ The live-speaker timing defaults are tuned to keep final ASR responsive while li
 
 ## Optional Local Preview
 
-The commands above disable local realtime preview with `--realtime-preview-engine off`. Remove that flag only after the local RealtimeSTT/Kroko preview environment is installed and working.
+The commands above disable local realtime preview with `--realtime-preview-engine off`. Remove that flag only after the chosen local preview backend is installed and working. Kroko uses RealtimeSTT/`kroko_onnx`; Nemotron 3.5 uses CPU `sherpa-onnx`.
 
 For a German realtime session with Kroko preview enabled, add `--language de` and keep the default `community-64l` preview preset:
 
@@ -108,6 +108,15 @@ For a German realtime session with Kroko preview enabled, add `--language de` an
 
 This selects `Kroko-DE-Community-64-L-Streaming-001.data` for preview, sends `de` to the final faster-whisper server, and uses German stream2sentence sentence splitting.
 If the German Kroko model is not present locally, the app downloads it from Hugging Face before starting realtime preview.
+
+For a German realtime session with Nemotron 3.5 preview, install the preview runtime once and select the `sherpa_onnx` engine:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install "sherpa-onnx>=1.13.4,<1.14" "sherpa-onnx-bin>=1.13.4,<1.14"
+.\.venv\Scripts\whospeaks-window.exe --port 8796 --language de --asr-backend remote --remote-asr-url http://YOUR_GPU_SERVER_IP:8650 --embeddings-backend remote --remote-embeddings-url http://YOUR_GPU_SERVER_IP:8660 --embedding-provider "espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12" --live-speaker-embedding-provider "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50" --vad-backend rms --realtime-preview-engine sherpa_onnx --realtime-preview-model-preset nemotron-3.5-560ms-int8
+```
+
+On first start, the app downloads and verifies the selected Nemotron archive under `runtime/models/sherpa-onnx/`. Use `nemotron-3.5-160ms-int8` only when you specifically want to compare lower latency against the default 560 ms model.
 
 ## First Session
 

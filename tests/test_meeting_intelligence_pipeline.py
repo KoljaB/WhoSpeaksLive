@@ -19,6 +19,7 @@ from window.meeting_intelligence_pipeline import (
     default_llm_config,
     openai_strict_schema,
     parse_openai_chat_json,
+    normalize_report_language,
     section_schema,
 )
 
@@ -45,6 +46,14 @@ def sample_rows(count: int = 30) -> list[dict[str, object]]:
 
 
 class MeetingIntelligencePipelineTests(unittest.TestCase):
+    def test_report_language_uses_the_shared_language_configuration(self) -> None:
+        self.assertEqual(normalize_report_language("es"), ("es", "Spanish"))
+        self.assertEqual(normalize_report_language("Spanish"), ("es", "Spanish"))
+        self.assertEqual(normalize_report_language("de"), ("de", "German"))
+        self.assertEqual(normalize_report_language("de-AT"), ("de", "German"))
+        with self.assertRaises(ValueError):
+            normalize_report_language("not-a-language")
+
     def test_default_config_supports_openai_compatible_providers(self) -> None:
         self.assertEqual(default_llm_config("llama-cpp").base_url, "http://127.0.0.1:8081/v1")
         self.assertEqual(default_llm_config("ollama").base_url, "http://127.0.0.1:11434/v1")
@@ -180,6 +189,34 @@ class MeetingIntelligencePipelineTests(unittest.TestCase):
         self.assertEqual(progress_events[-1]["percent"], 100)
         self.assertIn("evidence", {event["stage"] for event in progress_events})
         self.assertIn("section", {event["stage"] for event in progress_events})
+
+    def test_multi_pass_pipeline_requests_and_records_spanish_report_content(self) -> None:
+        client = MockMeetingLLMClient()
+        pipeline = MultiPassMeetingIntelligencePipeline(
+            client,
+            max_segment_rows=12,
+            section_types=("executive_summary",),
+            report_language="es",
+        )
+
+        report = pipeline.generate(session_id="spanish-test", transcript_rows=sample_rows(12))
+
+        self.assertEqual(report["report_language"], "es")
+        self.assertIn("Borrador de resumen ejecutivo", report["summary"])
+        self.assertTrue(client.payloads)
+        self.assertTrue(all(payload["report_language"] == "es" for payload in client.payloads))
+
+    def test_multi_pass_pipeline_propagates_german_to_every_llm_pass(self) -> None:
+        client = MockMeetingLLMClient()
+        report = MultiPassMeetingIntelligencePipeline(
+            client,
+            max_segment_rows=12,
+            section_types=("executive_summary", "decisions"),
+            report_language="de",
+        ).generate(session_id="german-test", transcript_rows=sample_rows(12))
+
+        self.assertEqual(report["report_language"], "de")
+        self.assertTrue(all(payload["report_language"] == "de" for payload in client.payloads))
 
     def test_openai_json_parser_accepts_fenced_content(self) -> None:
         payload = parse_openai_chat_json({

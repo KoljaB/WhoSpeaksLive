@@ -17,7 +17,7 @@ The base install includes the Textual setup interface, doctor checks, profile st
 - Core/controller: browser UI on this machine, with ASR and embeddings served by remote HTTP services.
 - ASR and embeddings server packages: service-side dependencies for a remote GPU/server machine.
 
-For local or core/controller installs, use the Kroko realtime text switch to include or exclude the native Kroko setup. Leave it off when you want the cleanest install first; final ASR and speaker diarization can still run without live preview text.
+For local or core/controller installs, use the realtime text selection to include or exclude optional preview support. Kroko setup is still a native post-install step, while Nemotron 3.5 preview can be enabled manually with the `sherpa_onnx` runtime option while the installer flow is being integrated. Leave preview off when you want the cleanest install first; final ASR and speaker diarization can still run without live preview text.
 
 The interface has four operational views:
 
@@ -274,7 +274,7 @@ The guided path is:
 .\.venv\Scripts\whospeaks.exe doctor --mode local --deep
 ```
 
-Select Full local on the Setup tab, then use Install / repair. The launcher uses `--device auto` for this path. If pip installed a CPU-only PyTorch build, speaker embeddings fall back to CPU instead of crashing; install a CUDA-enabled PyTorch build when you need GPU embeddings. The Kroko realtime text switch controls whether the native Kroko setup is included.
+Select Full local on the Setup tab, then use Install / repair. The launcher uses `--device auto` for this path. If pip installed a CPU-only PyTorch build, speaker embeddings fall back to CPU instead of crashing; install a CUDA-enabled PyTorch build when you need GPU embeddings. The realtime text selection controls whether native Kroko setup is included; Nemotron preview can also be enabled manually with `--realtime-preview-engine sherpa_onnx`.
 
 The older manual path installs the larger historical environment directly:
 
@@ -287,7 +287,7 @@ This path is slower to install and more likely to hit CUDA, PyTorch, model-cache
 
 ## Realtime Preview
 
-Realtime preview text is optional. Final transcript diarization and live speaker probing still work if preview is disabled or if Kroko fails to install, but the live text row depends on the `kroko_onnx` native Python extension and a Kroko model file.
+Realtime preview text is optional. Final transcript diarization and live speaker probing still work if preview is disabled or if a preview backend fails to install. Kroko preview depends on the `kroko_onnx` native Python extension and a Kroko model file. Nemotron preview depends on `sherpa-onnx`, `sherpa-onnx-bin`, and a verified Nemotron model directory.
 
 ### Nemotron 3.5 (experimental)
 
@@ -298,7 +298,9 @@ Nemotron 3.5 is an opt-in CPU-only preview backend. It uses `sherpa-onnx` in a s
 .\.venv\Scripts\whospeaks-window.exe --language de --realtime-preview-engine sherpa_onnx --realtime-preview-model-preset nemotron-3.5-560ms-int8
 ```
 
-On first start, WhoSpeaks downloads the selected 453 MB archive from the upstream `k2-fsa/sherpa-onnx` release, verifies its pinned SHA-256 checksum, and installs it under `runtime/models/sherpa-onnx/`. Use `--no-realtime-preview-auto-download` to require a preinstalled model or `--realtime-preview-model-dir` to select one manually. Nemotron supports `en`, `de`, `es`, `fr`, `it`, `nl`, `pt`, `tr`, and `sv`; Swedish is broad-coverage, while Hebrew should remain on Kroko or have preview disabled.
+On first start, WhoSpeaks downloads the selected 453 MB archive from the upstream `k2-fsa/sherpa-onnx` release, verifies its pinned SHA-256 checksum, and installs it under `runtime/models/sherpa-onnx/`. Use `--no-realtime-preview-auto-download` to require a preinstalled model or `--realtime-preview-model-dir` to select one manually.
+
+Nemotron 3.5 exposes `en`, `de`, `es`, `fr`, `it`, `nl`, `pt`, `tr`, and `sv` for realtime preview in WhoSpeaksLive. English, German, Spanish, French, Italian, Dutch, Portuguese, and Turkish are the main supported languages; Swedish is broad-coverage. Hebrew should remain on Kroko or have preview disabled. The underlying model may produce text for more languages, but they are not treated as supported until validated in the app's realtime path.
 
 Nemotron model weights use NVIDIA Open Model Development and Weight License 1.1, not the project MIT license. It remains experimental and Kroko remains available. See [Third-Party Model Licenses](third-party-model-licenses.md).
 

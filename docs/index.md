@@ -23,6 +23,7 @@ Follow these in order for a new machine:
 
 - [Live window workflow](live-window-workflow.md): run a media session, watch live speaker labels, and export results.
 - [Meeting intelligence server](meeting-intelligence-server.md): generate LLM meeting reports from saved transcripts, review evidence, and recreate cached reports.
+- [Spanish executive meeting](spanish-executive-meeting.md): operate a six-person weekly leadership meeting with live Spanish transcription and an automatic Spanish report.
 - [Speaker libraries](speaker-libraries.md): save, load, import, export, and reuse known speakers.
 - [Public diarization events](public-events.md): subscribe to stable transcript and speaker-change events from Python tools.
 - [Validation and scoring](validation-and-scoring.md): evaluate diarization and live-speaker behavior.
