@@ -246,6 +246,8 @@ def replay_cached_window_diarizer(
             )
             if committed_after == committed_before:
                 break
+        controller._apply_delayed_multirow_clustering()
+        controller._refine_speaker_assignments()
         controller._merge_tiny_fragmented_speaker_profiles()
         controller._merge_terminal_promotional_outro()
         controller._split_long_low_confidence_retro_assignments()

@@ -329,7 +329,7 @@ VOCABLE_WORDS = {
 
 
 def text_content_words(text: str) -> list[str]:
-    words = re.findall(r"[A-Za-z']+", text.lower())
+    words = re.findall(r"[^\W\d_]+(?:['’][^\W\d_]+)*", text.lower(), flags=re.UNICODE)
     return [
         word
         for word in words
@@ -338,7 +338,7 @@ def text_content_words(text: str) -> list[str]:
 
 
 def is_embedding_candidate_text(text: str) -> bool:
-    words = re.findall(r"[A-Za-z']+", text.lower())
+    words = re.findall(r"[^\W\d_]+(?:['’][^\W\d_]+)*", text.lower(), flags=re.UNICODE)
     if not words:
         return False
     vocables = sum(1 for word in words if word.strip("'") in VOCABLE_WORDS)
