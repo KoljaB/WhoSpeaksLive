@@ -42,7 +42,8 @@ class TranslationTuiContractTests(unittest.IsolatedAsyncioTestCase):
                     translation_port=8897,
                 )
                 app = WhoSpeaksSetupApp(profile, auto_doctor=False, popen_factory=popen_factory)
-                app._server_port_accepting = lambda *_args: False
+                translation_ready = False
+                app._server_port_accepting = lambda _host, port: translation_ready and port == 8897
                 async with app.run_test(size=(120, 36)) as pilot:
                     app.query_one("#main-tabs", TabbedContent).active = "translation-tab"
                     await pilot.pause()
@@ -64,6 +65,13 @@ class TranslationTuiContractTests(unittest.IsolatedAsyncioTestCase):
                     app.action_launch()
                     await pilot.pause()
 
+                    self.assertEqual(len(calls), 1)
+                    self.assertTrue(app.launch_live_when_translation_ready)
+                    translation_ready = True
+                    app.last_server_probe_at = 0.0
+                    app._refresh_server_states()
+                    await pilot.pause()
+
                     self.assertEqual(len(calls), 2)
                     translation_command, live_command = calls
                     self.assertEqual(translation_command[0], "translation-python")
@@ -71,7 +79,7 @@ class TranslationTuiContractTests(unittest.IsolatedAsyncioTestCase):
                     self.assertIn("--translation-provider", live_command)
                     self.assertLess(calls.index(translation_command), calls.index(live_command))
                     self.assertIn(
-                        "Translation: starting",
+                        "Translation: running",
                         str(app.query_one("#translation-server-state", Static).content),
                     )
             finally:

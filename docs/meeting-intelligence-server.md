@@ -6,16 +6,27 @@ Use this server when you want to review a finished transcript, generate a struct
 
 ## What It Does
 
-The server loads saved WhoSpeaksLive sessions, or an explicit demo transcript, and runs a multi-step report pipeline:
+The server loads saved WhoSpeaksLive sessions, or an explicit demo transcript, and runs a multi-step report pipeline for the selected report template:
 
 1. Prepare transcript rows and speaker labels.
 2. Split the transcript into manageable segments.
-3. Extract evidence anchors from each segment.
-4. Generate report sections from those evidence anchors.
-5. Save the report in a local cache.
-6. Show progress, report sections, evidence, and transcript rows in the browser.
+3. Send every configured section objective and output-field definition to each evidence pass.
+4. Extract evidence anchors from each segment and tag them with relevant section keys.
+5. Generate each flat report section from its full definition, relevant evidence, and global context.
+6. Save the report and its complete template snapshot in a local template-specific cache.
+7. Show progress, report sections, evidence, and transcript rows in the browser.
 
 An evidence anchor is a small auditable support span. Each anchor stores the transcript row IDs that support a claim. In the browser, clicking an evidence chip opens the Transcript tab, scrolls to the matching rows, and highlights them.
+
+## Predefined And Custom Reports
+
+The **Report template** selector works with ordinary JSON report templates. A template is a reusable report design containing an ordered, flat list of sections. Predefined and user-created Custom templates use the same validation, evidence extraction, section generation, and rendering path.
+
+Use **Predefined** to select the supplied Standard Meeting Intelligence report and the ten domain examples for works councils, podcasts, medical case conferences, film production, incident response, mediation, investigative journalism, qualitative research, shift handover, and committee minutes. Click **Inspect** to open a Predefined report read-only, then **Clone** to create an editable Custom copy.
+
+Use **New** to open **Report builder** and build a Custom template from scratch. Custom reports also offer **Edit** and **Delete**. Each section can configure its objective, item limit, evidence requirement, card/table/timeline/quote layout, relevance/chronological/severity sorting, and typed output fields. Reports have no nested subsection level. The builder's primary action is **Save template**.
+
+See [Custom Reports](custom-reports.md) for the builder workflow, complete template schema, predefined report coverage, language and privacy policies, and MVP limitations.
 
 ## Start With A Mock LLM
 
@@ -46,7 +57,11 @@ whospeaks-meeting-intelligence `
 
 Reports generated in another language are treated as stale, so a previously cached English report cannot be shown as the current Spanish report. `--report-language` accepts every language code supported by WhoSpeaks final transcription, including `de`, `en`, `es`, `fr`, `it`, `pt`, and the broader Whisper-language set listed in [Configuration](configuration.md#language). The server resolves aliases and regional codes through the shared language configuration, so `German` and `de-AT` both select `de`.
 
+A template whose language is set to **Inherit** uses `--report-language`. A fixed-language template overrides that server default; for example, the predefined French medical-case report always requests French output. The effective language is included in cache validation.
+
 With `--auto-generate`, the server checks saved sessions every 10 seconds and queues a report as soon as the live window finalizes a new one with status `Saved`. Existing saved sessions are deliberately ignored when the server starts, so historical meetings are never unexpectedly sent to the LLM. No report-page selection or Generate click is needed. Change the cadence with `--auto-generate-poll-seconds`.
+
+Automatic generation currently uses the Standard Meeting Intelligence template. Generate other Predefined or Custom reports explicitly in the browser or API.
 
 The `whospeaks` launcher can start both services from one command. It inherits the report language from the live profile unless `--report-language` is supplied:
 
@@ -62,7 +77,7 @@ Open:
 http://127.0.0.1:8798/
 ```
 
-Select a session and click `Generate report`.
+Select a session and a Report template, then click `Generate report`.
 
 ## Start With llama.cpp Or Another OpenAI-Compatible Server
 
@@ -169,20 +184,31 @@ Generated reports are cached locally. Override the cache directory when you want
 --cache-dir D:\Projekte\SpeakerDiarization\runtime\meeting_intelligence_reports_browser
 ```
 
-The cache is provider-aware. A cached report generated with `mock_meeting_llm` is not treated as valid when the server is currently configured for `llama_cpp:gemma-4-12b-it-Q6_K.gguf`.
+Custom report templates are also saved locally. Override their directory separately:
+
+```powershell
+--template-dir D:\path\to\report_templates
+```
+
+The cache supports multiple reports for one session by using the session ID and template ID together. A Podcast Production report therefore does not overwrite a Standard Meeting Intelligence report made from the same transcript.
+
+A cache is current only while transcript and speaker revision, provider and model, effective report language, template ID, and template revision all match. For example, a report generated with `mock_meeting_llm` is not current under `llama_cpp:gemma-4-12b-it-Q6_K.gguf`, and editing a Custom template makes its previous report stale. Switching back to matching settings can make an unchanged cache current again.
 
 ## Browser Workflow
 
 1. Open `http://127.0.0.1:8798/`.
 2. Select a session in the left sidebar.
-3. Click `Generate report`.
-4. Watch the progress panel while evidence and sections are generated.
-5. Review Summary, Decisions, Action items, Questions, Risks, Evidence, and Transcript tabs.
-6. Click evidence chips to jump to highlighted transcript rows.
-7. Click `Delete`, then `Confirm`, to delete only the cached report for that session.
-8. Click `Generate report` again to recreate it.
+3. Select a report design under **Predefined** or **Custom** in the **Report template** selector; its current cache for the selected session loads automatically.
+4. Optionally use **Inspect** or **Clone** for a Predefined report, **Edit** or **Delete** for a Custom report, or **New** to open **Report builder**.
+5. Click `Generate report`.
+6. Watch the modal progress overlay while template-aware evidence and sections are generated; select **View report** after completion to dismiss it.
+7. Review the dynamically generated section navigation, Evidence, and Transcript views.
+8. Click evidence chips to jump to highlighted transcript rows.
+9. Switch templates and generate another report for the same session when needed.
+10. Click `Delete`, then `Confirm`, to delete only the selected template's cached report.
+11. Click `Generate report` again to recreate it.
 
-Deleting a report does not delete the transcript, speakers, embeddings, saved session, or media files. It removes only the cached meeting intelligence report.
+Deleting a report does not delete the transcript, speakers, embeddings, saved session, template, reports made with other templates, or media files. It removes only the selected cached meeting-intelligence report.
 
 ## API Endpoints
 
@@ -194,19 +220,34 @@ The browser uses these local endpoints:
 | `/api/llm-config` | `POST` | Switch runtime provider, model, and base URL. API keys stay server-side. |
 | `/api/llm-models?provider=...&base_url=...` | `GET` | Return text-generation model IDs from the provider's `/models` endpoint, sorted with cheaper `nano` and `mini` names first when present. |
 | `/api/sessions` | `GET` | List demo and saved sessions. |
-| `/api/report?session_id=...` | `GET` | Return the current cached report and transcript rows. |
-| `/api/generate-async` | `POST` | Start background report generation. |
+| `/api/templates` | `GET` | List inspectable Predefined and saved Custom report templates. |
+| `/api/template?template_id=...` | `GET` | Return one complete template definition. |
+| `/api/templates/save` | `POST` | Validate and save a Custom template; accepts the template object directly or under `template`. |
+| `/api/templates/clone` | `POST` | Clone `template_id` under a supplied `name` as an editable Custom template. |
+| `/api/templates/delete` | `POST` | Delete a Custom template by `template_id`; Predefined templates are immutable. |
+| `/api/report?session_id=...&template_id=...` | `GET` | Return the selected template's current cached report and transcript rows. The standard template is the default. |
+| `/api/generate-async` | `POST` | Start background generation for `session_id` and `template_id`. |
 | `/api/generate-status?job_id=...` | `GET` | Poll report-generation progress. |
-| `/api/generate` | `POST` | Synchronous generation endpoint kept for tests and simple clients. |
-| `/api/delete-report` | `POST` | Delete the cached report for a session. |
+| `/api/generate` | `POST` | Synchronously generate `session_id` with `template_id`; kept for tests and simple clients. |
+| `/api/delete-report` | `POST` | Delete the cache for one `session_id` and `template_id`. |
 
-`/api/generate-async` returns a job object. The browser polls `/api/generate-status` and updates the progress bar with stages such as `prepare`, `segment`, `evidence`, `section`, `finalize`, and `completed`.
+`/api/generate-async` returns a job object. The browser polls `/api/generate-status` and updates a modal progress overlay with stages such as `prepare`, `segment`, `evidence`, `section`, `finalize`, and `completed`. The overlay is not part of the scrollable report layout.
+
+Template-changing endpoints accept JSON request bodies. Examples:
+
+```json
+{"template_id":"builtin.english-podcast-production","name":"My podcast report"}
+```
+
+```json
+{"session_id":"SESSION_ID","template_id":"custom.my-podcast-report"}
+```
 
 ## Troubleshooting
 
-If the page says there is no current report, click `Generate report`. If the report was generated with a different provider or model, the server treats it as stale and will not display it as current.
+If the page says there is no current report, confirm that the intended template is selected and click `Generate report`. A cache is stale when its transcript revision, provider/model, effective language, or template revision differs from the current selection.
 
-If generation appears stuck, check the progress panel first. Real local LLM generation can take several minutes for larger transcripts, especially when many sections are enabled.
+If generation appears stuck, check the progress overlay first. Real local LLM generation can take several minutes for larger transcripts, especially when many sections are enabled.
 
 If the server cannot connect to the model, verify the base URL:
 
@@ -219,5 +260,7 @@ For OpenAI, verify that the server process can see `OPENAI_API_KEY`. If you add 
 If OpenAI generation fails with HTTP 400, read the progress-panel detail. Current builds include the OpenAI error message. Common causes are unsupported model capabilities, invalid model IDs, or schema restrictions. The report schemas are normalized for OpenAI strict structured output, so nested open-object schema failures should be treated as bugs and covered by tests.
 
 If evidence opens the Transcript tab but does not highlight a row, regenerate the report. Older reports or sessions without stable row IDs can reference normalized row IDs; current browser builds resolve both stored and normalized IDs.
+
+If a local-only report refuses to generate with OpenAI or OpenRouter, that is the template's routing policy working as intended. Select llama.cpp, Ollama, or LM Studio, or clone the template and deliberately change the policy after reviewing the privacy implications.
 
 If you only want to test the UI, use `--mock-llm`. If you want a realistic report, use a real OpenAI-compatible server and enough context/output tokens for the selected model.

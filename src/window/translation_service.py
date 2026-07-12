@@ -323,6 +323,9 @@ class TranslationProvider(ABC):
             model_metadata=TRANSLATION_MODEL_METADATA.get(self.model_id),
         )
 
+    def warmup(self) -> None:
+        """Prepare provider resources before the provider is advertised as ready."""
+
     @abstractmethod
     def translate(
         self,
@@ -919,6 +922,9 @@ class TransformersTranslationProvider(TranslationProvider):
             if self.family == "translategemma":
                 return self._translate_gemma(runtime, text, source_language, target_language)
             return self._translate_madlad(runtime, text, target_language)
+
+    def warmup(self) -> None:
+        self._ensure_runtime()
 
     def _ensure_runtime(self) -> _TransformersRuntime:
         if self._runtime is not None:

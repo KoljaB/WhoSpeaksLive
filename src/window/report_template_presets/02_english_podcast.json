@@ -1,0 +1,62 @@
+{
+  "schema_version": "report_template_v1",
+  "template_id": "builtin.english-podcast-production",
+  "name": "English Podcast Production",
+  "description": "An episode-production report with an editorial summary, chapters, attributable quotes, and fact-check leads.",
+  "version": 1,
+  "builtin": true,
+  "language_mode": "en",
+  "privacy_policy": "inherit",
+  "sections": [
+    {
+      "key": "episode_summary",
+      "title": "Episode summary",
+      "objective": "Write a concise listener-oriented summary of the episode's main subjects and conclusions without promotional invention.",
+      "max_items": 4,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "relevance",
+      "output_fields": []
+    },
+    {
+      "key": "chapter_markers",
+      "title": "Suggested chapter markers",
+      "objective": "Propose useful chapter boundaries when the conversation changes topic, using exact transcript timing and short descriptive titles.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "timeline",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "start_time", "label": "Start", "type": "timestamp", "description": "Chapter start time in the recording.", "options": []},
+        {"key": "chapter_title", "label": "Chapter title", "type": "text", "description": "Concise editorial title.", "options": []}
+      ]
+    },
+    {
+      "key": "notable_quotes",
+      "title": "Notable quotes",
+      "objective": "Select concise, representative verbatim quotations and attribute each one to the transcript's actual speaker.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "quotes",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "speaker", "label": "Speaker", "type": "speaker", "description": "Speaker who said the quoted words.", "options": []},
+        {"key": "quote_time", "label": "Time", "type": "timestamp", "description": "Start time of the quotation.", "options": []}
+      ]
+    },
+    {
+      "key": "fact_check_candidates",
+      "title": "Fact-check candidates",
+      "objective": "Identify checkable factual claims that may warrant editorial verification; do not claim that a statement is false merely because it needs checking.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "speaker", "label": "Speaker", "type": "speaker", "description": "Speaker who made the claim.", "options": []},
+        {"key": "claim", "label": "Claim", "type": "text", "description": "Checkable claim as stated or closely paraphrased.", "options": []},
+        {"key": "priority", "label": "Priority", "type": "enum", "description": "Editorial verification priority.", "options": ["high", "medium", "low"]}
+      ]
+    }
+  ]
+}

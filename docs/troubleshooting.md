@@ -175,7 +175,7 @@ Documentation-only changes should not affect runtime tests. If tests fail after 
 
 ## Meeting Intelligence OpenAI Report Fails With HTTP 400
 
-Open the progress panel detail first. Current builds include the provider's HTTP error body when available, so the message should usually name the rejected field, schema, model, or parameter.
+Open the progress overlay detail first. Current builds include the provider's HTTP error body when available, so the message should usually name the rejected field, schema, model, or parameter.
 
 For OpenAI and OpenRouter, the meeting intelligence server uses strict structured output schemas. Strict structured output means every returned JSON object must match a closed schema: no undeclared properties, and every declared property is required. The server normalizes report schemas before sending OpenAI `response_format`, so failures mentioning `additionalProperties`, `required`, or nested object schemas should be treated as bugs in the report schema path.
 

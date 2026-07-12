@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import sys
 import tempfile
+import threading
 import time
 import unittest
 from pathlib import Path
@@ -29,12 +30,33 @@ from window.meeting_intelligence_server import (
     parse_whospeakslive_transcript,
     speaker_id_from_name,
 )
+from window.meeting_intelligence_pipeline import MockMeetingLLMClient
+from window.report_templates import STANDARD_TEMPLATE_ID
 
 
 DEMO_TEXT = """[00:00.7 - 00:02.8] Speaker 1: Thanks for coming to today's monthly meeting.
 [00:04.4 - 00:06.7] Speaker 2: We decided the beta launch moves to August.
 [00:08.0 - 00:10.5] Speaker 1: Alice will follow up with the API team by Tuesday.
 """
+
+
+GERMAN_WORKS_COUNCIL_TEMPLATE_ID = "builtin.german-works-council"
+ENGLISH_PODCAST_TEMPLATE_ID = "builtin.english-podcast-production"
+
+
+def demo_service(root: Path, **overrides: object) -> MeetingIntelligenceService:
+    transcript_path = root / "demo.txt"
+    transcript_path.write_text(DEMO_TEXT, encoding="utf-8")
+    values: dict[str, object] = {
+        "session_dir": root / "sessions",
+        "cache_dir": root / "reports",
+        "template_dir": root / "templates",
+        "demo_transcript": transcript_path,
+        "mock_llm": True,
+        "max_segment_rows": 12,
+    }
+    values.update(overrides)
+    return MeetingIntelligenceService(MeetingIntelligenceServerConfig(**values))
 
 
 class MeetingIntelligenceServerTests(unittest.TestCase):
@@ -51,6 +73,180 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
             self.assertEqual(rows[1]["assigned_speaker"], "S2")
             self.assertEqual(rows[2]["speaker_name"], "Speaker 1")
 
+    def test_service_lists_exactly_eleven_inspectable_predefined_templates(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            service = demo_service(Path(directory))
+
+            templates = service.list_report_templates()
+            predefined = [template for template in templates if template.get("builtin")]
+
+            self.assertEqual(len(predefined), 11)
+            self.assertEqual(len({template["template_id"] for template in predefined}), 11)
+            self.assertIn(STANDARD_TEMPLATE_ID, {template["template_id"] for template in predefined})
+            self.assertTrue(all(template["source_kind"] == "predefined" for template in predefined))
+            self.assertTrue(all(template["read_only"] is True for template in predefined))
+
+    def test_service_inspects_predefined_template_with_builder_shape(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            service = demo_service(Path(directory))
+
+            template = service.get_report_template(GERMAN_WORKS_COUNCIL_TEMPLATE_ID)
+
+            self.assertEqual(template["template_id"], GERMAN_WORKS_COUNCIL_TEMPLATE_ID)
+            self.assertEqual(template["language_mode"], "de")
+            self.assertEqual(template["privacy_policy"], "local_only")
+            self.assertTrue(template["builtin"])
+            self.assertTrue(template["read_only"])
+            self.assertTrue(template["revision_hash"])
+            self.assertTrue(template["sections"])
+            self.assertTrue(all("output_fields" in section for section in template["sections"]))
+
+    def test_custom_template_clone_save_version_and_delete_lifecycle(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            service = demo_service(Path(directory))
+
+            cloned = service.clone_report_template(STANDARD_TEMPLATE_ID, "My reusable report")
+            self.assertFalse(cloned["builtin"])
+            self.assertEqual(cloned["version"], 1)
+            self.assertEqual(cloned["source_kind"], "custom")
+            self.assertFalse(cloned["read_only"])
+
+            edited = dict(cloned)
+            edited.pop("source_kind", None)
+            edited.pop("read_only", None)
+            edited["description"] = "Updated reusable report definition."
+            saved = service.save_report_template({"template": edited})
+
+            self.assertEqual(saved["template_id"], cloned["template_id"])
+            self.assertEqual(saved["version"], 2)
+            self.assertNotEqual(saved["revision_hash"], cloned["revision_hash"])
+            self.assertEqual(
+                service.get_report_template(cloned["template_id"])["description"],
+                "Updated reusable report definition.",
+            )
+            self.assertTrue(service.delete_report_template(cloned["template_id"]))
+            with self.assertRaisesRegex(ValueError, "Unknown report template"):
+                service.get_report_template(cloned["template_id"])
+
+    def test_builder_can_save_a_new_template_without_preallocating_an_id(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            service = demo_service(Path(directory))
+            saved = service.save_report_template({"template": {
+                "schema_version": "report_template_v1",
+                "name": "Safety review",
+                "description": "Created through the report builder.",
+                "version": 1,
+                "builtin": False,
+                "language_mode": "inherit",
+                "privacy_policy": "inherit",
+                "sections": [{
+                    "key": "urgent_items",
+                    "title": "Urgent items",
+                    "objective": "Find urgent items grounded in transcript evidence.",
+                    "max_items": 5,
+                    "evidence_required": True,
+                    "render_kind": "table",
+                    "sort_order": "severity",
+                    "output_fields": [],
+                }],
+            }})
+
+            self.assertEqual(saved["template_id"], "custom.safety-review")
+            self.assertFalse(saved["read_only"])
+
+    def test_generation_with_fixed_language_preset_records_template_provenance(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            service = demo_service(Path(directory), report_language="en")
+
+            generated = service.generate_report(
+                DEMO_SESSION_ID,
+                template_id=GERMAN_WORKS_COUNCIL_TEMPLATE_ID,
+            )
+            report = generated["report"]
+
+            self.assertEqual(generated["report_language"], "de")
+            self.assertEqual(report["report_language"], "de")
+            self.assertEqual(report["template_id"], GERMAN_WORKS_COUNCIL_TEMPLATE_ID)
+            self.assertEqual(report["template_revision"], generated["template"]["revision_hash"])
+            self.assertEqual(report["report_template"]["template_id"], GERMAN_WORKS_COUNCIL_TEMPLATE_ID)
+            self.assertEqual(report["report_template"]["language_mode"], "de")
+            self.assertEqual(
+                report["pipeline"]["section_passes"],
+                [section["key"] for section in generated["template"]["sections"]],
+            )
+
+    def test_reports_for_multiple_templates_share_session_without_cache_collision(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            service = demo_service(root)
+
+            standard = service.generate_report(DEMO_SESSION_ID, template_id=STANDARD_TEMPLATE_ID)
+            podcast = service.generate_report(DEMO_SESSION_ID, template_id=ENGLISH_PODCAST_TEMPLATE_ID)
+
+            self.assertTrue(service.get_report(DEMO_SESSION_ID, STANDARD_TEMPLATE_ID)["available"])
+            self.assertTrue(service.get_report(DEMO_SESSION_ID, ENGLISH_PODCAST_TEMPLATE_ID)["available"])
+            self.assertNotEqual(standard["report"]["report_id"], podcast["report"]["report_id"])
+            self.assertNotEqual(standard["report"]["template_id"], podcast["report"]["template_id"])
+            cache_files = list((root / "reports").glob("*.json"))
+            self.assertEqual(len(cache_files), 2)
+            session = service.list_sessions()[0]
+            self.assertEqual(
+                set(session["report_template_ids"]),
+                {STANDARD_TEMPLATE_ID, ENGLISH_PODCAST_TEMPLATE_ID},
+            )
+
+    def test_local_only_template_blocks_public_remote_providers(self) -> None:
+        for provider, key_name in (("openai", "OPENAI_API_KEY"), ("openrouter", "OPENROUTER_API_KEY")):
+            with self.subTest(provider=provider), tempfile.TemporaryDirectory() as directory:
+                service = demo_service(
+                    Path(directory),
+                    mock_llm=False,
+                    llm_config=default_llm_config(provider, api_key="test-key"),
+                )
+
+                with self.assertRaisesRegex(ValueError, "local-only"):
+                    service.generate_report(
+                        DEMO_SESSION_ID,
+                        template_id=GERMAN_WORKS_COUNCIL_TEMPLATE_ID,
+                    )
+                self.assertEqual(service.public_config()["api_key_env_var"], key_name)
+
+    def test_async_jobs_include_template_id_and_dedupe_per_session_template_pair(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            entered = threading.Event()
+            release = threading.Event()
+
+            class BlockingMockMeetingLLMClient(MockMeetingLLMClient):
+                def chat_json(self, **kwargs: object) -> dict[str, object]:
+                    entered.set()
+                    if not release.wait(timeout=5.0):
+                        raise RuntimeError("test generation was not released")
+                    return super().chat_json(**kwargs)
+
+            service = demo_service(root)
+            service.client_factory = BlockingMockMeetingLLMClient
+
+            standard = service.start_generate_report(DEMO_SESSION_ID, STANDARD_TEMPLATE_ID)
+            self.assertTrue(entered.wait(timeout=2.0))
+            duplicate = service.start_generate_report(DEMO_SESSION_ID, STANDARD_TEMPLATE_ID)
+            podcast = service.start_generate_report(DEMO_SESSION_ID, ENGLISH_PODCAST_TEMPLATE_ID)
+
+            self.assertEqual(duplicate["job_id"], standard["job_id"])
+            self.assertEqual(standard["template_id"], STANDARD_TEMPLATE_ID)
+            self.assertNotEqual(podcast["job_id"], standard["job_id"])
+            self.assertEqual(podcast["template_id"], ENGLISH_PODCAST_TEMPLATE_ID)
+
+            release.set()
+            deadline = time.monotonic() + 5.0
+            jobs = [standard, podcast]
+            while time.monotonic() < deadline:
+                jobs = [service.get_generation_job(job["job_id"]) for job in jobs]
+                if all(job["status"] in {"succeeded", "failed"} for job in jobs):
+                    break
+                time.sleep(0.02)
+            self.assertEqual([job["status"] for job in jobs], ["succeeded", "succeeded"])
+
     def test_service_lists_demo_session_and_caches_mock_report(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -59,6 +255,7 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
             config = MeetingIntelligenceServerConfig(
                 session_dir=root / "sessions",
                 cache_dir=root / "reports",
+                template_dir=root / "templates",
                 demo_transcript=transcript_path,
                 mock_llm=True,
                 max_segment_rows=12,
@@ -81,11 +278,13 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
             transcript_path = root / "demo.txt"
             transcript_path.write_text(DEMO_TEXT, encoding="utf-8")
             english = MeetingIntelligenceService(MeetingIntelligenceServerConfig(
-                session_dir=root / "sessions", cache_dir=root / "reports", demo_transcript=transcript_path, mock_llm=True,
+                session_dir=root / "sessions", cache_dir=root / "reports", template_dir=root / "templates",
+                demo_transcript=transcript_path, mock_llm=True,
             ))
             english.generate_report(DEMO_SESSION_ID)
             spanish = MeetingIntelligenceService(MeetingIntelligenceServerConfig(
-                session_dir=root / "sessions", cache_dir=root / "reports", demo_transcript=transcript_path,
+                session_dir=root / "sessions", cache_dir=root / "reports", template_dir=root / "templates",
+                demo_transcript=transcript_path,
                 mock_llm=True, report_language="es",
             ))
 
@@ -96,11 +295,14 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
             self.assertIn("Borrador de resumen ejecutivo", generated["report"]["summary"])
 
     def test_report_language_accepts_german_and_regional_aliases(self) -> None:
-        args = build_arg_parser().parse_args(["--report-language", "de-AT"])
-        config = config_from_args(args)
-        service = MeetingIntelligenceService(config)
+        with tempfile.TemporaryDirectory() as directory:
+            args = build_arg_parser().parse_args([
+                "--report-language", "de-AT", "--template-dir", str(Path(directory) / "templates"),
+            ])
+            config = config_from_args(args)
+            service = MeetingIntelligenceService(config)
 
-        self.assertEqual(service.public_config()["report_language"], "de")
+            self.assertEqual(service.public_config()["report_language"], "de")
 
     def test_async_generation_job_exposes_progress_and_finishes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -111,6 +313,7 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
                 MeetingIntelligenceServerConfig(
                     session_dir=root / "sessions",
                     cache_dir=root / "reports",
+                    template_dir=root / "templates",
                     demo_transcript=transcript_path,
                     mock_llm=True,
                     max_segment_rows=12,
@@ -141,6 +344,7 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
                 MeetingIntelligenceServerConfig(
                     session_dir=session_dir,
                     cache_dir=root / "reports",
+                    template_dir=root / "templates",
                     demo_transcript=transcript_path,
                     mock_llm=True,
                     auto_generate=True,
@@ -172,6 +376,7 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
                 MeetingIntelligenceServerConfig(
                     session_dir=root / "sessions",
                     cache_dir=root / "reports",
+                    template_dir=root / "templates",
                     demo_transcript=transcript_path,
                     mock_llm=True,
                     max_segment_rows=12,
@@ -209,6 +414,7 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
                 MeetingIntelligenceServerConfig(
                     session_dir=root / "sessions",
                     cache_dir=root / "reports",
+                    template_dir=root / "templates",
                     llm_config=default_llm_config("llama_cpp", model="local-before"),
                 )
             )
@@ -252,6 +458,7 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
                 MeetingIntelligenceServerConfig(
                     session_dir=root / "sessions",
                     cache_dir=root / "reports",
+                    template_dir=root / "templates",
                     demo_transcript=transcript_path,
                     llm_config=default_llm_config("openai", api_key="", model="gpt-5.6-luna"),
                     max_segment_rows=12,
@@ -265,13 +472,28 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
         self.assertEqual(parse_timecode("01:02.5"), 62.5)
         self.assertEqual(parse_timecode("01:02:03.5"), 3723.5)
         self.assertEqual(speaker_id_from_name("Speaker 12"), "S12")
-        self.assertIn("Summary", PAGE_HTML)
-        self.assertIn("Action items", PAGE_HTML)
+        self.assertIn("Report template", PAGE_HTML)
+        self.assertIn("Report builder", PAGE_HTML)
+        self.assertIn("templateSelect", PAGE_HTML)
+        self.assertIn("templateBuilder", PAGE_HTML)
+        self.assertIn("data-section-prop", PAGE_HTML)
+        self.assertIn("data-field-prop", PAGE_HTML)
+        self.assertIn("render_kind", PAGE_HTML)
+        self.assertIn("evidence_required", PAGE_HTML)
+        self.assertIn("reportTabs", PAGE_HTML)
+        self.assertNotIn("const tabs =", PAGE_HTML)
+        self.assertIn("/api/templates", PAGE_HTML)
+        self.assertIn("/api/templates/save", PAGE_HTML)
+        self.assertIn("/api/templates/delete", PAGE_HTML)
         self.assertIn("/api/generate-async", PAGE_HTML)
         self.assertIn("/api/delete-report", PAGE_HTML)
         self.assertIn("deleteReportBtn", PAGE_HTML)
         self.assertIn("deleteReportLabel", PAGE_HTML)
         self.assertIn("progressPanel", PAGE_HTML)
+        self.assertIn("progressOverlay", PAGE_HTML)
+        self.assertIn('role="dialog"', PAGE_HTML)
+        self.assertIn("closeProgressFooterBtn", PAGE_HTML)
+        self.assertIn("progress-modal-open", PAGE_HTML)
         self.assertIn("data-evidence-id", PAGE_HTML)
         self.assertIn("openEvidenceInTranscript", PAGE_HTML)
         self.assertIn("transcriptRowAliases", PAGE_HTML)

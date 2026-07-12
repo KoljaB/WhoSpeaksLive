@@ -1,0 +1,107 @@
+{
+  "schema_version": "report_template_v1",
+  "template_id": "builtin.portuguese-investigative-newsroom",
+  "name": "Briefing de jornalismo de investigação",
+  "description": "Briefing editorial confidencial para hipóteses, fontes, investigação, verificação, riscos e prazos.",
+  "version": 1,
+  "builtin": true,
+  "language_mode": "pt",
+  "privacy_policy": "local_only",
+  "sections": [
+    {
+      "key": "story_hypotheses",
+      "title": "Hipóteses de investigação",
+      "objective": "Capture editorial story hypotheses as hypotheses, attribute who proposed them, and never present them as verified findings.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "proposed_by", "label": "Proposta por", "type": "speaker", "description": "Pessoa que apresentou a hipótese.", "options": []},
+        {"key": "evidence_status", "label": "Estado da evidência", "type": "enum", "description": "Suficiência da evidência discutida.", "options": ["sem_evidência", "evidência_inicial", "parcialmente_sustentada", "bem_sustentada", "incerta"]}
+      ]
+    },
+    {
+      "key": "source_information",
+      "title": "Informação sobre fontes",
+      "objective": "Record source information mentioned in the meeting without inventing identities, reliability, consent, or publication status.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "source_reference", "label": "Referência da fonte", "type": "text", "description": "Nome, função ou rótulo realmente usado na reunião.", "options": []},
+        {"key": "source_status", "label": "Estado", "type": "enum", "description": "Estado editorial explicitamente discutido.", "options": ["contactada", "por_contactar", "confirmada", "não_confirmada", "incerto"]},
+        {"key": "confidentiality", "label": "Confidencialidade", "type": "enum", "description": "Tratamento de confidencialidade mencionado.", "options": ["confidencial", "publicável", "não_especificado"]}
+      ]
+    },
+    {
+      "key": "research_assignments",
+      "title": "Tarefas de investigação",
+      "objective": "List research assignments with owner and deadline only when explicitly assigned.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "owner", "label": "Responsável", "type": "speaker", "description": "Pessoa designada.", "options": []},
+        {"key": "deadline", "label": "Prazo", "type": "date", "description": "Data ou período referido.", "options": []},
+        {"key": "status", "label": "Estado", "type": "enum", "description": "Confirmação da atribuição.", "options": ["atribuída", "proposta", "a_confirmar"]}
+      ]
+    },
+    {
+      "key": "verification_tasks",
+      "title": "Tarefas de verificação",
+      "objective": "Extract concrete verification work needed for claims, documents, dates, identities, or source accounts.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "claim_or_material", "label": "Afirmação ou material", "type": "text", "description": "Elemento que necessita de verificação.", "options": []},
+        {"key": "owner", "label": "Responsável", "type": "speaker", "description": "Pessoa designada, quando indicada.", "options": []},
+        {"key": "priority", "label": "Prioridade", "type": "enum", "description": "Prioridade editorial suportada pela conversa.", "options": ["alta", "média", "baixa", "incerta"]}
+      ]
+    },
+    {
+      "key": "legal_ethical_concerns",
+      "title": "Questões jurídicas e éticas",
+      "objective": "List legal or ethical concerns raised by participants as concerns requiring review, not as legal conclusions.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "severity",
+      "output_fields": [
+        {"key": "concern_type", "label": "Tipo", "type": "enum", "description": "Categoria principal discutida.", "options": ["jurídica", "ética", "privacidade", "segurança_da_fonte", "outra"]},
+        {"key": "review_owner", "label": "Responsável pela revisão", "type": "speaker", "description": "Pessoa designada, quando indicada.", "options": []}
+      ]
+    },
+    {
+      "key": "deadlines",
+      "title": "Prazos",
+      "objective": "Extract explicit editorial, research, verification, and publication deadlines without inferring missing dates.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "timeline",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "deadline", "label": "Prazo", "type": "date", "description": "Data ou janela temporal mencionada.", "options": []},
+        {"key": "owner", "label": "Responsável", "type": "speaker", "description": "Pessoa responsável, quando atribuída.", "options": []}
+      ]
+    },
+    {
+      "key": "insufficient_evidence_claims",
+      "title": "Afirmações sem evidência suficiente",
+      "objective": "Identify important claims that participants themselves treated as insufficiently supported or that still have explicit verification gaps.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "claim", "label": "Afirmação", "type": "text", "description": "Afirmação que necessita de suporte adicional.", "options": []},
+        {"key": "missing_evidence", "label": "Evidência em falta", "type": "text", "description": "Lacuna explicitamente discutida.", "options": []},
+        {"key": "speaker", "label": "Interveniente", "type": "speaker", "description": "Pessoa associada à afirmação ou à ressalva.", "options": []}
+      ]
+    }
+  ]
+}

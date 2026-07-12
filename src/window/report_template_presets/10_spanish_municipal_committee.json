@@ -1,0 +1,123 @@
+{
+  "schema_version": "report_template_v1",
+  "template_id": "builtin.spanish-municipal-committee",
+  "name": "Acta de comité municipal",
+  "description": "Acta formal en español con orden del día, argumentos, mociones, votaciones, decisiones, acciones y pruebas.",
+  "version": 1,
+  "builtin": true,
+  "language_mode": "es",
+  "privacy_policy": "inherit",
+  "sections": [
+    {
+      "key": "agenda_items",
+      "title": "Puntos del orden del día",
+      "objective": "List the agenda items in meeting order, preserving any explicit item number and the supported disposition of each item.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "item_number", "label": "Número", "type": "number", "description": "Número de orden indicado en la reunión.", "options": []},
+        {"key": "topic", "label": "Asunto", "type": "text", "description": "Asunto tratado.", "options": []},
+        {"key": "disposition", "label": "Resultado", "type": "enum", "description": "Resultado explícito del punto.", "options": ["resuelto", "pendiente", "aplazado", "sin_resultado_claro"]}
+      ]
+    },
+    {
+      "key": "participant_arguments",
+      "title": "Argumentos de los participantes",
+      "objective": "Summarize material arguments and attribute each one to the correct participant without judging motives or persuasiveness.",
+      "max_items": 20,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "speaker", "label": "Participante", "type": "speaker", "description": "Orador que presentó el argumento.", "options": []},
+        {"key": "agenda_item", "label": "Punto del orden del día", "type": "text", "description": "Punto al que se refiere el argumento.", "options": []},
+        {"key": "position", "label": "Posición", "type": "text", "description": "Posición respaldada por la transcripción.", "options": []}
+      ]
+    },
+    {
+      "key": "motions",
+      "title": "Mociones",
+      "objective": "Extract formal motions and their proposer, wording, amendments, and disposition only when supported by the transcript.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "proposed_by", "label": "Proponente", "type": "speaker", "description": "Participante que presentó la moción.", "options": []},
+        {"key": "agenda_item", "label": "Punto", "type": "text", "description": "Punto del orden del día relacionado.", "options": []},
+        {"key": "status", "label": "Estado", "type": "enum", "description": "Resultado procesal de la moción.", "options": ["aprobada", "rechazada", "retirada", "aplazada", "pendiente", "incierta"]}
+      ]
+    },
+    {
+      "key": "decisions",
+      "title": "Acuerdos y decisiones",
+      "objective": "List adopted committee decisions separately from proposals and ambiguous discussion.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "agenda_item", "label": "Punto", "type": "text", "description": "Punto del orden del día relacionado.", "options": []},
+        {"key": "status", "label": "Estado", "type": "enum", "description": "Finalidad de la decisión.", "options": ["decidida", "propuesta", "requiere_revisión"]}
+      ]
+    },
+    {
+      "key": "voting_outcomes",
+      "title": "Resultados de las votaciones",
+      "objective": "Record voting outcomes exactly as announced, including abstentions and absent members only when stated; never infer missing counts.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "motion", "label": "Moción", "type": "text", "description": "Moción sometida a votación.", "options": []},
+        {"key": "votes_for", "label": "A favor", "type": "number", "description": "Número anunciado de votos a favor.", "options": []},
+        {"key": "votes_against", "label": "En contra", "type": "number", "description": "Número anunciado de votos en contra.", "options": []},
+        {"key": "abstentions", "label": "Abstenciones", "type": "number", "description": "Número anunciado de abstenciones.", "options": []},
+        {"key": "outcome", "label": "Resultado", "type": "enum", "description": "Resultado anunciado.", "options": ["aprobada", "rechazada", "empate", "no_anunciado"]}
+      ]
+    },
+    {
+      "key": "action_items",
+      "title": "Tareas acordadas",
+      "objective": "List confirmed action items with responsible people and deadlines only when explicitly assigned.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "owner", "label": "Responsable", "type": "speaker", "description": "Persona asignada.", "options": []},
+        {"key": "deadline", "label": "Plazo", "type": "date", "description": "Fecha o periodo mencionado.", "options": []},
+        {"key": "status", "label": "Asignación", "type": "enum", "description": "Grado de confirmación.", "options": ["asignada", "propuesta", "por_confirmar"]}
+      ]
+    },
+    {
+      "key": "deadlines",
+      "title": "Plazos",
+      "objective": "Extract formal deadlines, future committee dates, and timing windows without inventing calendar values.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "timeline",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "deadline", "label": "Fecha", "type": "date", "description": "Fecha o plazo mencionado.", "options": []},
+        {"key": "owner", "label": "Responsable", "type": "speaker", "description": "Persona responsable, cuando conste.", "options": []}
+      ]
+    },
+    {
+      "key": "unresolved_questions",
+      "title": "Preguntas pendientes",
+      "objective": "List substantive questions that remained unanswered or were explicitly deferred.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "raised_by", "label": "Planteada por", "type": "speaker", "description": "Participante que planteó la pregunta.", "options": []},
+        {"key": "agenda_item", "label": "Punto", "type": "text", "description": "Punto del orden del día relacionado.", "options": []}
+      ]
+    }
+  ]
+}

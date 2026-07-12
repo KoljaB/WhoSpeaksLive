@@ -1,0 +1,102 @@
+{
+  "schema_version": "report_template_v1",
+  "template_id": "builtin.dutch-business-mediation",
+  "name": "Zakelijke mediation",
+  "description": "Neutraal Nederlands mediationverslag dat standpunten, feiten, betwistingen en voorlopige uitkomsten uit elkaar houdt.",
+  "version": 1,
+  "builtin": true,
+  "language_mode": "nl",
+  "privacy_policy": "local_only",
+  "sections": [
+    {
+      "key": "party_positions",
+      "title": "Standpunten van partijen",
+      "objective": "Represent each party's stated position separately and neutrally, attributing it without judging truth or motive.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "party", "label": "Partij", "type": "text", "description": "Partij of vertegenwoordiger aan wie het standpunt is toegeschreven.", "options": []},
+        {"key": "speaker", "label": "Spreker", "type": "speaker", "description": "Spreker die het standpunt uitte.", "options": []}
+      ]
+    },
+    {
+      "key": "agreed_facts",
+      "title": "Erkende feiten",
+      "objective": "List only facts explicitly accepted by all relevant parties; do not promote an uncontested-sounding allegation to an agreed fact.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "agreement_status", "label": "Bevestiging", "type": "enum", "description": "Mate van expliciete overeenstemming.", "options": ["door_allen_erkend", "gedeeltelijk_erkend", "te_controleren"]}
+      ]
+    },
+    {
+      "key": "disputed_claims",
+      "title": "Betwiste beweringen",
+      "objective": "Record allegations and disputed claims with attribution and the opposing response; never state an allegation as established fact.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "asserting_party", "label": "Stellende partij", "type": "text", "description": "Partij die de bewering deed.", "options": []},
+        {"key": "response", "label": "Reactie", "type": "text", "description": "Belegde reactie van de andere partij.", "options": []},
+        {"key": "claim_status", "label": "Status", "type": "enum", "description": "Feitelijke status van de bewering.", "options": ["betwist", "onbevestigd", "gedeeltelijk_erkend"]}
+      ]
+    },
+    {
+      "key": "proposals",
+      "title": "Voorstellen",
+      "objective": "List settlement or process proposals and identify the proposing party without implying acceptance.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "proposed_by", "label": "Voorgesteld door", "type": "speaker", "description": "Spreker die het voorstel deed.", "options": []},
+        {"key": "response_status", "label": "Reactie", "type": "enum", "description": "Expliciete reactie op het voorstel.", "options": ["aanvaard", "afgewezen", "in_overweging", "geen_reactie"]}
+      ]
+    },
+    {
+      "key": "concessions",
+      "title": "Concessies",
+      "objective": "Capture explicit concessions or changes in position and attribute each one to the offering party.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "offered_by", "label": "Aangeboden door", "type": "speaker", "description": "Spreker of partij die de concessie deed.", "options": []},
+        {"key": "conditions", "label": "Voorwaarden", "type": "text", "description": "Expliciet genoemde voorwaarden.", "options": []}
+      ]
+    },
+    {
+      "key": "tentative_agreements",
+      "title": "Voorlopige afspraken",
+      "objective": "List tentative agreements while clearly preserving their provisional nature and any stated conditions.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "status", "label": "Status", "type": "enum", "description": "Mate van finaliteit.", "options": ["voorlopig", "onder_voorbehoud", "definitief", "onduidelijk"]},
+        {"key": "conditions", "label": "Voorwaarden", "type": "text", "description": "Genoemde voorwaarden of vervolgstappen.", "options": []}
+      ]
+    },
+    {
+      "key": "unresolved_issues",
+      "title": "Onopgeloste kwesties",
+      "objective": "Summarize issues that remain unresolved and each party's supported position at the close of the session.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "next_step", "label": "Vervolgstap", "type": "text", "description": "Alleen een expliciet besproken vervolgstap.", "options": []}
+      ]
+    }
+  ]
+}

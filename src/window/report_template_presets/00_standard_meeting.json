@@ -1,0 +1,165 @@
+{
+  "schema_version": "report_template_v1",
+  "template_id": "builtin.standard-meeting",
+  "name": "Standard Meeting Intelligence",
+  "description": "The complete existing meeting-intelligence report rebuilt as a reusable flat report template.",
+  "version": 1,
+  "builtin": true,
+  "language_mode": "inherit",
+  "privacy_policy": "inherit",
+  "sections": [
+    {
+      "key": "speaker_map",
+      "title": "Speaker map",
+      "objective": "Map transcript speaker labels to supported names or roles; preserve the original label whenever identity is uncertain.",
+      "max_items": 8,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "speaker", "label": "Speaker", "type": "speaker", "description": "Verified speaker label or identity.", "options": []},
+        {"key": "role", "label": "Role", "type": "text", "description": "Role supported by the transcript.", "options": []}
+      ]
+    },
+    {
+      "key": "executive_summary",
+      "title": "Executive summary",
+      "objective": "Summarize the meeting's concrete outcomes, unresolved issues, and operational context concisely.",
+      "max_items": 3,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "relevance",
+      "output_fields": []
+    },
+    {
+      "key": "structured_brief",
+      "title": "Structured brief",
+      "objective": "Create a compact topic brief showing the main topics, outcomes, and unresolved follow-up.",
+      "max_items": 5,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "topic", "label": "Topic", "type": "text", "description": "The topic discussed.", "options": []},
+        {"key": "outcome", "label": "Outcome", "type": "text", "description": "Outcome or current state.", "options": []}
+      ]
+    },
+    {
+      "key": "decisions",
+      "title": "Decisions",
+      "objective": "Extract final decisions and clearly mark proposals or ambiguous decision candidates as not final.",
+      "max_items": 6,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "status", "label": "Status", "type": "enum", "description": "Decision finality.", "options": ["decided", "proposed", "needs_review"]},
+        {"key": "decision_maker", "label": "Decision maker", "type": "speaker", "description": "Speaker responsible for or announcing the decision.", "options": []}
+      ]
+    },
+    {
+      "key": "action_items",
+      "title": "Action items",
+      "objective": "Extract confirmed and candidate follow-up work, including an owner and deadline only when supported.",
+      "max_items": 6,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "owner", "label": "Owner", "type": "speaker", "description": "Assigned person or speaker label.", "options": []},
+        {"key": "deadline", "label": "Deadline", "type": "date", "description": "Explicit due date or timing window.", "options": []},
+        {"key": "status", "label": "Status", "type": "enum", "description": "Assignment confidence.", "options": ["assigned", "candidate", "needs_review"]}
+      ]
+    },
+    {
+      "key": "open_questions",
+      "title": "Open questions",
+      "objective": "List questions that remained unanswered or materially unresolved at the end of the meeting.",
+      "max_items": 6,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "raised_by", "label": "Raised by", "type": "speaker", "description": "Speaker who raised the question.", "options": []}
+      ]
+    },
+    {
+      "key": "risks",
+      "title": "Risks",
+      "objective": "Identify risks, blockers, and material uncertainties without overstating their likelihood or severity.",
+      "max_items": 6,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "severity",
+      "output_fields": [
+        {"key": "severity", "label": "Severity", "type": "enum", "description": "Supported severity assessment.", "options": ["critical", "high", "medium", "low", "unclear"]},
+        {"key": "mitigation", "label": "Mitigation", "type": "text", "description": "Mitigation actually discussed.", "options": []}
+      ]
+    },
+    {
+      "key": "discussion_threads",
+      "title": "Discussion threads",
+      "objective": "Identify coherent topics in the order in which the meeting moved through them.",
+      "max_items": 8,
+      "evidence_required": true,
+      "render_kind": "timeline",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "start_time", "label": "Start", "type": "timestamp", "description": "Approximate first supporting transcript time.", "options": []},
+        {"key": "outcome", "label": "Outcome", "type": "text", "description": "Topic outcome or unresolved state.", "options": []}
+      ]
+    },
+    {
+      "key": "disagreements",
+      "title": "Disagreements",
+      "objective": "Capture explicit disagreements and unresolved trade-offs while representing each supported position neutrally.",
+      "max_items": 6,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "participants", "label": "Participants", "type": "text", "description": "Speakers or parties involved.", "options": []},
+        {"key": "resolution_status", "label": "Resolution", "type": "enum", "description": "Whether the disagreement was resolved.", "options": ["resolved", "unresolved", "partially_resolved", "unclear"]}
+      ]
+    },
+    {
+      "key": "deadlines",
+      "title": "Deadlines",
+      "objective": "Extract explicit deadlines, future meetings, and timing windows without inventing calendar dates.",
+      "max_items": 6,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "deadline", "label": "Deadline", "type": "date", "description": "Stated date or timing window.", "options": []},
+        {"key": "owner", "label": "Owner", "type": "speaker", "description": "Responsible speaker when assigned.", "options": []}
+      ]
+    },
+    {
+      "key": "speaker_participation",
+      "title": "Speaker participation",
+      "objective": "Summarize each speaker's concrete contributions without making unsupported judgments about performance or intent.",
+      "max_items": 8,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "speaker", "label": "Speaker", "type": "speaker", "description": "Transcript speaker or verified identity.", "options": []},
+        {"key": "contribution", "label": "Contribution", "type": "text", "description": "Main supported contribution.", "options": []}
+      ]
+    },
+    {
+      "key": "ask_this_meeting",
+      "title": "Ask this meeting",
+      "objective": "Provide useful grounded question-and-answer examples whose answers are supported by the meeting evidence.",
+      "max_items": 6,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "question", "label": "Question", "type": "text", "description": "Question answered from the transcript.", "options": []},
+        {"key": "answer", "label": "Answer", "type": "text", "description": "Evidence-grounded answer.", "options": []}
+      ]
+    }
+  ]
+}

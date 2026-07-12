@@ -1,0 +1,95 @@
+{
+  "schema_version": "report_template_v1",
+  "template_id": "builtin.italian-film-production",
+  "name": "Riunione di produzione cinematografica",
+  "description": "Rapporto operativo italiano per riunioni di inizio e fine giornata di riprese.",
+  "version": 1,
+  "builtin": true,
+  "language_mode": "it",
+  "privacy_policy": "inherit",
+  "sections": [
+    {
+      "key": "schedule_changes",
+      "title": "Modifiche al programma",
+      "objective": "Extract stated shooting-schedule changes and distinguish confirmed changes from suggestions under discussion.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "timeline",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "scene", "label": "Scena", "type": "text", "description": "Numero o identificatore della scena, se citato.", "options": []},
+        {"key": "new_time", "label": "Nuovo orario", "type": "timestamp", "description": "Orario di ripresa esplicitamente indicato.", "options": []},
+        {"key": "status", "label": "Stato", "type": "enum", "description": "Conferma della modifica.", "options": ["confermato", "suggerito", "da_verificare"]}
+      ]
+    },
+    {
+      "key": "scene_specific_decisions",
+      "title": "Decisioni per scena",
+      "objective": "List creative and operational decisions under the correct scene identifier and preserve decision finality.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "scene", "label": "Scena", "type": "text", "description": "Identificatore della scena citato.", "options": []},
+        {"key": "status", "label": "Stato", "type": "enum", "description": "Decisione o proposta.", "options": ["deciso", "suggerito", "da_verificare"]},
+        {"key": "decision_maker", "label": "Responsabile della decisione", "type": "speaker", "description": "Interlocutore associato alla decisione.", "options": []}
+      ]
+    },
+    {
+      "key": "equipment_requirements",
+      "title": "Requisiti di attrezzatura",
+      "objective": "Capture equipment, quantity, configuration, and availability requirements mentioned for upcoming work.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "equipment", "label": "Attrezzatura", "type": "text", "description": "Attrezzatura o configurazione richiesta.", "options": []},
+        {"key": "scene", "label": "Scena", "type": "text", "description": "Scena associata, se citata.", "options": []},
+        {"key": "owner", "label": "Responsabile", "type": "speaker", "description": "Persona o reparto assegnato.", "options": []}
+      ]
+    },
+    {
+      "key": "continuity_concerns",
+      "title": "Problemi di continuità",
+      "objective": "Identify visual, performance, costume, prop, lighting, or story-continuity concerns without resolving ambiguities by invention.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "scene", "label": "Scena", "type": "text", "description": "Scena interessata.", "options": []},
+        {"key": "status", "label": "Stato", "type": "enum", "description": "Stato del problema.", "options": ["aperto", "risolto", "da_verificare"]}
+      ]
+    },
+    {
+      "key": "responsibilities",
+      "title": "Responsabilità",
+      "objective": "List assigned production responsibilities and deadlines, using real speakers or named departments only when supported.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "owner", "label": "Responsabile", "type": "speaker", "description": "Persona esplicitamente assegnata.", "options": []},
+        {"key": "department", "label": "Reparto", "type": "text", "description": "Reparto citato.", "options": []},
+        {"key": "deadline", "label": "Scadenza", "type": "date", "description": "Scadenza o finestra temporale citata.", "options": []}
+      ]
+    },
+    {
+      "key": "filming_delay_risks",
+      "title": "Rischi di ritardo",
+      "objective": "Identify issues that could delay filming and rank severity only when the discussion supports that assessment.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "severity",
+      "output_fields": [
+        {"key": "severity", "label": "Gravità", "type": "enum", "description": "Possibile impatto sulle riprese.", "options": ["critica", "alta", "media", "bassa", "incerta"]},
+        {"key": "scene", "label": "Scena", "type": "text", "description": "Scena interessata, se indicata.", "options": []},
+        {"key": "mitigation", "label": "Mitigazione", "type": "text", "description": "Soluzione effettivamente discussa.", "options": []}
+      ]
+    }
+  ]
+}
