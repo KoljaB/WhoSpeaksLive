@@ -1,0 +1,78 @@
+{
+  "schema_version": "report_template_v1",
+  "template_id": "builtin.german-works-council",
+  "name": "Protokoll der Betriebsratssitzung",
+  "description": "Vertrauliches, strukturiertes deutsches Sitzungsprotokoll für Geschäftsleitung und Betriebsrat.",
+  "version": 1,
+  "builtin": true,
+  "language_mode": "de",
+  "privacy_policy": "local_only",
+  "sections": [
+    {
+      "key": "discussed_issues",
+      "title": "Besprochene Themen",
+      "objective": "List the substantive workplace, personnel, and organizational issues discussed, in meeting order, without exposing unsupported personal details.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "topic", "label": "Thema", "type": "text", "description": "Kurzbezeichnung des besprochenen Themas.", "options": []},
+        {"key": "status", "label": "Stand", "type": "enum", "description": "Ergebnis des Gesprächs.", "options": ["geklärt", "offen", "vertagt", "unklar"]}
+      ]
+    },
+    {
+      "key": "decisions",
+      "title": "Beschlüsse",
+      "objective": "Extract only supported final decisions and keep proposals clearly separate from adopted decisions.",
+      "max_items": 10,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "status", "label": "Status", "type": "enum", "description": "Verbindlichkeit des Beschlusses.", "options": ["beschlossen", "vorgeschlagen", "prüfbedürftig"]},
+        {"key": "announced_by", "label": "Festgehalten durch", "type": "speaker", "description": "Sprecherkennung der belegten Beschlussaussage.", "options": []}
+      ]
+    },
+    {
+      "key": "unresolved_disagreements",
+      "title": "Offene Meinungsverschiedenheiten",
+      "objective": "Describe unresolved differences between management and works-council positions neutrally and without inferring motives.",
+      "max_items": 10,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "management_position", "label": "Position der Geschäftsleitung", "type": "text", "description": "Belegte Position der Geschäftsleitung.", "options": []},
+        {"key": "works_council_position", "label": "Position des Betriebsrats", "type": "text", "description": "Belegte Position des Betriebsrats.", "options": []}
+      ]
+    },
+    {
+      "key": "action_items",
+      "title": "Maßnahmen",
+      "objective": "List agreed work and follow-up, with a responsible person and due date only when explicitly supported.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "owner", "label": "Verantwortlich", "type": "speaker", "description": "Zugeordnete Person oder Sprecherkennung.", "options": []},
+        {"key": "deadline", "label": "Termin", "type": "date", "description": "Genannter Termin oder Zeitraum.", "options": []},
+        {"key": "status", "label": "Zuweisung", "type": "enum", "description": "Verbindlichkeit der Aufgabe.", "options": ["zugewiesen", "vorgeschlagen", "unklar"]}
+      ]
+    },
+    {
+      "key": "responsibilities",
+      "title": "Verantwortlichkeiten",
+      "objective": "Summarize explicit ongoing responsibilities mentioned in the meeting, distinct from one-time action items.",
+      "max_items": 10,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "responsible_person", "label": "Verantwortliche Person", "type": "speaker", "description": "Belegte Person oder Sprecherkennung.", "options": []},
+        {"key": "scope", "label": "Zuständigkeit", "type": "text", "description": "Belegter Verantwortungsbereich.", "options": []}
+      ]
+    }
+  ]
+}

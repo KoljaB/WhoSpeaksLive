@@ -1,0 +1,92 @@
+{
+  "schema_version": "report_template_v1",
+  "template_id": "builtin.hebrew-cybersecurity-incident",
+  "name": "דוח חדר אירועי סייבר",
+  "description": "דוח כרונולוגי מבוסס ראיות לצוות תגובה לאירוע סייבר.",
+  "version": 1,
+  "builtin": true,
+  "language_mode": "he",
+  "privacy_policy": "local_only",
+  "sections": [
+    {
+      "key": "incident_timeline",
+      "title": "ציר זמן של האירוע",
+      "objective": "Build a chronological incident timeline that keeps observations, hypotheses, decisions, actions, and risks explicitly classified.",
+      "max_items": 20,
+      "evidence_required": true,
+      "render_kind": "timeline",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "event_time", "label": "זמן", "type": "timestamp", "description": "זמן הקטע התומך בתמליל.", "options": []},
+        {"key": "event_type", "label": "סוג אירוע", "type": "enum", "description": "סיווג מפורש של הפריט.", "options": ["תצפית", "השערה", "החלטה", "פעולה", "סיכון"]},
+        {"key": "speaker", "label": "דובר", "type": "speaker", "description": "הדובר שדיווח או הציע את הפריט.", "options": []}
+      ]
+    },
+    {
+      "key": "observations",
+      "title": "תצפיות",
+      "objective": "List direct observations and reported system facts separately from interpretations, preserving the reporting speaker and time.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "observed_at", "label": "זמן", "type": "timestamp", "description": "זמן התצפית או הדיווח, אם צוין.", "options": []},
+        {"key": "reported_by", "label": "דווח על ידי", "type": "speaker", "description": "הדובר המדווח.", "options": []}
+      ]
+    },
+    {
+      "key": "hypotheses",
+      "title": "השערות",
+      "objective": "Capture possible explanations under investigation and never present an unconfirmed hypothesis as an established incident fact.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "proposed_by", "label": "הוצע על ידי", "type": "speaker", "description": "הדובר שהעלה את ההשערה.", "options": []},
+        {"key": "status", "label": "סטטוס", "type": "enum", "description": "מצב הבדיקה.", "options": ["לא_נבדקה", "בבדיקה", "נתמכת", "נשללה", "לא_ברור"]}
+      ]
+    },
+    {
+      "key": "decisions",
+      "title": "החלטות",
+      "objective": "Extract incident-response decisions and separate adopted decisions from proposals or ambiguous statements.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "status", "label": "סטטוס", "type": "enum", "description": "סופיות ההחלטה.", "options": ["הוחלט", "הוצע", "דורש_בדיקה"]},
+        {"key": "decision_maker", "label": "מקבל ההחלטה", "type": "speaker", "description": "הדובר הקשור להחלטה.", "options": []}
+      ]
+    },
+    {
+      "key": "assigned_actions",
+      "title": "פעולות שהוקצו",
+      "objective": "List response actions with an owner, urgency, and deadline only when stated in the incident discussion.",
+      "max_items": 20,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "severity",
+      "output_fields": [
+        {"key": "owner", "label": "אחראי", "type": "speaker", "description": "האדם שהוקצה לפעולה.", "options": []},
+        {"key": "urgency", "label": "דחיפות", "type": "enum", "description": "דחיפות נתמכת בדיון.", "options": ["מיידית", "גבוהה", "רגילה", "לא_ברור"]},
+        {"key": "deadline", "label": "מועד", "type": "date", "description": "מועד או חלון זמן שנאמרו.", "options": []}
+      ]
+    },
+    {
+      "key": "unresolved_risks",
+      "title": "סיכונים לא פתורים",
+      "objective": "Identify security, operational, customer, and legal risks that remained unresolved, without inflating severity.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "severity",
+      "output_fields": [
+        {"key": "severity", "label": "חומרה", "type": "enum", "description": "חומרה כפי שנתמכת בשיחה.", "options": ["קריטית", "גבוהה", "בינונית", "נמוכה", "לא_ברור"]},
+        {"key": "risk_area", "label": "תחום", "type": "enum", "description": "תחום ההשפעה העיקרי.", "options": ["אבטחה", "תפעול", "לקוחות", "משפטי", "אחר"]}
+      ]
+    }
+  ]
+}

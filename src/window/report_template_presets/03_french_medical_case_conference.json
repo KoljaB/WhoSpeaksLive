@@ -1,0 +1,79 @@
+{
+  "schema_version": "report_template_v1",
+  "template_id": "builtin.french-medical-case-conference",
+  "name": "Conférence de cas médicaux",
+  "description": "Rapport clinique structuré et confidentiel qui conserve les cas séparés et relie les points importants à leurs preuves.",
+  "version": 1,
+  "builtin": true,
+  "language_mode": "fr",
+  "privacy_policy": "local_only",
+  "sections": [
+    {
+      "key": "discussed_cases",
+      "title": "Cas discutés",
+      "objective": "Summarize each discussed case separately using only the case identifier used in the transcript; never merge details from different patients.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "case_reference", "label": "Référence du cas", "type": "text", "description": "Identifiant non inventé employé pendant la réunion.", "options": []},
+        {"key": "clinical_context", "label": "Contexte", "type": "text", "description": "Contexte explicitement discuté.", "options": []}
+      ]
+    },
+    {
+      "key": "proposed_next_steps",
+      "title": "Prochaines étapes proposées",
+      "objective": "Extract proposed clinical or coordination next steps per case and distinguish proposals from confirmed plans.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "case_reference", "label": "Cas", "type": "text", "description": "Référence du cas concerné.", "options": []},
+        {"key": "status", "label": "Statut", "type": "enum", "description": "Degré de confirmation.", "options": ["proposé", "confirmé", "à_revoir"]},
+        {"key": "owner", "label": "Responsable", "type": "speaker", "description": "Personne explicitement désignée.", "options": []}
+      ]
+    },
+    {
+      "key": "open_questions",
+      "title": "Questions ouvertes",
+      "objective": "List unresolved clinical and coordination questions, keeping each item attached to the correct case.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "case_reference", "label": "Cas", "type": "text", "description": "Référence du cas concerné.", "options": []},
+        {"key": "raised_by", "label": "Question posée par", "type": "speaker", "description": "Intervenant ayant formulé la question.", "options": []}
+      ]
+    },
+    {
+      "key": "responsibilities",
+      "title": "Responsabilités",
+      "objective": "Record explicit care or coordination responsibilities without guessing an owner from professional role alone.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "case_reference", "label": "Cas", "type": "text", "description": "Référence du cas concerné.", "options": []},
+        {"key": "responsible_person", "label": "Responsable", "type": "speaker", "description": "Personne explicitement responsable.", "options": []},
+        {"key": "deadline", "label": "Échéance", "type": "date", "description": "Échéance explicitement mentionnée.", "options": []}
+      ]
+    },
+    {
+      "key": "decisions",
+      "title": "Décisions",
+      "objective": "List confirmed decisions per case and mark any ambiguous finality for human review.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "case_reference", "label": "Cas", "type": "text", "description": "Référence du cas concerné.", "options": []},
+        {"key": "status", "label": "Statut", "type": "enum", "description": "Finalité de la décision.", "options": ["décidé", "proposé", "à_revoir"]}
+      ]
+    }
+  ]
+}

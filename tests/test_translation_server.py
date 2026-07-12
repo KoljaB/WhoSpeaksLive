@@ -54,6 +54,10 @@ class FakeProvider(TranslationProvider):
         self.active = 0
         self.max_active = 0
         self.lock = threading.Lock()
+        self.warmup_calls = 0
+
+    def warmup(self) -> None:
+        self.warmup_calls += 1
 
     def status(self) -> ProviderStatus:
         return ProviderStatus(
@@ -139,6 +143,15 @@ class TranslationServerTests(unittest.TestCase):
         self.assertEqual(payload["model"], NLLB_MODEL_ID)
         self.assertTrue(payload["capabilities"]["local"])
         self.assertEqual(payload["license"]["identifier"], "CC-BY-NC-4.0")
+
+    def test_sidecar_warmup_prepares_provider_before_serving(self) -> None:
+        provider = FakeProvider()
+        sidecar = TranslationSidecar(TranslationServerConfig(), provider=provider)
+        self.addCleanup(sidecar.close)
+
+        sidecar.warmup()
+
+        self.assertEqual(provider.warmup_calls, 1)
 
     def test_translate_accepts_source_text_or_text_and_preserves_context(self) -> None:
         provider = FakeProvider()

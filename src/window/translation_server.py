@@ -147,6 +147,12 @@ class TranslationSidecar:
             "model_metadata": metadata,
         }
 
+    def warmup(self) -> None:
+        """Load provider resources before the HTTP endpoint is made available."""
+
+        with self._translation_lock:
+            self.provider.warmup()
+
     def translate_payload(self, payload: Mapping[str, Any]) -> dict[str, Any]:
         text_value = payload.get("source_text")
         if text_value is None:
@@ -356,11 +362,24 @@ def config_from_args(args: argparse.Namespace) -> TranslationServerConfig:
 
 def run_server(args: argparse.Namespace) -> None:
     sidecar = TranslationSidecar(config_from_args(args))
-    server = ThreadingHTTPServer((args.host, args.port), make_handler(sidecar, quiet=not args.verbose_http))
+    print(
+        f"Warming WhoSpeaks translation model ({sidecar.config.model_profile}, "
+        f"{sidecar.provider.model_id})...",
+        flush=True,
+    )
+    try:
+        sidecar.warmup()
+    except Exception:
+        sidecar.close()
+        raise
     health = sidecar.health()
+    if not health["ok"] or health["readiness"] != "ready":
+        sidecar.close()
+        raise RuntimeError(f"translation model warmup did not become ready: {health['detail']}")
+    server = ThreadingHTTPServer((args.host, args.port), make_handler(sidecar, quiet=not args.verbose_http))
     print(
         f"WhoSpeaks translation server: http://{args.host}:{args.port} "
-        f"({health['model_profile']}, {health['model']}; model loads on first request)",
+        f"({health['model_profile']}, {health['model']}; ready)",
         flush=True,
     )
     license_info = health.get("license")

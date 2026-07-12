@@ -23,6 +23,7 @@ Follow these in order for a new machine:
 
 - [Live window workflow](live-window-workflow.md): run a media session, watch live speaker labels, and export results.
 - [Meeting intelligence server](meeting-intelligence-server.md): generate LLM meeting reports from saved transcripts, review evidence, and recreate cached reports.
+- [Custom reports](custom-reports.md): inspect predefined report templates, build reusable flat-section reports, and configure layouts, fields, language, privacy, and evidence.
 - [Live translation](translation.md): configure compact multi-language transcript views and local, sidecar, or LLM translation providers.
 - [Spanish executive meeting](spanish-executive-meeting.md): operate a six-person weekly leadership meeting with live Spanish transcription and an automatic Spanish report.
 - [Speaker libraries](speaker-libraries.md): save, load, import, export, and reuse known speakers.
@@ -44,6 +45,7 @@ Follow these in order for a new machine:
 
 - [CLI reference](cli-reference.md): complete parameter reference for installed commands and helper modules.
 - [Meeting intelligence server](meeting-intelligence-server.md): standalone report-generation server, LLM setup, cache behavior, and evidence links.
+- [Custom reports](custom-reports.md): report-template schema, predefined use-case reports, generation behavior, cache identity, and current limitations.
 - [Technical description](technical-description.md): the concepts behind ASR windows, embeddings, live speakers, and final speakers.
 - [Architecture](architecture.md): how audio, ASR, embeddings, memory, and the browser UI interact.
 - [Troubleshooting](troubleshooting.md): common failures and concrete checks.

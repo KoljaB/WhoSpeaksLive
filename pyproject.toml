@@ -161,4 +161,9 @@ where = ["src", "vendor"]
 [tool.setuptools.package-data]
 stream2sentence = ["data/*.json"]
 RealtimeSTT = ["assets/**/*"]
-window = ["assets/flags/LICENSE", "assets/flags/README.md", "assets/flags/4x3/*.svg"]
+window = [
+    "assets/flags/LICENSE",
+    "assets/flags/README.md",
+    "assets/flags/4x3/*.svg",
+    "report_template_presets/*.json",
+]

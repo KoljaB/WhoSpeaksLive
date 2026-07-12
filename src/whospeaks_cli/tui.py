@@ -653,6 +653,7 @@ class WhoSpeaksSetupApp(App[str]):
         self.live_server_state = "stopped"
         self.reports_server_state = "stopped"
         self.translation_server_state = "stopped"
+        self.launch_live_when_translation_ready = False
         self.last_server_probe_at = 0.0
         self.install_cancelled = False
         self.active_operation = ""
@@ -1335,6 +1336,8 @@ class WhoSpeaksSetupApp(App[str]):
                     and self._server_port_accepting(self.profile.host, self.profile.translation_port)
                 ),
             }
+        translation_became_ready = False
+        translation_failed = False
         for kind in ("live", "reports", "translation"):
             process_attr = f"{kind}_server_process"
             state_attr = f"{kind}_server_state"
@@ -1355,12 +1358,33 @@ class WhoSpeaksSetupApp(App[str]):
                 setattr(self, process_attr, None)
                 label = self._server_label(kind)
                 self._append_log(f"{label} exited with code {return_code}.")
-            if getattr(self, state_attr) != next_state:
+            previous_state = getattr(self, state_attr)
+            if previous_state != next_state:
                 setattr(self, state_attr, next_state)
                 changed = True
+                if kind == "translation" and next_state == "running":
+                    translation_became_ready = True
+                if kind == "translation" and next_state == "failed":
+                    translation_failed = True
         if changed:
             self._render_server_states()
             self._sync_action_buttons()
+        if translation_became_ready:
+            self._set_feedback(
+                "success",
+                "Translation server ready",
+                f"Translation API on http://{self.profile.host}:{self.profile.translation_port}/",
+            )
+        if self.launch_live_when_translation_ready and translation_became_ready:
+            self.launch_live_when_translation_ready = False
+            self._start_live_server()
+        elif self.launch_live_when_translation_ready and translation_failed:
+            self.launch_live_when_translation_ready = False
+            self._set_feedback(
+                "error",
+                "Translation warm-up failed",
+                "The live server was not started. Check the translation server window for the model-loading error.",
+            )
 
     @staticmethod
     def _server_port_accepting(host: str, port: int) -> bool:
@@ -1770,8 +1794,8 @@ class WhoSpeaksSetupApp(App[str]):
             return False
         self._set_feedback(
             "success",
-            "Translation server starting in another window",
-            f"Translation API on http://{self.profile.host}:{self.profile.translation_port}/",
+            "Translation model warming in another window",
+            "The API URL will become available after the model reports ready.",
         )
         return True
 
@@ -1981,12 +2005,23 @@ class WhoSpeaksSetupApp(App[str]):
             return
         if self.profile.reports_enabled and not self._process_is_running(self.reports_server_process):
             self._start_reports_server(save_settings=False)
-        if (
+        translation_required = (
             self.profile.translation_enabled
             and self.profile.translation_provider == "sidecar"
-            and not self._process_is_running(self.translation_server_process)
+        )
+        if translation_required and not self._server_port_accepting(
+            self.profile.host, self.profile.translation_port
         ):
-            self._start_translation_server(save_settings=False)
+            if not self._process_is_running(self.translation_server_process):
+                if not self._start_translation_server(save_settings=False):
+                    return
+            self.launch_live_when_translation_ready = True
+            self._set_feedback(
+                "running",
+                "Waiting for translation warm-up",
+                "The live URL will be started only after the translation model is ready.",
+            )
+            return
         self._start_live_server()
 
     def _show_activity(self) -> None:

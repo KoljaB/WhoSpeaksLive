@@ -1,0 +1,110 @@
+{
+  "schema_version": "report_template_v1",
+  "template_id": "builtin.turkish-factory-shift-handover",
+  "name": "Fabrika vardiya devir raporu",
+  "description": "Acil güvenlik konularını rutin işletme notlarından ayıran kısa Türkçe vardiya devir raporu.",
+  "version": 1,
+  "builtin": true,
+  "language_mode": "tr",
+  "privacy_policy": "inherit",
+  "sections": [
+    {
+      "key": "urgent_safety_issues",
+      "title": "Acil güvenlik konuları",
+      "objective": "Identify only safety issues that the discussion supports as potentially urgent; preserve uncertainty and do not downgrade explicit danger.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "severity",
+      "output_fields": [
+        {"key": "severity", "label": "Önem derecesi", "type": "enum", "description": "Toplantıda desteklenen aciliyet.", "options": ["kritik", "yüksek", "belirsiz"]},
+        {"key": "equipment", "label": "Ekipman", "type": "text", "description": "Etkilenen makine veya alan.", "options": []},
+        {"key": "owner", "label": "Sorumlu", "type": "speaker", "description": "Açıkça görevlendirilen kişi.", "options": []},
+        {"key": "immediate_action", "label": "Acil işlem", "type": "text", "description": "Konuşmada belirtilen acil işlem.", "options": []}
+      ]
+    },
+    {
+      "key": "equipment_problems",
+      "title": "Ekipman sorunları",
+      "objective": "List equipment faults, abnormal conditions, and affected production areas with supported operational status.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "severity",
+      "output_fields": [
+        {"key": "equipment", "label": "Ekipman", "type": "text", "description": "Makine, hat veya sistem adı.", "options": []},
+        {"key": "operational_status", "label": "Durum", "type": "enum", "description": "Belirtilen çalışma durumu.", "options": ["duruşta", "kısıtlı", "çalışıyor", "belirsiz"]},
+        {"key": "severity", "label": "Önem derecesi", "type": "enum", "description": "Toplantıda desteklenen etki.", "options": ["yüksek", "orta", "düşük", "belirsiz"]}
+      ]
+    },
+    {
+      "key": "temporary_workarounds",
+      "title": "Geçici çözümler",
+      "objective": "Capture temporary workarounds in use or proposed, including limitations and safety caveats actually mentioned.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "equipment", "label": "Ekipman", "type": "text", "description": "İlgili makine veya süreç.", "options": []},
+        {"key": "status", "label": "Durum", "type": "enum", "description": "Çözümün kullanım durumu.", "options": ["uygulanıyor", "önerildi", "doğrulanmalı"]},
+        {"key": "limitations", "label": "Sınırlamalar", "type": "text", "description": "Belirtilen sınırlamalar veya uyarılar.", "options": []}
+      ]
+    },
+    {
+      "key": "routine_safety_concerns",
+      "title": "Rutin güvenlik notları",
+      "objective": "List non-urgent safety reminders and monitoring needs separately from potentially urgent safety issues.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "area", "label": "Alan", "type": "text", "description": "İlgili alan, ekipman veya faaliyet.", "options": []},
+        {"key": "follow_up", "label": "Takip", "type": "text", "description": "Belirtilen rutin takip.", "options": []}
+      ]
+    },
+    {
+      "key": "unfinished_maintenance",
+      "title": "Tamamlanmamış bakım işleri",
+      "objective": "List maintenance work that remains incomplete, with state, responsible staff, and deadline only when stated.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "equipment", "label": "Ekipman", "type": "text", "description": "Bakım yapılan ekipman.", "options": []},
+        {"key": "owner", "label": "Sorumlu", "type": "speaker", "description": "Görevlendirilen kişi.", "options": []},
+        {"key": "deadline", "label": "Termin", "type": "date", "description": "Belirtilen tamamlanma tarihi veya zaman aralığı.", "options": []}
+      ]
+    },
+    {
+      "key": "production_interruptions",
+      "title": "Üretim kesintileri",
+      "objective": "Record production stops, slowdowns, and quality-impacting interruptions, including duration only when reported.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "timeline",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "line_or_process", "label": "Hat veya süreç", "type": "text", "description": "Etkilenen üretim alanı.", "options": []},
+        {"key": "duration", "label": "Süre", "type": "text", "description": "Açıkça belirtilen kesinti süresi.", "options": []},
+        {"key": "resolved", "label": "Çözüldü", "type": "boolean", "description": "Kesintinin toplantıda çözülmüş olarak bildirilip bildirilmediği.", "options": []}
+      ]
+    },
+    {
+      "key": "follow_up_actions",
+      "title": "Takip işlemleri",
+      "objective": "Consolidate required follow-up actions with explicit owners, priority, and due dates, excluding merely hypothetical work.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "severity",
+      "output_fields": [
+        {"key": "owner", "label": "Sorumlu", "type": "speaker", "description": "Açıkça görevlendirilen kişi.", "options": []},
+        {"key": "priority", "label": "Öncelik", "type": "enum", "description": "Toplantıda desteklenen öncelik.", "options": ["acil", "yüksek", "rutin", "belirsiz"]},
+        {"key": "deadline", "label": "Termin", "type": "date", "description": "Belirtilen tarih veya zaman aralığı.", "options": []}
+      ]
+    }
+  ]
+}

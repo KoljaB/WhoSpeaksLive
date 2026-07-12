@@ -66,14 +66,32 @@ class TranslationUiContractTests(unittest.TestCase):
         self.assertIn("licenseLabel", HTML)
         self.assertIn("translationProvider.title = translationProviderNotice();", HTML)
 
-    def test_all_completed_translations_use_the_same_text_size_and_show_flags(self) -> None:
+    def test_translation_text_style_stays_stable_across_states(self) -> None:
         self.assertIn(".translation-line { min-width:0; color:#E8EEF5; font-size:15px;", HTML)
-        self.assertIn(".translation-line.translation-additional { color:#D7DEE8; }", HTML)
-        self.assertNotIn(".translation-line.translation-additional { color:#D7DEE8; font-size", HTML)
+        self.assertIn(".translation-line.translation-additional { color:#E8EEF5; }", HTML)
+        self.assertIn(".translation-line.translation-pending, .translation-line.translation-error { color:#E8EEF5; font-size:15px; }", HTML)
+        self.assertIn(".text { color:#E8EEF5; font-size:15px; line-height:1.34; }", HTML)
+        self.assertIn(".text.translation-secondary { color:#E8EEF5; font-size:15px; line-height:1.34;", HTML)
+        self.assertNotIn(".text.translation-secondary::before", HTML)
+
+    def test_language_labels_support_flag_name_and_code_combinations(self) -> None:
+        self.assertIn('id="translationLanguageLabelMode"', HTML)
+        self.assertIn('<option value="flag">Flag only</option>', HTML)
+        self.assertIn('<option value="flag_name">Flag + full name</option>', HTML)
+        self.assertIn('<option value="name">Full name only</option>', HTML)
+        self.assertIn('<option value="flag_code">Flag + code</option>', HTML)
+        self.assertIn('<option value="code">Code only</option>', HTML)
+        self.assertIn('let translationLanguageLabelMode = "flag_name";', HTML)
+        self.assertIn("translationLanguageLabelModeStorageKey", HTML)
+        self.assertIn("translationLanguageCodeLabel(languageCode)", HTML)
+        self.assertIn("source.prepend(createTranslationLanguageLabel(languageConfig.code));", HTML)
         self.assertIn("flag_url:flagUrl", HTML)
         self.assertIn("function translationLanguageFlagUrl(code)", HTML)
         self.assertIn('flag.className = "translation-language-flag";', HTML)
         self.assertIn('flag.setAttribute("aria-hidden", "true");', HTML)
+        self.assertIn("normalized === normalizedTranslationLanguageCode(languageConfig.code)", HTML)
+        self.assertIn('return String(languageConfig.flag_url || "");', HTML)
+        self.assertIn("return String(languageConfig.name || normalized);", HTML)
 
     def test_chrome_translator_uses_feature_detection_and_backend_fallback(self) -> None:
         self.assertIn("globalThis.Translator", HTML)

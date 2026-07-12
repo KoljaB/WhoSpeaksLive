@@ -1,0 +1,90 @@
+{
+  "schema_version": "report_template_v1",
+  "template_id": "builtin.swedish-qualitative-research",
+  "name": "Tematisk kvalitativ forskningsrapport",
+  "description": "Svensk tematisk fokusgruppsrapport med deltagarperspektiv, citat, frågor och transkriptbelägg.",
+  "version": 1,
+  "builtin": true,
+  "language_mode": "sv",
+  "privacy_policy": "inherit",
+  "sections": [
+    {
+      "key": "recurring_themes",
+      "title": "Återkommande teman",
+      "objective": "Identify themes recurring across distinct transcript passages and describe their range without treating repetition as consensus.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "participants", "label": "Deltagare", "type": "text", "description": "Talare som uttryckte perspektiv inom temat.", "options": []},
+        {"key": "recurrence", "label": "Återkomst", "type": "number", "description": "Antal tydligt separata belägg som stöder temat.", "options": []}
+      ]
+    },
+    {
+      "key": "areas_of_agreement",
+      "title": "Områden av samstämmighet",
+      "objective": "Summarize explicitly shared viewpoints and distinguish broad agreement from agreement between only some participants.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "agreement_scope", "label": "Omfattning", "type": "enum", "description": "Vilka som uttryckligen delade uppfattningen.", "options": ["bred", "flera_deltagare", "två_deltagare", "oklar"]},
+        {"key": "participants", "label": "Deltagare", "type": "text", "description": "Berörda talaretiketter.", "options": []}
+      ]
+    },
+    {
+      "key": "areas_of_disagreement",
+      "title": "Områden av oenighet",
+      "objective": "Represent conflicting or divergent participant viewpoints fairly and without inferring personal motives.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "viewpoints", "label": "Perspektiv", "type": "text", "description": "De belagda avvikande perspektiven.", "options": []},
+        {"key": "participants", "label": "Deltagare", "type": "text", "description": "Talare för respektive perspektiv.", "options": []}
+      ]
+    },
+    {
+      "key": "participant_viewpoints",
+      "title": "Deltagarspecifika perspektiv",
+      "objective": "Summarize each participant's concrete viewpoints using the corrected final speaker assignments and avoid personality judgments.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "table",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "participant", "label": "Deltagare", "type": "speaker", "description": "Korrigerad talare eller deltagaridentitet.", "options": []},
+        {"key": "viewpoint", "label": "Perspektiv", "type": "text", "description": "Sammanfattat perspektiv med stöd i transkriptet.", "options": []}
+      ]
+    },
+    {
+      "key": "representative_quotes",
+      "title": "Representativa citat",
+      "objective": "Select concise verbatim quotations that represent important themes or viewpoints and attribute them to the corrected speaker.",
+      "max_items": 16,
+      "evidence_required": true,
+      "render_kind": "quotes",
+      "sort_order": "chronological",
+      "output_fields": [
+        {"key": "speaker", "label": "Talare", "type": "speaker", "description": "Talaren som yttrade citatet.", "options": []},
+        {"key": "theme", "label": "Tema", "type": "text", "description": "Tema som citatet illustrerar.", "options": []},
+        {"key": "quote_time", "label": "Tid", "type": "timestamp", "description": "Citatets starttid.", "options": []}
+      ]
+    },
+    {
+      "key": "unanswered_questions",
+      "title": "Obesvarade frågor",
+      "objective": "List substantive questions that remained unanswered or underexplored at the end of the focus group.",
+      "max_items": 12,
+      "evidence_required": true,
+      "render_kind": "cards",
+      "sort_order": "relevance",
+      "output_fields": [
+        {"key": "raised_by", "label": "Väckt av", "type": "speaker", "description": "Talare som ställde frågan.", "options": []}
+      ]
+    }
+  ]
+}

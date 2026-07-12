@@ -10,11 +10,17 @@ import os
 import re
 import time
 from typing import Any, Callable, Iterable, Protocol
+import unicodedata
 import urllib.error
 import urllib.request
 
 from window.language_config import get_language_config
 from window.meeting_intelligence import TranscriptRow, normalize_transcript_rows, transcript_revision_id
+from window.report_templates import (
+    STANDARD_TEMPLATE_ID,
+    get_builtin_report_template,
+    validate_report_template,
+)
 
 
 PIPELINE_SCHEMA_VERSION = "meeting_intelligence_report_v2"
@@ -246,6 +252,7 @@ class MockMeetingLLMClient:
         report_language, _report_language_label = normalize_report_language(user_payload.get("report_language"))
         if schema_name == "meeting_evidence_index":
             rows = user_payload.get("transcript_rows") or []
+            report_sections = user_payload.get("report_sections") or []
             title = "Señal de reunión simulada" if report_language == "es" else "Mock meeting signal"
             summary = (
                 "La transcripción contiene una decisión, tarea, pregunta o riesgo."
@@ -260,6 +267,11 @@ class MockMeetingLLMClient:
                         "title": title,
                         "summary": summary,
                         "row_ids": [str(item.get("row_id")) for item in rows[:3] if isinstance(item, dict)],
+                        "section_keys": [
+                            str(item.get("key"))
+                            for item in report_sections
+                            if isinstance(item, dict) and str(item.get("key") or "").strip()
+                        ],
                         "support_type": "direct",
                         "confidence": "High",
                     }
@@ -326,6 +338,8 @@ def common_item(item_id: str, title: str, body: str, evidence_id: str) -> dict[s
         "due": "",
         "confidence": "Medium",
         "evidence_ids": [evidence_id],
+        "attributes": [],
+        "grounding_status": "grounded",
         "metadata": {},
     }
 
@@ -416,13 +430,102 @@ def _openai_strict_node(node: Any) -> Any:
     return result
 
 
+def resolve_pipeline_report_template(
+    *,
+    report_template: dict[str, Any] | None,
+    section_types: Iterable[str] | None,
+) -> dict[str, Any]:
+    """Resolve every pipeline run to one normalized report-template snapshot."""
+
+    if report_template is not None and section_types is not None:
+        raise ValueError("Pass either report_template or legacy section_types, not both")
+    if report_template is not None:
+        return validate_report_template(
+            report_template,
+            allow_builtin=bool(report_template.get("builtin")),
+        )
+    if section_types is None:
+        template = get_builtin_report_template(STANDARD_TEMPLATE_ID)
+        if not isinstance(template, dict):
+            raise RuntimeError(f"Built-in report template is unavailable: {STANDARD_TEMPLATE_ID}")
+        return json.loads(json.dumps(template))
+
+    keys: list[str] = []
+    seen: set[str] = set()
+    for value in section_types:
+        key = str(value or "").strip()
+        if not key or key in seen:
+            continue
+        keys.append(key)
+        seen.add(key)
+    legacy_template: dict[str, Any] = {
+        "schema_version": "report_template_v1",
+        "template_id": "custom.legacy",
+        "name": "Legacy section selection",
+        "description": "Compatibility template synthesized from section_types.",
+        "version": 1,
+        "builtin": False,
+        "language_mode": "inherit",
+        "privacy_policy": "inherit",
+        "sections": [
+            legacy_section_definition(key, position=index)
+            for index, key in enumerate(keys)
+        ],
+    }
+    if legacy_template["sections"]:
+        return validate_report_template(legacy_template)
+    # Older callers could explicitly request no section passes. The template
+    # validator intentionally rejects empty user templates, so retain that
+    # narrow compatibility case as a complete, provenance-bearing snapshot.
+    legacy_template["revision_hash"] = stable_hash(legacy_template, length=16)
+    return legacy_template
+
+
+def legacy_section_definition(section: str, *, position: int) -> dict[str, Any]:
+    """Build a template definition only for the deprecated section_types API."""
+
+    policies = section_policy(section)
+    objective = " ".join(policies[:-1] or policies)
+    return {
+        "key": section,
+        "title": section.replace("_", " ").title(),
+        "objective": objective or "Summarize only what the evidence supports.",
+        "max_items": section_max_items(section),
+        "evidence_required": True,
+        "render_kind": "cards",
+        "sort_order": "relevance",
+        "output_fields": [],
+    }
+
+
+def compact_section_definitions(definitions: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return the section goals needed by each evidence-extraction pass."""
+
+    result: list[dict[str, Any]] = []
+    for definition in definitions:
+        if not isinstance(definition, dict):
+            continue
+        result.append({
+            "key": definition.get("key"),
+            "title": definition.get("title"),
+            "objective": definition.get("objective"),
+            "max_items": definition.get("max_items"),
+            "evidence_required": definition.get("evidence_required"),
+            "render_kind": definition.get("render_kind"),
+            "sort_order": definition.get("sort_order"),
+            "output_fields": json.loads(json.dumps(definition.get("output_fields") or [])),
+        })
+    return result
+
+
 class MultiPassMeetingIntelligencePipeline:
     def __init__(
         self,
         client: StructuredChatClient,
         *,
         max_segment_rows: int = 80,
-        section_types: Iterable[str] = DEFAULT_SECTION_TYPES,
+        section_types: Iterable[str] | None = None,
+        report_template: dict[str, Any] | None = None,
         evidence_max_tokens: int = 4096,
         section_max_tokens: int = 4096,
         report_language: str = "en",
@@ -430,10 +533,21 @@ class MultiPassMeetingIntelligencePipeline:
     ) -> None:
         self.client = client
         self.max_segment_rows = max(12, int(max_segment_rows))
-        self.section_types = tuple(section_types)
+        self.report_template = resolve_pipeline_report_template(
+            report_template=report_template,
+            section_types=section_types,
+        )
+        self.section_definitions = tuple(
+            dict(section)
+            for section in self.report_template.get("sections") or []
+            if isinstance(section, dict)
+        )
+        self.section_types = tuple(str(section["key"]) for section in self.section_definitions)
         self.evidence_max_tokens = int(evidence_max_tokens)
         self.section_max_tokens = int(section_max_tokens)
-        self.report_language, self.report_language_label = normalize_report_language(report_language)
+        template_language = str(self.report_template.get("language_mode") or "inherit")
+        effective_report_language = report_language if template_language == "inherit" else template_language
+        self.report_language, self.report_language_label = normalize_report_language(effective_report_language)
         self.progress_callback = progress_callback
 
     def generate(
@@ -488,7 +602,43 @@ class MultiPassMeetingIntelligencePipeline:
                 current=index,
                 total=len(segments),
             )
-        evidence_items = normalize_evidence_items(evidence_items, rows)
+        evidence_items = normalize_evidence_items(
+            evidence_items,
+            rows,
+            valid_section_keys=set(self.section_types),
+            allow_fallback=False,
+        )
+        repair_definitions = [
+            definition
+            for definition in self.section_definitions
+            if bool(definition.get("evidence_required", True))
+            and not evidence_for_section(evidence_items, str(definition["key"]))
+        ]
+        repaired_section_keys = [str(definition["key"]) for definition in repair_definitions]
+        if repair_definitions and segments:
+            self._emit_progress(
+                stage="evidence",
+                message="Repairing evidence coverage",
+                detail=f"Searching again for {len(repair_definitions)} uncovered report sections",
+                completed_steps=completed_steps,
+                total_steps=total_steps,
+                current=len(segments),
+                total=len(segments),
+            )
+            repair_items: list[dict[str, Any]] = []
+            for segment in segments:
+                repair_items.extend(
+                    self._extract_evidence(
+                        segment,
+                        section_definitions=repair_definitions,
+                        coverage_repair=True,
+                    )
+                )
+            evidence_items = normalize_evidence_items(
+                [*evidence_items, *repair_items],
+                rows,
+                valid_section_keys=set(self.section_types),
+            )
         self._emit_progress(
             stage="evidence",
             message="Evidence index normalized",
@@ -499,17 +649,34 @@ class MultiPassMeetingIntelligencePipeline:
             total=len(segments),
         )
         sections: dict[str, Any] = {}
-        for index, section in enumerate(self.section_types, start=1):
+        global_context = {
+            "session_id": str(session_id or ""),
+            "report_title": title or str(self.report_template.get("name") or ""),
+            "template_id": str(self.report_template.get("template_id") or ""),
+            "template_name": str(self.report_template.get("name") or ""),
+            "template_description": str(self.report_template.get("description") or ""),
+            "template_version": self.report_template.get("version"),
+            "template_revision": str(self.report_template.get("revision_hash") or ""),
+            "speaker_state": speaker_state or {},
+            "transcript_outline": transcript_outline(rows),
+        }
+        for index, definition in enumerate(self.section_definitions, start=1):
+            section = str(definition["key"])
             self._emit_progress(
                 stage="section",
                 message=f"Generating section {index} of {len(self.section_types)}",
-                detail=section.replace("_", " "),
+                detail=str(definition.get("title") or section.replace("_", " ")),
                 completed_steps=completed_steps,
                 total_steps=total_steps,
                 current=index,
                 total=len(self.section_types),
             )
-            sections[section] = self._extract_section(section, evidence_items, rows)
+            sections[section] = self._extract_section(
+                definition,
+                evidence_items,
+                rows,
+                global_context=global_context,
+            )
             completed_steps += 1
             self._emit_progress(
                 stage="section",
@@ -529,18 +696,22 @@ class MultiPassMeetingIntelligencePipeline:
         )
         report = {
             "schema_version": PIPELINE_SCHEMA_VERSION,
-            "report_id": f"mir2_{stable_hash({'session_id': session_id, 'revision': revision_id, 'generated_at': generated_at}, length=16)}",
+            "report_id": f"mir2_{stable_hash({'session_id': session_id, 'revision': revision_id, 'template_revision': self.report_template.get('revision_hash'), 'generated_at': generated_at}, length=16)}",
             "session_id": str(session_id or ""),
-            "title": title or "Meeting intelligence report",
+            "title": title or str(self.report_template.get("name") or "Meeting intelligence report"),
             "generated_at": generated_at,
             "updated_at": generated_at,
             "transcript_revision_id": revision_id,
             "provider": getattr(self.client, "name", "structured_chat_client"),
             "report_language": self.report_language,
+            "template_id": str(self.report_template.get("template_id") or ""),
+            "template_revision": str(self.report_template.get("revision_hash") or ""),
+            "report_template": json.loads(json.dumps(self.report_template)),
             "pipeline": {
                 "mode": "multi_pass",
                 "segments": len(segments),
                 "section_passes": list(self.section_types),
+                "evidence_coverage_repair": repaired_section_keys,
             },
             "summary": section_summary(sections.get("executive_summary")),
             "evidence_index": evidence_items,
@@ -572,22 +743,44 @@ class MultiPassMeetingIntelligencePipeline:
         payload["at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
         self.progress_callback(payload)
 
-    def _extract_evidence(self, segment: dict[str, Any]) -> list[dict[str, Any]]:
+    def _extract_evidence(
+        self,
+        segment: dict[str, Any],
+        *,
+        section_definitions: Iterable[dict[str, Any]] | None = None,
+        coverage_repair: bool = False,
+    ) -> list[dict[str, Any]]:
+        definitions = list(section_definitions or self.section_definitions)
+        report_sections = compact_section_definitions(definitions)
+        max_items = evidence_max_items_for_sections(len(report_sections))
+        instructions = [
+            "Create compact evidence anchors for this transcript segment.",
+            "Return no more evidence anchors than max_items.",
+            "Use row_ids exactly as supplied.",
+            "Target the supplied report section objectives and output fields.",
+            "Assign every anchor to each applicable section by using exact section keys in section_keys.",
+            f"Write all generated titles and summaries in {self.report_language_label}.",
+        ]
+        if coverage_repair:
+            instructions.extend([
+                "This is a coverage-repair pass: search carefully for support for every supplied report section.",
+                "Recognize implicit decisions, commitments, actions, owners, deadlines, disagreements, and outcomes even when no formal keyword is used.",
+                "Use only the supplied section keys; one anchor may support multiple supplied sections.",
+                "Return an empty list only when this segment genuinely contains no support for any supplied section.",
+            ])
         payload = {
             "schema_version": "meeting_evidence_index_v1",
             "segment": {key: segment[key] for key in ("id", "title", "start", "end")},
-            "instructions": [
-                "Create compact evidence anchors for this transcript segment.",
-                "Use row_ids exactly as supplied.",
-                "Prefer items that can support later decisions, actions, risks, open questions, disagreements, deadlines, speaker identity, and summary claims.",
-                f"Write all generated titles and summaries in {self.report_language_label}.",
-            ],
+            "max_items": max_items,
+            "instructions": instructions,
+            "coverage_repair": coverage_repair,
             "report_language": self.report_language,
+            "report_sections": report_sections,
             "transcript_rows": [row_to_prompt_dict(row) for row in segment["rows"]],
         }
         result = self.client.chat_json(
             schema_name="meeting_evidence_index",
-            schema=evidence_index_schema(),
+            schema=evidence_index_schema(max_items=max_items),
             system_prompt=evidence_system_prompt(),
             user_payload=payload,
             max_tokens=self.evidence_max_tokens,
@@ -596,34 +789,84 @@ class MultiPassMeetingIntelligencePipeline:
 
     def _extract_section(
         self,
-        section: str,
+        definition: dict[str, Any],
         evidence_items: list[dict[str, Any]],
         rows: list[TranscriptRow],
+        *,
+        global_context: dict[str, Any],
     ) -> dict[str, Any]:
+        section = str(definition["key"])
+        max_items = definition_max_items(definition)
+        relevant_evidence = evidence_for_section(evidence_items, section)
+        evidence_required = bool(definition.get("evidence_required", True))
+        if evidence_required and not relevant_evidence:
+            return normalize_section(
+                section,
+                {
+                    "schema_version": "meeting_section_v1",
+                    "section": section,
+                    "summary": "",
+                    "items": [],
+                },
+                set(),
+                definition=definition,
+            )
         payload = {
             "schema_version": "meeting_section_v1",
             "section": section,
-            "max_items": section_max_items(section),
-            "section_policy": section_policy(section),
-            "evidence_index": compact_evidence(evidence_items),
+            "section_definition": json.loads(json.dumps(definition)),
+            "max_items": max_items,
+            "section_policy": [str(definition.get("objective") or "")],
+            "evidence_index": compact_evidence(relevant_evidence),
+            "global_context": global_context,
             "transcript_outline": transcript_outline(rows),
             "output_contract": [
                 "Return concise JSON only.",
                 "Use no more items than max_items.",
                 "Keep each body under 45 words.",
                 "Use only evidence_ids from evidence_index.",
+                "When section_definition.evidence_required is true, every item must cite at least one valid evidence_id. Omit claims that cannot be cited.",
+                "Return custom attributes only for keys declared in section_definition.output_fields.",
+                "Set grounding_status to grounded only when the cited evidence directly supports the item.",
                 f"Write every generated title, summary, body, status, owner, and due value in {self.report_language_label}; preserve quoted transcript text as-is.",
             ],
             "report_language": self.report_language,
         }
         result = self.client.chat_json(
             schema_name="meeting_section",
-            schema=section_schema(),
+            schema=section_schema(max_items=max_items),
             system_prompt=section_system_prompt(section),
             user_payload=payload,
             max_tokens=self.section_max_tokens,
         )
-        return normalize_section(section, result, {item["id"] for item in evidence_items})
+        normalized = normalize_section(
+            section,
+            result,
+            {item["id"] for item in relevant_evidence},
+            definition=definition,
+        )
+        if evidence_required and result.get("items") and not normalized.get("items"):
+            retry_payload = json.loads(json.dumps(payload))
+            retry_payload["citation_repair"] = True
+            retry_payload["output_contract"].extend([
+                "The previous response contained claims but no usable evidence citation.",
+                "Re-evaluate each claim and cite the exact matching IDs from evidence_index.",
+                "Do not drop a supported claim merely because its previous evidence ID was invalid.",
+            ])
+            retry_result = self.client.chat_json(
+                schema_name="meeting_section",
+                schema=section_schema(max_items=max_items),
+                system_prompt=section_system_prompt(section),
+                user_payload=retry_payload,
+                max_tokens=self.section_max_tokens,
+            )
+            normalized = normalize_section(
+                section,
+                retry_result,
+                {item["id"] for item in relevant_evidence},
+                definition=definition,
+            )
+        return normalized
 
 
 def segment_transcript(rows: list[TranscriptRow], *, max_segment_rows: int = 80) -> list[dict[str, Any]]:
@@ -685,6 +928,7 @@ def section_system_prompt(section: str) -> str:
         "You extract one section of a post-meeting intelligence report from evidence anchors. "
         "Return JSON only. Cite evidence_ids on every material item. Preserve uncertainty: "
         "separate decided, suggested, unclear, and unresolved. Do not invent owners or dates. "
+        "If evidence is required, omit every item that lacks a directly supporting evidence anchor. "
         "Be concise: no more than the requested max_items, short titles, and short bodies. "
         f"Current section: {section}. Follow the requested report language exactly."
     )
@@ -736,7 +980,11 @@ def section_max_items(section: str) -> int:
     }.get(section, 6)
 
 
-def evidence_index_schema() -> dict[str, Any]:
+def evidence_max_items_for_sections(section_count: int) -> int:
+    return max(8, min(32, 2 * max(0, int(section_count))))
+
+
+def evidence_index_schema(*, max_items: int = 8) -> dict[str, Any]:
     item = {
         "type": "object",
         "additionalProperties": False,
@@ -745,23 +993,33 @@ def evidence_index_schema() -> dict[str, Any]:
             "title": {"type": "string"},
             "summary": {"type": "string"},
             "row_ids": {"type": "array", "items": {"type": "string"}},
+            "section_keys": {"type": "array", "items": {"type": "string"}},
             "support_type": {"type": "string"},
             "confidence": {"type": "string"},
         },
-        "required": ["id", "title", "summary", "row_ids", "support_type", "confidence"],
+        "required": ["id", "title", "summary", "row_ids", "section_keys", "support_type", "confidence"],
     }
     return {
         "type": "object",
         "additionalProperties": False,
         "properties": {
             "schema_version": {"type": "string"},
-            "items": {"type": "array", "items": item, "maxItems": 8},
+            "items": {"type": "array", "items": item, "maxItems": max(1, int(max_items))},
         },
         "required": ["schema_version", "items"],
     }
 
 
-def section_schema() -> dict[str, Any]:
+def section_schema(*, max_items: int = 8) -> dict[str, Any]:
+    attribute = {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "key": {"type": "string"},
+            "value": {"type": "string"},
+        },
+        "required": ["key", "value"],
+    }
     item = {
         "type": "object",
         "additionalProperties": False,
@@ -774,9 +1032,23 @@ def section_schema() -> dict[str, Any]:
             "due": {"type": "string"},
             "confidence": {"type": "string"},
             "evidence_ids": {"type": "array", "items": {"type": "string"}},
+            "attributes": {"type": "array", "items": attribute},
+            "grounding_status": {"type": "string"},
             "metadata": {"type": "object", "additionalProperties": False, "properties": {}},
         },
-        "required": ["id", "title", "body", "status", "owner", "due", "confidence", "evidence_ids", "metadata"],
+        "required": [
+            "id",
+            "title",
+            "body",
+            "status",
+            "owner",
+            "due",
+            "confidence",
+            "evidence_ids",
+            "attributes",
+            "grounding_status",
+            "metadata",
+        ],
     }
     return {
         "type": "object",
@@ -785,13 +1057,82 @@ def section_schema() -> dict[str, Any]:
             "schema_version": {"type": "string"},
             "section": {"type": "string"},
             "summary": {"type": "string"},
-            "items": {"type": "array", "items": item, "maxItems": 8},
+            "items": {"type": "array", "items": item, "maxItems": max(1, int(max_items))},
         },
         "required": ["schema_version", "section", "summary", "items"],
     }
 
 
-def normalize_evidence_items(items: Iterable[dict[str, Any]], rows: list[TranscriptRow]) -> list[dict[str, Any]]:
+def definition_max_items(definition: dict[str, Any]) -> int:
+    try:
+        return max(1, min(50, int(definition.get("max_items", 8))))
+    except (TypeError, ValueError):
+        return 8
+
+
+def output_field_keys(definition: dict[str, Any]) -> set[str]:
+    keys: set[str] = set()
+    for field in definition.get("output_fields") or []:
+        if isinstance(field, dict):
+            key = str(field.get("key") or "").strip()
+        else:
+            # Tolerate early templates that used a compact list of keys.
+            key = str(field or "").strip()
+        if key:
+            keys.add(key)
+    return keys
+
+
+def normalize_attributes(value: Any, allowed_keys: set[str]) -> list[dict[str, str]]:
+    normalized: list[dict[str, str]] = []
+    seen: set[str] = set()
+    if not isinstance(value, list):
+        return normalized
+    for raw in value:
+        if not isinstance(raw, dict):
+            continue
+        key = clean_text(raw.get("key"), limit=80)
+        if key not in allowed_keys or key in seen:
+            continue
+        normalized.append({
+            "key": key,
+            "value": clean_text(raw.get("value"), limit=800),
+        })
+        seen.add(key)
+    return normalized
+
+
+def normalize_section_keys(value: Any, valid_section_keys: set[str] | None) -> list[str]:
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for raw in value if isinstance(value, list) else []:
+        key = str(raw or "").strip()
+        if not key or key in seen:
+            continue
+        if valid_section_keys is not None and key not in valid_section_keys:
+            continue
+        normalized.append(key)
+        seen.add(key)
+    return normalized
+
+
+def evidence_for_section(items: list[dict[str, Any]], section: str) -> list[dict[str, Any]]:
+    """Select section-targeted anchors while retaining unclassified global context."""
+
+    return [
+        item
+        for item in items
+        if not item.get("section_keys") or section in item.get("section_keys", [])
+    ]
+
+
+def normalize_evidence_items(
+    items: Iterable[dict[str, Any]],
+    rows: list[TranscriptRow],
+    *,
+    valid_section_keys: set[str] | None = None,
+    allow_fallback: bool = True,
+) -> list[dict[str, Any]]:
     row_by_id = {row.row_id: row for row in rows}
     normalized: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -805,11 +1146,13 @@ def normalize_evidence_items(items: Iterable[dict[str, Any]], rows: list[Transcr
         if evidence_id in seen:
             evidence_id = f"{evidence_id}-{position:02d}"
         selected_rows = [row_by_id[row_id] for row_id in row_ids]
+        section_keys = normalize_section_keys(item.get("section_keys"), valid_section_keys)
         normalized.append({
             "id": evidence_id,
             "title": clean_text(item.get("title"), limit=120),
             "summary": clean_text(item.get("summary"), limit=600),
             "row_ids": row_ids,
+            "section_keys": section_keys,
             "start": format_seconds(min(row.start for row in selected_rows)),
             "end": format_seconds(max(row.end for row in selected_rows)),
             "speakers": sorted({row.speaker_name for row in selected_rows}),
@@ -818,13 +1161,14 @@ def normalize_evidence_items(items: Iterable[dict[str, Any]], rows: list[Transcr
             "confidence": clean_text(item.get("confidence"), limit=40) or "Medium",
         })
         seen.add(evidence_id)
-    if not normalized and rows:
+    if allow_fallback and not normalized and rows:
         selected = rows[: min(8, len(rows))]
         normalized.append({
             "id": "EV-FALLBACK-001",
             "title": "Transcript context",
             "summary": "Fallback evidence span from the transcript.",
             "row_ids": [row.row_id for row in selected],
+            "section_keys": sorted(valid_section_keys or set()),
             "start": format_seconds(selected[0].start),
             "end": format_seconds(selected[-1].end),
             "speakers": sorted({row.speaker_name for row in selected}),
@@ -835,7 +1179,21 @@ def normalize_evidence_items(items: Iterable[dict[str, Any]], rows: list[Transcr
     return normalized
 
 
-def normalize_section(section: str, result: dict[str, Any], valid_evidence_ids: set[str]) -> dict[str, Any]:
+def normalize_section(
+    section: str,
+    result: dict[str, Any],
+    valid_evidence_ids: set[str],
+    *,
+    definition: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    normalized_definition = (
+        json.loads(json.dumps(definition))
+        if isinstance(definition, dict)
+        else legacy_section_definition(section, position=0)
+    )
+    max_items = definition_max_items(normalized_definition)
+    evidence_required = bool(normalized_definition.get("evidence_required", True))
+    allowed_attribute_keys = output_field_keys(normalized_definition)
     items: list[dict[str, Any]] = []
     seen_keys: set[str] = set()
     for raw in result.get("items") or []:
@@ -854,6 +1212,13 @@ def normalize_section(section: str, result: dict[str, Any], valid_evidence_ids: 
             for value in raw.get("evidence_ids") or []
             if str(value) in valid_evidence_ids
         ]
+        if evidence_required and not evidence_ids:
+            continue
+        attributes = normalize_attributes(raw.get("attributes"), allowed_attribute_keys)
+        if evidence_ids:
+            grounding_status = "grounded"
+        else:
+            grounding_status = "not_required"
         items.append({
             "id": normalize_id(raw.get("id"), prefix=section.upper()[:5], fallback=f"{section.upper()}-{len(items) + 1:03d}"),
             "title": title or body[:80] or section.replace("_", " ").title(),
@@ -863,12 +1228,15 @@ def normalize_section(section: str, result: dict[str, Any], valid_evidence_ids: 
             "due": clean_text(raw.get("due"), limit=120),
             "confidence": clean_text(raw.get("confidence"), limit=60) or "Medium",
             "evidence_ids": evidence_ids,
+            "attributes": attributes,
+            "grounding_status": grounding_status,
             "metadata": raw.get("metadata") if isinstance(raw.get("metadata"), dict) else {},
         })
-        if len(items) >= section_max_items(section):
+        if len(items) >= max_items:
             break
     return {
         "section": section,
+        "definition": normalized_definition,
         "summary": clean_text(result.get("summary"), limit=1600),
         "items": items,
     }
@@ -883,6 +1251,7 @@ def compact_evidence(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "time": f"{item.get('start')}-{item.get('end')}",
             "speakers": item.get("speakers"),
             "quote_excerpt": item.get("quote_excerpt"),
+            "section_keys": item.get("section_keys") or [],
         }
         for item in items
     ]
@@ -967,10 +1336,77 @@ def normalize_id(value: Any, *, prefix: str, fallback: str) -> str:
 
 
 def clean_text(value: Any, *, limit: int = 400) -> str:
-    text = " ".join(str(value or "").strip().split())
+    text = repair_mangled_unicode_text(str(value or ""))
+    text = " ".join(text.strip().split())
     if len(text) <= limit:
         return text
     return text[: max(0, limit - 1)].rstrip() + "..."
+
+
+def repair_mangled_unicode_text(value: str) -> str:
+    """Repair model output that encoded ``ü`` as a NUL plus ``fc``."""
+
+    repaired = re.sub(
+        r"\x00([0-9A-Fa-f]{2})",
+        lambda match: chr(int(match.group(1), 16)),
+        str(value or ""),
+    )
+    repaired = "".join(
+        character
+        for character in repaired
+        if character in "\n\r\t" or ord(character) >= 32
+    )
+    return unicodedata.normalize("NFC", repaired)
+
+
+def sanitize_report_output(report: dict[str, Any]) -> dict[str, Any]:
+    """Repair cached text artifacts and remove uncited evidence-required items."""
+
+    def repair(value: Any) -> Any:
+        if isinstance(value, str):
+            return repair_mangled_unicode_text(value)
+        if isinstance(value, list):
+            return [repair(item) for item in value]
+        if isinstance(value, dict):
+            return {key: repair(item) for key, item in value.items()}
+        return value
+
+    normalized = repair(report)
+    sections = normalized.get("sections") if isinstance(normalized, dict) else None
+    if not isinstance(sections, dict):
+        return normalized
+    valid_evidence_ids = {
+        str(item.get("id"))
+        for item in normalized.get("evidence_index") or []
+        if isinstance(item, dict) and item.get("id")
+    }
+    for section in sections.values():
+        if not isinstance(section, dict):
+            continue
+        definition = section.get("definition") if isinstance(section.get("definition"), dict) else {}
+        evidence_required = bool(definition.get("evidence_required", True))
+        items = section.get("items") if isinstance(section.get("items"), list) else []
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            item["evidence_ids"] = [
+                str(evidence_id)
+                for evidence_id in item.get("evidence_ids") or []
+                if str(evidence_id) in valid_evidence_ids
+            ]
+        if evidence_required:
+            section["items"] = [
+                item
+                for item in items
+                if isinstance(item, dict) and bool(item.get("evidence_ids"))
+            ]
+        for item in section.get("items") or []:
+            if isinstance(item, dict):
+                item["grounding_status"] = "grounded" if item.get("evidence_ids") else "not_required"
+    quality = normalized.get("quality")
+    if isinstance(quality, dict):
+        quality["evidence_gaps"] = find_evidence_gaps(sections)
+    return normalized
 
 
 def stable_hash(value: Any, *, length: int = 12) -> str:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from http import HTTPStatus
@@ -29,13 +30,22 @@ from window.meeting_intelligence_pipeline import (
     StructuredChatClient,
     default_llm_config,
     normalize_report_language,
+    sanitize_report_output,
     stable_hash,
+)
+from window.report_templates import (
+    STANDARD_TEMPLATE_ID,
+    ReportTemplateStore,
+    builtin_report_templates,
+    get_builtin_report_template,
+    validate_report_template,
 )
 from window.session_store import DEFAULT_SESSION_DIR, SessionStore
 
 
 DEMO_SESSION_ID = "demo-whospeakslive-transcript"
 DEFAULT_CACHE_DIR = RUNTIME_DIR / "meeting_intelligence_reports"
+DEFAULT_TEMPLATE_DIR = RUNTIME_DIR / "report_templates"
 DEFAULT_ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 LLM_PROVIDER_OPTIONS = {
     "llama_cpp": {
@@ -85,6 +95,7 @@ TRANSCRIPT_LINE_RE = re.compile(
 class MeetingIntelligenceServerConfig:
     session_dir: Path = DEFAULT_SESSION_DIR
     cache_dir: Path = DEFAULT_CACHE_DIR
+    template_dir: Path = DEFAULT_TEMPLATE_DIR
     demo_transcript: Path | None = None
     llm_config: MeetingLLMConfig = field(default_factory=default_llm_config)
     mock_llm: bool = False
@@ -98,6 +109,7 @@ class MeetingIntelligenceServerConfig:
 class GenerationJob:
     job_id: str
     session_id: str
+    template_id: str = STANDARD_TEMPLATE_ID
     status: str = "queued"
     stage: str = "queued"
     message: str = "Queued"
@@ -122,6 +134,7 @@ class MeetingIntelligenceService:
         self.config = config
         self.report_language, self.report_language_label = normalize_report_language(config.report_language)
         self.store = SessionStore(config.session_dir)
+        self.template_store = ReportTemplateStore(config.template_dir)
         self.client_factory = client_factory
         self._llm_config = config.llm_config
         self._settings_lock = threading.Lock()
@@ -142,11 +155,70 @@ class MeetingIntelligenceService:
             "auto_generate_poll_seconds": self.config.auto_generate_poll_seconds,
             "max_segment_rows": self.config.max_segment_rows,
             "report_language": self.report_language,
+            "standard_template_id": STANDARD_TEMPLATE_ID,
             "expected_report_provider": self.expected_report_provider(),
             "api_key_configured": self._provider_api_key_configured(llm),
             "api_key_env_var": self._provider_api_key_env_var(llm.provider),
             "providers": provider_options_payload(),
         }
+
+    def list_report_templates(self) -> list[dict[str, Any]]:
+        """Return built-in presets and saved custom templates in one inspectable list."""
+
+        templates = [self._public_template(template) for template in self.template_store.list_templates()]
+        templates.sort(key=lambda item: (not bool(item.get("builtin")), str(item.get("name") or "").casefold()))
+        return templates
+
+    def get_report_template(self, template_id: str) -> dict[str, Any]:
+        template = self._resolve_template(template_id)
+        return self._public_template(template)
+
+    def save_report_template(self, payload: dict[str, Any]) -> dict[str, Any]:
+        raw = payload.get("template") if isinstance(payload.get("template"), dict) else payload
+        if bool(raw.get("builtin")):
+            raise ValueError("Predefined report templates are read-only. Clone the preset before editing it.")
+        return self._public_template(self.template_store.save_template(raw))
+
+    def delete_report_template(self, template_id: str) -> bool:
+        template_id = str(template_id or "").strip()
+        if get_builtin_report_template(template_id) is not None:
+            raise ValueError("Predefined report templates cannot be deleted.")
+        return bool(self.template_store.delete_template(template_id))
+
+    def clone_report_template(self, template_id: str, name: str) -> dict[str, Any]:
+        return self._public_template(self.template_store.clone_template(str(template_id or "").strip(), str(name or "").strip()))
+
+    def _resolve_template(self, template_id: str | None) -> dict[str, Any]:
+        normalized_id = str(template_id or STANDARD_TEMPLATE_ID).strip() or STANDARD_TEMPLATE_ID
+        builtin = get_builtin_report_template(normalized_id)
+        if builtin is not None:
+            return validate_report_template(builtin, allow_builtin=True)
+        custom = self.template_store.get_template(normalized_id)
+        if custom is None:
+            raise ValueError(f"Unknown report template: {normalized_id}")
+        return validate_report_template(custom)
+
+    @staticmethod
+    def _public_template(template: dict[str, Any]) -> dict[str, Any]:
+        payload = copy.deepcopy(template)
+        payload["source_kind"] = "predefined" if bool(payload.get("builtin")) else "custom"
+        payload["read_only"] = bool(payload.get("builtin"))
+        return payload
+
+    def _template_report_language(self, template: dict[str, Any]) -> str:
+        language_mode = str(template.get("language_mode") or "inherit").strip().lower()
+        if language_mode == "inherit":
+            return self.report_language
+        return normalize_report_language(language_mode)[0]
+
+    @staticmethod
+    def _enforce_template_privacy(template: dict[str, Any], llm: MeetingLLMConfig, *, mock_llm: bool) -> None:
+        privacy_policy = str(template.get("privacy_policy") or "allow_remote").strip().lower()
+        if privacy_policy == "local_only" and not mock_llm and llm.provider in {"openai", "openrouter"}:
+            raise ValueError(
+                f"Template '{template.get('name') or template.get('template_id')}' is local-only and cannot use "
+                f"the public remote provider '{llm.provider}'. Choose llama.cpp, Ollama, or LM Studio."
+            )
 
     def expected_report_provider(self) -> str:
         if self.config.mock_llm:
@@ -222,12 +294,15 @@ class MeetingIntelligenceService:
             sessions.append({
                 **demo["summary"],
                 "source_kind": "demo_transcript",
-                "has_cached_report": bool(self._read_runtime_cached_report(DEMO_SESSION_ID)),
+                "has_cached_report": bool(self._read_runtime_cached_report(DEMO_SESSION_ID, STANDARD_TEMPLATE_ID)),
+                "report_template_ids": self._cached_template_ids(DEMO_SESSION_ID),
             })
         for session in self.store.list_sessions("all"):
             item = dict(session)
             item["source_kind"] = "saved_session"
-            item["has_cached_report"] = bool(self._read_runtime_cached_report(str(item.get("id") or "")))
+            session_id = str(item.get("id") or "")
+            item["has_cached_report"] = bool(self._read_runtime_cached_report(session_id, STANDARD_TEMPLATE_ID))
+            item["report_template_ids"] = self._cached_template_ids(session_id)
             sessions.append(item)
         return sessions
 
@@ -238,17 +313,22 @@ class MeetingIntelligenceService:
             return self._load_demo_session()
         return self.store.open_session(session_id)
 
-    def get_report(self, session_id: str) -> dict[str, Any]:
+    def get_report(self, session_id: str, template_id: str = STANDARD_TEMPLATE_ID) -> dict[str, Any]:
+        template = self._resolve_template(template_id)
+        template_id = str(template["template_id"])
+        report_language = self._template_report_language(template)
         session = self.load_session(session_id)
         rows = [dict(row) for row in session.get("transcript_rows") or []]
         speaker_state = session.get("speaker_state") if isinstance(session.get("speaker_state"), dict) else {}
         revision_id = transcript_revision_id(rows, speaker_state)
-        report = self._read_cached_report(session_id)
+        report = self._read_cached_report(session_id, template_id)
         available = (
             isinstance(report, dict)
             and report.get("transcript_revision_id") == revision_id
             and report.get("provider") == self.expected_report_provider()
-            and report.get("report_language") == self.report_language
+            and report.get("report_language") == report_language
+            and report.get("template_id") == template_id
+            and report.get("template_revision") == template.get("revision_hash")
         )
         return {
             "available": available,
@@ -256,14 +336,21 @@ class MeetingIntelligenceService:
             "session": session.get("summary") or {},
             "report": report if available else None,
             "transcript_rows": rows,
+            "template": self._public_template(template),
+            "template_id": template_id,
+            "report_language": report_language,
         }
 
     def generate_report(
         self,
         session_id: str,
         *,
+        template_id: str = STANDARD_TEMPLATE_ID,
         progress_callback: Callable[[dict[str, Any]], None] | None = None,
     ) -> dict[str, Any]:
+        template = self._resolve_template(template_id)
+        template_id = str(template["template_id"])
+        report_language = self._template_report_language(template)
         session = self.load_session(session_id)
         rows = [dict(row) for row in session.get("transcript_rows") or []]
         if not rows:
@@ -272,6 +359,7 @@ class MeetingIntelligenceService:
         summary = session.get("summary") if isinstance(session.get("summary"), dict) else {}
         title = str(summary.get("title") or session_id)
         llm_config = self._current_llm_config()
+        self._enforce_template_privacy(template, llm_config, mock_llm=self.config.mock_llm)
         if not self.config.mock_llm and self._provider_requires_api_key(llm_config.provider) and not llm_config.api_key:
             env_var = self._provider_api_key_env_var(llm_config.provider)
             raise ValueError(f"{llm_config.provider} requires {env_var} in .env or the server environment.")
@@ -281,7 +369,8 @@ class MeetingIntelligenceService:
             max_segment_rows=self.config.max_segment_rows,
             evidence_max_tokens=llm_config.max_tokens,
             section_max_tokens=llm_config.section_max_tokens,
-            report_language=self.report_language,
+            report_language=report_language,
+            report_template=template,
             progress_callback=progress_callback,
         )
         report = pipeline.generate(
@@ -290,24 +379,33 @@ class MeetingIntelligenceService:
             speaker_state=speaker_state,
             title=title,
         )
-        self._write_cached_report(session_id, report)
+        self._write_cached_report(session_id, template_id, report)
         return {
             "available": True,
             "stale": False,
             "session": summary,
             "report": report,
             "transcript_rows": rows,
+            "template": self._public_template(template),
+            "template_id": template_id,
+            "report_language": report_language,
         }
 
-    def delete_report(self, session_id: str) -> dict[str, Any]:
+    def delete_report(self, session_id: str, template_id: str = STANDARD_TEMPLATE_ID) -> dict[str, Any]:
         session_id = str(session_id or "").strip()
         if not session_id:
             raise ValueError("Session id is required.")
         session = self.load_session(session_id)
-        path = self._cache_path(session_id)
+        template = self._resolve_template(template_id)
+        template_id = str(template["template_id"])
+        path = self._cache_path(session_id, template_id)
         deleted = False
         if path.is_file():
             path.unlink()
+            deleted = True
+        legacy_path = self._legacy_cache_path(session_id)
+        if template_id == STANDARD_TEMPLATE_ID and legacy_path.is_file():
+            legacy_path.unlink()
             deleted = True
         return {
             "deleted": deleted,
@@ -316,26 +414,31 @@ class MeetingIntelligenceService:
             "available": False,
             "stale": False,
             "transcript_rows": [dict(row) for row in session.get("transcript_rows") or []],
+            "template": self._public_template(template),
+            "template_id": template_id,
         }
 
-    def start_generate_report(self, session_id: str) -> dict[str, Any]:
+    def start_generate_report(self, session_id: str, template_id: str = STANDARD_TEMPLATE_ID) -> dict[str, Any]:
         session_id = str(session_id or "").strip()
         if not session_id:
             raise ValueError("Session id is required.")
+        template = self._resolve_template(template_id)
+        template_id = str(template["template_id"])
         with self._jobs_lock:
             for job in self._jobs.values():
-                if job.session_id == session_id and job.status in {"queued", "running"}:
+                if job.session_id == session_id and job.template_id == template_id and job.status in {"queued", "running"}:
                     return self._job_snapshot(job)
             job = GenerationJob(
                 job_id=f"mirjob_{uuid.uuid4().hex[:16]}",
                 session_id=session_id,
+                template_id=template_id,
                 message="Queued report generation",
             )
             self._jobs[job.job_id] = job
             snapshot = self._job_snapshot(job)
         thread = threading.Thread(
             target=self._run_generation_job,
-            args=(job.job_id, session_id),
+            args=(job.job_id, session_id, template_id),
             name=f"meeting-intelligence-{job.job_id}",
             daemon=True,
         )
@@ -366,10 +469,10 @@ class MeetingIntelligenceService:
             if not session_id or session_id in self._auto_generation_existing_saved_ids:
                 continue
             try:
-                if self.get_report(session_id)["available"]:
+                if self.get_report(session_id, STANDARD_TEMPLATE_ID)["available"]:
                     self._auto_generation_existing_saved_ids.add(session_id)
                     continue
-                queued.append(self.start_generate_report(session_id))
+                queued.append(self.start_generate_report(session_id, STANDARD_TEMPLATE_ID))
                 self._auto_generation_existing_saved_ids.add(session_id)
             except (FileNotFoundError, ValueError, OSError):
                 # A session may be edited or removed while the monitor scans it.
@@ -384,7 +487,7 @@ class MeetingIntelligenceService:
                 raise ValueError("Generation job not found.")
             return self._job_snapshot(job)
 
-    def _run_generation_job(self, job_id: str, session_id: str) -> None:
+    def _run_generation_job(self, job_id: str, session_id: str, template_id: str) -> None:
         self._update_job(
             job_id,
             status="running",
@@ -396,6 +499,7 @@ class MeetingIntelligenceService:
         try:
             result = self.generate_report(
                 session_id,
+                template_id=template_id,
                 progress_callback=lambda event: self._apply_progress_event(job_id, event),
             )
         except Exception as exc:
@@ -467,6 +571,7 @@ class MeetingIntelligenceService:
         return {
             "job_id": job.job_id,
             "session_id": job.session_id,
+            "template_id": job.template_id,
             "status": job.status,
             "stage": job.stage,
             "message": job.message,
@@ -514,15 +619,26 @@ class MeetingIntelligenceService:
             return True
         return bool(llm.api_key)
 
-    def _cache_path(self, session_id: str) -> Path:
+    def _legacy_cache_path(self, session_id: str) -> Path:
         clean = re.sub(r"[^A-Za-z0-9_.-]+", "-", str(session_id or "").strip()).strip("-")
         if not clean:
             clean = "session"
         suffix = stable_hash(session_id, length=10)
         return self.config.cache_dir / f"{clean[:80]}-{suffix}.json"
 
-    def _read_cached_report(self, session_id: str) -> dict[str, Any] | None:
-        path = self._cache_path(session_id)
+    def _cache_path(self, session_id: str, template_id: str = STANDARD_TEMPLATE_ID) -> Path:
+        clean_session = re.sub(r"[^A-Za-z0-9_.-]+", "-", str(session_id or "").strip()).strip("-") or "session"
+        clean_template = re.sub(r"[^A-Za-z0-9_.-]+", "-", str(template_id or "").strip()).strip("-") or "template"
+        session_suffix = stable_hash(session_id, length=10)
+        template_suffix = stable_hash(template_id, length=10)
+        return self.config.cache_dir / (
+            f"{clean_session[:64]}-{session_suffix}--{clean_template[:64]}-{template_suffix}.json"
+        )
+
+    def _read_cached_report(self, session_id: str, template_id: str = STANDARD_TEMPLATE_ID) -> dict[str, Any] | None:
+        path = self._cache_path(session_id, template_id)
+        if not path.is_file() and template_id == STANDARD_TEMPLATE_ID:
+            path = self._legacy_cache_path(session_id)
         if not path.is_file():
             return None
         try:
@@ -530,25 +646,45 @@ class MeetingIntelligenceService:
         except (OSError, json.JSONDecodeError):
             return None
         report = payload.get("report") if isinstance(payload, dict) else None
-        return report if isinstance(report, dict) else None
+        return sanitize_report_output(report) if isinstance(report, dict) else None
 
-    def _read_runtime_cached_report(self, session_id: str) -> dict[str, Any] | None:
-        report = self._read_cached_report(session_id)
+    def _read_runtime_cached_report(
+        self,
+        session_id: str,
+        template_id: str = STANDARD_TEMPLATE_ID,
+    ) -> dict[str, Any] | None:
+        template = self._resolve_template(template_id)
+        report = self._read_cached_report(session_id, template_id)
         if not isinstance(report, dict):
             return None
         if report.get("provider") != self.expected_report_provider():
             return None
+        if report.get("report_language") != self._template_report_language(template):
+            return None
+        if report.get("template_id") != template.get("template_id"):
+            return None
+        if report.get("template_revision") != template.get("revision_hash"):
+            return None
         return report
 
-    def _write_cached_report(self, session_id: str, report: dict[str, Any]) -> None:
+    def _cached_template_ids(self, session_id: str) -> list[str]:
+        result: list[str] = []
+        for template in self.list_report_templates():
+            template_id = str(template.get("template_id") or "")
+            if template_id and self._read_runtime_cached_report(session_id, template_id) is not None:
+                result.append(template_id)
+        return result
+
+    def _write_cached_report(self, session_id: str, template_id: str, report: dict[str, Any]) -> None:
         self.config.cache_dir.mkdir(parents=True, exist_ok=True)
         payload = {
-            "version": 1,
+            "version": 2,
             "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "session_id": session_id,
+            "template_id": template_id,
             "report": report,
         }
-        self._cache_path(session_id).write_text(
+        self._cache_path(session_id, template_id).write_text(
             json.dumps(payload, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
@@ -570,7 +706,7 @@ class MeetingIntelligenceService:
         ]
         duration = max((float(row.get("end") or 0.0) for row in rows), default=0.0)
         updated_at = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat(timespec="seconds")
-        cached_report = self._read_runtime_cached_report(DEMO_SESSION_ID)
+        cached_report = self._read_runtime_cached_report(DEMO_SESSION_ID, STANDARD_TEMPLATE_ID)
         summary = {
             "id": DEMO_SESSION_ID,
             "title": "WhoSpeaksLive demo meeting",
@@ -786,9 +922,20 @@ def make_handler(service: MeetingIntelligenceService) -> type[BaseHTTPRequestHan
                 if parsed.path == "/api/sessions":
                     self._send_json({"sessions": service.list_sessions()})
                     return
+                if parsed.path == "/api/templates":
+                    self._send_json({
+                        "templates": service.list_report_templates(),
+                        "standard_template_id": STANDARD_TEMPLATE_ID,
+                    })
+                    return
+                if parsed.path == "/api/template":
+                    template_id = single_query_value(parsed.query, "template_id")
+                    self._send_json({"template": service.get_report_template(template_id)})
+                    return
                 if parsed.path == "/api/report":
                     session_id = single_query_value(parsed.query, "session_id")
-                    self._send_json(service.get_report(session_id))
+                    template_id = optional_query_value(parsed.query, "template_id", STANDARD_TEMPLATE_ID)
+                    self._send_json(service.get_report(session_id, template_id))
                     return
                 if parsed.path == "/api/generate-status":
                     job_id = single_query_value(parsed.query, "job_id")
@@ -801,21 +948,39 @@ def make_handler(service: MeetingIntelligenceService) -> type[BaseHTTPRequestHan
         def do_POST(self) -> None:
             parsed = urlparse(self.path)
             try:
-                if parsed.path not in {"/api/generate", "/api/generate-async", "/api/delete-report", "/api/llm-config"}:
+                if parsed.path not in {
+                    "/api/generate", "/api/generate-async", "/api/delete-report", "/api/llm-config",
+                    "/api/templates/save", "/api/templates/delete", "/api/templates/clone",
+                }:
                     self._send_json({"error": "not_found"}, status=HTTPStatus.NOT_FOUND)
                     return
                 payload = self._read_json_body()
                 if parsed.path == "/api/llm-config":
                     self._send_json({"config": service.update_llm_config(payload)})
                     return
+                if parsed.path == "/api/templates/save":
+                    self._send_json({"template": service.save_report_template(payload)})
+                    return
+                if parsed.path == "/api/templates/delete":
+                    deleted = service.delete_report_template(str(payload.get("template_id") or ""))
+                    self._send_json({"deleted": deleted})
+                    return
+                if parsed.path == "/api/templates/clone":
+                    template = service.clone_report_template(
+                        str(payload.get("template_id") or ""),
+                        str(payload.get("name") or ""),
+                    )
+                    self._send_json({"template": template})
+                    return
                 session_id = str(payload.get("session_id") or "").strip()
+                template_id = str(payload.get("template_id") or STANDARD_TEMPLATE_ID).strip()
                 if parsed.path == "/api/delete-report":
-                    self._send_json(service.delete_report(session_id))
+                    self._send_json(service.delete_report(session_id, template_id))
                     return
                 if parsed.path == "/api/generate-async":
-                    self._send_json({"job": service.start_generate_report(session_id)})
+                    self._send_json({"job": service.start_generate_report(session_id, template_id)})
                     return
-                self._send_json(service.generate_report(session_id))
+                self._send_json(service.generate_report(session_id, template_id=template_id))
             except Exception as exc:
                 self._send_json({"error": str(exc)}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
@@ -861,12 +1026,20 @@ def single_query_value(query: str, key: str) -> str:
     return str(values[0]).strip()
 
 
+def optional_query_value(query: str, key: str, default: str = "") -> str:
+    values = parse_qs(query).get(key) or []
+    if not values or not str(values[0]).strip():
+        return default
+    return str(values[0]).strip()
+
+
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Serve WhoSpeaks meeting intelligence reports.")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8798)
     parser.add_argument("--session-dir", type=Path, default=DEFAULT_SESSION_DIR)
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
+    parser.add_argument("--template-dir", type=Path, default=DEFAULT_TEMPLATE_DIR)
     parser.add_argument("--demo-transcript", type=Path)
     parser.add_argument("--env-file", type=Path, default=DEFAULT_ENV_FILE)
     parser.add_argument(
@@ -915,6 +1088,7 @@ def config_from_args(args: argparse.Namespace) -> MeetingIntelligenceServerConfi
     return MeetingIntelligenceServerConfig(
         session_dir=args.session_dir.expanduser().resolve(),
         cache_dir=args.cache_dir.expanduser().resolve(),
+        template_dir=args.template_dir.expanduser().resolve(),
         demo_transcript=args.demo_transcript.expanduser().resolve() if args.demo_transcript else None,
         llm_config=default_llm_config(args.llm_provider, **overrides),
         mock_llm=bool(args.mock_llm),
@@ -1000,6 +1174,8 @@ PAGE_HTML = r"""<!doctype html>
       box-sizing: border-box;
     }
 
+    [hidden] { display: none !important; }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -1013,7 +1189,8 @@ PAGE_HTML = r"""<!doctype html>
 
     button,
     input,
-    select {
+    select,
+    textarea {
       font: inherit;
     }
 
@@ -1028,7 +1205,7 @@ PAGE_HTML = r"""<!doctype html>
       background: rgba(255, 255, 255, 0.78);
       backdrop-filter: blur(12px);
       display: grid;
-      grid-template-rows: auto auto minmax(0, 1fr);
+      grid-template-rows: auto auto auto minmax(0, 1fr);
       min-height: 100vh;
       min-width: 0;
       overflow: hidden;
@@ -1640,19 +1817,74 @@ PAGE_HTML = r"""<!doctype html>
       font-weight: 620;
     }
 
-    .progress-panel {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel-soft);
-      padding: 12px;
-      display: grid;
-      gap: 9px;
-      max-width: 980px;
-      box-shadow: var(--shadow-soft);
+    body.progress-modal-open {
+      overflow: hidden;
     }
 
-    .progress-panel[hidden] {
+    .progress-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1200;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(20, 35, 31, 0.46);
+      backdrop-filter: blur(4px);
+    }
+
+    .progress-backdrop[hidden] {
       display: none;
+    }
+
+    .progress-dialog {
+      width: min(780px, 100%);
+      max-height: calc(100vh - 48px);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      border-radius: 16px;
+      background: var(--panel);
+      box-shadow: 0 24px 70px rgba(16, 34, 29, 0.28);
+    }
+
+    .progress-dialog-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 19px 22px 15px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .progress-dialog-header h2 {
+      margin: 3px 0 0;
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .progress-dialog-kicker {
+      color: var(--accent-strong);
+      font-size: 11px;
+      font-weight: 760;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .progress-panel {
+      padding: 20px 22px;
+      display: grid;
+      gap: 12px;
+      overflow: auto;
+      background: var(--panel-soft);
+    }
+
+    .progress-dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+      padding: 14px 22px;
+      border-top: 1px solid var(--line);
+      background: var(--panel);
     }
 
     .progress-line {
@@ -1688,6 +1920,10 @@ PAGE_HTML = r"""<!doctype html>
       transition: width 240ms ease;
     }
 
+    .progress-dialog.failed .progress-fill {
+      background: var(--red);
+    }
+
     .progress-log {
       display: grid;
       gap: 5px;
@@ -1707,6 +1943,12 @@ PAGE_HTML = r"""<!doctype html>
       color: var(--accent-strong);
       font-weight: 720;
       overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 640px) {
+      .progress-backdrop { padding: 0; }
+      .progress-dialog { width: 100%; max-height: 100vh; border-radius: 0; }
+      .progress-event { grid-template-columns: 1fr; gap: 2px; }
     }
 
     .tabbar {
@@ -1968,6 +2210,117 @@ PAGE_HTML = r"""<!doctype html>
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
+    .template-panel {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, #f7fbf9, #eef6f3);
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .template-panel-title,
+    .builder-heading-row,
+    .builder-section-heading,
+    .builder-field-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .template-panel-title strong { font-size: 13px; }
+    .template-panel select { width: 100%; }
+    .template-summary { color: var(--muted); font-size: 12px; line-height: 1.45; min-height: 34px; }
+    .template-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+    .template-actions .btn { min-height: 30px; padding: 7px 9px; font-size: 12px; flex: 1 1 auto; }
+    .template-origin { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .builder-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      background: rgba(15, 23, 42, 0.58);
+      backdrop-filter: blur(5px);
+    }
+
+    .builder-backdrop[hidden] { display: none; }
+
+    .builder-dialog {
+      width: min(1180px, 100%);
+      max-height: calc(100vh - 44px);
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      background: var(--panel);
+      border: 1px solid var(--line-strong);
+      border-radius: 18px;
+      box-shadow: 0 24px 80px rgba(15, 23, 42, 0.28);
+    }
+
+    .builder-header,
+    .builder-footer { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+    .builder-footer { border-top: 1px solid var(--line); border-bottom: 0; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .builder-header h2 { margin: 0; font-size: 20px; }
+    .builder-header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .builder-body { padding: 18px 20px 28px; overflow: auto; display: grid; gap: 18px; background: var(--panel-soft); }
+    .builder-card { border: 1px solid var(--line); background: var(--panel); border-radius: 13px; padding: 15px; box-shadow: var(--shadow-soft); }
+    .builder-meta-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; }
+    .builder-meta-grid .wide { grid-column: 1 / -1; }
+    .builder-card label { display: grid; gap: 6px; color: var(--slate); font-size: 12px; font-weight: 650; }
+    .builder-card input,
+    .builder-card select,
+    .builder-card textarea,
+    .template-panel select {
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      padding: 9px 10px;
+      min-width: 0;
+    }
+    .builder-card textarea { min-height: 76px; resize: vertical; line-height: 1.4; }
+    .builder-section-list { display: grid; gap: 14px; }
+    .builder-section-card { border-left: 4px solid var(--accent); }
+    .builder-section-heading h3 { margin: 0; font-size: 16px; }
+    .builder-section-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 11px; margin-top: 13px; }
+    .builder-section-grid .span-2 { grid-column: span 2; }
+    .builder-section-grid .wide { grid-column: 1 / -1; }
+    .builder-inline-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .builder-inline-actions .btn { padding: 6px 8px; font-size: 11px; }
+    .builder-fields { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 9px; }
+    .builder-field-row { display: grid; grid-template-columns: 0.75fr 0.9fr 0.7fr 1.25fr 1fr auto; gap: 8px; align-items: end; }
+    .builder-field-row .btn { margin-bottom: 1px; }
+    .builder-readonly-note { border: 1px solid #99c8b9; background: var(--accent-quiet); color: var(--accent-strong); border-radius: 9px; padding: 10px 12px; font-size: 13px; }
+    .builder-validation { color: var(--red); font-size: 12px; min-height: 18px; }
+    .builder-footer-actions { display: flex; gap: 8px; }
+
+    .attribute-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .attribute-chip { border-radius: 7px; padding: 5px 7px; background: var(--panel-soft); border: 1px solid var(--line); font-size: 12px; }
+    .grounding-warning { color: var(--red); background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 7px 9px; font-size: 12px; }
+    .report-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+    .report-table { width: 100%; border-collapse: collapse; min-width: 680px; }
+    .report-table th,
+    .report-table td { padding: 10px 11px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: start; font-size: 13px; }
+    .report-table th { color: var(--muted); background: var(--panel-soft); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+    .report-table tr:last-child td { border-bottom: 0; }
+    .timeline-list { display: grid; gap: 0; padding-left: 17px; border-left: 2px solid #a7d3c7; }
+    .timeline-list .item { position: relative; margin: 0 0 12px 12px; }
+    .timeline-list .item::before { content: ""; position: absolute; left: -21px; top: 17px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--accent); }
+    .quote-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+    .quote-layout .item p { font-size: 16px; line-height: 1.5; font-style: italic; }
+
+    @media (max-width: 900px) {
+      .builder-meta-grid,
+      .builder-section-grid,
+      .builder-field-row { grid-template-columns: 1fr; }
+      .builder-section-grid .span-2 { grid-column: auto; }
+      .builder-backdrop { padding: 0; }
+      .builder-dialog { width: 100%; max-height: 100vh; border-radius: 0; }
+    }
   </style>
 </head>
 <body>
@@ -2012,6 +2365,21 @@ PAGE_HTML = r"""<!doctype html>
           </div>
         </div>
       </div>
+      <section class="template-panel" aria-label="Report template">
+        <div class="template-panel-title">
+          <strong>Report template</strong>
+          <span class="badge hot">Generator</span>
+        </div>
+        <select id="templateSelect" aria-label="Choose report template"></select>
+        <div class="template-origin" id="templateBadges"></div>
+        <div class="template-summary" id="templateSummary" dir="auto">Loading report templates...</div>
+        <div class="template-actions">
+          <button class="btn primary" id="newTemplateBtn" type="button">New</button>
+          <button class="btn" id="inspectTemplateBtn" type="button">Inspect</button>
+          <button class="btn" id="cloneTemplateBtn" type="button">Clone</button>
+          <button class="btn danger" id="deleteTemplateBtn" type="button">Delete</button>
+        </div>
+      </section>
       <div class="toolbar">
         <input class="search" id="sessionSearch" type="search" placeholder="Filter sessions">
         <div class="button-row">
@@ -2039,7 +2407,7 @@ PAGE_HTML = r"""<!doctype html>
     <main>
       <header class="topbar">
         <div class="title-line">
-          <h2 id="reportTitle">Select a session</h2>
+          <h2 id="reportTitle" dir="auto">Select a session</h2>
           <div class="badge-row" id="reportBadges"></div>
         </div>
         <div class="report-meta-row">
@@ -2063,7 +2431,21 @@ PAGE_HTML = r"""<!doctype html>
           </div>
         </div>
         <div class="report-stats" id="reportStats" hidden></div>
-        <div class="progress-panel" id="progressPanel" hidden>
+      </header>
+      <nav class="tabbar" id="tabs"></nav>
+      <section class="content" id="content"></section>
+    </main>
+  </div>
+  <div class="progress-backdrop" id="progressOverlay" hidden>
+    <section class="progress-dialog" id="progressDialog" role="dialog" aria-modal="true" aria-labelledby="progressDialogTitle" aria-describedby="progressDetail">
+      <header class="progress-dialog-header">
+        <div>
+          <div class="progress-dialog-kicker">Report generator</div>
+          <h2 id="progressDialogTitle">Generating report</h2>
+        </div>
+        <button class="icon-btn" id="closeProgressBtn" type="button" aria-label="Close generation status" disabled>&times;</button>
+      </header>
+      <div class="progress-panel" id="progressPanel" aria-live="polite">
           <div class="progress-line">
             <span id="progressLabel">Queued</span>
             <span id="progressPercent">0%</span>
@@ -2073,30 +2455,44 @@ PAGE_HTML = r"""<!doctype html>
           </div>
           <div class="progress-detail" id="progressDetail"></div>
           <div class="progress-log" id="progressLog"></div>
+      </div>
+      <footer class="progress-dialog-footer">
+        <button class="btn primary" id="closeProgressFooterBtn" type="button" disabled>Generating...</button>
+      </footer>
+    </section>
+  </div>
+  <div class="builder-backdrop" id="templateBuilder" hidden>
+    <section class="builder-dialog" role="dialog" aria-modal="true" aria-labelledby="builderTitle">
+      <header class="builder-header">
+        <div class="builder-heading-row">
+          <div>
+            <h2 id="builderTitle">Report builder</h2>
+            <p id="builderSubtitle">Create a reusable report from flat, evidence-grounded sections.</p>
+          </div>
+          <button class="icon-btn" id="closeBuilderBtn" type="button" aria-label="Close report builder">×</button>
         </div>
       </header>
-      <nav class="tabbar" id="tabs"></nav>
-      <section class="content" id="content"></section>
-    </main>
+      <div class="builder-body" id="builderBody"></div>
+      <footer class="builder-footer">
+        <div class="builder-validation" id="builderValidation"></div>
+        <div class="builder-footer-actions">
+          <button class="btn" id="cancelBuilderBtn" type="button">Cancel</button>
+          <button class="btn primary" id="saveTemplateBtn" type="button">Save report template</button>
+        </div>
+      </footer>
+    </section>
   </div>
   <script>
-    const tabs = [
-      ["summary", "Summary", "list"],
-      ["decisions", "Decisions", "check"],
-      ["action_items", "Action items", "tasks"],
-      ["questions", "Questions", "question"],
-      ["risks", "Risks", "shield"],
-      ["evidence", "Evidence", "file"],
-      ["transcript", "Transcript", "wave"]
-    ];
     const state = {
       config: {},
       sessions: [],
+      templates: [],
+      templateId: "",
       sessionId: "",
       report: null,
       reportAvailable: false,
       transcriptRows: [],
-      activeTab: "summary",
+      activeTab: "",
       generating: false,
       generationJob: null,
       activeEvidenceId: "",
@@ -2107,7 +2503,10 @@ PAGE_HTML = r"""<!doctype html>
       providerModels: {},
       loadingModels: false,
       applyingProvider: false,
-      status: ""
+      status: "",
+      builderTemplate: null,
+      builderReadOnly: false,
+      builderMode: "new"
     };
 
     const el = (id) => document.getElementById(id);
@@ -2392,7 +2791,7 @@ PAGE_HTML = r"""<!doctype html>
         spark: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3ZM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
         users: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
       };
-      return icons[groups[name]] || tabIcon(groups[name] || name);
+      return icons[groups[name]] || tabIcon(groups[name] || name) || tabIcon("file");
     }
 
     function sectionLabel(name) {
@@ -2401,6 +2800,345 @@ PAGE_HTML = r"""<!doctype html>
 
     function pluralLabel(count, singular, plural = `${singular}s`) {
       return `${count} ${count === 1 ? singular : plural}`;
+    }
+
+    function deepCopy(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function currentTemplate() {
+      return state.templates.find((item) => item.template_id === state.templateId) || null;
+    }
+
+    function effectiveReportTemplate() {
+      return state.report?.report_template || currentTemplate() || {sections: []};
+    }
+
+    function reportSectionDefinitions() {
+      const definitions = effectiveReportTemplate()?.sections;
+      return Array.isArray(definitions) ? definitions : [];
+    }
+
+    function sectionTabId(key) {
+      return `section:${key}`;
+    }
+
+    function sectionIconName(definition) {
+      const kind = String(definition?.render_kind || "cards");
+      return kind === "timeline" ? "list" : kind === "quotes" ? "question" : kind === "table" ? "tasks" : "file";
+    }
+
+    function reportTabs() {
+      const sectionTabs = reportSectionDefinitions().map((definition) => [
+        sectionTabId(definition.key),
+        definition.title || sectionLabel(definition.key),
+        sectionIconName(definition),
+      ]);
+      return [...sectionTabs, ["evidence", "Evidence", "link"], ["transcript", "Transcript", "wave"]];
+    }
+
+    function ensureActiveTab() {
+      const available = reportTabs();
+      if (!available.some(([id]) => id === state.activeTab)) {
+        state.activeTab = available[0]?.[0] || "transcript";
+      }
+    }
+
+    function normalizeBuilderKey(value, fallback = "section") {
+      const key = String(value || "").toLowerCase().normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .slice(0, 64);
+      return key || fallback;
+    }
+
+    function defaultOutputField(index = 1) {
+      return {key: `field_${index}`, label: `Field ${index}`, type: "text", description: "", options: []};
+    }
+
+    function defaultSection(index = 1) {
+      return {
+        key: `section_${index}`,
+        title: `Section ${index}`,
+        objective: "Describe exactly what this section should find in the final speaker-labelled transcript.",
+        max_items: 6,
+        evidence_required: true,
+        render_kind: "cards",
+        sort_order: "relevance",
+        output_fields: [],
+      };
+    }
+
+    function newTemplateDraft() {
+      return {
+        schema_version: "report_template_v1",
+        name: "Untitled custom report",
+        description: "A reusable evidence-grounded report.",
+        version: 1,
+        builtin: false,
+        language_mode: "inherit",
+        privacy_policy: "inherit",
+        sections: [defaultSection(1)],
+      };
+    }
+
+    function cleanBuilderTemplate(template) {
+      const clean = deepCopy(template || {});
+      delete clean.read_only;
+      delete clean.source_kind;
+      delete clean.revision_hash;
+      clean.builtin = false;
+      clean.version = Number(clean.version || 1);
+      clean.sections = (clean.sections || []).map((section) => ({
+        key: normalizeBuilderKey(section.key, "section"),
+        title: String(section.title || "").trim(),
+        objective: String(section.objective || "").trim(),
+        max_items: Math.max(1, Math.min(20, Number(section.max_items || 6))),
+        evidence_required: Boolean(section.evidence_required),
+        render_kind: section.render_kind || "cards",
+        sort_order: section.sort_order || "relevance",
+        output_fields: (section.output_fields || []).map((field) => ({
+          key: normalizeBuilderKey(field.key, "field"),
+          label: String(field.label || "").trim(),
+          type: field.type || "text",
+          description: String(field.description || "").trim(),
+          options: Array.isArray(field.options) ? field.options.map((item) => String(item).trim()).filter(Boolean) : [],
+        })),
+      }));
+      return clean;
+    }
+
+    function renderTemplateControls() {
+      const select = el("templateSelect");
+      const predefined = state.templates.filter((item) => item.builtin);
+      const custom = state.templates.filter((item) => !item.builtin);
+      const optionHtml = (item) => `<option value="${escapeHtml(item.template_id)}" ${item.template_id === state.templateId ? "selected" : ""}>${escapeHtml(item.name)}</option>`;
+      select.innerHTML = [
+        `<optgroup label="Predefined reports">${predefined.map(optionHtml).join("")}</optgroup>`,
+        custom.length ? `<optgroup label="Custom reports">${custom.map(optionHtml).join("")}</optgroup>` : "",
+      ].join("");
+      const template = currentTemplate();
+      el("templateSummary").textContent = template?.description || "Choose or create a report template.";
+      el("templateBadges").innerHTML = template ? [
+        `<span class="badge ${template.builtin ? "hot" : ""}">${template.builtin ? "Predefined" : "Custom"}</span>`,
+        `<span class="badge">${escapeHtml(template.language_mode === "inherit" ? "Follow server language" : template.language_mode)}</span>`,
+        template.privacy_policy === "local_only" ? '<span class="badge warn">Local only</span>' : "",
+        `<span class="badge">${template.sections?.length || 0} sections</span>`,
+      ].join("") : "";
+      el("inspectTemplateBtn").disabled = !template;
+      el("cloneTemplateBtn").disabled = !template;
+      el("deleteTemplateBtn").disabled = !template || Boolean(template.builtin);
+      el("inspectTemplateBtn").textContent = template?.builtin ? "Inspect" : "Edit";
+    }
+
+    function builderValidationMessage(template) {
+      if (!String(template?.name || "").trim()) return "Give the report a name.";
+      if (!Array.isArray(template?.sections) || !template.sections.length) return "Add at least one section.";
+      if (template.sections.length > 16) return "A report can contain at most 16 sections.";
+      const keys = new Set();
+      for (const section of template.sections) {
+        const key = normalizeBuilderKey(section.key, "");
+        if (!key) return "Every section needs a key.";
+        if (keys.has(key)) return `Section key '${key}' is duplicated.`;
+        keys.add(key);
+        if (!String(section.title || "").trim()) return `Section '${key}' needs a title.`;
+        if (!String(section.objective || "").trim()) return `Section '${key}' needs an objective.`;
+        const fieldKeys = new Set();
+        for (const field of section.output_fields || []) {
+          const fieldKey = normalizeBuilderKey(field.key, "");
+          if (!fieldKey || !String(field.label || "").trim()) return `Every output field in '${key}' needs a key and label.`;
+          if (fieldKeys.has(fieldKey)) return `Output field '${fieldKey}' is duplicated in '${key}'.`;
+          fieldKeys.add(fieldKey);
+          if (field.type === "enum" && !(field.options || []).length) return `Enum field '${fieldKey}' needs at least one option.`;
+        }
+      }
+      return "";
+    }
+
+    function openTemplateBuilder(mode = "inspect") {
+      const source = currentTemplate();
+      state.builderMode = mode;
+      if (mode === "new") {
+        state.builderTemplate = newTemplateDraft();
+        state.builderReadOnly = false;
+      } else if (mode === "clone") {
+        state.builderTemplate = cleanBuilderTemplate(source || newTemplateDraft());
+        delete state.builderTemplate.template_id;
+        state.builderTemplate.name = `${source?.name || "Report"} copy`;
+        state.builderTemplate.version = 1;
+        state.builderReadOnly = false;
+      } else {
+        state.builderTemplate = deepCopy(source || newTemplateDraft());
+        state.builderReadOnly = Boolean(source?.builtin);
+      }
+      el("templateBuilder").hidden = false;
+      document.body.style.overflow = "hidden";
+      renderTemplateBuilder();
+    }
+
+    function closeTemplateBuilder() {
+      el("templateBuilder").hidden = true;
+      document.body.style.overflow = "";
+      state.builderTemplate = null;
+      el("builderValidation").textContent = "";
+    }
+
+    function renderTemplateBuilder() {
+      const template = state.builderTemplate;
+      if (!template) return;
+      const disabled = state.builderReadOnly ? "disabled" : "";
+      el("builderTitle").textContent = state.builderReadOnly ? "Inspect predefined report" : state.builderMode === "new" ? "Create custom report" : state.builderMode === "clone" ? "Clone report" : "Edit custom report";
+      el("builderSubtitle").textContent = state.builderReadOnly
+        ? "This is an ordinary report-template document. Clone it to make an editable copy."
+        : "Configure flat top-level sections, their output fields, layout, ordering, and evidence rules.";
+      const languageCodes = "inherit,af,ar,be,bg,ca,cs,cy,da,de,el,en,es,et,eu,fa,fi,fo,fr,gl,he,hi,hr,hu,hy,id,is,it,ja,ka,kk,ko,la,lt,lv,ml,mr,mt,my,nl,nn,no,pl,pt,ro,ru,sa,sd,sk,sl,sq,sr,sv,ta,te,th,tr,uk,ur,vi,zh".split(",");
+      const sections = (template.sections || []).map((section, sectionIndex) => {
+        const fields = (section.output_fields || []).map((field, fieldIndex) => `
+          <div class="builder-field-row" data-field-row="${fieldIndex}">
+            <label>Key<input ${disabled} data-section-index="${sectionIndex}" data-field-index="${fieldIndex}" data-field-prop="key" value="${escapeHtml(field.key || "")}"></label>
+            <label>Label<input ${disabled} data-section-index="${sectionIndex}" data-field-index="${fieldIndex}" data-field-prop="label" value="${escapeHtml(field.label || "")}"></label>
+            <label>Type<select ${disabled} data-section-index="${sectionIndex}" data-field-index="${fieldIndex}" data-field-prop="type">${["text","enum","speaker","date","timestamp","boolean","number"].map((type) => `<option ${field.type === type ? "selected" : ""}>${type}</option>`).join("")}</select></label>
+            <label>Description<input ${disabled} data-section-index="${sectionIndex}" data-field-index="${fieldIndex}" data-field-prop="description" value="${escapeHtml(field.description || "")}"></label>
+            <label>Enum options<input ${disabled} data-section-index="${sectionIndex}" data-field-index="${fieldIndex}" data-field-prop="options" value="${escapeHtml((field.options || []).join(", "))}" placeholder="open, closed"></label>
+            <button class="btn danger" type="button" ${disabled} data-field-action="remove" data-section-index="${sectionIndex}" data-field-index="${fieldIndex}">Remove</button>
+          </div>
+        `).join("");
+        return `
+          <article class="builder-card builder-section-card" data-section-card="${sectionIndex}">
+            <div class="builder-section-heading">
+              <h3 dir="auto">${escapeHtml(section.title || `Section ${sectionIndex + 1}`)}</h3>
+              <div class="builder-inline-actions">
+                <button class="btn" type="button" ${disabled} data-section-action="up" data-section-index="${sectionIndex}">↑ Up</button>
+                <button class="btn" type="button" ${disabled} data-section-action="down" data-section-index="${sectionIndex}">↓ Down</button>
+                <button class="btn danger" type="button" ${disabled} data-section-action="remove" data-section-index="${sectionIndex}">Remove</button>
+              </div>
+            </div>
+            <div class="builder-section-grid">
+              <label class="span-2">Title<input ${disabled} data-section-index="${sectionIndex}" data-section-prop="title" value="${escapeHtml(section.title || "")}"></label>
+              <label class="span-2">Key<input ${disabled} data-section-index="${sectionIndex}" data-section-prop="key" value="${escapeHtml(section.key || "")}"></label>
+              <label class="wide">What should this section find?<textarea ${disabled} data-section-index="${sectionIndex}" data-section-prop="objective">${escapeHtml(section.objective || "")}</textarea></label>
+              <label>Maximum items<input ${disabled} type="number" min="1" max="20" data-section-index="${sectionIndex}" data-section-prop="max_items" value="${Number(section.max_items || 6)}"></label>
+              <label>Layout<select ${disabled} data-section-index="${sectionIndex}" data-section-prop="render_kind">${["cards","table","timeline","quotes"].map((kind) => `<option ${section.render_kind === kind ? "selected" : ""}>${kind}</option>`).join("")}</select></label>
+              <label>Order<select ${disabled} data-section-index="${sectionIndex}" data-section-prop="sort_order">${["relevance","chronological","severity"].map((kind) => `<option ${section.sort_order === kind ? "selected" : ""}>${kind}</option>`).join("")}</select></label>
+              <label>Evidence<select ${disabled} data-section-index="${sectionIndex}" data-section-prop="evidence_required"><option value="true" ${section.evidence_required ? "selected" : ""}>Required</option><option value="false" ${!section.evidence_required ? "selected" : ""}>Optional</option></select></label>
+              <div class="builder-fields">
+                <div class="builder-field-heading"><strong>Configurable output fields</strong><button class="btn" type="button" ${disabled} data-section-action="add-field" data-section-index="${sectionIndex}">+ Add field</button></div>
+                ${fields || '<div class="meta">No custom fields. Items still include a title, body, status, confidence, and evidence tags.</div>'}
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+      el("builderBody").innerHTML = `
+        ${state.builderReadOnly ? '<div class="builder-readonly-note">Predefined reports use the same template format and generator as custom reports. Inspect every setting here, then Clone to customize it.</div>' : ""}
+        <section class="builder-card">
+          <div class="builder-meta-grid">
+            <label>Report name<input ${disabled} data-template-prop="name" value="${escapeHtml(template.name || "")}"></label>
+            <label>Report language<select ${disabled} data-template-prop="language_mode">${languageCodes.map((code) => `<option value="${code}" ${template.language_mode === code ? "selected" : ""}>${code === "inherit" ? "Follow report server" : code}</option>`).join("")}</select></label>
+            <label>Privacy<select ${disabled} data-template-prop="privacy_policy"><option value="inherit" ${template.privacy_policy === "inherit" ? "selected" : ""}>Follow provider settings</option><option value="local_only" ${template.privacy_policy === "local_only" ? "selected" : ""}>Local models only</option></select></label>
+            <label class="wide">Description<textarea ${disabled} data-template-prop="description">${escapeHtml(template.description || "")}</textarea></label>
+          </div>
+        </section>
+        <div class="builder-section-list">${sections}</div>
+        <button class="btn primary" type="button" ${disabled} id="addSectionBtn">+ Add top-level section</button>
+      `;
+      el("saveTemplateBtn").hidden = state.builderReadOnly;
+      el("builderValidation").textContent = state.builderReadOnly ? "" : builderValidationMessage(template);
+      attachBuilderHandlers();
+    }
+
+    function attachBuilderHandlers() {
+      const template = state.builderTemplate;
+      if (!template || state.builderReadOnly) return;
+      el("builderBody").querySelectorAll("[data-template-prop]").forEach((node) => {
+        node.addEventListener("input", () => { template[node.dataset.templateProp] = node.value; el("builderValidation").textContent = builderValidationMessage(template); });
+        node.addEventListener("change", () => { template[node.dataset.templateProp] = node.value; renderTemplateBuilder(); });
+      });
+      el("builderBody").querySelectorAll("[data-section-prop]").forEach((node) => {
+        const update = () => {
+          const section = template.sections[Number(node.dataset.sectionIndex)];
+          const prop = node.dataset.sectionProp;
+          let value = node.value;
+          if (prop === "max_items") value = Number(value);
+          if (prop === "evidence_required") value = value === "true";
+          if (prop === "key") value = normalizeBuilderKey(value, value);
+          section[prop] = value;
+          el("builderValidation").textContent = builderValidationMessage(template);
+        };
+        node.addEventListener("input", update);
+        node.addEventListener("change", () => { update(); renderTemplateBuilder(); });
+      });
+      el("builderBody").querySelectorAll("[data-field-prop]").forEach((node) => {
+        const update = () => {
+          const field = template.sections[Number(node.dataset.sectionIndex)].output_fields[Number(node.dataset.fieldIndex)];
+          const prop = node.dataset.fieldProp;
+          field[prop] = prop === "options" ? node.value.split(",").map((item) => item.trim()).filter(Boolean) : prop === "key" ? normalizeBuilderKey(node.value, node.value) : node.value;
+          el("builderValidation").textContent = builderValidationMessage(template);
+        };
+        node.addEventListener("input", update);
+        node.addEventListener("change", () => { update(); renderTemplateBuilder(); });
+      });
+      el("builderBody").querySelectorAll("[data-section-action]").forEach((button) => button.addEventListener("click", () => {
+        const index = Number(button.dataset.sectionIndex);
+        const action = button.dataset.sectionAction;
+        if (action === "remove") template.sections.splice(index, 1);
+        if (action === "up" && index > 0) [template.sections[index - 1], template.sections[index]] = [template.sections[index], template.sections[index - 1]];
+        if (action === "down" && index < template.sections.length - 1) [template.sections[index + 1], template.sections[index]] = [template.sections[index], template.sections[index + 1]];
+        if (action === "add-field") template.sections[index].output_fields.push(defaultOutputField(template.sections[index].output_fields.length + 1));
+        renderTemplateBuilder();
+      }));
+      el("builderBody").querySelectorAll("[data-field-action='remove']").forEach((button) => button.addEventListener("click", () => {
+        template.sections[Number(button.dataset.sectionIndex)].output_fields.splice(Number(button.dataset.fieldIndex), 1);
+        renderTemplateBuilder();
+      }));
+      el("addSectionBtn")?.addEventListener("click", () => {
+        if (template.sections.length >= 16) return;
+        template.sections.push(defaultSection(template.sections.length + 1));
+        renderTemplateBuilder();
+        el("builderBody").lastElementChild?.scrollIntoView({behavior: "smooth", block: "end"});
+      });
+    }
+
+    async function saveTemplateBuilder() {
+      if (!state.builderTemplate || state.builderReadOnly) return;
+      const error = builderValidationMessage(state.builderTemplate);
+      el("builderValidation").textContent = error;
+      if (error) return;
+      const payload = cleanBuilderTemplate(state.builderTemplate);
+      if (state.builderMode === "new" || state.builderMode === "clone") delete payload.template_id;
+      try {
+        const data = await api("/api/templates/save", {method: "POST", body: JSON.stringify({template: payload})});
+        closeTemplateBuilder();
+        await loadTemplates(data.template?.template_id || "");
+        setStatus("Report template saved");
+        if (state.sessionId) await selectSession(state.sessionId);
+      } catch (error) {
+        el("builderValidation").textContent = error.message;
+      }
+    }
+
+    async function deleteSelectedTemplate() {
+      const template = currentTemplate();
+      if (!template || template.builtin) return;
+      if (!confirm(`Delete custom report template '${template.name}'? Cached reports are left untouched.`)) return;
+      await api("/api/templates/delete", {method: "POST", body: JSON.stringify({template_id: template.template_id})});
+      await loadTemplates(state.config.standard_template_id || "");
+      state.report = null;
+      state.reportAvailable = false;
+      if (state.sessionId) await selectSession(state.sessionId);
+      setStatus("Custom report template deleted");
+    }
+
+    async function loadTemplates(preferredTemplateId = "") {
+      const data = await api("/api/templates");
+      state.templates = data.templates || [];
+      const candidate = preferredTemplateId || state.templateId || data.standard_template_id || state.config.standard_template_id;
+      state.templateId = state.templates.some((item) => item.template_id === candidate)
+        ? candidate
+        : state.templates[0]?.template_id || "";
+      ensureActiveTab();
+      renderTemplateControls();
     }
 
     function renderSessions() {
@@ -2415,7 +3153,9 @@ PAGE_HTML = r"""<!doctype html>
         const rows = Number(session.transcript_rows || 0);
         const speakers = Number(session.speaker_count || 0);
         const source = session.source_kind === "demo_transcript" ? "Demo" : "Saved";
-        const cached = session.has_cached_report || session.has_meeting_intelligence;
+        const cached = Array.isArray(session.report_template_ids)
+          ? session.report_template_ids.includes(state.templateId)
+          : session.has_cached_report || session.has_meeting_intelligence;
         const sessionTime = formatDateTime(session.updated_at || session.created_at);
         return `
           <button class="session${active}" type="button" data-session-id="${escapeHtml(session.id)}">
@@ -2440,10 +3180,11 @@ PAGE_HTML = r"""<!doctype html>
     }
 
     function renderTabs() {
-      el("tabs").innerHTML = tabs.map(([id, label, icon]) => `
+      ensureActiveTab();
+      el("tabs").innerHTML = reportTabs().map(([id, label, icon]) => `
         <button class="tab ${id === state.activeTab ? "active" : ""}" type="button" data-tab="${id}">
           ${tabIcon(icon)}
-          ${escapeHtml(label)}
+          <span dir="auto">${escapeHtml(label)}</span>
         </button>
       `).join("");
       document.querySelectorAll(".tab").forEach((button) => {
@@ -2486,12 +3227,14 @@ PAGE_HTML = r"""<!doctype html>
       }
       const evidenceCount = Array.isArray(state.report.evidence_index) ? state.report.evidence_index.length : 0;
       const rows = Number(state.transcriptRows?.length || 0);
+      const definitions = reportSectionDefinitions();
+      const totalItems = definitions.reduce((total, definition) => total + sectionItemCount([definition.key]), 0);
+      const groundedItems = definitions.reduce((total, definition) => total + (getSection(definition.key).items || []).filter((item) => item.grounding_status !== "missing_required_evidence").length, 0);
       stats.hidden = false;
       stats.innerHTML = [
-        statCard("check", sectionItemCount(["decisions", "deadlines"]), "Decisions"),
-        statCard("tasks", sectionItemCount(["action_items"]), "Action items"),
-        statCard("question", sectionItemCount(["open_questions", "ask_this_meeting"]), "Questions"),
-        statCard("shield", sectionItemCount(["risks", "disagreements"]), "Risks"),
+        statCard("file", definitions.length, "Report sections"),
+        statCard("tasks", totalItems, "Generated items"),
+        statCard("check", groundedItems, "Evidence-grounded"),
         statCard("link", evidenceCount, "Evidence links"),
         statCard("wave", rows, "Transcript rows")
       ].join("");
@@ -2503,20 +3246,43 @@ PAGE_HTML = r"""<!doctype html>
       el("reportTitle").textContent = report.title || session.title || "Select a session";
       const badges = [];
       if (report.pipeline) badges.push(`<span class="badge hot">${escapeHtml(report.pipeline.mode || "pipeline")}</span>`);
+      const template = effectiveReportTemplate();
+      if (template.name) badges.push(`<span class="badge">${escapeHtml(template.name)}</span>`);
+      if (template.privacy_policy === "local_only") badges.push('<span class="badge warn">Local only</span>');
       if (report.provider) badges.push(`<span class="badge">${escapeHtml(report.provider)}</span>`);
+      if (report.report_language) badges.push(`<span class="badge">${escapeHtml(report.report_language)}</span>`);
       if (report.pipeline?.segments) badges.push(`<span class="badge">${report.pipeline.segments} segments</span>`);
       el("reportBadges").innerHTML = badges.join("");
       renderReportStats();
     }
 
+    function generationIsTerminal(job = state.generationJob) {
+      return Boolean(job && ["succeeded", "failed"].includes(job.status));
+    }
+
+    function openProgressOverlay() {
+      el("progressOverlay").hidden = false;
+      document.body.classList.add("progress-modal-open");
+    }
+
+    function closeProgressOverlay() {
+      if (state.generating || !generationIsTerminal()) return;
+      el("progressOverlay").hidden = true;
+      document.body.classList.remove("progress-modal-open");
+    }
+
     function renderProgress() {
-      const panel = el("progressPanel");
+      const overlay = el("progressOverlay");
+      const dialog = el("progressDialog");
       const job = state.generationJob;
       if (!job) {
-        panel.hidden = true;
+        overlay.hidden = true;
+        document.body.classList.remove("progress-modal-open");
         return;
       }
-      panel.hidden = false;
+      const terminal = generationIsTerminal(job);
+      const canClose = terminal && !state.generating;
+      if (state.generating || !terminal) openProgressOverlay();
       const percent = Math.max(0, Math.min(100, Number(job.percent || 0)));
       el("progressLabel").textContent = job.message || "Generating report";
       el("progressPercent").textContent = `${percent}%`;
@@ -2531,6 +3297,21 @@ PAGE_HTML = r"""<!doctype html>
           <span>${escapeHtml(event.message || "")}${event.detail ? `: ${escapeHtml(event.detail)}` : ""}</span>
         </div>
       `).join("");
+      dialog.classList.toggle("failed", job.status === "failed");
+      dialog.classList.toggle("succeeded", job.status === "succeeded");
+      el("progressDialogTitle").textContent = job.status === "succeeded"
+        ? "Report generated"
+        : job.status === "failed"
+          ? "Report generation failed"
+          : "Generating report";
+      el("closeProgressBtn").disabled = !canClose;
+      const footerButton = el("closeProgressFooterBtn");
+      footerButton.disabled = !canClose;
+      footerButton.textContent = job.status === "succeeded"
+        ? "View report"
+        : job.status === "failed"
+          ? "Close"
+          : "Generating...";
     }
 
     function getSection(name) {
@@ -2561,7 +3342,7 @@ PAGE_HTML = r"""<!doctype html>
       if (!item || !rowIds.length) return;
       const hadEvidenceFocus = Boolean(state.activeEvidenceId);
       state.evidenceReturnTab = state.activeTab === "transcript"
-        ? state.evidenceReturnTab || "summary"
+        ? state.evidenceReturnTab || reportTabs()[0]?.[0] || "transcript"
         : state.activeTab;
       state.activeEvidenceId = evidenceId;
       state.highlightRowIds = rowIds;
@@ -2581,7 +3362,7 @@ PAGE_HTML = r"""<!doctype html>
     }
 
     function returnFromEvidence() {
-      const tab = state.evidenceReturnTab || "summary";
+      const tab = state.evidenceReturnTab || reportTabs()[0]?.[0] || "transcript";
       clearEvidenceFocus();
       state.activeTab = tab;
       try {
@@ -2607,30 +3388,75 @@ PAGE_HTML = r"""<!doctype html>
       }
     }
 
-    function itemHtml(item, evidence, sectionName = "") {
+    function evidenceChipsHtml(item, evidence) {
       const evidenceIds = Array.isArray(item.evidence_ids) ? item.evidence_ids : [];
-      const chips = evidenceIds.map((id) => {
+      return evidenceIds.map((id) => {
         const ev = evidence.get(id);
         const label = ev ? `${id} ${ev.start || ""}` : id;
         const rowLabel = ev ? ` / ${evidenceRowLabel(ev)}` : "";
         return `<a class="badge hot evidence-link" href="#evidence-${encodeURIComponent(id)}" data-evidence-id="${escapeHtml(id)}">${escapeHtml(label + rowLabel)}</a>`;
       }).join("");
+    }
+
+    function itemAttributeMap(item) {
+      const result = new Map();
+      (Array.isArray(item?.attributes) ? item.attributes : []).forEach((attribute) => {
+        const key = String(attribute?.key || "");
+        if (key) result.set(key, String(attribute?.value || ""));
+      });
+      return result;
+    }
+
+    function itemHtml(item, evidence, sectionName = "") {
+      const chips = evidenceChipsHtml(item, evidence);
       const meta = [
         item.status ? `Status: ${item.status}` : "",
         item.owner ? `Owner: ${item.owner}` : "",
         item.due ? `Due: ${item.due}` : "",
         item.confidence ? `Confidence: ${item.confidence}` : ""
       ].filter(Boolean).map((value) => `<span class="badge">${escapeHtml(value)}</span>`).join("");
+      const attributes = Array.from(itemAttributeMap(item).entries()).map(([key, value]) => `<span class="attribute-chip"><strong>${escapeHtml(key)}:</strong> ${escapeHtml(value)}</span>`).join("");
+      const grounding = item.grounding_status === "missing_required_evidence"
+        ? '<div class="grounding-warning">Required transcript evidence is missing. Review this item before use.</div>'
+        : "";
       return `
-        <article class="item">
+        <article class="item" dir="auto">
           <div class="item-title-row">
             ${sectionIcon(sectionName)}
             <h3>${escapeHtml(item.title || "Untitled")}</h3>
           </div>
           <p>${escapeHtml(item.body || item.summary || "")}</p>
+          ${attributes ? `<div class="attribute-list">${attributes}</div>` : ""}
+          ${grounding}
           <div class="item-footer">${meta}${chips}</div>
         </article>
       `;
+    }
+
+    function tableSectionItems(section, definition, evidence) {
+      const items = Array.isArray(section.items) ? section.items : [];
+      const fields = Array.isArray(definition.output_fields) ? definition.output_fields : [];
+      const headings = fields.map((field) => `<th>${escapeHtml(field.label || field.key)}</th>`).join("");
+      const rows = items.map((item) => {
+        const attributes = itemAttributeMap(item);
+        return `<tr dir="auto">
+          <td><strong>${escapeHtml(item.title || "Untitled")}</strong><br><span class="meta">${escapeHtml(item.body || "")}</span>${item.grounding_status === "missing_required_evidence" ? '<div class="grounding-warning">Evidence missing</div>' : ""}</td>
+          ${fields.map((field) => `<td>${escapeHtml(attributes.get(field.key) || "—")}</td>`).join("")}
+          <td><div class="item-footer">${evidenceChipsHtml(item, evidence) || '<span class="badge warn">No evidence</span>'}</div></td>
+        </tr>`;
+      }).join("");
+      return `<div class="report-table-wrap"><table class="report-table"><thead><tr><th>Item</th>${headings}<th>Evidence</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }
+
+    function renderedSectionItems(section, definition, evidence) {
+      const items = Array.isArray(section.items) ? section.items : [];
+      if (!items.length) return `<div class="empty">No ${escapeHtml(definition.title || section.section || "items")} extracted.</div>`;
+      const kind = definition.render_kind || "cards";
+      if (kind === "table") return tableSectionItems(section, definition, evidence);
+      const cards = items.map((item) => itemHtml(item, evidence, definition.key)).join("");
+      if (kind === "timeline") return `<div class="timeline-list">${cards}</div>`;
+      if (kind === "quotes") return `<div class="quote-layout">${cards}</div>`;
+      return cards;
     }
 
     function sectionHtml(title, sectionNames) {
@@ -2638,17 +3464,16 @@ PAGE_HTML = r"""<!doctype html>
       const blocks = sectionNames.map((name) => {
         const section = getSection(name);
         const items = Array.isArray(section.items) ? section.items : [];
-        const body = items.length
-          ? items.map((item) => itemHtml(item, evidence, name)).join("")
-          : `<div class="empty">No ${sectionLabel(name)} extracted.</div>`;
+        const definition = section.definition || reportSectionDefinitions().find((item) => item.key === name) || {key: name, title: sectionLabel(name), render_kind: "cards", output_fields: []};
+        const body = renderedSectionItems(section, definition, evidence);
         return `
           <div class="section-block">
             <h3 class="section-heading">
               ${sectionIcon(name)}
-              <span>${escapeHtml(sectionLabel(name))}</span>
+              <span dir="auto">${escapeHtml(definition.title || sectionLabel(name))}</span>
               <span class="section-count">${escapeHtml(pluralLabel(items.length, "item"))}</span>
             </h3>
-            ${section.summary ? `<div class="item"><p>${escapeHtml(section.summary)}</p></div>` : ""}
+            ${section.summary ? `<div class="item" dir="auto"><p>${escapeHtml(section.summary)}</p></div>` : ""}
             ${body}
           </div>
         `;
@@ -2711,22 +3536,10 @@ PAGE_HTML = r"""<!doctype html>
         return;
       }
       const tab = state.activeTab;
-      if (tab === "summary") {
-        el("content").innerHTML = sectionHtml("Summary", [
-          "executive_summary",
-          "structured_brief",
-          "speaker_map",
-          "speaker_participation",
-          "discussion_threads"
-        ]);
-      } else if (tab === "decisions") {
-        el("content").innerHTML = sectionHtml("Decisions", ["decisions", "deadlines", "disagreements"]);
-      } else if (tab === "action_items") {
-        el("content").innerHTML = sectionHtml("Action items", ["action_items"]);
-      } else if (tab === "questions") {
-        el("content").innerHTML = sectionHtml("Questions", ["open_questions", "ask_this_meeting"]);
-      } else if (tab === "risks") {
-        el("content").innerHTML = sectionHtml("Risks", ["risks"]);
+      if (tab.startsWith("section:")) {
+        const sectionKey = tab.slice("section:".length);
+        const definition = reportSectionDefinitions().find((item) => item.key === sectionKey) || {title: sectionLabel(sectionKey)};
+        el("content").innerHTML = sectionHtml(definition.title || sectionLabel(sectionKey), [sectionKey]);
       } else if (tab === "evidence") {
         el("content").innerHTML = evidenceHtml();
       } else if (tab === "transcript") {
@@ -2748,6 +3561,7 @@ PAGE_HTML = r"""<!doctype html>
       el("deleteReportLabel").textContent = deleteLabel;
       deleteButton.title = state.confirmDelete ? "Confirm cached report deletion" : "Delete cached report";
       deleteButton.setAttribute("aria-label", deleteButton.title);
+      renderTemplateControls();
       renderSessions();
       renderTabs();
       renderHeader();
@@ -2821,13 +3635,14 @@ PAGE_HTML = r"""<!doctype html>
       setStatus("Loading report");
       render();
       try {
-        const data = await api(`/api/report?session_id=${encodeURIComponent(sessionId)}`);
+        const data = await api(`/api/report?session_id=${encodeURIComponent(sessionId)}&template_id=${encodeURIComponent(state.templateId)}`);
         state.report = data.report;
         state.reportAvailable = Boolean(data.available);
         state.transcriptRows = data.transcript_rows || [];
+        ensureActiveTab();
         setStatus(data.available ? "Cached report loaded" : data.stale ? "Cached report is stale" : "Ready");
         render();
-        if (!data.available && state.config.auto_generate) {
+        if (!data.available && state.config.auto_generate && state.templateId === state.config.standard_template_id) {
           await generateReport();
         }
       } catch (error) {
@@ -2856,16 +3671,24 @@ PAGE_HTML = r"""<!doctype html>
       try {
         const data = await api("/api/generate-async", {
           method: "POST",
-          body: JSON.stringify({session_id: state.sessionId})
+          body: JSON.stringify({session_id: state.sessionId, template_id: state.templateId})
         });
         state.generationJob = data.job;
         await pollGenerationJob(data.job.job_id);
-        const reportData = await api(`/api/report?session_id=${encodeURIComponent(state.sessionId)}`);
+        const reportData = await api(`/api/report?session_id=${encodeURIComponent(state.sessionId)}&template_id=${encodeURIComponent(state.templateId)}`);
         state.report = reportData.report;
         state.reportAvailable = Boolean(reportData.available);
         state.transcriptRows = reportData.transcript_rows || [];
         setStatus("Report generated");
       } catch (error) {
+        state.generationJob = {
+          ...(state.generationJob || {}),
+          status: "failed",
+          stage: "failed",
+          message: "Report generation failed",
+          detail: error.message,
+          error: error.message
+        };
         setStatus(error.message);
       } finally {
         state.generating = false;
@@ -2890,12 +3713,12 @@ PAGE_HTML = r"""<!doctype html>
       try {
         const data = await api("/api/delete-report", {
           method: "POST",
-          body: JSON.stringify({session_id: state.sessionId})
+          body: JSON.stringify({session_id: state.sessionId, template_id: state.templateId})
         });
         state.report = null;
         state.reportAvailable = false;
         state.transcriptRows = data.transcript_rows || state.transcriptRows || [];
-        state.activeTab = "summary";
+        state.activeTab = reportTabs()[0]?.[0] || "transcript";
         setStatus(data.deleted ? "Report deleted" : "No cached report found");
         await loadSessions(false);
       } catch (error) {
@@ -2934,6 +3757,7 @@ PAGE_HTML = r"""<!doctype html>
       try {
         state.config = (await api("/api/config")).config || {};
         syncProviderDraftFromConfig();
+        await loadTemplates(state.config.standard_template_id || "");
         await loadSessions(true);
         render();
       } catch (error) {
@@ -2949,6 +3773,30 @@ PAGE_HTML = r"""<!doctype html>
     el("headerRefreshBtn").addEventListener("click", () => refreshSelectedReport().catch((error) => setStatus(error.message)));
     el("refreshBtn").addEventListener("click", () => loadSessions(false).then(render).catch((error) => setStatus(error.message)));
     el("sessionSearch").addEventListener("input", renderSessions);
+    el("templateSelect").addEventListener("change", async () => {
+      state.templateId = el("templateSelect").value;
+      state.report = null;
+      state.reportAvailable = false;
+      clearEvidenceFocus();
+      state.activeTab = sectionTabId(currentTemplate()?.sections?.[0]?.key || "");
+      render();
+      if (state.sessionId) await selectSession(state.sessionId);
+    });
+    el("newTemplateBtn").addEventListener("click", () => openTemplateBuilder("new"));
+    el("inspectTemplateBtn").addEventListener("click", () => openTemplateBuilder("inspect"));
+    el("cloneTemplateBtn").addEventListener("click", () => openTemplateBuilder("clone"));
+    el("deleteTemplateBtn").addEventListener("click", () => deleteSelectedTemplate().catch((error) => setStatus(error.message)));
+    el("closeBuilderBtn").addEventListener("click", closeTemplateBuilder);
+    el("cancelBuilderBtn").addEventListener("click", closeTemplateBuilder);
+    el("saveTemplateBtn").addEventListener("click", saveTemplateBuilder);
+    el("templateBuilder").addEventListener("click", (event) => {
+      if (event.target === el("templateBuilder")) closeTemplateBuilder();
+    });
+    el("closeProgressBtn").addEventListener("click", closeProgressOverlay);
+    el("closeProgressFooterBtn").addEventListener("click", closeProgressOverlay);
+    el("progressOverlay").addEventListener("click", (event) => {
+      if (event.target === el("progressOverlay")) closeProgressOverlay();
+    });
     el("llmProviderSelect").addEventListener("change", () => {
       const option = providerOption(el("llmProviderSelect").value);
       state.providerDraft.provider = option.id || el("llmProviderSelect").value;
@@ -2985,11 +3833,15 @@ PAGE_HTML = r"""<!doctype html>
     el("loadModelsBtn").addEventListener("click", () => loadProviderModels());
     window.addEventListener("popstate", () => {
       if (state.activeEvidenceId) {
-        const tab = state.evidenceReturnTab || "summary";
+        const tab = state.evidenceReturnTab || reportTabs()[0]?.[0] || "transcript";
         clearEvidenceFocus();
         state.activeTab = tab;
         render();
       }
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !el("templateBuilder").hidden) closeTemplateBuilder();
+      if (event.key === "Escape" && !el("progressOverlay").hidden) closeProgressOverlay();
     });
     boot();
   </script>

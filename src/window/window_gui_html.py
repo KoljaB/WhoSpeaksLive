@@ -386,17 +386,15 @@ HTML = r"""<!doctype html>
     .transcript-panel.hide-review-hints .review-reasons.needs-review-hints { display:none; }
     .speaker-name, .speaker-row-title { font-weight:600; }
     .row.provisional-assignment .speaker-name { opacity:.5; }
-    .text { font-size:15px; line-height:1.34; }
-    .text.translation-secondary { color:#8392A2; font-size:12.5px; line-height:1.3; margin-bottom:3px; }
-    .text.translation-secondary::before { content:attr(data-language-label); display:inline; margin-right:6px; color:#647586; font-size:10px; text-transform:uppercase; letter-spacing:.035em; }
+    .text { color:#E8EEF5; font-size:15px; line-height:1.34; }
+    .text.translation-secondary { color:#E8EEF5; font-size:15px; line-height:1.34; margin-bottom:3px; }
     .translation-lines { display:grid; gap:3px; }
     .translation-lines[hidden] { display:none; }
     .translation-line { min-width:0; color:#E8EEF5; font-size:15px; line-height:1.34; }
-    .translation-line.translation-additional { color:#D7DEE8; }
+    .translation-line.translation-additional { color:#E8EEF5; }
     .translation-language { display:inline-flex; align-items:center; gap:4px; max-width:110px; margin-right:6px; color:#718192; font-size:10px; text-transform:uppercase; letter-spacing:.035em; overflow:hidden; text-overflow:ellipsis; vertical-align:baseline; white-space:nowrap; }
     .translation-language-flag { width:14px; height:10.5px; flex:0 0 auto; border-radius:1px; object-fit:cover; box-shadow:0 0 0 1px rgba(255,255,255,.12); }
-    .translation-line.translation-pending { color:#8392A2; font-size:12.5px; }
-    .translation-line.translation-error { color:#B98A87; font-size:12.5px; }
+    .translation-line.translation-pending, .translation-line.translation-error { color:#E8EEF5; font-size:15px; }
     .translation-inline-state { margin-left:6px; color:#8392A2; font-size:11px; white-space:nowrap; }
     .row.realtime { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 10%, #0B1015); }
     .row.realtime.live-speaker-row { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, #0B1015); border-bottom-color:color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, var(--line)); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, transparent), inset 7px 0 14px color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, transparent); }
@@ -712,6 +710,16 @@ HTML = r"""<!doctype html>
                   <span>Show language</span>
                   <select id="translationPrimaryTarget" aria-label="Translation shown in single-language mode"></select>
                 </label>
+                <label class="translation-menu-field">
+                  <span>Language label</span>
+                  <select id="translationLanguageLabelMode" aria-label="Language label style">
+                    <option value="flag">Flag only</option>
+                    <option value="flag_name">Flag + full name</option>
+                    <option value="name">Full name only</option>
+                    <option value="flag_code">Flag + code</option>
+                    <option value="code">Code only</option>
+                  </select>
+                </label>
                 <label class="translation-include-original">
                   <input id="translationIncludeOriginal" type="checkbox">
                   <span>Also show original</span>
@@ -990,6 +998,7 @@ const translationProviderAttribution = document.getElementById("translationProvi
 const translationDisplayModeControl = document.getElementById("translationDisplayMode");
 const translationPrimaryField = document.getElementById("translationPrimaryField");
 const translationPrimaryTargetControl = document.getElementById("translationPrimaryTarget");
+const translationLanguageLabelModeControl = document.getElementById("translationLanguageLabelMode");
 const translationIncludeOriginalControl = document.getElementById("translationIncludeOriginal");
 const translationTargetList = document.getElementById("translationTargetList");
 const translationMenuHint = document.getElementById("translationMenuHint");
@@ -1114,8 +1123,10 @@ const transcriptReviewHintsStorageKey = "whospeaks.demo.show_transcript_review_h
 const translationDisplayModeStorageKey = "whospeaks.demo.translation_display_mode.v1";
 const translationPrimaryTargetStorageKey = "whospeaks.demo.translation_primary_target.v1";
 const translationIncludeOriginalStorageKey = "whospeaks.demo.translation_include_original.v1";
+const translationLanguageLabelModeStorageKey = "whospeaks.demo.translation_language_label_mode.v1";
 let translationDisplayMode = "original";
 let translationPrimaryTarget = "";
+let translationLanguageLabelMode = "flag_name";
 let translationSelectedTargets = new Set();
 let translationStatesBySentence = new Map();
 let translationConfigureTimer = null;
@@ -3583,6 +3594,13 @@ function translationLanguageOptions() {
   });
   return result;
 }
+function normalizedTranslationLanguageLabelMode(value) {
+  const mode = String(value || "").trim().toLowerCase();
+  return ["flag", "flag_name", "name", "flag_code", "code"].includes(mode) ? mode : "flag_name";
+}
+function translationLanguageCodeLabel(code) {
+  return normalizedTranslationLanguageCode(code).toUpperCase();
+}
 function translationConfiguredTargets() {
   const candidates = translationConfig && (
     translationConfig.selected_targets
@@ -3635,11 +3653,17 @@ function translationProviderNotice() {
 }
 function translationLanguageName(code) {
   const normalized = normalizedTranslationLanguageCode(code);
+  if (normalized && normalized === normalizedTranslationLanguageCode(languageConfig.code)) {
+    return String(languageConfig.name || normalized);
+  }
   const option = translationLanguageOptions().find(item => item.code === normalized);
   return option ? option.name : String(code || normalized || "Translation");
 }
 function translationLanguageFlagUrl(code) {
   const normalized = normalizedTranslationLanguageCode(code);
+  if (normalized && normalized === normalizedTranslationLanguageCode(languageConfig.code)) {
+    return String(languageConfig.flag_url || "");
+  }
   const option = translationLanguageOptions().find(item => item.code === normalized);
   return option ? String(option.flag_url || "") : "";
 }
@@ -3932,15 +3956,15 @@ function translationStateForRow(row, languageCode) {
   }
   return {status:"translating", text:completedText, error:""};
 }
-function createTranslationLine(languageCode, state, options = {}) {
-  const line = document.createElement("div");
-  line.className = "translation-line";
-  line.lang = normalizedTranslationLanguageCode(languageCode);
-  if (options.additional) line.classList.add("translation-additional");
-  const showLabel = options.show_label || state.status !== "complete";
-  if (showLabel) {
-    const label = document.createElement("span");
-    label.className = "translation-language";
+function createTranslationLanguageLabel(languageCode) {
+  const label = document.createElement("span");
+  label.className = "translation-language";
+  const languageName = translationLanguageName(languageCode);
+  const showFlag = translationLanguageLabelMode === "flag" || translationLanguageLabelMode.startsWith("flag_");
+  const showName = translationLanguageLabelMode === "name" || translationLanguageLabelMode === "flag_name";
+  const showCode = translationLanguageLabelMode === "code" || translationLanguageLabelMode === "flag_code";
+  let hasFlag = false;
+  if (showFlag) {
     const flagUrl = translationLanguageFlagUrl(languageCode);
     if (flagUrl) {
       const flag = document.createElement("img");
@@ -3949,10 +3973,24 @@ function createTranslationLine(languageCode, state, options = {}) {
       flag.alt = "";
       flag.setAttribute("aria-hidden", "true");
       label.appendChild(flag);
+      hasFlag = true;
     }
-    label.appendChild(document.createTextNode(translationLanguageName(languageCode)));
-    line.appendChild(label);
   }
+  if (showName) label.appendChild(document.createTextNode(languageName));
+  if (showCode || (showFlag && !hasFlag && !showName)) {
+    label.appendChild(document.createTextNode(translationLanguageCodeLabel(languageCode)));
+  }
+  label.title = languageName;
+  label.setAttribute("aria-label", languageName);
+  return label;
+}
+function createTranslationLine(languageCode, state, options = {}) {
+  const line = document.createElement("div");
+  line.className = "translation-line";
+  line.lang = normalizedTranslationLanguageCode(languageCode);
+  if (options.additional) line.classList.add("translation-additional");
+  const label = createTranslationLanguageLabel(languageCode);
+  line.appendChild(label);
   if (state.status === "complete") {
     line.appendChild(document.createTextNode(state.text));
     return line;
@@ -4004,9 +4042,11 @@ function refreshTranslationRow(row) {
     source.lang = String(languageConfig.code || "");
     source.hidden = mode !== "original" && !includeOriginal && !showErrorFallback && !showPendingSource;
     source.classList.toggle("translation-secondary", includeOriginal || showErrorFallback);
-    source.dataset.languageLabel = includeOriginal || showErrorFallback
-      ? `${showErrorFallback && !includeOriginal ? "Original fallback" : "Original"} · ${String(languageConfig.name || languageConfig.code || "Source")}`
-      : "";
+    const existingLabel = source.querySelector(".translation-language");
+    if (existingLabel) existingLabel.remove();
+    if (includeOriginal || showErrorFallback) {
+      source.prepend(createTranslationLanguageLabel(languageConfig.code));
+    }
   }
   lines.replaceChildren();
   if (!targetCodes.length || showPendingSource) {
@@ -4016,7 +4056,6 @@ function refreshTranslationRow(row) {
   targetCodes.forEach((code, index) => {
     lines.appendChild(createTranslationLine(code, displayStates[index], {
       additional:index > 0,
-      show_label:mode === "all",
     }));
   });
   lines.hidden = false;
@@ -4060,6 +4099,7 @@ function renderTranslationMenu() {
   translationControls.hidden = !available;
   if (!available) return;
   translationDisplayModeControl.value = translationDisplayMode;
+  translationLanguageLabelModeControl.value = translationLanguageLabelMode;
   const providerLicense = translationProviderLicense();
   const licenseLabel = providerLicense && (providerLicense.identifier || providerLicense.display_name);
   translationProvider.textContent = [translationProviderLabel(), licenseLabel].filter(Boolean).join(" · ");
@@ -4167,6 +4207,9 @@ function initializeTranslationControls() {
   translationIncludeOriginalControl.checked = storedBooleanValue(
     translationIncludeOriginalStorageKey,
     Boolean(translationConfig && (translationConfig.include_original || translationConfig.show_original_with_translations))
+  );
+  translationLanguageLabelMode = normalizedTranslationLanguageLabelMode(
+    storedSessionValue(translationLanguageLabelModeStorageKey)
   );
   if (!translationSelectedTargets.size) translationDisplayMode = "original";
   renderTranslationMenu();
@@ -6713,6 +6756,11 @@ translationPrimaryTargetControl.addEventListener("change", () => {
     storeSessionValue(translationPrimaryTargetStorageKey, translationPrimaryTarget);
     refreshTranslationPresentation();
   }
+});
+translationLanguageLabelModeControl.addEventListener("change", () => {
+  translationLanguageLabelMode = normalizedTranslationLanguageLabelMode(translationLanguageLabelModeControl.value);
+  storeSessionValue(translationLanguageLabelModeStorageKey, translationLanguageLabelMode);
+  refreshTranslationPresentation();
 });
 translationIncludeOriginalControl.addEventListener("change", () => {
   storeBooleanValue(translationIncludeOriginalStorageKey, translationIncludeOriginalControl.checked);
