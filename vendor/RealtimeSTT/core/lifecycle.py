@@ -9,6 +9,7 @@ import time
 from .realtime_text_stabilizer import RealtimeTextStabilizer
 from .recording_buffers import (
     get_frames_lock,
+    get_realtime_state_lock,
     get_next_recorded_audio,
     queue_recorded_audio,
     set_audio_from_frames,
@@ -36,44 +37,50 @@ def start_recording(recorder, frames=None):
         return recorder
 
     logger.info("recording started")
-    set_recorder_state(recorder, "recording")
-    recorder.text_storage = []
-    recorder.realtime_stabilized_text = ""
-    recorder.realtime_stabilized_safetext = ""
-    recorder._force_current_recording_lowercase_start = False
-    recorder.realtime_observation_sequence = 0
-    recorder.realtime_recording_id = (
-        getattr(recorder, "realtime_recording_id", 0) + 1
-    )
-    recorder.recording_start_monotonic = time.monotonic()
-    recorder.last_preroll_selection = getattr(
-        recorder,
-        "_pending_preroll_selection",
-        None,
-    )
-    recorder._pending_preroll_selection = None
-    recorder.wakeword_detected = False
-    recorder.wake_word_detect_time = 0
-    with get_frames_lock(recorder):
-        recorder.frames = list(frames) if frames else []
+    recording_start_monotonic = time.monotonic()
+    recording_start_time = time.time()
+    with get_realtime_state_lock(recorder):
+        set_recorder_state(recorder, "recording")
+        recorder.text_storage = []
+        recorder.realtime_stabilized_text = ""
+        recorder.realtime_stabilized_safetext = ""
+        recorder._force_current_recording_lowercase_start = False
+        recorder.realtime_observation_sequence = 0
+        recorder.realtime_recording_id = (
+            getattr(recorder, "realtime_recording_id", 0) + 1
+        )
+        recorder.realtime_recording_generation = (
+            getattr(recorder, "realtime_recording_generation", 0) + 1
+        )
+        recorder.recording_start_monotonic = recording_start_monotonic
+        recorder.recording_start_time = recording_start_time
+        recorder.last_preroll_selection = getattr(
+            recorder,
+            "_pending_preroll_selection",
+            None,
+        )
+        recorder._pending_preroll_selection = None
+        recorder.wakeword_detected = False
+        recorder.wake_word_detect_time = 0
+        recorder.speech_end_silence_candidate_start = 0
+        with get_frames_lock(recorder):
+            recorder.frames = list(frames) if frames else []
+            recorder.is_recording = True
 
-    recorder.recording_start_time = time.time()
-    recorder.speech_end_silence_candidate_start = 0
-    realtime_text_stabilizer = getattr(
-        recorder,
-        "realtime_text_stabilizer",
-        None,
-    )
-    if realtime_text_stabilizer is None:
-        realtime_text_stabilizer = RealtimeTextStabilizer()
-        recorder.realtime_text_stabilizer = realtime_text_stabilizer
-    realtime_text_stabilizer.reset(
-        recorder.realtime_recording_id,
-        started_at_monotonic=recorder.recording_start_monotonic,
-        started_at_wall_time=recorder.recording_start_time,
-    )
+        realtime_text_stabilizer = getattr(
+            recorder,
+            "realtime_text_stabilizer",
+            None,
+        )
+        if realtime_text_stabilizer is None:
+            realtime_text_stabilizer = RealtimeTextStabilizer()
+            recorder.realtime_text_stabilizer = realtime_text_stabilizer
+        realtime_text_stabilizer.reset(
+            recorder.realtime_recording_id,
+            started_at_monotonic=recorder.recording_start_monotonic,
+            started_at_wall_time=recorder.recording_start_time,
+        )
     reset_silero_vad_state(recorder)
-    recorder.is_recording = True
     recorder.is_webrtc_speech_active = False
     recorder.stop_recording_event.clear()
     recorder.start_recording_event.set()
@@ -106,11 +113,22 @@ def stop_recording(
         return recorder
 
     logger.info("recording stopped")
-    with get_frames_lock(recorder):
-        stopped_frames = copy.deepcopy(recorder.frames)
-        recorder.last_frames = copy.deepcopy(stopped_frames)
-        recorder.frames = []
-        recorder.is_recording = False
+    with get_realtime_state_lock(recorder):
+        with get_frames_lock(recorder):
+            stopped_frames = copy.deepcopy(recorder.frames)
+            recorder.last_frames = copy.deepcopy(stopped_frames)
+            recorder.frames = []
+            recorder.is_recording = False
+            recorder.realtime_recording_generation = (
+                getattr(recorder, "realtime_recording_generation", 0) + 1
+            )
+        realtime_text_stabilizer = getattr(
+            recorder,
+            "realtime_text_stabilizer",
+            None,
+        )
+        if realtime_text_stabilizer is not None:
+            realtime_text_stabilizer.finalize()
     recorder.backdate_stop_seconds = backdate_stop_seconds
     recorder.backdate_resume_seconds = backdate_resume_seconds
     queue_recorded_audio(
@@ -120,13 +138,6 @@ def stop_recording(
         backdate_resume_seconds,
     )
     recorder.recording_stop_time = time.time()
-    realtime_text_stabilizer = getattr(
-        recorder,
-        "realtime_text_stabilizer",
-        None,
-    )
-    if realtime_text_stabilizer is not None:
-        realtime_text_stabilizer.finalize()
     reset_silero_vad_state(recorder)
     recorder.is_webrtc_speech_active = False
     recorder.silero_check_time = 0
@@ -165,15 +176,17 @@ def wait_for_recorded_audio(recorder):
 
         queued_recording = get_next_recorded_audio(recorder)
 
-        if (
-                queued_recording is None
-                and not recorder.is_recording
-                and not snapshot_frames(recorder)):
-            set_recorder_state(recorder, "listening")
-            reset_silero_vad_state(recorder)
-            recorder.start_recording_on_voice_activity = True
-            armed_for_voice_activity = True
+        if queued_recording is None:
+            with get_realtime_state_lock(recorder):
+                if (
+                        not recorder.is_recording
+                        and not snapshot_frames(recorder)):
+                    set_recorder_state(recorder, "listening")
+                    reset_silero_vad_state(recorder)
+                    recorder.start_recording_on_voice_activity = True
+                    armed_for_voice_activity = True
 
+        if armed_for_voice_activity:
             logger.debug('Waiting for recording start')
             while not recorder.interrupt_stop_event.is_set():
                 if recorder.start_recording_event.wait(timeout=0.02):
@@ -220,19 +233,21 @@ def wait_for_recorded_audio(recorder):
             backdate_resume_seconds,
         )
 
-        if not recorder.is_recording:
-            with get_frames_lock(recorder):
-                recorder.frames.clear()
-                recorder.last_frames.clear()
-                recorder.frames.extend(frames_to_read)
+        with get_realtime_state_lock(recorder):
+            if not recorder.is_recording:
+                with get_frames_lock(recorder):
+                    recorder.frames.clear()
+                    recorder.last_frames.clear()
+                    recorder.frames.extend(frames_to_read)
 
         recorder.backdate_stop_seconds = 0.0
         recorder.backdate_resume_seconds = 0.0
 
         recorder.listen_start = 0
 
-        if not recorder.is_recording:
-            set_recorder_state(recorder, "inactive")
+        with get_realtime_state_lock(recorder):
+            if not recorder.is_recording:
+                set_recorder_state(recorder, "inactive")
 
         if (
                 armed_for_voice_activity

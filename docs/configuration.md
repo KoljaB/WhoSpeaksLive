@@ -242,7 +242,7 @@ whospeaks config --translation-enabled --translation-provider sidecar `
   --translation-target-languages "en,de" --translation-max-targets 4
 ```
 
-Use `--translation-provider transformers` for in-process local inference, `reports_llm` to reuse the report LLM, or `openai_compatible` for a separate `/v1/chat/completions` endpoint. See [Live translation](translation.md) for installation, model-license constraints, browser display modes, capacity behavior, and the sidecar/API reference.
+Use `--translation-provider transformers` for in-process local inference; `deepl`, `google_cloud`, or `azure_translator` for managed translation; `libretranslate` for its open REST API; `reports_llm` to reuse the report LLM; or `openai_compatible` for a separate `/v1/chat/completions` endpoint. `--translation-browser-preferred` tries Chrome's on-device Translator API first and retains the selected provider as automatic fallback. API secrets stay in environment variables selected with `--translation-api-key-env`; Azure can additionally use `--translation-region`. See [Live translation](translation.md) for installation, provider setup, model-license constraints, browser display modes, capacity behavior, and the sidecar/API reference.
 
 ## Runtime Directories
 

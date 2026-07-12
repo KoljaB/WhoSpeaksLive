@@ -5585,10 +5585,16 @@ class WindowDiarizer:
                 time.sleep(0.05)
                 continue
             if vad_gate and not gate_open:
-                search_left = max(gate_search_left, right - gate_search_window)
+                # Search every audio sample that has not already been proven to be
+                # silence.  In particular, do not jump straight to the tail after
+                # a slow final-ASR pass: speech may have started while that pass was
+                # running, and skipping to the bounded tail cuts its first words.
+                search_left = gate_search_left
                 vad_state = self._vad_gate_window_state(search_left, right, force=True)
                 if not vad_state.has_speech or vad_state.speech_start is None:
-                    gate_search_left = search_left
+                    # Once the complete unseen range is known to contain no speech,
+                    # retaining only a bounded tail keeps idle VAD work constant.
+                    gate_search_left = max(gate_search_left, right - gate_search_window)
                     time.sleep(0.05)
                     continue
                 pre_padding = max(0.0, float(getattr(self.args, "realtime_preview_vad_gate_pre_padding_seconds", 0.35)))

@@ -19,7 +19,12 @@ from .realtime_callbacks import (
     publish_realtime_transcription_stabilized,
     publish_realtime_transcription_update,
 )
-from .recording_buffers import get_frames_lock, queue_recorded_audio, snapshot_frames
+from .recording_buffers import (
+    get_frames_lock,
+    get_realtime_state_lock,
+    queue_recorded_audio,
+    snapshot_frames,
+)
 from .state import run_callback
 from .text_formatting import preprocess_output
 from .transcription import call_transcription_executor
@@ -276,6 +281,104 @@ def _confirm_realtime_punctuation_split_candidate(recorder, split_marks, hint):
 
         recorder._realtime_punctuation_split_candidate = (key, count)
         return count >= _PUNCTUATION_SPLIT_REQUIRED_OBSERVATIONS
+
+
+def _split_frames_at_sample(frames, split_sample):
+    """
+    Splits 16-bit PCM frame bytes at a sample offset.
+    """
+
+    left, right = [], []
+    remaining = int(split_sample)
+    for frame in frames:
+        samples = len(frame) // 2
+        if remaining >= samples:
+            left.append(frame)
+            remaining -= samples
+        elif remaining <= 0:
+            right.append(frame)
+        else:
+            byte_index = max(0, min(len(frame), remaining * 2))
+            left.append(frame[:byte_index])
+            right.append(frame[byte_index:])
+            remaining = 0
+    return left, right
+
+
+def _commit_realtime_punctuation_split(
+    recorder,
+    *,
+    expected_recording_id,
+    expected_generation,
+    split_sample,
+    punctuation,
+    sample_rate,
+):
+    """
+    Atomically commits a punctuation split for the generation that requested it.
+
+    The final-model lookup can take seconds.  During that time VAD may stop the
+    old recording or start a new one, so a delayed result must never be applied
+    to whichever frames happen to be current when it returns.  The generation
+    check and frame replacement intentionally happen under the same lock.
+    """
+
+    with get_realtime_state_lock(recorder):
+        with get_frames_lock(recorder):
+            if (
+                not getattr(recorder, "is_recording", False)
+                or getattr(recorder, "realtime_recording_id", 0)
+                != expected_recording_id
+                or getattr(recorder, "realtime_recording_generation", 0)
+                != expected_generation
+            ):
+                return None
+
+            current_frames = list(getattr(recorder, "frames", None) or ())
+            current_sample_count = sum(len(frame) // 2 for frame in current_frames)
+            if split_sample <= 0 or split_sample >= current_sample_count:
+                return None
+
+            left_frames, right_frames = _split_frames_at_sample(
+                current_frames,
+                split_sample,
+            )
+            if not left_frames or not right_frames:
+                return None
+
+            force_lowercase_start = getattr(
+                recorder,
+                "_force_current_recording_lowercase_start",
+                False,
+            )
+            remaining_seconds = (
+                sum(len(frame) // 2 for frame in right_frames) / float(sample_rate)
+            )
+            recorder.frames = list(right_frames)
+            recorder.last_frames = []
+            recorder.realtime_recording_id = expected_recording_id + 1
+            recorder.realtime_recording_generation = expected_generation + 1
+            recorder.recording_start_monotonic = time.monotonic() - remaining_seconds
+            recorder.recording_start_time = time.time() - remaining_seconds
+
+        recorder.text_storage = []
+        recorder.realtime_transcription_text = ""
+        recorder.realtime_stabilized_text = ""
+        recorder.realtime_stabilized_safetext = ""
+        recorder.realtime_observation_sequence = 0
+        recorder._force_current_recording_lowercase_start = punctuation == ","
+        recorder.realtime_text_stabilizer.reset(
+            recorder.realtime_recording_id,
+            started_at_monotonic=recorder.recording_start_monotonic,
+            started_at_wall_time=recorder.recording_start_time,
+        )
+        queue_recorded_audio(
+            recorder,
+            left_frames,
+            force_lowercase_start=force_lowercase_start,
+        )
+
+        return True
 
 
 def run_realtime_worker(recorder):
@@ -840,55 +943,13 @@ def run_realtime_worker(recorder):
 
         return text[:1].lower() + text[1:] if text else text
 
-    def _split_frames_at_sample(frames, split_sample):
-        """
-        Splits 16-bit PCM frame bytes at a sample offset.
-        """
-
-        left, right = [], []
-        remaining = int(split_sample)
-        for frame in frames:
-            samples = len(frame) // 2
-            if remaining >= samples:
-                left.append(frame)
-                remaining -= samples
-            elif remaining <= 0:
-                right.append(frame)
-            else:
-                byte_index = max(0, min(len(frame), remaining * 2))
-                left.append(frame[:byte_index])
-                right.append(frame[byte_index:])
-                remaining = 0
-        return left, right
-
-    def _reset_after_punctuation_split(right_frames, punctuation, sample_rate):
-        """
-        Starts a new realtime segment from the right-side audio remainder.
-        """
-
-        remaining_seconds = _count_frame_samples(right_frames) / float(sample_rate)
-        with get_frames_lock(self):
-            self.frames = list(right_frames)
-            self.last_frames = []
-        self.text_storage = []
-        self.realtime_transcription_text = ""
-        self.realtime_stabilized_text = ""
-        self.realtime_stabilized_safetext = ""
-        self.realtime_observation_sequence = 0
-        self.realtime_recording_id = getattr(self, "realtime_recording_id", 0) + 1
-        self.recording_start_monotonic = time.monotonic() - remaining_seconds
-        self.recording_start_time = time.time() - remaining_seconds
-        self._force_current_recording_lowercase_start = punctuation == ","
-        self._last_realtime_punctuation_split_attempt_text = ""
-        _clear_realtime_punctuation_split_candidate(self)
-        self.realtime_text_stabilizer.reset(
-            self.realtime_recording_id,
-            started_at_monotonic=self.recording_start_monotonic,
-            started_at_wall_time=self.recording_start_time,
-        )
-        _close_streaming_session()
-
-    def _maybe_split_on_stable_punctuation(event, frames_snapshot, sample_rate):
+    def _maybe_split_on_stable_punctuation(
+        event,
+        frames_snapshot,
+        sample_rate,
+        recording_id,
+        recording_generation,
+    ):
         """
         Splits the active recording when stable punctuation has a timestamp.
         """
@@ -944,24 +1005,19 @@ def run_realtime_worker(recorder):
                 if split_sample <= 0:
                     return
 
-                current_frames = list(_snapshot_frames() or frames_snapshot)
-                current_sample_count = _count_frame_samples(current_frames)
-                if split_sample >= current_sample_count:
-                    return
-                left_frames, right_frames = _split_frames_at_sample(current_frames, split_sample)
-                if not left_frames or not right_frames:
+                if not _commit_realtime_punctuation_split(
+                    self,
+                    expected_recording_id=recording_id,
+                    expected_generation=recording_generation,
+                    split_sample=split_sample,
+                    punctuation=punctuation,
+                    sample_rate=sample_rate,
+                ):
                     return
 
-                queue_recorded_audio(
-                    self,
-                    left_frames,
-                    force_lowercase_start=getattr(
-                        self,
-                        "_force_current_recording_lowercase_start",
-                        False,
-                    ),
-                )
-                _reset_after_punctuation_split(right_frames, punctuation, sample_rate)
+                with _get_realtime_punctuation_split_lock(self):
+                    self._last_realtime_punctuation_split_attempt_text = ""
+                    self._realtime_punctuation_split_candidate = None
             finally:
                 with _get_realtime_punctuation_split_lock(self):
                     self._realtime_punctuation_split_busy = False
@@ -973,7 +1029,7 @@ def run_realtime_worker(recorder):
         ).start()
         return True
 
-    def _publish_realtime_text(
+    def _publish_realtime_text_current(
         realtime_text,
         sequence,
         trigger_reason,
@@ -981,6 +1037,7 @@ def run_realtime_worker(recorder):
         sample_count,
         sample_rate,
         recording_id,
+        recording_generation,
         recording_started_at_monotonic,
         recording_start_time,
         created_at_monotonic,
@@ -1081,6 +1138,8 @@ def run_realtime_worker(recorder):
             event,
             frames_snapshot,
             sample_rate,
+            recording_id,
+            recording_generation,
         ):
             return
 
@@ -1128,6 +1187,62 @@ def run_realtime_worker(recorder):
             ),
         )
 
+    def _publish_realtime_text(
+        realtime_text,
+        sequence,
+        trigger_reason,
+        frame_count,
+        sample_count,
+        sample_rate,
+        recording_id,
+        recording_generation,
+        recording_started_at_monotonic,
+        recording_start_time,
+        created_at_monotonic,
+        completed_at_monotonic,
+        completed_at_wall_time,
+        detected_language,
+        detected_language_probability,
+        frames_snapshot,
+    ):
+        """
+        Publishes only if the transcription still belongs to the active generation.
+        """
+
+        with get_realtime_state_lock(self):
+            if (
+                not getattr(self, "is_recording", False)
+                or getattr(self, "realtime_recording_id", 0) != recording_id
+                or getattr(self, "realtime_recording_generation", 0)
+                != recording_generation
+            ):
+                logger.debug(
+                    "Dropping stale realtime transcription for recording %s "
+                    "generation %s",
+                    recording_id,
+                    recording_generation,
+                )
+                return
+
+            return _publish_realtime_text_current(
+                realtime_text,
+                sequence,
+                trigger_reason,
+                frame_count,
+                sample_count,
+                sample_rate,
+                recording_id,
+                recording_generation,
+                recording_started_at_monotonic,
+                recording_start_time,
+                created_at_monotonic,
+                completed_at_monotonic,
+                completed_at_wall_time,
+                detected_language,
+                detected_language_probability,
+                frames_snapshot,
+            )
+
     last_transcription_time = time.time()
 
     def _run_realtime_transcription(trigger_reason):
@@ -1139,9 +1254,22 @@ def run_realtime_worker(recorder):
 
         last_transcription_time = time.time()
 
-        frames_snapshot = _snapshot_frames()
+        with get_realtime_state_lock(self):
+            with get_frames_lock(self):
+                frames_snapshot = tuple(getattr(self, "frames", None) or ())
+                recording_id = getattr(self, "realtime_recording_id", 0)
+                recording_generation = getattr(
+                    self,
+                    "realtime_recording_generation",
+                    0,
+                )
+                recording_started_at_monotonic = getattr(
+                    self,
+                    "recording_start_monotonic",
+                    None,
+                )
+                recording_start_time = getattr(self, "recording_start_time", None)
         sample_rate = _safe_get_sample_rate()
-        recording_id = getattr(self, "realtime_recording_id", 0)
         streaming_target = _streaming_realtime_target()
         created_at_monotonic = time.monotonic()
 
@@ -1174,23 +1302,6 @@ def run_realtime_worker(recorder):
             else:
                 transcription_result = _transcribe_with_realtime_model(audio_array)
 
-        self.realtime_transcription_count += 1
-        self.realtime_transcription_trigger_counts[trigger_reason] = (
-            self.realtime_transcription_trigger_counts.get(trigger_reason, 0)
-            + 1
-        )
-
-        self.realtime_observation_sequence = (
-            getattr(self, "realtime_observation_sequence", 0) + 1
-        )
-        observation_sequence = self.realtime_observation_sequence
-        recording_started_at_monotonic = getattr(
-            self,
-            "recording_start_monotonic",
-            None,
-        )
-        recording_start_time = getattr(self, "recording_start_time", None)
-
         completed_at_monotonic = time.monotonic()
         completed_at_wall_time = time.time()
 
@@ -1198,12 +1309,61 @@ def run_realtime_worker(recorder):
             _extract_text_and_language(transcription_result)
         )
 
-        self.detected_realtime_language = detected_language
-        self.detected_realtime_language_probability = detected_language_probability
+        with get_realtime_state_lock(self):
+            if (
+                not getattr(self, "is_recording", False)
+                or getattr(self, "realtime_recording_id", 0) != recording_id
+                or getattr(self, "realtime_recording_generation", 0)
+                != recording_generation
+            ):
+                logger.debug(
+                    "Dropping completed realtime decode from stale recording %s "
+                    "generation %s",
+                    recording_id,
+                    recording_generation,
+                )
+                return False
 
-        if not realtime_text:
-            self.realtime_transcription_empty_count += 1
-            logger.debug("Realtime transcription returned empty text")
+            self.realtime_transcription_count += 1
+            self.realtime_transcription_trigger_counts[trigger_reason] = (
+                self.realtime_transcription_trigger_counts.get(trigger_reason, 0)
+                + 1
+            )
+            self.realtime_observation_sequence = (
+                getattr(self, "realtime_observation_sequence", 0) + 1
+            )
+            observation_sequence = self.realtime_observation_sequence
+            self.detected_realtime_language = detected_language
+            self.detected_realtime_language_probability = (
+                detected_language_probability
+            )
+
+            if not realtime_text:
+                self.realtime_transcription_empty_count += 1
+                logger.debug("Realtime transcription returned empty text")
+                _publish_realtime_text(
+                    realtime_text,
+                    observation_sequence,
+                    trigger_reason,
+                    frame_count,
+                    sample_count,
+                    sample_rate,
+                    recording_id,
+                    recording_generation,
+                    recording_started_at_monotonic,
+                    recording_start_time,
+                    created_at_monotonic,
+                    completed_at_monotonic,
+                    completed_at_wall_time,
+                    detected_language,
+                    detected_language_probability,
+                    frames_snapshot,
+                )
+                return False
+
+            self.realtime_transcription_success_count += 1
+            logger.debug(f"Realtime text detected ({trigger_reason}): {realtime_text}")
+
             _publish_realtime_text(
                 realtime_text,
                 observation_sequence,
@@ -1212,6 +1372,7 @@ def run_realtime_worker(recorder):
                 sample_count,
                 sample_rate,
                 recording_id,
+                recording_generation,
                 recording_started_at_monotonic,
                 recording_start_time,
                 created_at_monotonic,
@@ -1221,29 +1382,7 @@ def run_realtime_worker(recorder):
                 detected_language_probability,
                 frames_snapshot,
             )
-            return False
-
-        self.realtime_transcription_success_count += 1
-        logger.debug(f"Realtime text detected ({trigger_reason}): {realtime_text}")
-
-        _publish_realtime_text(
-            realtime_text,
-            observation_sequence,
-            trigger_reason,
-            frame_count,
-            sample_count,
-            sample_rate,
-            recording_id,
-            recording_started_at_monotonic,
-            recording_start_time,
-            created_at_monotonic,
-            completed_at_monotonic,
-            completed_at_wall_time,
-            detected_language,
-            detected_language_probability,
-            frames_snapshot,
-        )
-        return True
+            return True
 
     use_syllable_boundaries = bool(
         getattr(self, "realtime_transcription_use_syllable_boundaries", False)

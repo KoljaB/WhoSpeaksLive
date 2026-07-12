@@ -113,6 +113,120 @@ class OpenAICompatibleProviderTests(unittest.TestCase):
         self.assertNotIn("top-secret", json.dumps(provider.status().to_dict()))
 
 
+class DedicatedApiProviderTests(unittest.TestCase):
+    class FakeResponse:
+        def __init__(self, payload: object) -> None:
+            self.payload = payload
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, traceback):
+            return None
+
+        def read(self) -> bytes:
+            return json.dumps(self.payload).encode("utf-8")
+
+    def _translate(self, provider, response: object, **kwargs: object):
+        with mock.patch(
+            "window.translation_service.urllib.request.urlopen",
+            return_value=self.FakeResponse(response),
+        ) as urlopen:
+            result = provider.translate("Guten Morgen & willkommen.", "de", "en", **kwargs)
+        return result, urlopen.call_args.args[0]
+
+    def test_deepl_protocol_uses_auth_header_and_unbilled_context(self) -> None:
+        from window.translation_service import DeepLTranslationProvider
+
+        provider = DeepLTranslationProvider(api_key="deepl-secret")
+        result, request = self._translate(
+            provider,
+            {"translations": [{"text": "Good morning & welcome."}]},
+            context=("Die Besprechung beginnt.",),
+        )
+
+        self.assertEqual(result, "Good morning & welcome.")
+        self.assertEqual(request.full_url, "https://api-free.deepl.com/v2/translate")
+        self.assertEqual(request.get_header("Authorization"), "DeepL-Auth-Key deepl-secret")
+        payload = json.loads(request.data)
+        self.assertEqual(payload["text"], ["Guten Morgen & willkommen."])
+        self.assertEqual(payload["source_lang"], "DE")
+        self.assertEqual(payload["target_lang"], "EN")
+        self.assertEqual(payload["context"], "Die Besprechung beginnt.")
+        self.assertNotIn("deepl-secret", json.dumps(provider.status().to_dict()))
+
+    def test_google_cloud_protocol_keeps_key_out_of_url_and_decodes_entities(self) -> None:
+        from window.translation_service import GoogleCloudTranslationProvider
+
+        provider = GoogleCloudTranslationProvider(api_key="google-secret")
+        result, request = self._translate(
+            provider,
+            {"data": {"translations": [{"translatedText": "Good morning &amp; welcome."}]}},
+        )
+
+        self.assertEqual(result, "Good morning & welcome.")
+        self.assertNotIn("google-secret", request.full_url)
+        self.assertEqual(request.get_header("X-goog-api-key"), "google-secret")
+        payload = json.loads(request.data)
+        self.assertEqual(payload["source"], "de")
+        self.assertEqual(payload["target"], "en")
+        self.assertEqual(payload["model"], "nmt")
+
+    def test_azure_protocol_sets_region_and_category(self) -> None:
+        from window.translation_service import AzureTranslatorProvider
+
+        provider = AzureTranslatorProvider(
+            api_key="azure-secret",
+            region="westeurope",
+            model="general",
+        )
+        result, request = self._translate(
+            provider,
+            [{"translations": [{"text": "Good morning & welcome.", "to": "en"}]}],
+        )
+
+        self.assertEqual(result, "Good morning & welcome.")
+        self.assertIn("api-version=3.0", request.full_url)
+        self.assertIn("from=de", request.full_url)
+        self.assertIn("to=en", request.full_url)
+        self.assertIn("category=general", request.full_url)
+        self.assertEqual(request.get_header("Ocp-apim-subscription-key"), "azure-secret")
+        self.assertEqual(request.get_header("Ocp-apim-subscription-region"), "westeurope")
+        self.assertEqual(json.loads(request.data), [{"Text": "Guten Morgen & willkommen."}])
+
+    def test_libretranslate_protocol_supports_keyless_custom_endpoint(self) -> None:
+        from window.translation_service import LibreTranslateProvider
+
+        provider = LibreTranslateProvider(base_url="http://translate.internal:5000/")
+        result, request = self._translate(
+            provider,
+            {"translatedText": "Good morning & welcome."},
+        )
+
+        self.assertEqual(result, "Good morning & welcome.")
+        self.assertEqual(request.full_url, "http://translate.internal:5000/translate")
+        self.assertNotIn("api_key", json.loads(request.data))
+        self.assertTrue(provider.status().ready)
+
+    def test_factory_exposes_all_dedicated_api_providers(self) -> None:
+        from window.translation_service import TranslationProviderConfig, create_translation_provider
+
+        providers = {
+            "deepl": "deepl",
+            "google_cloud": "google_cloud",
+            "azure_translator": "azure_translator",
+            "libretranslate": "libretranslate",
+        }
+        for kind, provider_id in providers.items():
+            with self.subTest(kind=kind):
+                provider = create_translation_provider(TranslationProviderConfig(
+                    kind=kind,
+                    api_key="secret",
+                    options={"region": "westeurope"},
+                ))
+                self.assertEqual(provider.provider_id, provider_id)
+
+
 class FakeBatch(dict):
     def __init__(self, input_ids=None) -> None:
         super().__init__(input_ids=input_ids or [[10, 11, 12]])

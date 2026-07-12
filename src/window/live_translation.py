@@ -186,6 +186,7 @@ class LiveTranslationCoordinator:
         queue_size = max(1, int(getattr(args, "translation_queue_size", 256)))
         self.max_deferred_jobs = min(8192, max(queue_size * 8, self.max_targets * 64))
         self.provider_kind = str(getattr(args, "translation_provider", "off") or "off")
+        self.browser_preferred = bool(getattr(args, "translation_browser_preferred", False))
         self.model_profile = str(getattr(args, "translation_model_profile", "translate-gemma-4b"))
         self._lock = threading.RLock()
         self._session_id = ""
@@ -218,19 +219,40 @@ class LiveTranslationCoordinator:
         timeout = float(getattr(self.args, "translation_timeout_seconds", 600.0))
         if self.provider_kind == "sidecar":
             return SidecarTranslationProvider(
-                base_url=str(getattr(self.args, "translation_base_url", "http://127.0.0.1:8799")),
+                base_url=str(
+                    getattr(self.args, "translation_base_url", "")
+                    or "http://127.0.0.1:8799"
+                ),
                 model_profile=self.model_profile,
                 model=model_override,
                 timeout_seconds=timeout,
             )
-        if self.provider_kind == "openai_compatible":
-            api_key_env = str(getattr(self.args, "translation_api_key_env", "OPENAI_API_KEY"))
+        if self.provider_kind in {
+            "openai_compatible",
+            "deepl",
+            "google_cloud",
+            "azure_translator",
+            "libretranslate",
+        }:
+            default_key_env = {
+                "openai_compatible": "OPENAI_API_KEY",
+                "deepl": "DEEPL_API_KEY",
+                "google_cloud": "GOOGLE_TRANSLATE_API_KEY",
+                "azure_translator": "AZURE_TRANSLATOR_KEY",
+                "libretranslate": "LIBRETRANSLATE_API_KEY",
+            }[self.provider_kind]
+            api_key_env = str(
+                getattr(self.args, "translation_api_key_env", "") or default_key_env
+            )
             return create_translation_provider(TranslationProviderConfig(
-                kind="openai_compatible",
+                kind=self.provider_kind,
                 base_url=str(getattr(self.args, "translation_base_url", "")),
                 model=model_override,
                 api_key=os.environ.get(api_key_env, ""),
                 timeout_seconds=timeout,
+                options={
+                    "region": str(getattr(self.args, "translation_region", "") or ""),
+                },
             ))
         if self.provider_kind == "mock":
             return create_translation_provider({"kind": "mock"})
@@ -316,6 +338,7 @@ class LiveTranslationCoordinator:
         *,
         only_targets: Sequence[str] | None = None,
         emit_queued: bool = True,
+        force_backend: bool = False,
     ) -> None:
         service = self.service
         if service is None:
@@ -353,6 +376,8 @@ class LiveTranslationCoordinator:
                     source_revision=source_revision,
                     status="queued",
                 ))
+        if self.browser_preferred and not force_backend:
+            return
         for target in targets:
             key = (segment_id, target, source_hash, source_revision)
             try:
@@ -395,6 +420,81 @@ class LiveTranslationCoordinator:
                     status="error",
                     error=str(exc),
                 ))
+
+    def accept_browser_result(self, payload: Mapping[str, Any]) -> dict[str, Any]:
+        if not self.browser_preferred:
+            raise ValueError("browser translation is not enabled")
+        segment_id, target, row, source_hash, source_revision = self._browser_request(payload)
+        translated_text = str(payload.get("text") or payload.get("translated_text") or "").strip()
+        if not translated_text:
+            raise ValueError("translated browser text must not be empty")
+        event = self._event_payload(
+            segment_id=segment_id,
+            target=target,
+            source_hash=source_hash,
+            source_revision=source_revision,
+            status="complete",
+            text=translated_text,
+            provider="chrome_translator",
+            model="Chrome on-device Translator API",
+            latency_seconds=float(payload.get("latency_seconds") or 0.0),
+        )
+        with self._lock:
+            self._records[(segment_id, target)] = dict(event)
+        self.bus.emit("translation", event)
+        return event
+
+    def request_browser_fallback(self, payload: Mapping[str, Any]) -> dict[str, Any]:
+        if not self.browser_preferred:
+            raise ValueError("browser translation is not enabled")
+        segment_id, target, row, source_hash, source_revision = self._browser_request(payload)
+        key = (segment_id, target, source_hash, source_revision)
+        with self._lock:
+            self._submitted.discard(key)
+        self._submit_row(
+            segment_id,
+            row,
+            only_targets=(target,),
+            emit_queued=False,
+            force_backend=True,
+        )
+        return self._event_payload(
+            segment_id=segment_id,
+            target=target,
+            source_hash=source_hash,
+            source_revision=source_revision,
+            status="queued",
+            provider=self.provider.provider_id if self.provider else self.provider_kind,
+            model=self.provider.model_id if self.provider else "",
+        )
+
+    def _browser_request(
+        self,
+        payload: Mapping[str, Any],
+    ) -> tuple[str, str, dict[str, Any], str, str]:
+        segment_id = str(
+            payload.get("segment_id")
+            if payload.get("segment_id") is not None
+            else payload.get("sentence_index")
+        ).strip()
+        target = normalize_language_code(payload.get("target_language"))
+        if not segment_id:
+            raise ValueError("browser translation segment_id must not be empty")
+        with self._lock:
+            if target not in self._targets:
+                raise ValueError("browser translation target is not selected")
+            row = dict(self._rows.get(segment_id) or {})
+        if not row:
+            raise ValueError("browser translation sentence is no longer available")
+        source_hash = str(row.get("source_text_hash") or translation_source_hash(str(row.get("text") or "")))
+        source_revision = str(row.get("source_revision") or source_hash)
+        supplied_hash = str(payload.get("source_text_hash") or payload.get("source_hash") or "")
+        supplied_revision = str(payload.get("source_revision") or "")
+        if supplied_hash and supplied_hash != source_hash:
+            raise ValueError("browser translation source hash is stale")
+        if supplied_revision and supplied_revision != source_revision:
+            raise ValueError("browser translation source revision is stale")
+        return segment_id, target, row, source_hash, source_revision
 
     def _context_for_locked(self, segment_id: str) -> tuple[str, ...]:
         if self.context_sentences <= 0:
@@ -558,6 +658,7 @@ class LiveTranslationCoordinator:
             "available": self.service is not None,
             "enabled": self.service is not None,
             "provider": provider_payload,
+            "browser_preferred": self.browser_preferred,
             "source_language": self.source_language,
             "languages": languages,
             "selected_targets": targets,

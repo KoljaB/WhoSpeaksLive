@@ -528,6 +528,18 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/translation/configure":
                 self._require_session(payload)
                 self._send_json({"ok": True, "translation": self.server.translation.configure(payload)})
+            elif path == "/api/translation/browser-result":
+                self._require_session(payload)
+                self._send_json({
+                    "ok": True,
+                    "translation": self.server.translation.accept_browser_result(payload),
+                })
+            elif path == "/api/translation/browser-fallback":
+                self._require_session(payload)
+                self._send_json({
+                    "ok": True,
+                    "translation": self.server.translation.request_browser_fallback(payload),
+                })
             elif path == "/api/sessions/create":
                 self._send_json(self.server.create_saved_session(payload))
             elif path == "/api/sessions/open":
@@ -1837,7 +1849,17 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--translation-provider",
-        choices=("off", "sidecar", "transformers", "openai_compatible", "mock"),
+        choices=(
+            "off",
+            "sidecar",
+            "transformers",
+            "deepl",
+            "google_cloud",
+            "azure_translator",
+            "libretranslate",
+            "openai_compatible",
+            "mock",
+        ),
         default=os.environ.get("WHOSPEAKS_TRANSLATION_PROVIDER", "off"),
         help=(
             "Optional sentence translation backend. 'sidecar' is recommended for local models so its "
@@ -1852,6 +1874,12 @@ def parse_args() -> argparse.Namespace:
         help="Initial translation target language. Repeat for simultaneous targets; targets can also be changed in the browser.",
     )
     parser.add_argument(
+        "--translation-browser-preferred",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Prefer Chrome's on-device Translator API and use the selected server provider as fallback.",
+    )
+    parser.add_argument(
         "--translation-max-targets",
         type=int,
         default=4,
@@ -1859,8 +1887,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--translation-base-url",
-        default=os.environ.get("WHOSPEAKS_TRANSLATION_BASE_URL", "http://127.0.0.1:8799"),
-        help="Translation sidecar URL, or OpenAI-compatible /v1 base URL for the LLM provider.",
+        default=os.environ.get("WHOSPEAKS_TRANSLATION_BASE_URL", ""),
+        help="Optional provider endpoint override; defaults are used for managed translation APIs.",
     )
     parser.add_argument(
         "--translation-model-profile",
@@ -1871,7 +1899,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--translation-model", default="", help="Optional model id override for the selected provider/profile.")
     parser.add_argument("--translation-device", choices=("auto", "cuda", "cpu"), default="auto")
     parser.add_argument("--translation-dtype", default="auto")
-    parser.add_argument("--translation-api-key-env", default="OPENAI_API_KEY")
+    parser.add_argument(
+        "--translation-api-key-env",
+        default="",
+        help="Environment variable containing the provider secret; blank uses the provider-specific default.",
+    )
+    parser.add_argument(
+        "--translation-region",
+        default="",
+        help="Optional provider region, currently used by Azure Translator.",
+    )
     parser.add_argument(
         "--translation-timeout-seconds",
         type=float,

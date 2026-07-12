@@ -23,6 +23,11 @@ A source-text SHA-256 hash and revision travel with each request. If a newer sou
 | `translate-gemma-4b` | Recommended quality-first local default. It is a dedicated translation model and fits desktop/server deployment better than a general report LLM. | [TranslateGemma 4B IT](https://huggingface.co/google/translategemma-4b-it) covers 55 languages, uses the Gemma terms, and requires accepting those terms before Hugging Face downloads the gated weights. The checkpoint is named 4B but currently contains about 5B parameters. |
 | `nllb-200-600m` | Lighter local option and the broadest practical choice among the smaller profiles, especially for lower-resource languages. | [NLLB-200 distilled 600M](https://huggingface.co/facebook/nllb-200-distilled-600M) is CC-BY-NC-4.0. Its model card describes research and single-sentence use and says it was not released for production deployment. WhoSpeaks does not redistribute the weights; users download them separately and remain responsible for attribution and non-commercial use. |
 | `madlad-400-3b` | Very broad permissively licensed alternative when TranslateGemma does not cover a language. | [MADLAD-400 3B MT](https://huggingface.co/google/madlad400-3b-mt) is Apache-2.0 and publishes 419 language tags. Its model card reports evaluation on 204 languages, so a language tag is not itself a quality guarantee. |
+| Chrome Translator API | Prefer this on supported Chrome desktop installations to translate on-device without a per-character API charge. | Enable **Prefer Chrome** in the launcher. WhoSpeaks checks each language pair at runtime, lets Chrome download a required language pack, and asks the selected backend provider only when Chrome is unavailable or fails. |
+| `azure_translator` | Managed-cloud default with broad language coverage and efficient text translation. | Uses `AZURE_TRANSLATOR_KEY` by default and optionally `translation_region`. The key itself is never saved in the WhoSpeaks profile. |
+| `google_cloud` | Broad managed coverage and a useful fallback for language pairs missing elsewhere. | The current adapter uses the API-key authenticated Cloud Translation Basic v2 JSON API. The browser displays the required “Powered by Google Translate” attribution next to the translation controls. |
+| `deepl` | Premium translation-specific option with useful sentence context. | Uses the API Free endpoint by default; set a Pro endpoint override when appropriate. Previous transcript sentences are sent through DeepL's context field, not concatenated into the text being translated. |
+| `libretranslate` | Open REST contract for a private or managed LibreTranslate deployment. | Defaults to `http://127.0.0.1:5000`; an API key is optional for self-hosted instances and normally required by managed hosting. |
 | `reports_llm` | Reuse the OpenAI-compatible LLM already configured for meeting reports. Useful for experiments or when that server is already loaded. | Quality, privacy, latency, and cost depend on that configured provider. The prompt treats transcript text as data and requests translation-only output. |
 | `openai_compatible` | Use any other llama.cpp, Ollama, LM Studio, hosted, or cloud endpoint that exposes `/v1/chat/completions`. | Configure the base URL, model ID, and API-key environment variable. |
 
@@ -41,7 +46,28 @@ The first request loads the selected model lazily and can therefore be much slow
 
 ## Installation and startup
 
-For isolation, install the translation runtime in its own environment:
+The guided installer can create a model-specific sidecar environment, install the appropriate CUDA or CPU PyTorch build, download the selected weights, and update the saved launcher profile:
+
+```powershell
+whospeaks install-translation --model-profile nllb-200-600m --torch auto --yes
+```
+
+The same command works on Windows and Linux. Default locations are:
+
+- Windows: `%LOCALAPPDATA%\WhoSpeaks\translation\<profile>\venv` and `%LOCALAPPDATA%\WhoSpeaks\models\translation\<profile>`
+- Linux: `${XDG_DATA_HOME:-~/.local/share}/whospeaks/translation/<profile>/venv` and `${XDG_DATA_HOME:-~/.local/share}/whospeaks/models/translation/<profile>`
+
+Available profiles are `nllb-200-600m`, `translate-gemma-4b`, and `madlad-400-3b`. Each gets its own environment, so installing one does not replace the dependencies of another. Select the active server in the launcher Translation tab, or repeat `install-translation` for another profile. Use `--venv` and `--model-dir` for server-specific storage layouts, `--torch cuda|cpu|auto` for the runtime, and `--skip-model-download` to verify an already populated model directory without network access.
+
+The general installer exposes the same choice:
+
+```powershell
+whospeaks install --target core --translation-model-profile nllb-200-600m --yes
+```
+
+`core`, `local`, and `server` targets may all include a local translation sidecar. A server-only profile can start it with `whospeaks translation`; a controller profile starts it automatically with `whospeaks launch`.
+
+For a manual source-checkout installation, create the isolated environment directly:
 
 ```powershell
 py -3.11 -m venv .venv-translation
@@ -53,6 +79,8 @@ For TranslateGemma, sign in to Hugging Face, accept the terms on the [checkpoint
 ```powershell
 .\.venv-translation\Scripts\hf.exe auth login
 ```
+
+On Linux the executable is `.venv-translation/bin/hf`. A failed gated download leaves the environment intact; authenticate, accept the model terms, and rerun the same installer command.
 
 Then configure the normal WhoSpeaks profile:
 
@@ -87,6 +115,48 @@ whospeaks-window `
 
 Use `--translation-provider transformers` only when intentionally loading the model inside the live-window process.
 
+## Managed and REST API providers
+
+WhoSpeaks stores only the **name** of an environment variable, never the secret value. Configure a provider in the launcher Translation tab, or use the CLI. For example, DeepL API Free on Windows:
+
+```powershell
+$env:DEEPL_API_KEY = "your-key"
+whospeaks config --translation-enabled --translation-provider deepl `
+  --translation-target-languages "en,de"
+whospeaks launch
+```
+
+Azure additionally accepts a region:
+
+```powershell
+$env:AZURE_TRANSLATOR_KEY = "your-key"
+whospeaks config --translation-enabled --translation-provider azure_translator `
+  --translation-region westeurope --translation-target-languages "en,de"
+```
+
+Google Cloud Translation Basic uses `GOOGLE_TRANSLATE_API_KEY`. LibreTranslate uses `LIBRETRANSLATE_API_KEY` when its endpoint requires authentication and accepts an endpoint override:
+
+```powershell
+whospeaks config --translation-enabled --translation-provider libretranslate `
+  --translation-base-url http://translate.internal:5000
+```
+
+The default secret-variable names are:
+
+| Provider | Environment variable | Default endpoint |
+| --- | --- | --- |
+| DeepL | `DEEPL_API_KEY` | `https://api-free.deepl.com/v2` |
+| Google Cloud Translation | `GOOGLE_TRANSLATE_API_KEY` | Cloud Translation Basic v2 |
+| Azure Translator | `AZURE_TRANSLATOR_KEY` | Global Translator endpoint |
+| LibreTranslate | `LIBRETRANSLATE_API_KEY` | `http://127.0.0.1:5000` |
+| OpenAI-compatible | `OPENAI_API_KEY` | Must be configured |
+
+Use `--translation-api-key-env MY_SECRET_NAME` to select another environment variable. Use `--translation-base-url` for DeepL Pro, sovereign/private cloud endpoints, proxies, or self-hosted LibreTranslate.
+
+### Chrome first with automatic fallback
+
+Select a normal backend provider and enable **Prefer Chrome; use selected provider as fallback**. For each stable sentence and target language, the browser checks Chrome's Translator API. A supported or downloadable pair is translated on-device and the completed result is returned to WhoSpeaks for normal session persistence. An unsupported pair or browser-side failure is queued through the selected backend provider instead. Jobs are serialized in the browser so simultaneous language-pack/model work does not overwhelm Chrome.
+
 ## Capacity and multiple languages
 
 Every stable sentence creates one job per selected target language. With a single serialized local model, two targets need roughly twice the inference work and four targets roughly four times the work. Cached duplicates return immediately, but new speech does not. The default maximum is four simultaneous targets and is configurable up to sixteen.
@@ -99,6 +169,8 @@ The live app exposes:
 
 - `GET /api/translation/status`
 - `POST /api/translation/configure` with `{"target_languages":["en","de"]}`
+- `POST /api/translation/browser-result` for a revision-checked Chrome result
+- `POST /api/translation/browser-fallback` when Chrome cannot translate a selected pair
 - raw server-sent events named `translation`
 - public semantic events such as `translation.queued`, `translation.completed`, and `translation.failed`
 

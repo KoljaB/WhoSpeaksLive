@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import importlib
 import importlib.metadata
 import importlib.util
 import json
@@ -53,6 +54,8 @@ SERVER_EXTRA = "server"
 PACKAGE_NAME = "whospeaks"
 KROKO_INSTALL_MODULE = "RealtimeSTT.install_kroko"
 KROKO_PREVIEW_VENV_ENV = "WHOSPEAKS_KROKO_PREVIEW_VENV"
+TRANSLATION_VENV_ROOT_ENV = "WHOSPEAKS_TRANSLATION_VENV_ROOT"
+TRANSLATION_MODEL_ROOT_ENV = "WHOSPEAKS_TRANSLATION_MODEL_ROOT"
 TESTPYPI_SIMPLE_URL = "https://test.pypi.org/simple/"
 PIP_INDEX_URL_ENV = "WHOSPEAKS_PIP_INDEX_URL"
 PIP_EXTRA_INDEX_URL_ENV = "WHOSPEAKS_PIP_EXTRA_INDEX_URL"
@@ -71,6 +74,7 @@ PYTORCH_CPU_INDEX_URL = "https://download.pytorch.org/whl/cpu"
 TORCH_PACKAGE_SPECS = ("torch>=2.2", "torchaudio>=2.2")
 KROKO_LANGUAGE_MENU_CODES = ("en", "de", "es", "fr", "it", "nl", "pt", "sv", "tr", "he")
 INSTALL_TARGET_CHOICES = ("local", "core", "server")
+TRANSLATION_INSTALL_PROFILE_CHOICES = ("off", "nllb-200-600m", "translate-gemma-4b", "madlad-400-3b")
 TORCH_INSTALL_POLICY_CHOICES = ("auto", "cuda", "cpu", "skip")
 EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("mode", "Profile mode", "local, remote, or server. Mode also aligns the ASR and embeddings backends."),
@@ -83,7 +87,7 @@ EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("realtime_preview_engine", "Realtime text engine", "Use sherpa_onnx for Nemotron, kroko_onnx for Kroko/Banafo, or off."),
     ("realtime_preview_model_preset", "Realtime model preset", "Nemotron: 560ms stable or 160ms low-latency. Kroko: a Kroko model preset."),
     ("realtime_preview_model_dir", "Nemotron model folder", "Optional explicit folder for the unpacked sherpa-onnx/Nemotron model."),
-    ("realtime_preview_python", "Realtime preview Python", "Optional Python executable for the realtime worker. Nemotron uses the current environment by default."),
+    ("realtime_preview_python", "Realtime preview Python", "Optional Python executable for the Kroko realtime worker. Nemotron always uses the current WhoSpeaks environment."),
     ("reports_enabled", "Start reports with live window", "Open the meeting-intelligence server in a second terminal whenever the live window launches."),
     ("reports_port", "Reports browser port", "Port for the meeting-intelligence browser UI."),
     ("report_language", "Report language", "Blank follows the live transcription language; otherwise use a WhoSpeaks language code."),
@@ -92,13 +96,16 @@ EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("report_llm_model", "Reports LLM model", "Optional model ID used for report generation."),
     ("report_auto_generate", "Auto-generate reports", "Generate a report automatically when a newly saved meeting session is finalized."),
     ("translation_enabled", "Enable translation", "Translate stable transcript sentences without changing the original transcript."),
-    ("translation_provider", "Translation provider", "sidecar (recommended local isolation), transformers, reports_llm, or openai_compatible."),
+    ("translation_browser_preferred", "Prefer Chrome translation", "Use Chrome's on-device Translator API first and the selected provider as fallback."),
+    ("translation_provider", "Translation provider", "Local, managed API, LibreTranslate, reports LLM, or OpenAI-compatible backend."),
     ("translation_port", "Translation server port", "Port used by the optional local translation sidecar."),
     ("translation_target_languages", "Translation targets", "Comma-separated WhoSpeaks language codes; the browser can change these while running."),
     ("translation_max_targets", "Maximum translation targets", "Capacity guard for simultaneous target languages."),
     ("translation_model_profile", "Translation model profile", "translate-gemma-4b, nllb-200-600m, or madlad-400-3b."),
     ("translation_model", "Translation model override", "Optional Hugging Face or OpenAI-compatible model ID override."),
-    ("translation_base_url", "Translation base URL", "Optional sidecar or OpenAI-compatible base URL."),
+    ("translation_base_url", "Translation base URL", "Optional provider endpoint override."),
+    ("translation_api_key_env", "Translation API-key variable", "Environment-variable name containing the selected provider secret."),
+    ("translation_region", "Translation provider region", "Optional region, currently used by Azure Translator."),
     ("translation_python", "Translation sidecar Python", "Optional Python executable for an isolated translation environment."),
     ("translation_device", "Translation device", "auto, cuda, or cpu for an in-process/sidecar local model."),
     ("asr_backend", "ASR backend", "local or remote."),
@@ -228,6 +235,7 @@ class Profile:
     report_llm_model: str = ""
     report_auto_generate: bool = True
     translation_enabled: bool = False
+    translation_browser_preferred: bool = False
     translation_provider: str = "sidecar"
     translation_port: int = 8799
     translation_target_languages: str = ""
@@ -235,6 +243,8 @@ class Profile:
     translation_model_profile: str = "translate-gemma-4b"
     translation_model: str = ""
     translation_base_url: str = ""
+    translation_api_key_env: str = ""
+    translation_region: str = ""
     translation_python: str = ""
     translation_device: str = "auto"
     advanced_args: str = ""
@@ -286,7 +296,17 @@ class Profile:
         if profile.report_llm_provider not in {"llama_cpp", "ollama", "lm_studio", "openai", "openrouter"}:
             profile.report_llm_provider = "llama_cpp"
         profile.translation_provider = str(profile.translation_provider or "sidecar").strip().lower().replace("-", "_")
-        if profile.translation_provider not in {"sidecar", "transformers", "reports_llm", "openai_compatible", "mock"}:
+        if profile.translation_provider not in {
+            "sidecar",
+            "transformers",
+            "reports_llm",
+            "openai_compatible",
+            "deepl",
+            "google_cloud",
+            "azure_translator",
+            "libretranslate",
+            "mock",
+        }:
             profile.translation_provider = "sidecar"
         if profile.translation_model_profile not in {"translate-gemma-4b", "nllb-200-600m", "madlad-400-3b"}:
             profile.translation_model_profile = "translate-gemma-4b"
@@ -472,6 +492,7 @@ class InstallPlan:
     summary: str
     realtime_preview_engine: str = "off"
     realtime_preview_model_preset: str = ""
+    translation_model_profile: str = "off"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -662,6 +683,38 @@ def check_import_group(name: str, modules: list[tuple[str, str]], required: bool
         status,
         "Missing: " + ", ".join(missing),
         "Open `whospeaks` and use Install / repair on the Setup tab.",
+    )
+
+
+def check_sherpa_onnx_runtime() -> CheckResult:
+    """Verify that this WhoSpeaks Python has the complete Nemotron runtime API."""
+
+    try:
+        sherpa_onnx = importlib.import_module("sherpa_onnx")
+    except Exception as exc:
+        return CheckResult(
+            "Nemotron sherpa-onnx runtime",
+            "warn",
+            f"{sys.executable} cannot import sherpa_onnx: {type(exc).__name__}: {exc}",
+            "Install sherpa-onnx and sherpa-onnx-bin into the current WhoSpeaks Python environment.",
+        )
+    if getattr(sherpa_onnx, "OnlineRecognizer", None) is None:
+        return CheckResult(
+            "Nemotron sherpa-onnx runtime",
+            "warn",
+            (
+                f"{sys.executable} can import sherpa_onnx, but "
+                "sherpa_onnx.OnlineRecognizer is missing."
+            ),
+            (
+                "Replace the incomplete or Kroko-specific sherpa-onnx build in the current WhoSpeaks "
+                "Python environment with sherpa-onnx and sherpa-onnx-bin."
+            ),
+        )
+    return CheckResult(
+        "Nemotron sherpa-onnx runtime",
+        "ok",
+        f"{sys.executable} provides sherpa_onnx.OnlineRecognizer.",
     )
 
 
@@ -1061,26 +1114,7 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
                 ))
             else:
                 checks.append(CheckResult("Nemotron model folder", "ok", f"{preset} is ready at {model_dir}."))
-        if profile.realtime_preview_python:
-            checks.append(check_python_imports(
-                "Nemotron preview Python",
-                profile.realtime_preview_python,
-                [
-                    ("workers.sherpa_onnx_realtime_preview_worker", "WhoSpeaks Nemotron worker"),
-                    ("sherpa_onnx", "sherpa-onnx"),
-                    ("numpy", "numpy"),
-                ],
-                required=False,
-            ))
-        elif module_available("sherpa_onnx"):
-            checks.append(CheckResult("Nemotron sherpa-onnx runtime", "ok", "sherpa_onnx is importable."))
-        else:
-            checks.append(CheckResult(
-                "Nemotron sherpa-onnx runtime",
-                "warn",
-                "sherpa_onnx is not importable, so Nemotron live text cannot start yet.",
-                "Run the WhoSpeaks installer with Nemotron selected, or install sherpa-onnx and sherpa-onnx-bin in this Python environment.",
-            ))
+        checks.append(check_sherpa_onnx_runtime())
     else:
         checks.append(check_import_group(
             "Realtime preview",
@@ -1183,8 +1217,15 @@ def install_plan_for_target(
     *,
     realtime_preview_engine: str | None = None,
     realtime_preview_model_preset: str | None = None,
+    translation_model_profile: str = "off",
 ) -> InstallPlan:
     selected = normalize_install_target(target)
+    translation_profile = str(translation_model_profile or "off").strip().lower()
+    if translation_profile not in TRANSLATION_INSTALL_PROFILE_CHOICES:
+        raise SystemExit(
+            f"Unknown translation model profile {translation_model_profile!r}. Choose one of: "
+            f"{', '.join(TRANSLATION_INSTALL_PROFILE_CHOICES)}."
+        )
     if selected == "server":
         engine = "off"
     elif realtime_preview_engine is None:
@@ -1214,6 +1255,7 @@ def install_plan_for_target(
             summary="Browser controller, local final ASR, and local speaker embeddings on this machine.",
             realtime_preview_engine=engine,
             realtime_preview_model_preset=preset,
+            translation_model_profile=translation_profile,
         )
     if selected == "core":
         return InstallPlan(
@@ -1225,6 +1267,7 @@ def install_plan_for_target(
             summary="Browser controller on this machine with final ASR and embeddings served over HTTP.",
             realtime_preview_engine=engine,
             realtime_preview_model_preset=preset,
+            translation_model_profile=translation_profile,
         )
     return InstallPlan(
         target=selected,
@@ -1234,6 +1277,7 @@ def install_plan_for_target(
         install_kroko=False,
         summary="Service-side dependencies for the remote faster-whisper ASR and embeddings endpoints.",
         realtime_preview_engine="off",
+        translation_model_profile=translation_profile,
     )
 
 
@@ -1248,6 +1292,10 @@ def configure_profile_for_install(profile: Profile, plan: InstallPlan) -> Profil
         profile.realtime_preview_engine = "off"
         profile.realtime_preview_model_preset = ""
         profile.realtime_preview_model_dir = ""
+    profile.translation_enabled = plan.translation_model_profile != "off"
+    if profile.translation_enabled:
+        profile.translation_provider = "sidecar"
+        profile.translation_model_profile = plan.translation_model_profile
     return profile
 
 
@@ -1540,6 +1588,10 @@ def print_install_plan(plan: InstallPlan, profile: Profile) -> None:
         print("Realtime text: disabled for this install. Run the installer again and choose Kroko to try native live text.")
     else:
         print("Realtime text: not part of the server package install.")
+    if plan.translation_model_profile == "off":
+        print("Translation: not installed by this plan.")
+    else:
+        print(f"Translation: isolated local {plan.translation_model_profile} sidecar and model files.")
     print(f"Language: {language_summary(profile.language)}")
     print(f"Internal dependency set: {plan.extra}")
     print("Underlying pip command:")
@@ -1591,6 +1643,31 @@ def prompt_realtime_preview(target: str) -> tuple[str, str]:
             return "kroko_onnx", "community-64l"
         if answer in {"4", "off", "none", "no"}:
             return "off", ""
+        print("Choose 1, 2, 3, or 4.")
+
+
+def prompt_translation_model() -> str:
+    print()
+    print("Local translation server")
+    print_wrapped(
+        "1. NLLB-200 600M: broad language coverage and the safest GPU-memory choice. "
+        "2. TranslateGemma 4B: quality-first, but requires accepting the Gemma terms and more VRAM. "
+        "3. MADLAD-400 3B: Apache-2.0 weights with higher memory requirements. "
+        "4. Do not install local translation.",
+        initial_indent="",
+        subsequent_indent="",
+        style=detail_text,
+    )
+    while True:
+        answer = read_input("Choose translation [1/2/3/4] ", "1").strip().lower()
+        if answer in {"1", "nllb", "nllb-200", "nllb-200-600m"}:
+            return "nllb-200-600m"
+        if answer in {"2", "gemma", "translategemma", "translate-gemma-4b"}:
+            return "translate-gemma-4b"
+        if answer in {"3", "madlad", "madlad-400", "madlad-400-3b"}:
+            return "madlad-400-3b"
+        if answer in {"4", "off", "none", "no"}:
+            return "off"
         print("Choose 1, 2, 3, or 4.")
 
 
@@ -1652,6 +1729,120 @@ def venv_python_path(venv_dir: Path) -> Path:
     if os.name == "nt":
         return venv_dir / "Scripts" / "python.exe"
     return venv_dir / "bin" / "python"
+
+
+def default_translation_venv_dir(model_profile: str) -> Path:
+    override = os.environ.get(TRANSLATION_VENV_ROOT_ENV, "").strip()
+    if override:
+        root = Path(override).expanduser()
+    elif os.name == "nt":
+        root = Path(os.environ.get("LOCALAPPDATA") or config_path().parent) / "WhoSpeaks" / "translation"
+    else:
+        root = Path(os.environ.get("XDG_DATA_HOME") or (Path.home() / ".local" / "share")) / "whospeaks" / "translation"
+    return root / model_profile / "venv"
+
+
+def default_translation_model_dir(model_profile: str) -> Path:
+    override = os.environ.get(TRANSLATION_MODEL_ROOT_ENV, "").strip()
+    if override:
+        root = Path(override).expanduser()
+    elif os.name == "nt":
+        root = Path(os.environ.get("LOCALAPPDATA") or config_path().parent) / "WhoSpeaks" / "models" / "translation"
+    else:
+        root = Path(os.environ.get("XDG_DATA_HOME") or (Path.home() / ".local" / "share")) / "whospeaks" / "models" / "translation"
+    return root / model_profile
+
+
+def translation_package_install_command(python_executable: Path) -> list[str]:
+    source_root = Path(__file__).resolve().parents[2]
+    if (source_root / "pyproject.toml").is_file():
+        return [str(python_executable), "-m", "pip", "install", "-e", f"{source_root}[translation]"]
+    return [
+        str(python_executable), "-m", "pip", "install",
+        *pip_index_args_for_installed_package(), package_extra_spec("translation"),
+    ]
+
+
+def build_translation_install_commands(
+    model_profile: str,
+    *,
+    venv_dir: Path | None = None,
+    model_dir: Path | None = None,
+    torch_policy: str | None = None,
+    download_model: bool = True,
+) -> tuple[list[list[str]], Path, Path, TorchInstallSelection]:
+    if model_profile not in TRANSLATION_INSTALL_PROFILE_CHOICES or model_profile == "off":
+        raise SystemExit("Choose nllb-200-600m, translate-gemma-4b, or madlad-400-3b.")
+    environment = (venv_dir or default_translation_venv_dir(model_profile)).expanduser().resolve()
+    model_path = (model_dir or default_translation_model_dir(model_profile)).expanduser().resolve()
+    python_executable = venv_python_path(environment)
+    torch_command, selection = build_torch_install_command(torch_policy)
+    if torch_command:
+        torch_command[0] = str(python_executable)
+    commands: list[list[str]] = [
+        [sys.executable, "-m", "venv", str(environment)],
+        [str(python_executable), "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"],
+    ]
+    if torch_command:
+        commands.append(torch_command)
+    commands.append(translation_package_install_command(python_executable))
+    prepare = [
+        str(python_executable), "-m", "window.translation_installer",
+        "--model-profile", model_profile, "--model-dir", str(model_path),
+    ]
+    if not download_model:
+        prepare.append("--verify-only")
+    commands.append(prepare)
+    return commands, python_executable, model_path, selection
+
+
+def install_translation_runtime(
+    profile: Profile,
+    model_profile: str,
+    *,
+    assume_yes: bool = False,
+    dry_run: bool = False,
+    venv_dir: Path | None = None,
+    model_dir: Path | None = None,
+    torch_policy: str | None = None,
+    download_model: bool = True,
+) -> int:
+    commands, python_executable, model_path, selection = build_translation_install_commands(
+        model_profile,
+        venv_dir=venv_dir,
+        model_dir=model_dir,
+        torch_policy=torch_policy,
+        download_model=download_model,
+    )
+    print(f"Translation model: {model_profile}")
+    print(f"Translation environment: {python_executable.parent.parent}")
+    print(f"Translation model files: {model_path}")
+    print(f"PyTorch: {selection.reason}")
+    for command in commands:
+        print(f"  {format_command(command)}")
+    if dry_run:
+        return 0
+    if not assume_yes:
+        answer = read_input("Install this local translation server now? [y/N] ", "n").strip().lower()
+        if answer not in {"y", "yes"}:
+            print("Translation installation skipped.")
+            return 0
+    code = run_command_sequence(commands)
+    if code:
+        return code
+    profile.translation_enabled = True
+    profile.translation_provider = "sidecar"
+    profile.translation_model_profile = model_profile
+    profile.translation_python = str(python_executable)
+    profile.translation_model = str(model_path)
+    if selection.mode == "cuda":
+        profile.translation_device = "cuda"
+    elif selection.mode == "cpu":
+        profile.translation_device = "cpu"
+    save_path = save_profile(profile)
+    print(f"Saved local translation server profile to {save_path}")
+    print(f"Start command: {format_command(build_translation_command(profile))}")
+    return 0
 
 
 def query_python_command_info(command: list[str]) -> dict[str, Any] | None:
@@ -1980,7 +2171,11 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
         command.extend(["--realtime-preview-model-preset", str(profile.realtime_preview_model_preset)])
     if preview_engine == "sherpa_onnx" and profile.realtime_preview_model_dir:
         command.extend(["--realtime-preview-model-dir", str(profile.realtime_preview_model_dir)])
-    if profile.realtime_preview_python or preview_engine not in {"off", "none", "false", "0"}:
+    if preview_engine == "sherpa_onnx":
+        # realtime_preview_python is a Kroko sidecar setting. Nemotron ships with
+        # WhoSpeaks and must use this installation's complete sherpa-onnx runtime.
+        command.extend(["--realtime-preview-python", sys.executable])
+    elif profile.realtime_preview_python or preview_engine not in {"off", "none", "false", "0"}:
         command.extend(["--realtime-preview-python", str(profile.realtime_preview_python or sys.executable)])
     if profile.asr_backend == "remote":
         command.extend(["--remote-asr-url", str(profile.remote_asr_url)])
@@ -1989,7 +2184,7 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
     translation_provider = profile.translation_provider if profile.translation_enabled else "off"
     translation_base_url = str(profile.translation_base_url or "").strip()
     translation_model = str(profile.translation_model or "").strip()
-    translation_api_key_env = "OPENAI_API_KEY"
+    translation_api_key_env = str(profile.translation_api_key_env or "").strip()
     if translation_provider == "sidecar":
         translation_base_url = translation_base_url or f"http://127.0.0.1:{int(profile.translation_port)}"
     elif translation_provider == "reports_llm":
@@ -2004,6 +2199,14 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
         translation_provider = "openai_compatible"
         translation_base_url = translation_base_url or profile.report_llm_base_url or default_url
         translation_model = translation_model or profile.report_llm_model or default_model
+    else:
+        translation_api_key_env = translation_api_key_env or {
+            "openai_compatible": "OPENAI_API_KEY",
+            "deepl": "DEEPL_API_KEY",
+            "google_cloud": "GOOGLE_TRANSLATE_API_KEY",
+            "azure_translator": "AZURE_TRANSLATOR_KEY",
+            "libretranslate": "LIBRETRANSLATE_API_KEY",
+        }.get(translation_provider, "")
     command.extend([
         "--translation-provider",
         translation_provider,
@@ -2014,12 +2217,16 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
         "--translation-device",
         str(profile.translation_device),
     ])
+    if profile.translation_browser_preferred:
+        command.append("--translation-browser-preferred")
     if translation_base_url:
         command.extend(["--translation-base-url", translation_base_url])
     if translation_model:
         command.extend(["--translation-model", translation_model])
     if translation_api_key_env:
         command.extend(["--translation-api-key-env", translation_api_key_env])
+    if profile.translation_region:
+        command.extend(["--translation-region", str(profile.translation_region)])
     for target in str(profile.translation_target_languages or "").split(","):
         if target:
             command.extend(["--translation-target-language", target])
@@ -2978,10 +3185,20 @@ def cmd_install(args: argparse.Namespace) -> int:
         preview_engine, preview_preset = "off", ""
         print("Realtime preview text is not selected. Pass --realtime-preview-engine sherpa_onnx to include Nemotron.")
 
+    requested_translation = str(getattr(args, "translation_model_profile", "") or "").strip()
+    if requested_translation:
+        translation_profile = requested_translation
+    elif sys.stdin.isatty() and not args.yes:
+        translation_profile = prompt_translation_model()
+    else:
+        translation_profile = "off"
+        print("Local translation is not selected. Pass --translation-model-profile nllb-200-600m to include it.")
+
     plan = install_plan_for_target(
         target,
         realtime_preview_engine=preview_engine,
         realtime_preview_model_preset=preview_preset,
+        translation_model_profile=translation_profile,
     )
     profile = load_profile()
     configure_profile_for_install(profile, plan)
@@ -3016,9 +3233,37 @@ def cmd_install(args: argparse.Namespace) -> int:
     if code:
         return code
 
+    if plan.translation_model_profile != "off":
+        code = install_translation_runtime(
+            profile,
+            plan.translation_model_profile,
+            assume_yes=True,
+            dry_run=args.dry_run,
+            venv_dir=getattr(args, "translation_venv", None),
+            model_dir=getattr(args, "translation_model_dir", None),
+            torch_policy=getattr(args, "torch", None),
+            download_model=not bool(getattr(args, "skip_translation_model_download", False)),
+        )
+        if code:
+            return code
+
     report = run_doctor(profile, profile.mode, deep=args.deep)
     print_report(report)
     return 0
+
+
+def cmd_install_translation(args: argparse.Namespace) -> int:
+    profile = load_profile()
+    return install_translation_runtime(
+        profile,
+        args.model_profile,
+        assume_yes=args.yes,
+        dry_run=args.dry_run,
+        venv_dir=args.venv,
+        model_dir=args.model_dir,
+        torch_policy=args.torch,
+        download_model=not args.skip_model_download,
+    )
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
@@ -3244,6 +3489,7 @@ def cmd_config(args: argparse.Namespace) -> int:
         "report_llm_model",
         "report_auto_generate",
         "translation_enabled",
+        "translation_browser_preferred",
         "translation_provider",
         "translation_port",
         "translation_target_languages",
@@ -3251,6 +3497,8 @@ def cmd_config(args: argparse.Namespace) -> int:
         "translation_model_profile",
         "translation_model",
         "translation_base_url",
+        "translation_api_key_env",
+        "translation_region",
         "translation_python",
         "translation_device",
         "advanced_args",
@@ -3356,6 +3604,15 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional directory containing an unpacked Nemotron model.",
     )
+    install.add_argument(
+        "--translation-model-profile",
+        choices=TRANSLATION_INSTALL_PROFILE_CHOICES,
+        default="",
+        help="Install an isolated local translation sidecar: nllb-200-600m, translate-gemma-4b, madlad-400-3b, or off.",
+    )
+    install.add_argument("--translation-venv", type=Path, default=None, help="Override the model-specific translation virtual environment.")
+    install.add_argument("--translation-model-dir", type=Path, default=None, help="Override the local translation model directory.")
+    install.add_argument("--skip-translation-model-download", action="store_true", help="Install the runtime but only verify already present model files.")
     install.add_argument("--deep", action="store_true", help="Run expensive provider/cache checks after installation.")
     install.add_argument("--yes", action="store_true", help="Do not prompt before running installer actions.")
     install.add_argument("--dry-run", action="store_true", help="Print installer actions without running them.")
@@ -3366,6 +3623,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Torch wheel policy: auto-detect CUDA, force cuda/cpu, or skip Torch preinstall.",
     )
     install.set_defaults(func=cmd_install)
+
+    install_translation = subparsers.add_parser(
+        "install-translation",
+        help="Install one isolated local translation server and optionally download its model.",
+    )
+    install_translation.add_argument("--model-profile", choices=TRANSLATION_INSTALL_PROFILE_CHOICES[1:], required=True)
+    install_translation.add_argument("--venv", type=Path, default=None)
+    install_translation.add_argument("--model-dir", type=Path, default=None)
+    install_translation.add_argument("--skip-model-download", action="store_true")
+    install_translation.add_argument("--yes", action="store_true")
+    install_translation.add_argument("--dry-run", action="store_true")
+    install_translation.add_argument("--torch", choices=TORCH_INSTALL_POLICY_CHOICES, default="auto")
+    install_translation.set_defaults(func=cmd_install_translation)
 
     setup = subparsers.add_parser("setup", help="Choose a setup mode and optionally install dependencies.")
     setup.add_argument("--mode", choices=("local", "remote", "server"), default="local")
@@ -3512,13 +3782,36 @@ def build_parser() -> argparse.ArgumentParser:
     config.add_argument("--report-llm-model", dest="report_llm_model", default=None)
     config.add_argument("--report-auto-generate", dest="report_auto_generate", action="store_true", default=None)
     config.add_argument("--translation-enabled", dest="translation_enabled", action=argparse.BooleanOptionalAction, default=None)
-    config.add_argument("--translation-provider", dest="translation_provider", choices=("sidecar", "transformers", "reports_llm", "openai_compatible", "mock"), default=None)
+    config.add_argument(
+        "--translation-browser-preferred",
+        dest="translation_browser_preferred",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+    )
+    config.add_argument(
+        "--translation-provider",
+        dest="translation_provider",
+        choices=(
+            "sidecar",
+            "transformers",
+            "reports_llm",
+            "openai_compatible",
+            "deepl",
+            "google_cloud",
+            "azure_translator",
+            "libretranslate",
+            "mock",
+        ),
+        default=None,
+    )
     config.add_argument("--translation-port", dest="translation_port", type=int, default=None)
     config.add_argument("--translation-target-languages", dest="translation_target_languages", default=None)
     config.add_argument("--translation-max-targets", dest="translation_max_targets", type=int, default=None)
     config.add_argument("--translation-model-profile", dest="translation_model_profile", choices=("translate-gemma-4b", "nllb-200-600m", "madlad-400-3b"), default=None)
     config.add_argument("--translation-model", dest="translation_model", default=None)
     config.add_argument("--translation-base-url", dest="translation_base_url", default=None)
+    config.add_argument("--translation-api-key-env", dest="translation_api_key_env", default=None)
+    config.add_argument("--translation-region", dest="translation_region", default=None)
     config.add_argument("--translation-python", dest="translation_python", default=None)
     config.add_argument("--translation-device", dest="translation_device", choices=("auto", "cuda", "cpu"), default=None)
     config.add_argument("--advanced-args", dest="advanced_args", default=None)
