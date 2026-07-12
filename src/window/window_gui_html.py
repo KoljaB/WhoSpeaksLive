@@ -318,6 +318,8 @@ HTML = r"""<!doctype html>
     .translation-menu-panel { position:absolute; right:0; top:calc(100% + 6px); z-index:31; width:min(310px, calc(100vw - 32px)); display:grid; gap:9px; padding:10px; border:1px solid #304255; border-radius:8px; background:#0F161F; box-shadow:0 18px 46px rgba(0,0,0,.46); }
     .translation-menu-heading { min-width:0; display:flex; align-items:baseline; justify-content:space-between; gap:10px; color:#E8EEF5; font-size:13px; }
     .translation-provider { min-width:0; color:#8392A2; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .translation-provider-attribution { color:#8392A2; font-size:10px; text-align:right; }
+    .translation-provider-attribution[hidden] { display:none; }
     .translation-menu-field { display:grid; grid-template-columns:86px minmax(0,1fr); align-items:center; gap:8px; color:#9EAAB6; font-size:12px; }
     .translation-menu-field select { min-width:0; min-height:29px; border:1px solid #20303E; border-radius:6px; padding:0 28px 0 8px; background:#0B1015; color:#D7DEE8; color-scheme:dark; font-size:12px; }
     .translation-include-original { min-height:24px; display:flex; align-items:center; gap:7px; color:#C6D0DC; font-size:12px; }
@@ -697,6 +699,7 @@ HTML = r"""<!doctype html>
                   <span>Translation</span>
                   <span id="translationProvider" class="translation-provider"></span>
                 </div>
+                <div id="translationProviderAttribution" class="translation-provider-attribution" hidden></div>
                 <label class="translation-menu-field">
                   <span>Display</span>
                   <select id="translationDisplayMode" aria-label="Translation display mode">
@@ -983,6 +986,7 @@ const translationMenuSummary = document.getElementById("translationMenuSummary")
 const translationActivity = document.getElementById("translationActivity");
 const translationMenuPanel = document.getElementById("translationMenuPanel");
 const translationProvider = document.getElementById("translationProvider");
+const translationProviderAttribution = document.getElementById("translationProviderAttribution");
 const translationDisplayModeControl = document.getElementById("translationDisplayMode");
 const translationPrimaryField = document.getElementById("translationPrimaryField");
 const translationPrimaryTargetControl = document.getElementById("translationPrimaryTarget");
@@ -1115,6 +1119,10 @@ let translationPrimaryTarget = "";
 let translationSelectedTargets = new Set();
 let translationStatesBySentence = new Map();
 let translationConfigureTimer = null;
+let browserTranslationQueue = Promise.resolve();
+const browserTranslationJobs = new Set();
+const browserTranslationSourcesBySentence = new Map();
+const chromeTranslatorsByPair = new Map();
 let hasUndoableCorrection = false;
 let selectedTranscriptRowIndexes = new Set();
 let lastSelectedTranscriptRowIndex = "";
@@ -3311,6 +3319,8 @@ function resetTranscriptDisplay() {
   browserLiveObservationBuffer = [];
   sentences.textContent = "";
   translationStatesBySentence.clear();
+  browserTranslationSourcesBySentence.clear();
+  browserTranslationJobs.clear();
   renderTranslationMenu();
   statusBox.textContent = "";
   clearMeetingEvidenceHighlight();
@@ -3348,6 +3358,8 @@ function clearDisplayedTranscript() {
   transcriptClearBeforeSeconds = currentTranscriptClearBoundarySeconds();
   sentences.textContent = "";
   translationStatesBySentence.clear();
+  browserTranslationSourcesBySentence.clear();
+  browserTranslationJobs.clear();
   renderTranslationMenu();
   clearTranscriptSelection();
   renderedSpeakerSentenceCounts = {};
@@ -3581,10 +3593,23 @@ function translationConfiguredTargets() {
 }
 function translationProviderLabel() {
   const provider = translationConfig && translationConfig.provider;
+  let label = "";
   if (provider && typeof provider === "object") {
-    return String(provider.label || provider.display_name || provider.name || provider.id || provider.provider || "Translation");
+    label = String(provider.label || provider.display_name || provider.name || provider.id || provider.provider || "Translation");
+  } else {
+    label = String(provider || (translationConfig && translationConfig.provider_label) || "Translation");
   }
-  return String(provider || (translationConfig && translationConfig.provider_label) || "Translation");
+  return translationConfig && translationConfig.browser_preferred
+    ? `Chrome on-device -> ${label} fallback`
+    : label;
+}
+function translationProviderId() {
+  const provider = translationConfig && translationConfig.provider;
+  return String(
+    provider && typeof provider === "object"
+      ? (provider.id || provider.provider || "")
+      : (provider || "")
+  ).toLowerCase();
 }
 function translationProviderLicense() {
   const provider = translationConfig && translationConfig.provider;
@@ -3624,6 +3649,116 @@ function translationFeatureAvailable() {
     && translationConfig.available !== false
     && translationLanguageOptions().length
   );
+}
+function browserPreferredTranslationEnabled() {
+  return Boolean(
+    translationFeatureAvailable()
+    && translationConfig
+    && translationConfig.browser_preferred
+  );
+}
+function chromeTranslationUnavailable(value) {
+  return ["no", "unavailable", "unsupported"].includes(String(value || "").toLowerCase());
+}
+async function createChromeTranslator(sourceLanguage, targetLanguage) {
+  const options = {sourceLanguage, targetLanguage};
+  const modern = globalThis.Translator;
+  if (modern && typeof modern.create === "function") {
+    if (typeof modern.availability === "function") {
+      const availability = await modern.availability(options);
+      if (chromeTranslationUnavailable(availability)) return null;
+    }
+    return modern.create(options);
+  }
+  const legacy = globalThis.translation;
+  if (legacy && typeof legacy.createTranslator === "function") {
+    if (typeof legacy.canTranslate === "function") {
+      const availability = await legacy.canTranslate(options);
+      if (chromeTranslationUnavailable(availability)) return null;
+    }
+    return legacy.createTranslator(options);
+  }
+  return null;
+}
+function chromeTranslatorForPair(sourceLanguage, targetLanguage) {
+  const key = `${sourceLanguage}>${targetLanguage}`;
+  if (!chromeTranslatorsByPair.has(key)) {
+    chromeTranslatorsByPair.set(
+      key,
+      Promise.resolve(createChromeTranslator(sourceLanguage, targetLanguage)).catch(() => null),
+    );
+  }
+  return chromeTranslatorsByPair.get(key);
+}
+async function requestBackendTranslationFallback(source, targetLanguage, reason) {
+  await post("/api/translation/browser-fallback", {
+    segment_id: source.segment_id,
+    target_language: targetLanguage,
+    source_text_hash: source.source_text_hash,
+    source_revision: source.source_revision,
+    reason:String(reason || "Chrome Translator API unavailable"),
+  });
+}
+async function runBrowserPreferredTranslation(source, targetLanguage) {
+  const startedAt = performance.now();
+  const baseEvent = {
+    segment_id:source.segment_id,
+    sentence_index:source.segment_id,
+    source_text_hash:source.source_text_hash,
+    source_revision:source.source_revision,
+    target_language:targetLanguage,
+    provider:"chrome_translator",
+  };
+  applyTranslationEvent({...baseEvent, status:"translating"});
+  try {
+    const sourceLanguage = normalizedTranslationLanguageCode(languageConfig.code);
+    const translator = await chromeTranslatorForPair(sourceLanguage, targetLanguage);
+    if (!translator || typeof translator.translate !== "function") {
+      await requestBackendTranslationFallback(source, targetLanguage, "Language pair unavailable in Chrome");
+      return;
+    }
+    const translatedText = String(await translator.translate(source.text) || "").trim();
+    if (!translatedText) throw new Error("Chrome returned an empty translation");
+    const completed = {
+      ...baseEvent,
+      status:"complete",
+      text:translatedText,
+      latency_seconds:Math.max(0, performance.now() - startedAt) / 1000,
+    };
+    applyTranslationEvent(completed);
+    await post("/api/translation/browser-result", completed);
+  } catch (error) {
+    try {
+      await requestBackendTranslationFallback(source, targetLanguage, error && error.message);
+    } catch (fallbackError) {
+      applyTranslationEvent({
+        ...baseEvent,
+        status:"error",
+        error:`Chrome and backend translation failed: ${fallbackError.message || fallbackError}`,
+      });
+    }
+  }
+}
+function queueBrowserPreferredTranslation(source, targetLanguage) {
+  if (!browserPreferredTranslationEnabled() || !source || !source.segment_id) return;
+  const target = normalizedTranslationLanguageCode(targetLanguage);
+  if (!target || target === normalizedTranslationLanguageCode(languageConfig.code)) return;
+  const jobKey = [source.segment_id, target, source.source_text_hash, source.source_revision].join("|");
+  const existing = translationStateMap(source.segment_id);
+  const state = existing && existing.get(target);
+  if (browserTranslationJobs.has(jobKey) || (state && state.status === "complete")) return;
+  browserTranslationJobs.add(jobKey);
+  browserTranslationQueue = browserTranslationQueue
+    .then(() => runBrowserPreferredTranslation(source, target))
+    .finally(() => browserTranslationJobs.delete(jobKey))
+    .catch(error => log(`Browser translation failed: ${error.message || error}`));
+}
+function queueBrowserPreferredTranslationsForSource(source) {
+  if (!browserPreferredTranslationEnabled()) return;
+  translationSelectedTargets.forEach(target => queueBrowserPreferredTranslation(source, target));
+}
+function queueBrowserPreferredTranslationsForAllSources() {
+  browserTranslationSourcesBySentence.forEach(queueBrowserPreferredTranslationsForSource);
 }
 function translationMaximumTargets() {
   const configured = Number(translationConfig && translationConfig.max_targets);
@@ -3929,6 +4064,11 @@ function renderTranslationMenu() {
   const licenseLabel = providerLicense && (providerLicense.identifier || providerLicense.display_name);
   translationProvider.textContent = [translationProviderLabel(), licenseLabel].filter(Boolean).join(" · ");
   translationProvider.title = translationProviderNotice();
+  const googleAttributionRequired = translationProviderId() === "google_cloud";
+  translationProviderAttribution.hidden = !googleAttributionRequired;
+  translationProviderAttribution.textContent = googleAttributionRequired
+    ? "Powered by Google Translate"
+    : "";
   refreshTranslationMenuStatus();
   const selectedCodes = Array.from(translationSelectedTargets);
   translationPrimaryTargetControl.replaceChildren();
@@ -3981,6 +4121,7 @@ function scheduleTranslationConfiguration() {
     translationConfigureTimer = null;
     const targetLanguages = translationTargetPayloadCodes();
     post("/api/translation/configure", {target_languages:targetLanguages})
+      .then(() => queueBrowserPreferredTranslationsForAllSources())
       .catch(error => log(`Translation configuration failed: ${error.message}`));
   }, 180);
 }
@@ -4029,6 +4170,7 @@ function initializeTranslationControls() {
   );
   if (!translationSelectedTargets.size) translationDisplayMode = "original";
   renderTranslationMenu();
+  queueBrowserPreferredTranslationsForAllSources();
 }
 function transcriptSearchVisible(row) {
   const query = transcriptSearchText.trim().toLowerCase();
@@ -6477,6 +6619,20 @@ function renderSentence(item) {
   }
   if (!item.realtime && item.translations) {
     applyTranslationCollection(item.translations, {sentence_index:item.index, refresh:false});
+  }
+  if (!item.realtime && !item.provisional_assignment) {
+    const source = {
+      segment_id:String(item.index),
+      text:String(item.text || ""),
+      source_text_hash:String(item.source_text_hash || ""),
+      source_revision:String(
+        item.source_revision === undefined || item.source_revision === null
+          ? (item.source_text_hash || "")
+          : item.source_revision
+      ),
+    };
+    browserTranslationSourcesBySentence.set(source.segment_id, source);
+    queueBrowserPreferredTranslationsForSource(source);
   }
   removeOverlappingSettlingRealtimeRows(item, row);
   updateCurrentLiveSpeakerFromRealtimeRows();

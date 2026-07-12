@@ -449,13 +449,62 @@ class WhoSpeaksCliTests(unittest.TestCase):
 
         self.assertNotIn("--embedding-python", command)
 
-    def test_launch_command_includes_saved_realtime_preview_python(self) -> None:
-        profile = cli.Profile(realtime_preview_python=r"C:\Python\Python312\python.exe")
+    def test_kroko_launch_command_includes_saved_realtime_preview_python(self) -> None:
+        profile = cli.Profile(
+            realtime_preview_engine="kroko_onnx",
+            realtime_preview_model_preset="community-64l",
+            realtime_preview_python=r"C:\Python\Python312\python.exe",
+        )
 
         command = cli.build_launch_command(profile)
 
         self.assertIn("--realtime-preview-python", command)
         self.assertIn(r"C:\Python\Python312\python.exe", command)
+
+    def test_nemotron_launch_ignores_saved_kroko_preview_python(self) -> None:
+        stale_kroko_python = r"C:\WhoSpeaks\kroko-preview-py312\Scripts\python.exe"
+        profile = cli.Profile(
+            realtime_preview_engine="sherpa_onnx",
+            realtime_preview_python=stale_kroko_python,
+        )
+
+        command = cli.build_launch_command(profile)
+
+        self.assertEqual(command[command.index("--realtime-preview-python") + 1], sys.executable)
+        self.assertNotIn(stale_kroko_python, command)
+        self.assertEqual(profile.realtime_preview_python, stale_kroko_python)
+
+    def test_nemotron_doctor_rejects_importable_runtime_without_online_recognizer(self) -> None:
+        with mock.patch.object(cli.importlib, "import_module", return_value=object()):
+            check = cli.check_sherpa_onnx_runtime()
+
+        self.assertEqual(check.status, "warn")
+        self.assertIn("sherpa_onnx.OnlineRecognizer is missing", check.detail)
+        self.assertIn(sys.executable, check.detail)
+
+    def test_nemotron_doctor_accepts_online_recognizer_runtime(self) -> None:
+        runtime = mock.Mock(OnlineRecognizer=object())
+        with mock.patch.object(cli.importlib, "import_module", return_value=runtime):
+            check = cli.check_sherpa_onnx_runtime()
+
+        self.assertEqual(check.status, "ok")
+        self.assertIn("sherpa_onnx.OnlineRecognizer", check.detail)
+
+    def test_nemotron_doctor_ignores_saved_kroko_preview_python(self) -> None:
+        profile = cli.Profile(
+            realtime_preview_engine="sherpa_onnx",
+            realtime_preview_python=r"C:\WhoSpeaks\kroko-preview-py312\Scripts\python.exe",
+        )
+        runtime_check = cli.CheckResult("Nemotron sherpa-onnx runtime", "ok", "current runtime")
+        with (
+            mock.patch.object(cli, "check_sherpa_onnx_runtime", return_value=runtime_check) as check_current,
+            mock.patch.object(cli, "check_python_imports") as check_sidecar,
+        ):
+            report = cli.run_doctor(profile, mode="server")
+
+        check_current.assert_called_once_with()
+        check_sidecar.assert_not_called()
+        self.assertIn(runtime_check, report.checks)
 
     def test_window_parser_preserves_python_executable_symlinks(self) -> None:
         module_path = ROOT / "src" / "window" / "youtube_window_diarize_gui.py"

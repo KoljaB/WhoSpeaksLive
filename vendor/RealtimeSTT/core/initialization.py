@@ -226,6 +226,7 @@ def _assign_initial_attributes(recorder, init_args, normalize_wakeword_backend):
     recorder.realtime_stabilized_safetext = ""
     recorder.realtime_text_stabilizer = RealtimeTextStabilizer()
     recorder.realtime_recording_id = 0
+    recorder.realtime_recording_generation = 0
     recorder.realtime_observation_sequence = 0
     recorder.realtime_text_stabilization_event = None
     recorder.realtime_stabilization_accepted_count = 0
@@ -251,6 +252,7 @@ def _assign_initial_attributes(recorder, init_args, normalize_wakeword_backend):
     recorder._realtime_punctuation_split_busy = False
     recorder._last_realtime_punctuation_split_attempt_text = ""
     recorder._realtime_punctuation_split_candidate = None
+    recorder.realtime_state_lock = threading.RLock()
     recorder.continuous_listening = False
     recorder.last_transcription_bytes = None
     recorder.last_transcription_bytes_b64 = None

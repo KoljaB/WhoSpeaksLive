@@ -282,19 +282,19 @@ class WhoSpeaksSetupApp(App[str]):
     }
 
     #setup-options {
-        height: 4;
+        height: 6;
         layout: vertical;
         padding: 0 2;
         background: #0d1117;
     }
 
-    #target-row, #realtime-row {
+    #target-row, #realtime-row, #translation-install-row {
         width: 1fr;
         height: 2;
         align-vertical: middle;
     }
 
-    #target-label, #realtime-label {
+    #target-label, #realtime-label, #translation-install-label {
         width: 12;
         height: 1;
         color: #8f9db8;
@@ -345,7 +345,7 @@ class WhoSpeaksSetupApp(App[str]):
     }
 
     Screen.preview-incompatible #setup-options {
-        height: 5;
+        height: 7;
     }
 
     Screen.preview-incompatible #compatibility-note {
@@ -622,7 +622,7 @@ class WhoSpeaksSetupApp(App[str]):
         grid-columns: 1fr;
     }
 
-    Screen.narrow #target-row, Screen.narrow #realtime-row {
+    Screen.narrow #target-row, Screen.narrow #realtime-row, Screen.narrow #translation-install-row {
         width: 1fr;
         height: 2;
     }
@@ -694,6 +694,10 @@ class WhoSpeaksSetupApp(App[str]):
         translation_provider_options = [
             ("Local sidecar (recommended)", "sidecar"),
             ("Local model in live process", "transformers"),
+            ("DeepL API", "deepl"),
+            ("Google Cloud Translation", "google_cloud"),
+            ("Azure Translator", "azure_translator"),
+            ("LibreTranslate endpoint", "libretranslate"),
             ("Reuse reports LLM", "reports_llm"),
             ("OpenAI-compatible API", "openai_compatible"),
             ("Mock (testing)", "mock"),
@@ -751,6 +755,19 @@ class WhoSpeaksSetupApp(App[str]):
                                 value=self.profile.live_speaker_assignment,
                                 id="live-speakers-checkbox",
                                 compact=True,
+                            )
+                        with Horizontal(id="translation-install-row"):
+                            yield Label("Translation:", id="translation-install-label")
+                            yield Select(
+                                [
+                                    ("NLLB-200 600M (recommended)", "nllb-200-600m"),
+                                    ("TranslateGemma 4B", "translate-gemma-4b"),
+                                    ("MADLAD-400 3B", "madlad-400-3b"),
+                                    ("Off", "off"),
+                                ],
+                                value=self.profile.translation_model_profile if self.profile.translation_enabled else "off",
+                                allow_blank=False,
+                                id="translation-install-select",
                             )
                         yield Static("", id="compatibility-note", markup=False)
                     yield Static(id="compact-plan", markup=False)
@@ -907,6 +924,13 @@ class WhoSpeaksSetupApp(App[str]):
                                     id="translation-enabled-checkbox",
                                 )
                             with Vertical(classes="field"):
+                                yield Label("Chrome on-device translation")
+                                yield Checkbox(
+                                    "Prefer Chrome; use selected provider as fallback",
+                                    value=self.profile.translation_browser_preferred,
+                                    id="translation-browser-preferred-checkbox",
+                                )
+                            with Vertical(classes="field"):
                                 yield Label("Translation provider")
                                 yield Select(
                                     translation_provider_options,
@@ -949,6 +973,20 @@ class WhoSpeaksSetupApp(App[str]):
                                     self.profile.translation_base_url,
                                     placeholder="Provider default",
                                     id="translation-base-url-input",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("API-key environment variable")
+                                yield Input(
+                                    self.profile.translation_api_key_env,
+                                    placeholder="Provider default",
+                                    id="translation-api-key-env-input",
+                                )
+                            with Vertical(classes="field"):
+                                yield Label("Provider region (Azure)")
+                                yield Input(
+                                    self.profile.translation_region,
+                                    placeholder="For example: westeurope",
+                                    id="translation-region-input",
                                 )
                             with Vertical(classes="field"):
                                 yield Label("Translation Python (optional)")
@@ -1107,6 +1145,7 @@ class WhoSpeaksSetupApp(App[str]):
             target,
             realtime_preview_engine=engine,
             realtime_preview_model_preset=str(preset or ""),
+            translation_model_profile=str(self.query_one("#translation-install-select", Select).value or "off"),
         )
 
     def _update_plan(self, *, announce: bool = True) -> None:
@@ -1125,6 +1164,7 @@ class WhoSpeaksSetupApp(App[str]):
                 *component_lines,
                 "",
                 f"Realtime text: {realtime}",
+                f"Translation: {plan.translation_model_profile if plan.translation_model_profile != 'off' else 'off'}",
             )
         )
         self.query_one("#mode-pill", Static).update(
@@ -1508,6 +1548,7 @@ class WhoSpeaksSetupApp(App[str]):
 
         self.query_one("#target-select", RadioSet).disabled = bool(operation)
         self.query_one("#realtime-select", RadioSet).disabled = bool(operation) or self._selected_target() == "server"
+        self.query_one("#translation-install-select", Select).disabled = bool(operation)
         self.query_one("#quick-language-select", Select).disabled = bool(operation)
         self.query_one("#live-speakers-checkbox", Checkbox).disabled = bool(operation)
         self.query_one("#save-settings", Button).disabled = bool(operation)
@@ -1580,6 +1621,7 @@ class WhoSpeaksSetupApp(App[str]):
                 model_dir = self.query_one("#realtime-model-dir-input", Input).value.strip()
                 if model_dir:
                     command.extend(["--realtime-preview-model-dir", model_dir])
+        command.extend(["--translation-model-profile", plan.translation_model_profile])
         return command
 
     def _save_settings(self, *, notify: bool = True) -> bool:
@@ -1652,12 +1694,15 @@ class WhoSpeaksSetupApp(App[str]):
     def _save_translation_settings(self, *, notify: bool = True) -> bool:
         updates: list[tuple[str, Any]] = [
             ("translation_enabled", self.query_one("#translation-enabled-checkbox", Checkbox).value),
+            ("translation_browser_preferred", self.query_one("#translation-browser-preferred-checkbox", Checkbox).value),
             ("translation_provider", self.query_one("#translation-provider-select", Select).value),
             ("translation_target_languages", self.query_one("#translation-targets-input", Input).value),
             ("translation_max_targets", self.query_one("#translation-max-targets-input", Input).value),
             ("translation_model_profile", self.query_one("#translation-model-profile-select", Select).value),
             ("translation_model", self.query_one("#translation-model-input", Input).value),
             ("translation_base_url", self.query_one("#translation-base-url-input", Input).value),
+            ("translation_api_key_env", self.query_one("#translation-api-key-env-input", Input).value),
+            ("translation_region", self.query_one("#translation-region-input", Input).value),
             ("translation_python", self.query_one("#translation-python-input", Input).value),
             ("translation_port", self.query_one("#translation-port-input", Input).value),
             ("translation_device", self.query_one("#translation-device-select", Select).value),
@@ -1755,9 +1800,16 @@ class WhoSpeaksSetupApp(App[str]):
         self._sync_preview_compatibility()
         self._sync_action_buttons()
 
+    @on(Select.Changed, "#translation-install-select")
+    def translation_install_changed(self) -> None:
+        self._update_plan()
+
     @on(Select.Changed, "#quick-language-select")
     def quick_language_changed(self, event: Select.Changed) -> None:
         language = str(event.value or self.profile.language)
+        current = str(self.query_one("#quick-language-select", Select).value or self.profile.language)
+        if language != current:
+            return
         settings_select = self.query_one("#language-select", Select)
         if settings_select.value != language:
             settings_select.value = language
@@ -1768,6 +1820,9 @@ class WhoSpeaksSetupApp(App[str]):
     @on(Select.Changed, "#language-select")
     def settings_language_changed(self, event: Select.Changed) -> None:
         language = str(event.value or self.profile.language)
+        current = str(self.query_one("#language-select", Select).value or self.profile.language)
+        if language != current:
+            return
         quick_select = self.query_one("#quick-language-select", Select)
         if quick_select.value != language:
             quick_select.value = language
@@ -1778,6 +1833,12 @@ class WhoSpeaksSetupApp(App[str]):
     @on(Select.Changed, "#realtime-engine-select")
     def realtime_engine_changed(self, event: Select.Changed) -> None:
         engine = str(event.value or "off")
+        # Programmatic language recommendations can enqueue several Select
+        # events. Ignore a superseded event instead of letting an older
+        # recommendation overwrite the currently visible selection.
+        current = str(self.query_one("#realtime-engine-select", Select).value or "off")
+        if engine != current:
+            return
         self._sync_realtime_settings()
         self._select_realtime_engine(engine)
         self._update_plan()
@@ -1813,6 +1874,13 @@ class WhoSpeaksSetupApp(App[str]):
         self.query_one("#translation-port-input", Input).disabled = not sidecar
         self.query_one("#translation-python-input", Input).disabled = not sidecar
         self.query_one("#translation-base-url-input", Input).disabled = provider in {"transformers", "mock"}
+        self.query_one("#translation-api-key-env-input", Input).disabled = provider in {
+            "sidecar",
+            "transformers",
+            "reports_llm",
+            "mock",
+        }
+        self.query_one("#translation-region-input", Input).disabled = provider != "azure_translator"
         self.query_one("#translation-model-input", Input).disabled = provider == "mock"
 
     @on(Button.Pressed)

@@ -28,6 +28,22 @@ def get_frames_lock(recorder):
     return lock
 
 
+def get_realtime_state_lock(recorder):
+    """
+    Returns the lock that serializes realtime recording generations.
+
+    Callers that also need ``frames_lock`` must always acquire this lock
+    first.  Keeping one lock order lets lifecycle transitions and delayed
+    punctuation-split commits update the generation and its frame buffer as
+    one operation without deadlocking the recording worker.
+    """
+    lock = getattr(recorder, "realtime_state_lock", None)
+    if lock is None:
+        lock = threading.RLock()
+        recorder.realtime_state_lock = lock
+    return lock
+
+
 def snapshot_frames(recorder, attr_name="frames"):
     """
     Returns a stable tuple snapshot of one recorder frame list.

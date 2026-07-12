@@ -61,6 +61,57 @@ class TranslationCliTests(unittest.TestCase):
         self.assertIn("http://reports.local:11434/v1", command)
         self.assertIn("gemma-report", command)
 
+    def test_managed_provider_uses_secret_variable_name_without_serializing_secret(self) -> None:
+        profile = Profile(
+            translation_enabled=True,
+            translation_provider="azure_translator",
+            translation_api_key_env="MY_AZURE_TRANSLATOR_KEY",
+            translation_region="westeurope",
+            translation_target_languages="en,de",
+        )
+        command = build_launch_command(profile)
+
+        self.assertEqual(
+            command[command.index("--translation-provider") + 1],
+            "azure_translator",
+        )
+        self.assertEqual(
+            command[command.index("--translation-api-key-env") + 1],
+            "MY_AZURE_TRANSLATOR_KEY",
+        )
+        self.assertEqual(command[command.index("--translation-region") + 1], "westeurope")
+        self.assertNotIn("--translation-base-url", command)
+
+    def test_managed_providers_receive_safe_default_key_variable_names(self) -> None:
+        defaults = {
+            "deepl": "DEEPL_API_KEY",
+            "google_cloud": "GOOGLE_TRANSLATE_API_KEY",
+            "azure_translator": "AZURE_TRANSLATOR_KEY",
+            "libretranslate": "LIBRETRANSLATE_API_KEY",
+        }
+        for provider, env_name in defaults.items():
+            with self.subTest(provider=provider):
+                command = build_launch_command(Profile(
+                    translation_enabled=True,
+                    translation_provider=provider,
+                ))
+                self.assertEqual(
+                    command[command.index("--translation-api-key-env") + 1],
+                    env_name,
+                )
+
+    def test_chrome_preference_keeps_selected_backend_as_fallback(self) -> None:
+        command = build_launch_command(Profile(
+            translation_enabled=True,
+            translation_browser_preferred=True,
+            translation_provider="google_cloud",
+        ))
+        self.assertIn("--translation-browser-preferred", command)
+        self.assertEqual(
+            command[command.index("--translation-provider") + 1],
+            "google_cloud",
+        )
+
     def test_launch_translation_flag_temporarily_enables_disabled_saved_profile(self) -> None:
         parsed = cli.build_parser().parse_args(["launch", "--translation", "--print"])
         output = StringIO()

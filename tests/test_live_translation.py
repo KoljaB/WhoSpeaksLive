@@ -5,6 +5,7 @@ import sys
 import threading
 import time
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -42,6 +43,8 @@ def args(**overrides: object) -> SimpleNamespace:
         "translation_device": "cpu",
         "translation_dtype": "auto",
         "translation_api_key_env": "OPENAI_API_KEY",
+        "translation_browser_preferred": False,
+        "translation_region": "",
     }
     values.update(overrides)
     return SimpleNamespace(**values)
@@ -108,6 +111,86 @@ class LiveTranslationCoordinatorTests(unittest.TestCase):
         self.assertFalse(config["available"])
         self.assertEqual(config["display_mode"], "original")
         self.assertEqual(bus.events, [])
+
+    def test_managed_provider_reads_only_its_configured_environment_variable(self) -> None:
+        bus = RecordingBus()
+        with (
+            mock.patch.dict("os.environ", {"CUSTOM_DEEPL_KEY": "secret-value"}, clear=False),
+            mock.patch("window.live_translation.create_translation_provider") as factory,
+        ):
+            factory.return_value = mock.Mock()
+            coordinator = LiveTranslationCoordinator(args(
+                translation_provider="deepl",
+                translation_api_key_env="CUSTOM_DEEPL_KEY",
+                translation_base_url="",
+                translation_region="",
+            ), bus)
+        try:
+            config = factory.call_args.args[0]
+            self.assertEqual(config.kind, "deepl")
+            self.assertEqual(config.api_key, "secret-value")
+            self.assertEqual(config.base_url, "")
+        finally:
+            coordinator.shutdown()
+
+    def test_browser_result_is_canonical_and_stale_results_are_rejected(self) -> None:
+        bus = RecordingBus()
+        coordinator = LiveTranslationCoordinator(args(
+            translation_browser_preferred=True,
+            translation_target_language=["en"],
+        ), bus)
+        try:
+            coordinator.begin_session("browser-meeting")
+            coordinator.handle_sentence(
+                {"index": 7, "text": "Buenos dÃ­as.", "start": 0.0},
+                "browser-meeting",
+            )
+            source_hash = translation_source_hash("Buenos dÃ­as.")
+            self.assertEqual(coordinator.snapshot(), [])
+            event = coordinator.accept_browser_result({
+                "segment_id": 7,
+                "target_language": "en",
+                "source_text_hash": source_hash,
+                "source_revision": source_hash,
+                "text": "Good morning.",
+                "latency_seconds": 0.12,
+            })
+            self.assertEqual(event["provider"], "chrome_translator")
+            self.assertEqual(coordinator.snapshot()[0]["text"], "Good morning.")
+            with self.assertRaisesRegex(ValueError, "stale"):
+                coordinator.accept_browser_result({
+                    "segment_id": 7,
+                    "target_language": "en",
+                    "source_text_hash": "old-hash",
+                    "text": "Stale text",
+                })
+        finally:
+            coordinator.shutdown()
+
+    def test_browser_unavailable_pair_runs_selected_backend_fallback(self) -> None:
+        bus = RecordingBus()
+        coordinator = LiveTranslationCoordinator(args(
+            translation_browser_preferred=True,
+            translation_target_language=["de"],
+        ), bus)
+        try:
+            coordinator.begin_session("fallback-meeting")
+            coordinator.handle_sentence(
+                {"index": 2, "text": "Hola.", "start": 0.0},
+                "fallback-meeting",
+            )
+            source_hash = translation_source_hash("Hola.")
+            coordinator.request_browser_fallback({
+                "segment_id": 2,
+                "target_language": "de",
+                "source_text_hash": source_hash,
+            })
+            self.assertTrue(coordinator.service.wait_for_idle(timeout=2.0))
+            records = coordinator.snapshot()
+            self.assertEqual(records[0]["provider"], "mock")
+            self.assertEqual(records[0]["target_language"], "de")
+        finally:
+            coordinator.shutdown()
 
     def test_failed_target_can_be_retried_after_provider_recovers(self) -> None:
         bus = RecordingBus()

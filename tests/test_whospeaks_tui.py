@@ -56,12 +56,13 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(app.query_one("#title-bar").region.height, 3)
                     self.assertEqual(app.query_one("#status-row").region.height, 2)
                     self.assertEqual(app.query_one("#operation-banner").region.height, 0)
-                    self.assertEqual(app.query_one("#setup-options").region.height, 4)
+                    self.assertEqual(app.query_one("#setup-options").region.height, 6)
                     self.assertEqual(app.query_one("#setup-actions").region.height, 4)
                     actions = app.query_one("#setup-actions").region
                     self.assertLessEqual(app.query_one("#install-button", Button).region.bottom, actions.bottom)
                     self.assertEqual(app.query_one("#quick-language-select", Select).value, "en")
                     self.assertTrue(app.query_one("#live-speakers-checkbox", Checkbox).value)
+                    self.assertEqual(app.query_one("#translation-install-select", Select).value, "off")
                     self.assertGreaterEqual(
                         app.query_one("#language-label").region.x,
                         app.query_one("#target-select").region.right,
@@ -159,15 +160,15 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
             language = app.query_one("#quick-language-select", Select)
 
             language.value = "he"
-            await pilot.pause()
+            await pilot.pause(0.4)
             self.assertEqual(app.query_one("#realtime-select", RadioSet).pressed_button.id, "realtime-kroko")
 
             language.value = "cy"
-            await pilot.pause()
+            await pilot.pause(0.4)
             self.assertEqual(app.query_one("#realtime-select", RadioSet).pressed_button.id, "realtime-off")
 
             language.value = "de"
-            await pilot.pause()
+            await pilot.pause(0.4)
             self.assertEqual(app.query_one("#realtime-select", RadioSet).pressed_button.id, "realtime-nemotron")
 
     async def test_explicit_incompatible_live_text_keeps_language_warns_and_blocks_actions(self) -> None:
@@ -199,6 +200,8 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
             try:
                 app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
                 async with app.run_test(size=(100, 32)) as pilot:
+                    app.query_one("#translation-install-select", Select).value = "nllb-200-600m"
+                    await pilot.pause()
                     await pilot.click("#install-button")
                     await pilot.pause()
 
@@ -207,6 +210,8 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
                     self.assertIn("--target", app.pending_install_command)
                     self.assertIn("--realtime-preview-engine", app.pending_install_command)
                     self.assertIn("sherpa_onnx", app.pending_install_command)
+                    self.assertIn("--translation-model-profile", app.pending_install_command)
+                    self.assertIn("nllb-200-600m", app.pending_install_command)
 
                     await pilot.click("#cancel-install")
                     await pilot.pause()

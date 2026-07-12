@@ -1,5 +1,17 @@
 # Installation
 
+## Optional local translation server
+
+Choose a local translation model during the guided installer, similarly to the Nemotron/Kroko live-text choice, or install providers independently:
+
+```text
+whospeaks install-translation --model-profile nllb-200-600m --torch auto --yes
+whospeaks install-translation --model-profile translate-gemma-4b --torch auto --yes
+whospeaks install-translation --model-profile madlad-400-3b --torch auto --yes
+```
+
+Each command creates a separate virtual environment and model directory on Windows or Linux. NLLB is the recommended broad, lower-memory default. TranslateGemma requires accepting the Gemma terms on Hugging Face. MADLAD uses considerably more memory than NLLB. See [Live translation](translation.md) for paths, licensing, launch behavior, and offline verification.
+
 Install the lightweight `whospeaks` command first, then let it guide the full local, controller, or server setup.
 
 ## Recommended First Command

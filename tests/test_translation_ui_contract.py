@@ -75,6 +75,20 @@ class TranslationUiContractTests(unittest.TestCase):
         self.assertIn('flag.className = "translation-language-flag";', HTML)
         self.assertIn('flag.setAttribute("aria-hidden", "true");', HTML)
 
+    def test_chrome_translator_uses_feature_detection_and_backend_fallback(self) -> None:
+        self.assertIn("globalThis.Translator", HTML)
+        self.assertIn("modern.availability(options)", HTML)
+        self.assertIn("globalThis.translation", HTML)
+        self.assertIn('post("/api/translation/browser-result", completed)', HTML)
+        self.assertIn('post("/api/translation/browser-fallback", {', HTML)
+        self.assertIn("browserTranslationQueue", HTML)
+        self.assertIn("Chrome and backend translation failed", HTML)
+
+    def test_google_provider_keeps_required_attribution_adjacent_to_controls(self) -> None:
+        self.assertIn('id="translationProviderAttribution"', HTML)
+        self.assertIn('translationProviderId() === "google_cloud"', HTML)
+        self.assertIn("Powered by Google Translate", HTML)
+
 
 if __name__ == "__main__":
     unittest.main()
