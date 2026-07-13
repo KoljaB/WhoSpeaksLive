@@ -75,6 +75,14 @@ New sessions use the clearest title available. Preset YouTube clips use their pr
 
 Use `+ New session` in the Sessions tab to create a new active session immediately and return to a clean Ready state. Pressing Start also creates a new active session immediately if one is not already prepared; transcript rows, speakers, embeddings, and audio references are filled into that same session as the run progresses.
 
+## Ask Sessions
+
+The **Ask** tab answers questions from transcript evidence for the current live session, an opened saved session, or up to 20 checked saved sessions. Checked sessions take priority over an opened or running session; when nothing is checked, the opened saved session is used, followed by the current running session. Click **Ask selected sessions** beside the bulk session actions to open the selected scope directly.
+
+Each answer links to its session, speaker, and timestamp. Clicking a citation opens the corresponding saved session, scrolls to the transcript row, and highlights it. Live answers use only finalized rows and show the transcript cutoff used for the answer.
+
+Short single-session transcripts are sent to the configured large language model directly. Long or multi-session scopes use hybrid search, which combines semantic similarity from text embeddings with exact keyword matching, so they require a configured text-embedding endpoint. See [Ask sessions](ask-sessions.md) for setup, scope rules, indexing behavior, and troubleshooting.
+
 ## Practical Tips
 
 - Let the full clip finish before saving a speaker group.

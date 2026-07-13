@@ -329,6 +329,7 @@
         <div class="speaker-tabs" role="tablist" aria-label="Speaker controls">
           <button class="speaker-tab active" type="button" role="tab" aria-selected="true" data-speaker-tab="speakers">Speakers</button>
           <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="sessions">Sessions</button>
+          <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="ask">Ask</button>
           <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="intelligence">Insights</button>
           <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="settings">Settings</button>
         </div>
@@ -389,9 +390,34 @@
             <button id="archiveSelectedSessions" type="button">Archive</button>
             <button id="restoreSelectedSessions" type="button">Restore</button>
             <button id="deleteSelectedSessions" class="danger" type="button">Delete</button>
+            <button id="askSelectedMeetings" class="ask-selected-meetings" type="button">Ask selected sessions</button>
             <span id="sessionSelectionStatus" class="sessions-selection-status" aria-live="polite">0 selected</span>
           </div>
           <div id="sessionList" class="session-list"></div>
+        </div>
+        <div class="speaker-tab-panel meeting-chat-panel" data-speaker-panel="ask" hidden>
+          <div class="meeting-chat-header">
+            <div>
+              <h2 id="meetingChatTitle" class="meeting-chat-title">Ask this session</h2>
+              <div id="meetingChatStatus" class="meeting-chat-status" aria-live="polite">Choose a session to begin.</div>
+            </div>
+            <button id="meetingChatClear" class="meeting-chat-clear" type="button">Clear</button>
+          </div>
+          <div id="meetingChatScope" class="meeting-chat-scope" aria-label="Sessions in this conversation"></div>
+          <div id="meetingChatMessages" class="meeting-chat-messages" aria-live="polite"></div>
+          <div id="meetingChatProgress" class="meeting-chat-progress" hidden>
+            <div class="meeting-chat-progress-line">
+              <span class="meeting-chat-progress-dot" aria-hidden="true"></span>
+              <span id="meetingChatProgressText">Preparing session search</span>
+              <span id="meetingChatProgressPercent" class="meeting-chat-progress-percent">0%</span>
+              <span id="meetingChatProgressElapsed" class="meeting-chat-progress-elapsed">0s</span>
+            </div>
+            <progress id="meetingChatProgressBar" max="100" value="0" aria-label="Session question progress"></progress>
+          </div>
+          <form id="meetingChatForm" class="meeting-chat-form">
+            <textarea id="meetingChatQuestion" rows="3" maxlength="4000" placeholder="Ask about decisions, commitments, or what a person said"></textarea>
+            <button id="meetingChatSend" type="submit">Send</button>
+          </form>
         </div>
         <div class="speaker-tab-panel meeting-intelligence-panel" data-speaker-panel="intelligence" hidden>
           <div class="meeting-intelligence-header">

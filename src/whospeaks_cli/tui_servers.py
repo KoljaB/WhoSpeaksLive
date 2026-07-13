@@ -43,7 +43,7 @@ class ServerLifecycleMixin:
             "#live-server-state", "Live", self._servers.state("live").display_status
         )
         self._render_server_state(
-            "#reports-server-state", "Reports", self._servers.state("reports").display_status
+            "#reports-server-state", "Meeting Intelligence", self._servers.state("reports").display_status
         )
         self._render_server_state(
             "#translation-server-state", "Translation", self._servers.state("translation").display_status
@@ -153,6 +153,6 @@ class ServerLifecycleMixin:
     def _server_label(kind: str) -> str:
         return {
             "live": "Live server",
-            "reports": "Reports server",
+            "reports": "Meeting Intelligence",
             "translation": "Translation server",
         }.get(kind, f"{kind.title()} server")

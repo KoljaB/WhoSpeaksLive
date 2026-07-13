@@ -402,7 +402,13 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn("http://gpu.example:8660", command)
 
     def test_reports_command_inherits_the_live_profile_language(self) -> None:
-        profile = cli.Profile(language="de", host="127.0.0.1")
+        profile = cli.Profile(
+            language="de",
+            host="127.0.0.1",
+            text_embedding_base_url="http://embeddings.example/v1",
+            text_embedding_model="multilingual-e5",
+            text_embedding_api_key_env="EMBEDDING_API_KEY",
+        )
 
         command = cli.build_reports_command(
             profile,
@@ -414,6 +420,26 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertEqual(command[command.index("--report-language") + 1], "de")
         self.assertIn("--auto-generate", command)
         self.assertEqual(command[command.index("--llm-provider") + 1], "openai")
+        self.assertEqual(command[command.index("--text-embedding-base-url") + 1], "http://embeddings.example/v1")
+        self.assertEqual(command[command.index("--text-embedding-model") + 1], "multilingual-e5")
+        self.assertEqual(command[command.index("--text-embedding-api-key-env") + 1], "EMBEDDING_API_KEY")
+
+    def test_preferred_meeting_intelligence_flag_configures_live_proxy(self) -> None:
+        profile = cli.Profile(language="en", host="0.0.0.0", reports_port=8898)
+        stdout = io.StringIO()
+        with (
+            mock.patch.object(cli, "load_profile", return_value=profile),
+            contextlib.redirect_stdout(stdout),
+        ):
+            code = cli.main([
+                "launch", "--with-meeting-intelligence", "--reports-port", "8899", "--print",
+            ])
+
+        self.assertEqual(code, 0)
+        output = stdout.getvalue()
+        self.assertIn("Meeting Intelligence — Reports + Ask command:", output)
+        self.assertIn("--meeting-intelligence-url http://127.0.0.1:8899", output)
+        self.assertIn("--port 8899", output)
 
     def test_launch_with_reports_prints_both_commands(self) -> None:
         profile = cli.Profile(language="es")
@@ -434,7 +460,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         output = stdout.getvalue()
-        self.assertIn("Meeting reports command:", output)
+        self.assertIn("Meeting Intelligence — Reports + Ask command:", output)
         self.assertIn("--report-language es", output)
         self.assertIn("--llm-model gpt-4.1-nano", output)
         self.assertIn("Live window command:", output)
@@ -456,7 +482,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
         output = stdout.getvalue()
         self.assertEqual(output.count("Live window command:"), 1)
         self.assertLess(
-            output.index("Meeting reports command:"),
+            output.index("Meeting Intelligence — Reports + Ask command:"),
             output.index("Translation sidecar command:"),
         )
         self.assertLess(

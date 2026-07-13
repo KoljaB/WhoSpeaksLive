@@ -585,7 +585,7 @@ class WhoSpeaksSetupApp(
         elif reports_enabled and translation_sidecar_enabled:
             launch.label = "Launch + services"
         elif reports_enabled:
-            launch.label = "Launch + reports"
+            launch.label = "Launch + intelligence"
         elif translation_sidecar_enabled:
             launch.label = "Launch + translation"
         else:
@@ -847,7 +847,16 @@ class WhoSpeaksSetupApp(
         # never mistaken for a sidecar launched by this application.
         self.last_server_probe_at = 0.0
         self._refresh_server_states()
-        if self.profile.reports_enabled and self._servers.state("reports").status != "running":
+        reports_state = self._servers.state("reports")
+        if self.profile.reports_enabled and reports_state.ownership == "external":
+            self._set_feedback(
+                "warning",
+                "Meeting Intelligence port is owned by another process",
+                "Stop that process or choose another Meeting Intelligence port before launching.",
+            )
+            self.notify("The Meeting Intelligence port is already used by another process", severity="warning")
+            return
+        if self.profile.reports_enabled and reports_state.status != "running":
             self._start_reports_server(save_settings=False)
         translation_required = (
             self.profile.translation_enabled

@@ -106,6 +106,7 @@ export function installSavedReports(ctx) {
       button.setAttribute("aria-selected", active ? "true" : "false");
     });
     syncSavedSessionSelectionControls();
+    if (ctx.api.scheduleMeetingChatScopeRefresh) ctx.api.scheduleMeetingChatScopeRefresh();
     sessionList.textContent = "";
     if (ctx.owners.sessions.editingSessionTitleId && !ctx.owners.sessions.savedSessions.some(item => item.id === ctx.owners.sessions.editingSessionTitleId)) {
       ctx.owners.sessions.editingSessionTitleId = "";
@@ -382,8 +383,12 @@ export function installSavedReports(ctx) {
   }
   function meetingEvidenceRowIndex(rowRef, rowId = "") {
     if (rowRef && rowRef.index !== undefined && rowRef.index !== null) return String(rowRef.index);
-    const match = /^row_(\d+)$/.exec(String(rowId || ""));
-    return match ? match[1] : "";
+    const value = String(rowId || "");
+    const canonical = /^row_(\d+)$/.exec(value);
+    if (canonical) return String(Number(canonical[1]));
+    const legacyChat = /^ROW-(\d+)$/.exec(value);
+    if (legacyChat) return String(Math.max(0, Number(legacyChat[1]) - 1));
+    return "";
   }
   function findMeetingEvidenceTranscriptRow(rowRef, rowId = "") {
     const index = meetingEvidenceRowIndex(rowRef, rowId);

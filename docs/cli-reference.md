@@ -48,12 +48,19 @@ Starter command for setup, health checks, saved profiles, and launching `whospea
 | launch | `--dry-run` | off unless passed | Alias for --print. |
 | launch | `--provider-preset` | empty | Temporarily apply a named provider stack to the printed or executed launch command. |
 | launch | `--extra-args` | empty | Additional whospeaks-window arguments appended to the profile. |
+| launch | `--with-meeting-intelligence` / `--with-reports` | off unless passed | Start Meeting Intelligence for Reports + Ask before the live browser; `--with-reports` is the compatibility alias. |
+| launch | `--reports-port` | saved profile | Temporarily override the Meeting Intelligence port. |
+| launch | `--report-llm-provider` | saved profile | Temporarily choose `llama_cpp`, `ollama`, `lm_studio`, `openai_compatible`, `openai`, or `openrouter` for Reports + Ask. |
+| launch | `--report-llm-base-url` | saved profile | Temporarily override the OpenAI-compatible answer/report model endpoint. |
+| launch | `--report-llm-model` | saved profile | Temporarily override the answer/report model name. |
 | config | `--set` | `[]` | Save one profile field as `NAME=VALUE`; repeat the flag to set multiple fields. |
 | config | `--reset` | off unless passed | Reset the saved starter profile to defaults before applying any `--set` values. |
 
+Use `whospeaks config --set text_embedding_base_url=... --set text_embedding_model=...` to save the long and multi-session Ask search provider. Add `--set text_embedding_api_key_env=NAME` when the endpoint reads its secret from an environment variable.
+
 ### `whospeaks-meeting-intelligence`
 
-Standalone browser server for generating and reviewing LLM-based meeting intelligence reports from saved sessions or a demo transcript. See [Meeting intelligence server](meeting-intelligence-server.md) for the workflow and examples.
+Standalone server for generating and reviewing LLM-based meeting intelligence reports and for answering grounded questions about sessions. See [Meeting intelligence server](meeting-intelligence-server.md) and [Ask sessions](ask-sessions.md) for workflows and examples.
 
 | Area | Parameter | Default | What it does |
 | --- | --- | --- | --- |
@@ -63,13 +70,18 @@ Standalone browser server for generating and reviewing LLM-based meeting intelli
 | Data | `--cache-dir` | `DEFAULT_CACHE_DIR` | Directory where generated meeting intelligence reports are cached. |
 | Data | `--demo-transcript` | empty | Add one transcript-only demo session from a WhoSpeaksLive transcript text file. |
 | LLM | `--env-file` | repo `.env` | Local environment file loaded before LLM defaults are resolved. Existing process environment variables are not overwritten. |
-| LLM | `--llm-provider` | `llama_cpp` | OpenAI-compatible provider preset. Choices: `llama_cpp`, `ollama`, `lm_studio`, `openai`, `openrouter`. |
+| LLM | `--llm-provider` | `llama_cpp` | OpenAI-compatible provider preset. Choices: `llama_cpp`, `ollama`, `lm_studio`, `openai_compatible`, `openai`, `openrouter`. |
 | LLM | `--llm-base-url` | provider default | OpenAI-compatible base URL, without `/chat/completions`. |
 | LLM | `--llm-model` | provider default | Model name sent to the LLM server. |
 | LLM | `--llm-api-key` | empty | API key for providers that require authentication. |
 | LLM | `--timeout-seconds` | 900.0 | HTTP timeout for one report-generation LLM request. |
 | LLM | `--max-tokens` | 4096 | Maximum tokens for evidence-extraction calls. |
 | LLM | `--section-max-tokens` | 4096 | Maximum tokens for per-section report calls. |
+| Text search | `--text-embedding-base-url` | empty | OpenAI-compatible embeddings base URL used for long and multi-session Ask scopes. |
+| Text search | `--text-embedding-model` | empty | Embedding model name sent to the configured embeddings endpoint. |
+| Text search | `--text-embedding-api-key-env` | empty | Name of the server-side environment variable containing the embeddings API key. |
+| Text search | `--text-embedding-timeout-seconds` | 120.0 | HTTP timeout for one embeddings request. |
+| Text search | `--text-index-poll-seconds` | 10.0 | Background interval for indexing newly created or changed sessions. |
 | Pipeline | `--max-segment-rows` | 80 | Maximum transcript rows per evidence-extraction segment. Values below 12 are raised to 12. |
 | Development | `--mock-llm` | off unless passed | Use deterministic mock responses instead of contacting an LLM server. |
 | Development | `--auto-generate` | off unless passed | Generate a report automatically when a selected session has no current report. |

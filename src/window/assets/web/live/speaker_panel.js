@@ -125,6 +125,19 @@ export function installSpeakerPanel(ctx) {
       return;
     }
     try {
+      const savedSessionId = ctx.owners.sessions.openedSavedSessionId || "";
+      if (savedSessionId) {
+        const result = await post("/api/sessions/corrections/reassign", {
+          session_id: savedSessionId,
+          indexes,
+          speaker_id: speakerId,
+        });
+        if (result.session) loadSavedSessionReview(result.session, {quiet: true});
+        clearTranscriptSelection();
+        await fetchSavedSessions();
+        log(`Reassigned ${indexes.length} saved sentence${indexes.length === 1 ? "" : "s"} to ${speakerDisplayLabel(speakerId)}.`);
+        return;
+      }
       await ensureSessionOwner("correct speaker labels");
       const result = await post("/api/corrections/reassign", {indexes, speaker_id: speakerId, update_memory: true});
       applyCorrectionResult(result);
@@ -138,6 +151,18 @@ export function installSpeakerPanel(ctx) {
     const indexes = selectedTranscriptIndexes();
     if (!indexes.length) return;
     try {
+      const savedSessionId = ctx.owners.sessions.openedSavedSessionId || "";
+      if (savedSessionId) {
+        const result = await post("/api/sessions/corrections/mark-correct", {
+          session_id: savedSessionId,
+          indexes,
+        });
+        if (result.session) loadSavedSessionReview(result.session, {quiet: true});
+        clearTranscriptSelection();
+        await fetchSavedSessions();
+        log(`Marked ${indexes.length} saved sentence${indexes.length === 1 ? "" : "s"} correct.`);
+        return;
+      }
       await ensureSessionOwner("mark speaker labels correct");
       const result = await post("/api/corrections/mark-correct", {indexes});
       applyCorrectionResult(result);
@@ -152,6 +177,10 @@ export function installSpeakerPanel(ctx) {
     const indexes = selectedTranscriptIndexes();
     const speakerId = commonSelectedSpeakerId(rows);
     if (!indexes.length || !speakerId) return;
+    if (savedSessionReviewOpen()) {
+      log("Creating a new speaker from saved transcript rows is not available yet; choose an existing speaker.");
+      return;
+    }
     try {
       await ensureSessionOwner("create speaker profiles");
       const result = await post("/api/speakers/split", {speaker_id: speakerId, sentence_indices: indexes, update_memory: true});

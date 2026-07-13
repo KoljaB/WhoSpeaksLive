@@ -97,6 +97,9 @@ class ProfileActionsMixin:
             ("report_llm_provider", self.query_one("#report-llm-provider-select", Select).value),
             ("report_llm_base_url", self.query_one("#report-llm-base-url-input", Input).value),
             ("report_llm_model", self.query_one("#report-llm-model-input", Input).value),
+            ("text_embedding_base_url", self.query_one("#text-embedding-base-url-input", Input).value),
+            ("text_embedding_model", self.query_one("#text-embedding-model-input", Input).value),
+            ("text_embedding_api_key_env", self.query_one("#text-embedding-api-key-env-input", Input).value),
             ("report_auto_generate", self.query_one("#report-auto-generate-checkbox", Checkbox).value),
         ]
         saved = self._persist_profile_updates(
@@ -162,7 +165,7 @@ class ProfileActionsMixin:
         if self._start_server_process("reports", command):
             self._set_feedback(
                 "success",
-                "Reports server starting in another window",
+                "Meeting Intelligence starting in another window",
                 f"Open http://{self.profile.host}:{self.profile.reports_port}/",
             )
 

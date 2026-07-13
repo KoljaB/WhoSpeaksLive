@@ -27,6 +27,9 @@ Repository = "https://github.com/KoljaB/WhoSpeaksLive"
 Documentation = "https://github.com/KoljaB/WhoSpeaksLive/tree/master/docs"
 
 [project.optional-dependencies]
+intelligence = [
+    "numpy>=2,<3",
+]
 controller = [
     "av>=11.0.0",
     "emoji>=2.15.0",

@@ -50,12 +50,15 @@ EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("realtime_preview_model_preset", "Realtime model preset", "Nemotron: 560ms stable or 160ms low-latency. Kroko: a Kroko model preset."),
     ("realtime_preview_model_dir", "Nemotron model folder", "Optional explicit folder for the unpacked sherpa-onnx/Nemotron model."),
     ("realtime_preview_python", "Realtime preview Python", "Optional Python executable for the Kroko realtime worker. Nemotron always uses the current WhoSpeaks environment."),
-    ("reports_enabled", "Start reports with live window", "Open the meeting-intelligence server in a second terminal whenever the live window launches."),
-    ("reports_port", "Reports browser port", "Port for the meeting-intelligence browser UI."),
+    ("reports_enabled", "Start Meeting Intelligence", "Open the Reports + Ask service whenever the live window launches."),
+    ("reports_port", "Meeting Intelligence port", "Port for Reports, hybrid search, and session chat."),
     ("report_language", "Report language", "Blank follows the live transcription language; otherwise use a WhoSpeaks language code."),
-    ("report_llm_provider", "Reports LLM provider", "llama_cpp, ollama, lm_studio, openai, or openrouter."),
-    ("report_llm_base_url", "Reports LLM base URL", "Optional override for the report LLM OpenAI-compatible base URL."),
-    ("report_llm_model", "Reports LLM model", "Optional model ID used for report generation."),
+    ("report_llm_provider", "Meeting Intelligence LLM provider", "Shared by reports and session chat: llama_cpp, ollama, lm_studio, openai_compatible, openai, or openrouter."),
+    ("report_llm_base_url", "Meeting Intelligence LLM base URL", "Optional OpenAI-compatible endpoint override shared by reports and session chat."),
+    ("report_llm_model", "Meeting Intelligence LLM model", "Model ID shared by report generation, evidence selection, and grounded answers."),
+    ("text_embedding_base_url", "Text embedding base URL", "OpenAI-compatible endpoint used to index transcript text."),
+    ("text_embedding_model", "Text embedding model", "Embedding-capable model used for semantic session search."),
+    ("text_embedding_api_key_env", "Text embedding API-key variable", "Environment-variable name containing the embedding provider secret."),
     ("report_auto_generate", "Auto-generate reports", "Generate a report automatically when a newly saved meeting session is finalized."),
     ("translation_enabled", "Enable translation", "Translate stable transcript sentences without changing the original transcript."),
     ("translation_browser_preferred", "Prefer Chrome translation", "Use Chrome's on-device Translator API first and the selected provider as fallback."),
@@ -231,6 +234,9 @@ class Profile:
     report_llm_provider: str = "llama_cpp"
     report_llm_base_url: str = ""
     report_llm_model: str = ""
+    text_embedding_base_url: str = ""
+    text_embedding_model: str = ""
+    text_embedding_api_key_env: str = ""
     report_auto_generate: bool = True
     translation_enabled: bool = False
     translation_browser_preferred: bool = False
@@ -311,7 +317,7 @@ class Profile:
             "report_llm_provider",
             str(profile.report_llm_provider or "llama_cpp").strip().lower().replace("-", "_"),
         )
-        if profile.report_llm_provider not in {"llama_cpp", "ollama", "lm_studio", "openai", "openrouter"}:
+        if profile.report_llm_provider not in {"llama_cpp", "ollama", "lm_studio", "openai_compatible", "openai", "openrouter"}:
             object.__setattr__(profile, "report_llm_provider", "llama_cpp")
         object.__setattr__(
             profile,

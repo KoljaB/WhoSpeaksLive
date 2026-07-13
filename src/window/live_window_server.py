@@ -28,6 +28,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, BinaryIO
 from urllib.parse import parse_qs, quote, unquote, urlparse
+import urllib.error
+import urllib.request
 
 
 def _configure_console_output() -> None:
@@ -268,6 +270,87 @@ class LiveWindowApplication:
         self._close_lock = threading.Lock()
         self._closed = False
 
+    @property
+    def meeting_intelligence_url(self) -> str:
+        return str(getattr(self.args, "meeting_intelligence_url", "") or "").strip().rstrip("/")
+
+    def meeting_intelligence_status(self) -> dict[str, Any]:
+        if not self.meeting_intelligence_url:
+            return {"ok": True, "enabled": False, "ready": False, "error": "Meeting Intelligence is disabled."}
+        try:
+            config = self._meeting_intelligence_request("GET", "/api/config")
+        except Exception as exc:
+            return {"ok": True, "enabled": True, "ready": False, "error": str(exc)}
+        return {"ok": True, "enabled": True, "ready": True, "config": config.get("config") or {}}
+
+    def meeting_chat_scope(self, session_ids: list[str]) -> dict[str, Any]:
+        ids, provisional = self._meeting_chat_session_ids(session_ids)
+        result = self._meeting_intelligence_request("POST", "/api/chat/scope", {"session_ids": ids})
+        result.update({"ok": True, "provisional": provisional})
+        return result
+
+    def start_meeting_chat(self, session_ids: list[str], question: str) -> dict[str, Any]:
+        ids, provisional = self._meeting_chat_session_ids(session_ids)
+        result = self._meeting_intelligence_request("POST", "/api/chat/ask-async", {
+            "session_ids": ids,
+            "question": str(question or ""),
+            "provisional": provisional,
+        })
+        result.update({"ok": True, "provisional": provisional})
+        return result
+
+    def meeting_chat_job(self, job_id: str) -> dict[str, Any]:
+        encoded = quote(str(job_id or "").strip(), safe="")
+        result = self._meeting_intelligence_request("GET", f"/api/chat/job?job_id={encoded}")
+        result["ok"] = True
+        return result
+
+    def clear_meeting_chat(self, session_ids: list[str]) -> dict[str, Any]:
+        ids, _provisional = self._meeting_chat_session_ids(session_ids)
+        result = self._meeting_intelligence_request("POST", "/api/chat/clear", {"session_ids": ids})
+        result["ok"] = True
+        return result
+
+    def _meeting_chat_session_ids(self, session_ids: list[str]) -> tuple[list[str], bool]:
+        ids = sorted({str(value or "").strip() for value in session_ids if str(value or "").strip()})
+        snapshot = self.controller.session_snapshot()
+        current_id = str(snapshot.get("id") or "").strip()
+        if not ids:
+            ids = [self._meeting_intelligence_session_id("")]
+        elif current_id and ids == [current_id]:
+            self._save_current_session(status_label="Autosaved", write_audio=False)
+        provisional = bool(current_id and ids == [current_id] and self.controller.is_running())
+        return ids, provisional
+
+    def _meeting_intelligence_request(
+        self,
+        method: str,
+        path: str,
+        payload: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        if not self.meeting_intelligence_url:
+            raise RuntimeError("Enable Meeting Intelligence in the launcher to use Ask.")
+        data = json.dumps(payload).encode("utf-8") if payload is not None else None
+        request = urllib.request.Request(
+            f"{self.meeting_intelligence_url}{path}",
+            data=data,
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
+            method=method,
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=30.0) as response:
+                result = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")[:1000]
+            raise RuntimeError(f"Meeting Intelligence request failed ({exc.code}): {detail}") from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError(f"Meeting Intelligence is unavailable: {exc.reason}") from exc
+        if not isinstance(result, dict):
+            raise RuntimeError("Meeting Intelligence returned an invalid response.")
+        if result.get("error"):
+            raise RuntimeError(str(result["error"]))
+        return result
+
     def _record_session_event(self, event: str, payload: dict[str, Any]) -> None:
         self.persistence.handle_event(event, payload)
 
@@ -333,6 +416,23 @@ class LiveWindowApplication:
 
     def rename_saved_session_speaker(self, session_id: str, speaker_id: str, name: str) -> dict[str, Any]:
         return {"ok": True, "session": self.session_store.rename_speaker(session_id, speaker_id, name)}
+
+    def reassign_saved_session_rows(
+        self,
+        session_id: str,
+        indexes: list[int],
+        speaker_id: str,
+    ) -> dict[str, Any]:
+        return {
+            "ok": True,
+            "session": self.session_store.reassign_rows(session_id, indexes, speaker_id),
+        }
+
+    def mark_saved_session_rows_correct(self, session_id: str, indexes: list[int]) -> dict[str, Any]:
+        return {
+            "ok": True,
+            "session": self.session_store.mark_rows_correct(session_id, indexes),
+        }
 
     def _meeting_intelligence_session_id(self, session_id: str) -> str:
         requested = str(session_id or "").strip()

@@ -100,7 +100,7 @@ def launch_profile_with_reports(profile: Profile) -> int:
         auto_generate=profile.report_auto_generate,
     )
     live_command = build_launch_command(profile)
-    print("Meeting reports command:")
+    print("Meeting Intelligence — Reports + Ask command:")
     print(format_command(reports_command))
     print("Live window command:")
     print(format_command(live_command))

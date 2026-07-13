@@ -16,7 +16,7 @@ from window.realtime_preview_backends import (
 )
 
 from .cli_classic import *  # noqa: F403 - command-facing classic API
-from .cli_diagnostics import DoctorReport, print_report, report_to_dict, run_doctor
+from .cli_diagnostics import DoctorReport, check_port, print_report, report_to_dict, run_doctor
 from .cli_installation import *  # noqa: F403 - command-facing installation API
 from .planning import (
     build_launch_command,
@@ -307,12 +307,24 @@ def cmd_launch(args: argparse.Namespace) -> int:
         updates.append(("language", args.language))
     if args.port is not None:
         updates.append(("port", args.port))
+    for field, value in (
+        ("reports_port", getattr(args, "reports_port", None)),
+        ("report_language", getattr(args, "report_language", None)),
+        ("report_llm_provider", getattr(args, "report_llm_provider", None)),
+        ("report_llm_base_url", getattr(args, "report_llm_base_url", None)),
+        ("report_llm_model", getattr(args, "report_llm_model", None)),
+        ("report_auto_generate", getattr(args, "report_auto_generate", None)),
+    ):
+        if value is not None:
+            updates.append((field, value))
     if updates:
         profile = apply_profile_updates(profile, updates)
     if args.provider_preset:
         profile = apply_provider_preset(profile, args.provider_preset)
     if getattr(args, "translation", None) is not None:
         profile = profile.with_updates(translation_enabled=bool(args.translation))
+    if getattr(args, "with_reports", False):
+        profile = profile.with_updates(reports_enabled=True)
     if profile.mode == "server":
         print("Server profile service commands:")
         for line in build_server_launch_lines():
@@ -323,9 +335,9 @@ def cmd_launch(args: argparse.Namespace) -> int:
     command = build_launch_command(profile, args.extra_args or "")
     reports_command: list[str] | None = None
     translation_command: list[str] | None = None
-    if args.with_reports:
+    if profile.reports_enabled:
         reports_command = build_reports_command(profile, **report_launch_values(profile, args))
-        print("Meeting reports command:")
+        print("Meeting Intelligence — Reports + Ask command:")
         print(format_command(reports_command))
     if profile.translation_enabled and profile.translation_provider == "sidecar":
         translation_command = build_translation_command(profile)
@@ -337,6 +349,13 @@ def cmd_launch(args: argparse.Namespace) -> int:
     if args.print_only or args.dry_run:
         return 0
     if reports_command is not None:
+        port_check = check_port(profile.host, profile.reports_port)
+        if port_check.status == "fail":
+            print(
+                f"Meeting Intelligence was not started because {profile.host}:{profile.reports_port} "
+                "is already owned by another process."
+            )
+            return 2
         popen_kwargs: dict[str, Any] = {}
         if os.name == "nt":
             popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
@@ -406,6 +425,9 @@ def cmd_config(args: argparse.Namespace) -> int:
         "report_llm_provider",
         "report_llm_base_url",
         "report_llm_model",
+        "text_embedding_base_url",
+        "text_embedding_model",
+        "text_embedding_api_key_env",
         "report_auto_generate",
         "translation_enabled",
         "translation_browser_preferred",

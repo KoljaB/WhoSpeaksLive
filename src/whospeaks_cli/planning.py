@@ -231,6 +231,9 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
         "--realtime-preview-engine", str(profile.realtime_preview_engine or "off"),
     ])
     command.append("--live-speaker-assignment" if profile.live_speaker_assignment else "--no-live-speaker-assignment")
+    if profile.reports_enabled:
+        connect_host = "127.0.0.1" if str(profile.host) in {"0.0.0.0", "::", "[::]"} else str(profile.host)
+        command.extend(["--meeting-intelligence-url", f"http://{connect_host}:{int(profile.reports_port)}"])
     if profile.embeddings_backend == "local":
         command.extend(["--embedding-python", str(profile.embedding_python or sys.executable)])
     preview_engine = normalize_preview_engine(profile.realtime_preview_engine)
@@ -257,6 +260,7 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
             "llama_cpp": ("http://127.0.0.1:8081/v1", "local", ""),
             "ollama": ("http://127.0.0.1:11434/v1", "gemma3", ""),
             "lm_studio": ("http://127.0.0.1:1234/v1", "local-model", ""),
+            "openai_compatible": ("http://127.0.0.1:8000/v1", "local-model", ""),
             "openai": ("https://api.openai.com/v1", "", "OPENAI_API_KEY"),
             "openrouter": ("https://openrouter.ai/api/v1", "", "OPENROUTER_API_KEY"),
         }
@@ -319,6 +323,12 @@ def build_reports_command(
         command.extend(["--llm-base-url", str(llm_base_url)])
     if llm_model:
         command.extend(["--llm-model", str(llm_model)])
+    if profile.text_embedding_base_url:
+        command.extend(["--text-embedding-base-url", str(profile.text_embedding_base_url)])
+    if profile.text_embedding_model:
+        command.extend(["--text-embedding-model", str(profile.text_embedding_model)])
+    if profile.text_embedding_api_key_env:
+        command.extend(["--text-embedding-api-key-env", str(profile.text_embedding_api_key_env)])
     if auto_generate:
         command.append("--auto-generate")
     return command

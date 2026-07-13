@@ -146,8 +146,8 @@
     .mic-gain-control input { width:100%; accent-color:#17B7FE; }
     .media-card.mode-system .mic-gain-control { display:none; }
     .speaker-panel { min-height:0; padding:0; overflow:hidden; display:grid; grid-template-rows:auto minmax(0,1fr); gap:0; }
-    .speaker-tabs { min-height:38px; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; border-bottom:1px solid var(--line); }
-    .speaker-tab { min-height:38px; border:0; border-radius:0; background:transparent; color:#9EAAB6; font-size:13px; }
+    .speaker-tabs { min-height:38px; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); border-bottom:1px solid var(--line); }
+    .speaker-tab { min-height:38px; min-width:0; padding:0 4px; border:0; border-radius:0; background:transparent; color:#9EAAB6; font-size:12px; }
     .speaker-tab.active { color:#E8EEF5; box-shadow:inset 0 -2px 0 #17B7FE; }
     .speaker-tab-panel { min-width:0; min-height:0; padding:8px; overflow:hidden; }
     .speaker-tab-panel[hidden] { display:none; }
@@ -174,6 +174,7 @@
     .sessions-selection { display:flex; flex-wrap:wrap; align-items:center; gap:5px; padding:7px; border:1px solid var(--line); border-radius:7px; background:#0B1015; }
     .sessions-selection button { min-height:26px; padding:0 8px; border-color:#20303E; background:#121C26; color:#C6D0DC; font-size:11px; }
     .sessions-selection .danger { color:#E0A0A0; }
+    .sessions-selection .ask-selected-meetings { border-color:#17B7FE; color:#17B7FE; }
     .sessions-selection-status { flex:1 0 100%; color:#9EAAB6; font-size:11px; }
     .session-list { min-height:0; display:grid; align-content:start; gap:8px; overflow:auto; padding-right:2px; }
     .session-empty { min-height:48px; display:flex; align-items:center; padding:10px 12px; border:1px solid var(--line); border-radius:7px; background:#0B1015; color:#9EAAB6; font-size:12px; }
@@ -200,6 +201,39 @@
     .session-row-menu button { justify-content:flex-start; min-height:28px; border-color:#20303E; background:#121C26; color:#C6D0DC; text-align:left; font-size:12px; }
     .session-row-menu .danger { color:#E0A0A0; }
     .meeting-intelligence-panel:not([hidden]) { display:grid; grid-template-rows:auto auto auto minmax(0,1fr) auto; gap:8px; }
+    .meeting-chat-panel:not([hidden]) { min-height:0; display:grid; grid-template-rows:auto auto minmax(120px,1fr) auto auto; gap:9px; }
+    .meeting-chat-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    .meeting-chat-title { margin:0; color:#E8EEF5; font-size:14px; font-weight:600; }
+    .meeting-chat-status { margin-top:3px; color:#9EAAB6; font-size:11px; line-height:1.35; }
+    .meeting-chat-clear { min-height:27px; padding:0 8px; border-color:#20303E; background:#121C26; color:#AEB9C5; font-size:11px; }
+    .meeting-chat-scope { display:flex; flex-wrap:wrap; gap:5px; }
+    .meeting-chat-scope-chip { display:inline-flex; max-width:100%; min-height:22px; align-items:center; padding:0 7px; border:1px solid #26526A; border-radius:999px; background:#0D1C26; color:#B9DCEF; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .meeting-chat-messages { min-height:0; display:flex; flex-direction:column; gap:9px; overflow:auto; padding:3px 2px 3px 0; }
+    .meeting-chat-empty { padding:12px; border:1px dashed #253746; border-radius:8px; color:#8795A3; font-size:12px; line-height:1.45; }
+    .meeting-chat-message { max-width:94%; padding:9px 10px; border-radius:9px; font-size:12px; line-height:1.45; overflow-wrap:anywhere; }
+    .meeting-chat-question { align-self:flex-end; border:1px solid #285873; background:#102A3A; color:#E8F5FC; }
+    .meeting-chat-answer { align-self:flex-start; border:1px solid #263543; background:#0F161F; color:#D7DEE8; }
+    .meeting-chat-answer.not_established { border-color:#6E5728; background:#1A160E; }
+    .meeting-chat-answer.needs_review { border-color:#6E4B28; }
+    .meeting-chat-answer-body { white-space:pre-wrap; }
+    .meeting-chat-answer-status { margin-bottom:5px; color:#86D6FC; font-size:10px; font-weight:600; letter-spacing:.02em; text-transform:uppercase; }
+    .meeting-chat-answer.not_established .meeting-chat-answer-status { color:#E6C36A; }
+    .meeting-chat-citations { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+    .meeting-chat-citation { min-height:24px; max-width:100%; padding:0 7px; border-color:#24526A; border-radius:999px; background:#0B202D; color:#86D6FC; font-size:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .meeting-chat-cutoff { margin-top:7px; color:#90A0AE; font-size:10px; }
+    .meeting-chat-progress { display:grid; gap:5px; min-height:38px; padding:6px 8px; border:1px solid #20303E; border-radius:7px; background:#0B1015; color:#AEB9C5; font-size:11px; }
+    .meeting-chat-progress-line { display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; align-items:center; gap:7px; }
+    .meeting-chat-progress-percent { color:#86D6FC; font-variant-numeric:tabular-nums; }
+    .meeting-chat-progress-elapsed { min-width:28px; color:#778694; text-align:right; font-variant-numeric:tabular-nums; }
+    .meeting-chat-progress progress { width:100%; height:5px; border:0; border-radius:999px; overflow:hidden; background:#17232D; accent-color:#17B7FE; }
+    .meeting-chat-progress progress::-webkit-progress-bar { background:#17232D; }
+    .meeting-chat-progress progress::-webkit-progress-value { background:#17B7FE; }
+    .meeting-chat-progress-dot { width:8px; height:8px; border-radius:50%; background:#17B7FE; box-shadow:0 0 10px rgba(23,183,254,.6); animation:meeting-chat-pulse 1s ease-in-out infinite alternate; }
+    @keyframes meeting-chat-pulse { from { opacity:.35; transform:scale(.85); } to { opacity:1; transform:scale(1.1); } }
+    .meeting-chat-form { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:7px; }
+    .meeting-chat-form textarea { min-width:0; resize:vertical; max-height:150px; border:1px solid #253746; border-radius:7px; padding:8px 9px; background:#0B1015; color:#E8EEF5; font:inherit; font-size:12px; line-height:1.4; outline:none; }
+    .meeting-chat-form textarea:focus { border-color:#17B7FE; box-shadow:0 0 0 1px rgba(23,183,254,.2); }
+    .meeting-chat-form button { min-height:36px; border-color:#17B7FE; background:#0F2A3A; color:#BDEBFF; }
     .meeting-intelligence-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .meeting-intelligence-title { margin:0; color:#D7DEE8; font-size:13px; font-weight:400; }
     .meeting-intelligence-generate { min-height:28px; padding:0 9px; border-color:#3DC77C; background:#0F1A14; color:#3DC77C; font-size:12px; white-space:nowrap; }

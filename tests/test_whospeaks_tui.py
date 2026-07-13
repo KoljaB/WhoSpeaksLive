@@ -503,7 +503,7 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
                         self.assertTrue(reports_call[1]["start_new_session"])
                         self.assertTrue(live_call[1]["start_new_session"])
                     self.assertIn("Live: starting", str(app.query_one("#live-server-state", Static).content))
-                    self.assertIn("Reports: starting", str(app.query_one("#reports-server-state", Static).content))
+                    self.assertIn("Meeting Intelligence: starting", str(app.query_one("#reports-server-state", Static).content))
                     self.assertEqual(str(app.query_one("#launch-button", Button).label), "Live running")
                     self.assertTrue(app.query_one("#launch-button", Button).disabled)
 
@@ -511,7 +511,7 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
                         app.last_server_probe_at = 0.0
                         app._refresh_server_states()
                     self.assertIn("Live: running", str(app.query_one("#live-server-state", Static).content))
-                    self.assertIn("Reports: running", str(app.query_one("#reports-server-state", Static).content))
+                    self.assertIn("Meeting Intelligence: running", str(app.query_one("#reports-server-state", Static).content))
 
                     live_call[2].return_code = 3
                     app._refresh_server_states()

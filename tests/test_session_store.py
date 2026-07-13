@@ -126,6 +126,32 @@ class SessionStoreTests(unittest.TestCase):
             manifest = json.loads((Path(directory) / "20260707-test-session" / "manifest.json").read_text(encoding="utf-8"))
             self.assertIn("Anna", manifest["speaker_names"])
 
+    def test_saved_transcript_rows_can_be_reassigned_and_confirmed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = SessionStore(root)
+            store.save_snapshot(self.sample_snapshot(), status_label="Saved")
+
+            reassigned = store.reassign_rows("20260707-test-session", [1], "S2")
+
+            first = reassigned["transcript_rows"][0]
+            self.assertEqual(first["assigned_speaker"], "S2")
+            self.assertEqual(first["speaker_name"], "Bob")
+            self.assertEqual(first["assignment_source"], "user_correction")
+            self.assertEqual(first["correction"]["status"], "user_corrected")
+            self.assertFalse(first["correction"]["updates_memory"])
+            speakers = {speaker["id"]: speaker for speaker in reassigned["speaker_state"]["speakers"]}
+            self.assertEqual(speakers["S1"]["sentence_count"], 0)
+            self.assertEqual(speakers["S2"]["sentence_count"], 2)
+            embeddings = json.loads((root / "20260707-test-session" / "embeddings.json").read_text(encoding="utf-8"))
+            self.assertEqual(embeddings["records"][0]["assigned_speaker"], "S2")
+
+            confirmed = store.mark_rows_correct("20260707-test-session", [2])
+
+            self.assertEqual(confirmed["transcript_rows"][1]["correction"]["status"], "user_confirmed")
+            with self.assertRaisesRegex(ValueError, "Unknown transcript row"):
+                store.reassign_rows("20260707-test-session", [999], "S1")
+
     def test_create_empty_session_then_fill_same_session(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             store = SessionStore(Path(directory))

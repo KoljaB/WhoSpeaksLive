@@ -150,8 +150,8 @@
     },
     {
       "key": "ask_this_meeting",
-      "title": "Ask this meeting",
-      "objective": "Provide useful grounded question-and-answer examples whose answers are supported by the meeting evidence.",
+      "title": "Session Q&A examples",
+      "objective": "Provide useful grounded question-and-answer examples whose answers are supported by the session evidence.",
       "max_items": 6,
       "evidence_required": true,
       "render_kind": "cards",

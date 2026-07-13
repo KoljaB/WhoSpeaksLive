@@ -22,6 +22,7 @@ Follow these in order for a new machine:
 ## User Workflows
 
 - [Live window workflow](live-window-workflow.md): run a media session, watch live speaker labels, and export results.
+- [Ask sessions](ask-sessions.md): ask grounded questions about one live session, one saved session, or several selected sessions.
 - [Meeting intelligence server](meeting-intelligence-server.md): generate LLM meeting reports from saved transcripts, review evidence, and recreate cached reports.
 - [Custom reports](custom-reports.md): inspect predefined report templates, build reusable flat-section reports, and configure layouts, fields, language, privacy, and evidence.
 - [Live translation](translation.md): configure compact multi-language transcript views and local, sidecar, or LLM translation providers.

@@ -305,6 +305,11 @@ def format_command(command: list[str]) -> str:
 
 
 def recommended_install_extra(profile: Profile, report: DoctorReport) -> str | None:
+    if profile.reports_enabled and any(
+        check.status == "fail" and check.name == "Meeting Intelligence modules"
+        for check in report.checks
+    ):
+        return "intelligence"
     if report.mode == "server":
         return "server"
     if report.mode == "local":

@@ -718,6 +718,137 @@ class SessionStore:
         self._write_json(session_dir / "manifest.json", manifest)
         return self.open_session(session_id)
 
+    def reassign_rows(self, session_id: str, indexes: list[int], speaker_id: str) -> dict[str, Any]:
+        return self._correct_saved_rows(session_id, indexes, speaker_id=str(speaker_id or "").strip())
+
+    def mark_rows_correct(self, session_id: str, indexes: list[int]) -> dict[str, Any]:
+        return self._correct_saved_rows(session_id, indexes, speaker_id=None)
+
+    def _correct_saved_rows(
+        self,
+        session_id: str,
+        indexes: list[int],
+        *,
+        speaker_id: str | None,
+    ) -> dict[str, Any]:
+        normalized_indexes = sorted({int(index) for index in indexes})
+        if not normalized_indexes:
+            raise ValueError("Choose at least one transcript row.")
+
+        session_id = self._validate_session_id(session_id)
+        session_dir = self._session_dir(session_id)
+        manifest = self._load_manifest(session_id)
+        transcript_doc = self._read_json(session_dir / "transcript.json", {"rows": []})
+        speakers_doc = self._read_json(session_dir / "speakers.json", {"speaker_state": {}})
+        embeddings_doc = self._read_json(session_dir / "embeddings.json", {"records": []})
+        rows = [row for row in (transcript_doc.get("rows") or []) if isinstance(row, dict)]
+        rows_by_index: dict[int, dict[str, Any]] = {}
+        for position, row in enumerate(rows):
+            try:
+                row_index = int(row.get("index"))
+            except (TypeError, ValueError):
+                row_index = position
+                row["index"] = row_index
+            rows_by_index[row_index] = row
+        missing = [index for index in normalized_indexes if index not in rows_by_index]
+        if missing:
+            raise ValueError(f"Unknown transcript row {missing[0]}.")
+
+        speaker_state = speakers_doc.get("speaker_state") if isinstance(speakers_doc.get("speaker_state"), dict) else {}
+        speakers = [speaker for speaker in (speaker_state.get("speakers") or []) if isinstance(speaker, dict)]
+        target_name = ""
+        if speaker_id is not None:
+            target = next((speaker for speaker in speakers if str(speaker.get("id") or "") == speaker_id), None)
+            if target is None:
+                raise ValueError(f"Unknown speaker {speaker_id}.")
+            target_name = str(target.get("display_name") or target.get("name") or _speaker_display_name(speaker_id))
+
+        now = _now_iso()
+        for index in normalized_indexes:
+            row = rows_by_index[index]
+            current_speaker = str(row.get("assigned_speaker") or "")
+            if speaker_id is None:
+                row["correction"] = {
+                    "status": "user_confirmed",
+                    "action": "mark_correct",
+                    "original_speaker": row.get("automatic_assigned_speaker", current_speaker),
+                    "corrected_speaker": current_speaker or None,
+                    "corrected_at": now,
+                    "updates_memory": False,
+                }
+            else:
+                row.setdefault("automatic_assigned_speaker", current_speaker or None)
+                row.setdefault("automatic_assignment_source", str(row.get("assignment_source") or ""))
+                rejected = {
+                    str(value)
+                    for value in (row.get("correction") or {}).get("rejected_speakers", [])
+                    if str(value)
+                } if isinstance(row.get("correction"), dict) else set()
+                if current_speaker and current_speaker != speaker_id:
+                    rejected.add(current_speaker)
+                rejected.discard(speaker_id)
+                row["assigned_speaker"] = speaker_id
+                row["speaker_name"] = target_name
+                row["assignment_source"] = "user_correction"
+                row["correction"] = {
+                    "status": "user_corrected",
+                    "action": "reassign",
+                    "original_speaker": row.get("automatic_assigned_speaker"),
+                    "previous_speaker": current_speaker or None,
+                    "corrected_speaker": speaker_id,
+                    "rejected_speakers": sorted(rejected),
+                    "corrected_at": now,
+                    "updates_memory": False,
+                }
+            row["review"] = annotate_review(row)
+
+        if speaker_id is not None:
+            for record in embeddings_doc.get("records") or []:
+                if not isinstance(record, dict):
+                    continue
+                try:
+                    record_index = int(record.get("index"))
+                except (TypeError, ValueError):
+                    continue
+                if record_index in normalized_indexes:
+                    record["assigned_speaker"] = speaker_id
+
+        counts: dict[str, int] = {}
+        speaking_seconds: dict[str, float] = {}
+        for row in rows:
+            assigned = str(row.get("assigned_speaker") or "")
+            if not assigned:
+                continue
+            counts[assigned] = counts.get(assigned, 0) + 1
+            try:
+                duration = max(0.0, float(row.get("end") or 0.0) - float(row.get("start") or 0.0))
+            except (TypeError, ValueError):
+                duration = 0.0
+            speaking_seconds[assigned] = speaking_seconds.get(assigned, 0.0) + duration
+        for speaker in speakers:
+            identity = str(speaker.get("id") or "")
+            speaker["sentence_count"] = counts.get(identity, 0)
+            speaker["speech_seconds"] = round(speaking_seconds.get(identity, 0.0), 4)
+
+        transcript_doc["rows"] = rows
+        transcript_doc["updated_at"] = now
+        speakers_doc["updated_at"] = now
+        embeddings_doc["updated_at"] = now
+        manifest["updated_at"] = now
+        manifest["status_label"] = "Saved"
+        meeting_intelligence_report, _changed = self._mark_meeting_intelligence_stale_for_rows(
+            session_id,
+            [_with_review(dict(row)) for row in rows],
+            speaker_state,
+            now,
+        )
+        manifest = self._manifest_with_meeting_intelligence(manifest, meeting_intelligence_report)
+        self._write_json(session_dir / "transcript.json", transcript_doc)
+        self._write_json(session_dir / "speakers.json", speakers_doc)
+        self._write_json(session_dir / "embeddings.json", embeddings_doc)
+        self._write_json(session_dir / "manifest.json", manifest)
+        return self.open_session(session_id)
+
     def meeting_intelligence(self, session_id: str) -> dict[str, Any]:
         session_id = self._validate_session_id(session_id)
         session_dir = self._session_dir(session_id)

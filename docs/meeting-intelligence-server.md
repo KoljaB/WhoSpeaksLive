@@ -1,8 +1,8 @@
 # Meeting Intelligence Server
 
-The meeting intelligence server turns saved speaker-labeled transcripts into an evidence-grounded meeting report in a separate browser UI.
+The meeting intelligence server turns saved speaker-labeled transcripts into evidence-grounded reports and powers the **Ask sessions** feature in the main browser UI.
 
-Use this server when you want to review a finished transcript, generate a structured summary, inspect decisions and action items, and click evidence back into the transcript. It is separate from the main live window. The live window can store lightweight meeting intelligence data for saved sessions, while this server is the standalone report-generation and review surface for the multi-pass LLM report.
+Use this server when you want to review a finished transcript, generate a structured summary, inspect decisions and action items, click evidence back into the transcript, or ask grounded questions across sessions. Its standalone browser remains the report-generation and review surface; the main live window proxies its chat APIs so users can ask questions without opening a second page.
 
 ## What It Does
 
@@ -212,6 +212,8 @@ Deleting a report does not delete the transcript, speakers, embeddings, saved se
 
 ## API Endpoints
 
+The interactive **Ask sessions** workflow uses `/api/chat/scope`, `/api/chat/ask-async`, `/api/chat/job`, and `/api/chat/clear` on this service. In the main browser those endpoints are proxied under `/api/meeting-intelligence/chat/...`; LLM and embedding API keys remain server-side. See [Ask sessions](ask-sessions.md) for the user workflow and retrieval behavior.
+
 The browser uses these local endpoints:
 
 | Endpoint | Method | Purpose |
@@ -230,6 +232,10 @@ The browser uses these local endpoints:
 | `/api/generate-status?job_id=...` | `GET` | Poll report-generation progress. |
 | `/api/generate` | `POST` | Synchronously generate `session_id` with `template_id`; kept for tests and simple clients. |
 | `/api/delete-report` | `POST` | Delete the cache for one `session_id` and `template_id`. |
+| `/api/chat/scope` | `POST` | Open or restore the stable conversation scope for `session_ids` and queue missing indexing work. |
+| `/api/chat/ask-async` | `POST` | Queue a grounded answer for `session_ids` and a `question`. |
+| `/api/chat/job?job_id=...` | `GET` | Return indexing, retrieval, evidence-selection, and answering progress plus the completed answer. |
+| `/api/chat/clear` | `POST` | Clear the conversation history for the exact session scope. |
 
 `/api/generate-async` returns a job object. The browser polls `/api/generate-status` and updates a modal progress overlay with stages such as `prepare`, `segment`, `evidence`, `section`, `finalize`, and `completed`. The overlay is not part of the scrollable report layout.
 

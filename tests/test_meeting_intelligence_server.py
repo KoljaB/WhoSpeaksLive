@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import json
 import sys
 import tempfile
 import threading
@@ -55,6 +56,8 @@ def demo_service(root: Path, **overrides: object) -> MeetingIntelligenceService:
         "session_dir": root / "sessions",
         "cache_dir": root / "reports",
         "template_dir": root / "templates",
+        "chat_dir": root / "chats",
+        "text_index_db": root / "meeting-index.sqlite3",
         "demo_transcript": transcript_path,
         "mock_llm": True,
         "max_segment_rows": 12,
@@ -345,7 +348,9 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
     def test_report_language_accepts_german_and_regional_aliases(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             args = build_arg_parser().parse_args([
-                "--report-language", "de-AT", "--template-dir", str(Path(directory) / "templates"),
+                "--report-language", "de-AT",
+                "--template-dir", str(Path(directory) / "templates"),
+                "--cache-dir", str(Path(directory) / "reports"),
             ])
             config = config_from_args(args)
             service = MeetingIntelligenceService(config)
@@ -585,6 +590,55 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
                 server.shutdown()
                 server.server_close()
                 thread.join(timeout=2)
+
+    def test_chat_scope_async_job_and_clear_routes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            service = demo_service(Path(directory))
+            server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(service))
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            host, port = server.server_address
+
+            def post(path: str, payload: dict[str, object]) -> dict[str, object]:
+                request = urllib.request.Request(
+                    f"http://{host}:{port}{path}",
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                with urllib.request.urlopen(request, timeout=3) as response:
+                    return json.loads(response.read().decode("utf-8"))
+
+            try:
+                scope = post("/api/chat/scope", {"session_ids": [DEMO_SESSION_ID]})
+                self.assertEqual(scope["session_ids"], [DEMO_SESSION_ID])
+                self.assertFalse(scope["requires_index"])
+
+                started = post("/api/chat/ask-async", {
+                    "session_ids": [DEMO_SESSION_ID],
+                    "question": "What changed about the beta launch?",
+                })
+                job_id = started["job"]["job_id"]
+                deadline = time.monotonic() + 5
+                job: dict[str, object] = {}
+                while time.monotonic() < deadline:
+                    with urllib.request.urlopen(
+                        f"http://{host}:{port}/api/chat/job?job_id={job_id}", timeout=3,
+                    ) as response:
+                        job = json.loads(response.read().decode("utf-8"))["job"]
+                    if job["status"] in {"succeeded", "failed"}:
+                        break
+                    time.sleep(0.02)
+                self.assertEqual(job["status"], "succeeded")
+                self.assertEqual(job["result"]["answer"]["grounding_status"], "answered")
+
+                cleared = post("/api/chat/clear", {"session_ids": [DEMO_SESSION_ID]})
+                self.assertEqual(cleared["history"], [])
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+                service.close()
                 service.close()
 
 

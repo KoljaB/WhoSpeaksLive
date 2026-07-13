@@ -552,7 +552,7 @@ export function installTranscriptRender(ctx) {
     row.className = item.realtime ? "row realtime" : "row";
     row.dataset.index = item.index;
     row.dataset.realtime = item.realtime ? "true" : "false";
-    row.dataset.selectable = (!item.realtime && !item.pending && !savedSessionReviewOpen()) ? "true" : "false";
+    row.dataset.selectable = (!item.realtime && !item.pending) ? "true" : "false";
     if (row.dataset.selectable !== "true") {
       ctx.owners.transcript.selectedTranscriptRowIndexes.delete(String(row.dataset.index || ""));
     }

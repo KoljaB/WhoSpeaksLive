@@ -116,6 +116,20 @@ export function createLiveAppContext() {
   const restoreSelectedSessionsButton = document.getElementById("restoreSelectedSessions");
   const deleteSelectedSessionsButton = document.getElementById("deleteSelectedSessions");
   const sessionSelectionStatus = document.getElementById("sessionSelectionStatus");
+  const askSelectedMeetingsButton = document.getElementById("askSelectedMeetings");
+  const meetingChatTitle = document.getElementById("meetingChatTitle");
+  const meetingChatStatus = document.getElementById("meetingChatStatus");
+  const meetingChatClear = document.getElementById("meetingChatClear");
+  const meetingChatScope = document.getElementById("meetingChatScope");
+  const meetingChatMessages = document.getElementById("meetingChatMessages");
+  const meetingChatProgress = document.getElementById("meetingChatProgress");
+  const meetingChatProgressText = document.getElementById("meetingChatProgressText");
+  const meetingChatProgressBar = document.getElementById("meetingChatProgressBar");
+  const meetingChatProgressPercent = document.getElementById("meetingChatProgressPercent");
+  const meetingChatProgressElapsed = document.getElementById("meetingChatProgressElapsed");
+  const meetingChatForm = document.getElementById("meetingChatForm");
+  const meetingChatQuestion = document.getElementById("meetingChatQuestion");
+  const meetingChatSend = document.getElementById("meetingChatSend");
   const meetingIntelligenceGenerate = document.getElementById("meetingIntelligenceGenerate");
   const meetingIntelligenceStatus = document.getElementById("meetingIntelligenceStatus");
   const meetingIntelligenceSummary = document.getElementById("meetingIntelligenceSummary");
@@ -147,6 +161,7 @@ export function createLiveAppContext() {
     translation: translationConfig,
     sessions: {items: [], selected: [], filter: "active"},
     reports: {current: null, selectedObjectId: "", busy: false},
+    chat: {scope: null, busy: false, jobId: ""},
   });
   const appResources = createResourceRegistry();
   const svgNamespace = "http://www.w3.org/2000/svg";
@@ -287,6 +302,15 @@ export function createLiveAppContext() {
       meetingIntelligenceSelectedObjectId: "",
       meetingIntelligenceBusy: false,
     },
+    chat: {
+      scope: null,
+      busy: false,
+      jobId: "",
+      scopeRefreshTimer: null,
+      jobPollTimer: null,
+      jobElapsedTimer: null,
+      jobStartedAt: 0,
+    },
   };
 
   if (statusCard && window.matchMedia("(max-width: 900px)").matches) {
@@ -297,6 +321,7 @@ export function createLiveAppContext() {
     owners,
     api: Object.create(null),
     activators: [],
+    askSelectedMeetingsButton, meetingChatTitle, meetingChatStatus, meetingChatClear, meetingChatScope, meetingChatMessages, meetingChatProgress, meetingChatProgressText, meetingChatProgressBar, meetingChatProgressPercent, meetingChatProgressElapsed, meetingChatForm, meetingChatQuestion, meetingChatSend,
     start, stop, load, sessionBanner, sessionBannerMessage, releaseSessionButton, preset, state, languageSummary, languageFlag, languageName, source, mediaCard, sourceKind, sourceTitle, sourceModeMenu, sourceModeButton, sourceModeOptions, sourceModeOptionButtons, fileSourceControls, audioFileInput, fileDropZone, fileDropTitle, fileUploadStatus, chooseAudioFileButton, filePreviewName, mediaTime, mediaCurrentTime, mediaDuration, timelineFill, timelineThumb, expandMedia, captureTitle, captureDescription, captureLevelFill, captureLevelText, micGain, micGainValue, video, audio, youtubeFrame, streamHint, statusBox, statusCard, sentences, transcriptPanel, transcriptTitle, followLive, transcriptSearch, clearTranscriptButton, copyTranscriptButton, downloadTranscriptButton, downloadTranscriptJsonButton, transcriptSettingsButton, transcriptSettingsPanel, translationControls, translationMenuButton, translationMenuSummary, translationActivity, translationMenuPanel, translationProvider, translationProviderAttribution, translationDisplayModeControl, translationPrimaryField, translationPrimaryTargetControl, translationLanguageLabelModeControl, translationIncludeOriginalControl, translationTargetList, translationMenuHint, showTranscriptTags, showTranscriptTime, groupTranscriptTurns, showTranscriptReviewHints, showTranscriptSpeechRate, showTranscriptProbabilities, undoCorrectionButton, selectionToolbar, selectionCount, bulkCorrectionSpeaker, bulkReassignButton, bulkMarkCorrectButton, clearSelectionButton, reviewFilterButtons, inputMode, newSpeakerSensitivity, newSpeakerSensitivityLabel, speakerRefinementUnknownTentative, speakerRefinementUnknownCommit, allowSpeakerReassignment, loadSpeakerGroupButton, saveSpeakerGroupButton, saveCorrectedSpeakerGroupButton, speakerGroupFile, speakerCount, speakerCountNumber, speakerCountLabel, speakerPanelTitle, speakerList, speakerEditorDock, clearSpeakersButton, addReferenceSpeakerButton, manualSpeakerComposer, manualSpeakerName, manualSpeakerReferenceDock, speakerTabButtons, speakerTabPanels, sessionList, newRunSessionButton, sessionFilterButtons, selectAllSessionsButton, unselectAllSessionsButton, archiveSelectedSessionsButton, restoreSelectedSessionsButton, deleteSelectedSessionsButton, sessionSelectionStatus, meetingIntelligenceGenerate, meetingIntelligenceStatus, meetingIntelligenceSummary, meetingIntelligenceStats, meetingIntelligenceObjects, meetingIntelligenceEvidence, referenceSpeakerForm, referenceSpeakerFile, recordReferenceButton, recordReferenceButtonLabel, referenceRecordSeconds, bootstrapElement, bootstrap, speakerColors, initialSource, presetVideos, speakerSensitivityConfig, speakerRefinementConfig, liveSpeakerConfig, languageConfig, translationConfig, sessionLeaseEnabled, initialSpeakerLibrary, appStore, appResources, svgNamespace, createSpeakerOptionValue, targetCaptureSampleRate, captureStartRmsThreshold, capturePreRollSeconds, audioUploadExtensions, playbackClockSlackSeconds, transcriptGroupTurnsStorageKey, transcriptReviewHintsStorageKey, translationDisplayModeStorageKey, translationPrimaryTargetStorageKey, translationIncludeOriginalStorageKey, translationLanguageLabelModeStorageKey, realtimeSettleRemovalDelayMs, sessionClientIdStorageKey, sessionTokenStorageKey,
   };
 }

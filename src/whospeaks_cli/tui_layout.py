@@ -58,6 +58,7 @@ def compose_setup_app(app: Any) -> ComposeResult:
         ("llama.cpp", "llama_cpp"),
         ("Ollama", "ollama"),
         ("LM Studio", "lm_studio"),
+        ("OpenAI-compatible", "openai_compatible"),
         ("OpenAI", "openai"),
         ("OpenRouter", "openrouter"),
     ]
@@ -68,7 +69,7 @@ def compose_setup_app(app: Any) -> ComposeResult:
         ("Google Cloud Translation", "google_cloud"),
         ("Azure Translator", "azure_translator"),
         ("LibreTranslate endpoint", "libretranslate"),
-        ("Reuse reports LLM", "reports_llm"),
+        ("Reuse Meeting Intelligence LLM", "reports_llm"),
         ("OpenAI-compatible API", "openai_compatible"),
         ("Mock (testing)", "mock"),
     ]
@@ -238,13 +239,13 @@ def compose_setup_app(app: Any) -> ComposeResult:
                             yield Input(app.profile.remote_embeddings_url, id="embeddings-url-input")
                 with Horizontal(id="settings-actions"):
                     yield Button("Save settings", id="save-settings", variant="primary")
-            with TabPane("Reports", id="reports-tab"):
+            with TabPane("Meeting Intelligence", id="reports-tab"):
                 with VerticalScroll(id="reports-scroll"):
                     with Vertical(id="settings-grid"):
                         with Vertical(classes="field"):
-                            yield Label("Start reports with live window")
+                            yield Label("Meeting Intelligence — Reports + Ask")
                             yield Checkbox(
-                                "Open the report server automatically",
+                                "Open Meeting Intelligence automatically",
                                 value=app.profile.reports_enabled,
                                 id="reports-enabled-checkbox",
                             )
@@ -274,6 +275,15 @@ def compose_setup_app(app: Any) -> ComposeResult:
                             yield Label("Report LLM model")
                             yield Input(app.profile.report_llm_model, placeholder="Provider default", id="report-llm-model-input")
                         with Vertical(classes="field"):
+                            yield Label("Text embedding base URL")
+                            yield Input(app.profile.text_embedding_base_url, placeholder="OpenAI-compatible /v1", id="text-embedding-base-url-input")
+                        with Vertical(classes="field"):
+                            yield Label("Text embedding model")
+                            yield Input(app.profile.text_embedding_model, placeholder="Embedding-capable model", id="text-embedding-model-input")
+                        with Vertical(classes="field"):
+                            yield Label("Text embedding API-key variable")
+                            yield Input(app.profile.text_embedding_api_key_env, placeholder="Optional environment variable", id="text-embedding-api-key-env-input")
+                        with Vertical(classes="field"):
                             yield Label("Automatic reports")
                             yield Checkbox(
                                 "Generate when a new meeting is saved",
@@ -281,8 +291,8 @@ def compose_setup_app(app: Any) -> ComposeResult:
                                 id="report-auto-generate-checkbox",
                             )
                 with Horizontal(id="reports-actions"):
-                    yield Button("Save report settings", id="save-reports-settings", variant="primary")
-                    yield Button("Start reports now", id="start-reports-button")
+                    yield Button("Save Meeting Intelligence", id="save-reports-settings", variant="primary")
+                    yield Button("Start Meeting Intelligence", id="start-reports-button")
             with TabPane("Translation", id="translation-tab"):
                 with VerticalScroll(id="translation-scroll"):
                     with Vertical(id="settings-grid"):

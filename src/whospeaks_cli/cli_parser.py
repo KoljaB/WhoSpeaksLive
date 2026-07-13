@@ -192,7 +192,11 @@ def build_parser() -> argparse.ArgumentParser:
     launch.add_argument("--port", type=int, default=None, help="Temporarily override the saved browser UI port.")
     launch.add_argument("--provider-preset", choices=PROVIDER_PRESET_CHOICES, default="")
     launch.add_argument("--extra-args", default="", help="Additional whospeaks-window arguments appended to the profile.")
-    launch.add_argument("--with-reports", action="store_true", help="Also start the meeting-intelligence report server in a new console.")
+    launch.add_argument(
+        "--with-meeting-intelligence", "--with-reports",
+        dest="with_reports", action="store_true",
+        help="Also start Meeting Intelligence (Reports + Ask) in a new console.",
+    )
     launch.add_argument(
         "--translation",
         action=argparse.BooleanOptionalAction,
@@ -203,23 +207,23 @@ def build_parser() -> argparse.ArgumentParser:
     launch.add_argument("--report-language", default=None, help="Report language; defaults to the saved reports setting or live profile language.")
     launch.add_argument(
         "--report-llm-provider",
-        choices=("llama_cpp", "ollama", "lm_studio", "openai", "openrouter"),
+        choices=("llama_cpp", "ollama", "lm_studio", "openai_compatible", "openai", "openrouter"),
         default=None,
-        help="LLM provider used by --with-reports.",
+        help="LLM provider used by --with-meeting-intelligence (or its --with-reports compatibility alias).",
     )
     launch.add_argument("--report-llm-base-url", default=None, help="Optional report LLM base URL.")
     launch.add_argument("--report-llm-model", default=None, help="Optional report LLM model id.")
     launch.add_argument("--no-report-auto-generate", dest="report_auto_generate", action="store_false", default=None, help="Do not automatically generate reports for newly saved sessions.")
     launch.set_defaults(func=cmd_launch)
 
-    reports = subparsers.add_parser("reports", help="Print or run the meeting-intelligence report server from the saved live profile.")
+    reports = subparsers.add_parser("reports", help="Print or run Meeting Intelligence (Reports + Ask) from the saved live profile.")
     reports.add_argument("--print", dest="print_only", action="store_true", help="Print the report-server command and exit.")
     reports.add_argument("--dry-run", action="store_true", help="Alias for --print.")
     reports.add_argument("--port", dest="reports_port", type=int, default=None, help="Meeting-intelligence report server port.")
     reports.add_argument("--report-language", default=None, help="Report language; defaults to the saved reports setting or live profile language.")
     reports.add_argument(
         "--llm-provider",
-        choices=("llama_cpp", "ollama", "lm_studio", "openai", "openrouter"),
+        choices=("llama_cpp", "ollama", "lm_studio", "openai_compatible", "openai", "openrouter"),
         dest="report_llm_provider",
         default=None,
     )
@@ -272,9 +276,12 @@ def build_parser() -> argparse.ArgumentParser:
     config.add_argument("--reports-enabled", dest="reports_enabled", action="store_true", default=None)
     config.add_argument("--reports-port", dest="reports_port", type=int, default=None)
     config.add_argument("--report-language", dest="report_language", default=None)
-    config.add_argument("--report-llm-provider", dest="report_llm_provider", choices=("llama_cpp", "ollama", "lm_studio", "openai", "openrouter"), default=None)
+    config.add_argument("--report-llm-provider", dest="report_llm_provider", choices=("llama_cpp", "ollama", "lm_studio", "openai_compatible", "openai", "openrouter"), default=None)
     config.add_argument("--report-llm-base-url", dest="report_llm_base_url", default=None)
     config.add_argument("--report-llm-model", dest="report_llm_model", default=None)
+    config.add_argument("--text-embedding-base-url", dest="text_embedding_base_url", default=None)
+    config.add_argument("--text-embedding-model", dest="text_embedding_model", default=None)
+    config.add_argument("--text-embedding-api-key-env", dest="text_embedding_api_key_env", default=None)
     config.add_argument("--report-auto-generate", dest="report_auto_generate", action="store_true", default=None)
     config.add_argument("--translation-enabled", dest="translation_enabled", action=argparse.BooleanOptionalAction, default=None)
     config.add_argument(

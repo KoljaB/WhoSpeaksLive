@@ -186,7 +186,6 @@ export function installTranscriptReview(ctx) {
   function transcriptRowSelectionKey(row) {
     if (!row || row.dataset.realtime === "true" || row.dataset.selectable !== "true") return "";
     if (row.dataset.groupHidden === "true") return "";
-    if (Number(row.dataset.groupSize || 1) > 1) return "";
     return String(row.dataset.index || "");
   }
   function selectableTranscriptRows() {
@@ -275,7 +274,7 @@ export function installTranscriptReview(ctx) {
   }
   function syncBulkCorrectionSpeakerOptions(rows = selectedTranscriptRows()) {
     const speakers = Array.isArray(ctx.owners.speakers.speakerLibraryState.speakers) ? ctx.owners.speakers.speakerLibraryState.speakers : [];
-    const createSpeakerAllowed = Boolean(commonSelectedSpeakerId(rows));
+    const createSpeakerAllowed = Boolean(commonSelectedSpeakerId(rows)) && !savedSessionReviewOpen();
     const previousValue = bulkCorrectionSpeaker.value || "";
     bulkCorrectionSpeaker.textContent = "";
     const placeholder = document.createElement("option");
@@ -311,7 +310,7 @@ export function installTranscriptReview(ctx) {
     const rows = selectedTranscriptRows();
     const count = rows.length;
     syncBulkCorrectionSpeakerOptions(rows);
-    const locked = sessionControlsLocked() || savedSessionReviewOpen();
+    const locked = sessionControlsLocked();
     const speakers = Array.isArray(ctx.owners.speakers.speakerLibraryState.speakers) ? ctx.owners.speakers.speakerLibraryState.speakers : [];
     const selectedSpeakerId = bulkCorrectionSpeaker.value || "";
     const createSpeakerSelected = selectedSpeakerId === createSpeakerOptionValue;
@@ -375,6 +374,10 @@ export function installTranscriptReview(ctx) {
       if (transcriptRowClickIsControl(event.target)) return;
       const selection = window.getSelection ? String(window.getSelection() || "") : "";
       if (selection.trim()) return;
+      if (Number(row.dataset.groupSize || 1) > 1 && groupTranscriptTurns.checked) {
+        groupTranscriptTurns.checked = false;
+        groupTranscriptTurns.dispatchEvent(new Event("change"));
+      }
       const key = transcriptRowSelectionKey(row);
       setTranscriptRowSelected(row, !ctx.owners.transcript.selectedTranscriptRowIndexes.has(key), {range: event.shiftKey});
     };
@@ -382,6 +385,10 @@ export function installTranscriptReview(ctx) {
       if (transcriptRowClickIsControl(event.target)) return;
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
+      if (Number(row.dataset.groupSize || 1) > 1 && groupTranscriptTurns.checked) {
+        groupTranscriptTurns.checked = false;
+        groupTranscriptTurns.dispatchEvent(new Event("change"));
+      }
       const key = transcriptRowSelectionKey(row);
       setTranscriptRowSelected(row, !ctx.owners.transcript.selectedTranscriptRowIndexes.has(key), {range: event.shiftKey});
     };
@@ -434,7 +441,7 @@ export function installTranscriptReview(ctx) {
     syncBulkCorrectionToolbar();
   }
   function setSpeakerTab(tabName) {
-    const nextTab = tabName === "settings" || tabName === "sessions" || tabName === "intelligence" ? tabName : "speakers";
+    const nextTab = ["settings", "sessions", "ask", "intelligence"].includes(tabName) ? tabName : "speakers";
     speakerTabButtons.forEach(button => {
       const active = button.dataset.speakerTab === nextTab;
       button.classList.toggle("active", active);
@@ -445,6 +452,9 @@ export function installTranscriptReview(ctx) {
     });
     if (nextTab === "sessions") {
       fetchSavedSessions().catch(error => log(`Refresh sessions failed: ${error.message}`));
+    }
+    if (nextTab === "ask" && ctx.api.refreshMeetingChatScope) {
+      ctx.api.refreshMeetingChatScope();
     }
     syncSavedSessionsAutoRefresh();
     renderMeetingIntelligencePanel();

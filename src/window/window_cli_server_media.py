@@ -212,6 +212,11 @@ def add_server_media_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--yt-dlp", type=Path, default=None)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8795)
+    parser.add_argument(
+        "--meeting-intelligence-url",
+        default="",
+        help="Base URL of the optional Meeting Intelligence service used for Reports and Ask.",
+    )
     parser.add_argument("--no-browser", action="store_true")
     parser.add_argument(
         "--demo-seat-lease",

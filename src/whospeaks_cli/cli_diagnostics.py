@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import dataclasses
+from contextlib import closing
 import importlib
 import importlib.metadata
 import importlib.util
@@ -11,14 +12,18 @@ import os
 import platform
 import shutil
 import socket
+import sqlite3
 import subprocess
 import sys
+import tempfile
 import textwrap
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+
+from paths import RUNTIME_DIR
 
 from window.realtime_preview_backends import (
     get_preview_backend_spec,
@@ -494,6 +499,141 @@ def check_local_provider_syntax(provider: str, required: bool) -> CheckResult:
     return CheckResult("Embedding provider syntax", "ok", f"Provider stack parses as: {names}")
 
 
+def check_meeting_intelligence_entrypoint(required: bool) -> CheckResult:
+    try:
+        module = importlib.import_module("window.meeting_intelligence_server")
+    except Exception as exc:
+        return CheckResult(
+            "Meeting Intelligence modules",
+            "fail" if required else "warn",
+            f"Cannot import the service: {type(exc).__name__}: {exc}",
+            "Install `whospeaks[intelligence]` in this Python environment.",
+        )
+    if not callable(getattr(module, "main", None)):
+        return CheckResult(
+            "Meeting Intelligence entry point",
+            "fail" if required else "warn",
+            "window.meeting_intelligence_server.main is missing.",
+            "Reinstall the WhoSpeaks package.",
+        )
+    executable = shutil.which("whospeaks-meeting-intelligence")
+    detail = executable or "packaged module entry point is callable"
+    return CheckResult("Meeting Intelligence entry point", "ok", detail)
+
+
+def check_meeting_intelligence_llm(profile: Profile, *, deep: bool) -> CheckResult:
+    defaults = {
+        "llama_cpp": ("http://127.0.0.1:8081/v1", "local", ""),
+        "ollama": ("http://127.0.0.1:11434/v1", "gemma3", ""),
+        "lm_studio": ("http://127.0.0.1:1234/v1", "local-model", ""),
+        "openai_compatible": ("http://127.0.0.1:8000/v1", "local-model", ""),
+        "openai": ("https://api.openai.com/v1", "gpt-5.6-luna", "OPENAI_API_KEY"),
+        "openrouter": ("https://openrouter.ai/api/v1", "google/gemma-3-12b-it", "OPENROUTER_API_KEY"),
+    }
+    base_url, model, key_env = defaults.get(profile.report_llm_provider, defaults["llama_cpp"])
+    base_url = str(profile.report_llm_base_url or base_url).rstrip("/")
+    model = str(profile.report_llm_model or model)
+    if key_env and not (os.getenv(key_env) or os.getenv("WHOSPEAKS_MI_LLM_API_KEY")):
+        return CheckResult(
+            "Meeting Intelligence LLM",
+            "fail",
+            f"{profile.report_llm_provider}:{model} requires {key_env}.",
+            f"Set {key_env} in the Meeting Intelligence environment or .env file.",
+        )
+    if not deep:
+        return CheckResult("Meeting Intelligence LLM", "ok", f"Configured as {profile.report_llm_provider}:{model} at {base_url}.")
+    headers = {"Accept": "application/json"}
+    key = os.getenv(key_env, "") if key_env else os.getenv("WHOSPEAKS_MI_LLM_API_KEY", "")
+    if key:
+        headers["Authorization"] = f"Bearer {key}"
+    try:
+        with urlopen(Request(f"{base_url}/models", headers=headers), timeout=10.0) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception as exc:
+        return CheckResult(
+            "Meeting Intelligence LLM",
+            "fail",
+            f"{base_url}/models failed: {type(exc).__name__}: {exc}",
+            "Start the configured LLM server or correct its base URL and credentials.",
+        )
+    models = payload.get("data") if isinstance(payload, dict) else None
+    return CheckResult("Meeting Intelligence LLM", "ok", f"Endpoint is ready; configured model is {model} ({len(models or [])} listed).")
+
+
+def check_text_embedding_provider(profile: Profile, *, deep: bool) -> CheckResult:
+    base_url = str(profile.text_embedding_base_url or "").strip().rstrip("/")
+    model = str(profile.text_embedding_model or "").strip()
+    key_env = str(profile.text_embedding_api_key_env or "").strip()
+    if not base_url or not model:
+        return CheckResult(
+            "Text embedding endpoint",
+            "warn",
+            "Not configured; short single-session chat works, but long and cross-session chat do not.",
+            "Set the text embedding URL and model in the Meeting Intelligence tab.",
+        )
+    if key_env and not os.getenv(key_env):
+        return CheckResult(
+            "Text embedding endpoint",
+            "fail",
+            f"Required API-key environment variable {key_env} is missing.",
+            f"Set {key_env} before launching Meeting Intelligence.",
+        )
+    if not deep:
+        return CheckResult("Text embedding endpoint", "ok", f"Configured model {model} at {base_url}.")
+    url = base_url if base_url.endswith("/embeddings") else f"{base_url}/embeddings"
+    headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    if key_env:
+        headers["Authorization"] = f"Bearer {os.environ[key_env]}"
+    request = Request(
+        url,
+        data=json.dumps({"model": model, "input": ["WhoSpeaks embedding diagnostic"]}).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+    try:
+        with urlopen(request, timeout=15.0) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        vector = payload["data"][0]["embedding"]
+        dimensions = len(vector)
+        if dimensions < 1:
+            raise ValueError("empty embedding vector")
+    except Exception as exc:
+        return CheckResult(
+            "Text embedding endpoint",
+            "fail",
+            f"Embedding probe failed: {type(exc).__name__}: {exc}",
+            "Verify that the endpoint implements the OpenAI-compatible /embeddings API and supports the configured model.",
+        )
+    return CheckResult("Text embedding endpoint", "ok", f"Endpoint is ready and returned {dimensions}-dimensional vectors.")
+
+
+def check_meeting_index_writable() -> CheckResult:
+    directory = RUNTIME_DIR
+    temporary = ""
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        handle, temporary = tempfile.mkstemp(prefix=".meeting-index-doctor-", suffix=".sqlite3", dir=directory)
+        os.close(handle)
+        with closing(sqlite3.connect(temporary)) as connection:
+            with connection:
+                connection.execute("CREATE TABLE writable_probe (value INTEGER)")
+                connection.execute("INSERT INTO writable_probe VALUES (1)")
+    except Exception as exc:
+        return CheckResult(
+            "Meeting index SQLite",
+            "fail",
+            f"{directory} is not writable: {type(exc).__name__}: {exc}",
+            "Choose a writable WHOSPEAKS_RUNTIME_DIR or fix permissions on the runtime directory.",
+        )
+    finally:
+        if temporary:
+            try:
+                Path(temporary).unlink(missing_ok=True)
+            except OSError:
+                pass
+    return CheckResult("Meeting index SQLite", "ok", f"SQLite writes succeed in {directory}.")
+
+
 def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> DoctorReport:
     selected_mode = normalize_mode(mode)
     if selected_mode == "auto":
@@ -575,6 +715,15 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
         ],
         required=server_required,
     ))
+
+    if profile.reports_enabled:
+        checks.append(check_meeting_intelligence_entrypoint(required=True))
+        checks.append(check_meeting_intelligence_llm(profile, deep=deep))
+        checks.append(check_text_embedding_provider(profile, deep=deep))
+        checks.append(check_meeting_index_writable())
+        checks.append(check_port(profile.host, profile.reports_port))
+    else:
+        checks.append(CheckResult("Meeting Intelligence", "skip", "Reports + Ask is disabled in this profile."))
 
     if remote_required:
         checks.append(check_remote_health("Remote ASR health", profile.remote_asr_url, required=True))

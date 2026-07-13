@@ -23,6 +23,7 @@ class PackagedWebAssetTests(unittest.TestCase):
 
     def test_asset_whitelist_and_content_types(self) -> None:
         self.assertTrue(read_web_asset("live/app.js").startswith(b"import "))
+        self.assertIn(b"installMeetingChat", read_web_asset("live/meeting_chat.js"))
         self.assertEqual(web_asset_content_type("live/app.js"), "text/javascript")
         self.assertEqual(web_asset_content_type("live/styles.css"), "text/css")
         with self.assertRaises(FileNotFoundError):
@@ -36,6 +37,27 @@ class PackagedWebAssetTests(unittest.TestCase):
         self.assertIn('type="module" src="/assets/web/reports/app.js"', report)
         self.assertTrue(read_web_asset("reports/app.js").startswith(b"import "))
         self.assertIn("WhoSpeaksLive Fact Lens", fact_lens)
+
+    def test_live_page_exposes_grounded_meeting_chat_controls(self) -> None:
+        page = read_web_text("live/index.html")
+        script = read_web_text("live/meeting_chat.js")
+
+        self.assertIn('data-speaker-tab="ask"', page)
+        self.assertIn('id="askSelectedMeetings"', page)
+        self.assertIn("Ask selected sessions", page)
+        self.assertIn("Ask this session", page)
+        self.assertNotIn("Ask this meeting", page)
+        self.assertIn('id="meetingChatForm"', page)
+        self.assertIn('id="meetingChatMessages"', page)
+        self.assertIn('id="meetingChatProgressBar"', page)
+        self.assertIn('id="meetingChatProgressElapsed"', page)
+        self.assertIn("meeting.started_at", script)
+        self.assertIn("Not established from the selected transcript", script)
+        self.assertIn("meetingChatProgressBar.value", script)
+        self.assertIn("row_index", script)
+
+        saved_reports = read_web_text("live/saved_reports.js")
+        self.assertIn('const legacyChat = /^ROW-(\\d+)$/.exec(value);', saved_reports)
 
 
 if __name__ == "__main__":

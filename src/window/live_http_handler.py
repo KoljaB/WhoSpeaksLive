@@ -242,10 +242,15 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json({"ok": True, "speaker_state": self.server.controller.speaker_state()})
         elif path == "/api/translation/status":
             self._send_json({"ok": True, "translation": self.server.translation.public_config()})
+        elif path == "/api/meeting-intelligence/status":
+            self._send_json(self.server.meeting_intelligence_status())
+        elif path == "/api/meeting-intelligence/chat/job":
+            query = parse_qs(parsed.query)
+            self._send_json(self.server.meeting_chat_job(str((query.get("job_id") or [""])[0])))
         elif path == "/api/bootstrap":
             self._send_json({"ok": True, **self._bootstrap_payload()})
         elif re.fullmatch(
-            r"/assets/web/live/(?:styles\.css|(?:app|app_store|live_context|media_capture|session_transport|saved_reports|transcript_translation|transcript_review|speaker_panel|transcript_render|live_bindings)\.js)",
+            r"/assets/web/live/(?:styles\.css|(?:app|app_store|live_context|media_capture|session_transport|saved_reports|meeting_chat|transcript_translation|transcript_review|speaker_panel|transcript_render|live_bindings)\.js)",
             path,
         ):
             name = path.removeprefix("/assets/web/")
@@ -279,6 +284,9 @@ class Handler(BaseHTTPRequestHandler):
                 "flag_url": f"/assets/flags/4x3/{flag_country}.svg",
             },
             "translation": self.server.translation.public_config(),
+            "meeting_intelligence": {
+                "enabled": bool(self.server.meeting_intelligence_url),
+            },
             "new_speaker_sensitivity": new_speaker_sensitivity_config(
                 getattr(self.server.args, "new_speaker_sensitivity", 3)
             ),
@@ -358,6 +366,23 @@ class Handler(BaseHTTPRequestHandler):
                     str(payload.get("speaker_id") or ""),
                     str(payload.get("name") or ""),
                 ))
+            elif path == "/api/sessions/corrections/reassign":
+                raw_indexes = payload.get("indexes")
+                if not isinstance(raw_indexes, list):
+                    raise ValueError("indexes must be a list.")
+                self._send_json(self.server.reassign_saved_session_rows(
+                    str(payload.get("session_id") or ""),
+                    [int(index) for index in raw_indexes],
+                    str(payload.get("speaker_id") or ""),
+                ))
+            elif path == "/api/sessions/corrections/mark-correct":
+                raw_indexes = payload.get("indexes")
+                if not isinstance(raw_indexes, list):
+                    raise ValueError("indexes must be a list.")
+                self._send_json(self.server.mark_saved_session_rows_correct(
+                    str(payload.get("session_id") or ""),
+                    [int(index) for index in raw_indexes],
+                ))
             elif path == "/api/meeting-intelligence/report":
                 self._send_json(self.server.meeting_intelligence_report(str(payload.get("session_id") or "")))
             elif path == "/api/meeting-intelligence/generate":
@@ -370,6 +395,15 @@ class Handler(BaseHTTPRequestHandler):
                     title=str(payload.get("title")) if "title" in payload else None,
                     body=str(payload.get("body")) if "body" in payload else None,
                 ))
+            elif path == "/api/meeting-intelligence/chat/scope":
+                self._send_json(self.server.meeting_chat_scope(_string_list(payload.get("session_ids"))))
+            elif path == "/api/meeting-intelligence/chat/ask-async":
+                self._send_json(self.server.start_meeting_chat(
+                    _string_list(payload.get("session_ids")),
+                    str(payload.get("question") or ""),
+                ))
+            elif path == "/api/meeting-intelligence/chat/clear":
+                self._send_json(self.server.clear_meeting_chat(_string_list(payload.get("session_ids"))))
             elif path == "/api/session/acquire":
                 self._send_json(self.server.acquire_session(str(payload.get("client_id") or "")))
             elif path == "/api/session/heartbeat":
@@ -745,6 +779,12 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
+
+
+def _string_list(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [str(item or "").strip() for item in value if str(item or "").strip()]
 
 
 def parse_range_header(header: str | None, file_size: int) -> tuple[int, int] | None:

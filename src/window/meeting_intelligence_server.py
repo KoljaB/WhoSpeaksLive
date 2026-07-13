@@ -32,6 +32,14 @@ from window.meeting_intelligence_pipeline import (
     sanitize_report_output,
     stable_hash,
 )
+from window.meeting_chat import (
+    MeetingChatEngine,
+    MeetingChatJobManager,
+    MeetingChatStore,
+    MeetingTextIndex,
+    MockTextEmbeddingClient,
+    TextEmbeddingConfig,
+)
 from window.meeting_intelligence_runtime import (
     AutoGenerationMonitor,
     AutoGenerationTracker,
@@ -71,6 +79,8 @@ from window.web_assets import read_web_asset, web_asset_content_type
 DEMO_SESSION_ID = "demo-whospeakslive-transcript"
 DEFAULT_CACHE_DIR = RUNTIME_DIR / "meeting_intelligence_reports"
 DEFAULT_TEMPLATE_DIR = RUNTIME_DIR / "report_templates"
+DEFAULT_CHAT_DIR = RUNTIME_DIR / "meeting_chats"
+DEFAULT_TEXT_INDEX_DB = RUNTIME_DIR / "meeting_text_index.sqlite3"
 
 
 @dataclass(frozen=True)
@@ -78,6 +88,8 @@ class MeetingIntelligenceServerConfig:
     session_dir: Path = DEFAULT_SESSION_DIR
     cache_dir: Path = DEFAULT_CACHE_DIR
     template_dir: Path = DEFAULT_TEMPLATE_DIR
+    chat_dir: Path = DEFAULT_CHAT_DIR
+    text_index_db: Path = DEFAULT_TEXT_INDEX_DB
     demo_transcript: Path | None = None
     llm_config: MeetingLLMConfig = field(default_factory=default_llm_config)
     mock_llm: bool = False
@@ -85,6 +97,8 @@ class MeetingIntelligenceServerConfig:
     auto_generate: bool = False
     auto_generate_poll_seconds: float = 10.0
     report_language: str = "en"
+    text_embedding: TextEmbeddingConfig = field(default_factory=TextEmbeddingConfig)
+    text_index_poll_seconds: float = 10.0
 
 
 @dataclass(frozen=True)
@@ -110,6 +124,32 @@ class MeetingIntelligenceService:
         self._report_cache = ReportCache(config.cache_dir, hash_fn=stable_hash)
         self._job_manager = GenerationJobManager(self._generate_captured_request)
         self._auto_generation = AutoGenerationTracker()
+        embedding_factory = (lambda: MockTextEmbeddingClient()) if config.mock_llm else None
+        text_index_db = config.text_index_db
+        chat_dir = config.chat_dir
+        if config.cache_dir != DEFAULT_CACHE_DIR:
+            if text_index_db == DEFAULT_TEXT_INDEX_DB:
+                text_index_db = config.cache_dir.parent / DEFAULT_TEXT_INDEX_DB.name
+            if chat_dir == DEFAULT_CHAT_DIR:
+                chat_dir = config.cache_dir.parent / DEFAULT_CHAT_DIR.name
+        self._text_index = MeetingTextIndex(
+            text_index_db,
+            config.text_embedding,
+            client_factory=embedding_factory,
+        )
+        self._chat_store = MeetingChatStore(chat_dir)
+        self._chat_engine = MeetingChatEngine(
+            self._text_index,
+            self._chat_store,
+            session_loader=self.load_session,
+            llm_client_factory=self._new_client,
+            report_loader=self._chat_report_context,
+        )
+        self._chat_jobs = MeetingChatJobManager(self._chat_engine)
+        self._index_scan_lock = threading.Lock()
+        self._index_scan_baseline = False
+        self._index_seen: dict[str, str] = {}
+        self._scope_indexing: set[str] = set()
 
     def public_config(self) -> dict[str, Any]:
         llm = self._current_llm_config()
@@ -128,7 +168,71 @@ class MeetingIntelligenceService:
             "api_key_configured": self._provider_api_key_configured(llm),
             "api_key_env_var": self._provider_api_key_env_var(llm.provider),
             "providers": provider_options_payload(),
+            "text_embedding": self.config.text_embedding.public(),
+            "text_index_poll_seconds": self.config.text_index_poll_seconds,
         }
+
+    def chat_scope(self, session_ids: list[str]) -> dict[str, Any]:
+        result = self._chat_engine.scope(session_ids)
+        if result.get("requires_index") and self.config.text_embedding.configured:
+            self._queue_scope_index(result["scope_id"], result["session_ids"])
+        return result
+
+    def start_chat(self, session_ids: list[str], question: str, *, provisional: bool = False) -> dict[str, Any]:
+        return self._chat_jobs.submit(session_ids, question, provisional=provisional)
+
+    def get_chat_job(self, job_id: str) -> dict[str, Any]:
+        return self._chat_jobs.get(job_id)
+
+    def clear_chat(self, session_ids: list[str]) -> dict[str, Any]:
+        return self._chat_store.clear(session_ids)
+
+    def _queue_scope_index(self, scope_id: str, session_ids: list[str]) -> None:
+        with self._index_scan_lock:
+            if scope_id in self._scope_indexing:
+                return
+            self._scope_indexing.add(scope_id)
+
+        def run() -> None:
+            try:
+                self._chat_engine.ensure_index(session_ids)
+            except Exception:
+                # The status remains not-current and the foreground chat job
+                # returns the actionable provider error to the browser.
+                pass
+            finally:
+                with self._index_scan_lock:
+                    self._scope_indexing.discard(scope_id)
+
+        threading.Thread(target=run, name=f"meeting-index-{scope_id[-8:]}", daemon=True).start()
+
+    def auto_index_changed_sessions(self) -> list[str]:
+        """Index sessions changed after service start without scanning the historical archive."""
+
+        summaries = self.store.list_sessions("all")
+        current = {
+            str(summary.get("id") or ""): str(summary.get("updated_at") or "")
+            for summary in summaries
+            if summary.get("id") and summary.get("has_transcript")
+        }
+        with self._index_scan_lock:
+            if not self._index_scan_baseline:
+                self._index_seen = current
+                self._index_scan_baseline = True
+                return []
+            changed = [session_id for session_id, updated_at in current.items() if self._index_seen.get(session_id) != updated_at]
+            removed = (set(self._index_seen) | self._text_index.session_ids()) - set(current)
+            self._index_seen = current
+        for session_id in removed:
+            self._text_index.delete_session(session_id)
+            self._chat_store.delete_scopes_containing(session_id)
+        if changed and (self.config.text_embedding.configured or self.config.mock_llm):
+            try:
+                sessions = self._chat_engine.capture_sessions(changed)
+                self._text_index.ensure_sessions(sessions)
+            except (FileNotFoundError, ValueError, OSError, RuntimeError):
+                return []
+        return changed
 
     def list_report_templates(self) -> list[dict[str, Any]]:
         """Return built-in presets and saved custom templates in one inspectable list."""
@@ -466,7 +570,38 @@ class MeetingIntelligenceService:
             return MockMeetingLLMClient()
         return OpenAICompatibleMeetingClient(llm_config or self._current_llm_config())
 
+    def _chat_report_context(self, session_id: str, revision_id: str) -> dict[str, Any] | None:
+        """Return compact current report context; transcript rows remain the only evidence."""
+
+        result = self.get_report(session_id, STANDARD_TEMPLATE_ID)
+        report = result.get("report") if result.get("available") else None
+        if not isinstance(report, dict) or str(report.get("transcript_revision_id") or "") != revision_id:
+            return None
+        sections = report.get("sections") if isinstance(report.get("sections"), dict) else {}
+        compact_sections: dict[str, Any] = {}
+        for key, value in list(sections.items())[:12]:
+            if not isinstance(value, dict):
+                continue
+            compact_sections[str(key)] = {
+                "summary": str(value.get("summary") or ""),
+                "items": [
+                    {
+                        "title": str(item.get("title") or ""),
+                        "body": str(item.get("body") or ""),
+                    }
+                    for item in (value.get("items") or [])[:8]
+                    if isinstance(item, dict)
+                ],
+            }
+        return {
+            "meeting_id": session_id,
+            "title": str(report.get("title") or (result.get("session") or {}).get("title") or session_id),
+            "template_id": str(report.get("template_id") or STANDARD_TEMPLATE_ID),
+            "sections": compact_sections,
+        }
+
     def close(self) -> None:
+        self._chat_jobs.close()
         self._job_manager.close()
 
     @staticmethod
@@ -635,6 +770,10 @@ def make_handler(service: MeetingIntelligenceService) -> type[BaseHTTPRequestHan
                     job_id = single_query_value(parsed.query, "job_id")
                     self._send_json({"job": service.get_generation_job(job_id)})
                     return
+                if parsed.path == "/api/chat/job":
+                    job_id = single_query_value(parsed.query, "job_id")
+                    self._send_json({"job": service.get_chat_job(job_id)})
+                    return
                 self._send_json({"error": "not_found"}, status=HTTPStatus.NOT_FOUND)
             except Exception as exc:
                 self._send_json({"error": str(exc)}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -645,10 +784,24 @@ def make_handler(service: MeetingIntelligenceService) -> type[BaseHTTPRequestHan
                 if parsed.path not in {
                     "/api/generate", "/api/generate-async", "/api/delete-report", "/api/llm-config",
                     "/api/templates/save", "/api/templates/delete", "/api/templates/clone",
+                    "/api/chat/scope", "/api/chat/ask-async", "/api/chat/clear",
                 }:
                     self._send_json({"error": "not_found"}, status=HTTPStatus.NOT_FOUND)
                     return
                 payload = self._read_json_body()
+                if parsed.path == "/api/chat/scope":
+                    self._send_json(service.chat_scope(_session_ids(payload)))
+                    return
+                if parsed.path == "/api/chat/ask-async":
+                    self._send_json({"job": service.start_chat(
+                        _session_ids(payload),
+                        str(payload.get("question") or ""),
+                        provisional=bool(payload.get("provisional")),
+                    )})
+                    return
+                if parsed.path == "/api/chat/clear":
+                    self._send_json(service.clear_chat(_session_ids(payload)))
+                    return
                 if parsed.path == "/api/llm-config":
                     self._send_json({"config": service.update_llm_config(payload)})
                     return
@@ -738,19 +891,28 @@ def optional_query_value(query: str, key: str, default: str = "") -> str:
     return str(values[0]).strip()
 
 
+def _session_ids(payload: dict[str, Any]) -> list[str]:
+    values = payload.get("session_ids")
+    if not isinstance(values, list):
+        raise ValueError("session_ids must be an array.")
+    return [str(value or "").strip() for value in values if str(value or "").strip()]
+
+
 def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Serve WhoSpeaks meeting intelligence reports.")
+    parser = argparse.ArgumentParser(description="Serve WhoSpeaks Meeting Intelligence — Reports + Ask.")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8798)
     parser.add_argument("--session-dir", type=Path, default=DEFAULT_SESSION_DIR)
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
     parser.add_argument("--template-dir", type=Path, default=DEFAULT_TEMPLATE_DIR)
+    parser.add_argument("--chat-dir", type=Path, default=DEFAULT_CHAT_DIR)
+    parser.add_argument("--text-index-db", type=Path, default=DEFAULT_TEXT_INDEX_DB)
     parser.add_argument("--demo-transcript", type=Path)
     parser.add_argument("--env-file", type=Path, default=DEFAULT_ENV_FILE)
     parser.add_argument(
         "--llm-provider",
         default="llama_cpp",
-        choices=("llama_cpp", "ollama", "lm_studio", "openai", "openrouter"),
+        choices=("llama_cpp", "ollama", "lm_studio", "openai_compatible", "openai", "openrouter"),
     )
     parser.add_argument("--llm-base-url", default="")
     parser.add_argument("--llm-model", default="")
@@ -760,6 +922,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--section-max-tokens", type=int, default=4096)
     parser.add_argument("--max-segment-rows", type=int, default=80)
     parser.add_argument("--mock-llm", action="store_true")
+    parser.add_argument("--text-embedding-base-url", default="")
+    parser.add_argument("--text-embedding-model", default="")
+    parser.add_argument("--text-embedding-api-key-env", default="")
+    parser.add_argument("--text-embedding-timeout-seconds", type=float, default=120.0)
+    parser.add_argument("--text-index-poll-seconds", type=float, default=10.0)
     parser.add_argument("--auto-generate", action="store_true")
     parser.add_argument(
         "--auto-generate-poll-seconds",
@@ -794,6 +961,8 @@ def config_from_args(args: argparse.Namespace) -> MeetingIntelligenceServerConfi
         session_dir=args.session_dir.expanduser().resolve(),
         cache_dir=args.cache_dir.expanduser().resolve(),
         template_dir=args.template_dir.expanduser().resolve(),
+        chat_dir=args.chat_dir.expanduser().resolve(),
+        text_index_db=args.text_index_db.expanduser().resolve(),
         demo_transcript=args.demo_transcript.expanduser().resolve() if args.demo_transcript else None,
         llm_config=default_llm_config(args.llm_provider, **overrides),
         mock_llm=bool(args.mock_llm),
@@ -801,6 +970,13 @@ def config_from_args(args: argparse.Namespace) -> MeetingIntelligenceServerConfi
         auto_generate=bool(args.auto_generate),
         auto_generate_poll_seconds=max(1.0, float(args.auto_generate_poll_seconds)),
         report_language=args.report_language,
+        text_embedding=TextEmbeddingConfig(
+            base_url=str(args.text_embedding_base_url or "").strip(),
+            model=str(args.text_embedding_model or "").strip(),
+            api_key_env=str(args.text_embedding_api_key_env or "").strip(),
+            timeout_seconds=max(1.0, float(args.text_embedding_timeout_seconds)),
+        ),
+        text_index_poll_seconds=max(1.0, float(args.text_index_poll_seconds)),
     )
 
 
@@ -819,6 +995,7 @@ def run_server(runtime: MeetingIntelligenceRuntimeConfig) -> None:
     httpd = ThreadingHTTPServer((runtime.host, runtime.port), handler)
     print(f"Meeting intelligence server: http://{runtime.host}:{runtime.port}/", flush=True)
     monitor: AutoGenerationMonitor | None = None
+    index_monitor: AutoGenerationMonitor | None = None
     try:
         if config.auto_generate:
             monitor = AutoGenerationMonitor(
@@ -826,6 +1003,11 @@ def run_server(runtime: MeetingIntelligenceRuntimeConfig) -> None:
                 interval_seconds=config.auto_generate_poll_seconds,
             )
             monitor.start()
+        index_monitor = AutoGenerationMonitor(
+            service.auto_index_changed_sessions,
+            interval_seconds=config.text_index_poll_seconds,
+        )
+        index_monitor.start()
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
@@ -833,6 +1015,7 @@ def run_server(runtime: MeetingIntelligenceRuntimeConfig) -> None:
         failures: list[str] = []
         for close in (
             monitor.close if monitor is not None else None,
+            index_monitor.close if index_monitor is not None else None,
             httpd.server_close,
             service.close,
         ):

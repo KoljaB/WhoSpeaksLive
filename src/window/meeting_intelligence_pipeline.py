@@ -81,6 +81,11 @@ def default_llm_config(provider: str = "llama_cpp", **overrides: Any) -> Meeting
             "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", "local-model"),
             "schema_mode": "response_format",
         },
+        "openai_compatible": {
+            "base_url": os.environ.get("WHOSPEAKS_MI_LLM_BASE_URL", "http://127.0.0.1:8000/v1"),
+            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", "local-model"),
+            "schema_mode": "response_format",
+        },
         "openai": {
             "base_url": os.environ.get("WHOSPEAKS_MI_LLM_BASE_URL", "https://api.openai.com/v1"),
             "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", "gpt-5.6-luna"),
@@ -249,6 +254,21 @@ class MockMeetingLLMClient:
     ) -> dict[str, Any]:
         self.calls.append(schema_name)
         self.payloads.append(dict(user_payload))
+        if schema_name == "meeting_chat_evidence":
+            candidates = [item for item in (user_payload.get("candidates") or []) if isinstance(item, dict)]
+            return {
+                "schema_version": "meeting_chat_evidence_v1",
+                "chunk_ids": [str(item.get("chunk_id")) for item in candidates[:12] if item.get("chunk_id")],
+            }
+        if schema_name == "meeting_chat_answer":
+            evidence_rows = [item for item in (user_payload.get("evidence_rows") or []) if isinstance(item, dict)]
+            cited = [str(item.get("evidence_id")) for item in evidence_rows[:2] if item.get("evidence_id")]
+            return {
+                "schema_version": "meeting_chat_answer_v1",
+                "status": "answered" if cited else "not_established",
+                "answer": "Grounded mock answer from the selected meeting transcript." if cited else "The meeting does not establish an answer.",
+                "evidence_ids": cited,
+            }
         report_language, _report_language_label = normalize_report_language(user_payload.get("report_language"))
         if schema_name == "meeting_evidence_index":
             rows = user_payload.get("transcript_rows") or []
