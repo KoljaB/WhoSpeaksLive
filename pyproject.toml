@@ -167,6 +167,12 @@ include-package-data = true
 where = ["src", "vendor"]
 
 [tool.setuptools.package-data]
+remote_servers = [
+    "faster-whisper-asr/*.py",
+    "voice-embeddings-server/*.py",
+    "voice-embeddings-server/*.txt",
+    "voice-embeddings-server/tools/*.py",
+]
 stream2sentence = ["data/*.json", "LICENSE"]
 RealtimeSTT = ["assets/**/*", "LICENSE"]
 RealtimeSTT_server = ["LICENSE"]

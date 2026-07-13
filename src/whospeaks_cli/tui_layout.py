@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import platform
 from typing import Any
 
 from textual.app import ComposeResult
@@ -37,7 +38,12 @@ def provider_preset_label(preset_id: str, preset: backend.ProviderPreset) -> str
 
 
 def compose_setup_app(app: Any) -> ComposeResult:
-    target = {"local": "local", "remote": "core", "server": "server"}.get(app.profile.mode, "local")
+    target = (
+        "macos"
+        if app.profile.deployment_target == "macos"
+        else {"local": "local", "remote": "core", "server": "server"}.get(app.profile.mode, "local")
+    )
+    macos_supported = platform.system() == "Darwin" and platform.machine().lower() in {"arm64", "aarch64"}
     preview_engine = backend.normalize_preview_engine(app.profile.realtime_preview_engine)
     preview_preset = app.profile.realtime_preview_model_preset
     if preview_preset not in {"nemotron-3.5-560ms-int8", "nemotron-3.5-160ms-int8"}:
@@ -99,7 +105,12 @@ def compose_setup_app(app: Any) -> ComposeResult:
                         yield Label("Deployment:", id="target-label")
                         with RadioSet(
                             RadioButton("Full local", id="target-local", value=target == "local", compact=True),
-                            RadioButton("Remote core", id="target-core", value=target == "core", compact=True),
+                            *(
+                                [RadioButton("Mac", id="target-macos", value=target == "macos", compact=True)]
+                                if macos_supported
+                                else []
+                            ),
+                            RadioButton("Remote", id="target-core", value=target == "core", compact=True),
                             RadioButton("Server", id="target-server", value=target == "server", compact=True),
                             id="target-select",
                         ):

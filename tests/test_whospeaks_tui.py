@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import dataclasses
 import os
+import signal
 import socket
 import subprocess
 import tempfile
@@ -30,6 +32,166 @@ def unused_local_port() -> int:
 
 
 class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
+    async def test_macos_target_is_first_class_and_defaults_preview_off(self) -> None:
+        with (
+            mock.patch.object(backend.platform, "system", return_value="Darwin"),
+            mock.patch.object(backend.platform, "machine", return_value="arm64"),
+        ):
+            app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
+            async with app.run_test(size=(140, 42)) as pilot:
+                await pilot.click("#target-macos")
+                await pilot.pause()
+
+                self.assertEqual(app._selected_target(), "macos")
+                self.assertEqual(app.query_one("#realtime-select", RadioSet).pressed_button.id, "realtime-off")
+                self.assertIn("Apple Silicon", str(app.query_one("#plan-summary", Static).content))
+
+    async def test_macos_tui_starts_services_before_live_and_cleans_only_owned(self) -> None:
+        class FakeProcess:
+            next_pid = 100
+
+            def __init__(self) -> None:
+                self.pid = self.next_pid
+                FakeProcess.next_pid += 1
+
+            def poll(self) -> None:
+                return None
+
+        calls: list[list[str]] = []
+        processes: list[FakeProcess] = []
+
+        def popen_factory(command: list[str], **_kwargs: object) -> FakeProcess:
+            calls.append(command)
+            process = FakeProcess()
+            processes.append(process)
+            return process
+
+        profile = backend.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
+        app = WhoSpeaksSetupApp(profile, auto_doctor=False, popen_factory=popen_factory)
+        app._service_health_ready = mock.Mock(return_value=False)
+        with mock.patch.object(backend, "terminate_service_processes") as terminate:
+            async with app.run_test(size=(140, 42)) as pilot:
+                await pilot.click("#launch-button")
+                await pilot.pause()
+                self.assertEqual(len(calls), 1)
+                self.assertEqual(calls[0][-2:], ["remote_servers.launcher", "mlx-asr"])
+
+                app._service_health_ready.side_effect = lambda spec: spec.health_url.endswith("8651/health")
+                app.last_server_probe_at = 0.0
+                app._refresh_server_states()
+                self.assertEqual(len(calls), 2)
+                self.assertEqual(calls[1][-2:], ["remote_servers.launcher", "embeddings"])
+
+                app._service_health_ready.return_value = True
+                app._service_health_ready.side_effect = None
+                app.last_server_probe_at = 0.0
+                app._refresh_server_states()
+                self.assertEqual(len(calls), 3)
+                self.assertIn("--asr-backend", calls[2])
+
+            terminate.assert_called_once_with(processes)
+
+    def test_macos_tui_shutdown_does_not_terminate_external_services(self) -> None:
+        profile = backend.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
+        app = WhoSpeaksSetupApp(profile, auto_doctor=False)
+        for kind in ("macos_asr", "macos_embeddings", "translation", "reports", "live"):
+            app._servers.observe(kind, listening=True, probe_due=True)
+
+        with mock.patch.object(backend, "terminate_service_processes") as terminate:
+            app.on_unmount()
+
+        terminate.assert_called_once_with([])
+
+    def test_tui_shutdown_includes_owned_live_children_in_dependency_order(self) -> None:
+        class FakeProcess:
+            def poll(self) -> None:
+                return None
+
+        app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
+        processes = {kind: FakeProcess() for kind in ("macos_asr", "macos_embeddings", "translation", "reports", "live")}
+        for kind in ("macos_asr", "macos_embeddings", "translation", "reports", "live"):
+            app._servers.begin(kind, processes[kind])
+        cleanup_order: list[FakeProcess] = []
+
+        with mock.patch.object(
+            backend,
+            "terminate_service_processes",
+            side_effect=lambda owned: cleanup_order.extend(reversed(owned)),
+        ) as terminate:
+            app.on_unmount()
+
+        terminate.assert_called_once_with([
+            processes["macos_asr"],
+            processes["macos_embeddings"],
+            processes["translation"],
+            processes["reports"],
+            processes["live"],
+        ])
+        self.assertEqual(cleanup_order, [
+            processes["live"],
+            processes["reports"],
+            processes["translation"],
+            processes["macos_embeddings"],
+            processes["macos_asr"],
+        ])
+
+    async def test_tui_readiness_timeout_uses_wait_and_escalate_cleanup(self) -> None:
+        process = mock.Mock(pid=42)
+        process.poll.return_value = None
+        process.wait.side_effect = [subprocess.TimeoutExpired(["service"], 5), 0]
+        profile = backend.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
+        specs = backend.build_macos_service_specs(profile)
+        timed_out = (dataclasses.replace(specs[0], readiness_timeout=0), specs[1])
+        app = WhoSpeaksSetupApp(profile, auto_doctor=False)
+        app._service_health_ready = mock.Mock(return_value=False)
+
+        with (
+            mock.patch.object(backend, "build_macos_service_specs", return_value=timed_out),
+            mock.patch("whospeaks_cli.service_processes.os.name", "posix"),
+            mock.patch("whospeaks_cli.service_processes.os.getpgid", return_value=99),
+            mock.patch("whospeaks_cli.service_processes.os.killpg") as killpg,
+            mock.patch.object(backend, "terminate_service_processes", wraps=backend.terminate_service_processes),
+        ):
+            async with app.run_test(size=(140, 42)) as pilot:
+                app._servers.begin("macos_asr", process)
+                app._managed_service_started_at["macos_asr"] = 0
+                app.last_server_probe_at = 0
+                app._refresh_server_states()
+                await pilot.pause()
+
+        self.assertEqual(killpg.call_args_list, [mock.call(99, signal.SIGTERM), mock.call(99, signal.SIGKILL)])
+        self.assertEqual(app._servers.state("macos_asr").status, "failed")
+
+    async def test_macos_tui_popen_failure_clears_pending_action_and_allows_retry(self) -> None:
+        class FakeProcess:
+            pid = 123
+
+            def poll(self) -> None:
+                return None
+
+        calls = 0
+
+        def popen_factory(_command: list[str], **_kwargs: object) -> FakeProcess:
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise OSError("cannot start")
+            return FakeProcess()
+
+        profile = backend.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
+        app = WhoSpeaksSetupApp(profile, auto_doctor=False, popen_factory=popen_factory)
+        app._service_health_ready = mock.Mock(return_value=False)
+        with mock.patch.object(backend, "terminate_service_processes"):
+            async with app.run_test(size=(140, 42)) as pilot:
+                await pilot.click("#launch-button")
+                await pilot.pause()
+                self.assertEqual(app._coordinator.snapshot.pending_action, PendingAction.NONE)
+
+                await pilot.click("#launch-button")
+                await pilot.pause()
+                self.assertEqual(calls, 2)
+                self.assertEqual(app._coordinator.snapshot.pending_action, PendingAction.START_MACOS_EMBEDDINGS)
+
     def test_state_owners_use_immutable_snapshots_and_distinguish_external_ports(self) -> None:
         coordinator = SetupCoordinator(clock=lambda: 12.5)
         original = coordinator.snapshot

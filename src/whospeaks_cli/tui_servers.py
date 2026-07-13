@@ -73,8 +73,36 @@ class ServerLifecycleMixin:
                     and self._server_port_accepting(self.profile.host, self.profile.translation_port)
                 ),
             }
+        if self.profile.deployment_target == "macos" and probe_due:
+            specs = backend.build_macos_service_specs(self.profile)
+            listening["macos_asr"] = self._service_health_ready(specs[0])
+            listening["macos_embeddings"] = self._service_health_ready(specs[1])
+            for kind, spec in zip(("macos_asr", "macos_embeddings"), specs):
+                started_at = self._managed_service_started_at.get(kind)
+                if (
+                    started_at is not None
+                    and not listening[kind]
+                    and now - started_at >= spec.readiness_timeout
+                ):
+                    process = self._servers.process(kind)
+                    if process is not None:
+                        backend.terminate_service_processes([process])
+                    self._servers.fail_start(kind)
+                    self._managed_service_started_at.pop(kind, None)
+                    self._append_log(f"{spec.name} did not become healthy within {spec.readiness_timeout:g}s.")
+                    pending = (
+                        PendingAction.START_MACOS_EMBEDDINGS
+                        if kind == "macos_asr"
+                        else PendingAction.LAUNCH_AFTER_MACOS_SERVICES
+                    )
+                    self._coordinator.take_pending_action(pending)
+                    self._set_feedback(
+                        "error",
+                        f"{spec.name} failed health checks",
+                        f"The browser controller was not started. Check {spec.health_url} and service logs.",
+                    )
         transitions = []
-        for kind in ("live", "reports", "translation"):
+        for kind in ("live", "reports", "translation", "macos_asr", "macos_embeddings"):
             transition = self._servers.observe(
                 kind,
                 listening=bool(listening.get(kind, False)),
@@ -91,6 +119,8 @@ class ServerLifecycleMixin:
             self._render_server_states()
             self._sync_action_buttons()
         translation = next(item for item in transitions if item.kind == "translation")
+        macos_asr = next(item for item in transitions if item.kind == "macos_asr")
+        macos_embeddings = next(item for item in transitions if item.kind == "macos_embeddings")
         if translation.became_app_ready:
             self._set_feedback(
                 "success",
@@ -109,6 +139,24 @@ class ServerLifecycleMixin:
                 "Translation warm-up failed",
                 "The live server was not started. Check the translation server window for the model-loading error.",
             )
+        if macos_asr.became_app_ready and self._coordinator.take_pending_action(
+            PendingAction.START_MACOS_EMBEDDINGS
+        ):
+            self._managed_service_started_at.pop("macos_asr", None)
+            self._start_macos_service("macos_embeddings")
+        elif macos_asr.app_failed and self._coordinator.take_pending_action(
+            PendingAction.START_MACOS_EMBEDDINGS
+        ):
+            self._set_feedback("error", "MLX ASR failed", "The browser controller was not started.")
+        if macos_embeddings.became_app_ready and self._coordinator.take_pending_action(
+            PendingAction.LAUNCH_AFTER_MACOS_SERVICES
+        ):
+            self._managed_service_started_at.pop("macos_embeddings", None)
+            self._start_configured_services_and_live()
+        elif macos_embeddings.app_failed and self._coordinator.take_pending_action(
+            PendingAction.LAUNCH_AFTER_MACOS_SERVICES
+        ):
+            self._set_feedback("error", "Embeddings service failed", "The browser controller was not started.")
 
     @staticmethod
     def _server_port_accepting(host: str, port: int) -> bool:
@@ -127,7 +175,18 @@ class ServerLifecycleMixin:
             return {"creationflags": subprocess.CREATE_NEW_CONSOLE}
         return {"start_new_session": True}
 
-    def _start_server_process(self, kind: str, command: list[str]) -> bool:
+    @staticmethod
+    def _service_health_ready(spec: backend.ServiceProcessSpec) -> bool:
+        return backend.service_health_ready(spec)
+
+    def _start_server_process(
+        self,
+        kind: str,
+        command: list[str],
+        *,
+        cwd: str | None = None,
+        env_additions: dict[str, str] | None = None,
+    ) -> bool:
         server_state = self._servers.state(kind)
         if self._servers.process_is_running(kind) or server_state.status == "running":
             label = self._server_label(kind)
@@ -136,7 +195,14 @@ class ServerLifecycleMixin:
             return False
         label = self._server_label(kind)
         try:
-            process = self.popen_factory(command, **self._new_server_console_kwargs())
+            kwargs = self._new_server_console_kwargs()
+            if cwd:
+                kwargs["cwd"] = cwd
+            if env_additions:
+                env = dict(os.environ)
+                env.update(env_additions)
+                kwargs["env"] = env
+            process = self.popen_factory(command, **kwargs)
         except OSError as exc:
             self._servers.fail_start(kind)
             self._render_server_states()
@@ -149,10 +215,29 @@ class ServerLifecycleMixin:
         self._append_log(f"Started {label.lower()}: {backend.format_command(command)}")
         return True
 
+    def _start_macos_service(self, kind: str) -> bool:
+        index = 0 if kind == "macos_asr" else 1
+        spec = backend.build_macos_service_specs(self.profile)[index]
+        started = self._start_server_process(
+            kind,
+            list(spec.command),
+            cwd=spec.cwd,
+            env_additions=dict(spec.env),
+        )
+        if started:
+            self._managed_service_started_at[kind] = time.monotonic()
+            if kind == "macos_embeddings":
+                self._coordinator.set_pending_action(PendingAction.LAUNCH_AFTER_MACOS_SERVICES)
+        else:
+            self._coordinator.clear_pending_action()
+        return started
+
     @staticmethod
     def _server_label(kind: str) -> str:
         return {
             "live": "Live server",
             "reports": "Reports server",
             "translation": "Translation server",
+            "macos_asr": "MLX ASR service",
+            "macos_embeddings": "MPS embeddings service",
         }.get(kind, f"{kind.title()} server")

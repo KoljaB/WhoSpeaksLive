@@ -13,12 +13,14 @@ from collections.abc import Callable
 from typing import Any
 
 
-SERVER_KINDS = ("live", "reports", "translation")
+SERVER_KINDS = ("live", "reports", "translation", "macos_asr", "macos_embeddings")
 
 
 class PendingAction(str, enum.Enum):
     NONE = "none"
     LAUNCH_LIVE_AFTER_TRANSLATION = "launch_live_after_translation"
+    START_MACOS_EMBEDDINGS = "start_macos_embeddings"
+    LAUNCH_AFTER_MACOS_SERVICES = "launch_after_macos_services"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -134,6 +136,10 @@ class SetupCoordinator:
 
     def set_pending_action(self, action: PendingAction) -> SetupState:
         self._state = dataclasses.replace(self._state, pending_action=action)
+        return self._state
+
+    def clear_pending_action(self) -> SetupState:
+        self._state = dataclasses.replace(self._state, pending_action=PendingAction.NONE)
         return self._state
 
     def take_pending_action(self, expected: PendingAction) -> bool:

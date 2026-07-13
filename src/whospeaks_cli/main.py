@@ -27,6 +27,7 @@ from urllib.request import urlopen
 from . import __version__
 from .profiles import (
     DEFAULT_REMOTE_ASR_URL,
+    DEFAULT_MACOS_ASR_URL,
     DEFAULT_REMOTE_EMBEDDINGS_URL,
     EDITABLE_PROFILE_FIELDS,
     FAST_LIVE_PROVIDER,
@@ -61,14 +62,20 @@ from .planning import (
     TRANSLATION_INSTALL_PROFILE_CHOICES,
     InstallPlan,
     LaunchPlan,
+    ServiceProcessSpec,
     build_launch_command,
     build_launch_plan,
+    build_macos_service_specs,
     build_reports_command,
     build_translation_command,
     install_plan_for_target,
     normalize_install_target,
     profile_for_install,
     profile_for_mode,
+    default_macos_runtime_root,
+    health_payload_matches,
+    require_apple_silicon_macos,
+    service_resource_path,
 )
 from .cli_console import (
     color_enabled,
@@ -97,6 +104,9 @@ from .cli_diagnostics import (
     check_faster_whisper_cache,
     check_import_group,
     check_local_provider_syntax,
+    check_macos_audio_capture,
+    check_macos_mps,
+    check_macos_service_runtime,
     check_port,
     check_python_imports,
     check_remote_health,
@@ -118,6 +128,12 @@ from .cli_diagnostics import (
 from .cli_installation import *  # noqa: F403 - compatibility facade
 from .cli_classic import *  # noqa: F403 - compatibility facade
 from .cli_commands import *  # noqa: F403 - compatibility facade
+from .service_processes import (
+    service_health_ready,
+    start_service_process,
+    terminate_service_processes,
+    wait_for_service_health,
+)
 from .cli_parser import build_parser
 from window.language_config import SUPPORTED_LANGUAGE_CONFIGS, get_language_config, normalize_language_code
 from window.realtime_preview_backends import (

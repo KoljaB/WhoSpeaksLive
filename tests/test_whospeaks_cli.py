@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import ast
 import contextlib
+import importlib.util
 import io
 import json
 import os
+import signal
 import subprocess
 import sys
 import tempfile
 import tomllib
+import types
 import unittest
+import zipfile
 from unittest import mock
 from pathlib import Path
 
@@ -24,6 +28,339 @@ from whospeaks_cli.tui import provider_preset_label
 
 
 class WhoSpeaksCliTests(unittest.TestCase):
+    def test_speechbrain_encoder_initialization_supports_current_and_older_pretrained_locations(self) -> None:
+        module_path = (
+            ROOT
+            / "vendor"
+            / "remote_servers"
+            / "voice-embeddings-server"
+            / "speechbrain_compat.py"
+        )
+        spec = importlib.util.spec_from_file_location("test_speechbrain_compat", module_path)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        compatibility = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(compatibility)
+
+        class EncoderClassifier:
+            from_hparams = mock.Mock(return_value=object())
+
+        class CurrentPretrained:
+            pass
+
+        speechbrain = types.ModuleType("speechbrain")
+        inference = types.ModuleType("speechbrain.inference")
+        inference.__path__ = []
+        speaker = types.ModuleType("speechbrain.inference.speaker")
+        speaker.EncoderClassifier = EncoderClassifier
+        interfaces = types.ModuleType("speechbrain.inference.interfaces")
+        interfaces.Pretrained = CurrentPretrained
+        modules = {
+            "speechbrain": speechbrain,
+            "speechbrain.inference": inference,
+            "speechbrain.inference.speaker": speaker,
+            "speechbrain.inference.interfaces": interfaces,
+        }
+        with mock.patch.dict(sys.modules, modules):
+            model = compatibility.load_speechbrain_encoder("model-id", "/cache", "mps")
+
+        self.assertIs(model, EncoderClassifier.from_hparams.return_value)
+        EncoderClassifier.from_hparams.assert_called_once_with(
+            source="model-id",
+            savedir="/cache",
+            run_opts={"device": "mps"},
+        )
+        self.assertEqual(CurrentPretrained.device_type, "cpu")
+
+        class OlderPretrained:
+            pass
+
+        speaker.Pretrained = OlderPretrained
+        EncoderClassifier.from_hparams.reset_mock()
+        older_modules = dict(modules)
+        older_modules.pop("speechbrain.inference.interfaces")
+        with mock.patch.dict(sys.modules, older_modules, clear=False):
+            sys.modules.pop("speechbrain.inference.interfaces", None)
+            compatibility.load_speechbrain_encoder("older-id", "/older-cache", "cpu")
+
+        EncoderClassifier.from_hparams.assert_called_once()
+        self.assertEqual(OlderPretrained.device_type, "cpu")
+
+    def test_macos_runtime_root_is_stable_across_working_directories(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            first = Path(directory) / "first"
+            second = Path(directory) / "second"
+            first.mkdir()
+            second.mkdir()
+            with mock.patch.dict(os.environ, {"WHOSPEAKS_MACOS_RUNTIME_ROOT": str(Path(directory) / "runtime")}):
+                with mock.patch.object(Path, "cwd", return_value=first):
+                    first_root = cli.default_macos_runtime_root()
+                with mock.patch.object(Path, "cwd", return_value=second):
+                    second_root = cli.default_macos_runtime_root()
+
+        self.assertEqual(first_root, second_root)
+
+    def test_macos_install_plan_uses_current_editable_source_and_packaged_service_module(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "checkout"
+            source.mkdir()
+            with mock.patch.object(cli, "installed_package_source", return_value=(source, True)):
+                commands = cli.build_macos_install_commands(Path(directory) / "runtime")
+
+        rendered = [" ".join(command) for command in commands]
+        self.assertIn(f"-e {source}[controller]", rendered[0])
+        service_installs = [item for item in rendered if "--no-deps" in item]
+        self.assertEqual(len(service_installs), 2)
+        self.assertTrue(all(f"-e {source}" in item for item in service_installs))
+        profile = cli.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
+        self.assertTrue(all("remote_servers.launcher" in spec.command for spec in cli.build_macos_service_specs(profile)))
+
+    def test_wheel_contains_managed_service_scripts_and_requirements(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            completed = subprocess.run(
+                [sys.executable, "-m", "pip", "wheel", "--no-deps", "--no-build-isolation", "-w", directory, "."],
+                cwd=ROOT,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            wheel = next(Path(directory).glob("*.whl"))
+            with zipfile.ZipFile(wheel) as archive:
+                names = set(archive.namelist())
+
+        self.assertIn("remote_servers/launcher.py", names)
+        self.assertIn("remote_servers/faster-whisper-asr/mlx_asr_server.py", names)
+        self.assertIn("remote_servers/voice-embeddings-server/embeddings_server.py", names)
+        self.assertIn("remote_servers/voice-embeddings-server/requirements-macos.txt", names)
+
+    def test_macos_install_profile_keeps_remote_backends_and_managed_marker(self) -> None:
+        with (
+            mock.patch("whospeaks_cli.planning.platform.system", return_value="Darwin"),
+            mock.patch("whospeaks_cli.planning.platform.machine", return_value="arm64"),
+        ):
+            plan = cli.install_plan_for_target("macos")
+        profile = cli.profile_for_install(cli.Profile(), plan)
+
+        self.assertEqual(plan.mode, "remote")
+        self.assertEqual(plan.realtime_preview_engine, "off")
+        self.assertEqual(profile.deployment_target, "macos")
+        self.assertEqual(profile.mode, "remote")
+        self.assertEqual(profile.asr_backend, "remote")
+        self.assertEqual(profile.embeddings_backend, "remote")
+        self.assertEqual(profile.remote_asr_url, "http://127.0.0.1:8651")
+        self.assertEqual(profile.remote_embeddings_url, "http://127.0.0.1:8660")
+        self.assertEqual(profile.embedding_provider, "speechbrain_ecapa")
+
+    def test_macos_target_rejects_unsupported_platform(self) -> None:
+        with (
+            mock.patch("whospeaks_cli.planning.platform.system", return_value="Darwin"),
+            mock.patch("whospeaks_cli.planning.platform.machine", return_value="x86_64"),
+        ):
+            with self.assertRaisesRegex(SystemExit, "Apple Silicon"):
+                cli.install_plan_for_target("macos")
+
+    def test_macos_install_commands_create_isolated_service_venvs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / ".whospeaks" / "macos"
+            commands = cli.build_macos_install_commands(root)
+
+        rendered = [" ".join(command) for command in commands]
+        self.assertIn("[controller]", rendered[0])
+        self.assertTrue(any(f"-m venv {root / 'mlx-asr'}" in item for item in rendered))
+        self.assertTrue(any("mlx-whisper" in item for item in rendered))
+        self.assertTrue(any(f"-m venv {root / 'embeddings'}" in item for item in rendered))
+        requirements = next(item for item in rendered if "requirements-macos.txt" in item)
+        self.assertNotIn("pyannote", requirements)
+
+    def test_macos_launch_plan_has_immutable_http_service_specs(self) -> None:
+        profile = cli.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
+        plan = cli.build_launch_plan(profile)
+
+        self.assertEqual([spec.name for spec in plan.services], ["MLX ASR", "MPS embeddings"])
+        asr, embeddings = plan.services
+        self.assertIsInstance(asr.command, tuple)
+        self.assertEqual(asr.health_url, "http://127.0.0.1:8651/health")
+        self.assertIn("ASR_PORT", dict(asr.env))
+        self.assertEqual(dict(embeddings.env)["EMBEDDINGS_DEVICE"], "auto")
+        self.assertEqual(dict(embeddings.env)["PYTORCH_ENABLE_MPS_FALLBACK"], "1")
+        self.assertEqual(dict(asr.expected_health), {"service": "mlx-whisper-asr"})
+        self.assertEqual(dict(embeddings.expected_health), {"service": "voice-embeddings-server"})
+
+    def test_macos_profile_normalizes_custom_service_urls_to_fixed_loopback(self) -> None:
+        profile = cli.Profile.from_mapping({
+            "deployment_target": "macos",
+            "mode": "remote",
+            "remote_asr_url": "http://example.test:9999",
+            "remote_embeddings_url": "http://0.0.0.0:1234",
+        })
+
+        self.assertEqual(profile.remote_asr_url, "http://127.0.0.1:8651")
+        self.assertEqual(profile.remote_embeddings_url, "http://127.0.0.1:8660")
+        specs = cli.build_macos_service_specs(profile)
+        self.assertEqual(specs[0].health_url, "http://127.0.0.1:8651/health")
+        self.assertEqual(dict(specs[0].env)["ASR_PORT"], "8651")
+
+    def test_macos_profile_mapping_forces_remote_topology(self) -> None:
+        profile = cli.Profile.from_mapping({
+            "deployment_target": "macos",
+            "mode": "local",
+            "asr_backend": "local",
+            "embeddings_backend": "local",
+            "remote_asr_url": "http://example.test:9999",
+            "remote_embeddings_url": "http://example.test:9998",
+        })
+
+        self.assertEqual(profile.mode, "remote")
+        self.assertEqual(profile.asr_backend, "remote")
+        self.assertEqual(profile.embeddings_backend, "remote")
+        self.assertEqual(profile.remote_asr_url, "http://127.0.0.1:8651")
+        self.assertEqual(profile.remote_embeddings_url, "http://127.0.0.1:8660")
+
+    def test_service_health_uses_spec_identity_not_url_port(self) -> None:
+        spec = cli.ServiceProcessSpec(
+            name="test",
+            command=("python",),
+            cwd=".",
+            env=(),
+            health_url="http://127.0.0.1:9999/health",
+            readiness_timeout=1,
+            expected_health=(("service", "expected"),),
+        )
+        with mock.patch("whospeaks_cli.service_processes.read_json_url", return_value=(True, "ok", {"ok": True, "service": "other"})):
+            self.assertFalse(cli.service_health_ready(spec))
+        with mock.patch("whospeaks_cli.service_processes.read_json_url", return_value=(True, "ok", {"ok": True, "service": "expected"})):
+            self.assertTrue(cli.service_health_ready(spec))
+
+    def test_switching_mode_clears_managed_macos_marker(self) -> None:
+        managed = cli.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
+
+        for mode in ("local", "remote", "server"):
+            with self.subTest(mode=mode):
+                self.assertEqual(cli.profile_for_mode(managed, mode).deployment_target, "")
+
+    def test_macos_cli_launch_waits_in_order_and_cleans_owned_services(self) -> None:
+        profile = cli.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
+        events: list[str] = []
+
+        class FakeProcess:
+            pid = 42
+
+            def poll(self) -> None:
+                return None
+
+        def fake_start(spec: object) -> FakeProcess:
+            events.append(f"start:{spec.name}")
+            return FakeProcess()
+
+        def fake_wait(spec: object, _process: object = None) -> None:
+            events.append(f"ready:{spec.name}")
+
+        with (
+            mock.patch.object(cli, "load_profile", return_value=profile),
+            mock.patch.object(cli, "service_health_ready", return_value=False),
+            mock.patch.object(cli, "start_service_process", side_effect=fake_start),
+            mock.patch.object(cli, "wait_for_service_health", side_effect=fake_wait),
+            mock.patch.object(cli, "terminate_service_processes") as terminate,
+            mock.patch.object(cli.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run,
+        ):
+            code = cli.main(["launch"])
+
+        self.assertEqual(code, 0)
+        self.assertEqual(events, ["start:MLX ASR", "ready:MLX ASR", "start:MPS embeddings", "ready:MPS embeddings"])
+        run.assert_called_once()
+        self.assertEqual(len(terminate.call_args.args[0]), 2)
+
+    def test_macos_cli_launch_preserves_external_service_and_cleans_after_health_failure(self) -> None:
+        profile = cli.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
+        process = mock.Mock(pid=42)
+        process.poll.return_value = None
+        health_results = iter((True, False))
+        with (
+            mock.patch.object(cli, "load_profile", return_value=profile),
+            mock.patch.object(cli, "service_health_ready", side_effect=lambda _url: next(health_results)),
+            mock.patch.object(cli, "start_service_process", return_value=process) as start,
+            mock.patch.object(cli, "wait_for_service_health", side_effect=RuntimeError("unhealthy")),
+            mock.patch.object(cli, "terminate_service_processes") as terminate,
+            mock.patch.object(cli.subprocess, "run") as run,
+        ):
+            code = cli.main(["launch"])
+
+        self.assertEqual(code, 1)
+        self.assertEqual(start.call_count, 1)
+        terminate.assert_called_once_with([process])
+        run.assert_not_called()
+
+    def test_macos_launch_rejects_unsupported_saved_platform(self) -> None:
+        profile = cli.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
+        with (
+            mock.patch.object(cli, "load_profile", return_value=profile),
+            mock.patch("whospeaks_cli.planning.platform.system", return_value="Darwin"),
+            mock.patch("whospeaks_cli.planning.platform.machine", return_value="x86_64"),
+        ):
+            with self.assertRaisesRegex(SystemExit, "Apple Silicon"):
+                cli.main(["launch"])
+
+    def test_owned_process_cleanup_waits_then_escalates(self) -> None:
+        process = mock.Mock(pid=42)
+        process.poll.return_value = None
+        process.wait.side_effect = [subprocess.TimeoutExpired(["service"], 5), 0]
+        with (
+            mock.patch("whospeaks_cli.service_processes.os.name", "posix"),
+            mock.patch("whospeaks_cli.service_processes.os.getpgid", return_value=99),
+            mock.patch("whospeaks_cli.service_processes.os.killpg") as killpg,
+        ):
+            cli.terminate_service_processes([process])
+
+        self.assertEqual(killpg.call_args_list, [mock.call(99, signal.SIGTERM), mock.call(99, signal.SIGKILL)])
+        self.assertEqual(process.wait.call_count, 2)
+
+    def test_posix_cleanup_ignores_exit_between_poll_and_getpgid(self) -> None:
+        process = mock.Mock(pid=42)
+        process.poll.return_value = None
+        process.wait.return_value = 0
+        with (
+            mock.patch("whospeaks_cli.service_processes.os.name", "posix"),
+            mock.patch("whospeaks_cli.service_processes.os.getpgid", side_effect=ProcessLookupError),
+        ):
+            cli.terminate_service_processes([process])
+
+        process.wait.assert_called_once_with(timeout=5)
+
+    def test_windows_cleanup_targets_descendant_tree_before_root_wait(self) -> None:
+        process = mock.Mock(pid=42)
+        process.poll.return_value = 0
+        process.wait.return_value = 0
+        with (
+            mock.patch("whospeaks_cli.service_processes.os.name", "nt"),
+            mock.patch("whospeaks_cli.service_processes.subprocess.run") as run,
+        ):
+            cli.terminate_service_processes([process])
+
+        self.assertEqual(run.call_args.args[0], ["taskkill", "/PID", "42", "/T"])
+        process.wait.assert_called_once_with(timeout=5)
+
+    def test_macos_doctor_distinguishes_installed_stopped_services(self) -> None:
+        profile = cli.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
+        installed = cli.CheckResult("runtime", "ok", "installed")
+        with (
+            mock.patch("whospeaks_cli.cli_diagnostics.platform.system", return_value="Darwin"),
+            mock.patch("whospeaks_cli.cli_diagnostics.platform.machine", return_value="arm64"),
+            mock.patch("whospeaks_cli.cli_diagnostics.check_macos_service_runtime", return_value=installed),
+            mock.patch("whospeaks_cli.cli_diagnostics.read_json_url", return_value=(False, "Connection failed: Connection refused", None)),
+            mock.patch.object(cli, "command_version", return_value=(True, "ffmpeg")),
+            mock.patch.object(cli, "check_import_group", return_value=cli.CheckResult("imports", "ok", "ok")),
+        ):
+            report = cli.run_doctor(profile)
+
+        asr = next(check for check in report.checks if check.name == "Managed MLX ASR health")
+        embeddings = next(check for check in report.checks if check.name == "Managed embeddings health")
+        self.assertEqual(asr.status, "warn")
+        self.assertEqual(embeddings.status, "warn")
+        self.assertIn("installed but stopped", asr.detail)
+        self.assertFalse(any(check.name == "CUDA visibility" and check.status == "fail" for check in report.checks))
+
     def test_profile_and_install_planners_are_copy_on_write(self) -> None:
         profile = cli.Profile(model="large-v2", translation_enabled=False)
         updated = profile.with_updates(model="small")

@@ -1,8 +1,33 @@
 # macOS Setup
 
-Run the controller and both remote-style servers locally on Apple Silicon. This is an alternative to the Windows-controller + Linux-GPU-server topology in [Installation](installation.md); everything below runs on one Mac.
+Run the controller and both remote-style servers locally on Apple Silicon. The supported path installs isolated MLX ASR and MPS embeddings environments once, then manages both localhost services whenever the browser controller launches.
 
-## Controller Setup
+## Recommended Managed Setup
+
+Python 3.11 or newer and `ffmpeg` must already be available. The installer does not invoke Homebrew or install system audio drivers.
+
+```bash
+git clone https://github.com/KoljaB/WhoSpeaksLive.git
+cd WhoSpeaksLive
+python3.11 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip setuptools wheel
+.venv/bin/python -m pip install -e .
+.venv/bin/whospeaks install --target macos --yes
+.venv/bin/whospeaks doctor
+.venv/bin/whospeaks launch
+```
+
+The saved profile remains a remote-controller profile internally: both backends use the existing HTTP clients, with MLX ASR at `http://127.0.0.1:8651` and SpeechBrain ECAPA embeddings at `http://127.0.0.1:8660`. Realtime preview defaults off. On launch, WhoSpeaks preserves compatible services that are already healthy and only stops service processes it started itself.
+
+Managed service environments live under `~/Library/Application Support/WhoSpeaks/macos`, independent of the shell's working directory. Set `WHOSPEAKS_MACOS_RUNTIME_ROOT` only when an explicit alternate location is required.
+
+The `macos` target requires Darwin on arm64/aarch64. Intel Macs are rejected with guidance to use the controller target and external services.
+
+## Manual Setup Reference
+
+Use the commands below to inspect or troubleshoot the individual components. They are no longer the primary installation path.
+
+### Controller Setup
 
 ```bash
 git clone https://github.com/KoljaB/WhoSpeaksLive.git
@@ -14,7 +39,7 @@ python3.11 -m venv .venv
 .venv/bin/whospeaks-window --help
 ```
 
-## ASR Server (CPU, int8)
+### ASR Server (CPU, int8)
 
 CTranslate2 (faster-whisper's inference backend) has no MPS/Metal device, so ASR always runs on CPU on macOS. `int8` compute type keeps this fast enough for real use.
 
@@ -27,7 +52,7 @@ ASR_MODEL=small ASR_DEVICE=cpu ASR_COMPUTE_TYPE=int8 ASR_HOST=127.0.0.1 ASR_PORT
 
 `small` is a good default for responsiveness. If you want higher accuracy and can spend more latency, `large-v3-turbo` also runs on CPU/int8, but measured on an M3 Max it manages only about **1.2x realtime** (6.1s of audio transcribed in ~5.0s) — noticeably slower than `small`. It is not recommended as the default; if you need turbo-level accuracy, prefer the MLX server below instead of CPU turbo.
 
-### Optional: MLX Whisper Server (faster, Apple Silicon only)
+#### MLX Whisper Server (managed default)
 
 `mlx_asr_server.py` in the same directory runs `large-v3-turbo` through `mlx-whisper` on the Neural Engine/GPU instead of CPU. Measured on the same M3 Max: **~12x realtime** steady state (6.1s audio in ~0.5s), vastly faster than the CPU turbo path above. It implements the same `/health` and `/transcribe-window` contract the controller uses (`src/window/window_remote_asr.py`), so it's a drop-in alternative — just point `--remote-asr-url` at its port instead.
 
@@ -39,12 +64,12 @@ ASR_HOST=127.0.0.1 ASR_PORT=8651 .venv/bin/python mlx_asr_server.py
 
 Caveats: mlx-whisper is greedy-decode only (no beam search) — `beam_size` is accepted for API compatibility but ignored. Not usable off Apple Silicon.
 
-## Embeddings Server (MPS)
+### Embeddings Server (MPS)
 
 ```bash
 cd vendor/remote_servers/voice-embeddings-server
 python3.11 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m pip install -r requirements-macos.txt
 EMBEDDINGS_HOST=127.0.0.1 EMBEDDINGS_DEVICE=auto PYTORCH_ENABLE_MPS_FALLBACK=1 .venv/bin/python embeddings_server.py
 ```
 
@@ -52,7 +77,7 @@ Device auto-detection picks `mps` when available (falls back to `cpu`, then `cud
 
 ### Provider status on MPS (M3 Max, this checkout)
 
-Install the full provider set with `pip install -r requirements.txt` (skip `nvidia-ml-py`, it's a no-op off Nvidia hardware). Every provider below was tested with one `/embed` call (`device=auto`) against the running server.
+The managed `requirements-macos.txt` intentionally installs only the default SpeechBrain ECAPA path and omits NVIDIA-only and known-broken pyannote dependencies. The broader provider results below come from the full `requirements.txt` environment and are retained as troubleshooting/reference information.
 
 | Provider | Device used | Result |
 | --- | --- | --- |
