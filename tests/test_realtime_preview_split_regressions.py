@@ -15,9 +15,9 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 
-from window.window_diarizer import WindowDiarizer
 from window.window_domain import VadWindowState
 from window.window_events import RecordingEventBus
+from tests.window_diarizer_support import make_window_diarizer
 
 
 class _CumulativePreviewTranscriber:
@@ -35,7 +35,7 @@ class RealtimePreviewSplitRegressionTests(unittest.TestCase):
     def test_vad_gate_does_not_skip_unseen_audio_after_slow_multi_sentence_commit(self) -> None:
         """A lagging preview generation must inspect audio immediately after its reset boundary."""
 
-        diarizer = WindowDiarizer.__new__(WindowDiarizer)
+        diarizer = make_window_diarizer()
         diarizer.args = argparse.Namespace(
             realtime_preview_reset_overlap_seconds=0.15,
             realtime_preview_interval_seconds=0.05,

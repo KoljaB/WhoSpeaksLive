@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-import argparse
 import json
 import queue
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
 from common.audio_utils import json_dumps
-from realtime.realtime_capture import EventBus, TraceLogger, YouTubeWasapiController
+from realtime.realtime_capture import EventBus, RealtimeCapture, TraceLogger
+from realtime.realtime_cli import RealtimeConfig
 from realtime.realtime_gui_html import HTML
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -114,7 +114,7 @@ class GuiServer(ThreadingHTTPServer):
     def __init__(
         self,
         address: tuple[str, int],
-        args: argparse.Namespace,
+        args: RealtimeConfig,
         bus: EventBus,
         trace: TraceLogger,
     ) -> None:
@@ -122,6 +122,6 @@ class GuiServer(ThreadingHTTPServer):
         self.args = args
         self.bus = bus
         self.trace = trace
-        self.controller = YouTubeWasapiController(args, bus)
+        self.controller = RealtimeCapture(args, bus)
 
 

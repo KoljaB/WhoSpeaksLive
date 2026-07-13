@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Mapping
 import re
 from urllib.parse import urlparse
 
@@ -47,12 +48,21 @@ def resolve_media(args: argparse.Namespace) -> MediaFiles:
     return MediaFiles(args.url, video_id, audio_file.resolve(), video_file.resolve())
 
 
-def resolve_media_url(args: argparse.Namespace, url: str, skip_download: bool = False) -> MediaFiles:
-    media_args = argparse.Namespace(**vars(args))
-    media_args.url = url
-    media_args.audio_file = None
-    media_args.video_file = None
-    media_args.skip_download = skip_download
+def resolve_media_url(args: argparse.Namespace | Mapping[str, object], url: str, skip_download: bool = False) -> MediaFiles:
+    with_updates = getattr(args, "with_updates", None)
+    if callable(with_updates):
+        media_args = with_updates(
+            url=url,
+            audio_file=None,
+            video_file=None,
+            skip_download=skip_download,
+        )
+    else:
+        media_args = argparse.Namespace(**vars(args))
+        media_args.url = url
+        media_args.audio_file = None
+        media_args.video_file = None
+        media_args.skip_download = skip_download
     return resolve_media(media_args)
 
 

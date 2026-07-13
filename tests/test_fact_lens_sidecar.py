@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import sys
+import queue
+import threading
+import time
 import unittest
 from pathlib import Path
 
@@ -13,6 +16,10 @@ if str(SRC) not in sys.path:
 
 from window.fact_lens_sidecar import (
     SCHEMA_VERSION,
+    ClaimExtractionWorker,
+    ExtractedClaim,
+    ExtractionResult,
+    FactLensRuntime,
     SidecarState,
     TranscriptSentence,
     build_arg_parser,
@@ -162,6 +169,95 @@ class FactLensParsingTests(unittest.TestCase):
         self.assertEqual(events[0].event, "transcript.final")
         self.assertEqual(events[0].data, '{"type":"transcript.final"}')
         self.assertEqual(events[1].data, "first\nsecond")
+
+    def test_sentence_replacement_removes_old_cards_and_rejects_stale_completion(self) -> None:
+        state = SidecarState()
+        try:
+            old = TranscriptSentence(id="same", text="Berlin has three million residents.", speaker="S1")
+            old_token = state.record_sentence(old)
+            self.assertIsNotNone(old_token)
+            old_result = ExtractionResult(
+                sentence_id="same",
+                classification="checkable_claim",
+                rationale="claim",
+                claims=[ExtractedClaim(old.text, old.text)],
+            )
+            self.assertTrue(state.apply_extraction(old, old_result, old_token))
+
+            current = TranscriptSentence(id="same", text="Berlin has four million residents.", speaker="S1")
+            current_token = state.record_sentence(current)
+            self.assertIsNotNone(current_token)
+            cards = state.snapshot()["cards"]
+            self.assertEqual(len(cards), 1)
+            self.assertEqual(cards[0]["transcript_text"], current.text)
+
+            self.assertFalse(state.apply_extraction(old, old_result, old_token))
+            self.assertEqual(state.snapshot()["cards"][0]["transcript_text"], current.text)
+        finally:
+            state.close()
+
+    def test_queue_eviction_marks_dropped_current_sentence_terminal(self) -> None:
+        state = SidecarState()
+        stop = threading.Event()
+        work_queue = queue.Queue(maxsize=1)
+        worker = ClaimExtractionWorker(
+            state=state,
+            client=object(),
+            work_queue=work_queue,
+            stop_event=stop,
+            debounce_seconds=0,
+        )
+        try:
+            first = TranscriptSentence(id="first", text="First checkable sentence.")
+            second = TranscriptSentence(id="second", text="Second checkable sentence.")
+            first_token = state.record_sentence(first)
+            second_token = state.record_sentence(second)
+            worker.submit(first, first_token)
+            worker.submit(second, second_token)
+
+            first_card = next(card for card in state.snapshot()["cards"] if card["sentence_id"] == "first")
+            self.assertEqual(first_card["status"], "needs_context")
+            self.assertIn("capacity", first_card["error"])
+            self.assertEqual(state.snapshot()["stats"]["queue_drops"], 1)
+        finally:
+            worker.stop(timeout=0.1)
+            state.close()
+
+    def test_snapshot_publisher_coalesces_without_losing_monotonic_revision(self) -> None:
+        state = SidecarState()
+        subscriber = state.subscribe()
+        try:
+            initial = subscriber.get(timeout=1)
+            state.set_source_status("connecting")
+            state.set_source_status("connected")
+            state.set_llm_status("ready")
+            deadline = time.monotonic() + 2
+            payloads = [initial]
+            while time.monotonic() < deadline:
+                try:
+                    payloads.append(subscriber.get(timeout=0.05))
+                except queue.Empty:
+                    pass
+                if '"revision": 3' in payloads[-1]:
+                    break
+            revisions = [__import__("json").loads(payload)["revision"] for payload in payloads]
+            self.assertEqual(revisions, sorted(revisions))
+            self.assertEqual(revisions[-1], 3)
+        finally:
+            state.unsubscribe(subscriber)
+            state.close()
+
+    def test_runtime_shutdown_joins_reader_and_is_idempotent(self) -> None:
+        state = SidecarState()
+        stop = threading.Event()
+        reader = threading.Thread(target=stop.wait, name="fact-lens-test-reader")
+        runtime = FactLensRuntime(state=state, stop_event=stop, reader=reader, worker=None)
+
+        runtime.start()
+        runtime.close(reader_timeout=1)
+        runtime.close(reader_timeout=1)
+
+        self.assertFalse(reader.is_alive())
 
 
 if __name__ == "__main__":

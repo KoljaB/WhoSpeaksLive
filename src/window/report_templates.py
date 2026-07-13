@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import re
 import tempfile
+import threading
 from typing import Any, Mapping
 import unicodedata
 
@@ -17,6 +18,8 @@ from window.language_config import normalize_language_code
 
 TEMPLATE_SCHEMA_VERSION = "report_template_v1"
 STANDARD_TEMPLATE_ID = "builtin.standard-meeting"
+_STORE_LOCKS_GUARD = threading.Lock()
+_STORE_LOCKS: dict[str, threading.RLock] = {}
 
 _PRESET_DIRECTORY = Path(__file__).with_name("report_template_presets")
 _MAX_SECTIONS = 16
@@ -335,6 +338,11 @@ class ReportTemplateStore:
     def __init__(self, directory: Path) -> None:
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
+        # One store owns the read/modify/write transaction used for versions,
+        # clone IDs, deletion, and atomic file replacement.
+        directory_key = str(self.directory.resolve())
+        with _STORE_LOCKS_GUARD:
+            self._lock = _STORE_LOCKS.setdefault(directory_key, threading.RLock())
 
     def _path_for_id(self, template_id: str) -> Path:
         normalized_id = _normalized_template_id(template_id)
@@ -353,30 +361,36 @@ class ReportTemplateStore:
         return template
 
     def list_templates(self) -> list[dict[str, Any]]:
-        templates = builtin_report_templates()
-        builtin_ids = {template["template_id"] for template in templates}
-        custom_templates: list[dict[str, Any]] = []
-        for path in sorted(self.directory.glob("*.json")):
-            template = self._load_custom_path(path)
-            if template["template_id"] in builtin_ids:
-                raise ValueError(f"Custom template shadows builtin id {template['template_id']!r}")
-            custom_templates.append(template)
-        custom_templates.sort(key=lambda item: (item["name"].casefold(), item["template_id"]))
-        return [*templates, *custom_templates]
+        with self._lock:
+            templates = builtin_report_templates()
+            builtin_ids = {template["template_id"] for template in templates}
+            custom_templates: list[dict[str, Any]] = []
+            for path in sorted(self.directory.glob("*.json")):
+                template = self._load_custom_path(path)
+                if template["template_id"] in builtin_ids:
+                    raise ValueError(f"Custom template shadows builtin id {template['template_id']!r}")
+                custom_templates.append(template)
+            custom_templates.sort(key=lambda item: (item["name"].casefold(), item["template_id"]))
+            return [*templates, *custom_templates]
 
     def get_template(self, template_id: str) -> dict[str, Any] | None:
-        builtin = get_builtin_report_template(template_id)
-        if builtin is not None:
-            return builtin
-        try:
-            path = self._path_for_id(template_id)
-        except ValueError:
-            return None
-        if not path.is_file():
-            return None
-        return self._load_custom_path(path)
+        with self._lock:
+            builtin = get_builtin_report_template(template_id)
+            if builtin is not None:
+                return builtin
+            try:
+                path = self._path_for_id(template_id)
+            except ValueError:
+                return None
+            if not path.is_file():
+                return None
+            return self._load_custom_path(path)
 
     def save_template(self, payload: Mapping[str, Any]) -> dict[str, Any]:
+        with self._lock:
+            return self._save_template_locked(payload)
+
+    def _save_template_locked(self, payload: Mapping[str, Any]) -> dict[str, Any]:
         if not isinstance(payload, Mapping):
             raise ValueError("report template must be an object")
         draft = deepcopy(dict(payload))
@@ -418,32 +432,34 @@ class ReportTemplateStore:
         return deepcopy(template)
 
     def delete_template(self, template_id: str) -> bool:
-        normalized_id = _normalized_template_id(template_id)
-        if get_builtin_report_template(normalized_id) is not None or normalized_id.startswith("builtin."):
-            raise ValueError("builtin report templates are immutable")
-        path = self._path_for_id(normalized_id)
-        if not path.is_file():
-            return False
-        path.unlink()
-        return True
+        with self._lock:
+            normalized_id = _normalized_template_id(template_id)
+            if get_builtin_report_template(normalized_id) is not None or normalized_id.startswith("builtin."):
+                raise ValueError("builtin report templates are immutable")
+            path = self._path_for_id(normalized_id)
+            if not path.is_file():
+                return False
+            path.unlink()
+            return True
 
     def clone_template(self, source_id: str, name: str) -> dict[str, Any]:
-        source = self.get_template(source_id)
-        if source is None:
-            raise ValueError(f"Unknown report template: {source_id}")
-        normalized_name = _normalized_string(name, "name", max_length=160)
-        base_id = f"custom.{slugify_template_id(normalized_name)}"
-        candidate_id = base_id
-        suffix = 2
-        while self.get_template(candidate_id) is not None:
-            candidate_id = f"{base_id}-{suffix}"
-            suffix += 1
-        draft = deepcopy(source)
-        draft.update({
-            "template_id": candidate_id,
-            "name": normalized_name,
-            "version": 1,
-            "builtin": False,
-        })
-        draft.pop("revision_hash", None)
-        return self.save_template(draft)
+        with self._lock:
+            source = self.get_template(source_id)
+            if source is None:
+                raise ValueError(f"Unknown report template: {source_id}")
+            normalized_name = _normalized_string(name, "name", max_length=160)
+            base_id = f"custom.{slugify_template_id(normalized_name)}"
+            candidate_id = base_id
+            suffix = 2
+            while self.get_template(candidate_id) is not None:
+                candidate_id = f"{base_id}-{suffix}"
+                suffix += 1
+            draft = deepcopy(source)
+            draft.update({
+                "template_id": candidate_id,
+                "name": normalized_name,
+                "version": 1,
+                "builtin": False,
+            })
+            draft.pop("revision_hash", None)
+            return self._save_template_locked(draft)

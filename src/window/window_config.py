@@ -486,8 +486,3 @@ def default_faster_whisper_download_root() -> Path | None:
         return Path(env_path).expanduser()
     return DEFAULT_FAST_WHISPER_CACHE if DEFAULT_FAST_WHISPER_CACHE.exists() else None
 
-
-from window.window_gui_html import HTML  # noqa: E402
-
-
-

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WhoSpeaks Meeting Intelligence</title>
+  <link rel="stylesheet" href="/assets/web/reports/styles-base.css">
+  <link rel="stylesheet" href="/assets/web/reports/styles-components.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">
+          <div class="logo" aria-hidden="true">WS</div>
+          <h1>WhoSpeaks Meeting Intelligence</h1>
+        </div>
+        <div class="provider" id="provider"></div>
+        <div class="provider-controls" id="providerControls">
+          <div class="provider-control-grid">
+            <label class="field">
+              Provider
+              <select id="llmProviderSelect"></select>
+            </label>
+            <label class="field">
+              Model
+              <select id="llmModelSelect"></select>
+              <input id="llmModelInput" autocomplete="off" placeholder="Custom model id" hidden>
+            </label>
+          </div>
+          <label class="field">
+            Base URL
+            <input id="llmBaseUrlInput" autocomplete="off">
+          </label>
+          <div class="provider-action-row">
+            <button class="btn" id="applyProviderBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Apply</span>
+            </button>
+            <button class="btn" id="loadModelsBtn" type="button" title="Load available models">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>Models</span>
+            </button>
+            <div class="provider-hint" id="providerHint"></div>
+          </div>
+        </div>
+      </div>
+      <section class="template-panel" aria-label="Report template">
+        <div class="template-panel-title">
+          <strong>Report template</strong>
+          <span class="badge hot">Generator</span>
+        </div>
+        <select id="templateSelect" aria-label="Choose report template"></select>
+        <div class="template-origin" id="templateBadges"></div>
+        <div class="template-summary" id="templateSummary" dir="auto">Loading report templates...</div>
+        <div class="template-actions">
+          <button class="btn primary" id="newTemplateBtn" type="button">New</button>
+          <button class="btn" id="inspectTemplateBtn" type="button">Inspect</button>
+          <button class="btn" id="cloneTemplateBtn" type="button">Clone</button>
+          <button class="btn danger" id="deleteTemplateBtn" type="button">Delete</button>
+        </div>
+      </section>
+      <div class="toolbar">
+        <input class="search" id="sessionSearch" type="search" placeholder="Filter sessions">
+        <div class="button-row">
+          <button class="btn primary" id="generateBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3v18M5 10l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Generate report</span>
+          </button>
+          <button class="btn danger" id="deleteReportBtn" type="button" title="Delete cached report" aria-label="Delete cached report">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="deleteReportLabel">Delete</span>
+          </button>
+          <button class="btn" id="refreshBtn" type="button" title="Refresh sessions">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="sessions" id="sessions"></div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div class="title-line">
+          <h2 id="reportTitle" dir="auto">Select a session</h2>
+          <div class="badge-row" id="reportBadges"></div>
+        </div>
+        <div class="report-meta-row">
+          <div class="status" id="status"></div>
+          <div class="header-actions" aria-label="Report shortcuts">
+            <button class="icon-btn" id="headerGenerateBtn" type="button" title="Regenerate report" aria-label="Regenerate report">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3ZM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="icon-btn" id="headerTranscriptBtn" type="button" title="Open transcript" aria-label="Open transcript">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 10v4M8 7v10M12 5v14M16 8v8M20 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <button class="icon-btn" id="headerRefreshBtn" type="button" title="Refresh report" aria-label="Refresh report">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="report-stats" id="reportStats" hidden></div>
+      </header>
+      <nav class="tabbar" id="tabs"></nav>
+      <section class="content" id="content"></section>
+    </main>
+  </div>
+  <div class="progress-backdrop" id="progressOverlay" hidden>
+    <section class="progress-dialog" id="progressDialog" role="dialog" aria-modal="true" aria-labelledby="progressDialogTitle" aria-describedby="progressDetail">
+      <header class="progress-dialog-header">
+        <div>
+          <div class="progress-dialog-kicker">Report generator</div>
+          <h2 id="progressDialogTitle">Generating report</h2>
+        </div>
+        <button class="icon-btn" id="closeProgressBtn" type="button" aria-label="Close generation status" disabled>&times;</button>
+      </header>
+      <div class="progress-panel" id="progressPanel" aria-live="polite">
+          <div class="progress-line">
+            <span id="progressLabel">Queued</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-detail" id="progressDetail"></div>
+          <div class="progress-log" id="progressLog"></div>
+      </div>
+      <footer class="progress-dialog-footer">
+        <button class="btn primary" id="closeProgressFooterBtn" type="button" disabled>Generating...</button>
+      </footer>
+    </section>
+  </div>
+  <div class="builder-backdrop" id="templateBuilder" hidden>
+    <section class="builder-dialog" role="dialog" aria-modal="true" aria-labelledby="builderTitle">
+      <header class="builder-header">
+        <div class="builder-heading-row">
+          <div>
+            <h2 id="builderTitle">Report builder</h2>
+            <p id="builderSubtitle">Create a reusable report from flat, evidence-grounded sections.</p>
+          </div>
+          <button class="icon-btn" id="closeBuilderBtn" type="button" aria-label="Close report builder">×</button>
+        </div>
+      </header>
+      <div class="builder-body" id="builderBody"></div>
+      <footer class="builder-footer">
+        <div class="builder-validation" id="builderValidation"></div>
+        <div class="builder-footer-actions">
+          <button class="btn" id="cancelBuilderBtn" type="button">Cancel</button>
+          <button class="btn primary" id="saveTemplateBtn" type="button">Save report template</button>
+        </div>
+      </footer>
+    </section>
+  </div>
+  <script type="module" src="/assets/web/reports/app.js"></script>
+</body>
+</html>

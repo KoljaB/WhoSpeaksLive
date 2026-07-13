@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Growing Window Speaker Diarization</title>
+  <link rel="stylesheet" href="/assets/web/live/styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+          <path d="M4 10v4"></path>
+          <path d="M8 6v12"></path>
+          <path d="M12 3v18"></path>
+          <path d="M16 7v10"></path>
+          <path d="M20 11v2"></path>
+        </svg>
+      </span>
+      <div class="title">WhoSpeaks Live</div>
+    </div>
+    <div class="live-summary">
+      <div class="status-pill" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="state" class="runtime-state">Ready</span>
+      </div>
+      <div id="languageSummary" class="language-summary" title="Transcription language">
+        <img id="languageFlag" class="language-flag" alt="">
+        <span id="languageName" class="language-name"></span>
+      </div>
+      <span class="topbar-divider" aria-hidden="true"></span>
+      <div class="speaker-summary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="10" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span id="speakerCount"><span id="speakerCountNumber" class="speaker-count-number">0</span><span id="speakerCountLabel" class="speaker-count-label">speakers found</span></span>
+      </div>
+    </div>
+    <span class="topbar-divider" aria-hidden="true"></span>
+    <div class="transport">
+      <button id="start">Start transcription</button>
+      <button id="stop" disabled><span class="stop-icon" aria-hidden="true"></span>Stop transcription</button>
+    </div>
+  </header>
+  <div id="sessionBanner" class="session-banner available" hidden>
+    <span id="sessionBannerMessage" class="session-banner-message">Demo seat available. Press Start or Load to take it.</span>
+    <span class="session-banner-actions">
+      <button id="releaseSession" type="button" hidden>Release seat</button>
+    </span>
+  </div>
+  <main class="layout">
+    <section class="workspace">
+      <section id="mediaCard" class="media-card mode-youtube">
+        <section class="source-strip" aria-label="Media source">
+          <span class="source-icon source-icon-youtube" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9.5 8.2v7.6l6.7-3.8-6.7-3.8z"></path>
+            </svg>
+          </span>
+          <span class="source-icon source-icon-microphone" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <path d="M12 19v3"></path>
+            </svg>
+          </span>
+          <span class="source-icon source-icon-system" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="12" rx="2"></rect>
+              <path d="M8 20h8"></path>
+              <path d="M12 16v4"></path>
+            </svg>
+          </span>
+          <span class="source-icon source-icon-file" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18V5l12-2v13"></path>
+              <circle cx="6" cy="18" r="3"></circle>
+              <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+          </span>
+          <div class="source-copy">
+            <span class="source-kind">Source: <span id="sourceKind">YouTube</span></span>
+            <strong id="sourceTitle" class="source-title">Loading source</strong>
+          </div>
+          <div id="mediaTime" class="media-time">00:00 / 00:00</div>
+          <select id="inputMode" class="mode source-mode-select" aria-label="Input mode">
+            <option value="youtube">YouTube video</option>
+            <option value="file">Audio file</option>
+            <option value="microphone">Microphone</option>
+            <option value="system">Computer audio</option>
+            <option value="both">Computer audio + microphone</option>
+          </select>
+          <div id="sourceModeMenu" class="source-mode-menu">
+            <button id="sourceModeButton" class="source-mode-button dropdown-control" type="button" aria-expanded="false" aria-controls="sourceModeOptions">Change source</button>
+            <div id="sourceModeOptions" class="source-mode-options" hidden>
+              <button class="source-mode-option" type="button" data-input-mode="youtube">YouTube video</button>
+              <button class="source-mode-option" type="button" data-input-mode="file">Audio file</button>
+              <button class="source-mode-option" type="button" data-input-mode="microphone">Microphone</button>
+              <button class="source-mode-option" type="button" data-input-mode="system">Computer audio</button>
+              <button class="source-mode-option" type="button" data-input-mode="both">Computer audio + microphone</button>
+            </div>
+          </div>
+        </section>
+        <section class="playback-panel" aria-label="Video playback">
+          <div class="video-frame">
+            <video id="video" src="/media/video" muted playsinline></video>
+            <div id="youtubeStream" class="youtube-stream"><iframe id="youtubeFrame" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div id="streamHint" class="stream-hint"></div></div>
+            <div id="filePreview" class="file-preview" aria-hidden="true">
+              <div class="file-preview-inner">
+                <span class="file-preview-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18V5l12-2v13"></path>
+                    <circle cx="6" cy="18" r="3"></circle>
+                    <circle cx="18" cy="16" r="3"></circle>
+                  </svg>
+                </span>
+                <span id="filePreviewName" class="file-preview-name">No audio file selected</span>
+              </div>
+            </div>
+          </div>
+          <div class="media-controls">
+            <div id="youtubeSourceControls" class="source-grid youtube-source-controls">
+              <span class="select-control dropdown-control"><select id="preset" class="preset" aria-label="Preset video"></select></span>
+              <div class="source-row">
+                <input id="source" class="source" type="url" spellcheck="false" autocomplete="off">
+                <button id="load">Load</button>
+              </div>
+            </div>
+            <div id="fileSourceControls" class="file-source-controls">
+              <input id="audioFileInput" class="file-input" type="file" accept=".wav,.mp3,.m4a,.aac,.flac,.ogg,.oga,.opus,.webm,.mp4,.aif,.aiff,audio/*">
+              <div id="fileDropZone" class="file-drop-zone" tabindex="0" aria-label="Choose or drop an audio file">
+                <span class="file-drop-copy">
+                  <span id="fileDropTitle" class="file-drop-title">Drop audio file here</span>
+                  <span id="fileUploadStatus" class="file-upload-status">WAV, MP3, M4A, FLAC, OGG</span>
+                </span>
+                <button id="chooseAudioFile" class="choose-audio-file" type="button">Choose audio file</button>
+              </div>
+            </div>
+            <div class="timeline-row" aria-label="Playback progress">
+              <span id="mediaCurrentTime">00:00</span>
+              <div id="timelineBar" class="timeline-bar" aria-hidden="true">
+                <span id="timelineFill" class="timeline-fill"></span>
+                <span id="timelineThumb" class="timeline-thumb"></span>
+              </div>
+              <span id="mediaDuration">00:00</span>
+            </div>
+            <button id="expandMedia" class="media-expand" type="button" aria-label="Enlarge video">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 3h6v6"></path>
+                <path d="M21 3l-7 7"></path>
+                <path d="M9 21H3v-6"></path>
+                <path d="M3 21l7-7"></path>
+              </svg>
+            </button>
+          </div>
+          <audio id="audio" src="/media/audio"></audio>
+        </section>
+        <section id="capturePanel" class="capture-panel" aria-label="Audio input level">
+          <div class="capture-icon" aria-hidden="true">
+            <svg class="capture-icon-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <path d="M12 19v3"></path>
+            </svg>
+            <svg class="capture-icon-system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="12" rx="2"></rect>
+              <path d="M8 20h8"></path>
+              <path d="M12 16v4"></path>
+            </svg>
+          </div>
+          <div class="capture-body">
+            <h2 id="captureTitle" class="capture-title">Microphone input</h2>
+            <p id="captureDescription" class="capture-description">Live input level appears after capture starts.</p>
+            <div class="level-row">
+              <span>Volume</span>
+              <div class="level-meter"><div id="captureLevelFill" class="level-fill"></div></div>
+              <span id="captureLevelText">0%</span>
+            </div>
+            <label id="micGainControl" class="mic-gain-control">
+              <span>Mic gain</span>
+              <input id="micGain" type="range" min="0" max="2" step="0.05" value="1">
+              <span id="micGainValue">1.00x</span>
+            </label>
+          </div>
+        </section>
+      </section>
+      <section class="transcript-panel">
+        <div class="transcript-header">
+          <div class="transcript-heading">
+            <h2 id="transcriptTitle" class="transcript-title">Live transcript</h2>
+            <div id="translationControls" class="translation-controls" hidden>
+              <button id="translationMenuButton" class="translation-menu-button" type="button" title="Translation display" aria-label="Translation display" aria-haspopup="true" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 5h10"></path>
+                  <path d="M9 3v2c0 4-2 7-6 9"></path>
+                  <path d="M5 9c1.5 2.5 3.5 4.3 6 5.5"></path>
+                  <path d="m14 19 3.5-8 3.5 8"></path>
+                  <path d="M15.2 16h4.6"></path>
+                </svg>
+                <span id="translationMenuSummary" class="translation-menu-summary">Original</span>
+                <span id="translationActivity" class="translation-activity" data-state="off" aria-hidden="true"></span>
+              </button>
+              <div id="translationMenuPanel" class="translation-menu-panel" hidden>
+                <div class="translation-menu-heading">
+                  <span>Translation</span>
+                  <span id="translationProvider" class="translation-provider"></span>
+                </div>
+                <div id="translationProviderAttribution" class="translation-provider-attribution" hidden></div>
+                <label class="translation-menu-field">
+                  <span>Display</span>
+                  <select id="translationDisplayMode" aria-label="Translation display mode">
+                    <option value="original">Original</option>
+                    <option value="single">One translation</option>
+                    <option value="all">All translations</option>
+                  </select>
+                </label>
+                <label id="translationPrimaryField" class="translation-menu-field">
+                  <span>Show language</span>
+                  <select id="translationPrimaryTarget" aria-label="Translation shown in single-language mode"></select>
+                </label>
+                <label class="translation-menu-field">
+                  <span>Language label</span>
+                  <select id="translationLanguageLabelMode" aria-label="Language label style">
+                    <option value="flag">Flag only</option>
+                    <option value="flag_name">Flag + full name</option>
+                    <option value="name">Full name only</option>
+                    <option value="flag_code">Flag + code</option>
+                    <option value="code">Code only</option>
+                  </select>
+                </label>
+                <label class="translation-include-original">
+                  <input id="translationIncludeOriginal" type="checkbox">
+                  <span>Also show original</span>
+                </label>
+                <div class="translation-target-heading">Translate into</div>
+                <div id="translationTargetList" class="translation-target-list"></div>
+                <div id="translationMenuHint" class="translation-menu-hint"></div>
+              </div>
+            </div>
+          </div>
+          <div class="transcript-left-tools">
+            <label class="follow-live-toggle">
+              <input id="followLive" type="checkbox" checked>
+              <span class="follow-live-track" aria-hidden="true"></span>
+              <span>Follow live</span>
+            </label>
+            <div class="review-filter" role="tablist" aria-label="Transcript review filter">
+              <button class="review-filter-button active" type="button" data-review-filter="all">All</button>
+              <button class="review-filter-button" type="button" data-review-filter="needs-review">Needs review</button>
+              <button class="review-filter-button" type="button" data-review-filter="corrected">Corrected</button>
+            </div>
+            <button id="undoCorrection" class="undo-correction-button" type="button" disabled>Undo</button>
+          </div>
+          <div class="transcript-search">
+            <input id="transcriptSearch" type="search" placeholder="Search transcript" autocomplete="off">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m20 20-3.5-3.5"></path>
+            </svg>
+          </div>
+          <div class="transcript-right-tools">
+            <button id="clearTranscript" class="transcript-icon-button" type="button" title="Clear transcript" aria-label="Clear transcript">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18"></path>
+                <path d="M8 6V4h8v2"></path>
+                <path d="M19 6l-1 14H6L5 6"></path>
+                <path d="M10 11v5"></path>
+                <path d="M14 11v5"></path>
+              </svg>
+            </button>
+            <button id="copyTranscript" class="transcript-icon-button" type="button" title="Copy transcript" aria-label="Copy transcript">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+            <button id="downloadTranscript" class="transcript-icon-button" type="button" title="Download transcript" aria-label="Download transcript">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3v12"></path>
+                <path d="m7 10 5 5 5-5"></path>
+                <path d="M5 21h14"></path>
+              </svg>
+            </button>
+            <button id="downloadTranscriptJson" class="transcript-icon-button" type="button" title="Download transcript metadata" aria-label="Download transcript metadata">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"></path>
+                <path d="M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2"></path>
+                <path d="m10 9-3 3 3 3"></path>
+                <path d="m14 9 3 3-3 3"></path>
+              </svg>
+            </button>
+            <div class="transcript-settings-menu">
+              <button id="transcriptSettings" class="transcript-icon-button" type="button" title="Transcript settings" aria-label="Transcript settings" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 1 1 7.1 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1Z"></path>
+                </svg>
+              </button>
+              <div id="transcriptSettingsPanel" class="transcript-settings-panel" hidden>
+                <label><input id="showTranscriptTags" type="checkbox" checked> Show tags</label>
+                <label><input id="showTranscriptTime" type="checkbox" checked> Show time information</label>
+                <label title="Display only; original sentence boundaries are preserved."><input id="groupTranscriptTurns" type="checkbox" checked> Group consecutive same-speaker sentences</label>
+                <label><input id="showTranscriptReviewHints" type="checkbox"> Show review hints</label>
+                <label><input id="showTranscriptSpeechRate" type="checkbox" checked> Show speech/audio rate</label>
+                <label><input id="showTranscriptProbabilities" type="checkbox" checked> Show probabilities</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="selectionToolbar" class="selection-toolbar" hidden>
+          <span id="selectionCount" class="selection-count">0 selected</span>
+          <select id="bulkCorrectionSpeaker" aria-label="Assign selected rows to speaker">
+            <option value="">Assign speaker...</option>
+          </select>
+          <button id="bulkReassign" class="primary-selection-action" type="button" disabled>Reassign</button>
+          <button id="bulkMarkCorrect" type="button" disabled>Mark correct</button>
+          <button id="clearSelection" class="clear-selection-button" type="button" title="Clear selection" aria-label="Clear selection">&times;</button>
+        </div>
+        <section id="sentences" class="sentences"></section>
+      </section>
+    </section>
+    <aside class="control-panel">
+      <section class="control-card speaker-panel" aria-label="Speakers">
+        <div class="speaker-tabs" role="tablist" aria-label="Speaker controls">
+          <button class="speaker-tab active" type="button" role="tab" aria-selected="true" data-speaker-tab="speakers">Speakers</button>
+          <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="sessions">Sessions</button>
+          <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="intelligence">Insights</button>
+          <button class="speaker-tab" type="button" role="tab" aria-selected="false" data-speaker-tab="settings">Settings</button>
+        </div>
+        <div class="speaker-tab-panel" data-speaker-panel="speakers">
+          <div class="speaker-panel-header">
+            <h2 id="speakerPanelTitle" class="speaker-panel-title">Detected speakers (0)</h2>
+            <span class="speaker-panel-actions">
+              <button id="clearSpeakers" class="clear-speakers-button" type="button">Clear speakers</button>
+              <button id="addReferenceSpeaker" class="add-speaker-button" type="button" aria-expanded="false">Add speaker</button>
+            </span>
+          </div>
+          <div id="manualSpeakerComposer" class="manual-speaker-composer" hidden>
+            <input id="manualSpeakerName" class="speaker-row-name-input manual-speaker-name" type="text" placeholder="Speaker name" autocomplete="off" aria-label="New speaker name">
+            <div id="manualSpeakerReferenceDock"></div>
+          </div>
+          <div id="speakerList" class="speaker-list"></div>
+          <div id="speakerEditorDock" hidden>
+            <form id="referenceSpeakerForm" class="speaker-editor" hidden>
+              <div class="speaker-reference-title">Add voice reference</div>
+              <div class="speaker-reference-actions">
+                <label class="speaker-reference-button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 16V4"></path>
+                    <path d="M7 9l5-5 5 5"></path>
+                    <path d="M5 20h14"></path>
+                  </svg>
+                  <span>Upload audio</span>
+                  <input id="referenceSpeakerFile" type="file" accept="audio/*">
+                </label>
+                <button id="recordReference" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <path d="M12 19v3"></path>
+                  </svg>
+                  <span>Record from mic</span>
+                </button>
+                <span id="referenceRecordSeconds" class="speaker-record-seconds">0.0s</span>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="speaker-tab-panel sessions-panel" data-speaker-panel="sessions" hidden>
+          <div class="sessions-header">
+            <h2 id="sessionsPanelTitle" class="sessions-title">Recent sessions</h2>
+            <div class="sessions-header-actions">
+              <button id="newRunSession" class="sessions-new-run" type="button" title="Create a new session">+ New session</button>
+            </div>
+          </div>
+          <div class="sessions-filter" role="tablist" aria-label="Session filter">
+            <button class="sessions-filter-button active" type="button" data-session-filter="active">Active</button>
+            <button class="sessions-filter-button" type="button" data-session-filter="archived">Archived</button>
+            <button class="sessions-filter-button" type="button" data-session-filter="all">All</button>
+          </div>
+          <div class="sessions-selection" aria-label="Bulk session actions">
+            <button id="selectAllSessions" type="button">Select all</button>
+            <button id="unselectAllSessions" type="button">Unselect all</button>
+            <button id="archiveSelectedSessions" type="button">Archive</button>
+            <button id="restoreSelectedSessions" type="button">Restore</button>
+            <button id="deleteSelectedSessions" class="danger" type="button">Delete</button>
+            <span id="sessionSelectionStatus" class="sessions-selection-status" aria-live="polite">0 selected</span>
+          </div>
+          <div id="sessionList" class="session-list"></div>
+        </div>
+        <div class="speaker-tab-panel meeting-intelligence-panel" data-speaker-panel="intelligence" hidden>
+          <div class="meeting-intelligence-header">
+            <h2 class="meeting-intelligence-title">Meeting intelligence</h2>
+            <button id="meetingIntelligenceGenerate" class="meeting-intelligence-generate" type="button">Generate</button>
+          </div>
+          <div id="meetingIntelligenceStatus" class="meeting-intelligence-status">No report</div>
+          <div id="meetingIntelligenceSummary" class="meeting-intelligence-summary">No meeting intelligence report yet.</div>
+          <div id="meetingIntelligenceStats" class="meeting-intelligence-stats"></div>
+          <div id="meetingIntelligenceObjects" class="meeting-object-list"></div>
+          <div class="meeting-evidence-panel">
+            <div class="meeting-evidence-title">Evidence</div>
+            <div id="meetingIntelligenceEvidence" class="meeting-evidence-list"></div>
+          </div>
+        </div>
+        <div class="speaker-tab-panel speaker-settings-panel" data-speaker-panel="settings" hidden>
+          <label class="sensitivity" title="Controls how easily the diarizer creates a new speaker profile.">
+            <span class="sensitivity-title">New speaker</span>
+            <span class="sensitivity-row">
+              <input id="newSpeakerSensitivity" type="range" min="1" max="5" step="1">
+              <strong id="newSpeakerSensitivityLabel"></strong>
+            </span>
+          </label>
+          <label class="speaker-setting-toggle" title="When enabled, prototype evidence may show a low-opacity speaker hint on UNKNOWN transcript rows without committing the label.">
+            <input id="speakerRefinementUnknownTentative" type="checkbox">
+            <span>Tentative UNKNOWN hints</span>
+          </label>
+          <label class="speaker-setting-toggle" title="When enabled, later evidence may commit UNKNOWN transcript rows to a known or newly confirmed speaker.">
+            <input id="speakerRefinementUnknownCommit" type="checkbox">
+            <span>Commit UNKNOWN later</span>
+          </label>
+          <label class="speaker-setting-toggle" title="When enabled, later prototype evidence may change an already committed speaker label.">
+            <input id="allowSpeakerReassignment" type="checkbox">
+            <span>Reassign labeled speakers</span>
+          </label>
+          <div class="speaker-tools">
+            <strong>Speaker groups</strong>
+            <span class="speaker-file-actions">
+              <button id="loadSpeakerGroup" type="button">Load file</button>
+              <button id="saveSpeakerGroup" type="button">Save file</button>
+              <button id="saveCorrectedSpeakerGroup" type="button">Save corrected</button>
+            </span>
+            <input id="speakerGroupFile" type="file" accept=".whospeaks-speakers.json,.json,application/json" hidden>
+          </div>
+        </div>
+      </section>
+      <details class="control-card status-card" open>
+        <summary>Status</summary>
+        <div id="status" class="status"></div>
+      </details>
+    </aside>
+  </main>
+</div>
+<script id="bootstrap-data" type="application/json">__BOOTSTRAP_JSON__</script>
+<script type="module" src="/assets/web/live/app.js"></script>
+</body>
+</html>

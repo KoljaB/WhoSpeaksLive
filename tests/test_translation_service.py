@@ -627,6 +627,63 @@ class TranslationServiceTests(unittest.TestCase):
         json.dumps(result.to_dict())
         json.dumps(status)
 
+    def test_scheduler_cache_identity_is_immutable_for_its_lifetime(self) -> None:
+        from window.translation_service import MockTranslationProvider, TranslationRequest, TranslationService
+
+        class MutableIdentityProvider(MockTranslationProvider):
+            identity = "configured"
+
+            @property
+            def cache_identity(self) -> str:
+                return self.identity
+
+        provider = MutableIdentityProvider(translations={("es", "de", "Hola"): "Hallo"})
+        service = TranslationService(provider)
+        try:
+            first = service.submit(TranslationRequest("a", "Hola", "es", ("de",))).result("de", timeout=2)
+            provider.identity = "observed-remote-model"
+            second = service.submit(TranslationRequest("b", "Hola", "es", ("de",))).result("de", timeout=2)
+        finally:
+            service.close()
+
+        self.assertFalse(first.cached)
+        self.assertTrue(second.cached)
+        self.assertEqual(len(provider.calls), 1)
+
+    def test_local_runtime_close_wins_over_inflight_lazy_load(self) -> None:
+        from window.translation_service import TransformersTranslationProvider
+
+        provider = TransformersTranslationProvider(model="local-test", family="madlad")
+        entered = threading.Event()
+        release = threading.Event()
+        errors: list[str] = []
+
+        def load_runtime() -> object:
+            entered.set()
+            release.wait(timeout=2)
+            return object()
+
+        provider._load_runtime = load_runtime
+
+        def warmup() -> None:
+            try:
+                provider.warmup()
+            except RuntimeError as exc:
+                errors.append(str(exc))
+
+        thread = threading.Thread(target=warmup)
+        thread.start()
+        self.assertTrue(entered.wait(timeout=1))
+        provider.close()
+        release.set()
+        thread.join(timeout=2)
+
+        self.assertFalse(thread.is_alive())
+        self.assertTrue(any("closed" in error for error in errors))
+        self.assertIn("closed", provider.status().detail)
+        with self.assertRaisesRegex(RuntimeError, "closed"):
+            provider.warmup()
+
 
 if __name__ == "__main__":
     unittest.main()

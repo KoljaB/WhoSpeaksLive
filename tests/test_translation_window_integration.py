@@ -30,7 +30,7 @@ class TranslationWindowIntegrationTests(unittest.TestCase):
         with mock.patch.object(sys, "argv", argv):
             parsed = parse_args()
         self.assertEqual(parsed.translation_provider, "mock")
-        self.assertEqual(parsed.translation_target_language, ["en", "de"])
+        self.assertEqual(parsed.translation_target_language, ("en", "de"))
 
     def test_committed_sentence_payload_has_revision_safe_source_hash(self) -> None:
         from window.window_diarizer import WindowDiarizer
@@ -58,12 +58,15 @@ class TranslationWindowIntegrationTests(unittest.TestCase):
         self.assertEqual(payload["source_revision"], expected)
 
     def test_server_wires_translation_config_events_routes_and_persistence(self) -> None:
-        server_source = (SRC / "window" / "youtube_window_diarize_gui.py").read_text(encoding="utf-8")
-        self.assertIn('replace("__TRANSLATION_JSON__"', server_source)
+        server_source = (SRC / "window" / "live_http_handler.py").read_text(encoding="utf-8")
+        app_source = (SRC / "window" / "assets" / "web" / "live" / "live_context.js").read_text(encoding="utf-8")
+        persistence_source = (SRC / "window" / "session_persistence.py").read_text(encoding="utf-8")
+        self.assertIn("const translationConfig = bootstrap.translation || {};", app_source)
+        self.assertIn('path == "/api/bootstrap"', server_source)
         self.assertIn('path == "/api/translation/configure"', server_source)
         self.assertIn('path == "/api/translation/status"', server_source)
-        self.assertIn('snapshot["translations"] = self.translation.snapshot()', server_source)
-        self.assertIn('self.translation.handle_sentence(payload', server_source)
+        self.assertIn('snapshot["translations"] = self._translation_snapshot()', persistence_source)
+        self.assertIn("self._handle_sentence_translation(payload, self._session_id())", persistence_source)
 
 
 if __name__ == "__main__":

@@ -98,6 +98,14 @@ class TranslationServerConfig:
         )
 
 
+@dataclass(frozen=True)
+class TranslationServerRuntimeConfig:
+    host: str
+    port: int
+    verbose_http: bool
+    translation: TranslationServerConfig
+
+
 class TranslationHTTPError(Exception):
     def __init__(self, status: HTTPStatus, code: str, message: str) -> None:
         super().__init__(message)
@@ -360,8 +368,17 @@ def config_from_args(args: argparse.Namespace) -> TranslationServerConfig:
     )
 
 
-def run_server(args: argparse.Namespace) -> None:
-    sidecar = TranslationSidecar(config_from_args(args))
+def runtime_config_from_args(args: argparse.Namespace) -> TranslationServerRuntimeConfig:
+    return TranslationServerRuntimeConfig(
+        host=str(args.host),
+        port=int(args.port),
+        verbose_http=bool(args.verbose_http),
+        translation=config_from_args(args),
+    )
+
+
+def run_server(config: TranslationServerRuntimeConfig) -> None:
+    sidecar = TranslationSidecar(config.translation)
     print(
         f"Warming WhoSpeaks translation model ({sidecar.config.model_profile}, "
         f"{sidecar.provider.model_id})...",
@@ -376,9 +393,9 @@ def run_server(args: argparse.Namespace) -> None:
     if not health["ok"] or health["readiness"] != "ready":
         sidecar.close()
         raise RuntimeError(f"translation model warmup did not become ready: {health['detail']}")
-    server = ThreadingHTTPServer((args.host, args.port), make_handler(sidecar, quiet=not args.verbose_http))
+    server = ThreadingHTTPServer((config.host, config.port), make_handler(sidecar, quiet=not config.verbose_http))
     print(
-        f"WhoSpeaks translation server: http://{args.host}:{args.port} "
+        f"WhoSpeaks translation server: http://{config.host}:{config.port} "
         f"({health['model_profile']}, {health['model']}; ready)",
         flush=True,
     )
@@ -402,7 +419,8 @@ def run_server(args: argparse.Namespace) -> None:
 
 
 def main(argv: Sequence[str] | None = None) -> None:
-    run_server(build_arg_parser().parse_args(argv))
+    args = build_arg_parser().parse_args(argv)
+    run_server(runtime_config_from_args(args))
 
 
 if __name__ == "__main__":

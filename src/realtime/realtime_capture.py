@@ -2,23 +2,25 @@
 
 from __future__ import annotations
 
-import argparse
 import json
+import math
+import os
 import queue
 import re
 import sys
 import threading
 import time
 import uuid
-from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from urllib.parse import parse_qs, urlparse
 
 import numpy as np
 
 from common.audio_utils import SAMPLE_RATE, audio_to_float_mono, json_dumps
+from realtime.external_feed import ExternalAudioFeed
+from realtime.realtime_cli import RealtimeConfig
 from realtime.realtime_speaker_engine import RealtimeSpeakerEngine
 from realtime.realtime_transcript import split_transcript_by_timestamps
 
@@ -256,30 +258,84 @@ class EventBus:
                     pass
 
 
-class YouTubeWasapiController:
-    def __init__(self, args: argparse.Namespace, bus: EventBus) -> None:
+class RealtimeCapture:
+    def __init__(
+        self,
+        args: RealtimeConfig,
+        bus: EventBus,
+        *,
+        speaker_engine: RealtimeSpeakerEngine | None = None,
+        recorder_factory: Callable[[str, int | None], Any] | None = None,
+    ) -> None:
         self.args = args
         self.bus = bus
         self._lock = threading.RLock()
+        self._shutdown_lock = threading.Lock()
+        self._closed = False
         self._session_id: str | None = None
         self._recorder: Any = None
         self._audio_interface: Any = None
         self._audio_stream: Any = None
+        self._capture_start_thread: threading.Thread | None = None
         self._final_thread: threading.Thread | None = None
         self._stop_event = threading.Event()
         self._stopping = False
+        self._external_feed: ExternalAudioFeed | None = None
         self._video_ids: dict[str, str] = {}
         self._video_clocks: dict[str, VideoClock] = {}
         self._sentence_indices: dict[str, int] = {}
-        self.speaker_engine = RealtimeSpeakerEngine(args, bus)
+        self.speaker_engine = speaker_engine or RealtimeSpeakerEngine(args, bus)
+        self._recorder_factory = recorder_factory
+
+    def external_feed(
+        self,
+        *,
+        session_id: str = "replay",
+        media_id: str = "external-feed",
+    ) -> ExternalAudioFeed:
+        """Create a context-managed external audio input session."""
+
+        self._assert_open()
+        return ExternalAudioFeed(
+            self,
+            session_id=session_id,
+            media_id=media_id,
+        )
+
+    def _activate_external_feed(self, feed: ExternalAudioFeed) -> None:
+        self._assert_open()
+        self.stop(emit=False)
+        with self._lock:
+            if self._external_feed is not None:
+                raise RuntimeError("Another external audio feed is already active.")
+            self._external_feed = feed
+            self._session_id = feed.session_id
+            self._stopping = False
+            self._video_ids[feed.session_id] = feed.media_id
+            self._video_clocks.pop(feed.session_id, None)
+            self._sentence_indices[feed.session_id] = 0
+        try:
+            self.speaker_engine.start_session(feed.session_id)
+            feed._activate()
+            self._set_video_time(feed.session_id, 0.0)
+        except Exception:
+            self._release_external_feed(feed)
+            raise
+
+    def _release_external_feed(self, feed: ExternalAudioFeed) -> None:
+        with self._lock:
+            if self._external_feed is feed:
+                self._external_feed = None
 
     def start(self, url: str) -> tuple[str, str]:
+        self._assert_open()
         video_id = extract_youtube_video_id(url)
         self.stop(emit=False)
         session_id = uuid.uuid4().hex
         with self._lock:
             self._session_id = session_id
-            self._stop_event = threading.Event()
+            stop_event = threading.Event()
+            self._stop_event = stop_event
             self._stopping = False
             self._video_ids[session_id] = video_id
             self._video_clocks.pop(session_id, None)
@@ -288,34 +344,69 @@ class YouTubeWasapiController:
         self._status(session_id, "Started.")
         worker = threading.Thread(
             target=self._start_capture,
-            args=(session_id,),
+            args=(session_id, stop_event),
             name="YouTubeWasapiCaptureStarter",
             daemon=True,
         )
+        with self._lock:
+            self._capture_start_thread = worker
         worker.start()
         return session_id, video_id
 
     def stop(self, emit: bool = True) -> None:
         with self._lock:
-            if emit and self._stopping:
-                session_id = self._session_id
-                if session_id:
-                    self._status(session_id, "Stop already in progress.")
-                return
-            if emit:
+            external_feed = self._external_feed
+        if external_feed is not None:
+            external_feed.finish(
+                transcript_drain_seconds=(
+                    float(self.args.stop_drain_seconds) if emit else 0.0
+                ),
+                embedding_drain_seconds=(
+                    float(self.args.stop_embedding_drain_seconds) if emit else 0.0
+                ),
+                emit_status=emit,
+            )
+            return
+
+        with self._lock:
+            already_stopping = bool(emit and self._stopping)
+            if emit and not already_stopping:
                 self._stopping = True
             session_id = self._session_id
             recorder = self._recorder
             stream = self._audio_stream
             audio_interface = self._audio_interface
             stop_event = self._stop_event
+            capture_start_thread = self._capture_start_thread
             final_thread = self._final_thread
+
+        if already_stopping:
+            if session_id:
+                self._status(session_id, "Stop already in progress.")
+            return
 
         if emit and session_id:
             self._status(session_id, "Stop requested. Draining final transcripts.")
         if emit and session_id and recorder is not None and not stop_event.is_set():
             self._drain_recorder_before_stop(session_id, recorder)
         stop_event.set()
+        if (
+            capture_start_thread is not None
+            and capture_start_thread is not threading.current_thread()
+        ):
+            try:
+                capture_start_thread.join(timeout=2.0)
+            except Exception:
+                pass
+            with self._lock:
+                if recorder is None:
+                    recorder = self._recorder
+                if stream is None:
+                    stream = self._audio_stream
+                if audio_interface is None:
+                    audio_interface = self._audio_interface
+                if final_thread is None:
+                    final_thread = self._final_thread
         if stream is not None:
             try:
                 stream.stop_stream()
@@ -344,6 +435,17 @@ class YouTubeWasapiController:
                 final_thread.join(timeout=2.0)
             except Exception:
                 pass
+        with self._lock:
+            if self._recorder is recorder:
+                self._recorder = None
+            if self._audio_stream is stream:
+                self._audio_stream = None
+            if self._audio_interface is audio_interface:
+                self._audio_interface = None
+            if self._final_thread is final_thread:
+                self._final_thread = None
+            if self._capture_start_thread is capture_start_thread:
+                self._capture_start_thread = None
         if emit and session_id:
             self._drain_embedding_jobs_after_stop(session_id)
             self._status(session_id, "Stopped.")
@@ -352,8 +454,19 @@ class YouTubeWasapiController:
                 self._stopping = False
 
     def shutdown(self) -> None:
-        self.stop(emit=False)
-        self.speaker_engine.shutdown()
+        with self._shutdown_lock:
+            if self._closed:
+                return
+            self.stop(emit=False)
+            self.speaker_engine.shutdown()
+            self._closed = True
+
+    close = shutdown
+
+    def _assert_open(self) -> None:
+        with self._shutdown_lock:
+            if self._closed:
+                raise RuntimeError("Realtime capture is closed.")
 
     def _drain_recorder_before_stop(self, session_id: str, recorder: Any) -> None:
         silence_seconds = max(0.0, float(self.args.stop_trailing_silence_seconds))
@@ -372,7 +485,10 @@ class YouTubeWasapiController:
             time.sleep(drain_seconds)
 
     def _drain_embedding_jobs_after_stop(self, session_id: str) -> None:
-        deadline = time.monotonic() + max(0.0, float(self.args.stop_embedding_drain_seconds))
+        self._drain_embedding_jobs(float(self.args.stop_embedding_drain_seconds))
+
+    def _drain_embedding_jobs(self, timeout_seconds: float) -> None:
+        deadline = time.monotonic() + max(0.0, float(timeout_seconds))
         while (
             getattr(self.speaker_engine.jobs, "unfinished_tasks", 0) > 0
             and time.monotonic() < deadline
@@ -442,7 +558,11 @@ class YouTubeWasapiController:
     def _error(self, session_id: str | None, message: str) -> None:
         self.bus.emit("error-status", {"session_id": session_id, "message": message})
 
-    def _start_capture(self, session_id: str) -> None:
+    def _start_capture(
+        self,
+        session_id: str,
+        stop_event: threading.Event,
+    ) -> None:
         try:
             self._status(session_id, "Selecting WASAPI loopback input.")
             input_device_index, device, devices = choose_wasapi_loopback_device(
@@ -475,26 +595,30 @@ class YouTubeWasapiController:
                 device,
             )
             with self._lock:
-                if session_id != self._session_id:
-                    try:
-                        stream.close()
-                    except Exception:
-                        pass
-                    try:
-                        audio_interface.terminate()
-                    except Exception:
-                        pass
-                    recorder.shutdown()
-                    return
-                self._recorder = recorder
-                self._audio_interface = audio_interface
-                self._audio_stream = stream
+                accept_resources = (
+                    session_id == self._session_id and not stop_event.is_set()
+                )
+                if accept_resources:
+                    self._recorder = recorder
+                    self._audio_interface = audio_interface
+                    self._audio_stream = stream
+            if not accept_resources:
+                try:
+                    stream.close()
+                except Exception:
+                    pass
+                try:
+                    audio_interface.terminate()
+                except Exception:
+                    pass
+                recorder.shutdown()
+                return
 
             recorder.start()
             self._status(session_id, "WASAPI capture started.")
             final_thread = threading.Thread(
                 target=self._consume_final_text,
-                args=(session_id, recorder, self._stop_event),
+                args=(session_id, recorder, stop_event),
                 name="YouTubeWasapiFinalConsumer",
                 daemon=True,
             )
@@ -510,6 +634,10 @@ class YouTubeWasapiController:
         except Exception as exc:
             if self._is_current(session_id):
                 self._error(session_id, str(exc))
+        finally:
+            with self._lock:
+                if self._capture_start_thread is threading.current_thread():
+                    self._capture_start_thread = None
 
     def _open_loopback_stream(
         self,
@@ -646,6 +774,8 @@ class YouTubeWasapiController:
             raise
 
     def _create_recorder(self, session_id: str, input_device_index: int | None) -> Any:
+        if self._recorder_factory is not None:
+            return self._recorder_factory(session_id, input_device_index)
         self._status(session_id, "Initializing RealtimeSTT.")
 
         if os.name == "nt":
@@ -811,5 +941,9 @@ class YouTubeWasapiController:
                     video_start_seconds=video_start_seconds,
                     video_end_seconds=video_end_seconds,
                 )
+
+
+# Compatibility for existing imports and third-party launchers.
+YouTubeWasapiController = RealtimeCapture
 
 

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WhoSpeaksLive Fact Lens</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --line: #d7dce2;
+      --text: #17202a;
+      --muted: #5c6670;
+      --queued: #6b7280;
+      --checking: #2563eb;
+      --ok: #14804a;
+      --bad: #b42318;
+      --warn: #b7791f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.8fr) minmax(320px, 1.4fr);
+      gap: 14px;
+      padding: 14px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+    section {
+      min-width: 0;
+    }
+    .strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #fff;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .panel-title {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 650;
+      text-transform: uppercase;
+    }
+    .list {
+      display: grid;
+      gap: 8px;
+    }
+    .sentence, .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-width: 0;
+    }
+    .sentence {
+      color: var(--muted);
+    }
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+    .claim {
+      font-size: 15px;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+    .evidence, .rationale, .error {
+      margin-top: 6px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+    .error { color: var(--bad); }
+    .card {
+      border-left: 5px solid var(--queued);
+    }
+    .status-checking { border-left-color: var(--checking); }
+    .status-supported { border-left-color: var(--ok); }
+    .status-contradicted { border-left-color: var(--bad); }
+    .status-mixed, .status-needs_context { border-left-color: var(--warn); }
+    .status-unverified { border-left-color: var(--checking); }
+    .status-ignored, .status-queued { border-left-color: var(--queued); }
+    .empty {
+      padding: 24px;
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+    }
+    a { color: var(--checking); }
+    @media (max-width: 820px) {
+      header { align-items: flex-start; flex-direction: column; }
+      .strip { justify-content: flex-start; }
+      main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WhoSpeaksLive Fact Lens</h1>
+    <div class="strip" id="status-strip"></div>
+  </header>
+  <main>
+    <section>
+      <h2 class="panel-title">Recent Transcript</h2>
+      <div class="list" id="sentences"></div>
+    </section>
+    <section>
+      <h2 class="panel-title">Claims</h2>
+      <div class="list" id="cards"></div>
+    </section>
+  </main>
+  <script>
+    const statusStrip = document.getElementById('status-strip');
+    const sentencesNode = document.getElementById('sentences');
+    const cardsNode = document.getElementById('cards');
+
+    function text(value) {
+      return value === null || value === undefined || value === '' ? 'unknown' : String(value);
+    }
+
+    function timeRange(item) {
+      if (typeof item.start !== 'number' && typeof item.transcript_start !== 'number') return '';
+      const start = item.start ?? item.transcript_start;
+      const end = item.end ?? item.transcript_end;
+      if (typeof end === 'number') return `${start.toFixed(1)}-${end.toFixed(1)}s`;
+      return `${start.toFixed(1)}s`;
+    }
+
+    function pill(label, value) {
+      const node = document.createElement('span');
+      node.className = 'pill';
+      node.textContent = `${label}: ${value}`;
+      return node;
+    }
+
+    function render(state) {
+      statusStrip.replaceChildren(
+        pill('source', state.source_status),
+        pill('llm', state.llm_status),
+        pill('claims', state.stats.claims_accepted),
+        pill('rejected', state.stats.claims_rejected)
+      );
+
+      const recent = state.sentences.slice(-10).reverse();
+      if (!recent.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = 'No final transcript sentences yet.';
+        sentencesNode.replaceChildren(empty);
+      } else {
+        sentencesNode.replaceChildren(...recent.map(renderSentence));
+      }
+
+      const cards = state.cards.slice().reverse();
+      if (!cards.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = 'No claim cards yet.';
+        cardsNode.replaceChildren(empty);
+      } else {
+        cardsNode.replaceChildren(...cards.map(renderCard));
+      }
+    }
+
+    function renderSentence(sentence) {
+      const node = document.createElement('article');
+      node.className = 'sentence';
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = `${text(sentence.speaker)}  ${timeRange(sentence)}`;
+      const body = document.createElement('div');
+      body.textContent = sentence.text;
+      node.append(meta, body);
+      return node;
+    }
+
+    function renderCard(card) {
+      const node = document.createElement('article');
+      node.className = `card status-${card.status}`;
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = `${card.status}  ${text(card.speaker)}  ${timeRange(card)}  ${card.priority}`;
+      const claim = document.createElement('div');
+      claim.className = 'claim';
+      claim.textContent = card.claim;
+      node.append(meta, claim);
+      if (card.evidence) {
+        const evidence = document.createElement('div');
+        evidence.className = 'evidence';
+        evidence.textContent = `Evidence: ${card.evidence}`;
+        node.append(evidence);
+      }
+      if (card.rationale) {
+        const rationale = document.createElement('div');
+        rationale.className = 'rationale';
+        rationale.textContent = card.rationale;
+        node.append(rationale);
+      }
+      if (card.error) {
+        const error = document.createElement('div');
+        error.className = 'error';
+        error.textContent = card.error;
+        node.append(error);
+      }
+      for (const source of card.sources || []) {
+        const link = document.createElement('a');
+        link.href = source.url;
+        link.target = '_blank';
+        link.rel = 'noreferrer';
+        link.textContent = source.title || source.url;
+        node.append(link);
+      }
+      return node;
+    }
+
+    fetch('/api/state').then(response => response.json()).then(render);
+    const stream = new EventSource('/events');
+    stream.addEventListener('state', event => render(JSON.parse(event.data)));
+  </script>
+</body>
+</html>

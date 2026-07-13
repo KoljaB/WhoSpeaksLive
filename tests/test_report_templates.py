@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from concurrent.futures import ThreadPoolExecutor
 import json
 import sys
 import tempfile
@@ -326,6 +327,23 @@ class ReportTemplateStoreTests(unittest.TestCase):
                 store.save_template(get_builtin_report_template(STANDARD_TEMPLATE_ID))
             with self.assertRaises(ValueError):
                 store.clone_template("custom.missing", "Missing")
+
+    def test_concurrent_updates_serialize_version_assignment_and_atomic_replace(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            store = ReportTemplateStore(Path(directory))
+            initial = store.save_template(custom_template_payload())
+
+            def update(index: int) -> dict[str, object]:
+                draft = deepcopy(initial)
+                draft["description"] = f"Concurrent update {index}"
+                return store.save_template(draft)
+
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                saved = list(executor.map(update, range(8)))
+
+            self.assertEqual(sorted(item["version"] for item in saved), list(range(2, 10)))
+            self.assertEqual(store.get_template(initial["template_id"])["version"], 9)
+            self.assertFalse(list(Path(directory).glob("*.tmp")))
 
 
 if __name__ == "__main__":

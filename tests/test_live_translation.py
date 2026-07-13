@@ -240,6 +240,30 @@ class LiveTranslationCoordinatorTests(unittest.TestCase):
         finally:
             coordinator.shutdown()
 
+    def test_same_session_id_restart_rejects_inflight_previous_epoch(self) -> None:
+        bus = RecordingBus()
+        coordinator = LiveTranslationCoordinator(
+            args(translation_target_language=["en"]),
+            bus,
+        )
+        try:
+            coordinator.provider.delay_seconds = 0.08
+            coordinator.begin_session("reused-id")
+            coordinator.handle_sentence({"index": 1, "text": "Same text."}, "reused-id")
+            time.sleep(0.02)
+            coordinator.begin_session("reused-id")
+            coordinator.handle_sentence({"index": 1, "text": "Same text."}, "reused-id")
+            self.assertTrue(coordinator.service.wait_for_idle(timeout=2.0))
+
+            completed = [
+                payload for event, payload in bus.events
+                if event == "translation" and payload.get("status") == "complete"
+            ]
+            self.assertEqual(len(completed), 1)
+            self.assertEqual(len(coordinator.snapshot()), 1)
+        finally:
+            coordinator.shutdown()
+
 
 if __name__ == "__main__":
     unittest.main()

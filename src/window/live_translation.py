@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import os
 import threading
+from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 import urllib.error
 import urllib.request
@@ -45,6 +46,50 @@ MODEL_PROFILES: dict[str, tuple[str, str]] = {
 }
 
 
+@dataclass(frozen=True)
+class LiveTranslationConfig:
+    language: str = "en"
+    provider: str = "off"
+    target_languages: tuple[str, ...] = ()
+    max_targets: int = 4
+    context_sentences: int = 2
+    queue_size: int = 256
+    browser_preferred: bool = False
+    model_profile: str = "translate-gemma-4b"
+    model: str = ""
+    timeout_seconds: float = 600.0
+    base_url: str = ""
+    api_key_env: str = ""
+    region: str = ""
+    device: str = "auto"
+    dtype: str = "auto"
+
+    @classmethod
+    def from_value(cls, value: Any) -> "LiveTranslationConfig":
+        if isinstance(value, cls):
+            return value
+        targets = getattr(value, "translation_target_language", ())
+        if isinstance(targets, str):
+            targets = (targets,)
+        return cls(
+            language=str(getattr(value, "language", "en")),
+            provider=str(getattr(value, "translation_provider", "off") or "off"),
+            target_languages=tuple(str(target) for target in targets),
+            max_targets=int(getattr(value, "translation_max_targets", 4)),
+            context_sentences=int(getattr(value, "translation_context_sentences", 2)),
+            queue_size=int(getattr(value, "translation_queue_size", 256)),
+            browser_preferred=bool(getattr(value, "translation_browser_preferred", False)),
+            model_profile=str(getattr(value, "translation_model_profile", "translate-gemma-4b")),
+            model=str(getattr(value, "translation_model", "") or ""),
+            timeout_seconds=float(getattr(value, "translation_timeout_seconds", 600.0)),
+            base_url=str(getattr(value, "translation_base_url", "") or ""),
+            api_key_env=str(getattr(value, "translation_api_key_env", "") or ""),
+            region=str(getattr(value, "translation_region", "") or ""),
+            device=str(getattr(value, "translation_device", "auto")),
+            dtype=str(getattr(value, "translation_dtype", "auto")),
+        )
+
+
 class SidecarTranslationProvider(TranslationProvider):
     """Synchronous client used by TranslationService background workers."""
 
@@ -69,6 +114,9 @@ class SidecarTranslationProvider(TranslationProvider):
         )
         self.model_id = str(model or default_model)
         self.timeout_seconds = max(1.0, float(timeout_seconds))
+        self._configured_model_id = self.model_id
+        self._observed_model_id = self.model_id
+        self._status_lock = threading.Lock()
         self.capabilities = ProviderCapabilities(
             local=True,
             requires_network=True,
@@ -79,7 +127,7 @@ class SidecarTranslationProvider(TranslationProvider):
 
     @property
     def cache_identity(self) -> str:
-        return f"{self.provider_id}:{self.base_url}:{self.model_id}"
+        return f"{self.provider_id}:{self.base_url}:{self._configured_model_id}"
 
     def translate(
         self,
@@ -113,7 +161,8 @@ class SidecarTranslationProvider(TranslationProvider):
         if not isinstance(translated, str) or not translated.strip():
             raise RuntimeError("translation sidecar response has no translated_text")
         if isinstance(result, Mapping):
-            self.model_id = str(result.get("model") or self.model_id)
+            with self._status_lock:
+                self._observed_model_id = str(result.get("model") or self._observed_model_id)
         return translated.strip()
 
     def status(self) -> ProviderStatus:
@@ -133,7 +182,8 @@ class SidecarTranslationProvider(TranslationProvider):
                 available = bool(payload.get("ok"))
                 ready = str(payload.get("readiness") or "") == "ready"
                 detail = str(payload.get("detail") or payload.get("readiness") or "configured")
-                self.model_id = str(payload.get("model") or self.model_id)
+                with self._status_lock:
+                    self._observed_model_id = str(payload.get("model") or self._observed_model_id)
                 remote_capabilities = payload.get("capabilities")
                 if isinstance(remote_capabilities, Mapping):
                     capabilities = ProviderCapabilities(
@@ -150,15 +200,17 @@ class SidecarTranslationProvider(TranslationProvider):
                     )
         except Exception as exc:
             detail = f"translation sidecar is not reachable: {exc}"
+        with self._status_lock:
+            observed_model_id = self._observed_model_id
         return ProviderStatus(
             provider=self.provider_id,
             display_name=self.display_name,
-            model=self.model_id,
+            model=observed_model_id,
             available=available,
             ready=ready,
             detail=detail,
             capabilities=capabilities,
-            model_metadata=TRANSLATION_MODEL_METADATA.get(self.model_id),
+            model_metadata=TRANSLATION_MODEL_METADATA.get(observed_model_id),
         )
 
 
@@ -178,19 +230,20 @@ class LiveTranslationCoordinator:
     """Connect stable transcript rows to a revision-safe TranslationService."""
 
     def __init__(self, args: Any, bus: Any) -> None:
-        self.args = args
+        self.config = LiveTranslationConfig.from_value(args)
         self.bus = bus
-        self.source_language = normalize_language_code(getattr(args, "language", "en"))
-        self.max_targets = min(16, max(1, int(getattr(args, "translation_max_targets", 4))))
-        self.context_sentences = max(0, int(getattr(args, "translation_context_sentences", 2)))
-        queue_size = max(1, int(getattr(args, "translation_queue_size", 256)))
+        self.source_language = normalize_language_code(self.config.language)
+        self.max_targets = min(16, max(1, self.config.max_targets))
+        self.context_sentences = max(0, self.config.context_sentences)
+        queue_size = max(1, self.config.queue_size)
         self.max_deferred_jobs = min(8192, max(queue_size * 8, self.max_targets * 64))
-        self.provider_kind = str(getattr(args, "translation_provider", "off") or "off")
-        self.browser_preferred = bool(getattr(args, "translation_browser_preferred", False))
-        self.model_profile = str(getattr(args, "translation_model_profile", "translate-gemma-4b"))
+        self.provider_kind = self.config.provider
+        self.browser_preferred = self.config.browser_preferred
+        self.model_profile = self.config.model_profile
         self._lock = threading.RLock()
         self._session_id = ""
-        self._targets = self._normalize_targets(getattr(args, "translation_target_language", ()))
+        self._session_epoch = 0
+        self._targets = self._normalize_targets(self.config.target_languages)
         self._rows: dict[str, dict[str, Any]] = {}
         self._records: dict[tuple[str, str], dict[str, Any]] = {}
         self._submitted: set[tuple[str, str, str, str]] = set()
@@ -215,12 +268,12 @@ class LiveTranslationCoordinator:
         return self.service is not None
 
     def _create_provider(self) -> TranslationProvider:
-        model_override = str(getattr(self.args, "translation_model", "") or "")
-        timeout = float(getattr(self.args, "translation_timeout_seconds", 600.0))
+        model_override = self.config.model
+        timeout = self.config.timeout_seconds
         if self.provider_kind == "sidecar":
             return SidecarTranslationProvider(
                 base_url=str(
-                    getattr(self.args, "translation_base_url", "")
+                    self.config.base_url
                     or "http://127.0.0.1:8799"
                 ),
                 model_profile=self.model_profile,
@@ -242,16 +295,16 @@ class LiveTranslationCoordinator:
                 "libretranslate": "LIBRETRANSLATE_API_KEY",
             }[self.provider_kind]
             api_key_env = str(
-                getattr(self.args, "translation_api_key_env", "") or default_key_env
+                self.config.api_key_env or default_key_env
             )
             return create_translation_provider(TranslationProviderConfig(
                 kind=self.provider_kind,
-                base_url=str(getattr(self.args, "translation_base_url", "")),
+                base_url=self.config.base_url,
                 model=model_override,
                 api_key=os.environ.get(api_key_env, ""),
                 timeout_seconds=timeout,
                 options={
-                    "region": str(getattr(self.args, "translation_region", "") or ""),
+                    "region": self.config.region,
                 },
             ))
         if self.provider_kind == "mock":
@@ -263,15 +316,14 @@ class LiveTranslationCoordinator:
         return create_translation_provider(TranslationProviderConfig(
             kind=family,
             model=model_override or default_model,
-            device=str(getattr(self.args, "translation_device", "auto")),
-            dtype=str(getattr(self.args, "translation_dtype", "auto")),
+            device=self.config.device,
+            dtype=self.config.dtype,
         ))
 
     def begin_session(self, session_id: str) -> None:
         normalized = str(session_id or "")
         with self._lock:
-            if normalized == self._session_id:
-                return
+            self._session_epoch += 1
             self._session_id = normalized
             self._rows.clear()
             self._records.clear()
@@ -286,7 +338,10 @@ class LiveTranslationCoordinator:
         if not text.strip() or not segment_id:
             return
         if session_id:
-            self.begin_session(session_id)
+            with self._lock:
+                needs_session = str(session_id) != self._session_id
+            if needs_session:
+                self.begin_session(session_id)
         row = dict(payload)
         row["text"] = text
         row["source_text_hash"] = str(payload.get("source_text_hash") or translation_source_hash(text))
@@ -297,7 +352,10 @@ class LiveTranslationCoordinator:
 
     def backfill(self, rows: Sequence[Mapping[str, Any]], session_id: str = "") -> None:
         if session_id:
-            self.begin_session(session_id)
+            with self._lock:
+                needs_session = str(session_id) != self._session_id
+            if needs_session:
+                self.begin_session(session_id)
         for row in rows:
             if isinstance(row, Mapping):
                 self.handle_sentence(row, session_id)
@@ -346,6 +404,16 @@ class LiveTranslationCoordinator:
         source_hash = str(row.get("source_text_hash") or translation_source_hash(str(row.get("text") or "")))
         source_revision = str(row.get("source_revision") or source_hash)
         with self._lock:
+            current_row = self._rows.get(segment_id)
+            if current_row is None:
+                return
+            current_hash = str(
+                current_row.get("source_text_hash")
+                or translation_source_hash(str(current_row.get("text") or ""))
+            )
+            current_revision = str(current_row.get("source_revision") or current_hash)
+            if current_hash != source_hash or current_revision != source_revision:
+                return
             for key in tuple(self._deferred):
                 if key[0] == segment_id and (key[2] != source_hash or key[3] != source_revision):
                     self._deferred.pop(key, None)
@@ -367,6 +435,7 @@ class LiveTranslationCoordinator:
             for target in targets:
                 self._submitted.add((segment_id, target, source_hash, source_revision))
             session_id = self._session_id
+            session_epoch = self._session_epoch
         if emit_queued:
             for target in targets:
                 self.bus.emit("translation", self._event_payload(
@@ -375,6 +444,7 @@ class LiveTranslationCoordinator:
                     source_hash=source_hash,
                     source_revision=source_revision,
                     status="queued",
+                    session_id=session_id,
                 ))
         if self.browser_preferred and not force_backend:
             return
@@ -384,6 +454,7 @@ class LiveTranslationCoordinator:
                 service.submit(TranslationRequest(
                     segment_id=segment_id,
                     session_id=session_id,
+                    session_epoch=session_epoch,
                     source_text=str(row.get("text") or ""),
                     source_language=self.source_language,
                     target_languages=(target,),
@@ -406,6 +477,7 @@ class LiveTranslationCoordinator:
                         source_hash=source_hash,
                         source_revision=source_revision,
                         status="error",
+                        session_id=session_id,
                         error=f"translation backlog reached its {self.max_deferred_jobs}-job capacity",
                     ))
             except Exception as exc:
@@ -418,13 +490,14 @@ class LiveTranslationCoordinator:
                     source_hash=source_hash,
                     source_revision=source_revision,
                     status="error",
+                    session_id=session_id,
                     error=str(exc),
                 ))
 
     def accept_browser_result(self, payload: Mapping[str, Any]) -> dict[str, Any]:
         if not self.browser_preferred:
             raise ValueError("browser translation is not enabled")
-        segment_id, target, row, source_hash, source_revision = self._browser_request(payload)
+        segment_id, target, row, source_hash, source_revision, session_id, session_epoch = self._browser_request(payload)
         translated_text = str(payload.get("text") or payload.get("translated_text") or "").strip()
         if not translated_text:
             raise ValueError("translated browser text must not be empty")
@@ -438,8 +511,13 @@ class LiveTranslationCoordinator:
             provider="chrome_translator",
             model="Chrome on-device Translator API",
             latency_seconds=float(payload.get("latency_seconds") or 0.0),
+            session_id=session_id,
         )
         with self._lock:
+            if not self._browser_commit_is_current_locked(
+                segment_id, target, source_hash, source_revision, session_id, session_epoch
+            ):
+                raise ValueError("browser translation result is stale")
             self._records[(segment_id, target)] = dict(event)
         self.bus.emit("translation", event)
         return event
@@ -447,7 +525,7 @@ class LiveTranslationCoordinator:
     def request_browser_fallback(self, payload: Mapping[str, Any]) -> dict[str, Any]:
         if not self.browser_preferred:
             raise ValueError("browser translation is not enabled")
-        segment_id, target, row, source_hash, source_revision = self._browser_request(payload)
+        segment_id, target, row, source_hash, source_revision, session_id, session_epoch = self._browser_request(payload)
         key = (segment_id, target, source_hash, source_revision)
         with self._lock:
             self._submitted.discard(key)
@@ -466,12 +544,13 @@ class LiveTranslationCoordinator:
             status="queued",
             provider=self.provider.provider_id if self.provider else self.provider_kind,
             model=self.provider.model_id if self.provider else "",
+            session_id=session_id,
         )
 
     def _browser_request(
         self,
         payload: Mapping[str, Any],
-    ) -> tuple[str, str, dict[str, Any], str, str]:
+    ) -> tuple[str, str, dict[str, Any], str, str, str, int]:
         segment_id = str(
             payload.get("segment_id")
             if payload.get("segment_id") is not None
@@ -484,6 +563,8 @@ class LiveTranslationCoordinator:
             if target not in self._targets:
                 raise ValueError("browser translation target is not selected")
             row = dict(self._rows.get(segment_id) or {})
+            session_id = self._session_id
+            session_epoch = self._session_epoch
         if not row:
             raise ValueError("browser translation sentence is no longer available")
         source_hash = str(row.get("source_text_hash") or translation_source_hash(str(row.get("text") or "")))
@@ -494,7 +575,25 @@ class LiveTranslationCoordinator:
             raise ValueError("browser translation source hash is stale")
         if supplied_revision and supplied_revision != source_revision:
             raise ValueError("browser translation source revision is stale")
-        return segment_id, target, row, source_hash, source_revision
+        return segment_id, target, row, source_hash, source_revision, session_id, session_epoch
+
+    def _browser_commit_is_current_locked(
+        self,
+        segment_id: str,
+        target: str,
+        source_hash: str,
+        source_revision: str,
+        session_id: str,
+        session_epoch: int,
+    ) -> bool:
+        if self._session_id != session_id or self._session_epoch != session_epoch or target not in self._targets:
+            return False
+        row = self._rows.get(segment_id)
+        if row is None:
+            return False
+        current_hash = str(row.get("source_text_hash") or translation_source_hash(str(row.get("text") or "")))
+        current_revision = str(row.get("source_revision") or current_hash)
+        return current_hash == source_hash and current_revision == source_revision
 
     def _context_for_locked(self, segment_id: str) -> tuple[str, ...]:
         if self.context_sentences <= 0:
@@ -511,7 +610,18 @@ class LiveTranslationCoordinator:
 
     def _on_result(self, result: TranslationResult) -> None:
         with self._lock:
-            if result.session_id != self._session_id:
+            if (
+                result.session_id != self._session_id
+                or result.session_epoch != self._session_epoch
+                or not self._browser_commit_is_current_locked(
+                    result.segment_id,
+                    result.target_language,
+                    result.source_hash,
+                    result.source_revision,
+                    result.session_id,
+                    result.session_epoch,
+                )
+            ):
                 return
         if result.status not in {"completed", "error"}:
             return
@@ -528,8 +638,22 @@ class LiveTranslationCoordinator:
             model=result.model,
             latency_seconds=result.latency_seconds,
             cached=result.cached,
+            session_id=result.session_id,
         )
         with self._lock:
+            if (
+                result.session_id != self._session_id
+                or result.session_epoch != self._session_epoch
+                or not self._browser_commit_is_current_locked(
+                    result.segment_id,
+                    result.target_language,
+                    result.source_hash,
+                    result.source_revision,
+                    result.session_id,
+                    result.session_epoch,
+                )
+            ):
+                return
             if status == "error":
                 self._submitted.discard((
                     result.segment_id,
@@ -567,6 +691,7 @@ class LiveTranslationCoordinator:
         model: str = "",
         latency_seconds: float = 0.0,
         cached: bool = False,
+        session_id: str | None = None,
     ) -> dict[str, Any]:
         try:
             sentence_index: int | str = int(segment_id)
@@ -576,7 +701,7 @@ class LiveTranslationCoordinator:
         return {
             "segment_id": segment_id,
             "sentence_index": sentence_index,
-            "session_id": self._session_id,
+            "session_id": self._session_id if session_id is None else session_id,
             "source_language": self.source_language,
             "source_text_hash": source_hash,
             "source_hash": source_hash,
@@ -674,4 +799,4 @@ class LiveTranslationCoordinator:
             self.service.close()
 
 
-__all__ = ["LiveTranslationCoordinator", "MODEL_PROFILES", "SidecarTranslationProvider"]
+__all__ = ["LiveTranslationConfig", "LiveTranslationCoordinator", "MODEL_PROFILES", "SidecarTranslationProvider"]

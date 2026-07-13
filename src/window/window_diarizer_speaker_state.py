@@ -1,0 +1,186 @@
+"""Main growing-window diarization controller."""
+
+from __future__ import annotations
+
+import argparse
+import base64
+import copy
+import hashlib
+from collections import Counter, deque
+from contextlib import nullcontext
+from dataclasses import dataclass
+from datetime import datetime
+import json
+import math
+import mimetypes
+import queue
+import re
+import shutil
+import sys
+import tempfile
+import threading
+import time
+import uuid
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+from stream2sentence import generate_sentences, init_tokenizer
+
+from common.audio_utils import load_audio_file, pad_audio, trim_silence, write_wav
+from embeddings.embedding_providers import EmbeddingSubprocessClient, RemoteEmbeddingClient
+from speakers.speaker_embedding_cluster import (
+    SpeakerDecision,
+    SpeakerMemory,
+    cosine_similarity,
+    normalize_vector,
+)
+from window.window_config import (
+    DEFAULT_KROKO_PREVIEW_AUTO_DOWNLOAD,
+    DEFAULT_REALTIMESTT_ROOT,
+    DEFAULT_SPEAKER_LIBRARY_DIR,
+    NEW_SPEAKER_SENSITIVITY_FIELDS,
+    NEW_SPEAKER_SENSITIVITY_PRESETS,
+    SILERO_VAD_CHUNK_SAMPLES,
+    SILERO_VAD_SAMPLE_RATE,
+    default_silero_vad_backend,
+    download_kroko_preview_model,
+    list_speaker_groups,
+    normalize_new_speaker_sensitivity,
+    safe_library_name,
+    safe_reference_filename,
+    speaker_group_dir,
+)
+from window.language_config import default_sentence_language, default_sentence_tokenizer
+from window.window_domain import (
+    EmbeddingSentenceJob,
+    LiveSpeakerMemoryUpdateJob,
+    MediaFiles,
+    PendingUnknownSentence,
+    SentencePart,
+    TimedWord,
+    VadWindowState,
+    WindowTranscript,
+)
+from window.window_events import EventBus
+from window.audio_timeline import AudioSnapshot, AudioTimeline
+from window.diarization_config import DiarizationConfig
+from window.diarization_run import DiarizationRun, DiarizationRunState
+from window.diarization_session import DiarizationSession
+from window.speaker_assignment_engine import AssignmentRequest, SpeakerAssignmentEngine
+from window.window_media import resolve_browser_stream_id
+from window.window_preview import (
+    RealtimePreviewTranscriber,
+    create_realtime_preview_transcriber,
+)
+from window.realtime_preview_backends import normalize_preview_engine
+from window.sherpa_onnx_models import ensure_sherpa_onnx_model, validate_sherpa_onnx_model_dir
+from window.review_flags import annotate_review
+from window.window_remote_asr import RemoteWindowAsrClient
+from window.window_text import (
+    is_embedding_candidate_text,
+    round_optional,
+    sentence_initial_uppercase_after_strong_boundary,
+    split_words_with_stream2sentence,
+    text_content_words,
+    text_ends_sentence,
+    word_attr,
+)
+from window.window_speaker_refinement import (
+    DelayedClusteringConfig,
+    SpeakerRefinementConfig,
+    find_delayed_speaker_splits,
+    find_speaker_prototype_revisions,
+    rejected_speaker_labels,
+    user_deleted_speaker_label,
+    user_confirmed_speaker_label,
+)
+
+
+@dataclass(frozen=True)
+
+
+class WindowSpeakerStateMixin:
+    def initial_speaker_state(self) -> dict[str, Any]:
+        if self.is_running():
+            return self.speaker_state()
+        return self._reset_runtime_session_state(emit=False)
+
+    def _sync_metadata_with_memory(self) -> None:
+        labels = {profile["label"] for profile in self.memory.export_profiles()}
+        with self._speaker_lock:
+            self._speaker_metadata = {
+                label: metadata
+                for label, metadata in self._speaker_metadata.items()
+                if label in labels
+            }
+            for label in sorted(labels, key=lambda value: int(value[1:]) if value.startswith("S") and value[1:].isdigit() else 9999):
+                self._speaker_metadata.setdefault(label, {
+                    "name": "",
+                    "source": "detected",
+                    "locked": False,
+                    "reference_audio": "",
+                })
+
+    def _ensure_speaker_metadata(self, label: str | None, source: str = "detected") -> None:
+        if not label:
+            return
+        with self._speaker_lock:
+            metadata = self._speaker_metadata.setdefault(label, {
+                "name": "",
+                "source": source,
+                "locked": False,
+                "reference_audio": "",
+            })
+            if source == "reference":
+                metadata["source"] = "reference"
+
+    def _speaker_info_for_payload(self, label: str | None) -> dict[str, Any]:
+        if not label:
+            return {"speaker_name": None, "speaker_source": None, "speaker_locked": False}
+        with self._speaker_lock:
+            metadata = dict(self._speaker_metadata.get(label) or {})
+        return {
+            "speaker_name": str(metadata.get("name") or ""),
+            "speaker_source": str(metadata.get("source") or "detected"),
+            "speaker_locked": bool(metadata.get("locked")),
+        }
+
+    def _speaker_state(self) -> dict[str, Any]:
+        profiles = self.memory.export_profiles()
+        with self._speaker_lock:
+            metadata_by_label = {
+                label: dict(metadata)
+                for label, metadata in self._speaker_metadata.items()
+            }
+            group_name = self._speaker_group_name
+        speakers: list[dict[str, Any]] = []
+        for profile in profiles:
+            label = str(profile["label"])
+            metadata = metadata_by_label.get(label, {})
+            speakers.append({
+                "id": label,
+                "name": str(metadata.get("name") or ""),
+                "display_name": str(metadata.get("name") or "") or f"Speaker {profile['index']}",
+                "source": str(metadata.get("source") or "detected"),
+                "locked": bool(metadata.get("locked") or profile.get("locked")),
+                "sentence_count": int(profile.get("sentence_count") or 0),
+                "speech_seconds": round(float(profile.get("speech_seconds") or 0.0), 4),
+                "reference_audio": str(metadata.get("reference_audio") or ""),
+            })
+        return {
+            "group_name": group_name,
+            "groups": list_speaker_groups(self.speaker_library_dir),
+            "speakers": speakers,
+            "embedding_provider": self.args.embedding_provider,
+        }
+
+    def emit_speaker_state(self) -> dict[str, Any]:
+        self._sync_metadata_with_memory()
+        state = self._speaker_state()
+        self.bus.emit("speakers", state)
+        return state
+
+    def speaker_state(self) -> dict[str, Any]:
+        self._sync_metadata_with_memory()
+        return self._speaker_state()

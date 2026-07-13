@@ -16,10 +16,11 @@ if str(SRC) not in os.sys.path:
 
 from whospeaks_cli import main as backend
 from whospeaks_cli.tui import WhoSpeaksSetupApp
+from whospeaks_cli.tui_state import PendingAction
 
 
 class TranslationTuiContractTests(unittest.IsolatedAsyncioTestCase):
-    async def test_translation_settings_save_and_sidecar_starts_before_live(self) -> None:
+    async def test_translation_settings_save_and_live_starts_during_sidecar_warmup(self) -> None:
         class FakeServerProcess:
             def poll(self) -> None:
                 return None
@@ -65,19 +66,23 @@ class TranslationTuiContractTests(unittest.IsolatedAsyncioTestCase):
                     app.action_launch()
                     await pilot.pause()
 
-                    self.assertEqual(len(calls), 1)
-                    self.assertTrue(app.launch_live_when_translation_ready)
+                    self.assertEqual(len(calls), 2)
+                    self.assertEqual(
+                        app._coordinator.snapshot.pending_action,
+                        PendingAction.NONE,
+                    )
+                    translation_command, live_command = calls
+                    self.assertEqual(translation_command[0], "translation-python")
+                    self.assertIn("window.translation_server", translation_command)
+                    self.assertIn("--translation-provider", live_command)
+                    self.assertLess(calls.index(translation_command), calls.index(live_command))
+
                     translation_ready = True
                     app.last_server_probe_at = 0.0
                     app._refresh_server_states()
                     await pilot.pause()
 
                     self.assertEqual(len(calls), 2)
-                    translation_command, live_command = calls
-                    self.assertEqual(translation_command[0], "translation-python")
-                    self.assertIn("window.translation_server", translation_command)
-                    self.assertIn("--translation-provider", live_command)
-                    self.assertLess(calls.index(translation_command), calls.index(live_command))
                     self.assertIn(
                         "Translation: running",
                         str(app.query_one("#translation-server-state", Static).content),

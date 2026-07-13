@@ -10,7 +10,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from window.window_gui_html import HTML
+from tests.web_asset_support import HTML
 from window.window_media import resolve_browser_stream_id
 
 
