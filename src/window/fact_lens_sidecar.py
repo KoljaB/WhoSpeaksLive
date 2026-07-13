@@ -3,21 +3,40 @@
 from __future__ import annotations
 
 import argparse
-import html
 import json
 import queue
 import re
 import threading
-import time
 import urllib.error
 import urllib.request
 from collections import OrderedDict
 from collections.abc import Iterable, Iterator
-from dataclasses import asdict, dataclass, field
-from difflib import SequenceMatcher
+from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 from urllib.parse import urlparse
+
+from window.evidence_matching import (
+    evidence_matches_transcript,
+    normalize_evidence_text,
+)
+from window.fact_lens import (
+    ClaimCard,
+    ExtractedClaim,
+    ExtractionJob,
+    ExtractionResult,
+    FactLensStore,
+    SentenceRevisionToken,
+    SidecarState,
+    SnapshotPublisher,
+    TranscriptSentence,
+    claim_card_id,
+    coalesce_sentences,
+    placeholder_card_id,
+    wall_now,
+)
+from window.fact_lens.runtime import FactLensRuntime
+from window.web_assets import read_web_text
 
 
 DEFAULT_SOURCE_URL = "http://127.0.0.1:8796"
@@ -59,39 +78,8 @@ CLAIM_EXTRACTION_SCHEMA: dict[str, Any] = {
 }
 
 
-def wall_now() -> float:
-    return time.time()
-
-
 def normalize_text(text: str) -> str:
-    return " ".join(re.findall(r"\w+", str(text).casefold(), flags=re.UNICODE))
-
-
-def evidence_matches_transcript(evidence: str, transcript: str) -> bool:
-    evidence_norm = normalize_text(evidence)
-    transcript_norm = normalize_text(transcript)
-    if not evidence_norm or not transcript_norm:
-        return False
-    if evidence_norm in transcript_norm:
-        return True
-
-    evidence_tokens = evidence_norm.split()
-    transcript_tokens = transcript_norm.split()
-    if len(evidence_tokens) < 3 or not transcript_tokens:
-        return False
-
-    low = max(1, len(evidence_tokens) - 2)
-    high = min(len(transcript_tokens), len(evidence_tokens) + 2)
-    evidence_token_set = set(evidence_tokens)
-    for size in range(low, high + 1):
-        for index in range(0, len(transcript_tokens) - size + 1):
-            window_tokens = transcript_tokens[index : index + size]
-            window_text = " ".join(window_tokens)
-            ratio = SequenceMatcher(None, evidence_norm, window_text).ratio()
-            overlap = len(evidence_token_set.intersection(window_tokens)) / len(evidence_token_set)
-            if ratio >= 0.82 or overlap >= 0.75:
-                return True
-    return False
+    return normalize_evidence_text(text)
 
 
 def strip_json_fences(text: str) -> str:
@@ -151,340 +139,6 @@ def iter_url_sse(url: str, *, timeout: float | None = None) -> Iterator[ServerSe
     request = urllib.request.Request(url, headers={"Accept": "text/event-stream"})
     with urllib.request.urlopen(request, timeout=timeout) as response:
         yield from parse_sse_lines(response)
-
-
-@dataclass(frozen=True)
-class TranscriptSentence:
-    id: str
-    text: str
-    speaker: str | None = None
-    start: float | None = None
-    end: float | None = None
-    event_time: float | None = None
-    received_at: float = field(default_factory=wall_now)
-
-    @classmethod
-    def from_public_event(cls, event: dict[str, Any]) -> "TranscriptSentence":
-        payload = event.get("payload")
-        if not isinstance(payload, dict):
-            raise ValueError("missing public event payload")
-        text = str(payload.get("text") or "").strip()
-        if not text:
-            raise ValueError("empty transcript text")
-        sentence_id = str(payload.get("id") or payload.get("index") or event.get("id") or "").strip()
-        if not sentence_id:
-            sentence_id = str(abs(hash((text, payload.get("start"), payload.get("end")))))
-        return cls(
-            id=sentence_id,
-            text=text,
-            speaker=_optional_str(payload.get("speaker") or payload.get("speaker_id")),
-            start=_optional_float(payload.get("start")),
-            end=_optional_float(payload.get("end")),
-            event_time=_optional_float(event.get("time")),
-        )
-
-    def to_prompt_dict(self) -> dict[str, Any]:
-        return {
-            "id": self.id,
-            "speaker": self.speaker,
-            "start": self.start,
-            "end": self.end,
-            "text": self.text,
-        }
-
-    def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
-
-
-@dataclass
-class ExtractedClaim:
-    claim: str
-    evidence: str
-    priority: str = "medium"
-    rationale: str = ""
-
-
-@dataclass
-class ExtractionResult:
-    sentence_id: str
-    classification: str
-    rationale: str
-    claims: list[ExtractedClaim] = field(default_factory=list)
-    rejected_claims: list[str] = field(default_factory=list)
-
-
-@dataclass
-class ClaimCard:
-    id: str
-    sentence_id: str
-    speaker: str | None
-    transcript_start: float | None
-    transcript_end: float | None
-    transcript_text: str
-    claim: str
-    evidence: str = ""
-    classification: str = "needs_context"
-    status: str = "queued"
-    verdict: str = "unverified"
-    rationale: str = ""
-    priority: str = "medium"
-    sources: list[dict[str, str]] = field(default_factory=list)
-    error: str = ""
-    created_at: float = field(default_factory=wall_now)
-    updated_at: float = field(default_factory=wall_now)
-
-    def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
-
-
-def _optional_float(value: Any) -> float | None:
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _optional_str(value: Any) -> str | None:
-    text = str(value or "").strip()
-    return text or None
-
-
-def placeholder_card_id(sentence_id: str) -> str:
-    return f"sentence:{sentence_id}"
-
-
-def claim_card_id(sentence_id: str, index: int) -> str:
-    return f"claim:{sentence_id}:{index}"
-
-
-def coalesce_sentences(sentences: Iterable[TranscriptSentence]) -> list[TranscriptSentence]:
-    by_id: OrderedDict[str, TranscriptSentence] = OrderedDict()
-    for sentence in sentences:
-        if sentence.id in by_id:
-            del by_id[sentence.id]
-        by_id[sentence.id] = sentence
-    return list(by_id.values())
-
-
-class SidecarState:
-    def __init__(self, *, max_sentences: int = 80, max_cards: int = 80) -> None:
-        self.max_sentences = max_sentences
-        self.max_cards = max_cards
-        self.started_at = wall_now()
-        self._lock = threading.RLock()
-        self._subscribers: list[queue.Queue[str]] = []
-        self._sentences: OrderedDict[str, TranscriptSentence] = OrderedDict()
-        self._cards: OrderedDict[str, ClaimCard] = OrderedDict()
-        self._revision = 0
-        self._source_status = "idle"
-        self._llm_status = "idle"
-        self._last_error = ""
-        self._stats: dict[str, int] = {
-            "sentences_seen": 0,
-            "sentences_queued": 0,
-            "llm_requests": 0,
-            "llm_failures": 0,
-            "claims_accepted": 0,
-            "claims_rejected": 0,
-            "queue_drops": 0,
-        }
-
-    def subscribe(self) -> queue.Queue[str]:
-        subscriber: queue.Queue[str] = queue.Queue(maxsize=8)
-        with self._lock:
-            self._subscribers.append(subscriber)
-            subscriber.put_nowait(json.dumps(self._snapshot_locked(), ensure_ascii=True))
-        return subscriber
-
-    def unsubscribe(self, subscriber: queue.Queue[str]) -> None:
-        with self._lock:
-            if subscriber in self._subscribers:
-                self._subscribers.remove(subscriber)
-
-    def snapshot(self) -> dict[str, Any]:
-        with self._lock:
-            return self._snapshot_locked()
-
-    def record_queue_drop(self) -> None:
-        with self._lock:
-            self._stats["queue_drops"] += 1
-            self._touch_locked()
-
-    def set_source_status(self, status: str, error: str = "") -> None:
-        with self._lock:
-            self._source_status = status
-            if error:
-                self._last_error = error
-            self._touch_locked()
-
-    def set_llm_status(self, status: str, error: str = "") -> None:
-        with self._lock:
-            self._llm_status = status
-            if error:
-                self._last_error = error
-            self._touch_locked()
-
-    def record_sentence(self, sentence: TranscriptSentence, *, queue_claim_extraction: bool = True) -> bool:
-        with self._lock:
-            previous = self._sentences.get(sentence.id)
-            should_queue = previous is None or previous.text != sentence.text or previous.speaker != sentence.speaker
-            if previous is not None:
-                del self._sentences[sentence.id]
-            self._sentences[sentence.id] = sentence
-            self._trim_sentences_locked()
-            self._stats["sentences_seen"] += 1
-            should_queue_claim = should_queue and queue_claim_extraction
-            if should_queue_claim:
-                self._stats["sentences_queued"] += 1
-                self._cards[placeholder_card_id(sentence.id)] = ClaimCard(
-                    id=placeholder_card_id(sentence.id),
-                    sentence_id=sentence.id,
-                    speaker=sentence.speaker,
-                    transcript_start=sentence.start,
-                    transcript_end=sentence.end,
-                    transcript_text=sentence.text,
-                    claim=sentence.text,
-                    status="queued",
-                    rationale="Waiting for claim extraction.",
-                )
-                self._trim_cards_locked()
-            self._touch_locked()
-            return should_queue_claim
-
-    def mark_checking(self, sentence: TranscriptSentence) -> None:
-        with self._lock:
-            card = self._cards.get(placeholder_card_id(sentence.id))
-            if card is None:
-                card = ClaimCard(
-                    id=placeholder_card_id(sentence.id),
-                    sentence_id=sentence.id,
-                    speaker=sentence.speaker,
-                    transcript_start=sentence.start,
-                    transcript_end=sentence.end,
-                    transcript_text=sentence.text,
-                    claim=sentence.text,
-                )
-                self._cards[card.id] = card
-            card.status = "checking"
-            card.updated_at = wall_now()
-            card.rationale = "Checking whether this final sentence contains an atomic claim."
-            self._llm_status = "checking"
-            self._touch_locked()
-
-    def apply_extraction(self, sentence: TranscriptSentence, result: ExtractionResult) -> None:
-        with self._lock:
-            self._stats["claims_rejected"] += len(result.rejected_claims)
-            self._cards.pop(placeholder_card_id(sentence.id), None)
-
-            if not result.claims:
-                status = "ignored" if result.classification == "ignore" else "needs_context"
-                rationale = result.rationale or ("Ignored by claim triage." if status == "ignored" else "Needs more transcript context.")
-                if result.rejected_claims:
-                    rationale = f"{rationale} Rejected extraction: {'; '.join(result.rejected_claims[:2])}."
-                self._cards[placeholder_card_id(sentence.id)] = ClaimCard(
-                    id=placeholder_card_id(sentence.id),
-                    sentence_id=sentence.id,
-                    speaker=sentence.speaker,
-                    transcript_start=sentence.start,
-                    transcript_end=sentence.end,
-                    transcript_text=sentence.text,
-                    claim=sentence.text,
-                    evidence=sentence.text if status == "ignored" else "",
-                    classification=result.classification,
-                    status=status,
-                    rationale=rationale,
-                )
-            else:
-                for index, claim in enumerate(result.claims, start=1):
-                    self._cards[claim_card_id(sentence.id, index)] = ClaimCard(
-                        id=claim_card_id(sentence.id, index),
-                        sentence_id=sentence.id,
-                        speaker=sentence.speaker,
-                        transcript_start=sentence.start,
-                        transcript_end=sentence.end,
-                        transcript_text=sentence.text,
-                        claim=claim.claim,
-                        evidence=claim.evidence,
-                        classification="checkable_claim",
-                        status="unverified",
-                        verdict="unverified",
-                        priority=claim.priority,
-                        rationale=claim.rationale or "Extracted from transcript; source verification has not run.",
-                    )
-                self._stats["claims_accepted"] += len(result.claims)
-
-            self._llm_status = "idle"
-            self._trim_cards_locked()
-            self._touch_locked()
-
-    def apply_extraction_failure(self, sentence: TranscriptSentence, error: str) -> None:
-        with self._lock:
-            self._stats["llm_failures"] += 1
-            self._last_error = error
-            card = self._cards.get(placeholder_card_id(sentence.id))
-            if card is None:
-                card = ClaimCard(
-                    id=placeholder_card_id(sentence.id),
-                    sentence_id=sentence.id,
-                    speaker=sentence.speaker,
-                    transcript_start=sentence.start,
-                    transcript_end=sentence.end,
-                    transcript_text=sentence.text,
-                    claim=sentence.text,
-                )
-                self._cards[card.id] = card
-            card.status = "needs_context"
-            card.classification = "needs_context"
-            card.rationale = "LLM extraction failed; no fact verdict was produced."
-            card.error = error
-            card.updated_at = wall_now()
-            self._llm_status = "error"
-            self._touch_locked()
-
-    def recent_sentences(self, limit: int) -> list[TranscriptSentence]:
-        with self._lock:
-            return list(self._sentences.values())[-limit:]
-
-    def record_llm_request(self) -> None:
-        with self._lock:
-            self._stats["llm_requests"] += 1
-            self._touch_locked()
-
-    def _snapshot_locked(self) -> dict[str, Any]:
-        return {
-            "ok": True,
-            "revision": self._revision,
-            "started_at": self.started_at,
-            "source_status": self._source_status,
-            "llm_status": self._llm_status,
-            "last_error": self._last_error,
-            "stats": dict(self._stats),
-            "sentences": [sentence.to_dict() for sentence in self._sentences.values()],
-            "cards": [card.to_dict() for card in self._cards.values()],
-        }
-
-    def _trim_sentences_locked(self) -> None:
-        while len(self._sentences) > self.max_sentences:
-            self._sentences.popitem(last=False)
-
-    def _trim_cards_locked(self) -> None:
-        while len(self._cards) > self.max_cards:
-            self._cards.popitem(last=False)
-
-    def _touch_locked(self) -> None:
-        self._revision += 1
-        if not self._subscribers:
-            return
-        payload = json.dumps(self._snapshot_locked(), ensure_ascii=True)
-        for subscriber in list(self._subscribers):
-            try:
-                subscriber.put_nowait(payload)
-            except queue.Full:
-                try:
-                    subscriber.get_nowait()
-                    subscriber.put_nowait(payload)
-                except queue.Empty:
-                    pass
 
 
 def parse_openai_chat_json(response_data: dict[str, Any]) -> dict[str, Any]:
@@ -674,7 +328,7 @@ class ClaimExtractionWorker:
         *,
         state: SidecarState,
         client: Any,
-        work_queue: "queue.Queue[TranscriptSentence]",
+        work_queue: "queue.Queue[ExtractionJob]",
         stop_event: threading.Event,
         debounce_seconds: float = 0.35,
         context_size: int = 8,
@@ -686,20 +340,42 @@ class ClaimExtractionWorker:
         self.debounce_seconds = debounce_seconds
         self.context_size = context_size
         self.thread = threading.Thread(target=self._run, name="fact-lens-llm-worker", daemon=True)
+        self._start_lock = threading.Lock()
+        self._started = False
 
     def start(self) -> None:
-        self.thread.start()
+        with self._start_lock:
+            if self._started:
+                return
+            self._started = True
+            self.thread.start()
 
-    def submit(self, sentence: TranscriptSentence) -> None:
+    def submit(self, sentence: TranscriptSentence, token: SentenceRevisionToken | None = None) -> None:
+        token = token or self.state.current_token(sentence.id)
+        if token is None:
+            return
+        job = ExtractionJob(sentence, token)
         try:
-            self.work_queue.put_nowait(sentence)
+            self.work_queue.put_nowait(job)
         except queue.Full:
+            dropped: ExtractionJob | None = None
             try:
-                self.work_queue.get_nowait()
+                dropped = self.work_queue.get_nowait()
+                self.work_queue.task_done()
             except queue.Empty:
                 pass
-            self.state.record_queue_drop()
-            self.work_queue.put_nowait(sentence)
+            self.state.record_queue_drop(dropped)
+            self.work_queue.put_nowait(job)
+
+    def stop(self, *, timeout: float = 30.0) -> None:
+        self.stop_event.set()
+        with self._start_lock:
+            started = self._started
+        if not started:
+            return
+        self.thread.join(timeout=max(0.0, float(timeout)))
+        if self.thread.is_alive():
+            raise RuntimeError("fact lens extraction worker did not stop")
 
     def _run(self) -> None:
         while not self.stop_event.is_set():
@@ -717,22 +393,33 @@ class ClaimExtractionWorker:
                 except queue.Empty:
                     break
 
-            for sentence in coalesce_sentences(batch):
-                if self.stop_event.is_set():
-                    return
-                self._process(sentence)
+            latest_by_id: OrderedDict[str, ExtractionJob] = OrderedDict()
+            for job in batch:
+                if job.sentence.id in latest_by_id:
+                    del latest_by_id[job.sentence.id]
+                latest_by_id[job.sentence.id] = job
+            try:
+                for job in latest_by_id.values():
+                    if self.stop_event.is_set():
+                        return
+                    self._process(job)
+            finally:
+                for _job in batch:
+                    self.work_queue.task_done()
 
-    def _process(self, sentence: TranscriptSentence) -> None:
-        self.state.mark_checking(sentence)
+    def _process(self, job: ExtractionJob) -> None:
+        sentence = job.sentence
+        if not self.state.mark_checking(sentence, job.token):
+            return
         self.state.record_llm_request()
         context = self.state.recent_sentences(self.context_size)
         try:
             payload = self.client.extract(sentence, context)
             result = validate_extraction_payload(payload, sentence)
         except Exception as exc:
-            self.state.apply_extraction_failure(sentence, str(exc))
+            self.state.apply_extraction_failure(sentence, str(exc), job.token)
             return
-        self.state.apply_extraction(sentence, result)
+        self.state.apply_extraction(sentence, result, job.token)
 
 
 def run_whospeaks_reader(
@@ -760,8 +447,9 @@ def run_whospeaks_reader(
                     if not isinstance(event, dict):
                         continue
                     sentence = TranscriptSentence.from_public_event(event)
-                    if state.record_sentence(sentence, queue_claim_extraction=worker is not None) and worker is not None:
-                        worker.submit(sentence)
+                    token = state.record_sentence(sentence, queue_claim_extraction=worker is not None)
+                    if token is not None and worker is not None:
+                        worker.submit(sentence, token)
         except Exception as exc:
             state.set_source_status("reconnecting", f"SSE connection failed: {exc}")
             stop_event.wait(reconnect_seconds)
@@ -792,8 +480,9 @@ def run_offline_demo(
             start=start + offset,
             end=end + offset,
         )
-        if state.record_sentence(sentence, queue_claim_extraction=worker is not None) and worker is not None:
-            worker.submit(sentence)
+        token = state.record_sentence(sentence, queue_claim_extraction=worker is not None)
+        if token is not None and worker is not None:
+            worker.submit(sentence, token)
         counter += 1
         stop_event.wait(interval_seconds)
 
@@ -868,268 +557,7 @@ def make_handler(state: SidecarState, *, quiet: bool = False) -> type[BaseHTTPRe
 
 
 def render_dashboard_html() -> str:
-    title = "WhoSpeaksLive Fact Lens"
-    escaped_title = html.escape(title)
-    return f"""<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{escaped_title}</title>
-  <style>
-    :root {{
-      color-scheme: light;
-      --bg: #f6f7f9;
-      --panel: #ffffff;
-      --line: #d7dce2;
-      --text: #17202a;
-      --muted: #5c6670;
-      --queued: #6b7280;
-      --checking: #2563eb;
-      --ok: #14804a;
-      --bad: #b42318;
-      --warn: #b7791f;
-    }}
-    * {{ box-sizing: border-box; }}
-    body {{
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font: 14px/1.45 "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    }}
-    header {{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--line);
-      background: var(--panel);
-      position: sticky;
-      top: 0;
-      z-index: 2;
-    }}
-    h1 {{
-      margin: 0;
-      font-size: 18px;
-      font-weight: 650;
-      letter-spacing: 0;
-    }}
-    main {{
-      display: grid;
-      grid-template-columns: minmax(280px, 0.8fr) minmax(320px, 1.4fr);
-      gap: 14px;
-      padding: 14px;
-      max-width: 1440px;
-      margin: 0 auto;
-    }}
-    section {{
-      min-width: 0;
-    }}
-    .strip {{
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }}
-    .pill {{
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 4px 9px;
-      background: #fff;
-      color: var(--muted);
-      white-space: nowrap;
-    }}
-    .panel-title {{
-      margin: 0 0 8px;
-      font-size: 13px;
-      color: var(--muted);
-      font-weight: 650;
-      text-transform: uppercase;
-    }}
-    .list {{
-      display: grid;
-      gap: 8px;
-    }}
-    .sentence, .card {{
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px 12px;
-      min-width: 0;
-    }}
-    .sentence {{
-      color: var(--muted);
-    }}
-    .meta {{
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 6px;
-    }}
-    .claim {{
-      font-size: 15px;
-      font-weight: 600;
-      overflow-wrap: anywhere;
-    }}
-    .evidence, .rationale, .error {{
-      margin-top: 6px;
-      color: var(--muted);
-      overflow-wrap: anywhere;
-    }}
-    .error {{ color: var(--bad); }}
-    .card {{
-      border-left: 5px solid var(--queued);
-    }}
-    .status-checking {{ border-left-color: var(--checking); }}
-    .status-supported {{ border-left-color: var(--ok); }}
-    .status-contradicted {{ border-left-color: var(--bad); }}
-    .status-mixed, .status-needs_context {{ border-left-color: var(--warn); }}
-    .status-unverified {{ border-left-color: var(--checking); }}
-    .status-ignored, .status-queued {{ border-left-color: var(--queued); }}
-    .empty {{
-      padding: 24px;
-      color: var(--muted);
-      background: var(--panel);
-      border: 1px dashed var(--line);
-      border-radius: 8px;
-    }}
-    a {{ color: var(--checking); }}
-    @media (max-width: 820px) {{
-      header {{ align-items: flex-start; flex-direction: column; }}
-      .strip {{ justify-content: flex-start; }}
-      main {{ grid-template-columns: 1fr; }}
-    }}
-  </style>
-</head>
-<body>
-  <header>
-    <h1>{escaped_title}</h1>
-    <div class="strip" id="status-strip"></div>
-  </header>
-  <main>
-    <section>
-      <h2 class="panel-title">Recent Transcript</h2>
-      <div class="list" id="sentences"></div>
-    </section>
-    <section>
-      <h2 class="panel-title">Claims</h2>
-      <div class="list" id="cards"></div>
-    </section>
-  </main>
-  <script>
-    const statusStrip = document.getElementById('status-strip');
-    const sentencesNode = document.getElementById('sentences');
-    const cardsNode = document.getElementById('cards');
-
-    function text(value) {{
-      return value === null || value === undefined || value === '' ? 'unknown' : String(value);
-    }}
-
-    function timeRange(item) {{
-      if (typeof item.start !== 'number' && typeof item.transcript_start !== 'number') return '';
-      const start = item.start ?? item.transcript_start;
-      const end = item.end ?? item.transcript_end;
-      if (typeof end === 'number') return `${{start.toFixed(1)}}-${{end.toFixed(1)}}s`;
-      return `${{start.toFixed(1)}}s`;
-    }}
-
-    function pill(label, value) {{
-      const node = document.createElement('span');
-      node.className = 'pill';
-      node.textContent = `${{label}}: ${{value}}`;
-      return node;
-    }}
-
-    function render(state) {{
-      statusStrip.replaceChildren(
-        pill('source', state.source_status),
-        pill('llm', state.llm_status),
-        pill('claims', state.stats.claims_accepted),
-        pill('rejected', state.stats.claims_rejected)
-      );
-
-      const recent = state.sentences.slice(-10).reverse();
-      if (!recent.length) {{
-        const empty = document.createElement('div');
-        empty.className = 'empty';
-        empty.textContent = 'No final transcript sentences yet.';
-        sentencesNode.replaceChildren(empty);
-      }} else {{
-        sentencesNode.replaceChildren(...recent.map(renderSentence));
-      }}
-
-      const cards = state.cards.slice().reverse();
-      if (!cards.length) {{
-        const empty = document.createElement('div');
-        empty.className = 'empty';
-        empty.textContent = 'No claim cards yet.';
-        cardsNode.replaceChildren(empty);
-      }} else {{
-        cardsNode.replaceChildren(...cards.map(renderCard));
-      }}
-    }}
-
-    function renderSentence(sentence) {{
-      const node = document.createElement('article');
-      node.className = 'sentence';
-      const meta = document.createElement('div');
-      meta.className = 'meta';
-      meta.textContent = `${{text(sentence.speaker)}}  ${{timeRange(sentence)}}`;
-      const body = document.createElement('div');
-      body.textContent = sentence.text;
-      node.append(meta, body);
-      return node;
-    }}
-
-    function renderCard(card) {{
-      const node = document.createElement('article');
-      node.className = `card status-${{card.status}}`;
-      const meta = document.createElement('div');
-      meta.className = 'meta';
-      meta.textContent = `${{card.status}}  ${{text(card.speaker)}}  ${{timeRange(card)}}  ${{card.priority}}`;
-      const claim = document.createElement('div');
-      claim.className = 'claim';
-      claim.textContent = card.claim;
-      node.append(meta, claim);
-      if (card.evidence) {{
-        const evidence = document.createElement('div');
-        evidence.className = 'evidence';
-        evidence.textContent = `Evidence: ${{card.evidence}}`;
-        node.append(evidence);
-      }}
-      if (card.rationale) {{
-        const rationale = document.createElement('div');
-        rationale.className = 'rationale';
-        rationale.textContent = card.rationale;
-        node.append(rationale);
-      }}
-      if (card.error) {{
-        const error = document.createElement('div');
-        error.className = 'error';
-        error.textContent = card.error;
-        node.append(error);
-      }}
-      for (const source of card.sources || []) {{
-        const link = document.createElement('a');
-        link.href = source.url;
-        link.target = '_blank';
-        link.rel = 'noreferrer';
-        link.textContent = source.title || source.url;
-        node.append(link);
-      }}
-      return node;
-    }}
-
-    fetch('/api/state').then(response => response.json()).then(render);
-    const stream = new EventSource('/events');
-    stream.addEventListener('state', event => render(JSON.parse(event.data)));
-  </script>
-</body>
-</html>
-"""
+    return read_web_text("fact_lens/index.html")
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -1170,7 +598,7 @@ def main(argv: list[str] | None = None) -> int:
     worker: ClaimExtractionWorker | None = None
     extraction_enabled = bool(args.enable_llm or args.mock_llm)
     if extraction_enabled:
-        work_queue: queue.Queue[TranscriptSentence] = queue.Queue(maxsize=args.queue_size)
+        work_queue: queue.Queue[ExtractionJob] = queue.Queue(maxsize=args.queue_size)
         client = (
             MockClaimClient()
             if args.mock_llm
@@ -1192,7 +620,6 @@ def main(argv: list[str] | None = None) -> int:
             debounce_seconds=args.debounce_seconds,
             context_size=args.context_size,
         )
-        worker.start()
     else:
         state.set_llm_status("disabled")
 
@@ -1222,17 +649,25 @@ def main(argv: list[str] | None = None) -> int:
             name="fact-lens-whospeaks-reader",
             daemon=True,
         )
-    reader.start()
-
+    runtime = FactLensRuntime(
+        state=state,
+        stop_event=stop_event,
+        reader=reader,
+        worker=worker,
+    )
     server = ThreadingHTTPServer((args.host, args.port), make_handler(state, quiet=args.quiet))
-    print(f"Fact Lens dashboard: http://{args.host}:{args.port}/", flush=True)
     try:
+        runtime.start()
+        print(f"Fact Lens dashboard: http://{args.host}:{args.port}/", flush=True)
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
-        stop_event.set()
         server.server_close()
+        runtime.close(
+            reader_timeout=max(5.0, float(args.sse_timeout or 0.0) + 1.0),
+            worker_timeout=max(5.0, float(args.llm_timeout or 0.0) + 1.0),
+        )
     return 0
 
 

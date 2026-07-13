@@ -4,10 +4,8 @@ from __future__ import annotations
 
 import argparse
 from collections import deque
-import copy
 from dataclasses import dataclass
 from pathlib import Path
-import sys
 import threading
 from typing import Any, Sequence
 
@@ -16,6 +14,7 @@ import numpy as np
 from window.window_diarizer import WindowDiarizer
 from window.window_config import DEFAULT_SPEAKER_LIBRARY_DIR
 from window.window_domain import SentencePart
+from window.window_runtime_config import WindowConfig
 from window.window_text import is_embedding_candidate_text
 
 
@@ -45,36 +44,35 @@ class CachedReplayEventBus:
 def make_cached_replay_args(
     config: dict[str, Any] | None = None,
     *,
-    base_args: argparse.Namespace | None = None,
+    base_args: argparse.Namespace | WindowConfig | None = None,
     speaker_refinement: bool | None = None,
     speaker_refinement_unknown_tentative: bool | None = None,
     speaker_refinement_unknown_commit: bool | None = None,
     allow_speaker_reassignment: bool | None = None,
-) -> argparse.Namespace:
+) -> WindowConfig:
     """Create fast cached-replay args from the live GUI defaults plus candidate config."""
     if base_args is None:
         from window.youtube_window_diarize_gui import parse_args
 
-        old_argv = sys.argv
-        try:
-            sys.argv = ["youtube_window_diarize_gui"]
-            args = parse_args()
-        finally:
-            sys.argv = old_argv
+        args = parse_args([])
     else:
-        args = copy.copy(base_args)
-    for key, value in (config or {}).items():
-        setattr(args, str(key), value)
-    args.min_embed_seconds = 0.0
+        if isinstance(base_args, WindowConfig):
+            args = base_args
+        elif isinstance(base_args, argparse.Namespace):
+            args = WindowConfig.from_namespace(base_args)
+        else:
+            args = WindowConfig.from_mapping(base_args)
+    updates = {str(key): value for key, value in (config or {}).items()}
+    updates["min_embed_seconds"] = 0.0
     if speaker_refinement is not None:
-        args.speaker_refinement = bool(speaker_refinement)
+        updates["speaker_refinement"] = bool(speaker_refinement)
     if speaker_refinement_unknown_tentative is not None:
-        args.speaker_refinement_unknown_tentative = bool(speaker_refinement_unknown_tentative)
+        updates["speaker_refinement_unknown_tentative"] = bool(speaker_refinement_unknown_tentative)
     if speaker_refinement_unknown_commit is not None:
-        args.speaker_refinement_unknown_commit = bool(speaker_refinement_unknown_commit)
+        updates["speaker_refinement_unknown_commit"] = bool(speaker_refinement_unknown_commit)
     if allow_speaker_reassignment is not None:
-        args.allow_speaker_reassignment = bool(allow_speaker_reassignment)
-    return args
+        updates["allow_speaker_reassignment"] = bool(allow_speaker_reassignment)
+    return args.with_updates(**updates)
 
 
 def cached_sentence_part(sentence: dict[str, Any]) -> SentencePart:
@@ -113,11 +111,9 @@ def cached_sentence_index(sentence: dict[str, Any], fallback: int) -> int:
 
 def _install_cached_replay_state(
     controller: WindowDiarizer,
-    args: argparse.Namespace,
+    args: WindowConfig,
     bus: CachedReplayEventBus,
 ) -> None:
-    if not hasattr(args, "embedding_provider"):
-        setattr(args, "embedding_provider", "cached_replay")
     controller.args = args
     controller.bus = bus
     controller.memory = controller._new_memory()
@@ -147,10 +143,17 @@ def _install_cached_replay_state(
     controller._update_live_speaker_memory = lambda *_args, **_kwargs: None
 
 
+class CachedReplayDiarizer(WindowDiarizer):
+    """Assignment-only replay collaborator with an explicit bounded lifecycle."""
+
+    def __init__(self, args: WindowConfig, bus: CachedReplayEventBus) -> None:
+        _install_cached_replay_state(self, args, bus)
+
+
 def replay_cached_window_diarizer(
     sentences: Sequence[dict[str, Any]],
     embeddings: Sequence[Any],
-    args: argparse.Namespace,
+    args: argparse.Namespace | WindowConfig,
     *,
     emit_done: bool = False,
     defer_speaker_refinement: bool = True,
@@ -167,9 +170,9 @@ def replay_cached_window_diarizer(
         raise ValueError("Expected at least one cached embedding per sentence row.")
     from window.youtube_window_diarize_gui import build_window_validation_records
 
+    replay_args = args if isinstance(args, WindowConfig) else WindowConfig.from_namespace(args)
     bus = CachedReplayEventBus()
-    controller = WindowDiarizer.__new__(WindowDiarizer)
-    _install_cached_replay_state(controller, args, bus)
+    controller = CachedReplayDiarizer(replay_args, bus)
 
     for position, sentence in enumerate(sentences):
         part = cached_sentence_part(dict(sentence))
@@ -177,7 +180,7 @@ def replay_cached_window_diarizer(
         window_left = float(sentence.get("window_left") or part.start)
         window_right = float(sentence.get("window_right") or part.end)
         base_payload = WindowDiarizer._base_payload_from_sentence_part(index, part, window_left, window_right)
-        if part.speech_audio_ratio < args.min_speech_audio_ratio:
+        if part.speech_audio_ratio < replay_args.min_speech_audio_ratio:
             bus.emit("sentence", {
                 **base_payload,
                 "pending": False,
@@ -227,7 +230,7 @@ def replay_cached_window_diarizer(
         )
 
     controller._revisit_unknown_sentences()
-    if defer_speaker_refinement and bool(getattr(args, "speaker_refinement", True)):
+    if defer_speaker_refinement and bool(getattr(replay_args, "speaker_refinement", True)):
         for _ in range(max(1, int(max_refinement_passes))):
             committed_before = sum(
                 1
@@ -275,7 +278,7 @@ def replay_cached_window_score(
     match_mode: str = "auto",
 ) -> dict[str, Any]:
     """Replay cached rows through the live path and score the resulting committed events."""
-    from realtime.realtime_speakerdiarize import analyze_trace_against_canonical
+    from realtime.trace_analysis import analyze_trace_against_canonical
 
     replay = replay_cached_window_diarizer(sentences, embeddings, args)
     return analyze_trace_against_canonical(

@@ -6,6 +6,9 @@ import tempfile
 import threading
 import time
 import unittest
+import urllib.error
+import urllib.request
+from http.server import ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
 
@@ -18,7 +21,6 @@ if str(SRC) not in sys.path:
 
 from window.meeting_intelligence_server import (
     DEMO_SESSION_ID,
-    PAGE_HTML,
     MeetingIntelligenceServerConfig,
     MeetingIntelligenceService,
     config_from_args,
@@ -26,12 +28,14 @@ from window.meeting_intelligence_server import (
     default_llm_config,
     extract_model_ids,
     load_env_file,
+    make_handler,
     parse_timecode,
     parse_whospeakslive_transcript,
     speaker_id_from_name,
 )
 from window.meeting_intelligence_pipeline import MockMeetingLLMClient
 from window.report_templates import STANDARD_TEMPLATE_ID
+from window.web_assets import read_web_text
 
 
 DEMO_TEXT = """[00:00.7 - 00:02.8] Speaker 1: Thanks for coming to today's monthly meeting.
@@ -246,6 +250,50 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
                     break
                 time.sleep(0.02)
             self.assertEqual([job["status"] for job in jobs], ["succeeded", "succeeded"])
+
+    def test_queued_generation_uses_captured_template_revision(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            entered = threading.Event()
+            release = threading.Event()
+
+            class BlockingClient(MockMeetingLLMClient):
+                def chat_json(self, **kwargs: object) -> dict[str, object]:
+                    entered.set()
+                    if not release.wait(timeout=5):
+                        raise RuntimeError("generation was not released")
+                    return super().chat_json(**kwargs)
+
+            service = demo_service(Path(directory))
+            service.client_factory = BlockingClient
+            try:
+                blocker = service.start_generate_report(DEMO_SESSION_ID, STANDARD_TEMPLATE_ID)
+                self.assertTrue(entered.wait(timeout=2))
+                original = service.clone_report_template(STANDARD_TEMPLATE_ID, "Captured template")
+                queued = service.start_generate_report(DEMO_SESSION_ID, original["template_id"])
+
+                edited = dict(original)
+                edited.pop("source_kind", None)
+                edited.pop("read_only", None)
+                edited["description"] = "Edited after the generation request was queued."
+                current = service.save_report_template({"template": edited})
+                release.set()
+
+                deadline = time.monotonic() + 5
+                jobs = [blocker, queued]
+                while time.monotonic() < deadline:
+                    jobs = [service.get_generation_job(job["job_id"]) for job in jobs]
+                    if all(job["status"] in {"succeeded", "failed"} for job in jobs):
+                        break
+                    time.sleep(0.02)
+
+                cached = service._read_cached_report(DEMO_SESSION_ID, original["template_id"])
+                self.assertEqual([job["status"] for job in jobs], ["succeeded", "succeeded"])
+                self.assertEqual(cached["template_revision"], original["revision_hash"])
+                self.assertNotEqual(cached["template_revision"], current["revision_hash"])
+                self.assertTrue(service.get_report(DEMO_SESSION_ID, original["template_id"])["stale"])
+            finally:
+                release.set()
+                service.close()
 
     def test_service_lists_demo_session_and_caches_mock_report(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -469,44 +517,75 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
                 service.generate_report(DEMO_SESSION_ID)
 
     def test_helpers_and_page_contract_are_stable(self) -> None:
+        page_contract = "\n".join((
+            read_web_text("reports/index.html"),
+            read_web_text("reports/report_builder.js"),
+            read_web_text("reports/app.js"),
+            read_web_text("reports/styles-base.css"),
+            read_web_text("reports/styles-components.css"),
+        ))
         self.assertEqual(parse_timecode("01:02.5"), 62.5)
         self.assertEqual(parse_timecode("01:02:03.5"), 3723.5)
         self.assertEqual(speaker_id_from_name("Speaker 12"), "S12")
-        self.assertIn("Report template", PAGE_HTML)
-        self.assertIn("Report builder", PAGE_HTML)
-        self.assertIn("templateSelect", PAGE_HTML)
-        self.assertIn("templateBuilder", PAGE_HTML)
-        self.assertIn("data-section-prop", PAGE_HTML)
-        self.assertIn("data-field-prop", PAGE_HTML)
-        self.assertIn("render_kind", PAGE_HTML)
-        self.assertIn("evidence_required", PAGE_HTML)
-        self.assertIn("reportTabs", PAGE_HTML)
-        self.assertNotIn("const tabs =", PAGE_HTML)
-        self.assertIn("/api/templates", PAGE_HTML)
-        self.assertIn("/api/templates/save", PAGE_HTML)
-        self.assertIn("/api/templates/delete", PAGE_HTML)
-        self.assertIn("/api/generate-async", PAGE_HTML)
-        self.assertIn("/api/delete-report", PAGE_HTML)
-        self.assertIn("deleteReportBtn", PAGE_HTML)
-        self.assertIn("deleteReportLabel", PAGE_HTML)
-        self.assertIn("progressPanel", PAGE_HTML)
-        self.assertIn("progressOverlay", PAGE_HTML)
-        self.assertIn('role="dialog"', PAGE_HTML)
-        self.assertIn("closeProgressFooterBtn", PAGE_HTML)
-        self.assertIn("progress-modal-open", PAGE_HTML)
-        self.assertIn("data-evidence-id", PAGE_HTML)
-        self.assertIn("openEvidenceInTranscript", PAGE_HTML)
-        self.assertIn("transcriptRowAliases", PAGE_HTML)
-        self.assertIn("data-row-aliases", PAGE_HTML)
-        self.assertIn("transcript-row", PAGE_HTML)
-        self.assertIn("evidence-hit", PAGE_HTML)
-        self.assertIn("/api/llm-config", PAGE_HTML)
-        self.assertIn("/api/llm-models", PAGE_HTML)
-        self.assertIn("llmProviderSelect", PAGE_HTML)
-        self.assertIn("llmModelSelect", PAGE_HTML)
-        self.assertIn("llmModelInput", PAGE_HTML)
-        self.assertIn("loadModelsBtn", PAGE_HTML)
-        self.assertIn("applyProviderConfig", PAGE_HTML)
+        self.assertIn("Report template", page_contract)
+        self.assertIn("Report builder", page_contract)
+        self.assertIn("templateSelect", page_contract)
+        self.assertIn("templateBuilder", page_contract)
+        self.assertIn("data-section-prop", page_contract)
+        self.assertIn("data-field-prop", page_contract)
+        self.assertIn("render_kind", page_contract)
+        self.assertIn("evidence_required", page_contract)
+        self.assertIn("reportTabs", page_contract)
+        self.assertNotIn("const tabs =", page_contract)
+        self.assertIn("/api/templates", page_contract)
+        self.assertIn("/api/templates/save", page_contract)
+        self.assertIn("/api/templates/delete", page_contract)
+        self.assertIn("/api/generate-async", page_contract)
+        self.assertIn("/api/delete-report", page_contract)
+        self.assertIn("deleteReportBtn", page_contract)
+        self.assertIn("deleteReportLabel", page_contract)
+        self.assertIn("progressPanel", page_contract)
+        self.assertIn("progressOverlay", page_contract)
+        self.assertIn('role="dialog"', page_contract)
+        self.assertIn("closeProgressFooterBtn", page_contract)
+        self.assertIn("progress-modal-open", page_contract)
+        self.assertIn("data-evidence-id", page_contract)
+        self.assertIn("openEvidenceInTranscript", page_contract)
+        self.assertIn("transcriptRowAliases", page_contract)
+        self.assertIn("data-row-aliases", page_contract)
+        self.assertIn("transcript-row", page_contract)
+        self.assertIn("evidence-hit", page_contract)
+        self.assertIn("/api/llm-config", page_contract)
+        self.assertIn("/api/llm-models", page_contract)
+        self.assertIn("llmProviderSelect", page_contract)
+        self.assertIn("llmModelSelect", page_contract)
+        self.assertIn("llmModelInput", page_contract)
+        self.assertIn("loadModelsBtn", page_contract)
+        self.assertIn("applyProviderConfig", page_contract)
+
+    def test_report_server_serves_only_packaged_module_assets(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            service = demo_service(Path(directory))
+            server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(service))
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                host, port = server.server_address
+                with urllib.request.urlopen(
+                    f"http://{host}:{port}/assets/web/reports/app.js", timeout=2
+                ) as response:
+                    body = response.read()
+                    content_type = response.headers.get_content_type()
+                self.assertTrue(body.startswith(b"import "))
+                self.assertEqual(content_type, "text/javascript")
+                with self.assertRaises(urllib.error.HTTPError) as rejected:
+                    urllib.request.urlopen(f"http://{host}:{port}/assets/web/../../pyproject.toml", timeout=2)
+                self.assertEqual(rejected.exception.code, 404)
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+                service.close()
 
 
 if __name__ == "__main__":

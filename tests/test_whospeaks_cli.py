@@ -24,6 +24,35 @@ from whospeaks_cli.tui import provider_preset_label
 
 
 class WhoSpeaksCliTests(unittest.TestCase):
+    def test_profile_and_install_planners_are_copy_on_write(self) -> None:
+        profile = cli.Profile(model="large-v2", translation_enabled=False)
+        updated = profile.with_updates(model="small")
+        plan = cli.install_plan_for_target(
+            "local",
+            realtime_preview_engine="off",
+            translation_model_profile="nllb-200-600m",
+        )
+        install_profile = cli.profile_for_install(updated, plan)
+
+        self.assertEqual(profile.model, "large-v2")
+        self.assertFalse(profile.translation_enabled)
+        self.assertEqual(updated.model, "small")
+        self.assertTrue(install_profile.translation_enabled)
+        self.assertEqual(install_profile.translation_model_profile, "nllb-200-600m")
+
+    def test_launch_plan_captures_detached_commands(self) -> None:
+        profile = cli.Profile(
+            reports_enabled=True,
+            translation_enabled=True,
+            translation_provider="sidecar",
+        )
+        plan = cli.build_launch_plan(profile)
+
+        self.assertIsInstance(plan.live, tuple)
+        self.assertIsInstance(plan.reports, tuple)
+        self.assertIsInstance(plan.translation, tuple)
+        self.assertIn("--translation-provider", plan.live)
+
     def test_speaker_model_preset_documentation_matches_launcher_definitions(self) -> None:
         documentation = (ROOT / "docs" / "speaker-model-presets.md").read_text(encoding="utf-8")
         for preset_id, preset in cli.PROVIDER_PRESETS.items():
@@ -354,8 +383,10 @@ class WhoSpeaksCliTests(unittest.TestCase):
 
     def test_remote_launch_command_includes_remote_urls(self) -> None:
         profile = cli.configure_profile_for_mode(cli.Profile(), "remote")
-        profile.remote_asr_url = "http://gpu.example:8650"
-        profile.remote_embeddings_url = "http://gpu.example:8660"
+        profile = profile.with_updates(
+            remote_asr_url="http://gpu.example:8650",
+            remote_embeddings_url="http://gpu.example:8660",
+        )
 
         command = cli.build_launch_command(profile)
 
@@ -407,6 +438,31 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn("--report-language es", output)
         self.assertIn("--llm-model gpt-4.1-nano", output)
         self.assertIn("Live window command:", output)
+
+    def test_launch_with_reports_and_translation_prints_one_live_header(self) -> None:
+        profile = cli.Profile(
+            reports_enabled=True,
+            translation_enabled=True,
+            translation_provider="sidecar",
+        )
+        stdout = io.StringIO()
+        with (
+            mock.patch.object(cli, "load_profile", return_value=profile),
+            contextlib.redirect_stdout(stdout),
+        ):
+            code = cli.main(["launch", "--with-reports", "--print"])
+
+        self.assertEqual(code, 0)
+        output = stdout.getvalue()
+        self.assertEqual(output.count("Live window command:"), 1)
+        self.assertLess(
+            output.index("Meeting reports command:"),
+            output.index("Translation sidecar command:"),
+        )
+        self.assertLess(
+            output.index("Translation sidecar command:"),
+            output.index("Live window command:"),
+        )
 
     def test_local_profile_uses_auto_device_by_default(self) -> None:
         profile = cli.configure_profile_for_mode(cli.Profile(device="cuda"), "local")
@@ -507,7 +563,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn(runtime_check, report.checks)
 
     def test_window_parser_preserves_python_executable_symlinks(self) -> None:
-        module_path = ROOT / "src" / "window" / "youtube_window_diarize_gui.py"
+        module_path = ROOT / "src" / "window" / "window_cli.py"
         source = module_path.read_text(encoding="utf-8")
 
         self.assertIn("_absolute_path_preserving_symlinks(args.embedding_python)", source)
@@ -532,6 +588,40 @@ class WhoSpeaksCliTests(unittest.TestCase):
         payload = json.loads(stdout.getvalue())
         self.assertEqual(payload["mode"], "local")
         self.assertTrue(any(item["name"] == "Python" for item in payload["checks"]))
+
+    def test_doctor_auto_mode_uses_saved_remote_profile(self) -> None:
+        saved_profile = cli.Profile(
+            mode="remote",
+            asr_backend="remote",
+            embeddings_backend="remote",
+        )
+
+        def doctor_runner(profile: cli.Profile, mode: str, *, deep: bool) -> cli.DoctorReport:
+            selected_mode = profile.mode if mode == "auto" else mode
+            remote_status = "ok" if selected_mode == "remote" else "skip"
+            return cli.DoctorReport(
+                selected_mode,
+                [cli.CheckResult("Remote ASR health", remote_status, selected_mode)],
+            )
+
+        stdout = io.StringIO()
+        with (
+            mock.patch.object(cli, "load_profile", return_value=saved_profile),
+            mock.patch.object(cli, "run_doctor", side_effect=doctor_runner) as run_doctor,
+            contextlib.redirect_stdout(stdout),
+        ):
+            code = cli.main(["doctor", "--json"])
+
+        self.assertEqual(code, 0)
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(payload["mode"], "remote")
+        remote_health = next(
+            check for check in payload["checks"] if check["name"] == "Remote ASR health"
+        )
+        self.assertEqual(remote_health["status"], "ok")
+        called_profile, called_mode = run_doctor.call_args.args
+        self.assertEqual(called_profile.mode, "remote")
+        self.assertEqual(called_mode, "auto")
 
     def test_module_entrypoint_prints_help(self) -> None:
         env = dict(os.environ)
@@ -648,7 +738,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
     def test_provider_preset_expands_to_exact_launch_providers(self) -> None:
         profile = cli.Profile()
 
-        cli.apply_provider_preset(profile, "public_quality")
+        profile = cli.apply_provider_preset(profile, "public_quality")
         command = cli.build_launch_command(profile)
 
         self.assertEqual(profile.provider_preset, "public_quality")

@@ -10,7 +10,7 @@ import json
 import re
 from typing import Any, Iterable, Protocol
 
-from window.fact_lens_sidecar import evidence_matches_transcript
+from window.evidence_matching import evidence_matches_transcript
 
 
 REPORT_SCHEMA_VERSION = "meeting_intelligence_v1"

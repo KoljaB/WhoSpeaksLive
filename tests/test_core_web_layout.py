@@ -1,0 +1,381 @@
+from __future__ import annotations
+
+import sys
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from tests.web_asset_support import HTML
+
+
+
+
+
+class WindowWebLayoutContractTests(unittest.TestCase):
+    def test_live_transcript_header_matches_draft_contract(self) -> None:
+        self.assertIn('class="transcript-header"', HTML)
+        self.assertIn("Live transcript", HTML)
+        self.assertIn('id="followLive" type="checkbox" checked', HTML)
+        self.assertIn("followLiveEnabled: true,", HTML)
+        self.assertIn("if (!ctx.owners.speakers.followLiveEnabled) return;", HTML)
+        self.assertIn('id="transcriptSearch" type="search" placeholder="Search transcript"', HTML)
+        self.assertIn('transcriptSearchText: "",', HTML)
+        self.assertIn("function transcriptSearchVisible(row)", HTML)
+        self.assertIn("query.split(/\\s+/).every(term => searchable.includes(term));", HTML)
+        self.assertIn('id="clearTranscript" class="transcript-icon-button"', HTML)
+        self.assertIn('const clearTranscriptButton = document.getElementById("clearTranscript");', HTML)
+        self.assertIn("transcriptClearBeforeSeconds: 0,", HTML)
+        self.assertIn("function clearDisplayedTranscript()", HTML)
+        self.assertIn("function itemIsBeforeClearedTranscriptBoundary(item)", HTML)
+        self.assertIn("clearTranscriptButton.addEventListener(\"click\", clearDisplayedTranscript);", HTML)
+        self.assertIn("if (itemIsBeforeClearedTranscriptBoundary(item)) {", HTML)
+        self.assertIn('id="copyTranscript" class="transcript-icon-button"', HTML)
+        self.assertIn('id="downloadTranscript" class="transcript-icon-button"', HTML)
+        self.assertIn("function transcriptExportText(speakerId = null)", HTML)
+        self.assertIn("`[${row.start} - ${row.end}] ${row.speaker}: ${row.text}`", HTML)
+        self.assertIn("function copyTextToClipboard(text)", HTML)
+        self.assertIn("function downloadTranscript(speakerId = null)", HTML)
+        self.assertIn('id="transcriptSettings"', HTML)
+        self.assertIn('id="transcriptSettingsPanel" class="transcript-settings-panel" hidden', HTML)
+        self.assertIn('id="showTranscriptTags" type="checkbox" checked', HTML)
+        self.assertIn('id="showTranscriptTime" type="checkbox" checked', HTML)
+        self.assertIn('id="showTranscriptSpeechRate" type="checkbox" checked', HTML)
+        self.assertIn('id="showTranscriptProbabilities" type="checkbox" checked', HTML)
+        self.assertIn(
+            ".transcript-panel.hide-tags .badge.new, .transcript-panel.hide-tags .badge.state, "
+            ".transcript-panel.hide-tags .badge.group-count { display:none; }",
+            HTML,
+        )
+        self.assertIn(".transcript-panel.hide-time .sentence-duration, .transcript-panel.hide-time .sentence-range { display:none; }", HTML)
+        self.assertIn(".transcript-panel.hide-speech-rate .sentence-speech-rate { display:none; }", HTML)
+        self.assertIn(".transcript-panel.hide-probabilities .prob { display:none; }", HTML)
+        self.assertNotIn("Show low confidence", HTML)
+        self.assertNotIn(">Filter<", HTML)
+
+    def test_playback_clock_ignores_early_media_end_jumps(self) -> None:
+        self.assertIn("playbackClockStartedAt", HTML)
+        self.assertIn("playbackClockSlackSeconds", HTML)
+        self.assertIn("Ignoring early audio ended event", HTML)
+
+    def test_live_header_matches_draft_contract(self) -> None:
+        self.assertIn("WhoSpeaks Live", HTML)
+        self.assertIn("#17B7FE", HTML)
+        self.assertIn("#3DC77C", HTML)
+        self.assertIn("#BA79EF", HTML)
+        self.assertIn("Stop transcription", HTML)
+        self.assertIn("background:#981D20", HTML)
+        self.assertIn("border-color:#DF3C36", HTML)
+        self.assertIn('id="speakerCountNumber" class="speaker-count-number"', HTML)
+        self.assertIn('id="speakerCountLabel" class="speaker-count-label"', HTML)
+        self.assertIn(".speaker-count-number { position:relative; top:2px; font-size:16px; font-weight:600; line-height:1; color:#FF9F1C;", HTML)
+        self.assertIn(".speaker-count-label { font-size:13px; font-weight:400;", HTML)
+        self.assertIn(".speaker-summary { flex:0 0 auto; min-height:23px; display:flex; align-items:center; gap:4px;", HTML)
+        self.assertIn("#speakerCount { display:inline-flex; align-items:baseline; gap:7px;", HTML)
+        self.assertIn("speakerCountNumber.textContent", HTML)
+        self.assertIn("speakerCountLabel.textContent", HTML)
+        self.assertIn(".live-summary { min-width:0; margin-left:auto;", HTML)
+        self.assertIn(".live-summary { width:100%; justify-content:flex-end; }", HTML)
+        header_start = HTML.index('<header class="topbar">')
+        header_end = HTML.index("</header>", header_start)
+        header = HTML[header_start:header_end]
+        self.assertEqual(header.count("topbar-divider"), 2)
+        self.assertLess(header.index('class="brand"'), header.index('class="live-summary"'))
+        status_speaker_divider = header.index("topbar-divider")
+        transport_divider = header.index("topbar-divider", status_speaker_divider + 1)
+        self.assertLess(header.index('id="state"'), status_speaker_divider)
+        self.assertLess(status_speaker_divider, header.index('id="speakerCount"'))
+        self.assertLess(header.index('id="speakerCountNumber"'), header.index('id="speakerCountLabel"'))
+        self.assertLess(header.index('id="speakerCount"'), transport_divider)
+        self.assertLess(transport_divider, header.index('class="transport"'))
+
+    def test_live_header_shows_configured_language_with_local_flag(self) -> None:
+        self.assertIn('id="languageSummary" class="language-summary"', HTML)
+        self.assertIn('id="languageFlag" class="language-flag"', HTML)
+        self.assertIn('id="languageName" class="language-name"', HTML)
+        self.assertIn("const languageConfig = bootstrap.language || {};", HTML)
+        self.assertIn("function updateLanguageIndicator()", HTML)
+        header = HTML[HTML.index('<header class="topbar">'):HTML.index("</header>")]
+        self.assertLess(header.index('id="state"'), header.index('id="languageSummary"'))
+        self.assertLess(header.index('id="languageSummary"'), header.index('id="speakerCount"'))
+        server_source = (SRC / "window" / "live_http_handler.py").read_text(encoding="utf-8")
+        self.assertIn('"language": {', server_source)
+        self.assertIn('path == "/api/bootstrap"', server_source)
+        index_asset = (SRC / "window" / "assets" / "web" / "live" / "index.html").read_text(encoding="utf-8")
+        app_asset = (SRC / "window" / "assets" / "web" / "live" / "live_context.js").read_text(encoding="utf-8")
+        self.assertIn('id="bootstrap-data"', index_asset)
+        self.assertIn("const languageConfig = bootstrap.language || {};", app_asset)
+        self.assertIn(r'/assets/flags/4x3/[a-z]{2}\.svg', server_source)
+
+    def test_media_area_matches_draft_contract(self) -> None:
+        self.assertIn("#0B1015", HTML)
+        self.assertIn("#0F161F", HTML)
+        self.assertIn("--bg:#0B1015;", HTML)
+        self.assertIn("--panel:#0F161F;", HTML)
+        self.assertIn("--panel-2:#0F161F;", HTML)
+        self.assertIn("--field:#0B1015;", HTML)
+        self.assertIn("--line:#1B2B38;", HTML)
+        self.assertIn("font:14px/1.35 Arial", HTML)
+        self.assertIn(".topbar { min-height:52px;", HTML)
+        topbar_css = HTML[HTML.index(".topbar {"):HTML.index("}", HTML.index(".topbar {"))]
+        self.assertNotIn("border-bottom", topbar_css)
+        self.assertNotIn("inset 0 -1px", topbar_css)
+        control_panel_css = HTML[HTML.index(".control-panel {"):HTML.index("}", HTML.index(".control-panel {"))]
+        self.assertNotIn("border-left", control_panel_css)
+        self.assertIn(".source-strip { min-height:58px;", HTML)
+        self.assertIn(".playback-panel { min-height:132px;", HTML)
+        self.assertIn("grid-template-columns:minmax(150px, 240px)", HTML)
+        self.assertIn(".timeline-bar { position:relative; height:6px; margin-left:8px; margin-right:10px;", HTML)
+        self.assertIn(".source-grid { width:100%;", HTML)
+        self.assertIn("border:0; border-radius:0; background:transparent;", HTML)
+        self.assertIn(".source-row { display:contents; }", HTML)
+        self.assertIn("--text:#F1F5F8;", HTML)
+        self.assertIn(".dropdown-control { position:relative; min-height:34px; display:flex; align-items:center; border:1px solid var(--line); border-radius:7px; background:#0F161F; color:var(--text);", HTML)
+        self.assertIn(".dropdown-control::after { content:\"\"; position:absolute; right:15px; top:50%; width:8px; height:8px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor;", HTML)
+        self.assertIn(".select-control select { width:100%; min-width:0; min-height:32px; border:0; border-radius:7px; padding:0 36px 0 12px; background:#0F161F; color:var(--text); color-scheme:dark;", HTML)
+        self.assertIn(".select-control select option, .mode option, .speaker-panel select option { background:#0B1015; color:var(--text); }", HTML)
+        self.assertIn(".select-control select option:checked, .mode option:checked, .speaker-panel select option:checked { background:#0F161F; color:#FFFFFF; }", HTML)
+        self.assertIn('class="source-mode-button dropdown-control"', HTML)
+        self.assertIn('class="select-control dropdown-control"><select id="preset"', HTML)
+        self.assertNotIn("background-image:linear-gradient", HTML)
+        self.assertIn(".media-controls { min-width:0; min-height:100%; display:grid; grid-template-rows:auto minmax(0,1fr) auto;", HTML)
+        self.assertIn(".media-expand { width:40px; height:40px; align-self:end; justify-self:start;", HTML)
+        self.assertIn('id="mediaCard" class="media-card mode-youtube"', HTML)
+        self.assertIn('class="source-strip"', HTML)
+        self.assertIn("Change source", HTML)
+        self.assertIn('id="sourceModeOptions"', HTML)
+        self.assertIn('data-input-mode="youtube"', HTML)
+        self.assertIn('data-input-mode="microphone"', HTML)
+        self.assertIn('data-input-mode="system"', HTML)
+        self.assertIn('id="youtubeSourceControls"', HTML)
+        self.assertIn('id="timelineFill"', HTML)
+        self.assertIn('id="timelineThumb"', HTML)
+        self.assertIn('id="capturePanel"', HTML)
+        self.assertIn('id="captureLevelFill"', HTML)
+        self.assertIn('id="micGain"', HTML)
+        self.assertIn("function updateMediaMode()", HTML)
+        self.assertIn("function updateMediaTimeline()", HTML)
+        self.assertIn("function setCaptureLevel(value)", HTML)
+        self.assertIn("function setSourceModeMenuOpen(open)", HTML)
+        self.assertNotIn("source-panel", HTML)
+        self.assertNotIn("source-menu", HTML)
+        self.assertNotIn("font-weight:700", HTML)
+        self.assertNotIn("font-weight:800", HTML)
+        self.assertIn("strong, b, h1, h2, h3, h4, h5, h6, summary { font-weight:400; }", HTML)
+        self.assertIn(".speaker-name, .speaker-row-title { font-weight:600; }", HTML)
+        old_surface_colors = [
+            "#090b0d",
+            "#151715",
+            "#101210",
+            "#080a09",
+            "#343a36",
+            "#080d12",
+            "#0d0f0d",
+            "#20241f",
+            "#123e2d",
+            "#102231",
+            "#122231",
+            "#111923",
+            "#1B2732",
+            "#0d131a",
+            "#59675d",
+            "#2f8f68",
+            "#65b891",
+            "#9ea89f",
+        ]
+        for color in old_surface_colors:
+            self.assertNotIn(color, HTML)
+        oversized_layout_tokens = [
+            "min-height:68px",
+            "min-height:88px",
+            "min-height:200px",
+            "font-size:20px",
+            "grid-template-columns:minmax(220px, 360px)",
+            "padding:16px 18px",
+        ]
+        for token in oversized_layout_tokens:
+            self.assertNotIn(token, HTML)
+
+        media_start = HTML.index('<section id="mediaCard"')
+        transcript_start = HTML.index('<section class="transcript-panel"', media_start)
+        media = HTML[media_start:transcript_start]
+        self.assertIn('id="inputMode"', media)
+        self.assertIn('id="preset"', media)
+        self.assertIn('id="source"', media)
+        self.assertIn('id="load"', media)
+        self.assertLess(media.index('id="sourceKind"'), media.index('id="inputMode"'))
+        self.assertLess(media.index('class="video-frame"'), media.index('id="youtubeSourceControls"'))
+        self.assertLess(media.index('id="youtubeSourceControls"'), media.index('class="timeline-row"'))
+        self.assertLess(media.index('class="timeline-row"'), media.index('id="expandMedia"'))
+        self.assertNotIn("media-subtle-line", media)
+
+        video_start = HTML.index('<video id="video"')
+        video_end = HTML.index("</video>", video_start)
+        self.assertNotIn("controls", HTML[video_start:video_end])
+        audio_start = HTML.index('<audio id="audio"')
+        audio_end = HTML.index("</audio>", audio_start)
+        self.assertNotIn("controls", HTML[audio_start:audio_end])
+
+    def test_speaker_panel_matches_draft_contract(self) -> None:
+        self.assertIn('class="control-card speaker-panel"', HTML)
+        self.assertIn('class="speaker-tabs"', HTML)
+        self.assertIn('data-speaker-tab="speakers"', HTML)
+        self.assertIn('data-speaker-tab="settings"', HTML)
+        self.assertIn('id="speakerPanelTitle" class="speaker-panel-title">Detected speakers (0)</h2>', HTML)
+        self.assertIn('id="addReferenceSpeaker"', HTML)
+        self.assertIn('id="clearSpeakers"', HTML)
+        self.assertIn('Clear speakers</button>', HTML)
+        self.assertIn('const clearSpeakersButton = document.getElementById("clearSpeakers");', HTML)
+        self.assertIn('const result = await post("/api/speakers/clear", {});', HTML)
+        self.assertIn("resetTranscriptDisplay();", HTML)
+        self.assertNotIn('id="speakerGroupCurrent"', HTML)
+        self.assertNotIn("Current:", HTML)
+        self.assertIn('class="speaker-file-actions"', HTML)
+        self.assertIn(".speaker-file-actions button { min-height:28px; width:auto; padding:0 10px; font-size:12px; }", HTML)
+        self.assertIn('id="loadSpeakerGroup" type="button">Load file</button>', HTML)
+        self.assertIn('id="saveSpeakerGroup" type="button">Save file</button>', HTML)
+        self.assertIn('id="speakerGroupFile" type="file"', HTML)
+        self.assertNotIn('id="speakerGroupName"', HTML)
+        self.assertNotIn('id="speakerGroupSelect"', HTML)
+        self.assertIn('id="manualSpeakerComposer" class="manual-speaker-composer" hidden', HTML)
+        self.assertIn('id="manualSpeakerName"', HTML)
+        self.assertIn('id="manualSpeakerReferenceDock"', HTML)
+        self.assertIn(".speaker-tab.active { color:#E8EEF5; box-shadow:inset 0 -2px 0 #17B7FE;", HTML)
+        self.assertIn('class="sensitivity-title">New speaker</span>', HTML)
+        self.assertIn('class="sensitivity-row"', HTML)
+        self.assertIn(".sensitivity-title { color:var(--text); font-size:13px; line-height:1.25; }", HTML)
+        self.assertIn(".sensitivity-row { display:flex; align-items:center; gap:15px;", HTML)
+        self.assertIn(".sensitivity input { flex:0 1 50%; max-width:50%; min-width:120px;", HTML)
+        self.assertIn(".manual-speaker-composer { display:grid; gap:8px;", HTML)
+        self.assertIn(".speaker-item { --speaker-color:transparent;", HTML)
+        self.assertIn(".speaker-item.live-speaker { background:color-mix(in srgb, var(--speaker-color) 18%, #0F161F);", HTML)
+        self.assertIn(".speaker-item.live-speaker .speaker-item-summary { box-shadow:inset 4px 0 0 var(--speaker-color), inset 7px 0 14px", HTML)
+        self.assertIn(".speaker-title-row { min-width:0; display:flex; align-items:center; gap:7px; }", HTML)
+        self.assertIn(".speaker-live-indicator { flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; padding:2px 6px;", HTML)
+        self.assertIn("animation:livePulse 1s ease-in-out infinite;", HTML)
+        self.assertIn("@keyframes livePulse", HTML)
+        self.assertIn("@media (prefers-reduced-motion: reduce)", HTML)
+        self.assertIn(".speaker-item-summary { width:100%; min-height:60px; display:grid; grid-template-columns:minmax(0,1fr) auto;", HTML)
+        self.assertIn("box-shadow:inset 4px 0 0 var(--speaker-color);", HTML)
+        self.assertNotIn("speaker-avatar", HTML)
+        self.assertIn(".speaker-item.editing { position:relative; z-index:1; border:1px solid var(--speaker-color);", HTML)
+        self.assertIn(".speaker-item:not(.editing) .speaker-row-title { color:var(--speaker-color); }", HTML)
+        self.assertIn(".speaker-item-tail { align-self:stretch; display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between;", HTML)
+        self.assertIn(".speaker-filter-controls, .speaker-transcript-actions { display:flex; align-items:center; gap:4px; }", HTML)
+        self.assertIn(".speaker-filter-toggle { min-height:20px; width:39px;", HTML)
+        self.assertIn(".speaker-filter-toggle.mute.active", HTML)
+        self.assertIn(".transcript-icon-button { min-height:24px; width:28px;", HTML)
+        self.assertIn(".row.realtime { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 10%, #0B1015); }", HTML)
+        self.assertIn(".row.realtime.live-speaker-row { background:color-mix(in srgb, var(--live-row-color, #8F9BA8) 18%, #0B1015);", HTML)
+        self.assertIn("border-bottom-color:color-mix(in srgb, var(--live-row-color, #8F9BA8) 35%, var(--line));", HTML)
+        self.assertNotIn("inset 4px 0 0 var(--live-row-color, #8F9BA8)", HTML)
+        self.assertIn("function createSpeakerLiveIndicator()", HTML)
+        self.assertIn('indicator.appendChild(document.createTextNode("Live"));', HTML)
+        self.assertIn('titleRow.appendChild(createSpeakerLiveIndicator());', HTML)
+        self.assertIn('indicator.remove();', HTML)
+        self.assertIn("function applyFallbackLiveSpeaker(item)", HTML)
+        self.assertIn("function clearFallbackLiveSpeakerFromProbe(item)", HTML)
+        self.assertIn("function refreshRealtimeRowsFromLiveSpeaker()", HTML)
+        self.assertIn("row.dataset.start", HTML)
+        self.assertIn("row.dataset.end", HTML)
+        self.assertIn("row.dataset.speaker", HTML)
+        self.assertIn("rememberLiveSpeakerEvidence(speakerId, item);", HTML)
+        self.assertIn('row.classList.toggle("live-speaker-row", Boolean(normalizedSpeakerId));', HTML)
+        self.assertIn('ctx.owners.transcript.fallbackLiveSpeakerExpiryTimer = setTimeout(refreshRealtimeRowsFromLiveSpeaker, remainingMs + 25);', HTML)
+        self.assertIn('if (speakerId && ctx.owners.transcript.fallbackLiveSpeakerId && speakerId !== ctx.owners.transcript.fallbackLiveSpeakerId) return;', HTML)
+        self.assertIn('ctx.owners.capture.es.addEventListener("live_speaker", e => applyFallbackLiveSpeaker(JSON.parse(e.data)));', HTML)
+        self.assertIn('ctx.owners.capture.es.addEventListener("live_speaker_clear", e => clearFallbackLiveSpeakerFromProbe(JSON.parse(e.data)));', HTML)
+        self.assertIn("const holdSeconds = Math.max(0, Number(item.hold_seconds || 2.0));", HTML)
+        self.assertIn("ctx.owners.transcript.fallbackLiveSpeakerUntilMs = performance.now() + holdSeconds * 1000;", HTML)
+        self.assertIn("ctx.owners.transcript.currentLiveSpeakerId = ctx.owners.transcript.transcriptLiveSpeakerOverrideId", HTML)
+        self.assertIn("|| activeFallbackLiveSpeakerId()", HTML)
+        self.assertIn(
+            '|| (liveSpeakerConfig.highlight_transcript ? ctx.owners.transcript.transcriptLiveSpeakerId : "");',
+            HTML,
+        )
+        self.assertIn('return "sentence";', HTML)
+        self.assertNotIn("fast window", HTML)
+        self.assertIn("ctx.owners.speakers.fastSpeakerPanelStats[speakerId]", HTML)
+        self.assertIn('row.classList.toggle("live-speaker", Boolean(ctx.owners.transcript.currentLiveSpeakerId) && speaker.id === ctx.owners.transcript.currentLiveSpeakerId);', HTML)
+        self.assertNotIn("speaker-editing-badge", HTML)
+        self.assertIn(".speaker-row-name-input", HTML)
+        self.assertIn("Reference voice added", HTML)
+        self.assertNotIn("No reference voice", HTML)
+        self.assertIn("function setSpeakerTab(tabName)", HTML)
+        self.assertIn("function setEditingSpeaker(speakerId, options = {})", HTML)
+        self.assertIn("const collapse = requestedId && ctx.owners.reference.editingSpeakerId === requestedId && !options.keepOpen;", HTML)
+        self.assertIn("ctx.owners.reference.manualSpeakerComposerOpen = false;", HTML)
+        self.assertIn("function syncManualSpeakerComposer()", HTML)
+        self.assertIn("manualSpeakerReferenceDock.appendChild(referenceSpeakerForm);", HTML)
+        self.assertIn("manualSpeakerName.focus();", HTML)
+        self.assertIn("manualSpeakerName.select();", HTML)
+        self.assertIn('if (ctx.owners.reference.editingSpeakerId && !speakerIds.includes(ctx.owners.reference.editingSpeakerId))', HTML)
+        self.assertNotIn('editingSpeakerId = speakerIds[0]', HTML)
+        self.assertIn("? ctx.owners.reference.editingSpeakerId", HTML)
+        self.assertIn("return manualSpeakerName.value.trim();", HTML)
+        self.assertIn("function closeManualSpeakerComposerAfterReference()", HTML)
+        self.assertIn('addReferenceSpeakerButton.addEventListener("click"', HTML)
+        self.assertNotIn("window.prompt", HTML)
+        self.assertIn('const name = ctx.owners.speakers.speakerLibraryState.group_name || "speakers";', HTML)
+        self.assertIn('const result = await post("/api/speakers/export", {name});', HTML)
+        self.assertIn("downloadJsonFile(speakerGroupFileName(group.name || name), group);", HTML)
+        self.assertIn("speakerGroupFile.click();", HTML)
+        self.assertIn("const group = JSON.parse(await file.text());", HTML)
+        self.assertIn('const result = await post("/api/speakers/import", {group});', HTML)
+        self.assertIn("function speakerPanelName(speaker)", HTML)
+        self.assertIn("function createSpeakerFilterToggle(speaker, mode)", HTML)
+        self.assertIn('filterControls.appendChild(createSpeakerFilterToggle(speaker, "solo"));', HTML)
+        self.assertIn('filterControls.appendChild(createSpeakerFilterToggle(speaker, "mute"));', HTML)
+        self.assertIn("function deleteSpeakerProfile(speaker)", HTML)
+        self.assertIn('post("/api/speakers/delete", {speaker_id: speakerId, update_memory: true})', HTML)
+        self.assertIn("function createSpeakerDeleteButton(speaker)", HTML)
+        self.assertIn('editControls.appendChild(createSpeakerDeleteButton(speaker));', HTML)
+        self.assertIn("function createTranscriptActionButton(kind, speaker)", HTML)
+        self.assertIn('transcriptActions.appendChild(createTranscriptActionButton("copy", speaker));', HTML)
+        self.assertIn('transcriptActions.appendChild(createTranscriptActionButton("download", speaker));', HTML)
+        self.assertIn('button.setAttribute("aria-pressed", active ? "true" : "false");', HTML)
+        self.assertIn('target.closest(".speaker-row-name-input, .speaker-filter-toggle, .speaker-transcript-action, .speaker-profile-action")', HTML)
+        self.assertIn("function recomputeRenderedSpeakerSentenceCounts()", HTML)
+        self.assertIn("speakerSessionBaselineSentenceCounts: {},", HTML)
+        self.assertIn("function syncSpeakerSessionBaselines(state = ctx.owners.speakers.speakerLibraryState)", HTML)
+        self.assertIn("function hasCurrentSessionSpeakerCounts()", HTML)
+        self.assertIn('if (row.dataset.realtime === "true") return;', HTML)
+        self.assertIn("function speakerPanelSpeakingSeconds(speaker)", HTML)
+        self.assertIn('function speakerSentenceText(count, speakingSeconds = 0, unit = "sentence")', HTML)
+        self.assertIn('return `${total} ${unit}${total === 1 ? "" : "s"} · ${speakerSpeakingTimeText(speakingSeconds)}`;', HTML)
+        self.assertIn("function refreshSpeakerPanelSentenceCounts()", HTML)
+        self.assertIn("speakerPanelSentenceCount(speaker)", HTML)
+        self.assertIn("speakerPanelSpeakingSeconds(speaker)", HTML)
+        self.assertIn("speakerBaselineSentenceCount(speaker) + speakerCurrentSessionSentenceCount(speakerId)", HTML)
+        self.assertIn("speakerBaselineSpeakingSeconds(speaker) + speakerCurrentSessionSpeakingSeconds(speakerId)", HTML)
+        self.assertGreaterEqual(
+            HTML.count("if (ctx.owners.speakers.hasRenderedFinalSentenceRows) return rendered;"),
+            2,
+        )
+        self.assertIn("return fast;", HTML)
+        self.assertIn("if (!hasCurrentSessionSpeakerCounts()) {", HTML)
+        self.assertIn("function clearUnsavedDetectedSpeakerDisplay()", HTML)
+        self.assertIn('if (ctx.owners.speakers.speakerLibraryState.group_name) return;', HTML)
+        self.assertIn("if (result.speaker_state) updateSpeakerState(result.speaker_state);", HTML)
+        self.assertIn("if (media.speaker_state) updateSpeakerState(media.speaker_state);", HTML)
+        self.assertIn("async function commitSpeakerNameInput(speaker, input)", HTML)
+        self.assertIn('title.value = speakerPanelName(speaker);', HTML)
+        self.assertIn('title.addEventListener("blur"', HTML)
+        self.assertIn("title.focus();", HTML)
+        self.assertIn("title.select();", HTML)
+        self.assertNotIn('id="saveSpeakerName"', HTML)
+        self.assertNotIn('id="cancelSpeakerEdit"', HTML)
+        self.assertNotIn('id="stopReference"', HTML)
+        self.assertIn("Upload audio", HTML)
+        self.assertIn("Record from mic", HTML)
+        self.assertIn('recordReferenceButtonLabel.textContent = recording ? "Stop and add" : "Record from mic";', HTML)
+        self.assertIn('if (ctx.owners.reference.referenceRecordStream || ctx.owners.reference.referenceRecordPending)', HTML)
+        self.assertIn('recordReferenceButton.classList.toggle("recording", recording);', HTML)
+
+
+if __name__ == "__main__":
+    unittest.main()

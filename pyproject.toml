@@ -165,5 +165,8 @@ window = [
     "assets/flags/LICENSE",
     "assets/flags/README.md",
     "assets/flags/4x3/*.svg",
+    "assets/web/**/*.html",
+    "assets/web/**/*.css",
+    "assets/web/**/*.js",
     "report_template_presets/*.json",
 ]

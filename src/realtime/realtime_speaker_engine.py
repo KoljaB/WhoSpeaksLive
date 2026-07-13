@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import argparse
 import queue
+import re
 import tempfile
 import threading
 import time
@@ -16,6 +16,7 @@ import numpy as np
 
 from common.audio_utils import SAMPLE_RATE, clamp01, normalize_vector, pad_audio, trim_silence, write_wav
 from embeddings.embedding_providers import EmbeddingSubprocessClient
+from realtime.realtime_cli import RealtimeConfig
 from speakers.realtime_speaker_memory import SpeakerDecision, SpeakerMemory
 
 @dataclass
@@ -53,7 +54,7 @@ class ProcessedSentenceRecord:
 
 
 def is_reassignment_candidate(
-    args: argparse.Namespace,
+    args: RealtimeConfig,
     decision: SpeakerDecision,
     duration_seconds: float,
 ) -> bool:
@@ -71,7 +72,7 @@ def is_reassignment_candidate(
 
 
 def is_reassignment_accepted(
-    args: argparse.Namespace,
+    args: RealtimeConfig,
     decision: SpeakerDecision,
     duration_seconds: float,
 ) -> bool:
@@ -122,7 +123,7 @@ def context_adjusted_decision(
 
 
 def is_context_assignment_candidate(
-    args: argparse.Namespace,
+    args: RealtimeConfig,
     decision: SpeakerDecision,
     duration_seconds: float,
 ) -> bool:
@@ -138,7 +139,7 @@ def is_context_assignment_candidate(
 
 
 def is_context_anchor(
-    args: argparse.Namespace,
+    args: RealtimeConfig,
     record: ProcessedSentenceRecord,
 ) -> bool:
     decision = record.decision
@@ -152,7 +153,7 @@ def is_context_anchor(
 
 
 class RealtimeSpeakerEngine:
-    def __init__(self, args: argparse.Namespace, bus: "EventBus") -> None:
+    def __init__(self, args: RealtimeConfig, bus: "EventBus") -> None:
         self.args = args
         self.bus = bus
         self.memory = self._new_memory()

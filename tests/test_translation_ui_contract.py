@@ -10,7 +10,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from window.window_gui_html import HTML
+from tests.web_asset_support import HTML
 
 
 class TranslationUiContractTests(unittest.TestCase):
@@ -35,8 +35,8 @@ class TranslationUiContractTests(unittest.TestCase):
         self.assertIn("translationStateMatchesRow(state, row)", HTML)
 
     def test_translation_events_and_saved_session_backfill_share_one_path(self) -> None:
-        self.assertIn('const translationConfig = __TRANSLATION_JSON__;', HTML)
-        self.assertIn('es.addEventListener("translation", e => applyTranslationEvent(JSON.parse(e.data)));', HTML)
+        self.assertIn('const translationConfig = bootstrap.translation || {};', HTML)
+        self.assertIn('ctx.owners.capture.es.addEventListener("translation", e => applyTranslationEvent(JSON.parse(e.data)));', HTML)
         self.assertIn("item.sentence_index, item.segment_id, item.index", HTML)
         self.assertIn("applyTranslationCollection(sessionData.translations, {refresh:true});", HTML)
         self.assertIn("source_revision", HTML)
@@ -46,7 +46,7 @@ class TranslationUiContractTests(unittest.TestCase):
         self.assertIn("This language was not translated during the saved session.", HTML)
 
     def test_search_and_exports_include_translation_without_losing_source_text(self) -> None:
-        self.assertIn("const translatedSearchText = Array.from(translationSelectedTargets)", HTML)
+        self.assertIn("const translatedSearchText = Array.from(ctx.owners.translation.translationSelectedTargets)", HTML)
         self.assertIn("row.dataset.searchText = [sourceSearchText, ...translatedSearchText]", HTML)
         self.assertIn("translations: transcriptTranslationExportStates(row)", HTML)
         self.assertIn("translation_display:", HTML)
@@ -56,7 +56,7 @@ class TranslationUiContractTests(unittest.TestCase):
     def test_target_changes_use_the_translation_configuration_endpoint(self) -> None:
         self.assertIn('post("/api/translation/configure", {target_languages:targetLanguages})', HTML)
         self.assertIn("translationMaximumTargets()", HTML)
-        self.assertIn('!hadTargets && translationDisplayMode === "original"', HTML)
+        self.assertIn('!hadTargets && ctx.owners.translation.translationDisplayMode === "original"', HTML)
         self.assertIn("translationPrimaryTargetStorageKey", HTML)
         self.assertIn("translationDisplayModeStorageKey", HTML)
 
@@ -81,7 +81,7 @@ class TranslationUiContractTests(unittest.TestCase):
         self.assertIn('<option value="name">Full name only</option>', HTML)
         self.assertIn('<option value="flag_code">Flag + code</option>', HTML)
         self.assertIn('<option value="code">Code only</option>', HTML)
-        self.assertIn('let translationLanguageLabelMode = "flag_name";', HTML)
+        self.assertIn('translationLanguageLabelMode: "flag_name",', HTML)
         self.assertIn("translationLanguageLabelModeStorageKey", HTML)
         self.assertIn("translationLanguageCodeLabel(languageCode)", HTML)
         self.assertIn("source.prepend(createTranslationLanguageLabel(languageConfig.code));", HTML)

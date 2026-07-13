@@ -22,6 +22,11 @@ class EventBus:
         with self._lock:
             self._listeners.append(listener)
 
+    def remove_listener(self, listener: Callable[[str, dict[str, Any]], None]) -> None:
+        with self._lock:
+            if listener in self._listeners:
+                self._listeners.remove(listener)
+
     def subscribe(self) -> queue.Queue[tuple[str, str]]:
         subscriber: queue.Queue[tuple[str, str]] = queue.Queue()
         with self._lock:

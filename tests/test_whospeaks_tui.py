@@ -20,6 +20,7 @@ if str(SRC) not in os.sys.path:
 
 from whospeaks_cli import main as backend
 from whospeaks_cli.tui import ConfirmInstallScreen, WhoSpeaksSetupApp
+from whospeaks_cli.tui_state import PendingAction, ServerSupervisor, SetupCoordinator
 
 
 def unused_local_port() -> int:
@@ -29,6 +30,22 @@ def unused_local_port() -> int:
 
 
 class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
+    def test_state_owners_use_immutable_snapshots_and_distinguish_external_ports(self) -> None:
+        coordinator = SetupCoordinator(clock=lambda: 12.5)
+        original = coordinator.snapshot
+        coordinator.start_operation("doctor", "Checking", "Inspecting")
+        running = coordinator.snapshot
+
+        self.assertNotEqual(original, running)
+        self.assertEqual(running.operation.started_at, 12.5)
+        self.assertEqual(running.pending_action, PendingAction.NONE)
+
+        servers = ServerSupervisor()
+        transition = servers.observe("translation", listening=True, probe_due=True)
+        self.assertEqual(transition.current.display_status, "external")
+        self.assertFalse(transition.became_app_ready)
+        self.assertEqual(servers.state("translation").ownership, "external")
+
     async def test_language_dropdowns_are_sorted_by_display_name(self) -> None:
         app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
         async with app.run_test(size=(140, 42)) as pilot:
@@ -255,6 +272,153 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
                 else:
                     os.environ["WHOSPEAKS_CONFIG"] = original_config
 
+    async def test_external_translation_listener_does_not_overwrite_cancelled_install(self) -> None:
+        original_config = os.environ.get("WHOSPEAKS_CONFIG")
+        with tempfile.TemporaryDirectory() as directory:
+            os.environ["WHOSPEAKS_CONFIG"] = str(Path(directory) / "config.json")
+            try:
+                app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
+                async with app.run_test(size=(100, 32)) as pilot:
+                    app._server_port_accepting = mock.Mock(
+                        side_effect=lambda _host, port: port == app.profile.translation_port
+                    )
+                    app.query_one("#translation-install-select", Select).value = "nllb-200-600m"
+                    await pilot.pause()
+                    await pilot.click("#install-button")
+                    await pilot.pause()
+                    await pilot.click("#cancel-install")
+                    await pilot.pause()
+
+                    app.last_server_probe_at = 0.0
+                    app._refresh_server_states()
+                    await pilot.pause()
+
+                    self.assertIn(
+                        "Installation cancelled before start",
+                        str(app.query_one("#operation-primary", Static).content),
+                    )
+                    self.assertIn(
+                        "Translation: external",
+                        str(app.query_one("#translation-server-state", Static).content),
+                    )
+                    self.assertEqual(
+                        app._coordinator.snapshot.pending_action,
+                        PendingAction.NONE,
+                    )
+            finally:
+                if original_config is None:
+                    os.environ.pop("WHOSPEAKS_CONFIG", None)
+                else:
+                    os.environ["WHOSPEAKS_CONFIG"] = original_config
+
+    async def test_external_translation_listener_cannot_trigger_live_start(self) -> None:
+        calls: list[list[str]] = []
+
+        def popen_factory(command: list[str], **_kwargs: object) -> object:
+            calls.append(command)
+            return object()
+
+        original_config = os.environ.get("WHOSPEAKS_CONFIG")
+        with tempfile.TemporaryDirectory() as directory:
+            os.environ["WHOSPEAKS_CONFIG"] = str(Path(directory) / "config.json")
+            try:
+                profile = backend.Profile(
+                    translation_enabled=True,
+                    translation_provider="sidecar",
+                )
+                app = WhoSpeaksSetupApp(
+                    profile,
+                    auto_doctor=False,
+                    popen_factory=popen_factory,
+                )
+                async with app.run_test(size=(100, 32)) as pilot:
+                    app._server_port_accepting = mock.Mock(
+                        side_effect=lambda _host, port: port == app.profile.translation_port
+                    )
+                    await pilot.click("#launch-button")
+                    await pilot.pause()
+
+                    self.assertEqual(calls, [])
+                    self.assertIn(
+                        "Translation port is owned by another process",
+                        str(app.query_one("#operation-primary", Static).content),
+                    )
+                    self.assertEqual(app._servers.state("translation").ownership, "external")
+            finally:
+                if original_config is None:
+                    os.environ.pop("WHOSPEAKS_CONFIG", None)
+                else:
+                    os.environ["WHOSPEAKS_CONFIG"] = original_config
+
+    async def test_launcher_starts_live_while_app_translation_is_still_warming(self) -> None:
+        class FakeServerProcess:
+            def poll(self) -> None:
+                return None
+
+        calls: list[list[str]] = []
+
+        def popen_factory(command: list[str], **_kwargs: object) -> FakeServerProcess:
+            calls.append(command)
+            return FakeServerProcess()
+
+        original_config = os.environ.get("WHOSPEAKS_CONFIG")
+        with tempfile.TemporaryDirectory() as directory:
+            os.environ["WHOSPEAKS_CONFIG"] = str(Path(directory) / "config.json")
+            try:
+                profile = backend.Profile(
+                    port=unused_local_port(),
+                    reports_enabled=True,
+                    reports_port=unused_local_port(),
+                    translation_enabled=True,
+                    translation_provider="sidecar",
+                    translation_port=unused_local_port(),
+                )
+                app = WhoSpeaksSetupApp(
+                    profile,
+                    auto_doctor=False,
+                    popen_factory=popen_factory,
+                )
+                app._server_port_accepting = mock.Mock(return_value=False)
+                async with app.run_test(size=(100, 32)) as pilot:
+                    await pilot.click("#launch-button")
+                    await pilot.pause()
+
+                    self.assertEqual(len(calls), 3)
+                    self.assertIn("--report-language", calls[0])
+                    self.assertIn("--model-profile", calls[1])
+                    self.assertIn("--asr-backend", calls[2])
+                    self.assertEqual(app.reports_server_state, "starting")
+                    self.assertEqual(app.translation_server_state, "starting")
+                    self.assertEqual(app.live_server_state, "starting")
+                    self.assertEqual(
+                        app._coordinator.snapshot.pending_action,
+                        PendingAction.NONE,
+                    )
+                    self.assertIn(
+                        "Live server starting",
+                        str(app.query_one("#operation-primary", Static).content),
+                    )
+
+                    app._server_port_accepting.side_effect = (
+                        lambda _host, port: port == app.profile.translation_port
+                    )
+                    app.last_server_probe_at = 0.0
+                    app._refresh_server_states()
+                    await pilot.pause()
+
+                    self.assertEqual(len(calls), 3)
+                    self.assertEqual(app.translation_server_state, "running")
+                    self.assertEqual(app.live_server_state, "starting")
+                    self.assertIn(
+                        "Translation server ready",
+                        str(app.query_one("#operation-primary", Static).content),
+                    )
+            finally:
+                if original_config is None:
+                    os.environ.pop("WHOSPEAKS_CONFIG", None)
+                else:
+                    os.environ["WHOSPEAKS_CONFIG"] = original_config
+
     async def test_reports_tab_saves_profile_and_starts_report_server(self) -> None:
         original_config = os.environ.get("WHOSPEAKS_CONFIG")
         calls: list[tuple[list[str], dict[str, object]]] = []
@@ -364,11 +528,13 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
     async def test_unwritable_profile_is_reported_without_crashing(self) -> None:
         app = WhoSpeaksSetupApp(backend.Profile(), auto_doctor=False)
         async with app.run_test(size=(100, 32)) as pilot:
+            app.query_one("#model-input", Input).value = "small"
             with mock.patch.object(backend, "save_profile", side_effect=PermissionError("read only")):
                 saved = app._save_settings()
             await pilot.pause()
 
             self.assertFalse(saved)
+            self.assertEqual(app.profile.model, "large-v2")
             self.assertIsNone(app.install_process)
             self.assertEqual(app.operation_status, "error")
             self.assertIn("read only", str(app.query_one("#operation-secondary", Static).content))

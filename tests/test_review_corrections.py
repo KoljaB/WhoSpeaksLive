@@ -33,6 +33,7 @@ from window.window_speaker_refinement import (
     build_speaker_prototypes,
     find_speaker_prototype_revisions,
 )
+from tests.window_diarizer_support import make_window_diarizer
 
 
 def _unit(values: list[float]) -> np.ndarray:
@@ -41,7 +42,10 @@ def _unit(values: list[float]) -> np.ndarray:
 
 
 def _fake_diarizer() -> WindowDiarizer:
-    diarizer = WindowDiarizer.__new__(WindowDiarizer)
+    diarizer = make_window_diarizer(
+        audio=np.zeros(int(4.1 * 16_000), dtype=np.float32),
+        sample_rate=16_000,
+    )
     diarizer.args = SimpleNamespace(embedding_provider="test-provider", live_speaker_ema_count=3)
     diarizer.bus = RecordingEventBus()
     diarizer.media = SimpleNamespace(
@@ -463,11 +467,11 @@ class CorrectionControllerTests(unittest.TestCase):
             assignment_source="prototype_reassign",
         )
 
-        with mock.patch(
-            "window.window_diarizer.find_speaker_prototype_revisions",
-            return_value=[revision],
-        ):
-            diarizer._refine_speaker_assignments()
+        diarizer._assignment_engine = mock.Mock()
+        diarizer._assignment_engine.plan_refinement.return_value = SimpleNamespace(
+            revisions=(revision,),
+        )
+        diarizer._refine_speaker_assignments()
 
         self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
         profiles = {
@@ -510,11 +514,11 @@ class CorrectionControllerTests(unittest.TestCase):
             assignment_source="prototype_reassign",
         )
 
-        with mock.patch(
-            "window.window_diarizer.find_speaker_prototype_revisions",
-            return_value=[revision],
-        ):
-            diarizer._refine_speaker_assignments()
+        diarizer._assignment_engine = mock.Mock()
+        diarizer._assignment_engine.plan_refinement.return_value = SimpleNamespace(
+            revisions=(revision,),
+        )
+        diarizer._refine_speaker_assignments()
 
         self.assertIn("S1", {profile["label"] for profile in diarizer.memory.export_profiles()})
         self.assertIn("S1", diarizer._speaker_metadata)
@@ -548,6 +552,7 @@ class CorrectionControllerTests(unittest.TestCase):
             duration_seconds=0.1,
             suffix=".live-profile.wav",
             speaker_generation=diarizer._speaker_generation,
+            run_id="",
         ))
 
         diarizer._embed_live_audio_chunk.assert_not_called()
@@ -595,11 +600,11 @@ class CorrectionControllerTests(unittest.TestCase):
             ),
         ]
 
-        with mock.patch(
-            "window.window_diarizer.find_speaker_prototype_revisions",
-            return_value=revisions,
-        ):
-            diarizer._refine_speaker_assignments()
+        diarizer._assignment_engine = mock.Mock()
+        diarizer._assignment_engine.plan_refinement.return_value = SimpleNamespace(
+            revisions=tuple(revisions),
+        )
+        diarizer._refine_speaker_assignments()
 
         self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
         self.assertEqual(diarizer._sentence_refinement_records[2]["assigned_speaker"], "S1")
