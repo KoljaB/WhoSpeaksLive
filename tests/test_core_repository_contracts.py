@@ -27,6 +27,35 @@ from tests.window_diarizer_support import make_window_diarizer
 
 
 class RepositoryStructureTests(unittest.TestCase):
+    def test_publication_ignores_local_data_and_all_dot_env_files(self) -> None:
+        gitignore_lines = {
+            line.strip()
+            for line in (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+        }
+        self.assertIn("/data/", gitignore_lines)
+        self.assertIn(".env", gitignore_lines)
+        self.assertIn(".env.*", gitignore_lines)
+        self.assertNotIn("!.env.example", gitignore_lines)
+        self.assertFalse((ROOT / ".env.example").exists())
+
+    def test_realtimestt_warmup_asset_and_vendor_licenses_are_release_inputs(self) -> None:
+        warmup_audio = ROOT / "vendor" / "RealtimeSTT" / "assets" / "warmup_audio.wav"
+        self.assertTrue(warmup_audio.is_file())
+        self.assertGreater(warmup_audio.stat().st_size, 0)
+
+        pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        self.assertIn('RealtimeSTT = ["assets/**/*", "LICENSE"]', pyproject)
+        self.assertIn('RealtimeSTT_server = ["LICENSE"]', pyproject)
+        self.assertIn('stream2sentence = ["data/*.json", "LICENSE"]', pyproject)
+
+        for relative_path in (
+            "THIRD_PARTY_NOTICES.md",
+            "vendor/RealtimeSTT/LICENSE",
+            "vendor/RealtimeSTT_server/LICENSE",
+            "vendor/stream2sentence/LICENSE",
+        ):
+            self.assertTrue((ROOT / relative_path).is_file(), relative_path)
+
     def test_package_imports_do_not_require_tools_on_sys_path(self) -> None:
         self.assertFalse((ROOT / "tools").exists())
         self.assertEqual(WindowDiarizer.__name__, "WindowDiarizer")

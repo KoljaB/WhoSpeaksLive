@@ -22,7 +22,7 @@ from embeddings.embedding_providers import RemoteEmbeddingClient, create_embeddi
 
 DEFAULT_INPUT_ROOT = Path("data") / "baselines" / "elevenlabs_scribe"
 DEFAULT_OUTPUT_ROOT = DEFAULT_INPUT_ROOT / "_sentence_embeddings"
-DEFAULT_REMOTE_EMBEDDINGS_URL = os.environ.get("WHOSPEAKS_REMOTE_EMBEDDINGS_URL", "http://192.168.178.22:8660")
+DEFAULT_REMOTE_EMBEDDINGS_URL = os.environ.get("WHOSPEAKS_REMOTE_EMBEDDINGS_URL", "http://127.0.0.1:8660")
 LOCAL_PROVIDER_IDS = [
     "resemblyzer",
     "speechbrain_ecapa",

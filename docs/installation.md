@@ -327,7 +327,7 @@ That wrapper runs `python -m RealtimeSTT.install_kroko --build` where the active
 On Windows, Kroko builds may be available only for Python 3.12 while the main WhoSpeaks install uses Python 3.11. If `py -3.12` is available, `whospeaks install-kroko` can create a Python 3.12 realtime-preview sidecar, install the preview package there, build/install `kroko_onnx`, and save that interpreter in the launcher. You can also create or reuse a Python 3.12 realtime-preview venv yourself and save it explicitly:
 
 ```powershell
-whospeaks config --realtime-preview-python D:\Projekte\SpeakerDiarization\.venvs\kroko-install-test\Scripts\python.exe
+whospeaks config --realtime-preview-python C:\path\to\kroko-preview\Scripts\python.exe
 ```
 
 The launcher passes the installed WhoSpeaks package path to that subprocess, so the Python 3.12 environment only needs the preview runtime packages and native `kroko_onnx` wheel. Normal users should open `whospeaks`, enable Kroko on the Setup tab, and use Install / repair instead of installing preview internals by hand. The `install` and `install-kroko` subcommands remain available for automation and troubleshooting.

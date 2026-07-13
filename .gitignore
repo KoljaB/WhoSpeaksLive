@@ -6,7 +6,6 @@
 # Local environment
 .env
 .env.*
-!.env.example
 install-whospeaks-test.bat
 .whospeaks/
 
@@ -19,6 +18,7 @@ build/
 dist/
 
 # Local runtime data
+/data/
 runtime/
 .cache/
 hub/
@@ -34,7 +34,10 @@ assets/
 !src/window/assets/
 !src/window/assets/flags/
 !src/window/assets/flags/**
+!vendor/RealtimeSTT/assets/
+!vendor/RealtimeSTT/assets/**
 *.wav
+!vendor/RealtimeSTT/assets/warmup_audio.wav
 data/live_sentence_boundaries/**/_logs/
 
 # Legacy generated tool outputs

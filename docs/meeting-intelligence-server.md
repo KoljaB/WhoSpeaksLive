@@ -181,7 +181,7 @@ To add a transcript-only demo session, pass:
 Generated reports are cached locally. Override the cache directory when you want an isolated test cache:
 
 ```powershell
---cache-dir D:\Projekte\SpeakerDiarization\runtime\meeting_intelligence_reports_browser
+--cache-dir C:\path\to\meeting-intelligence-cache
 ```
 
 Custom report templates are also saved locally. Override their directory separately:

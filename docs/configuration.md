@@ -24,7 +24,7 @@ The first launcher screen exposes those same controls directly, with launch, doc
 The `Language and realtime text` section also exposes the realtime preview Python path. Use it when the main WhoSpeaks environment is Python 3.11 but the installed Kroko native runtime is in a separate Python 3.12 environment:
 
 ```powershell
-whospeaks config --realtime-preview-python D:\Projekte\SpeakerDiarization\.venvs\kroko-install-test\Scripts\python.exe
+whospeaks config --realtime-preview-python C:\path\to\kroko-preview\Scripts\python.exe
 whospeaks launch --print
 ```
 

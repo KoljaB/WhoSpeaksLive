@@ -4,6 +4,8 @@
 
 WhoSpeaksLive identifies speakers while a conversation is still happening, produces a stable speaker-labeled transcript, and can turn a saved session into a structured meeting report with a summary, decisions, action items, open questions, risks, and links to supporting transcript evidence.
 
+Unlike meeting bots that depend on participant channels or active-speaker metadata, WhoSpeaksLive identifies speakers from the audio itself - live or recorded, from any source.
+
 Speaker diarization means identifying who spoke when. WhoSpeaksLive combines a fast live path for immediate speaker labels and optional draft text with a separate final path that uses more context for stable sentence-level results.
 
 The core diarization and transcription stack can run entirely on hardware you control. Meeting reports can also use a local or self-hosted large language model (LLM), so sensitive audio, voice profiles, transcripts, and summaries can remain inside your environment.
@@ -31,6 +33,21 @@ For a guided setup, install the lightweight CLI and let it inspect the machine:
 
 ```powershell
 pip install whospeaks
+whospeaks
+```
+
+The command above installs the current production release from PyPI. To test the
+`0.0.2` candidate from TestPyPI, keep TestPyPI selected for WhoSpeaks while using
+PyPI for its third-party dependencies and for any optional components installed
+later by the setup application:
+
+```powershell
+$env:WHOSPEAKS_PIP_INDEX_URL = "https://test.pypi.org/simple/"
+$env:WHOSPEAKS_PIP_EXTRA_INDEX_URL = "https://pypi.org/simple/"
+python -m pip install --no-cache-dir `
+  --index-url $env:WHOSPEAKS_PIP_INDEX_URL `
+  --extra-index-url $env:WHOSPEAKS_PIP_EXTRA_INDEX_URL `
+  whospeaks==0.0.2
 whospeaks
 ```
 

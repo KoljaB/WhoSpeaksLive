@@ -28,7 +28,7 @@ DEFAULT_INPUT_ROOT = (
 DEFAULT_OUTPUT_ROOT = DEFAULT_INPUT_ROOT / "_sentence_embeddings"
 DEFAULT_REMOTE_EMBEDDINGS_URL = os.environ.get(
     "WHOSPEAKS_REMOTE_EMBEDDINGS_URL",
-    "http://192.168.178.22:8660",
+    "http://127.0.0.1:8660",
 )
 
 

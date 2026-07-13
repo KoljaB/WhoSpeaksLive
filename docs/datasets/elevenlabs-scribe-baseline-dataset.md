@@ -37,7 +37,7 @@ The older roots below are source/provenance inputs for rebuilding the canonical 
 - Live-system sentence boundaries and live sentence embeddings:
   `data/live_sentence_boundaries/live_window_corpus_60_90_cuda_complete_23`
 
-The baseline root, baseline embedding root, historical live-window root, and `D:\Projekte\WhoSpeaks` cache roots are intentionally treated as inputs. The normalized dataset resolves naming aliases, groups all files by canonical YouTube ID, and records remaining gaps in one manifest.
+The baseline root, baseline embedding root, historical live-window root, and local cache roots are intentionally treated as inputs. The normalized dataset resolves naming aliases, groups all files by canonical YouTube ID, and records remaining gaps in one manifest. These research datasets are not distributed in the public source repository.
 
 ## Filesystem Layout
 
@@ -168,7 +168,7 @@ The normalized dataset now contains live sentence/audio caches for all 27 baseli
 
 The durable programmatic map is `data/datasets/elevenlabs_scribe_27/manifest.json`, with the alias repeated in `aliases.json`. Use those files when joining baseline folders to live-window caches so `cunk` is not incorrectly flagged missing.
 
-No live-window provider embedding gaps remain. The four videos that originally lived only in `D:\Projekte\WhoSpeaks\tools\.window_diarize_feature_cache\live_window_corpus_60_90_cuda_more` are now staged locally in `data/live_sentence_boundaries/live_window_corpus_60_90_cuda_more_4`, with all 15 provider embeddings generated through the remote Linux embeddings server.
+No live-window provider embedding gaps remain in the internal research corpus. Four videos recovered from a historical local cache were staged in `data/live_sentence_boundaries/live_window_corpus_60_90_cuda_more_4`, with all 15 provider embeddings generated through the remote Linux embeddings server.
 
 ## Video Inventory
 
@@ -254,7 +254,7 @@ The `live_window_corpus_60_90_cuda_more_4` embedding manifest validates:
 - Use `data/datasets/elevenlabs_scribe_27` as the default dataset root for optimization and scoring work.
 - Use `runtime/optimization/optimize_canonical_27.py` for cached optimization against this canonical layout. It wraps the historical WhoSpeaks optimizer and loads `videos/<canonical_youtube_id>/live_window` directly.
 - Use `runtime/optimization/canonical_27_optimization_ready.md` for ready commands and verified 27-video baseline scores.
-- Treat `data/baselines/elevenlabs_scribe`, `data/baselines/elevenlabs_scribe/_sentence_embeddings`, `data/live_sentence_boundaries/*`, and `D:\Projekte\WhoSpeaks\tools\.window_diarize_feature_cache\*` as source roots for rebuilds and provenance.
+- Treat `data/baselines/elevenlabs_scribe`, `data/baselines/elevenlabs_scribe/_sentence_embeddings`, `data/live_sentence_boundaries/*`, and the configured external cache root as source roots for rebuilds and provenance.
 - Do not create a `videos/cunk` folder. The canonical dataset folder is `videos/JWS-qfR6K3w`, with `cunk` recorded as the source baseline key.
 - Do not mix the baseline segment embeddings with the live-window sentence embeddings. They have different segmentation and different row counts.
 - For scoring against ElevenLabs, use each video's `baseline/canonical_diarization.json` and `baseline_embeddings`.

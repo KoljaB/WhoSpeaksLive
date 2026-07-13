@@ -4,10 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "whospeaks"
-version = "0.0.1.dev33"
+version = "0.0.2"
 description = "Local speaker diarization and realtime voice-labeling tools."
 readme = "README.md"
 license = "MIT"
+license-files = [
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "vendor/RealtimeSTT/LICENSE",
+    "vendor/RealtimeSTT_server/LICENSE",
+    "vendor/stream2sentence/LICENSE",
+    "src/window/assets/flags/LICENSE",
+]
 requires-python = ">=3.11"
 dependencies = [
     "textual>=8.2,<9",
@@ -159,8 +167,9 @@ include-package-data = true
 where = ["src", "vendor"]
 
 [tool.setuptools.package-data]
-stream2sentence = ["data/*.json"]
-RealtimeSTT = ["assets/**/*"]
+stream2sentence = ["data/*.json", "LICENSE"]
+RealtimeSTT = ["assets/**/*", "LICENSE"]
+RealtimeSTT_server = ["LICENSE"]
 window = [
     "assets/flags/LICENSE",
     "assets/flags/README.md",
