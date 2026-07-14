@@ -57,8 +57,26 @@ class RepositoryStructureTests(unittest.TestCase):
             self.assertTrue((ROOT / relative_path).is_file(), relative_path)
 
     def test_package_imports_do_not_require_tools_on_sys_path(self) -> None:
-        self.assertFalse((ROOT / "tools").exists())
-        self.assertEqual(WindowDiarizer.__name__, "WindowDiarizer")
+        env = dict(os.environ)
+        env["PYTHONPATH"] = os.pathsep.join((str(SRC), str(ROOT / "vendor")))
+        with tempfile.TemporaryDirectory() as directory:
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-c",
+                    "from window.window_diarizer import WindowDiarizer; print(WindowDiarizer.__name__)",
+                ],
+                cwd=directory,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=20,
+                check=False,
+            )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(completed.stdout.strip(), "WindowDiarizer")
 
     def test_window_module_entrypoint_prints_help(self) -> None:
         env = dict(os.environ)
@@ -506,8 +524,10 @@ class RepositoryStructureTests(unittest.TestCase):
         self.assertIn("tests", CUNK_CANONICAL.parts)
         self.assertIn("fixtures", CUNK_CANONICAL.parts)
 
-    def test_legacy_tools_folder_is_removed(self) -> None:
-        self.assertFalse((ROOT / "tools").exists())
+    def test_release_manifest_prunes_repository_only_folders(self) -> None:
+        manifest = (ROOT / "MANIFEST.in").read_text(encoding="utf-8").splitlines()
+        for relative_path in ("tests", "tests-js", "tools", "docs", "docs-private"):
+            self.assertIn(f"prune {relative_path}", manifest)
 
 
 if __name__ == "__main__":

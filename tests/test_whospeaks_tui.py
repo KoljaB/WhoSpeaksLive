@@ -69,6 +69,7 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
         profile = backend.Profile.from_mapping({"deployment_target": "macos", "mode": "remote"})
         app = WhoSpeaksSetupApp(profile, auto_doctor=False, popen_factory=popen_factory)
         app._service_health_ready = mock.Mock(return_value=False)
+        app._server_port_accepting = mock.Mock(return_value=False)
         with (
             mock.patch.object(backend.platform, "system", return_value="Darwin"),
             mock.patch.object(backend.platform, "machine", return_value="arm64"),

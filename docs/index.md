@@ -51,3 +51,4 @@ Follow these in order for a new machine:
 - [Architecture](architecture.md): how audio, ASR, embeddings, memory, and the browser UI interact.
 - [Troubleshooting](troubleshooting.md): common failures and concrete checks.
 - [Development](development.md): tests, repo layout, and contribution workflow.
+- [PyPI package scope](pypi-package-scope.md): what the lightweight base install and release archives include and exclude.

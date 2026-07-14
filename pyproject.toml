@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "whospeaks"
-version = "0.0.2"
+version = "0.0.3"
 description = "Local speaker diarization and realtime voice-labeling tools."
 readme = "README.md"
 license = "MIT"
@@ -164,17 +164,18 @@ whospeaks-meeting-intelligence = "window.meeting_intelligence_server:main"
 whospeaks-translation-server = "window.translation_server:main"
 
 [tool.setuptools]
-include-package-data = true
+include-package-data = false
 
 [tool.setuptools.packages.find]
 where = ["src", "vendor"]
+namespaces = false
 
 [tool.setuptools.package-data]
 remote_servers = [
-    "faster-whisper-asr/*.py",
-    "voice-embeddings-server/*.py",
-    "voice-embeddings-server/*.txt",
-    "voice-embeddings-server/tools/*.py",
+    "faster-whisper-asr/mlx_asr_server.py",
+    "voice-embeddings-server/embeddings_server.py",
+    "voice-embeddings-server/requirements-macos.txt",
+    "voice-embeddings-server/speechbrain_compat.py",
 ]
 stream2sentence = ["data/*.json", "LICENSE"]
 RealtimeSTT = ["assets/**/*", "LICENSE"]

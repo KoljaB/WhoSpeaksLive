@@ -1,0 +1,25 @@
+include CHANGELOG.md
+include SECURITY.md
+
+prune tests
+prune tests-js
+prune tools
+prune docs
+prune docs-private
+prune dev-logs
+prune data
+prune runtime
+prune sessions
+prune .agents
+prune .codex
+prune .codex-runtime
+prune .tmp-tui-screens
+
+exclude AGENTS.md
+exclude .env
+exclude .env.*
+exclude install-whospeaks-test.bat
+
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.log

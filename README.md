@@ -29,27 +29,18 @@ For faster realtime ASR preview text like shown in the demo, WhoSpeaksLive suppo
 
 ## Start Here
 
-For a guided setup, install the lightweight CLI and let it inspect the machine:
+For a guided setup, install the lightweight CLI and run its compatibility check to find the best configuration for your system:
 
 ```powershell
 pip install whospeaks
 whospeaks
 ```
 
-The command above installs the current production release from PyPI. To test the
-`0.0.2` candidate from TestPyPI, keep TestPyPI selected for WhoSpeaks while using
-PyPI for its third-party dependencies and for any optional components installed
-later by the setup application:
-
-```powershell
-$env:WHOSPEAKS_PIP_INDEX_URL = "https://test.pypi.org/simple/"
-$env:WHOSPEAKS_PIP_EXTRA_INDEX_URL = "https://pypi.org/simple/"
-python -m pip install --no-cache-dir `
-  --index-url $env:WHOSPEAKS_PIP_INDEX_URL `
-  --extra-index-url $env:WHOSPEAKS_PIP_EXTRA_INDEX_URL `
-  whospeaks==0.0.2
-whospeaks
-```
+The command above installs the lightweight production CLI from PyPI. It brings
+only the terminal setup dependency; model runtimes and other heavy optional
+components are installed after you choose a deployment mode. See
+[PyPI package scope](docs/pypi-package-scope.md) for the exact inclusion and
+exclusion policy.
 
 The full-screen setup application opens on the Setup tab. Select the full local stack, the core/controller for remote ASR and embeddings servers, or the ASR/embeddings server packages, then choose whether to include optional realtime preview text. Kroko remains optional because its native runtime may require Python 3.12, Docker Desktop on Windows, or a prebuilt `kroko_onnx` wheel. Nemotron 3.5 is available as a manual CPU preview option while the installer flow is being integrated.
 
@@ -135,3 +126,4 @@ Optional translation weights are also downloaded separately and retain their own
 | Modal deployment | [docs/modal-deployment.md](docs/modal-deployment.md) |
 | Troubleshooting | [docs/troubleshooting.md](docs/troubleshooting.md) |
 | Development workflow | [docs/development.md](docs/development.md) |
+| PyPI package scope | [docs/pypi-package-scope.md](docs/pypi-package-scope.md) |
