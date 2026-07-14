@@ -19,11 +19,19 @@ from .cli_classic import *  # noqa: F403 - command-facing classic API
 from .cli_diagnostics import DoctorReport, check_port, print_report, report_to_dict, run_doctor
 from .cli_installation import *  # noqa: F403 - command-facing installation API
 from .planning import (
+    build_launch_plan,
     build_launch_command,
     build_reports_command,
     build_translation_command,
     install_plan_for_target,
     normalize_install_target,
+    require_apple_silicon_macos,
+)
+from .service_processes import (
+    service_health_ready,
+    start_service_process,
+    terminate_service_processes,
+    wait_for_service_health,
 )
 from .profiles import Profile, apply_provider_preset, config_path, load_profile, save_profile
 
@@ -124,15 +132,18 @@ def cmd_install(args: argparse.Namespace) -> int:
         print("Install skipped.")
         return 0
 
-    code = install_extra_and_maybe_kroko(
-        profile,
-        plan.extra,
-        assume_yes=True,
-        dry_run=args.dry_run,
-        install_kroko=plan.install_kroko,
-        kroko_assume_yes=True if plan.install_kroko else False,
-        torch_policy=getattr(args, "torch", None),
-    )
+    if plan.target == "macos":
+        code = install_macos_runtime(assume_yes=True, dry_run=args.dry_run)
+    else:
+        code = install_extra_and_maybe_kroko(
+            profile,
+            plan.extra,
+            assume_yes=True,
+            dry_run=args.dry_run,
+            install_kroko=plan.install_kroko,
+            kroko_assume_yes=True if plan.install_kroko else False,
+            torch_policy=getattr(args, "torch", None),
+        )
     if code:
         return code
 
@@ -302,6 +313,8 @@ def cmd_install_kroko(args: argparse.Namespace) -> int:
 
 def cmd_launch(args: argparse.Namespace) -> int:
     profile = _load_profile()
+    if profile.deployment_target == "macos":
+        _facade_callable("require_apple_silicon_macos", require_apple_silicon_macos)()
     updates: list[tuple[str, Any]] = []
     if args.language:
         updates.append(("language", args.language))
@@ -332,7 +345,8 @@ def cmd_launch(args: argparse.Namespace) -> int:
         if not args.print_only and not args.dry_run:
             print("Start each command in a separate shell so both services stay running.")
         return 0
-    command = build_launch_command(profile, args.extra_args or "")
+    launch_plan = build_launch_plan(profile, args.extra_args or "")
+    command = list(launch_plan.live)
     reports_command: list[str] | None = None
     translation_command: list[str] | None = None
     if profile.reports_enabled:
@@ -346,6 +360,8 @@ def cmd_launch(args: argparse.Namespace) -> int:
     if reports_command is not None or translation_command is not None:
         print("Live window command:")
     print(format_command(command))
+    for spec in launch_plan.services:
+        print(f"Managed {spec.name}: {format_command(list(spec.command))}")
     if args.print_only or args.dry_run:
         return 0
     if reports_command is not None:
@@ -356,16 +372,34 @@ def cmd_launch(args: argparse.Namespace) -> int:
                 "is already owned by another process."
             )
             return 2
-        popen_kwargs: dict[str, Any] = {}
-        if os.name == "nt":
-            popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
-        subprocess.Popen(reports_command, **popen_kwargs)
-    if translation_command is not None:
-        popen_kwargs = {}
-        if os.name == "nt":
-            popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
-        subprocess.Popen(translation_command, **popen_kwargs)
-    return subprocess.run(command, check=False).returncode
+    owned_services: list[object] = []
+    try:
+        try:
+            for spec in launch_plan.services:
+                if _facade_callable("service_health_ready", service_health_ready)(spec):
+                    print(f"Using already-running compatible {spec.name} at {spec.health_url}")
+                    continue
+                print(f"Starting {spec.name}...")
+                process = _facade_callable("start_service_process", start_service_process)(spec)
+                owned_services.append(process)
+                _facade_callable("wait_for_service_health", wait_for_service_health)(spec, process)
+                print(f"{spec.name} is healthy at {spec.health_url}")
+        except (OSError, RuntimeError) as exc:
+            print(f"Managed service startup failed: {exc}")
+            return 1
+        if reports_command is not None:
+            popen_kwargs: dict[str, Any] = {}
+            if os.name == "nt":
+                popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+            subprocess.Popen(reports_command, **popen_kwargs)
+        if translation_command is not None:
+            popen_kwargs = {}
+            if os.name == "nt":
+                popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+            subprocess.Popen(translation_command, **popen_kwargs)
+        return subprocess.run(command, check=False).returncode
+    finally:
+        _facade_callable("terminate_service_processes", terminate_service_processes)(owned_services)
 
 
 def cmd_reports(args: argparse.Namespace) -> int:

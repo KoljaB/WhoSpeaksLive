@@ -38,6 +38,12 @@ from window.sherpa_onnx_models import (
 from . import __version__
 from .cli_console import print_wrapped
 from .profiles import Profile, SMOKE_PROVIDER, normalize_mode
+from .planning import (
+    ServiceProcessSpec,
+    build_macos_service_specs,
+    health_payload_matches,
+    service_resource_path,
+)
 from .runtime_constants import PACKAGE_NAME, STATUS_LABEL, STATUS_ORDER
 
 
@@ -180,6 +186,142 @@ def check_python_imports(
             "Install those packages into the realtime preview Python environment.",
         )
     return CheckResult(name, "ok", f"{executable} can import the realtime preview runtime.")
+
+
+def check_macos_service_runtime(
+    name: str,
+    python_exe: str,
+    script: str,
+    modules: list[str],
+) -> CheckResult:
+    executable = Path(python_exe)
+    script_path = Path(script)
+    if not executable.is_file() or not script_path.is_file():
+        missing = executable if not executable.is_file() else script_path
+        return CheckResult(
+            name,
+            "fail",
+            f"{missing} does not exist.",
+            "Run `whospeaks install --target macos --yes` to create the managed service runtimes.",
+        )
+    probe = f"""import importlib
+import json
+modules = {json.dumps(modules)}
+results = {{}}
+for module in modules:
+    try:
+        importlib.import_module(module)
+    except Exception as exc:
+        results[module] = f"{{type(exc).__name__}}: {{exc}}"
+    else:
+        results[module] = True
+print(json.dumps(results))
+"""
+    try:
+        completed = subprocess.run(
+            [str(executable), "-c", probe],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+        payload = json.loads((completed.stdout or "{}").strip().splitlines()[-1]) if completed.returncode == 0 else {}
+    except Exception as exc:
+        return CheckResult(name, "fail", f"Runtime probe failed: {type(exc).__name__}: {exc}")
+    missing_modules = [
+        f"{module} ({payload.get(module)})"
+        for module in modules
+        if payload.get(module) is not True
+    ]
+    if missing_modules:
+        return CheckResult(
+            name,
+            "fail",
+            "Missing imports: " + ", ".join(missing_modules),
+            "Re-run `whospeaks install --target macos --yes`.",
+        )
+    return CheckResult(name, "ok", f"{executable} and {script_path.name} are installed.")
+
+
+def check_macos_mps(python_exe: str) -> CheckResult:
+    executable = Path(python_exe)
+    if not executable.is_file():
+        return CheckResult("MPS availability", "fail", f"{executable} does not exist.")
+    probe = "import torch; print('yes' if torch.backends.mps.is_available() else 'no')"
+    try:
+        completed = subprocess.run(
+            [str(executable), "-c", probe],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+    except Exception as exc:
+        return CheckResult("MPS availability", "fail", f"MPS probe failed: {type(exc).__name__}: {exc}")
+    if completed.returncode == 0 and (completed.stdout or "").strip() == "yes":
+        return CheckResult("MPS availability", "ok", "PyTorch reports the MPS backend is available.")
+    detail = (completed.stderr or completed.stdout or "MPS is unavailable").strip().splitlines()[-1]
+    return CheckResult(
+        "MPS availability",
+        "warn",
+        detail,
+        "Update macOS/PyTorch or allow embeddings to use the automatic CPU fallback.",
+    )
+
+
+def stopped_or_unhealthy_macos_health(name: str, spec: ServiceProcessSpec, *, installed: bool) -> CheckResult:
+    ok, detail, payload = read_json_url(spec.health_url)
+    if not ok and ("Connection failed" in detail or "Connection refused" in detail):
+        if not installed:
+            return CheckResult(name, "skip", "The managed runtime is not installed, so no service is expected to be running.")
+        return CheckResult(
+            name,
+            "warn",
+            f"Service is installed but stopped; launch will start it. {spec.health_url}: {detail}",
+        )
+    if not ok:
+        return CheckResult(name, "fail", f"{spec.health_url}: {detail}")
+    if not health_payload_matches(spec, payload):
+        return CheckResult(
+            name,
+            "fail",
+            f"{spec.health_url} returned an incompatible service identity: {payload}",
+            "Stop the process on the managed port, then launch again.",
+        )
+    return CheckResult(name, "ok", f"{spec.health_url} is healthy and compatible.")
+
+
+def check_macos_audio_capture() -> list[CheckResult]:
+    portaudio = CheckResult(
+        "PortAudio",
+        "ok" if module_available("pyaudio") else "warn",
+        "PyAudio is importable." if module_available("pyaudio") else "PyAudio/PortAudio is not installed; browser media still works.",
+        "For live system audio, install PortAudio yourself (for example with Homebrew), then install pyaudio.",
+    )
+    blackhole_found = False
+    profiler = shutil.which("system_profiler")
+    if profiler:
+        try:
+            completed = subprocess.run(
+                [profiler, "SPAudioDataType"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=20,
+                check=False,
+            )
+            blackhole_found = "blackhole" in (completed.stdout or "").lower()
+        except Exception:
+            pass
+    blackhole = CheckResult(
+        "BlackHole system audio",
+        "ok" if blackhole_found else "warn",
+        "BlackHole audio device detected." if blackhole_found else "BlackHole was not detected; browser media still works.",
+        "For live system audio, install BlackHole yourself and configure a Multi-Output Device.",
+    )
+    return [portaudio, blackhole]
 
 
 def installed_distribution_version(name: str) -> str | None:
@@ -642,6 +784,33 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
     local_required = selected_mode == "local"
     server_required = selected_mode == "server"
     checks: list[CheckResult] = []
+    macos_managed = profile.deployment_target == "macos"
+
+    if macos_managed:
+        machine = platform.machine().lower()
+        supported = platform.system() == "Darwin" and machine in {"arm64", "aarch64"}
+        checks.append(CheckResult(
+            "Apple Silicon platform",
+            "ok" if supported else "fail",
+            f"{platform.system()} {platform.machine()}",
+            "Use an Apple Silicon Mac, or install the core target and connect external services.",
+        ))
+        specs = build_macos_service_specs(profile)
+        asr_runtime = check_macos_service_runtime(
+            "Managed MLX ASR runtime",
+            specs[0].command[0],
+            str(service_resource_path("faster-whisper-asr", "mlx_asr_server.py")),
+            ["remote_servers.launcher", "mlx_whisper", "fastapi", "uvicorn"],
+        )
+        embeddings_runtime = check_macos_service_runtime(
+            "Managed embeddings runtime",
+            specs[1].command[0],
+            str(service_resource_path("voice-embeddings-server", "embeddings_server.py")),
+            ["remote_servers.launcher", "torch", "torchaudio", "speechbrain", "fastapi", "uvicorn"],
+        )
+        checks.extend((asr_runtime, embeddings_runtime))
+        checks.append(check_macos_mps(specs[1].command[0]))
+        checks.extend(check_macos_audio_capture())
 
     if sys.version_info >= (3, 11):
         checks.append(CheckResult("Python", "ok", f"{platform.python_implementation()} {platform.python_version()}"))
@@ -673,24 +842,30 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
         required=local_required or remote_required,
     ))
 
-    checks.append(check_import_group(
-        "Local ASR modules",
-        [("faster_whisper", "faster-whisper")],
-        required=local_required,
-    ))
+    if macos_managed:
+        checks.append(CheckResult("Local ASR modules", "skip", "MLX ASR uses its isolated managed runtime."))
+    else:
+        checks.append(check_import_group(
+            "Local ASR modules",
+            [("faster_whisper", "faster-whisper")],
+            required=local_required,
+        ))
     checks.append(check_faster_whisper_cache(profile.model, required=local_required))
 
-    checks.append(check_import_group(
-        "Local embedding modules",
-        [
-            ("torch", "torch"),
-            ("torchaudio", "torchaudio"),
-            ("speechbrain", "speechbrain"),
-            ("pyannote.audio", "pyannote.audio"),
-            ("resemblyzer", "resemblyzer"),
-        ],
-        required=local_required,
-    ))
+    if macos_managed:
+        checks.append(CheckResult("Local embedding modules", "skip", "Embeddings use their isolated managed runtime."))
+    else:
+        checks.append(check_import_group(
+            "Local embedding modules",
+            [
+                ("torch", "torch"),
+                ("torchaudio", "torchaudio"),
+                ("speechbrain", "speechbrain"),
+                ("pyannote.audio", "pyannote.audio"),
+                ("resemblyzer", "resemblyzer"),
+            ],
+            required=local_required,
+        ))
     checks.append(check_embedding_cache(required=local_required))
     if local_required and deep:
         checks.append(check_local_provider_syntax(profile.embedding_provider, required=True))
@@ -706,15 +881,18 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
     else:
         checks.append(CheckResult("CUDA visibility", "skip", "CUDA is only checked for local all-in-one mode."))
 
-    checks.append(check_import_group(
-        "Server Python modules",
-        [
-            ("fastapi", "fastapi"),
-            ("uvicorn", "uvicorn"),
-            ("faster_whisper", "faster-whisper"),
-        ],
-        required=server_required,
-    ))
+    if macos_managed:
+        checks.append(CheckResult("Server Python modules", "skip", "Managed services use isolated runtimes."))
+    else:
+        checks.append(check_import_group(
+            "Server Python modules",
+            [
+                ("fastapi", "fastapi"),
+                ("uvicorn", "uvicorn"),
+                ("faster_whisper", "faster-whisper"),
+            ],
+            required=server_required,
+        ))
 
     if profile.reports_enabled:
         checks.append(check_meeting_intelligence_entrypoint(required=True))
@@ -726,10 +904,30 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
         checks.append(CheckResult("Meeting Intelligence", "skip", "Reports + Ask is disabled in this profile."))
 
     if remote_required:
-        checks.append(check_remote_health("Remote ASR health", profile.remote_asr_url, required=True))
-        checks.append(check_remote_health("Remote embeddings health", profile.remote_embeddings_url, required=True))
-        checks.append(check_remote_providers(profile.remote_embeddings_url, required=True))
-        if deep:
+        if macos_managed:
+            asr_health = stopped_or_unhealthy_macos_health(
+                "Managed MLX ASR health",
+                specs[0],
+                installed=asr_runtime.status == "ok",
+            )
+            embeddings_health = stopped_or_unhealthy_macos_health(
+                "Managed embeddings health",
+                specs[1],
+                installed=embeddings_runtime.status == "ok",
+            )
+            checks.extend((asr_health, embeddings_health))
+        else:
+            checks.append(_facade_callable("check_remote_health", check_remote_health)("Remote ASR health", profile.remote_asr_url, required=True))
+            checks.append(_facade_callable("check_remote_health", check_remote_health)("Remote embeddings health", profile.remote_embeddings_url, required=True))
+        if macos_managed and embeddings_health.status != "ok":
+            checks.append(CheckResult(
+                "Remote embeddings providers",
+                "skip",
+                "The managed embeddings service is stopped; launch will start it before provider checks.",
+            ))
+        else:
+            checks.append(check_remote_providers(profile.remote_embeddings_url, required=True))
+        if deep and (not macos_managed or embeddings_health.status == "ok"):
             checks.append(check_remote_provider_load(
                 profile.remote_embeddings_url,
                 profile.embedding_provider or SMOKE_PROVIDER,

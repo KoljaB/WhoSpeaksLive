@@ -244,21 +244,13 @@ class SpeechBrainProvider:
     def __init__(self, device: str, model_id: str) -> None:
         configure_env()
         import torch
-        from speechbrain.inference.speaker import EncoderClassifier, Pretrained
+        from speechbrain_compat import load_speechbrain_encoder
 
         self.torch = torch
         self.device = choose_torch_device(device)
         self.lock = threading.Lock()
-        # speechbrain 1.1.0 only sets device_type for cpu/cuda; on mps the
-        # attribute is missing and TorchAutocast construction crashes.
-        if not hasattr(Pretrained, "device_type"):
-            Pretrained.device_type = "cpu"
         savedir = ROOT / ".cache" / "speechbrain" / sanitize(model_id)
-        self.model = EncoderClassifier.from_hparams(
-            source=model_id,
-            savedir=str(savedir),
-            run_opts={"device": self.device},
-        )
+        self.model = load_speechbrain_encoder(model_id, str(savedir), self.device)
 
     def embed(self, audio: np.ndarray, sample_rate: int) -> np.ndarray:
         if sample_rate != SAMPLE_RATE:

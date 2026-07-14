@@ -25,6 +25,7 @@ from window.realtime_preview_backends import (
 
 
 DEFAULT_REMOTE_ASR_URL = "http://127.0.0.1:8650"
+DEFAULT_MACOS_ASR_URL = "http://127.0.0.1:8651"
 DEFAULT_REMOTE_EMBEDDINGS_URL = "http://127.0.0.1:8660"
 SMOKE_PROVIDER = "speechbrain_ecapa"
 SINGLE_ESPNET_PROVIDER = "espnet_ecapa_wavlm_joint"
@@ -40,6 +41,7 @@ FAST_LIVE_PROVIDER = "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_o
 
 EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("mode", "Profile mode", "local, remote, or server. Mode also aligns the ASR and embeddings backends."),
+    ("deployment_target", "Managed deployment", "Blank for standard profiles or macos for managed Apple Silicon services."),
     ("language", "Language", "Shared by final ASR, realtime preview model selection, and sentence splitting."),
     ("provider_preset", "Provider preset", "Named final/live speaker embedding stack, or custom."),
     ("embedding_provider", "Final provider", "Exact provider string used for committed speaker assignment."),
@@ -208,6 +210,7 @@ class Profile:
     """
 
     mode: str = "local"
+    deployment_target: str = ""
     host: str = "127.0.0.1"
     port: int = 8796
     language: str = "en"
@@ -266,6 +269,17 @@ class Profile:
             min(16, max(1, int(profile.translation_max_targets))),
         )
         object.__setattr__(profile, "mode", normalize_mode(profile.mode))
+        object.__setattr__(
+            profile,
+            "deployment_target",
+            "macos" if str(profile.deployment_target).strip().lower() == "macos" else "",
+        )
+        if profile.deployment_target == "macos":
+            object.__setattr__(profile, "mode", "remote")
+            object.__setattr__(profile, "asr_backend", "remote")
+            object.__setattr__(profile, "embeddings_backend", "remote")
+            object.__setattr__(profile, "remote_asr_url", DEFAULT_MACOS_ASR_URL)
+            object.__setattr__(profile, "remote_embeddings_url", DEFAULT_REMOTE_EMBEDDINGS_URL)
         try:
             object.__setattr__(profile, "language", normalize_language_code(profile.language))
         except ValueError:

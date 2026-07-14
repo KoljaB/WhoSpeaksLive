@@ -3,9 +3,15 @@
 from __future__ import annotations
 
 import dataclasses
+import importlib.metadata
+import os
+import platform
 import shlex
 import shutil
 import sys
+from pathlib import Path
+from importlib import resources
+from typing import Any
 
 from window.language_config import normalize_language_code
 from window.realtime_preview_backends import (
@@ -14,7 +20,14 @@ from window.realtime_preview_backends import (
     normalize_preview_model_preset,
 )
 
-from .profiles import Profile, normalize_mode, profile_with_provider_preset
+from .profiles import (
+    DEFAULT_MACOS_ASR_URL,
+    DEFAULT_REMOTE_ASR_URL,
+    DEFAULT_REMOTE_EMBEDDINGS_URL,
+    Profile,
+    normalize_mode,
+    profile_with_provider_preset,
+)
 
 
 COMPLETE_EXTRA = "complete"
@@ -22,7 +35,7 @@ LOCAL_EXTRA = "complete,preview"
 CONTROLLER_EXTRA = "controller"
 PREVIEW_EXTRA = "preview"
 SERVER_EXTRA = "server"
-INSTALL_TARGET_CHOICES = ("local", "core", "server")
+INSTALL_TARGET_CHOICES = ("local", "macos", "core", "server")
 TRANSLATION_INSTALL_PROFILE_CHOICES = ("off", "nllb-200-600m", "translate-gemma-4b", "madlad-400-3b")
 
 
@@ -46,6 +59,70 @@ class LaunchPlan:
     live: tuple[str, ...]
     reports: tuple[str, ...] | None = None
     translation: tuple[str, ...] | None = None
+    services: tuple[ServiceProcessSpec, ...] = ()
+
+
+@dataclasses.dataclass(frozen=True)
+class ServiceProcessSpec:
+    name: str
+    command: tuple[str, ...]
+    cwd: str
+    env: tuple[tuple[str, str], ...]
+    health_url: str
+    readiness_timeout: float
+    expected_health: tuple[tuple[str, str], ...] = ()
+
+
+def require_apple_silicon_macos() -> None:
+    system = platform.system()
+    machine = platform.machine().lower()
+    if system != "Darwin" or machine not in {"arm64", "aarch64"}:
+        raise SystemExit(
+            "The macos target requires an Apple Silicon Mac (Darwin arm64/aarch64). "
+            "Intel Macs are not supported; use the core target with external services instead."
+        )
+
+
+def default_macos_runtime_root() -> Path:
+    override = os.environ.get("WHOSPEAKS_MACOS_RUNTIME_ROOT", "").strip()
+    if override:
+        return Path(override).expanduser()
+    if platform.system() == "Darwin":
+        return Path.home() / "Library" / "Application Support" / "WhoSpeaks" / "macos"
+    root = Path(os.environ.get("XDG_DATA_HOME") or (Path.home() / ".local" / "share"))
+    return root / "whospeaks" / "macos"
+
+
+def service_resource_path(*parts: str) -> Path:
+    relative = Path("remote_servers", *parts)
+    try:
+        resource = Path(os.fspath(resources.files("remote_servers").joinpath(*parts)))
+        if resource.is_file():
+            return resource
+    except (ModuleNotFoundError, NotADirectoryError, TypeError):
+        pass
+    try:
+        import remote_servers
+
+        for package_root in remote_servers.__path__:
+            resource = Path(package_root, *parts)
+            if resource.is_file():
+                return resource
+    except (ImportError, TypeError):
+        pass
+    distribution = importlib.metadata.distribution("whospeaks")
+    for entry in distribution.files or ():
+        if Path(str(entry)).as_posix().endswith(relative.as_posix()):
+            resource = Path(distribution.locate_file(entry))
+            if resource.is_file():
+                return resource
+    raise FileNotFoundError(f"Packaged service resource is missing: {relative}")
+
+
+def health_payload_matches(spec: ServiceProcessSpec, payload: dict[str, Any] | None) -> bool:
+    if not payload or payload.get("ok") is False:
+        return False
+    return all(payload.get(key) == value for key, value in spec.expected_health)
 
 
 def normalize_install_target(value: str | None) -> str:
@@ -86,6 +163,8 @@ def install_plan_for_target(
     translation_model_profile: str = "off",
 ) -> InstallPlan:
     selected = normalize_install_target(target)
+    if selected == "macos":
+        require_apple_silicon_macos()
     translation_profile = str(translation_model_profile or "off").strip().lower()
     if translation_profile not in TRANSLATION_INSTALL_PROFILE_CHOICES:
         raise SystemExit(
@@ -123,14 +202,22 @@ def install_plan_for_target(
             realtime_preview_model_preset=preset,
             translation_model_profile=translation_profile,
         )
-    if selected == "core":
+    if selected in {"core", "macos"}:
         return InstallPlan(
             target=selected,
-            title="Core/controller for remote ASR and embeddings servers",
+            title=(
+                "Apple Silicon managed local services"
+                if selected == "macos"
+                else "Core/controller for remote ASR and embeddings servers"
+            ),
             mode="remote",
             extra=f"{CONTROLLER_EXTRA},{PREVIEW_EXTRA}" if preview_selected else CONTROLLER_EXTRA,
             install_kroko=kroko_selected,
-            summary="Browser controller on this machine with final ASR and embeddings served over HTTP.",
+            summary=(
+                "Browser controller with managed localhost MLX ASR and MPS embeddings on this Apple Silicon Mac."
+                if selected == "macos"
+                else "Browser controller on this machine with final ASR and embeddings served over HTTP."
+            ),
             realtime_preview_engine=engine,
             realtime_preview_model_preset=preset,
             translation_model_profile=translation_profile,
@@ -151,6 +238,12 @@ def profile_for_mode(profile: Profile, mode: str) -> Profile:
     """Return a configured profile without mutating the input snapshot."""
 
     selected = normalize_mode(mode)
+    deployment_updates: dict[str, object] = {"deployment_target": ""}
+    if profile.deployment_target == "macos":
+        deployment_updates.update(
+            remote_asr_url=DEFAULT_REMOTE_ASR_URL,
+            remote_embeddings_url=DEFAULT_REMOTE_EMBEDDINGS_URL,
+        )
     if selected == "local":
         base = profile_with_provider_preset(profile, "smoke")
         return base.with_updates(
@@ -162,6 +255,7 @@ def profile_for_mode(profile: Profile, mode: str) -> Profile:
             realtime_preview_engine="sherpa_onnx",
             realtime_preview_model_preset="nemotron-3.5-560ms-int8",
             realtime_preview_model_dir="",
+            **deployment_updates,
         )
     if selected == "remote":
         base = profile_with_provider_preset(profile, "smoke")
@@ -174,6 +268,7 @@ def profile_for_mode(profile: Profile, mode: str) -> Profile:
             realtime_preview_engine="off",
             realtime_preview_model_preset="",
             realtime_preview_model_dir="",
+            **deployment_updates,
         )
     return profile.with_updates(
         mode="server",
@@ -182,6 +277,7 @@ def profile_for_mode(profile: Profile, mode: str) -> Profile:
         realtime_preview_engine="off",
         realtime_preview_model_preset="",
         realtime_preview_model_dir="",
+        **deployment_updates,
     )
 
 
@@ -191,8 +287,14 @@ def profile_for_install(profile: Profile, plan: InstallPlan) -> Profile:
     configured = profile_for_mode(profile, plan.mode)
     updates: dict[str, object] = {
         "translation_enabled": plan.translation_model_profile != "off",
+        "deployment_target": "macos" if plan.target == "macos" else "",
     }
-    if plan.target in {"local", "core"}:
+    if plan.target == "macos":
+        updates.update(
+            remote_asr_url=DEFAULT_MACOS_ASR_URL,
+            remote_embeddings_url=DEFAULT_REMOTE_EMBEDDINGS_URL,
+        )
+    if plan.target in {"local", "macos", "core"}:
         updates.update(
             realtime_preview_engine=plan.realtime_preview_engine,
             realtime_preview_model_preset=plan.realtime_preview_model_preset,
@@ -369,4 +471,41 @@ def build_launch_plan(profile: Profile, extra_args: str = "") -> LaunchPlan:
         live=tuple(build_launch_command(profile, extra_args)),
         reports=reports,
         translation=translation,
+        services=build_macos_service_specs(profile),
+    )
+
+
+def build_macos_service_specs(
+    profile: Profile,
+    runtime_root: Path | None = None,
+) -> tuple[ServiceProcessSpec, ...]:
+    if profile.deployment_target != "macos":
+        return ()
+    root = (runtime_root or default_macos_runtime_root()).expanduser().resolve()
+    asr_python = root / "mlx-asr" / "bin" / "python"
+    embeddings_python = root / "embeddings" / "bin" / "python"
+    return (
+        ServiceProcessSpec(
+            name="MLX ASR",
+            command=(str(asr_python), "-m", "remote_servers.launcher", "mlx-asr"),
+            cwd=str(root),
+            env=(("ASR_HOST", "127.0.0.1"), ("ASR_PORT", "8651")),
+            health_url=f"{profile.remote_asr_url.rstrip('/')}/health",
+            readiness_timeout=300.0,
+            expected_health=(("service", "mlx-whisper-asr"),),
+        ),
+        ServiceProcessSpec(
+            name="MPS embeddings",
+            command=(str(embeddings_python), "-m", "remote_servers.launcher", "embeddings"),
+            cwd=str(root),
+            env=(
+                ("EMBEDDINGS_HOST", "127.0.0.1"),
+                ("EMBEDDINGS_PORT", "8660"),
+                ("EMBEDDINGS_DEVICE", "auto"),
+                ("PYTORCH_ENABLE_MPS_FALLBACK", "1"),
+            ),
+            health_url=f"{profile.remote_embeddings_url.rstrip('/')}/health",
+            readiness_timeout=180.0,
+            expected_health=(("service", "voice-embeddings-server"),),
+        ),
     )

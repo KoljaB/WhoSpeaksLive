@@ -6,8 +6,26 @@ Start with a small smoke run, then move to the tuned provider stacks after the s
 
 Complete:
 
-1. [Installation](installation.md) on the Windows controller.
-2. [External Servers](external-servers.md) on the Linux GPU server if you are using remote ASR or remote embeddings.
+1. On Apple Silicon, follow [macOS Setup](macos-setup.md).
+2. On Windows, follow [Installation](installation.md) on the controller.
+3. Use [External Servers](external-servers.md) on a Linux GPU server if the controller uses remote services.
+
+## Apple Silicon Quickstart
+
+After creating `.venv`, install the managed macOS target once:
+
+```bash
+.venv/bin/whospeaks install --target macos --yes
+.venv/bin/whospeaks doctor
+```
+
+Then start MLX ASR, MPS embeddings, and the browser controller in health-checked order with one command:
+
+```bash
+.venv/bin/whospeaks launch
+```
+
+Realtime preview is off for the reliable first run. The manual service commands in [macOS Setup](macos-setup.md) remain available for troubleshooting.
 
 Verify from Windows:
 

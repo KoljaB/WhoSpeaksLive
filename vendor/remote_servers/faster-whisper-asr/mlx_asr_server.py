@@ -100,6 +100,7 @@ def load_model() -> None:
 def health() -> dict[str, Any]:
     return {
         "ok": model_loaded_at is not None,
+        "service": "mlx-whisper-asr",
         "model": MODEL_REPO,
         "device": "mlx",
         "compute_type": "mlx-default",

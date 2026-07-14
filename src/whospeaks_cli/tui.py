@@ -37,7 +37,7 @@ from .tui_actions import ProfileActionsMixin
 from .tui_layout import compose_setup_app, provider_preset_label
 from .tui_servers import ServerLifecycleMixin
 from .tui_styles import APP_CSS
-from .tui_state import ServerSupervisor, SetupCoordinator
+from .tui_state import PendingAction, ServerSupervisor, SetupCoordinator
 from .tui_workers import SetupWorkersMixin
 
 
@@ -132,6 +132,7 @@ class WhoSpeaksSetupApp(
         self.report = backend.DoctorReport(self.profile.mode, [])
         self._coordinator = SetupCoordinator()
         self._servers = ServerSupervisor()
+        self._managed_service_started_at: dict[str, float] = {}
         self.install_process: subprocess.Popen[str] | None = None
         self.last_server_probe_at = 0.0
         self.language_selection_changed = False
@@ -230,6 +231,16 @@ class WhoSpeaksSetupApp(
         else:
             self.query_one("#readiness-text", Static).update("Readiness not checked")
 
+    def on_unmount(self) -> None:
+        owned: list[object] = []
+        for kind in ("macos_asr", "macos_embeddings", "translation", "reports", "live"):
+            if self._servers.state(kind).ownership != "app":
+                continue
+            process = self._servers.process(kind)
+            if self._servers.return_code(process) is None and process is not None:
+                owned.append(process)
+        backend.terminate_service_processes(owned)
+
     def on_resize(self, event: events.Resize) -> None:
         self._apply_size_classes(event.size.width, event.size.height)
         self._render_operation()
@@ -260,6 +271,7 @@ class WhoSpeaksSetupApp(
         if selected is None:
             return "local"
         return {
+            "target-macos": "macos",
             "target-core": "core",
             "target-server": "server",
         }.get(selected.id or "", "local")
@@ -387,6 +399,11 @@ class WhoSpeaksSetupApp(
             return (
                 ("Browser controller", "Remote ASR and embeddings"),
                 "controller + remote ASR + embeddings",
+            )
+        if plan.target == "macos":
+            return (
+                ("Browser controller", "Managed MLX ASR", "Managed MPS embeddings"),
+                "controller + MLX ASR + MPS embeddings",
             )
         return (
             ("ASR service", "Embeddings service"),
@@ -659,6 +676,8 @@ class WhoSpeaksSetupApp(
 
     @on(RadioSet.Changed, "#target-select")
     def target_changed(self) -> None:
+        if self._selected_target() == "macos":
+            self._select_realtime_engine("off")
         self._update_plan()
 
     @on(RadioSet.Changed, "#realtime-select")
@@ -830,6 +849,13 @@ class WhoSpeaksSetupApp(
         self.run_doctor_worker(False)
 
     def action_launch(self) -> None:
+        if self.profile.deployment_target == "macos":
+            try:
+                backend.require_apple_silicon_macos()
+            except SystemExit as exc:
+                self._set_feedback("error", "Apple Silicon is required", str(exc))
+                self.notify(str(exc), severity="error")
+                return
         compatibility_error = self._sync_preview_compatibility()
         if compatibility_error:
             self.notify(compatibility_error, title="Unsupported live text language", severity="warning")
@@ -847,6 +873,19 @@ class WhoSpeaksSetupApp(
         # never mistaken for a sidecar launched by this application.
         self.last_server_probe_at = 0.0
         self._refresh_server_states()
+        if self.profile.deployment_target == "macos":
+            asr_state = self._servers.state("macos_asr")
+            embeddings_state = self._servers.state("macos_embeddings")
+            if asr_state.status != "running":
+                self._coordinator.set_pending_action(PendingAction.START_MACOS_EMBEDDINGS)
+                self._start_macos_service("macos_asr")
+                return
+            if embeddings_state.status != "running":
+                self._start_macos_service("macos_embeddings")
+                return
+        self._start_configured_services_and_live()
+
+    def _start_configured_services_and_live(self) -> None:
         reports_state = self._servers.state("reports")
         if self.profile.reports_enabled and reports_state.ownership == "external":
             self._set_feedback(

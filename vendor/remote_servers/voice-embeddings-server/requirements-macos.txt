@@ -1,0 +1,12 @@
+# Minimal Apple Silicon stack for the default speechbrain_ecapa provider.
+av>=11.0.0
+fastapi>=0.110
+huggingface-hub>=0.34,<1
+librosa>=0.10.1
+numpy>=2.0,<3
+soundfile>=0.12.1
+speechbrain>=1.0.0
+torch>=2.2
+torchaudio>=2.2
+transformers>=4.39,<5
+uvicorn[standard]>=0.29

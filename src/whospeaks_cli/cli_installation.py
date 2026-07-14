@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import importlib.metadata
+import importlib.util
 import os
 import platform
 import shlex
@@ -10,8 +12,11 @@ import shutil
 import subprocess
 import sys
 import textwrap
+import tomllib
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote, urlparse
+from urllib.request import url2pathname
 
 from window.realtime_preview_backends import (
     get_preview_backend_spec,
@@ -29,9 +34,11 @@ from .planning import (
     TRANSLATION_INSTALL_PROFILE_CHOICES,
     InstallPlan,
     build_translation_command,
+    default_macos_runtime_root,
     normalize_install_target,
     profile_for_install,
     profile_for_mode,
+    service_resource_path,
 )
 from .profiles import Profile, config_path, normalize_mode, save_profile, update_profile_in_place
 from .runtime_constants import (
@@ -68,6 +75,7 @@ __all__ = [
     "default_kroko_preview_venv_path", "venv_python_path", "default_translation_venv_dir",
     "default_translation_model_dir", "translation_package_install_command",
     "build_translation_install_commands", "install_translation_runtime",
+    "installed_package_source", "build_macos_install_commands", "install_macos_runtime",
     "query_python_command_info", "windows_python312_command", "report_suggests_kroko_install",
     "run_command_sequence", "install_kroko_in_python", "install_kroko_sidecar",
     "install_kroko_runtime", "install_extra_and_maybe_kroko", "configure_profile_for_mode",
@@ -127,6 +135,102 @@ def build_install_command(extra: str = LOCAL_EXTRA) -> list[str]:
         *pip_index_args_for_installed_package(),
         package_extra_spec(extra),
     ]
+
+
+def installed_package_source() -> tuple[Path | None, bool]:
+    try:
+        direct_url = importlib.metadata.distribution(PACKAGE_NAME).read_text("direct_url.json")
+        payload = json.loads(direct_url or "{}")
+    except (importlib.metadata.PackageNotFoundError, OSError, ValueError, TypeError):
+        payload = {}
+    parsed = urlparse(str(payload.get("url") or ""))
+    if parsed.scheme == "file":
+        path = Path(url2pathname(unquote(parsed.path)))
+        if path.exists():
+            editable = bool((payload.get("dir_info") or {}).get("editable"))
+            return path, editable
+    spec = importlib.util.find_spec("whospeaks_cli")
+    locations = (spec.submodule_search_locations or ()) if spec is not None else ()
+    for location in locations:
+        for candidate in Path(location).resolve().parents:
+            pyproject = candidate / "pyproject.toml"
+            try:
+                project_name = tomllib.loads(pyproject.read_text(encoding="utf-8"))["project"]["name"]
+            except (FileNotFoundError, OSError, KeyError, TypeError, tomllib.TOMLDecodeError):
+                continue
+            if str(project_name).strip().lower() == PACKAGE_NAME:
+                return candidate, True
+    return None, False
+
+
+def macos_package_install_command(
+    python_executable: str | Path,
+    *,
+    extra: str = "",
+    no_deps: bool = False,
+) -> list[str]:
+    command = [str(python_executable), "-m", "pip", "install"]
+    if no_deps:
+        command.append("--no-deps")
+    source, editable = _facade_callable("installed_package_source", installed_package_source)()
+    if source is not None:
+        target = f"{source}[{extra}]" if extra else str(source)
+        if editable:
+            command.append("-e")
+        command.append(target)
+        return command
+    command.extend(pip_index_args_for_installed_package())
+    if extra:
+        command.append(package_extra_spec(extra))
+    else:
+        version = _facade_callable("installed_distribution_version", installed_distribution_version)(PACKAGE_NAME)
+        command.append(f"{PACKAGE_NAME}=={version}" if version else PACKAGE_NAME)
+    return command
+
+
+def build_macos_install_commands(runtime_root: Path | None = None) -> list[list[str]]:
+    root = (runtime_root or default_macos_runtime_root()).expanduser()
+    asr_venv = root / "mlx-asr"
+    embeddings_venv = root / "embeddings"
+    asr_python = venv_python_path(asr_venv)
+    embeddings_python = venv_python_path(embeddings_venv)
+    requirements = service_resource_path("voice-embeddings-server", "requirements-macos.txt")
+    return [
+        macos_package_install_command(sys.executable, extra=CONTROLLER_EXTRA),
+        [sys.executable, "-m", "venv", str(asr_venv)],
+        [str(asr_python), "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"],
+        [
+            str(asr_python), "-m", "pip", "install",
+            "mlx-whisper", "fastapi>=0.110", "numpy>=2,<3", "uvicorn[standard]>=0.29",
+        ],
+        macos_package_install_command(asr_python, no_deps=True),
+        [sys.executable, "-m", "venv", str(embeddings_venv)],
+        [str(embeddings_python), "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"],
+        [str(embeddings_python), "-m", "pip", "install", "-r", str(requirements)],
+        macos_package_install_command(embeddings_python, no_deps=True),
+    ]
+
+
+def install_macos_runtime(
+    *,
+    assume_yes: bool = False,
+    dry_run: bool = False,
+    runtime_root: Path | None = None,
+) -> int:
+    commands = build_macos_install_commands(runtime_root)
+    print("Apple Silicon managed runtime install commands:")
+    for command in commands:
+        print(f"  {format_command(command)}")
+    if dry_run:
+        return 0
+    if not assume_yes:
+        answer = read_input("Install the controller and managed macOS services now? [y/N] ", "n").strip().lower()
+        if answer not in {"y", "yes"}:
+            print("macOS runtime installation skipped.")
+            return 0
+    root = (runtime_root or default_macos_runtime_root()).expanduser()
+    root.mkdir(parents=True, exist_ok=True)
+    return run_command_sequence(commands)
 
 
 def normalize_torch_install_policy(value: str | None) -> str:
@@ -388,7 +492,7 @@ def print_install_plan(plan: InstallPlan, profile: Profile) -> None:
         print("               sherpa-onnx packages install with WhoSpeaks; the verified model downloads on first launch.")
     elif plan.install_kroko:
         print("Realtime text: enabled; Kroko native runtime will be offered after Python packages.")
-    elif plan.target in {"local", "core"}:
+    elif plan.target in {"local", "core", "macos"}:
         print("Realtime text: disabled for this install. Run the installer again and choose Kroko to try native live text.")
     else:
         print("Realtime text: not part of the server package install.")
@@ -408,23 +512,26 @@ def prompt_install_target() -> str:
         """
         What do you want to install?
           1. Full local installation
-          2. Core/controller for remote ASR and embeddings servers
-          3. ASR and embeddings server packages
+          2. Apple Silicon managed local services
+          3. Core/controller for remote ASR and embeddings servers
+          4. ASR and embeddings server packages
         """
     ).strip())
     while True:
         choice = read_input("> ", "1").strip().lower()
         if choice in {"1", "local", "full", "full local"}:
             return "local"
-        if choice in {"2", "core", "controller", "remote"}:
+        if choice in {"2", "macos", "mac", "apple silicon"}:
+            return "macos"
+        if choice in {"3", "core", "controller", "remote"}:
             return "core"
-        if choice in {"3", "server", "gpu", "services"}:
+        if choice in {"4", "server", "gpu", "services"}:
             return "server"
-        print("Choose 1, 2, or 3.")
+        print("Choose 1, 2, 3, or 4.")
 
 
 def prompt_realtime_preview(target: str) -> tuple[str, str]:
-    if normalize_install_target(target) not in {"local", "core"}:
+    if normalize_install_target(target) not in {"local", "core", "macos"}:
         return "off", ""
     print()
     print("Realtime preview text")

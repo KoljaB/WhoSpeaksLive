@@ -62,13 +62,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     install = subparsers.add_parser(
         "install",
-        help="Guided installer for full local, core/controller, or server packages.",
+        help="Guided installer for full local, Apple Silicon, core/controller, or server packages.",
     )
     install.add_argument(
         "--target",
         choices=INSTALL_TARGET_CHOICES,
         default="",
-        help="Install target: local, core, or server. Omit for an interactive choice.",
+        help="Install target: local, macos, core, or server. Omit for an interactive choice.",
     )
     install.add_argument("--language", default="", help="Save the setup profile with this language code, for example de.")
     install.add_argument("--provider-preset", choices=PROVIDER_PRESET_CHOICES, default="")
