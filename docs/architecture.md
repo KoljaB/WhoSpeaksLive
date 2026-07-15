@@ -55,8 +55,10 @@ There can be two compatible memories:
 
 This separation is necessary because embeddings from different model families can live in different vector spaces.
 
+Persistent People are a separate layer beside meeting-local Speaker memory. The versioned People library stores `Person → VoiceSample → EmbeddingRepresentation`, with independent manual and confirmed-meeting source policy. Matching is suggestion-first, filters by provider and dimension, and uses strongest evidence plus capped independent corroboration rather than an unbounded gallery maximum. Once a user confirms a Speaker–Person link, a fixed-seed learner checkpoints robust evidence into only that session's meeting Voice sample; manual samples and other meetings remain immutable. Saved-session enrollment is addressed by durable session and Speaker IDs and uses ordered session-store/People-library transactions.
+
 ## Browser Event Model
 
 The Python process serves a browser UI and streams events. The browser updates transcript rows, speaker cards, live indicators, and validation observation state from those events.
 
-Most user actions in the browser call JSON API routes, such as speaker rename, save, load, import, export, clear, and reference upload.
+Most user actions in the browser call JSON API routes, such as Speaker rename, saved-session correction, Person linking, Voice-sample management, expected-People selection, and legacy Speaker-group import/export. Public payloads omit vectors and absolute local paths.

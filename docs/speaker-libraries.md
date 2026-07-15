@@ -2,6 +2,8 @@
 
 Speaker libraries let the app reuse known voices across sessions instead of rediscovering every speaker from scratch.
 
+For new workflows, use [People and recognition](people-and-recognition.md). It keeps persistent people separate from meeting-local speaker labels, suggests uncertain matches before confirmation, and stores multiple confirmed meeting conditions. Speaker groups remain supported as the legacy file-oriented workflow.
+
 ## Concepts
 
 A speaker profile contains a speaker label, display metadata, speech duration, sentence count, and a centroid. A centroid is the average embedding vector used to represent that speaker.

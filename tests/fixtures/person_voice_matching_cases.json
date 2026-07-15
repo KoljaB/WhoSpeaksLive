@@ -1,0 +1,26 @@
+{
+  "provider": "synthetic-cross-condition-v1",
+  "people": [
+    {
+      "name": "Alice",
+      "samples": [
+        {"condition": "headset", "vector": [1.0, 0.0, 0.0]},
+        {"condition": "telephone", "vector": [0.94, 0.25, 0.05]},
+        {"condition": "conference-room", "vector": [0.86, 0.39, 0.08]}
+      ]
+    },
+    {
+      "name": "Bob",
+      "samples": [
+        {"condition": "headset", "vector": [0.55, 0.83, 0.04]},
+        {"condition": "room", "vector": [0.48, 0.87, 0.08]}
+      ]
+    }
+  ],
+  "cases": [
+    {"name": "same-person-laptop", "vector": [0.97, 0.16, 0.03], "expected": "Alice"},
+    {"name": "same-person-noisy-room", "vector": [0.82, 0.43, 0.1], "expected": "Alice"},
+    {"name": "different-similar-person", "vector": [0.5, 0.86, 0.06], "expected": "Bob"},
+    {"name": "unknown-out-of-gallery", "vector": [0.05, 0.05, 0.99], "expected": null}
+  ]
+}

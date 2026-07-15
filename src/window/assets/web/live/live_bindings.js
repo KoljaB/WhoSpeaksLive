@@ -310,21 +310,26 @@ export function installLiveBindings(ctx) {
     restoreSelectedSessionsButton.addEventListener("click", () => bulkSavedSessionAction("restore"));
     deleteSelectedSessionsButton.addEventListener("click", () => bulkSavedSessionAction("delete"));
     newRunSessionButton.addEventListener("click", createNewSession);
-    addReferenceSpeakerButton.addEventListener("click", () => {
-      ctx.owners.reference.manualSpeakerComposerOpen = !ctx.owners.reference.manualSpeakerComposerOpen;
-      if (ctx.owners.reference.manualSpeakerComposerOpen) {
-        ctx.owners.reference.editingSpeakerId = "";
-        ctx.owners.reference.pendingSpeakerNameFocusId = "";
-        ctx.owners.reference.pendingManualSpeakerNameFocus = true;
-        referenceRecordSeconds.textContent = "0.0s";
-        referenceSpeakerFile.value = "";
+    addReferenceSpeakerButton.addEventListener("click", async () => {
+      const name = window.prompt("New Person name:", "");
+      if (!name || !name.trim()) return;
+      try {
+        await ensureSessionOwner("create a Person");
+        const result = await post("/api/people/create", {name: name.trim()});
+        updateSpeakerState(result.speaker_state);
+        log(`Created Person ${name.trim()}.`);
+      } catch (error) {
+        log(`Create Person failed: ${error.message}`);
       }
-      renderSpeakerPanel();
     });
     clearSpeakersButton.addEventListener("click", async () => {
       if (!ctx.owners.speakers.speakerLibraryState.speakers.length) return;
+      const confirmed = window.confirm(
+        "Reset live speaker detection? This removes the current detected Speakers and transcript, but keeps saved People and their Voice profiles."
+      );
+      if (!confirmed) return;
       try {
-        await ensureSessionOwner("clear speakers");
+        await ensureSessionOwner("reset live speaker detection");
       } catch (error) {
         log(error.message);
         return;
@@ -342,9 +347,10 @@ export function installLiveBindings(ctx) {
         clearLiveSpeakerState();
         resetTranscriptDisplay();
         updateSpeakerState(result.speaker_state);
-        log("Cleared speakers.");
+        clearSpeakersButton.closest("details")?.removeAttribute("open");
+        log("Reset live speaker detection.");
       } catch (error) {
-        log(`Clear speakers failed: ${error.message}`);
+        log(`Reset speaker detection failed: ${error.message}`);
       } finally {
         renderSpeakerPanel();
       }
@@ -436,19 +442,20 @@ export function installLiveBindings(ctx) {
     referenceSpeakerForm.addEventListener("submit", async event => {
       event.preventDefault();
       try {
-        await ensureSessionOwner("add reference speakers");
+        await ensureSessionOwner("add a Voice sample");
       } catch (error) {
         log(error.message);
         return;
       }
       if (ctx.owners.reference.referenceRecordStream || ctx.owners.reference.referenceRecordPending) {
-        log("Stop the reference recording first.");
+        log("Stop the Voice sample recording first.");
         return;
       }
       const name = selectedSpeakerReferenceName();
+      const personId = ctx.owners.reference.voiceSamplePersonId || "";
       const file = referenceSpeakerFile.files && referenceSpeakerFile.files[0];
-      if (!name || !file) {
-        log(name ? "Choose a reference audio file first." : referenceNameMissingMessage());
+      if (!personId || !file) {
+        log(personId ? "Choose a Voice sample audio file first." : "Choose a Person before adding a Voice sample.");
         return;
       }
       const submit = referenceSpeakerForm.querySelector("button[type='submit']");
@@ -456,13 +463,13 @@ export function installLiveBindings(ctx) {
       referenceSpeakerFile.disabled = true;
       try {
         const audio_b64 = await fileToBase64(file);
-        const result = await post("/api/speakers/reference", {name, filename: file.name, audio_b64});
+        const result = await post("/api/people/sample/add", {person_id: personId, label: file.name.replace(/\.[^.]+$/, ""), filename: file.name, audio_b64});
         closeManualSpeakerComposerAfterReference();
         updateSpeakerState(result.speaker_state);
         referenceSpeakerFile.value = "";
-        log(`Added reference speaker ${name}.`);
+        log(`Added a Voice sample to ${name}. The original audio is retained locally.`);
       } catch (error) {
-        log(`Add reference failed: ${error.message}`);
+        log(`Add Voice sample failed: ${error.message}`);
       } finally {
         if (submit) submit.disabled = false;
         referenceSpeakerFile.disabled = false;
@@ -474,16 +481,16 @@ export function installLiveBindings(ctx) {
         return;
       }
       if (ctx.owners.reference.referenceRecordStream || ctx.owners.reference.referenceRecordPending) {
-        stopAndAddReferenceRecording().catch(error => log(`Add recorded reference failed: ${error.message}`));
+        stopAndAddReferenceRecording().catch(error => log(`Add recorded Voice sample failed: ${error.message}`));
         return;
       }
       try {
-        await ensureSessionOwner("record reference speakers");
+        await ensureSessionOwner("record a Voice sample");
       } catch (error) {
         log(error.message);
         return;
       }
-      startReferenceRecording().catch(error => log(`Reference recording failed: ${error.message}`));
+      startReferenceRecording().catch(error => log(`Voice sample recording failed: ${error.message}`));
     });
     chooseAudioFileButton.addEventListener("click", event => {
       event.stopPropagation();

@@ -148,6 +148,7 @@ class WindowSpeakerStateMixin:
 
     def _speaker_state(self) -> dict[str, Any]:
         profiles = self.memory.export_profiles()
+        self._refresh_person_identity_suggestions(profiles)
         with self._speaker_lock:
             metadata_by_label = {
                 label: dict(metadata)
@@ -158,25 +159,47 @@ class WindowSpeakerStateMixin:
         for profile in profiles:
             label = str(profile["label"])
             metadata = metadata_by_label.get(label, {})
+            identity_status = str(metadata.get("identity_status") or "unidentified")
+            suggested_name = str(metadata.get("suggested_person_name") or "")
+            local_name = str(metadata.get("name") or "")
+            if local_name:
+                display_name = local_name
+            elif identity_status == "suggested" and suggested_name:
+                display_name = f"Likely {suggested_name}"
+            else:
+                display_name = f"Speaker {profile['index']}"
             speakers.append({
                 "id": label,
-                "name": str(metadata.get("name") or ""),
-                "display_name": str(metadata.get("name") or "") or f"Speaker {profile['index']}",
+                "name": local_name,
+                "display_name": display_name,
                 "source": str(metadata.get("source") or "detected"),
                 "locked": bool(metadata.get("locked") or profile.get("locked")),
                 "sentence_count": int(profile.get("sentence_count") or 0),
                 "speech_seconds": round(float(profile.get("speech_seconds") or 0.0), 4),
-                "reference_audio": str(metadata.get("reference_audio") or ""),
+                # Legacy meeting-local references may retain a local file, but
+                # public state never exposes its absolute path.
+                "reference_audio": "",
+                "reference_audio_retained": bool(metadata.get("reference_audio")),
+                "identity_status": identity_status,
+                "person_id": str(metadata.get("person_id") or ""),
+                "suggested_person_id": str(metadata.get("suggested_person_id") or ""),
+                "suggested_person_name": suggested_name,
             })
         return {
             "group_name": group_name,
             "groups": list_speaker_groups(self.speaker_library_dir),
             "speakers": speakers,
             "embedding_provider": self.args.embedding_provider,
+            "people": self.person_library.public_state(
+                embedding_provider=str(self.args.embedding_provider),
+            ),
+            "expected_person_ids": sorted(getattr(self, "_expected_person_ids", None) or []),
+            "expected_people_filter_active": getattr(self, "_expected_person_ids", None) is not None,
         }
 
     def emit_speaker_state(self) -> dict[str, Any]:
         self._sync_metadata_with_memory()
+        self._maybe_checkpoint_confirmed_people(review_assignments=True)
         state = self._speaker_state()
         self.bus.emit("speakers", state)
         return state

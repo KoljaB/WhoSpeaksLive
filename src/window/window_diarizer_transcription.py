@@ -817,6 +817,7 @@ class WindowTranscriptionMixin:
             self._revisit_unknown_sentences()
         if run_speaker_refinement:
             self._refine_speaker_assignments()
+        self._maybe_checkpoint_confirmed_people()
         return sentence_payload
 
     def _process_sentence_embedding(self, job: EmbeddingSentenceJob) -> None:

@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import base64
+import copy
 from datetime import datetime, timezone
 import json
 import re
 import shutil
+import threading
 import uuid
 from pathlib import Path
 from typing import Any, Callable
@@ -157,6 +159,13 @@ class SessionStore:
 
     def __init__(self, root: Path = DEFAULT_SESSION_DIR) -> None:
         self.root = Path(root).expanduser().resolve()
+        self._mutation_lock = threading.RLock()
+
+    @property
+    def mutation_lock(self) -> threading.RLock:
+        """Saved identity transactions acquire this before the People lock."""
+
+        return self._mutation_lock
 
     def _session_dir(self, session_id: str) -> Path:
         normalized = self._validate_session_id(session_id)
@@ -466,6 +475,22 @@ class SessionStore:
         write_audio: bool = False,
         audio_writer: Callable[[Path], bool] | None = None,
     ) -> dict[str, Any]:
+        with self._mutation_lock:
+            return self._save_snapshot_locked(
+                snapshot,
+                status_label=status_label,
+                write_audio=write_audio,
+                audio_writer=audio_writer,
+            )
+
+    def _save_snapshot_locked(
+        self,
+        snapshot: dict[str, Any],
+        *,
+        status_label: str = "Autosaved",
+        write_audio: bool = False,
+        audio_writer: Callable[[Path], bool] | None = None,
+    ) -> dict[str, Any]:
         session_id = self._validate_session_id(str(snapshot.get("id") or snapshot.get("session_id") or ""))
         session_dir = self._session_dir(session_id)
         existing = self._read_json(session_dir / "manifest.json")
@@ -617,13 +642,39 @@ class SessionStore:
         if meeting_intelligence_changed or manifest_with_translations != manifest:
             self._write_json(session_dir / "manifest.json", manifest_with_translations)
             manifest = manifest_with_translations
+        public_manifest = copy.deepcopy(manifest)
+        public_source = public_manifest.get("source") if isinstance(public_manifest.get("source"), dict) else {}
+        for key in ("audio_path", "video_path", "local_path", "path"):
+            public_source.pop(key, None)
+        public_audio = public_manifest.get("audio") if isinstance(public_manifest.get("audio"), dict) else {}
+        public_audio.pop("path", None)
+        public_speaker_state = copy.deepcopy(speaker_state)
+        for speaker in public_speaker_state.get("speakers") or []:
+            if isinstance(speaker, dict):
+                speaker.pop("reference_audio", None)
+        public_profiles = []
+        for profile in speakers.get("speaker_profiles") or []:
+            if not isinstance(profile, dict):
+                continue
+            public_profiles.append({
+                key: copy.deepcopy(value)
+                for key, value in profile.items()
+                if key not in {"centroid", "centroid_b64", "embedding", "embedding_b64", "reference_audio"}
+            })
+        public_rows = []
+        for row in rows:
+            public_rows.append({
+                key: copy.deepcopy(value)
+                for key, value in row.items()
+                if key not in {"embedding", "embedding_b64", "centroid", "centroid_b64", "reference_audio"}
+            })
         return {
             "summary": self._summary_from_manifest(manifest),
-            "manifest": manifest,
-            "transcript_rows": rows,
-            "speaker_state": speaker_state,
-            "speaker_profiles": list(speakers.get("speaker_profiles") or []),
-            "live_speaker_profiles": list(speakers.get("live_speaker_profiles") or []),
+            "manifest": public_manifest,
+            "transcript_rows": public_rows,
+            "speaker_state": public_speaker_state,
+            "speaker_profiles": public_profiles,
+            "live_speaker_profiles": [],
             "embedding_count": len(embeddings.get("records") or []),
             "embeddings_available": bool(embeddings.get("records")),
             "translations": translations,
@@ -663,6 +714,10 @@ class SessionStore:
         return {"id": self._validate_session_id(session_id), "deleted": True}
 
     def rename_speaker(self, session_id: str, speaker_id: str, name: str) -> dict[str, Any]:
+        with self._mutation_lock:
+            return self._rename_speaker_locked(session_id, speaker_id, name)
+
+    def _rename_speaker_locked(self, session_id: str, speaker_id: str, name: str) -> dict[str, Any]:
         speaker_id = str(speaker_id or "").strip()
         if not re.fullmatch(r"S\d+", speaker_id):
             raise ValueError("Invalid speaker id.")
@@ -719,10 +774,12 @@ class SessionStore:
         return self.open_session(session_id)
 
     def reassign_rows(self, session_id: str, indexes: list[int], speaker_id: str) -> dict[str, Any]:
-        return self._correct_saved_rows(session_id, indexes, speaker_id=str(speaker_id or "").strip())
+        with self._mutation_lock:
+            return self._correct_saved_rows(session_id, indexes, speaker_id=str(speaker_id or "").strip())
 
     def mark_rows_correct(self, session_id: str, indexes: list[int]) -> dict[str, Any]:
-        return self._correct_saved_rows(session_id, indexes, speaker_id=None)
+        with self._mutation_lock:
+            return self._correct_saved_rows(session_id, indexes, speaker_id=None)
 
     def _correct_saved_rows(
         self,
