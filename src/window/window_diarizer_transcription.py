@@ -815,6 +815,11 @@ class WindowTranscriptionMixin:
         elif decision.created_speaker:
             self.emit_speaker_state()
             self._revisit_unknown_sentences()
+        elif self._refresh_person_identity_suggestions(self.memory.export_profiles()):
+            # An existing Speaker can cross the Person-recognition evidence gate
+            # after its first state event. Notify the UI only when the public
+            # identity actually changes, rather than after every sentence.
+            self.emit_speaker_state()
         if run_speaker_refinement:
             self._refine_speaker_assignments()
         self._maybe_checkpoint_confirmed_people()

@@ -337,7 +337,7 @@
           <div class="speaker-panel-header">
             <h2 id="speakerPanelTitle" class="speaker-panel-title">Detected speakers (0)</h2>
             <span class="speaker-panel-actions">
-              <button id="addReferenceSpeaker" class="add-speaker-button" type="button" aria-expanded="false">+ Create Person</button>
+              <button id="addReferenceSpeaker" class="add-speaker-button" type="button" aria-expanded="false">+ Add person</button>
               <details class="speaker-panel-menu">
                 <summary aria-label="More speaker actions" title="More speaker actions">•••</summary>
                 <div class="speaker-panel-menu-popover">
@@ -347,7 +347,7 @@
             </span>
           </div>
           <div id="manualSpeakerComposer" class="manual-speaker-composer" hidden>
-            <input id="manualSpeakerName" class="speaker-row-name-input manual-speaker-name" type="text" placeholder="Person name" autocomplete="off" aria-label="New Person name">
+            <input id="manualSpeakerName" class="speaker-row-name-input manual-speaker-name" type="text" placeholder="Person name" autocomplete="off" aria-label="Person name">
             <div id="manualSpeakerReferenceDock"></div>
           </div>
           <div id="speakerList" class="speaker-list"></div>
@@ -483,12 +483,12 @@
           <section class="settings-section speaker-tools people-tools">
             <header class="settings-section-header">
               <div>
-                <h3>People and Voice profiles</h3>
-                <p>Choose who is expected, control recognition, and manage independently retained Voice samples.</p>
+                <h3>People</h3>
+                <p>Manage saved people and their voice recognition.</p>
               </div>
             </header>
             <div class="settings-callout">
-              Expected People are eligible for this meeting, but are never forced onto a detected Speaker.
+              People expected in this meeting are eligible for recognition, but are never forced onto a detected Speaker.
             </div>
             <div id="peopleList" class="people-list"></div>
           </section>
@@ -496,7 +496,7 @@
             <header class="settings-section-header">
               <div>
                 <h3>Legacy Speaker-group files</h3>
-                <p>Import or export compatibility profiles. New cross-meeting identity should use People and Voice profiles.</p>
+                <p>Import or export compatibility profiles. Use People for new cross-meeting identities.</p>
               </div>
             </header>
             <span class="speaker-file-actions">

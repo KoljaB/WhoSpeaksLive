@@ -265,3 +265,26 @@ def add_server_media_arguments(parser: argparse.ArgumentParser) -> None:
         default=120.0,
         help="HTTP timeout for each remote ASR request.",
     )
+    parser.add_argument(
+        "--speech-enhancement-url",
+        default="http://127.0.0.1:8651",
+        help="Base URL of the optional UniSE speech-enhancement service.",
+    )
+    parser.add_argument(
+        "--speech-enhancement-timeout-seconds",
+        type=float,
+        default=120.0,
+        help="HTTP timeout for each speech-enhancement request.",
+    )
+    parser.add_argument(
+        "--enhance-asr",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Enhance only final ASR windows; VAD, preview, and the raw timeline remain unchanged.",
+    )
+    parser.add_argument(
+        "--enhance-embeddings",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Enhance only final sentence audio before embedding; live speaker probes remain unchanged.",
+    )

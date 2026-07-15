@@ -13,6 +13,7 @@ from window.window_domain import PendingUnknownSentence
 
 class WindowRuntimeStateMixin:
     def _prepare_model_dependencies(self, include_asr_probe: bool, force_runtime_warmup: bool = False) -> None:
+        self._load_speech_enhancement()
         self.bus.emit("status", {"message": "Loading transcription model."})
         self._load_model()
         self.bus.emit("status", {"message": "Loading sentence splitter."})
@@ -154,5 +155,5 @@ class WindowRuntimeStateMixin:
         self._last_final_sentence_ended_strong = True
         self._reset_realtime_preview_state()
         self._reset_person_learning_state()
-        self._expected_person_ids = None
+        self._expected_person_ids = self.person_library.expected_person_ids()
         return self.emit_speaker_state() if emit else self.speaker_state()

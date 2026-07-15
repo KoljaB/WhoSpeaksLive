@@ -311,7 +311,7 @@ export function installLiveBindings(ctx) {
     deleteSelectedSessionsButton.addEventListener("click", () => bulkSavedSessionAction("delete"));
     newRunSessionButton.addEventListener("click", createNewSession);
     addReferenceSpeakerButton.addEventListener("click", async () => {
-      const name = window.prompt("New Person name:", "");
+      const name = window.prompt("Person name:", "");
       if (!name || !name.trim()) return;
       try {
         await ensureSessionOwner("create a Person");
@@ -319,13 +319,13 @@ export function installLiveBindings(ctx) {
         updateSpeakerState(result.speaker_state);
         log(`Created Person ${name.trim()}.`);
       } catch (error) {
-        log(`Create Person failed: ${error.message}`);
+        log(`Add person failed: ${error.message}`);
       }
     });
     clearSpeakersButton.addEventListener("click", async () => {
       if (!ctx.owners.speakers.speakerLibraryState.speakers.length) return;
       const confirmed = window.confirm(
-        "Reset live speaker detection? This removes the current detected Speakers and transcript, but keeps saved People and their Voice profiles."
+        "Reset live speaker detection? This removes the current detected Speakers and transcript, but keeps saved People and their Voice samples."
       );
       if (!confirmed) return;
       try {

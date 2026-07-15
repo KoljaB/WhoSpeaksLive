@@ -79,10 +79,10 @@ class WindowPersonIdentityMixin:
         # suggestions use a slightly stricter operating point.
         return min(0.95, max(-1.0, same + 0.04)), max(0.04, margin)
 
-    def _refresh_person_identity_suggestions(self, profiles: list[dict[str, Any]]) -> None:
+    def _refresh_person_identity_suggestions(self, profiles: list[dict[str, Any]]) -> bool:
         library = getattr(self, "person_library", None)
         if library is None:
-            return
+            return False
         profile_by_label = {str(item.get("label") or ""): item for item in profiles}
         with self._speaker_lock:
             confirmed = {
@@ -98,6 +98,7 @@ class WindowPersonIdentityMixin:
             }
         minimum_similarity, minimum_margin = self._person_match_thresholds()
         reserved = set(confirmed)
+        public_identity_changed = False
         ordered_profiles = sorted(
             profiles,
             key=lambda item: (
@@ -138,23 +139,38 @@ class WindowPersonIdentityMixin:
                 current = self._speaker_metadata.get(label)
                 if current is None or str(current.get("identity_status") or "") == "confirmed":
                     continue
+                previous_public_identity = (
+                    str(current.get("identity_status") or "unidentified"),
+                    str(current.get("suggested_person_id") or ""),
+                    str(current.get("suggested_person_name") or ""),
+                )
                 if match is None:
                     current.pop("suggested_person_id", None)
                     current.pop("suggested_person_name", None)
                     current.pop("identity_similarity", None)
                     current.pop("identity_margin", None)
                     current["identity_status"] = "unidentified"
-                    continue
-                current.update({
-                    "identity_status": "suggested",
-                    "suggested_person_id": match.person_id,
-                    "suggested_person_name": match.name,
-                    # Retained for diagnostics/session provenance; the normal UI
-                    # intentionally exposes only the qualitative state.
-                    "identity_similarity": match.similarity,
-                    "identity_margin": match.margin,
-                })
-                reserved.add(match.person_id)
+                else:
+                    current.update({
+                        "identity_status": "suggested",
+                        "suggested_person_id": match.person_id,
+                        "suggested_person_name": match.name,
+                        # Retained for diagnostics/session provenance; the normal UI
+                        # intentionally exposes only the qualitative state.
+                        "identity_similarity": match.similarity,
+                        "identity_margin": match.margin,
+                    })
+                    reserved.add(match.person_id)
+                current_public_identity = (
+                    str(current.get("identity_status") or "unidentified"),
+                    str(current.get("suggested_person_id") or ""),
+                    str(current.get("suggested_person_name") or ""),
+                )
+                public_identity_changed = (
+                    public_identity_changed
+                    or current_public_identity != previous_public_identity
+                )
+        return public_identity_changed
 
     def _person_learning_candidate(
         self,
@@ -623,14 +639,10 @@ class WindowPersonIdentityMixin:
         return self.emit_speaker_state()
 
     def set_expected_people(self, person_ids: list[str] | None) -> dict[str, Any]:
-        if person_ids is None:
-            self._expected_person_ids = None
-        else:
-            requested = {str(value or "").strip() for value in person_ids}
-            requested.discard("")
-            if any(self.person_library.get(person_id) is None for person_id in requested):
-                raise ValueError("Expected-People roster contains an unknown Person.")
-            self._expected_person_ids = requested
+        requested = {str(value or "").strip() for value in (person_ids or [])}
+        requested.discard("")
+        self.person_library.set_expected_people(requested)
+        self._expected_person_ids = requested
         return self.emit_speaker_state()
 
     def forget_person_voice(self, person_id: str) -> dict[str, Any]:
@@ -662,6 +674,7 @@ class WindowPersonIdentityMixin:
         if person is None:
             raise ValueError("Unknown Person.")
         self.person_library.delete_person(person_id)
+        self._expected_person_ids.discard(person_id)
         with self._speaker_lock:
             for metadata in self._speaker_metadata.values():
                 if str(metadata.get("person_id") or "") == person_id:
