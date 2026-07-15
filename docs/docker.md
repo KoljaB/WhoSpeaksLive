@@ -17,7 +17,7 @@ The image:
 - builds and installs `kroko-onnx`
 - runs as a non-root `whospeaks` user
 - serves the browser UI on container port `8796`
-- uses `/data` for sessions/output/work files
+- uses `/data` for sessions, People and Voice samples, output, and work files
 - uses `/models` for Hugging Face and model caches
 
 The default build currently pins the first PyPI release:
@@ -49,7 +49,7 @@ Use a newer `WHOSPEAKS_VERSION` after it is available on the selected package in
 
 ## Run The Server
 
-Use Docker-managed volumes for `/data` and `/models`. They avoid host-directory ownership problems with the non-root container user and keep downloaded models between restarts.
+Use Docker-managed volumes for `/data` and `/models`. They avoid host-directory ownership problems with the non-root container user and keep People, sessions, retained manual Voice samples, and downloaded models between restarts.
 
 ```bash
 docker volume create whospeaks-data
@@ -57,7 +57,7 @@ docker volume create whospeaks-models
 
 docker run --rm \
   --name whospeaks \
-  -p 8796:8796 \
+  -p 127.0.0.1:8796:8796 \
   -v whospeaks-data:/data \
   -v whospeaks-models:/models \
   whospeaks:local
@@ -69,7 +69,19 @@ Open:
 http://127.0.0.1:8796/
 ```
 
-For another machine on the LAN, use the Docker host IP instead of `127.0.0.1`.
+The host-loopback binding is intentional. The built-in server has no authentication or TLS. For another machine, use a VPN, SSH tunnel, or authenticated TLS reverse proxy; do not simply publish the port to an untrusted LAN or the internet. See [Security And Data Privacy](security-and-data-privacy.md).
+
+The persistent data volume contains:
+
+```text
+/data/work
+/data/output
+/data/sessions
+/data/speakers/people.json
+/data/speakers/voice-samples/
+```
+
+Back up `/data` as one sensitive unit. Legacy Speaker-group export is not a People backup.
 
 ## Run With A Local Media File
 
@@ -78,7 +90,7 @@ Mount media read-only and override the command with explicit file paths:
 ```bash
 docker run --rm \
   --name whospeaks \
-  -p 8796:8796 \
+  -p 127.0.0.1:8796:8796 \
   -v whospeaks-data:/data \
   -v whospeaks-models:/models \
   -v /path/to/media:/media:ro \
@@ -90,6 +102,7 @@ docker run --rm \
   --work-dir /data/work \
   --output-dir /data/output \
   --session-dir /data/sessions \
+  --speaker-library-dir /data/speakers \
   --audio-file /media/example.wav \
   --video-file /media/example.mp4 \
   --skip-download \

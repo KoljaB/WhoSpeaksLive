@@ -535,7 +535,10 @@ export function installSpeakerPanel(ctx) {
       const personName = person ? person.name : (speaker.name || "Person");
       const status = document.createElement("span");
       status.className = "speaker-identity-status confirmed";
-      status.textContent = `Linked to ${personName} · Recognition active`;
+      const recognitionState = person
+        ? (person.recognition_enabled ? "Recognition active" : "Recognition paused")
+        : "Person unavailable";
+      status.textContent = `Linked to ${personName} · ${recognitionState}`;
       controls.appendChild(status);
       if (!saved && person) {
         controls.appendChild(identityActionButton("Add voice sample", "sample", async () => openVoiceSampleForm(person)));
@@ -632,9 +635,9 @@ export function installSpeakerPanel(ctx) {
       const expectedCopy = document.createElement("span");
       expectedCopy.className = "setting-copy";
       const expectedTitle = document.createElement("strong");
-      expectedTitle.textContent = "Expected this meeting";
+      expectedTitle.textContent = "Include in automatic recognition";
       const expectedHint = document.createElement("span");
-      expectedHint.textContent = "Keep this Person eligible for matching in this and future meetings.";
+      expectedHint.textContent = "Saved until you change it. Keep this roster limited to plausible attendees.";
       expectedCopy.appendChild(expectedTitle);
       expectedCopy.appendChild(expectedHint);
       expectedLabel.appendChild(expectedCopy);
@@ -695,13 +698,13 @@ export function installSpeakerPanel(ctx) {
       forget.textContent = "Forget voice data";
       forget.disabled = !person.voice_sample_count;
       forget.addEventListener("click", async () => {
-        if (!window.confirm(`Permanently delete all retained audio and Voice samples for ${person.name}? The Person and historical transcript labels will be kept.`)) return;
+        if (!window.confirm(`Remove all Person-owned Voice samples and retained manual audio for ${person.name}? Saved meeting links will be removed; historical transcript labels and meeting evidence will remain.`)) return;
         forget.disabled = true;
         try {
           await ensureSessionOwner("forget Voice data");
           const result = await post("/api/people/forget-voice", {person_id: person.id});
           updateSpeakerState(result.speaker_state);
-          log(`Forgot Voice data for ${person.name}; transcript labels were kept.`);
+          log(`Forgot Person-owned Voice data for ${person.name}; saved identity links were removed and transcript labels were kept.`);
         } catch (error) {
           log(error.message || String(error));
         }
@@ -712,7 +715,7 @@ export function installSpeakerPanel(ctx) {
       deletePerson.className = "person-danger-action";
       deletePerson.textContent = "Delete person";
       deletePerson.addEventListener("click", async () => {
-        if (!window.confirm(`Delete ${person.name} and all saved Voice samples? Historical transcript labels will be kept.`)) return;
+        if (!window.confirm(`Delete ${person.name}, all Person-owned Voice samples, retained manual audio, and saved identity links? Historical transcript labels and meeting evidence will remain.`)) return;
         try {
           await ensureSessionOwner("delete a Person");
           const result = await post("/api/people/delete", {person_id: person.id});
@@ -756,7 +759,7 @@ export function installSpeakerPanel(ctx) {
         const remove = document.createElement("button");
         remove.type = "button"; remove.textContent = "Delete";
         remove.addEventListener("click", async () => {
-          if (!window.confirm(`Permanently delete ${sample.label}, including retained audio and derived representations? Historical transcript labels will not change.`)) return;
+          if (!window.confirm(`Remove ${sample.label}, including retained audio and derived representations? A meeting-derived sample will stay suppressed during background recalculation; historical transcript labels will not change.`)) return;
           try {
             await ensureSessionOwner("delete a Voice sample");
             const result = await post("/api/people/sample/delete", {person_id: person.id, sample_id: sample.id});

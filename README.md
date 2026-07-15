@@ -6,7 +6,7 @@ WhoSpeaksLive identifies speakers while a conversation is still happening, produ
 
 Speaker diarization means identifying who spoke when. WhoSpeaksLive combines a fast live path for immediate speaker labels and optional draft text with a separate final path that uses more context for stable sentence-level results.
 
-The core diarization and transcription stack can run entirely on hardware you control. Meeting reports can also use a local or self-hosted large language model (LLM), so sensitive audio, voice profiles, transcripts, and summaries can remain inside your environment.
+The core diarization and transcription stack can run entirely on hardware you control. Meeting reports can also use a local or self-hosted large language model (LLM), so sensitive audio, Person-owned Voice samples, transcripts, and summaries can remain inside your environment. The built-in browser server is intended for a trusted operator or protected network; it does not provide authentication or TLS by itself.
 
 ## Why WhoSpeaksLive
 
@@ -15,7 +15,8 @@ The core diarization and transcription stack can run entirely on hardware you co
 - **Useful while it happens:** see live speaker labels and optional low-latency draft text while the meeting is still in progress.
 - **Optional sentence-live translation:** translate stable transcript rows into one or several target languages with compact original, single-language, or multi-language views.
 - **Fast now, stable when final:** a low-latency live path gives immediate feedback, while a separate final path uses more context for speaker-labeled transcripts.
-- **Built for review and correction:** manage speaker libraries, correct assignments, and trace report evidence back to the supporting transcript rows.
+- **Remember real People safely:** link meeting-local Speakers to persistent People, keep a deliberate recognition roster, and confirm suggestions instead of forcing identity.
+- **Built for review and correction:** manage Person-owned Voice samples, correct assignments, and trace report evidence back to the supporting transcript rows.
 
 Use it when the audio is sensitive, the answer is needed immediately, or both: internal meetings, research interviews, legal or medical workflows, local media analysis, and any environment where sending raw conversation audio to another company is not acceptable.
 
@@ -44,7 +45,7 @@ For a Linux container server:
 
 ```bash
 docker build -t whospeaks:local .
-docker run --rm --name whospeaks -p 8796:8796 -v whospeaks-data:/data -v whospeaks-models:/models whospeaks:local
+docker run --rm --name whospeaks -p 127.0.0.1:8796:8796 -v whospeaks-data:/data -v whospeaks-models:/models whospeaks:local
 ```
 
 See [Docker](docs/docker.md) for the full build/run path and volume notes.
@@ -107,7 +108,9 @@ Optional translation weights are also downloaded separately and retain their own
 | Live window workflow | [docs/live-window-workflow.md](docs/live-window-workflow.md) |
 | Live translation | [docs/translation.md](docs/translation.md) |
 | Meeting intelligence server | [docs/meeting-intelligence-server.md](docs/meeting-intelligence-server.md) |
-| Speaker libraries | [docs/speaker-libraries.md](docs/speaker-libraries.md) |
+| People and cross-meeting recognition | [docs/people-and-recognition.md](docs/people-and-recognition.md) |
+| Security and data privacy | [docs/security-and-data-privacy.md](docs/security-and-data-privacy.md) |
+| Legacy Speaker-group files | [docs/speaker-libraries.md](docs/speaker-libraries.md) |
 | External ASR and embeddings servers | [docs/external-servers.md](docs/external-servers.md) |
 | Docker server image | [docs/docker.md](docs/docker.md) |
 | Configuration guide | [docs/configuration.md](docs/configuration.md) |

@@ -9,7 +9,7 @@ WhoSpeaksLive combines automatic speech recognition, speaker embeddings, speaker
 - Automatic speech recognition, or ASR, converts audio into words and timestamps.
 - A speaker embedding is a numeric vector that represents the sound of a voice.
 - Diarization is the process of assigning speech segments to speakers.
-- A speaker library stores known speaker profiles so future sessions can identify them immediately.
+- A meeting **Speaker** is a local voice cluster. A persistent **Person** owns reusable Voice samples and may be suggested in later meetings after enough evidence accumulates.
 
 The app is built for replaying videos, browser audio, and local media where you want both fast live feedback and a more reliable final transcript.
 
@@ -17,7 +17,8 @@ The app is built for replaying videos, browser audio, and local media where you 
 
 - Watch a YouTube or media clip and see the likely active speaker in real time.
 - Generate a transcript where each final sentence has a speaker label.
-- Build reusable speaker groups from a complete run, then load them in later sessions.
+- Link recurring participants to People, keep a deliberate automatic-recognition roster, and confirm or reject cross-meeting suggestions.
+- Import legacy Speaker-group files when compatibility with an older workflow is required.
 - Compare diarization settings against a canonical transcript.
 - Run expensive ASR and embedding models on a separate GPU server while keeping the UI local.
 

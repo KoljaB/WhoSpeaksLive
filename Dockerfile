@@ -15,6 +15,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     WHOSPEAKS_WORK_DIR=/data/work \
     WHOSPEAKS_OUTPUT_DIR=/data/output \
     WHOSPEAKS_SESSION_DIR=/data/sessions \
+    WHOSPEAKS_SPEAKER_LIBRARY_DIR=/data/speakers \
     KROKO_ONNX_SUPPRESS_LICENSE_OUTPUT=1
 
 RUN apt-get update \
@@ -41,7 +42,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* /tmp/kroko-build /root/.cache
 
 RUN useradd --create-home --uid 10001 whospeaks \
-    && mkdir -p /data/work /data/output /data/sessions /models \
+    && mkdir -p /data/work /data/output /data/sessions /data/speakers /models \
     && chown -R whospeaks:whospeaks /data /models
 
 USER whospeaks
@@ -53,4 +54,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \
     CMD python -c "from urllib.request import urlopen; urlopen('http://127.0.0.1:8796/', timeout=3).read(1)"
 
 ENTRYPOINT ["whospeaks-window"]
-CMD ["--host", "0.0.0.0", "--port", "8796", "--no-browser", "--no-startup-warmup-before-url", "--work-dir", "/data/work", "--output-dir", "/data/output", "--session-dir", "/data/sessions", "--language", "en", "--model", "tiny.en", "--device", "cpu", "--compute-type", "int8", "--asr-backend", "local", "--embeddings-backend", "local", "--embedding-provider", "speechbrain_ecapa", "--embedding-device", "cpu", "--live-speaker-embedding-provider", "speechbrain_ecapa", "--embedding-python", "/usr/local/bin/python", "--vad-backend", "rms", "--realtime-preview-engine", "kroko_onnx", "--realtime-preview-python", "/usr/local/bin/python"]
+CMD ["--host", "0.0.0.0", "--port", "8796", "--no-browser", "--no-startup-warmup-before-url", "--work-dir", "/data/work", "--output-dir", "/data/output", "--session-dir", "/data/sessions", "--speaker-library-dir", "/data/speakers", "--language", "en", "--model", "tiny.en", "--device", "cpu", "--compute-type", "int8", "--asr-backend", "local", "--embeddings-backend", "local", "--embedding-provider", "speechbrain_ecapa", "--embedding-device", "cpu", "--live-speaker-embedding-provider", "speechbrain_ecapa", "--embedding-python", "/usr/local/bin/python", "--vad-backend", "rms", "--realtime-preview-engine", "kroko_onnx", "--realtime-preview-python", "/usr/local/bin/python"]

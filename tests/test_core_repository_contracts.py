@@ -68,6 +68,12 @@ class RepositoryStructureTests(unittest.TestCase):
             os.environ.update(original_env)
             importlib.reload(paths)
 
+    def test_docker_persists_people_library_inside_data_volume(self) -> None:
+        dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+        self.assertIn("WHOSPEAKS_SPEAKER_LIBRARY_DIR=/data/speakers", dockerfile)
+        self.assertIn('"--speaker-library-dir", "/data/speakers"', dockerfile)
+        self.assertIn("/data/speakers", dockerfile)
+
     def test_window_gui_default_embedding_provider_ignores_environment_override(self) -> None:
         import window.window_config as window_config
 

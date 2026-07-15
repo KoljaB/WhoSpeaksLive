@@ -339,7 +339,29 @@ class LiveWindowApplication:
         return {"ok": True, "session": self.session_store.restore_session(session_id)}
 
     def delete_saved_session(self, session_id: str) -> dict[str, Any]:
-        return {"ok": True, "session": self.session_store.delete_session(session_id)}
+        removed_samples = 0
+        if self.saved_person_identity is not None:
+            removed_samples = self.saved_person_identity.remove_session_samples(session_id)
+        try:
+            deleted = self.session_store.delete_session(session_id)
+        except Exception:
+            if removed_samples and self.saved_person_identity is not None:
+                self.saved_person_identity.recompute_linked_samples(session_id)
+            raise
+        return {"ok": True, "session": deleted, "removed_person_voice_samples": removed_samples}
+
+    def delete_person_voice_sample(self, person_id: str, sample_id: str) -> dict[str, Any]:
+        return self.controller.delete_voice_sample(person_id, sample_id)
+
+    def forget_person_voice(self, person_id: str) -> dict[str, Any]:
+        if self.saved_person_identity is not None:
+            self.saved_person_identity.unlink_person_everywhere(person_id)
+        return self.controller.forget_person_voice(person_id)
+
+    def delete_person(self, person_id: str) -> dict[str, Any]:
+        if self.saved_person_identity is not None:
+            self.saved_person_identity.unlink_person_everywhere(person_id)
+        return self.controller.delete_person(person_id)
 
     def rename_saved_session_speaker(self, session_id: str, speaker_id: str, name: str) -> dict[str, Any]:
         return {"ok": True, "session": self.session_store.rename_speaker(session_id, speaker_id, name)}

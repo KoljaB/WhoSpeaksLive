@@ -190,6 +190,8 @@ class WindowPeopleIdentityTests(unittest.TestCase):
             label = _add_meeting_speaker(first, [1.0, 0.0])
             first._ensure_speaker_metadata(label)
             first.rename_speaker(label, "Alice")
+            for index, embedding in enumerate(([1.0, 0.0], [0.99, 0.01], [0.98, -0.02]), 1):
+                _add_learning_record(first, label, index, embedding, duration=3.0)
 
             remembered = first.remember_speaker_as_person(label)
             alice = remembered["people"][0]
@@ -202,6 +204,8 @@ class WindowPeopleIdentityTests(unittest.TestCase):
             second._session_source_title = "Different microphone"
             returning_label = _add_meeting_speaker(second, [0.98, 0.02])
             second._ensure_speaker_metadata(returning_label)
+            for index, embedding in enumerate(([0.98, 0.02], [0.97, 0.03], [0.99, 0.01]), 1):
+                _add_learning_record(second, returning_label, index, embedding, duration=3.0)
 
             suggested = second.speaker_state()
             speaker = suggested["speakers"][0]
@@ -221,7 +225,7 @@ class WindowPeopleIdentityTests(unittest.TestCase):
                 [0.98, -0.02],
                 [0.97, 0.03],
                 [0.45, 0.89],
-            ), 1):
+            ), 10):
                 _add_learning_record(second, returning_label, index, embedding)
             second._maybe_checkpoint_confirmed_people(review_assignments=True)
 
@@ -231,8 +235,8 @@ class WindowPeopleIdentityTests(unittest.TestCase):
                 item for item in learned["templates"]
                 if item["session_id"] == "meeting-2"
             )
-            self.assertEqual(meeting_template["confirmation"], "automatic_checkpoint")
-            self.assertEqual(meeting_template["sentence_count"], 4)
+            self.assertEqual(meeting_template["confirmation"], "user")
+            self.assertEqual(meeting_template["sentence_count"], 7)
             self.assertEqual(meeting_template["outlier_count"], 1)
             self.assertGreater(meeting_template["cohesion"], 0.95)
             self.assertEqual(len(learned["templates"]), 2)
@@ -354,6 +358,34 @@ class WindowPeopleIdentityTests(unittest.TestCase):
             other_label = _add_meeting_speaker(second, [1.0, 0.0])
             second._ensure_speaker_metadata(other_label)
             self.assertEqual(second.speaker_state()["speakers"][0]["identity_status"], "unidentified")
+
+    def test_link_without_valid_learning_candidate_keeps_identity_but_stores_no_voice(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bus = RecordingEventBus()
+            controller = make_window_diarizer(speaker_library_dir=Path(tmp), bus=bus)
+            controller._session_id = "meeting-1"
+            label = _add_meeting_speaker(controller, [1.0, 0.0], seconds=1.0, count=1)
+            controller._ensure_speaker_metadata(label)
+
+            linked = controller.remember_speaker_as_person(label, "Alice")
+            self.assertEqual(linked["speakers"][0]["identity_status"], "confirmed")
+            self.assertEqual(linked["people"][0]["voice_sample_count"], 0)
+            status = next(record for record in reversed(bus.records) if record["event"] == "status")
+            self.assertIn("more clean speech is needed", status["payload"]["message"])
+
+    def test_deleting_a_currently_linked_person_clears_learning_state_without_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            controller = make_window_diarizer(speaker_library_dir=Path(tmp))
+            controller._session_id = "meeting-1"
+            label = _add_meeting_speaker(controller, [1.0, 0.0])
+            controller._ensure_speaker_metadata(label)
+            person_id = controller.remember_speaker_as_person(label, "Alice")["people"][0]["id"]
+
+            state = controller.delete_person(person_id)
+
+            self.assertEqual(state["people"], [])
+            self.assertEqual(state["speakers"][0]["identity_status"], "unidentified")
+            self.assertNotIn(label, controller._person_learning_states)
 
 
 if __name__ == "__main__":

@@ -19,6 +19,8 @@ curl.exe http://YOUR_GPU_SERVER_IP:8660/providers
 
 Replace `YOUR_GPU_SERVER_IP` with your Linux GPU server address.
 
+The examples use plain HTTP for a trusted private network. Plain HTTP does not encrypt speech audio or authenticate the remote service; use a VPN or authenticated TLS proxy outside that threat model.
+
 Skip the remote health checks for a completely local Windows run.
 
 ## First End-To-End Run
@@ -38,6 +40,8 @@ whospeaks launch --print
 The launcher reads the saved profile, expands it into a full `whospeaks-window ...` command, and injects helper Python paths for local embeddings and realtime preview when those features are enabled.
 
 Use a smoke provider first. This proves the UI, media loading, ASR route, embedding route, and speaker assignment pipeline work:
+
+Do not build a durable People library during this smoke step. Voice samples are tied to the embedding-provider contract and are not automatically re-embedded when you switch to the production provider.
 
 In the full-screen starter, open **Settings** and choose **Speaker model preset** -> **Low VRAM - SpeechBrain ECAPA**, or run:
 
@@ -59,7 +63,7 @@ For a Linux container smoke server:
 docker build -t whospeaks:local .
 docker volume create whospeaks-data
 docker volume create whospeaks-models
-docker run --rm --name whospeaks -p 8796:8796 -v whospeaks-data:/data -v whospeaks-models:/models whospeaks:local
+docker run --rm --name whospeaks -p 127.0.0.1:8796:8796 -v whospeaks-data:/data -v whospeaks-models:/models whospeaks:local
 ```
 
 Open `http://127.0.0.1:8796/`. The container path uses CPU defaults and is meant as a reproducible server install first; see [Docker](docker.md) for local media mounts, build args, and validation commands.
@@ -126,8 +130,10 @@ On first start, the app downloads and verifies the selected Nemotron archive und
 4. Press Start in the browser UI.
 5. Watch the live speaker tag in the speaker panel for fast feedback.
 6. Watch the live transcript for the current sentence view.
-7. Let the clip finish if you want a complete speaker library.
-8. Save or export the speaker group if you want to reuse speakers later.
+7. After selecting the intended production embedding provider, let a recurring participant speak at least three clean sentences or about six seconds.
+8. In **Speakers**, choose **Link to Person…** and create or select that Person.
+9. In **Settings → People**, turn on **Include in automatic recognition** only for plausible upcoming attendees.
+10. In a later session, review **Likely Person** with **Confirm** or **Not Person** instead of assuming the suggestion is correct.
 
 ## What To Expect
 
@@ -141,6 +147,8 @@ The live layer may change faster than the final transcript. The final transcript
 ## Next Steps
 
 - Learn the full browser workflow in [Live Window Workflow](live-window-workflow.md).
-- Reuse speakers with [Speaker Libraries](speaker-libraries.md).
+- Remember recurring participants with [People And Voice Recognition](people-and-recognition.md).
+- Review the deployment and voice-data threat model in [Security And Data Privacy](security-and-data-privacy.md).
+- Use [Legacy Speaker-Group Files](speaker-libraries.md) only for compatibility with the older portable workflow.
 - Tune behavior with [Configuration](configuration.md).
 - Validate changes with [Validation And Scoring](validation-and-scoring.md).

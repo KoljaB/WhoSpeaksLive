@@ -240,7 +240,12 @@ class WindowPersonIdentityMixin:
         confirmation: str = "user",
         candidate: PersonLearningCandidate | None = None,
         session_id: str | None = None,
-    ) -> None:
+    ) -> bool:
+        # Linking an identity and enrolling reusable voice evidence are separate
+        # operations. Never fall back to an unvalidated profile centroid when the
+        # evidence builder could not produce a coherent learning candidate.
+        if candidate is None:
+            return False
         anchor_sample_ids: list[str] = []
         if confirmation != "user":
             person = self.person_library.get(person_id) or {}
@@ -251,7 +256,7 @@ class WindowPersonIdentityMixin:
                 and sample.get("state", "active") == "active"
                 and sample.get("trust") == "user_confirmed"
             ]
-        self.person_library.add_confirmed_template(
+        result = self.person_library.add_meeting_sample(
             person_id,
             candidate.centroid if candidate is not None else profile.get("centroid"),
             embedding_provider=str(self.args.embedding_provider),
@@ -263,7 +268,9 @@ class WindowPersonIdentityMixin:
             cohesion=(candidate.cohesion if candidate is not None else None),
             outlier_count=(candidate.outlier_count if candidate is not None else 0),
             anchor_sample_ids=anchor_sample_ids,
+            allow_restore=confirmation == "user",
         )
+        return not bool(result.get("suppressed"))
 
     def _start_person_learning(
         self,
@@ -450,7 +457,7 @@ class WindowPersonIdentityMixin:
         )
         if candidate is not None and not self._person_learning_candidate_is_safe(provisional, candidate):
             candidate = None
-        self._add_confirmed_person_template(
+        sample_saved = self._add_confirmed_person_template(
             str(person["id"]),
             profile,
             candidate=candidate,
@@ -468,7 +475,12 @@ class WindowPersonIdentityMixin:
             })
             metadata.pop("suggested_person_id", None)
             metadata.pop("suggested_person_name", None)
-        self.bus.emit("status", {"message": f"Remembered {person['name']} for future meetings."})
+        message = (
+            f"Linked {label} to {person['name']} and saved a Voice sample."
+            if sample_saved
+            else f"Linked {label} to {person['name']}; more clean speech is needed before recognition can be saved."
+        )
+        self.bus.emit("status", {"message": message})
         return self.emit_speaker_state()
 
     def confirm_speaker_person(self, speaker_id: str, person_id: str) -> dict[str, Any]:
@@ -487,7 +499,7 @@ class WindowPersonIdentityMixin:
         )
         if candidate is not None and not self._person_learning_candidate_is_safe(provisional, candidate):
             candidate = None
-        self._add_confirmed_person_template(
+        sample_saved = self._add_confirmed_person_template(
             str(person["id"]),
             profile,
             candidate=candidate,
@@ -507,7 +519,12 @@ class WindowPersonIdentityMixin:
             })
             metadata.pop("suggested_person_id", None)
             metadata.pop("suggested_person_name", None)
-        self.bus.emit("status", {"message": f"Confirmed {person['name']}."})
+        message = (
+            f"Confirmed {person['name']} and saved a Voice sample."
+            if sample_saved
+            else f"Confirmed {person['name']}; more clean speech is needed before recognition can be saved."
+        )
+        self.bus.emit("status", {"message": message})
         return self.emit_speaker_state()
 
     def reject_speaker_person(self, speaker_id: str, person_id: str = "") -> dict[str, Any]:
@@ -673,6 +690,16 @@ class WindowPersonIdentityMixin:
         person = self.person_library.get(person_id)
         if person is None:
             raise ValueError("Unknown Person.")
+        with self._speaker_lock:
+            linked_labels = [
+                label
+                for label, metadata in self._speaker_metadata.items()
+                if str(metadata.get("person_id") or "") == person_id
+            ]
+        # Drop learning state before deleting the library record. Otherwise the
+        # next state emission tries to clean up a sample on a missing Person.
+        for label in linked_labels:
+            self._discard_person_learning(label, remove_template=False)
         self.person_library.delete_person(person_id)
         self._expected_person_ids.discard(person_id)
         with self._speaker_lock:

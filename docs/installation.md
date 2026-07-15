@@ -116,7 +116,7 @@ The starter CLI supports these profiles:
 
 The easiest reliable setup is:
 
-- Windows machine: browser UI, media download, orchestration, speaker library files.
+- Windows machine: browser UI, media download, orchestration, People library, and saved sessions.
 - Linux GPU server: faster-whisper ASR on port `8650`.
 - Linux GPU server: voice embeddings on port `8660`.
 
@@ -248,10 +248,10 @@ For a reproducible Linux server container, use the root Dockerfile:
 docker build -t whospeaks:local .
 docker volume create whospeaks-data
 docker volume create whospeaks-models
-docker run --rm --name whospeaks -p 8796:8796 -v whospeaks-data:/data -v whospeaks-models:/models whospeaks:local
+docker run --rm --name whospeaks -p 127.0.0.1:8796:8796 -v whospeaks-data:/data -v whospeaks-models:/models whospeaks:local
 ```
 
-Open `http://127.0.0.1:8796/` on the Docker host, or use the host IP from another machine. See [Docker](docker.md) for build arguments, media mounts, validation commands, and volume notes.
+Open `http://127.0.0.1:8796/` on the Docker host. Remote access requires a protected private path such as a VPN, SSH tunnel, or authenticated TLS reverse proxy; the built-in server has no authentication. See [Docker](docker.md) and [Security And Data Privacy](security-and-data-privacy.md).
 
 ## Runtime Data
 
@@ -265,7 +265,10 @@ Default paths:
 - `runtime/media/local-filefeed/`: downloaded replay media.
 - `runtime/outputs/window-diarize/`: generated window diarization audio.
 - `runtime/outputs/window-diarize-validation/`: validation output.
-- `runtime/speakers/`: saved speaker groups and references.
+- `runtime/sessions/`: saved transcripts, Speaker/Person links, sentence embeddings, audio or audio references, corrections, translations, and reports.
+- `runtime/speakers/people.json`: People, persistent recognition settings, sample provenance, and embedding vectors.
+- `runtime/speakers/voice-samples/`: retained original audio for manual Voice samples.
+- `runtime/speakers/`: legacy Speaker-group files and People migration backups.
 
 You can redirect local state with environment variables:
 
@@ -275,6 +278,8 @@ $env:WHOSPEAKS_CACHE_DIR = "C:\whospeaks-runtime\cache"
 $env:WHOSPEAKS_MODEL_DIR = "C:\whospeaks-runtime\models"
 $env:WHOSPEAKS_SPEAKER_LIBRARY_DIR = "C:\whospeaks-runtime\speakers"
 ```
+
+Treat the speaker-library and session directories as one sensitive backup unit. See [Security And Data Privacy](security-and-data-privacy.md) before exposing the browser server or moving voice data between machines.
 
 ## Local All-In-One Setup
 

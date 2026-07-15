@@ -170,6 +170,11 @@ class PersonLibrary:
         person["recognition_enabled"] = bool(person.get("recognition_enabled", True))
         person["recognition_policy"] = _policy(person.get("recognition_policy"))
         person["voice_samples"] = [dict(item) for item in (person.get("voice_samples") or []) if isinstance(item, Mapping)]
+        person["suppressed_meeting_samples"] = [
+            dict(item)
+            for item in (person.get("suppressed_meeting_samples") or [])
+            if isinstance(item, Mapping)
+        ]
         person.pop("templates", None)
         return person
 
@@ -209,7 +214,7 @@ class PersonLibrary:
     @staticmethod
     def _new_person(name: str, *, person_id: str = "") -> dict[str, Any]:
         now = _now_iso()
-        return {"id": person_id or uuid.uuid4().hex, "name": name, "expected": False, "recognition_enabled": True, "recognition_policy": _policy(), "created_at": now, "updated_at": now, "profile_version": 0, "voice_samples": []}
+        return {"id": person_id or uuid.uuid4().hex, "name": name, "expected": False, "recognition_enabled": True, "recognition_policy": _policy(), "created_at": now, "updated_at": now, "profile_version": 0, "voice_samples": [], "suppressed_meeting_samples": []}
 
     def _find_locked(self, person_id: str) -> dict[str, Any]:
         target = str(person_id or "").strip()
@@ -221,6 +226,73 @@ class PersonLibrary:
     @staticmethod
     def _samples(person: Mapping[str, Any]) -> list[dict[str, Any]]:
         return [item for item in (person.get("voice_samples") or []) if isinstance(item, dict)]
+
+    @staticmethod
+    def _meeting_source_key(
+        session_id: str,
+        embedding_provider: str,
+        capture_condition: str = "",
+    ) -> tuple[str, str, str]:
+        return (
+            str(session_id or "").strip(),
+            str(embedding_provider or "").strip(),
+            _clean(capture_condition, 120).casefold(),
+        )
+
+    @staticmethod
+    def _suppressed_sources(person: Mapping[str, Any]) -> list[dict[str, Any]]:
+        return [
+            item
+            for item in (person.get("suppressed_meeting_samples") or [])
+            if isinstance(item, dict)
+        ]
+
+    def _source_is_suppressed_locked(
+        self,
+        person: Mapping[str, Any],
+        source_key: tuple[str, str, str],
+    ) -> bool:
+        for item in self._suppressed_sources(person):
+            if self._meeting_source_key(
+                str(item.get("session_id") or ""),
+                str(item.get("embedding_provider") or ""),
+                str(item.get("capture_condition") or ""),
+            ) == source_key:
+                return True
+        return False
+
+    def _suppress_source_locked(
+        self,
+        person: dict[str, Any],
+        *,
+        session_id: str,
+        embedding_provider: str,
+        capture_condition: str = "",
+    ) -> None:
+        key = self._meeting_source_key(session_id, embedding_provider, capture_condition)
+        if not key[0] or not key[1] or self._source_is_suppressed_locked(person, key):
+            return
+        person["suppressed_meeting_samples"] = self._suppressed_sources(person) + [{
+            "session_id": key[0],
+            "embedding_provider": key[1],
+            "capture_condition": _clean(capture_condition, 120),
+            "deleted_at": _now_iso(),
+        }]
+
+    def _restore_source_locked(
+        self,
+        person: dict[str, Any],
+        source_key: tuple[str, str, str],
+    ) -> None:
+        person["suppressed_meeting_samples"] = [
+            item
+            for item in self._suppressed_sources(person)
+            if self._meeting_source_key(
+                str(item.get("session_id") or ""),
+                str(item.get("embedding_provider") or ""),
+                str(item.get("capture_condition") or ""),
+            ) != source_key
+        ]
 
     @staticmethod
     def _representation(centroid: np.ndarray, provider: str, quality: float, when: str) -> dict[str, Any]:
@@ -250,12 +322,15 @@ class PersonLibrary:
                     result.append({"id": str(sample.get("id") or ""), "centroid": copy.deepcopy(representation.get("centroid")), "embedding_provider": str(representation.get("embedding_provider") or ""), "session_id": str(source.get("session_id") or ""), "source_title": str(source.get("session_title") or sample.get("label") or ""), "sentence_count": int(evidence.get("sentence_count") or 1), "speech_seconds": float(evidence.get("speech_seconds") or 0.0), "quality": float(evidence.get("quality") or 0.0), "confirmation": str(provenance.get("confirmation") or "user"), "cohesion": evidence.get("cohesion"), "outlier_count": int(evidence.get("outlier_count") or 0), "confirmed_at": str(sample.get("updated_at") or ""), "anchor": bool(provenance.get("legacy_anchor")) or sample.get("trust") == "user_confirmed"})
         return result
 
-    def create_person(self, name: str) -> dict[str, Any]:
+    def create_person(self, name: str, *, person_id: str = "") -> dict[str, Any]:
         clean = _clean(name)
         if not clean:
             raise ValueError("Enter a name for the Person.")
-        person = self._new_person(clean)
+        requested_id = str(person_id or "").strip()
+        person = self._new_person(clean, person_id=requested_id)
         with self._lock:
+            if requested_id and any(str(item.get("id") or "") == requested_id for item in self._document["people"]):
+                raise ValueError("A Person with this id already exists.")
             self._document["people"].append(person)
             self._save_locked()
         return copy.deepcopy(person)
@@ -322,7 +397,7 @@ class PersonLibrary:
             self._save_locked()
             return copy.deepcopy(policy)
 
-    def add_meeting_sample(self, person_id: str, centroid: Any, *, embedding_provider: str, session_id: str, source_title: str = "", capture_condition: str = "", sentence_count: int = 1, speech_seconds: float = 0.0, confirmation: str = "user", cohesion: float | None = None, outlier_count: int = 0, anchor_sample_ids: Iterable[str] = ()) -> dict[str, Any]:
+    def add_meeting_sample(self, person_id: str, centroid: Any, *, embedding_provider: str, session_id: str, source_title: str = "", capture_condition: str = "", sentence_count: int = 1, speech_seconds: float = 0.0, confirmation: str = "user", cohesion: float | None = None, outlier_count: int = 0, anchor_sample_ids: Iterable[str] = (), allow_restore: bool = False) -> dict[str, Any]:
         vector = _vector(centroid)
         provider = str(embedding_provider or "").strip()
         session_key = str(session_id or "").strip()
@@ -335,6 +410,15 @@ class PersonLibrary:
         condition, when = _clean(capture_condition, 120), _now_iso()
         with self._lock:
             person, existing = self._find_locked(person_id), None
+            source_key = self._meeting_source_key(session_key, provider, condition)
+            if self._source_is_suppressed_locked(person, source_key):
+                if not allow_restore:
+                    return {
+                        "person_id": str(person["id"]),
+                        "session_id": session_key,
+                        "suppressed": True,
+                    }
+                self._restore_source_locked(person, source_key)
             samples = self._samples(person)
             for sample in samples:
                 source = sample.get("source") if isinstance(sample.get("source"), Mapping) else {}
@@ -343,18 +427,24 @@ class PersonLibrary:
                     existing = sample
                     break
             confirmation_value, score = str(confirmation or "user")[:40], _quality(seconds, count, normalized_cohesion)
-            payload = {"id": str((existing or {}).get("id") or uuid.uuid4().hex), "kind": MEETING_SAMPLE, "state": ACTIVE_SAMPLE, "label": _clean(source_title, 120) or "Confirmed meeting", "trust": "user_confirmed" if confirmation_value == "user" else "automatically_derived", "created_at": str((existing or {}).get("created_at") or when), "updated_at": when, "source": {"type": "confirmed_meeting", "session_id": session_key, "session_title": _clean(source_title, 120), "capture_condition": condition}, "evidence": {"sentence_count": count, "speech_seconds": round(seconds, 4), "quality": score, "cohesion": None if normalized_cohesion is None else round(normalized_cohesion, 4), "outlier_count": max(0, int(outlier_count or 0))}, "provenance": {"confirmation": confirmation_value, "anchor_sample_ids": sorted({str(item) for item in anchor_sample_ids if str(item)}), "legacy_anchor": bool(((existing or {}).get("provenance") or {}).get("legacy_anchor"))}, "representations": [self._representation(vector, provider, score, when)]}
+            existing_provenance = (existing or {}).get("provenance") if isinstance((existing or {}).get("provenance"), Mapping) else {}
+            user_trusted = confirmation_value == "user" or (existing or {}).get("trust") == "user_confirmed"
+            if user_trusted and confirmation_value != "user":
+                confirmation_value = str(existing_provenance.get("confirmation") or "user")[:40]
+            payload = {"id": str((existing or {}).get("id") or uuid.uuid4().hex), "kind": MEETING_SAMPLE, "state": ACTIVE_SAMPLE, "label": _clean(source_title, 120) or "Confirmed meeting", "trust": "user_confirmed" if user_trusted else "automatically_derived", "created_at": str((existing or {}).get("created_at") or when), "updated_at": when, "source": {"type": "confirmed_meeting", "session_id": session_key, "session_title": _clean(source_title, 120), "capture_condition": condition}, "evidence": {"sentence_count": count, "speech_seconds": round(seconds, 4), "quality": score, "cohesion": None if normalized_cohesion is None else round(normalized_cohesion, 4), "outlier_count": max(0, int(outlier_count or 0))}, "provenance": {"confirmation": confirmation_value, "anchor_sample_ids": sorted({str(item) for item in anchor_sample_ids if str(item)}), "legacy_anchor": bool(existing_provenance.get("legacy_anchor"))}, "representations": [self._representation(vector, provider, score, when)]}
             if existing is None:
                 samples.append(payload)
             else:
                 existing.clear(); existing.update(payload)
             person["voice_samples"] = samples
             self._prune_locked(person, provider)
-            person.update({"recognition_enabled": True, "profile_version": int(person.get("profile_version") or 0) + 1, "updated_at": when})
+            person.update({"profile_version": int(person.get("profile_version") or 0) + 1, "updated_at": when})
             self._save_locked()
             return copy.deepcopy(payload)
 
     def add_confirmed_template(self, person_id: str, centroid: Any, **kwargs: Any) -> dict[str, Any]:
+        """Compatibility name that returns the updated Person record."""
+
         self.add_meeting_sample(person_id, centroid, **kwargs)
         result = self.get(person_id)
         assert result is not None
@@ -388,7 +478,7 @@ class PersonLibrary:
                 raise ValueError(f"Could not retain the manual Voice sample locally: {exc}") from exc
             sample = {"id": sample_id, "kind": MANUAL_SAMPLE, "state": ACTIVE_SAMPLE, "label": _clean(label, 120) or _clean(Path(filename).stem, 120) or "Manual voice sample", "trust": "user_confirmed", "created_at": when, "updated_at": when, "source": {"type": str(source_type or "manual_upload")[:40]}, "evidence": {"sentence_count": max(1, int(sentence_count or 1)), "speech_seconds": round(max(0.0, float(speech_seconds or 0.0)), 4), "quality": round(max(0.0, min(1.0, float(quality))), 4), "cohesion": None if cohesion is None else round(max(-1.0, min(1.0, float(cohesion))), 4), "outlier_count": max(0, int(outlier_count or 0))}, "raw_audio": {"retained": True, "relative_path": relative.as_posix(), "sha256": checksum}, "provenance": {"confirmation": "user", "anchor_sample_ids": []}, "representations": [self._representation(vector, provider, quality, when)]}
             person["voice_samples"] = self._samples(person) + [sample]
-            person.update({"recognition_enabled": True, "profile_version": int(person.get("profile_version") or 0) + 1, "updated_at": when})
+            person.update({"profile_version": int(person.get("profile_version") or 0) + 1, "updated_at": when})
             try:
                 self._save_locked()
             except Exception:
@@ -433,6 +523,20 @@ class PersonLibrary:
     def delete_sample(self, person_id: str, sample_id: str) -> dict[str, Any]:
         with self._lock:
             person, sample = self._find_locked(person_id), self._sample_locked(self._find_locked(person_id), sample_id)
+            if sample.get("kind") == MEETING_SAMPLE:
+                source = sample.get("source") if isinstance(sample.get("source"), Mapping) else {}
+                providers = {
+                    str(rep.get("embedding_provider") or "")
+                    for rep in sample.get("representations") or []
+                    if isinstance(rep, Mapping) and str(rep.get("embedding_provider") or "")
+                }
+                for provider in providers:
+                    self._suppress_source_locked(
+                        person,
+                        session_id=str(source.get("session_id") or ""),
+                        embedding_provider=provider,
+                        capture_condition=str(source.get("capture_condition") or ""),
+                    )
             raw_path = self._raw_path(sample)
             if raw_path is not None and raw_path.exists():
                 try: raw_path.unlink()
@@ -462,7 +566,11 @@ class PersonLibrary:
         session_key, provider = str(session_id or "").strip(), str(embedding_provider or "").strip()
         if not session_key or not provider: return False
         with self._lock:
-            person, retained, removed = self._find_locked(person_id), [], set()
+            try:
+                person = self._find_locked(person_id)
+            except ValueError:
+                return False
+            retained, removed = [], set()
             for sample in self._samples(person):
                 source = sample.get("source") if isinstance(sample.get("source"), Mapping) else {}
                 compatible = any(isinstance(rep, Mapping) and str(rep.get("embedding_provider") or "") == provider for rep in sample.get("representations") or [])
@@ -472,15 +580,76 @@ class PersonLibrary:
             person["voice_samples"] = retained; self._revalidate_locked(person, removed)
             person.update({"profile_version": int(person.get("profile_version") or 0) + 1, "updated_at": _now_iso()}); self._save_locked(); return True
 
+    def remove_session_samples(self, session_id: str) -> int:
+        """Remove every Person-owned meeting sample derived from one deleted session."""
+
+        session_key = str(session_id or "").strip()
+        if not session_key:
+            return 0
+        with self._lock:
+            removed_count = 0
+            changed = False
+            changed_at = _now_iso()
+            for person in self._document["people"]:
+                retained: list[dict[str, Any]] = []
+                removed_ids: set[str] = set()
+                for sample in self._samples(person):
+                    source = sample.get("source") if isinstance(sample.get("source"), Mapping) else {}
+                    if sample.get("kind") == MEETING_SAMPLE and str(source.get("session_id") or "") == session_key:
+                        removed_ids.add(str(sample.get("id") or ""))
+                    else:
+                        retained.append(sample)
+                suppressed = self._suppressed_sources(person)
+                retained_suppressions = [
+                    item
+                    for item in suppressed
+                    if str(item.get("session_id") or "") != session_key
+                ]
+                if not removed_ids and len(retained_suppressions) == len(suppressed):
+                    continue
+                changed = True
+                removed_count += len(removed_ids)
+                person["voice_samples"] = retained
+                person["suppressed_meeting_samples"] = retained_suppressions
+                self._revalidate_locked(person, removed_ids)
+                person.update({
+                    "profile_version": int(person.get("profile_version") or 0) + 1,
+                    "updated_at": changed_at,
+                })
+            if changed:
+                self._save_locked()
+            return removed_count
+
     def forget_voice(self, person_id: str) -> None:
         with self._lock:
             person, failures = self._find_locked(person_id), []
+            meeting_sources: list[tuple[str, str, str]] = []
             for sample in self._samples(person):
+                if sample.get("kind") == MEETING_SAMPLE:
+                    source = sample.get("source") if isinstance(sample.get("source"), Mapping) else {}
+                    providers = {
+                        str(rep.get("embedding_provider") or "")
+                        for rep in sample.get("representations") or []
+                        if isinstance(rep, Mapping) and str(rep.get("embedding_provider") or "")
+                    }
+                    for provider in providers:
+                        meeting_sources.append((
+                            str(source.get("session_id") or ""),
+                            provider,
+                            str(source.get("capture_condition") or ""),
+                        ))
                 try:
                     path = self._raw_path(sample)
                     if path is not None and path.exists(): path.unlink()
                 except (OSError, ValueError) as exc: failures.append(str(exc))
             if failures: raise ValueError("Could not remove all retained Voice sample audio; the Person was kept unchanged: " + "; ".join(failures[:3]))
+            for session_id, provider, condition in meeting_sources:
+                self._suppress_source_locked(
+                    person,
+                    session_id=session_id,
+                    embedding_provider=provider,
+                    capture_condition=condition,
+                )
             person["voice_samples"] = []
             person.update({"profile_version": int(person.get("profile_version") or 0) + 1, "updated_at": _now_iso()}); self._save_locked()
 

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import copy
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
@@ -64,6 +65,85 @@ class SavedPersonIdentityService:
         speakers = self.store._read_json(session_dir / "speakers.json", {"speaker_state": {}})
         embeddings = self.store._read_json(session_dir / "embeddings.json", {"records": []})
         return session_dir, manifest, transcript, speakers, embeddings
+
+    @staticmethod
+    def _intent_path(session_dir: Path) -> Path:
+        return session_dir / ".person-identity-transaction.json"
+
+    @staticmethod
+    def _clear_speaker_link(speaker: dict[str, Any]) -> None:
+        for key in ("person_id", "identity_status", "identity_source", "identity_confirmed_at"):
+            speaker.pop(key, None)
+
+    def _recover_pending_intent(self, session_id: str) -> dict[str, Any] | None:
+        """Complete an interrupted saved-session Person mutation idempotently."""
+
+        session_id = self.store._validate_session_id(session_id)
+        intent_path = self._intent_path(self.store._session_dir(session_id))
+        if not intent_path.is_file():
+            return None
+        with self.store.mutation_lock:
+            with self.people.mutation_lock:
+                intent = self.store._read_json(intent_path)
+                operation = str(intent.get("operation") or "")
+                speaker_id = str(intent.get("speaker_id") or "")
+                person_id = str(intent.get("person_id") or "")
+                session_dir, _manifest, _transcript, speakers, embeddings = self._documents(session_id)
+                speaker = self._speaker(speakers, speaker_id)
+                if speaker is None:
+                    raise ValueError("Could not recover the Person change because the saved Speaker no longer exists.")
+                if operation == "link":
+                    person = self.people.get(person_id)
+                    if person is None:
+                        if not bool(intent.get("create_person")):
+                            raise ValueError("Could not recover the Person link because the Person no longer exists.")
+                        person = self.people.create_person(
+                            str(intent.get("person_name") or ""),
+                            person_id=person_id,
+                        )
+                    evidence = self.evidence(session_id, speaker_id, person_id=person_id)
+                    if not evidence.get("available"):
+                        raise ValueError(
+                            "Could not recover the Person link: "
+                            + str(evidence.get("explanation") or "saved voice evidence is unavailable.")
+                        )
+                    candidate = evidence["candidate"]
+                    self.people.add_meeting_sample(
+                        person_id,
+                        candidate.centroid,
+                        embedding_provider=str(evidence["provider"]),
+                        session_id=session_id,
+                        source_title=str(evidence["session_title"]),
+                        sentence_count=candidate.sentence_count,
+                        speech_seconds=candidate.speech_seconds,
+                        confirmation="user",
+                        cohesion=candidate.cohesion,
+                        outlier_count=candidate.outlier_count,
+                        allow_restore=True,
+                    )
+                    when = _now_iso()
+                    speaker.update({
+                        "person_id": person_id,
+                        "identity_status": "confirmed",
+                        "identity_source": "user",
+                        "identity_confirmed_at": when,
+                    })
+                elif operation == "unlink":
+                    provider = str(embeddings.get("embedding_provider") or "")
+                    if person_id and provider:
+                        self.people.remove_session_template(
+                            person_id,
+                            session_id=session_id,
+                            embedding_provider=provider,
+                        )
+                    self._clear_speaker_link(speaker)
+                    when = _now_iso()
+                else:
+                    raise ValueError("The saved Person transaction has an unsupported operation.")
+                speakers["updated_at"] = when
+                self.store._write_json(session_dir / "speakers.json", speakers)
+                intent_path.unlink(missing_ok=True)
+                return dict(intent)
 
     @staticmethod
     def _speaker(speakers_doc: Mapping[str, Any], speaker_id: str) -> dict[str, Any] | None:
@@ -179,6 +259,9 @@ class SavedPersonIdentityService:
     def decorate_session(self, session: dict[str, Any]) -> dict[str, Any]:
         result = copy.deepcopy(session)
         session_id = str((result.get("summary") or {}).get("id") or (result.get("manifest") or {}).get("id") or "")
+        if session_id and self._intent_path(self.store._session_dir(session_id)).is_file():
+            self._recover_pending_intent(session_id)
+            result = copy.deepcopy(self.store.open_session(session_id))
         state = result.get("speaker_state") if isinstance(result.get("speaker_state"), dict) else {}
         state["people"] = self.people.public_state()
         for speaker in state.get("speakers") or []:
@@ -198,6 +281,9 @@ class SavedPersonIdentityService:
         expected_updated_at: str = "",
     ) -> dict[str, Any]:
         session_id, speaker_id = str(session_id or "").strip(), str(speaker_id or "").strip()
+        recovered = self._recover_pending_intent(session_id)
+        if recovered is not None and str(recovered.get("operation") or "") == "link" and str(recovered.get("speaker_id") or "") == speaker_id:
+            return self.decorate_session(self.store.open_session(session_id))
         with self.store.mutation_lock:
             with self.people.mutation_lock:
                 session_dir, manifest, _transcript, speakers, _embeddings = self._documents(session_id)
@@ -206,52 +292,82 @@ class SavedPersonIdentityService:
                 person = self.people.get(person_id) if person_id else None
                 if person_id and person is None:
                     raise ValueError("Unknown Person.")
-                if person is None:
-                    person = self.people.create_person(person_name)
-                person_id = str(person["id"])
-                evidence = self.evidence(session_id, speaker_id, person_id=person_id)
+                clean_person_name = " ".join(str(person_name or "").strip().split())[:80]
+                if person is None and not clean_person_name:
+                    raise ValueError("Enter a name for the Person.")
+                target_id = str(person["id"]) if person is not None else uuid.uuid4().hex
+                evidence = self.evidence(session_id, speaker_id, person_id=target_id if person is not None else "")
                 if not evidence.get("available"):
                     raise ValueError(str(evidence.get("explanation") or "Saved voice evidence is unavailable."))
-                intent_path = session_dir / ".person-identity-transaction.json"
-                self.store._write_json(intent_path, {"version": 1, "operation": "link", "session_id": session_id, "speaker_id": speaker_id, "person_id": person_id, "created_at": _now_iso()})
-                candidate = evidence["candidate"]
-                self.people.add_meeting_sample(
-                    person_id,
-                    candidate.centroid,
-                    embedding_provider=str(evidence["provider"]),
-                    session_id=session_id,
-                    source_title=str(evidence["session_title"]),
-                    sentence_count=candidate.sentence_count,
-                    speech_seconds=candidate.speech_seconds,
-                    confirmation="user",
-                    cohesion=candidate.cohesion,
-                    outlier_count=candidate.outlier_count,
-                )
                 speaker = self._speaker(speakers, speaker_id)
                 if speaker is None:
                     raise ValueError("This saved Speaker no longer exists.")
-                when = _now_iso()
-                speaker.update({"person_id": person_id, "identity_status": "confirmed", "identity_source": "user", "identity_confirmed_at": when})
-                speakers["updated_at"] = when
-                self.store._write_json(session_dir / "speakers.json", speakers)
-                intent_path.unlink(missing_ok=True)
+                self.store._write_json(self._intent_path(session_dir), {
+                    "version": 1,
+                    "operation": "link",
+                    "session_id": session_id,
+                    "speaker_id": speaker_id,
+                    "person_id": target_id,
+                    "person_name": str(person.get("name") or "") if person is not None else clean_person_name,
+                    "create_person": person is None,
+                    "created_at": _now_iso(),
+                })
+        self._recover_pending_intent(session_id)
         return self.decorate_session(self.store.open_session(session_id))
 
     def unlink(self, session_id: str, speaker_id: str) -> dict[str, Any]:
+        recovered = self._recover_pending_intent(session_id)
+        if recovered is not None and str(recovered.get("operation") or "") == "unlink" and str(recovered.get("speaker_id") or "") == str(speaker_id or ""):
+            return self.decorate_session(self.store.open_session(session_id))
         with self.store.mutation_lock:
             with self.people.mutation_lock:
-                session_dir, _manifest, _transcript, speakers, embeddings = self._documents(session_id)
+                session_dir, _manifest, _transcript, speakers, _embeddings = self._documents(session_id)
                 speaker = self._speaker(speakers, speaker_id)
                 if speaker is None:
                     raise ValueError("This saved Speaker no longer exists.")
                 person_id = str(speaker.get("person_id") or "")
-                if person_id:
-                    self.people.remove_session_template(person_id, session_id=session_id, embedding_provider=str(embeddings.get("embedding_provider") or ""))
-                for key in ("person_id", "identity_status", "identity_source", "identity_confirmed_at"):
-                    speaker.pop(key, None)
-                speakers["updated_at"] = _now_iso()
-                self.store._write_json(session_dir / "speakers.json", speakers)
+                self.store._write_json(self._intent_path(session_dir), {
+                    "version": 1,
+                    "operation": "unlink",
+                    "session_id": str(session_id or ""),
+                    "speaker_id": str(speaker_id or ""),
+                    "person_id": person_id,
+                    "created_at": _now_iso(),
+                })
+        self._recover_pending_intent(session_id)
         return self.decorate_session(self.store.open_session(session_id))
+
+    def unlink_person_everywhere(self, person_id: str) -> int:
+        """Remove one Person id from every saved session without rewriting names."""
+
+        target = str(person_id or "").strip()
+        if not target:
+            return 0
+        changed_sessions = 0
+        for summary in self.store.list_sessions(filter_mode="all"):
+            session_id = str(summary.get("id") or "")
+            if not session_id:
+                continue
+            self._recover_pending_intent(session_id)
+            with self.store.mutation_lock:
+                session_dir, _manifest, _transcript, speakers, _embeddings = self._documents(session_id)
+                changed = False
+                state = speakers.get("speaker_state") if isinstance(speakers.get("speaker_state"), Mapping) else {}
+                for speaker in state.get("speakers") or []:
+                    if not isinstance(speaker, dict) or str(speaker.get("person_id") or "") != target:
+                        continue
+                    self._clear_speaker_link(speaker)
+                    changed = True
+                if changed:
+                    speakers["updated_at"] = _now_iso()
+                    self.store._write_json(session_dir / "speakers.json", speakers)
+                    changed_sessions += 1
+        return changed_sessions
+
+    def remove_session_samples(self, session_id: str) -> int:
+        """Remove Person-owned samples whose source meeting is being deleted."""
+
+        return int(self.people.remove_session_samples(session_id))
 
     def recompute_linked_samples(self, session_id: str) -> None:
         with self.store.mutation_lock:
@@ -259,6 +375,8 @@ class SavedPersonIdentityService:
             state = speakers.get("speaker_state") if isinstance(speakers.get("speaker_state"), Mapping) else {}
             links = [(str(speaker.get("id") or ""), str(speaker.get("person_id") or "")) for speaker in state.get("speakers") or [] if isinstance(speaker, Mapping) and str(speaker.get("person_id") or "")]
         for speaker_id, person_id in links:
+            if self.people.get(person_id) is None:
+                continue
             evidence = self.evidence(session_id, speaker_id, person_id=person_id)
             if evidence.get("available"):
                 candidate = evidence["candidate"]
