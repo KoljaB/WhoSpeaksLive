@@ -162,7 +162,7 @@ class SavedPersonIdentityService:
             include_disabled=True,
         )
         if competitor is not None and candidate.seed_similarity - competitor.similarity < 0.04:
-            return {"available": False, "reason": "ambiguous_person", "explanation": "Stored evidence is too close to another Person's Voice profile."}
+            return {"available": False, "reason": "ambiguous_person", "explanation": "Stored evidence is too close to another Person's saved Voice samples."}
         return {
             "available": True,
             "reason": "",

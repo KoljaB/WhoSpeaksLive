@@ -113,7 +113,7 @@ def ingest_manual_voice_sample(
         centroid = normalize_vector(np.mean(np.stack(retained), axis=0))
         cohesion = float(np.mean([cosine_similarity(item, centroid) for item in retained]))
         if len(retained) > 1 and cohesion < 0.50:
-            raise ValueError("Voice sample is too inconsistent to form a reliable Voice profile sample.")
+            raise ValueError("Voice sample is too inconsistent to form reliable recognition evidence.")
         quality = max(0.0, min(1.0, (1.0 - clipping_ratio) * min(1.0, seconds / 8.0) * max(0.5, cohesion)))
         return library.add_manual_sample(
             person_id,

@@ -71,7 +71,7 @@ class PersonSampleIngestionTests(unittest.TestCase):
                 ingest_manual_voice_sample(library, _EmbeddingClient([[float("nan"), 0.0]]), audio_b64=_wav_data_url(3.0), **common)
             payload = _wav_data_url(3.0)
             ingest_manual_voice_sample(library, _EmbeddingClient(), audio_b64=payload, **common)
-            with self.assertRaisesRegex(ValueError, "exact voice sample"):
+            with self.assertRaisesRegex(ValueError, "exact Voice sample"):
                 ingest_manual_voice_sample(library, _EmbeddingClient(), audio_b64=payload, **common)
 
 

@@ -7,6 +7,7 @@ import unittest
 import numpy as np
 
 from tests.window_diarizer_support import make_window_diarizer
+from window.window_events import RecordingEventBus
 
 
 def _add_meeting_speaker(controller, centroid, *, seconds: float = 8.0, count: int = 3) -> str:
@@ -44,6 +45,74 @@ def _add_learning_record(
 
 
 class WindowPeopleIdentityTests(unittest.TestCase):
+    def test_existing_speaker_emits_identity_when_later_sentence_crosses_evidence_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bus = RecordingEventBus()
+            controller = make_window_diarizer(
+                speaker_library_dir=Path(tmp),
+                bus=bus,
+            )
+            person = controller.person_library.create_person("Alice")
+            controller.person_library.add_meeting_sample(
+                person["id"],
+                [1.0, 0.0],
+                embedding_provider=controller.args.embedding_provider,
+                session_id="earlier-meeting",
+            )
+            controller.set_expected_people([person["id"]])
+            bus.records.clear()
+
+            def apply_sentence(index: int, start: float, end: float) -> dict:
+                return controller._apply_sentence_embedding_decision(
+                    index=index,
+                    base_payload={
+                        "index": index,
+                        "text": "A short recognition sentence.",
+                        "start": start,
+                        "end": end,
+                        "speech_audio_ratio": 1.0,
+                    },
+                    text="A short recognition sentence.",
+                    embedding=np.asarray([1.0, 0.0], dtype=np.float32),
+                    duration_seconds=end - start,
+                    emit_status=False,
+                    run_speaker_refinement=False,
+                )
+
+            label = _add_meeting_speaker(
+                controller,
+                [1.0, 0.0],
+                seconds=2.25,
+                count=1,
+            )
+            controller._ensure_speaker_metadata(label)
+            controller.emit_speaker_state()
+            speaker_events = [record for record in bus.records if record["event"] == "speakers"]
+            self.assertEqual(len(speaker_events), 1)
+            self.assertEqual(
+                speaker_events[-1]["payload"]["speakers"][0]["identity_status"],
+                "unidentified",
+            )
+
+            second_sentence = apply_sentence(1, 2.25, 8.68)
+            self.assertEqual(second_sentence["assigned_speaker"], label)
+            self.assertFalse(second_sentence["created_speaker"])
+            self.assertEqual(controller.memory.export_profiles()[0]["sentence_count"], 2)
+            self.assertEqual(
+                controller._speaker_metadata[label]["identity_status"],
+                "suggested",
+            )
+            speaker_events = [record for record in bus.records if record["event"] == "speakers"]
+            self.assertEqual(len(speaker_events), 2)
+            self.assertEqual(
+                speaker_events[-1]["payload"]["speakers"][0]["display_name"],
+                "Likely Alice",
+            )
+
+            apply_sentence(2, 8.68, 15.11)
+            speaker_events = [record for record in bus.records if record["event"] == "speakers"]
+            self.assertEqual(len(speaker_events), 2)
+
     def test_manual_sample_is_immutable_and_learning_policy_is_independent(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             controller = make_window_diarizer(speaker_library_dir=Path(tmp))
@@ -77,7 +146,7 @@ class WindowPeopleIdentityTests(unittest.TestCase):
             self.assertEqual(controller.person_library.get(person_id)["profile_version"], profile_version)
             self.assertTrue(controller.person_library.get(person_id)["recognition_policy"]["manual_samples"])
 
-    def test_expected_people_are_session_scoped_and_unknown_remains_possible(self) -> None:
+    def test_expected_and_recognition_choices_persist_while_unknown_remains_possible(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             seed = make_window_diarizer(speaker_library_dir=root)
@@ -88,15 +157,29 @@ class WindowPeopleIdentityTests(unittest.TestCase):
 
             controller = make_window_diarizer(speaker_library_dir=root)
             controller.set_expected_people([bob["id"]])
+            controller.set_person_recognition(alice["id"], False)
             label = _add_meeting_speaker(controller, [1.0, 0.0])
             controller._ensure_speaker_metadata(label)
             state = controller.speaker_state()
             self.assertTrue(state["expected_people_filter_active"])
             self.assertEqual(state["expected_person_ids"], [bob["id"]])
             self.assertEqual(state["speakers"][0]["identity_status"], "unidentified")
-            self.assertTrue(controller.person_library.get(alice["id"])["recognition_enabled"])
+            self.assertFalse(controller.person_library.get(alice["id"])["recognition_enabled"])
             controller._reset_runtime_session_state(emit=False)
-            self.assertFalse(controller.speaker_state()["expected_people_filter_active"])
+            reset_state = controller.speaker_state()
+            self.assertTrue(reset_state["expected_people_filter_active"])
+            self.assertEqual(reset_state["expected_person_ids"], [bob["id"]])
+
+            reloaded = make_window_diarizer(speaker_library_dir=root)
+            reloaded_state = reloaded.speaker_state()
+            self.assertEqual(reloaded_state["expected_person_ids"], [bob["id"]])
+            reloaded_people = {person["id"]: person for person in reloaded_state["people"]}
+            self.assertFalse(reloaded_people[alice["id"]]["recognition_enabled"])
+
+            new_person_state = reloaded.create_person("Charlie")
+            charlie = next(person for person in new_person_state["people"] if person["name"] == "Charlie")
+            self.assertFalse(charlie["expected"])
+            self.assertNotIn(charlie["id"], new_person_state["expected_person_ids"])
 
     def test_returning_person_is_suggested_then_confirmation_learns_new_condition(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -110,6 +193,7 @@ class WindowPeopleIdentityTests(unittest.TestCase):
 
             remembered = first.remember_speaker_as_person(label)
             alice = remembered["people"][0]
+            first.set_expected_people([alice["id"]])
             self.assertEqual(remembered["speakers"][0]["identity_status"], "confirmed")
             self.assertEqual(alice["template_count"], 1)
 

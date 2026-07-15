@@ -193,8 +193,8 @@ class WindowSpeakerStateMixin:
             "people": self.person_library.public_state(
                 embedding_provider=str(self.args.embedding_provider),
             ),
-            "expected_person_ids": sorted(getattr(self, "_expected_person_ids", None) or []),
-            "expected_people_filter_active": getattr(self, "_expected_person_ids", None) is not None,
+            "expected_person_ids": sorted(self._expected_person_ids),
+            "expected_people_filter_active": True,
         }
 
     def emit_speaker_state(self) -> dict[str, Any]:

@@ -77,6 +77,7 @@ from window.realtime_preview_backends import normalize_preview_engine
 from window.sherpa_onnx_models import ensure_sherpa_onnx_model, validate_sherpa_onnx_model_dir
 from window.review_flags import annotate_review
 from window.window_remote_asr import RemoteWindowAsrClient
+from window.window_speech_enhancement import SpeechEnhancementClient
 from window.window_text import (
     is_embedding_candidate_text,
     round_optional,
@@ -100,6 +101,44 @@ from window.window_speaker_refinement import (
 
 
 class WindowModelRuntimeMixin:
+    def _load_speech_enhancement(self) -> None:
+        if not (
+            bool(getattr(self.args, "enhance_asr", False))
+            or bool(getattr(self.args, "enhance_embeddings", False))
+        ):
+            return
+        if self._speech_enhancement_client is not None:
+            return
+        client = SpeechEnhancementClient(
+            getattr(self.args, "speech_enhancement_url", "http://127.0.0.1:8651"),
+            getattr(self.args, "speech_enhancement_timeout_seconds", 120.0),
+        )
+        self.bus.emit("status", {"message": f"Checking speech enhancement at {client.base_url}."})
+        health = client.health()
+        self._speech_enhancement_client = client
+        self.bus.emit(
+            "status",
+            {
+                "message": (
+                    f"Speech enhancement ready at {client.base_url} "
+                    f"(sample_rate={health.get('sample_rate')}, segment_seconds={health.get('segment_seconds')})."
+                )
+            },
+        )
+
+    def _enhance_audio(self, audio: np.ndarray, sample_rate: int, *, path: str) -> tuple[np.ndarray, int]:
+        enabled = (
+            bool(getattr(self.args, "enhance_asr", False))
+            if path == "asr"
+            else bool(getattr(self.args, "enhance_embeddings", False))
+        )
+        if not enabled:
+            return audio, sample_rate
+        client = self._speech_enhancement_client
+        if client is None:
+            raise RuntimeError("Speech enhancement was enabled but its client was not initialized.")
+        return client.enhance(audio, sample_rate)
+
     def _load_model(self) -> None:
         with self._model_lock:
             if self._model is not None:
@@ -178,6 +217,16 @@ class WindowModelRuntimeMixin:
                 )
         words.sort(key=lambda item: (item.start, item.end))
         return self._filter_asr_no_speech_words(words), segment_count
+
+    def _transcribe_enhanced_final_audio_text(
+        self,
+        model: Any,
+        audio: np.ndarray,
+        sample_rate: int,
+    ) -> str:
+        enhanced, enhanced_rate = self._enhance_audio(audio, sample_rate, path="asr")
+        words, _segment_count = self._transcribe_audio_words(model, enhanced, enhanced_rate)
+        return "".join(word.text for word in words).strip()
 
     @staticmethod
     def _optional_float(value: Any) -> float | None:
@@ -363,6 +412,8 @@ class WindowModelRuntimeMixin:
                     pass
 
     def _embed_audio_chunk(self, audio: np.ndarray, sample_rate: int, suffix: str) -> np.ndarray:
+        if np.any(np.asarray(audio, dtype=np.float32)):
+            audio, sample_rate = self._enhance_audio(audio, sample_rate, path="embeddings")
         return self._embed_audio_chunk_with_client(self.embedding, audio, sample_rate, suffix)
 
     def _embed_live_audio_chunk(self, audio: np.ndarray, sample_rate: int, suffix: str) -> np.ndarray:

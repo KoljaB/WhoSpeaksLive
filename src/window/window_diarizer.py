@@ -173,13 +173,14 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
         self._person_learning_lock = threading.RLock()
         self._person_learning_states: dict[str, Any] = {}
         self._person_learning_fallback_session_id = ""
-        self._expected_person_ids: set[str] | None = None
+        self._expected_person_ids: set[str] = self.person_library.expected_person_ids()
         self._speaker_group_name = ""
         self._speaker_metadata: dict[str, dict[str, Any]] = {}
         self._seed_profiles: list[dict[str, Any]] = []
         self._seed_live_profiles: list[dict[str, Any]] = []
         self._model: Any = None
         self._model_lock = threading.Lock()
+        self._speech_enhancement_client: Any = None
         self._lifecycle_lock = threading.RLock()
         self._active_run: DiarizationRun | None = None
         self._thread: threading.Thread | None = None

@@ -50,8 +50,8 @@ During a run you can:
 
 - Rename a speaker.
 - Clear speaker memory.
-- Link a meeting Speaker to a Person with **Recognize in future meetings…**.
-- Add independently manageable manual Voice samples to a Person's Voice profile.
+- Link a meeting Speaker to a Person with **Link to Person…**.
+- Add independently manageable manual Voice samples to a Person.
 - Save a speaker group locally.
 - Export a portable speaker group JSON.
 - Import a speaker group JSON from disk.

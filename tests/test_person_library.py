@@ -83,6 +83,31 @@ class PersonLibraryTests(unittest.TestCase):
             self.assertEqual(library.get(first["id"])["name"], "Alex")
             self.assertEqual(library.get(second["id"])["name"], "Alexandra")
 
+    def test_expected_and_recognition_choices_persist_and_new_people_default_off(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "people.json"
+            library = PersonLibrary(path)
+            alice = library.create_person("Alice")
+            bob = library.create_person("Bob")
+
+            self.assertEqual(library.expected_person_ids(), set())
+            self.assertFalse(library.get(alice["id"])["expected"])
+            self.assertFalse(library.get(bob["id"])["expected"])
+
+            library.set_expected_people([alice["id"]])
+            library.set_recognition_enabled(alice["id"], False)
+
+            reloaded = PersonLibrary(path)
+            self.assertEqual(reloaded.expected_person_ids(), {alice["id"]})
+            people = {person["id"]: person for person in reloaded.public_state()}
+            self.assertTrue(people[alice["id"]]["expected"])
+            self.assertFalse(people[alice["id"]]["recognition_enabled"])
+            self.assertFalse(people[bob["id"]]["expected"])
+
+            charlie = reloaded.create_person("Charlie")
+            self.assertFalse(charlie["expected"])
+            self.assertEqual(reloaded.expected_person_ids(), {alice["id"]})
+
     def test_multiple_manual_samples_can_be_disabled_and_deleted_with_audio(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

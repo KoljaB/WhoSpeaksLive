@@ -1,4 +1,4 @@
-"""Versioned storage and conservative matching for Person-owned Voice profiles."""
+"""Versioned storage and conservative matching for Person-owned Voice samples."""
 
 from __future__ import annotations
 
@@ -166,6 +166,7 @@ class PersonLibrary:
         person = dict(raw)
         person["id"] = str(person.get("id") or uuid.uuid4().hex)
         person["name"] = _clean(person.get("name"))
+        person["expected"] = bool(person.get("expected", False))
         person["recognition_enabled"] = bool(person.get("recognition_enabled", True))
         person["recognition_policy"] = _policy(person.get("recognition_policy"))
         person["voice_samples"] = [dict(item) for item in (person.get("voice_samples") or []) if isinstance(item, Mapping)]
@@ -208,7 +209,7 @@ class PersonLibrary:
     @staticmethod
     def _new_person(name: str, *, person_id: str = "") -> dict[str, Any]:
         now = _now_iso()
-        return {"id": person_id or uuid.uuid4().hex, "name": name, "recognition_enabled": True, "recognition_policy": _policy(), "created_at": now, "updated_at": now, "profile_version": 0, "voice_samples": []}
+        return {"id": person_id or uuid.uuid4().hex, "name": name, "expected": False, "recognition_enabled": True, "recognition_policy": _policy(), "created_at": now, "updated_at": now, "profile_version": 0, "voice_samples": []}
 
     def _find_locked(self, person_id: str) -> dict[str, Any]:
         target = str(person_id or "").strip()
@@ -279,6 +280,37 @@ class PersonLibrary:
             person.update({"recognition_enabled": bool(enabled), "updated_at": _now_iso()})
             self._save_locked()
 
+    def expected_person_ids(self) -> set[str]:
+        with self._lock:
+            return {
+                str(person.get("id") or "")
+                for person in self._document["people"]
+                if bool(person.get("expected", False)) and str(person.get("id") or "")
+            }
+
+    def set_expected_people(self, person_ids: Iterable[str]) -> None:
+        requested = {str(person_id or "").strip() for person_id in person_ids}
+        requested.discard("")
+        with self._lock:
+            known = {
+                str(person.get("id") or "")
+                for person in self._document["people"]
+                if str(person.get("id") or "")
+            }
+            unknown = requested - known
+            if unknown:
+                raise ValueError("Expected-People roster contains an unknown Person.")
+            changed_at = _now_iso()
+            changed = False
+            for person in self._document["people"]:
+                expected = str(person.get("id") or "") in requested
+                if bool(person.get("expected", False)) == expected:
+                    continue
+                person.update({"expected": expected, "updated_at": changed_at})
+                changed = True
+            if changed:
+                self._save_locked()
+
     def set_recognition_policy(self, person_id: str, updates: Mapping[str, Any]) -> dict[str, Any]:
         with self._lock:
             person = self._find_locked(person_id)
@@ -340,7 +372,7 @@ class PersonLibrary:
             for sample in self._samples(person):
                 raw = sample.get("raw_audio") if isinstance(sample.get("raw_audio"), Mapping) else {}
                 if sample.get("kind") == MANUAL_SAMPLE and raw.get("sha256") == checksum:
-                    raise ValueError("This exact voice sample is already in the Person's Voice profile.")
+                    raise ValueError("This exact Voice sample is already saved for this Person.")
             sample_id = uuid.uuid4().hex
             suffix = Path(str(filename or "sample.wav")).suffix.lower()
             if not suffix or len(suffix) > 10 or not suffix[1:].isalnum():
@@ -448,7 +480,7 @@ class PersonLibrary:
                     path = self._raw_path(sample)
                     if path is not None and path.exists(): path.unlink()
                 except (OSError, ValueError) as exc: failures.append(str(exc))
-            if failures: raise ValueError("Could not remove all retained Voice sample audio; Voice profile was kept unchanged: " + "; ".join(failures[:3]))
+            if failures: raise ValueError("Could not remove all retained Voice sample audio; the Person was kept unchanged: " + "; ".join(failures[:3]))
             person["voice_samples"] = []
             person.update({"profile_version": int(person.get("profile_version") or 0) + 1, "updated_at": _now_iso()}); self._save_locked()
 
@@ -521,5 +553,5 @@ class PersonLibrary:
                     state = str(sample.get("state") or ACTIVE_SAMPLE)
                     public_samples.append({"id": str(sample.get("id") or ""), "kind": str(sample.get("kind") or ""), "state": state, "effective_state": state if compatible else "incompatible", "compatibility_reason": "" if compatible else "incompatible_provider_or_dimension", "label": _clean(sample.get("label"), 120), "created_at": str(sample.get("created_at") or ""), "updated_at": str(sample.get("updated_at") or ""), "source_type": str(source.get("type") or ""), "session_id": str(source.get("session_id") or ""), "session_title": _clean(source.get("session_title"), 120), "speech_seconds": round(float(evidence.get("speech_seconds") or 0.0), 1), "sentence_count": int(evidence.get("sentence_count") or 0), "quality": round(float(evidence.get("quality") or 0.0), 2), "raw_audio_retained": bool(isinstance(sample.get("raw_audio"), Mapping) and sample["raw_audio"].get("retained"))})
                 active = [item for item in public_samples if item["effective_state"] == ACTIVE_SAMPLE]
-                people.append({"id": str(person.get("id") or ""), "name": _clean(person.get("name")), "recognition_enabled": bool(person.get("recognition_enabled", True)), "recognition_policy": _policy(person.get("recognition_policy")), "recognition_ready": bool(active), "recognition_unavailable_reason": "" if active else "no_active_compatible_voice_samples", "voice_sample_count": len(public_samples), "active_voice_sample_count": len(active), "manual_sample_count": sum(item["kind"] == MANUAL_SAMPLE for item in public_samples), "meeting_sample_count": sum(item["kind"] == MEETING_SAMPLE for item in public_samples), "template_count": len(public_samples), "profile_version": int(person.get("profile_version") or 0), "last_confirmed_at": max((item["updated_at"] for item in public_samples), default=""), "voice_samples": public_samples})
+                people.append({"id": str(person.get("id") or ""), "name": _clean(person.get("name")), "expected": bool(person.get("expected", False)), "recognition_enabled": bool(person.get("recognition_enabled", True)), "recognition_policy": _policy(person.get("recognition_policy")), "recognition_ready": bool(active), "recognition_unavailable_reason": "" if active else "no_active_compatible_voice_samples", "voice_sample_count": len(public_samples), "active_voice_sample_count": len(active), "manual_sample_count": sum(item["kind"] == MANUAL_SAMPLE for item in public_samples), "meeting_sample_count": sum(item["kind"] == MEETING_SAMPLE for item in public_samples), "template_count": len(public_samples), "profile_version": int(person.get("profile_version") or 0), "last_confirmed_at": max((item["updated_at"] for item in public_samples), default=""), "voice_samples": public_samples})
             return sorted(people, key=lambda item: (item["name"].casefold(), item["id"]))

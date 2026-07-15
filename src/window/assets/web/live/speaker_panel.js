@@ -586,14 +586,11 @@ export function installSpeakerPanel(ctx) {
     if (!people.length) {
       const empty = document.createElement("span");
       empty.className = "people-empty";
-      empty.textContent = "No People yet. Create a Person here or link a meeting Speaker.";
+      empty.textContent = "No people saved yet. Add a person here or link a meeting Speaker.";
       peopleList.appendChild(empty);
       return false;
     }
-    const filterActive = Boolean(ctx.owners.speakers.speakerLibraryState.expected_people_filter_active);
-    const expected = new Set(filterActive
-      ? (ctx.owners.speakers.speakerLibraryState.expected_person_ids || [])
-      : people.map(person => person.id));
+    const expected = new Set(ctx.owners.speakers.speakerLibraryState.expected_person_ids || []);
     people.forEach(person => {
       const row = document.createElement("div");
       row.className = "person-row";
@@ -612,8 +609,10 @@ export function installSpeakerPanel(ctx) {
         : "Recognition unavailable · No active compatible Voice samples";
       identity.appendChild(details);
       heading.appendChild(identity);
+      const persistentToggles = document.createElement("div");
+      persistentToggles.className = "person-persistent-toggles";
       const expectedLabel = document.createElement("label");
-      expectedLabel.className = "person-candidate";
+      expectedLabel.className = "person-expected person-setting-toggle person-policy-toggle";
       const expectedCheckbox = document.createElement("input");
       expectedCheckbox.type = "checkbox";
       expectedCheckbox.checked = expected.has(person.id);
@@ -630,10 +629,17 @@ export function installSpeakerPanel(ctx) {
         }
       });
       expectedLabel.appendChild(expectedCheckbox);
-      expectedLabel.appendChild(document.createTextNode("Expected this meeting"));
-      heading.appendChild(expectedLabel);
+      const expectedCopy = document.createElement("span");
+      expectedCopy.className = "setting-copy";
+      const expectedTitle = document.createElement("strong");
+      expectedTitle.textContent = "Expected this meeting";
+      const expectedHint = document.createElement("span");
+      expectedHint.textContent = "Keep this Person eligible for matching in this and future meetings.";
+      expectedCopy.appendChild(expectedTitle);
+      expectedCopy.appendChild(expectedHint);
+      expectedLabel.appendChild(expectedCopy);
       const recognition = document.createElement("label");
-      recognition.className = "person-recognition person-policy-toggle";
+      recognition.className = "person-recognition person-setting-toggle person-policy-toggle";
       const recognitionCheckbox = document.createElement("input");
       recognitionCheckbox.type = "checkbox";
       recognitionCheckbox.checked = Boolean(person.recognition_enabled);
@@ -654,6 +660,8 @@ export function installSpeakerPanel(ctx) {
       recognitionCopy.appendChild(recognitionTitle);
       recognitionCopy.appendChild(recognitionHint);
       recognition.appendChild(recognitionCopy);
+      persistentToggles.appendChild(expectedLabel);
+      persistentToggles.appendChild(recognition);
       const policy = document.createElement("details");
       policy.className = "person-policy";
       const policySummary = document.createElement("summary");
@@ -702,9 +710,9 @@ export function installSpeakerPanel(ctx) {
       const deletePerson = document.createElement("button");
       deletePerson.type = "button";
       deletePerson.className = "person-danger-action";
-      deletePerson.textContent = "Delete Person";
+      deletePerson.textContent = "Delete person";
       deletePerson.addEventListener("click", async () => {
-        if (!window.confirm(`Delete Person ${person.name} and all Voice data? Historical transcript labels will be kept.`)) return;
+        if (!window.confirm(`Delete ${person.name} and all saved Voice samples? Historical transcript labels will be kept.`)) return;
         try {
           await ensureSessionOwner("delete a Person");
           const result = await post("/api/people/delete", {person_id: person.id});
@@ -759,7 +767,7 @@ export function installSpeakerPanel(ctx) {
         sampleRow.appendChild(sampleActions); samples.appendChild(sampleRow);
       });
       row.appendChild(heading);
-      row.appendChild(recognition);
+      row.appendChild(persistentToggles);
       row.appendChild(policy);
       row.appendChild(actions);
       row.appendChild(samples);

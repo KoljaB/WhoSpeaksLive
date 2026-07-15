@@ -11,6 +11,7 @@ import argparse
 import base64
 from collections import Counter
 from datetime import datetime
+import hashlib
 import json
 import mimetypes
 import os
@@ -235,6 +236,44 @@ def ratio_summary(final_payloads: list[dict[str, Any]], threshold: float) -> dic
     }
 
 
+def retranscribe_final_payloads_with_enhancement(
+    controller: WindowDiarizer,
+    final_payloads: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], float]:
+    """Re-ASR accepted sentence clips once, after raw growing-window splitting."""
+
+    started = time.monotonic()
+    updated_payloads: list[dict[str, Any]] = []
+    model = controller._model
+    if model is None:
+        raise RuntimeError("Final enhanced ASR requested without a loaded ASR backend.")
+    total = len(final_payloads)
+    for position, original in enumerate(final_payloads, start=1):
+        payload = dict(original)
+        start = float(payload.get("start") or 0.0)
+        end = float(payload.get("end") or start)
+        audio, sample_rate = controller._audio_window_copy(start, end)
+        raw_text = str(payload.get("text") or "")
+        enhanced_text = controller._transcribe_enhanced_final_audio_text(model, audio, sample_rate)
+        source_text_hash = hashlib.sha256(enhanced_text.encode("utf-8")).hexdigest()
+        payload.update({
+            "text": enhanced_text,
+            "source_text_hash": source_text_hash,
+            "source_revision": source_text_hash,
+            "pre_enhancement_asr_text": raw_text,
+            "final_asr_enhanced": True,
+        })
+        updated_payloads.append(payload)
+        if position % 25 == 0 or position == total:
+            print(f"Enhanced final ASR={position}/{total}", flush=True)
+
+    analysis_records: list[dict[str, Any]] = []
+    for payload in updated_payloads:
+        analysis_records.append({"time": time.time(), "event": "final", "payload": payload})
+        analysis_records.append({"time": time.time(), "event": "sentence", "payload": payload})
+    return analysis_records, updated_payloads, time.monotonic() - started
+
+
 def run_window_replay_validation(args: Any) -> int:
     from realtime.realtime_speakerdiarize import analyze_trace_against_canonical, read_canonical_segments
 
@@ -279,8 +318,13 @@ def run_window_replay_validation(args: Any) -> int:
     finally:
         controller.shutdown()
 
-    elapsed = time.monotonic() - started
     analysis_records, final_payloads = build_window_validation_records(bus.records)
+    final_asr_retranscription_seconds = 0.0
+    if bool(getattr(args, "enhance_asr", False)):
+        analysis_records, final_payloads, final_asr_retranscription_seconds = (
+            retranscribe_final_payloads_with_enhancement(controller, final_payloads)
+        )
+    elapsed = time.monotonic() - started
     canonical_segments = read_canonical_segments(args.validation_canonical)
     summary = analyze_trace_against_canonical(
         analysis_records,
@@ -300,6 +344,23 @@ def run_window_replay_validation(args: Any) -> int:
         "elapsed_seconds": round(elapsed, 4),
         "validation_replay_speed": args.validation_replay_speed,
         "validation_keep_preview": args.validation_keep_preview,
+        "final_asr_retranscription_seconds": round(final_asr_retranscription_seconds, 6),
+        "speech_enhancement": {
+            "url": getattr(args, "speech_enhancement_url", ""),
+            "enhance_asr": bool(getattr(args, "enhance_asr", False)),
+            "enhance_embeddings": bool(getattr(args, "enhance_embeddings", False)),
+            "stats": (
+                controller._speech_enhancement_client.stats()
+                if controller._speech_enhancement_client is not None
+                else {
+                    "request_count": 0,
+                    "input_seconds": 0.0,
+                    "http_seconds": 0.0,
+                    "queue_seconds": 0.0,
+                    "processing_seconds": 0.0,
+                }
+            ),
+        },
         "embedding_provider": args.embedding_provider,
         "embeddings_backend": args.embeddings_backend,
         "embedding_device": args.embedding_device,

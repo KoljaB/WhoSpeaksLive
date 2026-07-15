@@ -1,24 +1,24 @@
-# People and Voice profiles
+# People and voice recognition
 
 The goal is to recognize returning people conservatively while keeping meeting-local Speakers separate from durable People and their Voice samples.
 
 ## The model
 
-A **Speaker** such as `S2` is one cluster inside one meeting. It stays meeting-local, including when the meeting is saved. A **Person** is a durable identity with a stable ID; two People may have the same display name. A **Voice profile** is all recognition evidence owned by one Person, and a **Voice sample** is one independently manageable manual or meeting-derived source.
+A **Speaker** such as `S2` is one cluster inside one meeting. It stays meeting-local, including when the meeting is saved. A **Person** is a durable identity with a stable ID; two People may have the same display name. Each Person owns **Voice samples**, which are independently manageable manual or meeting-derived recognition sources.
 
 ```text
 Meeting
 └── Speaker S2 ── linked to ── Person Alice
 
 Person Alice
-└── Voice profile
+└── Voice samples
     ├── Manual Voice sample · headset
     ├── Manual Voice sample · telephone
     ├── Meeting Voice sample · laptop
     └── Meeting Voice sample · room microphone
 ```
 
-Naming a Speaker changes a meeting label only. It does not create a Person or store biometric evidence. Use **Recognize in future meetings…** to create or select a Person and explicitly link the Speaker.
+Naming a Speaker changes a meeting label only. It does not create a Person or store biometric evidence. Use **Link to Person…** to create or select a Person and explicitly link the Speaker.
 
 ## Suggestions and confirmation
 
@@ -36,7 +36,7 @@ Multiple manual samples may coexist. Each can be disabled, re-enabled, relabeled
 
 The original manual audio is retained locally under the Person and sample-owned `voice-samples/` directory so it can be audited or re-embedded. Public API state reports that retention but never exposes the absolute path. **Delete** removes the retained audio and representations. **Forget voice data** removes every sample while preserving the Person and historical transcript labels. A cleanup failure is reported and the profile is not claimed as deleted.
 
-## Recognition policy and expected People
+## Recognition policy and expected people
 
 Each Person has independent controls:
 
@@ -46,7 +46,7 @@ Each Person has independent controls:
 
 Both source categories and learning are on by default. Turning learning off does not hide stored meeting samples. Excluding meeting samples from matching does not turn learning off.
 
-**Expected this meeting** is a session-scoped candidate roster. It does not change the Person's global recognition-enabled state, and a new session clears the roster.
+**Recognition active** and **Expected this meeting** are both remembered for each Person. **Recognition active** controls whether the Person's compatible Voice samples may participate in matching at all. **Expected this meeting** controls the smaller candidate roster used for automatic suggestions. New People start with **Expected this meeting** off, and the last checkbox choices remain unchanged across recordings, new sessions, and application restarts until the user changes them.
 
 ## Confirmed meeting learning
 
@@ -58,7 +58,7 @@ Derived samples record their trusted anchors. Disabling or deleting their only t
 
 Saved review uses a dedicated operation addressed by `session_id` and `speaker_id`; it never routes saved `S1` to an unrelated live `S1`. The operation reads the saved transcript's current corrected assignments, stored embedding records, Speaker profiles, and provider metadata. It robustly reconstructs one sample, writes the saved Speaker–Person link and Person sample idempotently, and recomputes that sample after later row corrections.
 
-When compatible evidence is missing, **Recognize in future meetings…** remains visible but disabled with a stable factual explanation. Saved enrollment does not require ownership of an unrelated live session.
+When compatible evidence is missing, **Link to Person…** remains visible but disabled with a stable factual explanation. Saved enrollment does not require ownership of an unrelated live session.
 
 Saved-session and People writes use a fixed lock order—session store, then People library—and a durable transaction-intent file. Retrying the same operation repairs an interrupted second write without duplicating a sample.
 
