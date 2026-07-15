@@ -106,6 +106,7 @@ from window.session_store import DEFAULT_SESSION_DIR, SessionStore  # noqa: E402
 from window.session_lease import SessionLease, SessionLeaseError, SessionLeaseStateMachine  # noqa: E402
 from window.session_lease_coordinator import SessionLeaseCoordinator  # noqa: E402
 from window.session_persistence import SessionPersistenceCoordinator  # noqa: E402
+from window.saved_person_identity import SavedPersonIdentityService  # noqa: E402
 from window.media_manager import MediaManager  # noqa: E402
 from window.live_translation import LiveTranslationCoordinator  # noqa: E402
 
@@ -229,6 +230,12 @@ class LiveWindowApplication:
         self.bus = bus
         self.controller = controller
         self.session_store = SessionStore(Path(getattr(args, "session_dir", DEFAULT_SESSION_DIR)))
+        person_library = getattr(self.controller, "person_library", None)
+        self.saved_person_identity = (
+            SavedPersonIdentityService(self.session_store, person_library)
+            if person_library is not None
+            else None
+        )
         self.translation = LiveTranslationCoordinator(args, bus)
         translation_error = str(self.translation.public_config(refresh_status=False).get("error") or "")
         if translation_error:
@@ -317,7 +324,10 @@ class LiveWindowApplication:
         return {"ok": True, "session": summary}
 
     def open_saved_session(self, session_id: str) -> dict[str, Any]:
-        return {"ok": True, "session": self.session_store.open_session(session_id)}
+        session = self.session_store.open_session(session_id)
+        if self.saved_person_identity is not None:
+            session = self.saved_person_identity.decorate_session(session)
+        return {"ok": True, "session": session}
 
     def rename_saved_session(self, session_id: str, title: str) -> dict[str, Any]:
         return {"ok": True, "session": self.session_store.rename_session(session_id, title)}
@@ -333,6 +343,55 @@ class LiveWindowApplication:
 
     def rename_saved_session_speaker(self, session_id: str, speaker_id: str, name: str) -> dict[str, Any]:
         return {"ok": True, "session": self.session_store.rename_speaker(session_id, speaker_id, name)}
+
+    def reassign_saved_session_rows(
+        self,
+        session_id: str,
+        indexes: list[int],
+        speaker_id: str,
+    ) -> dict[str, Any]:
+        self.session_store.reassign_rows(session_id, indexes, speaker_id)
+        if self.saved_person_identity is not None:
+            self.saved_person_identity.recompute_linked_samples(session_id)
+        return self.open_saved_session(session_id)
+
+    def mark_saved_session_rows_correct(self, session_id: str, indexes: list[int]) -> dict[str, Any]:
+        self.session_store.mark_rows_correct(session_id, indexes)
+        if self.saved_person_identity is not None:
+            self.saved_person_identity.recompute_linked_samples(session_id)
+        return self.open_saved_session(session_id)
+
+    def link_saved_session_person(
+        self,
+        session_id: str,
+        speaker_id: str,
+        *,
+        person_id: str = "",
+        person_name: str = "",
+        expected_updated_at: str = "",
+    ) -> dict[str, Any]:
+        if self.saved_person_identity is None:
+            raise RuntimeError("People library is unavailable.")
+        return {
+            "ok": True,
+            "session": self.saved_person_identity.link(
+                session_id,
+                speaker_id,
+                person_id=person_id,
+                person_name=person_name,
+                expected_updated_at=expected_updated_at,
+            ),
+            "speaker_state": self.controller.speaker_state(),
+        }
+
+    def unlink_saved_session_person(self, session_id: str, speaker_id: str) -> dict[str, Any]:
+        if self.saved_person_identity is None:
+            raise RuntimeError("People library is unavailable.")
+        return {
+            "ok": True,
+            "session": self.saved_person_identity.unlink(session_id, speaker_id),
+            "speaker_state": self.controller.speaker_state(),
+        }
 
     def _meeting_intelligence_session_id(self, session_id: str) -> str:
         requested = str(session_id or "").strip()

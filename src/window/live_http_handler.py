@@ -240,6 +240,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_error(404)
         elif path == "/api/speakers":
             self._send_json({"ok": True, "speaker_state": self.server.controller.speaker_state()})
+        elif path == "/api/people":
+            self._send_json({"ok": True, "speaker_state": self.server.controller.speaker_state()})
         elif path == "/api/translation/status":
             self._send_json({"ok": True, "translation": self.server.translation.public_config()})
         elif path == "/api/bootstrap":
@@ -357,6 +359,36 @@ class Handler(BaseHTTPRequestHandler):
                     str(payload.get("session_id") or ""),
                     str(payload.get("speaker_id") or ""),
                     str(payload.get("name") or ""),
+                ))
+            elif path == "/api/sessions/people/link":
+                self._send_json(self.server.link_saved_session_person(
+                    str(payload.get("session_id") or ""),
+                    str(payload.get("speaker_id") or ""),
+                    person_id=str(payload.get("person_id") or ""),
+                    person_name=str(payload.get("person_name") or ""),
+                    expected_updated_at=str(payload.get("expected_updated_at") or ""),
+                ))
+            elif path == "/api/sessions/people/unlink":
+                self._send_json(self.server.unlink_saved_session_person(
+                    str(payload.get("session_id") or ""),
+                    str(payload.get("speaker_id") or ""),
+                ))
+            elif path == "/api/sessions/corrections/reassign":
+                raw_indexes = payload.get("indexes")
+                if not isinstance(raw_indexes, list):
+                    raise ValueError("indexes must be a list.")
+                self._send_json(self.server.reassign_saved_session_rows(
+                    str(payload.get("session_id") or ""),
+                    [int(index) for index in raw_indexes],
+                    str(payload.get("speaker_id") or ""),
+                ))
+            elif path == "/api/sessions/corrections/mark-correct":
+                raw_indexes = payload.get("indexes")
+                if not isinstance(raw_indexes, list):
+                    raise ValueError("indexes must be a list.")
+                self._send_json(self.server.mark_saved_session_rows_correct(
+                    str(payload.get("session_id") or ""),
+                    [int(index) for index in raw_indexes],
                 ))
             elif path == "/api/meeting-intelligence/report":
                 self._send_json(self.server.meeting_intelligence_report(str(payload.get("session_id") or "")))
@@ -589,11 +621,117 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
             elif path == "/api/speakers/reference":
                 self._require_session(payload)
-                state = self.server.controller.add_reference_speaker(
-                    str(payload.get("name", "")),
+                state = self.server.controller.add_manual_voice_sample(
+                    str(payload.get("person_id") or ""),
                     str(payload.get("filename", "reference.wav")),
                     str(payload.get("audio_b64", "")),
+                    label=str(payload.get("label") or ""),
+                    source_type=str(payload.get("source_type") or "manual_upload"),
                 )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/create":
+                self._require_session(payload)
+                state = self.server.controller.create_person(str(payload.get("name") or ""))
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/rename":
+                self._require_session(payload)
+                state = self.server.controller.rename_person(
+                    str(payload.get("person_id") or ""),
+                    str(payload.get("name") or ""),
+                )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/remember":
+                self._require_session(payload)
+                state = self.server.controller.remember_speaker_as_person(
+                    str(payload.get("speaker_id") or ""),
+                    str(payload.get("name") or ""),
+                    str(payload.get("person_id") or ""),
+                )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/confirm":
+                self._require_session(payload)
+                state = self.server.controller.confirm_speaker_person(
+                    str(payload.get("speaker_id") or ""),
+                    str(payload.get("person_id") or ""),
+                )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/reject":
+                self._require_session(payload)
+                state = self.server.controller.reject_speaker_person(
+                    str(payload.get("speaker_id") or ""),
+                    str(payload.get("person_id") or ""),
+                )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/unlink":
+                self._require_session(payload)
+                state = self.server.controller.unlink_speaker_person(
+                    str(payload.get("speaker_id") or ""),
+                )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/recognition":
+                self._require_session(payload)
+                state = self.server.controller.set_person_recognition(
+                    str(payload.get("person_id") or ""),
+                    bool(payload.get("enabled", True)),
+                )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/policy":
+                self._require_session(payload)
+                updates = payload.get("recognition_policy")
+                if not isinstance(updates, dict):
+                    raise ValueError("recognition_policy must be an object.")
+                state = self.server.controller.set_person_recognition_policy(
+                    str(payload.get("person_id") or ""),
+                    updates,
+                )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/sample/add":
+                self._require_session(payload)
+                state = self.server.controller.add_manual_voice_sample(
+                    str(payload.get("person_id") or ""),
+                    str(payload.get("filename") or "voice-sample.wav"),
+                    str(payload.get("audio_b64") or ""),
+                    label=str(payload.get("label") or ""),
+                    source_type=str(payload.get("source_type") or "manual_upload"),
+                )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/sample/state":
+                self._require_session(payload)
+                state = self.server.controller.set_voice_sample_enabled(
+                    str(payload.get("person_id") or ""),
+                    str(payload.get("sample_id") or ""),
+                    bool(payload.get("enabled", True)),
+                )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/sample/label":
+                self._require_session(payload)
+                state = self.server.controller.label_voice_sample(
+                    str(payload.get("person_id") or ""),
+                    str(payload.get("sample_id") or ""),
+                    str(payload.get("label") or ""),
+                )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/sample/delete":
+                self._require_session(payload)
+                state = self.server.controller.delete_voice_sample(
+                    str(payload.get("person_id") or ""),
+                    str(payload.get("sample_id") or ""),
+                )
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/expected":
+                self._require_session(payload)
+                raw_ids = payload.get("person_ids")
+                if raw_ids is not None and not isinstance(raw_ids, list):
+                    raise ValueError("person_ids must be a list or null.")
+                state = self.server.controller.set_expected_people(raw_ids)
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/forget-voice":
+                self._require_session(payload)
+                state = self.server.controller.forget_person_voice(str(payload.get("person_id") or ""))
+                self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+            elif path == "/api/people/delete":
+                self._require_session(payload)
+                state = self.server.controller.delete_person(str(payload.get("person_id") or ""))
                 self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
             else:
                 self.send_error(404)

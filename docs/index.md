@@ -27,6 +27,7 @@ Follow these in order for a new machine:
 - [Live translation](translation.md): configure compact multi-language transcript views and local, sidecar, or LLM translation providers.
 - [Spanish executive meeting](spanish-executive-meeting.md): operate a six-person weekly leadership meeting with live Spanish transcription and an automatic Spanish report.
 - [Speaker libraries](speaker-libraries.md): save, load, import, export, and reuse known speakers.
+- [People and cross-meeting recognition](people-and-recognition.md): remember people, review suggested matches, and safely improve recognition across recording conditions.
 - [Public diarization events](public-events.md): subscribe to stable transcript and speaker-change events from Python tools.
 - [Validation and scoring](validation-and-scoring.md): evaluate diarization and live-speaker behavior.
 - [ElevenLabs Scribe baseline dataset](datasets/elevenlabs-scribe-baseline-dataset.md): local dataset map for 27 baseline videos, transcripts, sentence boundaries, and embeddings.

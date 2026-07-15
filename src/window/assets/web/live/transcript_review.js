@@ -414,7 +414,10 @@ export function installTranscriptReview(ctx) {
       group_name: state.group_name || "",
       groups: Array.isArray(state.groups) ? state.groups : [],
       speakers: Array.isArray(state.speakers) ? state.speakers : [],
+      people: Array.isArray(state.people) ? state.people : [],
       embedding_provider: state.embedding_provider || "",
+      expected_person_ids: Array.isArray(state.expected_person_ids) ? state.expected_person_ids : [],
+      expected_people_filter_active: Boolean(state.expected_people_filter_active),
     };
     ctx.owners.speakers.speakerNames = {};
     ctx.owners.speakers.speakerLibraryState.speakers.forEach(speaker => {

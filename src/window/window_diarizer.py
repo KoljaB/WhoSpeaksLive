@@ -35,6 +35,7 @@ from speakers.speaker_embedding_cluster import (
     cosine_similarity,
     normalize_vector,
 )
+from speakers.person_library import PersonLibrary
 from window.window_config import (
     DEFAULT_KROKO_PREVIEW_AUTO_DOWNLOAD,
     DEFAULT_REALTIMESTT_ROOT,
@@ -133,9 +134,10 @@ from window.window_diarizer_live_scoring import WindowLiveScoringMixin
 from window.window_diarizer_live_probe import WindowLiveProbeMixin
 from window.window_diarizer_transcription import WindowTranscriptionMixin
 from window.window_diarizer_runtime_state import WindowRuntimeStateMixin
+from window.window_diarizer_people import WindowPersonIdentityMixin
 
 
-class WindowDiarizer(WindowSessionViewMixin, WindowSpeakerStateMixin, WindowSpeakerReviewMixin, WindowSpeakerLibraryMixin, WindowRuntimeAudioMixin, WindowRuntimeStateMixin, WindowAssignmentDecisionMixin, WindowRefinementRulesMixin, WindowRefinementMixin, WindowModelRuntimeMixin, WindowLiveScoringMixin, WindowLiveProbeMixin, WindowTranscriptionMixin):
+class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSpeakerStateMixin, WindowSpeakerReviewMixin, WindowSpeakerLibraryMixin, WindowRuntimeAudioMixin, WindowRuntimeStateMixin, WindowAssignmentDecisionMixin, WindowRefinementRulesMixin, WindowRefinementMixin, WindowModelRuntimeMixin, WindowLiveScoringMixin, WindowLiveProbeMixin, WindowTranscriptionMixin):
     def __init__(
         self,
         args: argparse.Namespace | DiarizationConfig,
@@ -164,9 +166,14 @@ class WindowDiarizer(WindowSessionViewMixin, WindowSpeakerStateMixin, WindowSpea
             maxlen=max(1, int(getattr(self.args, "live_speaker_ema_count", 3)))
         )
         self.speaker_library_dir = Path(getattr(args, "speaker_library_dir", DEFAULT_SPEAKER_LIBRARY_DIR))
+        self.person_library = PersonLibrary(self.speaker_library_dir / "people.json")
         self._session_state = DiarizationSession()
         self._assignment_engine = SpeakerAssignmentEngine()
         self._speaker_lock = self._session_state.lock
+        self._person_learning_lock = threading.RLock()
+        self._person_learning_states: dict[str, Any] = {}
+        self._person_learning_fallback_session_id = ""
+        self._expected_person_ids: set[str] | None = None
         self._speaker_group_name = ""
         self._speaker_metadata: dict[str, dict[str, Any]] = {}
         self._seed_profiles: list[dict[str, Any]] = []
@@ -462,6 +469,13 @@ class WindowDiarizer(WindowSessionViewMixin, WindowSpeakerStateMixin, WindowSpea
                 run.mark_failed(f"auxiliary workers missed shutdown deadline: {', '.join(alive)}")
             self._stop_embedding_worker()
             self._stop_live_memory_update_worker()
+            if hasattr(self, "person_library"):
+                try:
+                    self.consolidate_confirmed_people()
+                except Exception as exc:
+                    self.bus.emit("status", {
+                        "message": f"Could not update remembered people from the completed meeting: {exc}"
+                    })
             with self._lifecycle_lock:
                 preview_transcriber = self._preview_transcriber
                 self._preview_transcriber = None

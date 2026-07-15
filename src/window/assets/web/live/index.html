@@ -336,18 +336,23 @@
           <div class="speaker-panel-header">
             <h2 id="speakerPanelTitle" class="speaker-panel-title">Detected speakers (0)</h2>
             <span class="speaker-panel-actions">
-              <button id="clearSpeakers" class="clear-speakers-button" type="button">Clear speakers</button>
-              <button id="addReferenceSpeaker" class="add-speaker-button" type="button" aria-expanded="false">Add speaker</button>
+              <button id="addReferenceSpeaker" class="add-speaker-button" type="button" aria-expanded="false">+ Create Person</button>
+              <details class="speaker-panel-menu">
+                <summary aria-label="More speaker actions" title="More speaker actions">•••</summary>
+                <div class="speaker-panel-menu-popover">
+                  <button id="clearSpeakers" class="clear-speakers-button" type="button">Reset live speaker detection…</button>
+                </div>
+              </details>
             </span>
           </div>
           <div id="manualSpeakerComposer" class="manual-speaker-composer" hidden>
-            <input id="manualSpeakerName" class="speaker-row-name-input manual-speaker-name" type="text" placeholder="Speaker name" autocomplete="off" aria-label="New speaker name">
+            <input id="manualSpeakerName" class="speaker-row-name-input manual-speaker-name" type="text" placeholder="Person name" autocomplete="off" aria-label="New Person name">
             <div id="manualSpeakerReferenceDock"></div>
           </div>
           <div id="speakerList" class="speaker-list"></div>
           <div id="speakerEditorDock" hidden>
             <form id="referenceSpeakerForm" class="speaker-editor" hidden>
-              <div class="speaker-reference-title">Add voice reference</div>
+              <div class="speaker-reference-title">Add voice sample</div>
               <div class="speaker-reference-actions">
                 <label class="speaker-reference-button">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -408,34 +413,73 @@
           </div>
         </div>
         <div class="speaker-tab-panel speaker-settings-panel" data-speaker-panel="settings" hidden>
-          <label class="sensitivity" title="Controls how easily the diarizer creates a new speaker profile.">
-            <span class="sensitivity-title">New speaker</span>
-            <span class="sensitivity-row">
-              <input id="newSpeakerSensitivity" type="range" min="1" max="5" step="1">
-              <strong id="newSpeakerSensitivityLabel"></strong>
-            </span>
-          </label>
-          <label class="speaker-setting-toggle" title="When enabled, prototype evidence may show a low-opacity speaker hint on UNKNOWN transcript rows without committing the label.">
-            <input id="speakerRefinementUnknownTentative" type="checkbox">
-            <span>Tentative UNKNOWN hints</span>
-          </label>
-          <label class="speaker-setting-toggle" title="When enabled, later evidence may commit UNKNOWN transcript rows to a known or newly confirmed speaker.">
-            <input id="speakerRefinementUnknownCommit" type="checkbox">
-            <span>Commit UNKNOWN later</span>
-          </label>
-          <label class="speaker-setting-toggle" title="When enabled, later prototype evidence may change an already committed speaker label.">
-            <input id="allowSpeakerReassignment" type="checkbox">
-            <span>Reassign labeled speakers</span>
-          </label>
-          <div class="speaker-tools">
-            <strong>Speaker groups</strong>
+          <section class="settings-section detection-settings">
+            <header class="settings-section-header">
+              <div>
+                <h3>Speaker detection</h3>
+                <p>Control when the live diarizer creates or revises meeting-local Speakers.</p>
+              </div>
+            </header>
+            <label class="sensitivity setting-field" title="Controls how easily the diarizer creates a new speaker profile.">
+              <span class="setting-copy">
+                <strong class="sensitivity-title">New speaker sensitivity</strong>
+                <span>Higher values separate similar voices more readily.</span>
+              </span>
+              <span class="sensitivity-row">
+                <input id="newSpeakerSensitivity" type="range" min="1" max="5" step="1">
+                <strong id="newSpeakerSensitivityLabel" class="sensitivity-value"></strong>
+              </span>
+            </label>
+            <div class="speaker-setting-list">
+              <label class="speaker-setting-toggle" title="When enabled, prototype evidence may show a low-opacity speaker hint on UNKNOWN transcript rows without committing the label.">
+                <input id="speakerRefinementUnknownTentative" type="checkbox">
+                <span class="setting-copy">
+                  <strong>Tentative UNKNOWN hints</strong>
+                  <span>Preview a likely Speaker without changing the transcript label.</span>
+                </span>
+              </label>
+              <label class="speaker-setting-toggle" title="When enabled, later evidence may commit UNKNOWN transcript rows to a known or newly confirmed speaker.">
+                <input id="speakerRefinementUnknownCommit" type="checkbox">
+                <span class="setting-copy">
+                  <strong>Commit UNKNOWN later</strong>
+                  <span>Assign an UNKNOWN row after stronger evidence arrives.</span>
+                </span>
+              </label>
+              <label class="speaker-setting-toggle" title="When enabled, later prototype evidence may change an already committed speaker label.">
+                <input id="allowSpeakerReassignment" type="checkbox">
+                <span class="setting-copy">
+                  <strong>Reassign labeled speakers</strong>
+                  <span>Allow later evidence to correct an existing Speaker label.</span>
+                </span>
+              </label>
+            </div>
+          </section>
+          <section class="settings-section speaker-tools people-tools">
+            <header class="settings-section-header">
+              <div>
+                <h3>People and Voice profiles</h3>
+                <p>Choose who is expected, control recognition, and manage independently retained Voice samples.</p>
+              </div>
+            </header>
+            <div class="settings-callout">
+              Expected People are eligible for this meeting, but are never forced onto a detected Speaker.
+            </div>
+            <div id="peopleList" class="people-list"></div>
+          </section>
+          <section class="settings-section speaker-tools speaker-group-tools">
+            <header class="settings-section-header">
+              <div>
+                <h3>Legacy Speaker-group files</h3>
+                <p>Import or export compatibility profiles. New cross-meeting identity should use People and Voice profiles.</p>
+              </div>
+            </header>
             <span class="speaker-file-actions">
               <button id="loadSpeakerGroup" type="button">Load file</button>
               <button id="saveSpeakerGroup" type="button">Save file</button>
               <button id="saveCorrectedSpeakerGroup" type="button">Save corrected</button>
             </span>
             <input id="speakerGroupFile" type="file" accept=".whospeaks-speakers.json,.json,application/json" hidden>
-          </div>
+          </section>
         </div>
       </section>
       <details class="control-card status-card" open>

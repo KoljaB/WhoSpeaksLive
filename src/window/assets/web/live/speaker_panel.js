@@ -1,5 +1,5 @@
 export function installSpeakerPanel(ctx) {
-  const {addReferenceSpeakerButton, audio, bulkCorrectionSpeaker, clearSpeakersButton, createSpeakerOptionValue, manualSpeakerComposer, manualSpeakerName, manualSpeakerReferenceDock, recordReferenceButton, recordReferenceButtonLabel, referenceRecordSeconds, referenceSpeakerFile, referenceSpeakerForm, sentences, source, speakerEditorDock, speakerList, speakerPanelTitle, stop, svgNamespace, targetCaptureSampleRate, video} = ctx;
+  const {addReferenceSpeakerButton, audio, bulkCorrectionSpeaker, clearSpeakersButton, createSpeakerOptionValue, manualSpeakerComposer, manualSpeakerName, manualSpeakerReferenceDock, peopleList, recordReferenceButton, recordReferenceButtonLabel, referenceRecordSeconds, referenceSpeakerFile, referenceSpeakerForm, sentences, source, speakerEditorDock, speakerList, speakerPanelTitle, stop, svgNamespace, targetCaptureSampleRate, video} = ctx;
   const clearTranscriptSelection = (...args) => ctx.api.clearTranscriptSelection(...args), commonSelectedSpeakerId = (...args) => ctx.api.commonSelectedSpeakerId(...args), connect = (...args) => ctx.api.connect(...args), copyTranscript = (...args) => ctx.api.copyTranscript(...args), correctionStatus = (...args) => ctx.api.correctionStatus(...args), downloadTranscript = (...args) => ctx.api.downloadTranscript(...args), ensureSessionOwner = (...args) => ctx.api.ensureSessionOwner(...args), fetchSavedSessions = (...args) => ctx.api.fetchSavedSessions(...args), loadSavedSessionReview = (...args) => ctx.api.loadSavedSessionReview(...args), log = (...args) => ctx.api.log(...args), post = (...args) => ctx.api.post(...args), renderSentence = (...args) => ctx.api.renderSentence(...args), resampleFloat32 = (...args) => ctx.api.resampleFloat32(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), scheduleSavedSessionsRefresh = (...args) => ctx.api.scheduleSavedSessionsRefresh(...args), selectedSpeaker = (...args) => ctx.api.selectedSpeaker(...args), selectedTranscriptIndexes = (...args) => ctx.api.selectedTranscriptIndexes(...args), selectedTranscriptRows = (...args) => ctx.api.selectedTranscriptRows(...args), sessionControlsLocked = (...args) => ctx.api.sessionControlsLocked(...args), setSpeakerFilter = (...args) => ctx.api.setSpeakerFilter(...args), speakerColor = (...args) => ctx.api.speakerColor(...args), speakerCurrentSessionSentenceCount = (...args) => ctx.api.speakerCurrentSessionSentenceCount(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), speakerPanelCountUnit = (...args) => ctx.api.speakerPanelCountUnit(...args), speakerPanelName = (...args) => ctx.api.speakerPanelName(...args), speakerPanelSentenceCount = (...args) => ctx.api.speakerPanelSentenceCount(...args), speakerPanelSpeakingSeconds = (...args) => ctx.api.speakerPanelSpeakingSeconds(...args), syncCorrectionUndoState = (...args) => ctx.api.syncCorrectionUndoState(...args), updateSpeakerState = (...args) => ctx.api.updateSpeakerState(...args);
   function speakerSpeakingTimeText(seconds) {
     const totalSeconds = Math.max(0, Number(seconds || 0));
@@ -13,11 +13,19 @@ export function installSpeakerPanel(ctx) {
     const total = Number(count || 0);
     return `${total} ${unit}${total === 1 ? "" : "s"} · ${speakerSpeakingTimeText(speakingSeconds)}`;
   }
+  function speakerMeetingName(speaker) {
+    if (speaker.name) return speaker.name;
+    if (speaker.identity_status === "suggested" && speaker.suggested_person_id) {
+      const match = String(speaker.id || "").match(/(\d+)$/);
+      if (match) return `Speaker ${Number(match[1]) + 1}`;
+    }
+    return speakerPanelName(speaker);
+  }
   function speakerReferenceText(speaker) {
     const hasReference = Boolean(speaker.reference_audio || speaker.locked || speaker.source === "reference");
     if (!hasReference) return "";
     const seconds = Number(speaker.speech_seconds || 0);
-    return seconds > 0 ? `Reference voice added (${Math.round(seconds)}s)` : "Reference voice added";
+    return seconds > 0 ? `Legacy Speaker-group profile (${Math.round(seconds)}s)` : "Legacy Speaker-group profile";
   }
   function appendSvgElement(svg, tagName, attributes) {
     const element = document.createElementNS(svgNamespace, tagName);
@@ -64,6 +72,10 @@ export function installSpeakerPanel(ctx) {
     switchTrack.className = "speaker-filter-switch";
     switchTrack.setAttribute("aria-hidden", "true");
     button.appendChild(createSpeakerFilterIcon(mode));
+    const visibleLabel = document.createElement("span");
+    visibleLabel.className = "speaker-filter-label";
+    visibleLabel.textContent = label;
+    button.appendChild(visibleLabel);
     button.appendChild(switchTrack);
     return button;
   }
@@ -86,7 +98,7 @@ export function installSpeakerPanel(ctx) {
     }
     return svg;
   }
-  function createTranscriptActionButton(kind, speaker) {
+  function createTranscriptActionButton(kind, speaker, options = {}) {
     const speakerName = speaker ? speakerPanelName(speaker) : "";
     const label = `${kind === "download" ? "Download" : "Copy"} ${speakerName ? `${speakerName} transcript` : "transcript"}`;
     const button = document.createElement("button");
@@ -95,6 +107,11 @@ export function installSpeakerPanel(ctx) {
     button.title = label;
     button.setAttribute("aria-label", label);
     button.appendChild(createTranscriptActionIcon(kind));
+    if (options.visibleLabel) {
+      const text = document.createElement("span");
+      text.textContent = kind === "download" ? "Download transcript" : "Copy transcript";
+      button.appendChild(text);
+    }
     button.addEventListener("click", event => {
       event.stopPropagation();
       if (kind === "download") {
@@ -231,11 +248,11 @@ export function installSpeakerPanel(ctx) {
     controls.appendChild(button);
     return controls;
   }
-  function createSpeakerDeleteButton(speaker) {
+  function createSpeakerDeleteButton(speaker, label = "Delete Speaker") {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "speaker-delete-button speaker-profile-action";
-    button.textContent = "Delete";
+    button.textContent = label;
     button.disabled = sessionControlsLocked() || savedSessionReviewOpen();
     button.addEventListener("click", event => {
       event.stopPropagation();
@@ -284,17 +301,20 @@ export function installSpeakerPanel(ctx) {
       appendSvgElement(svg, "path", {d: `M${x1} ${y1}v${Number(y2) - Number(y1)}`});
     });
     indicator.appendChild(svg);
-    indicator.appendChild(document.createTextNode("Live"));
+    indicator.appendChild(document.createTextNode("Speaking now"));
     return indicator;
   }
   function isSpeakerRowControl(target) {
-    return target instanceof Element && target.closest(".speaker-row-name-input, .speaker-filter-toggle, .speaker-transcript-action, .speaker-profile-action");
+    return target instanceof Element && (
+      target.closest("button, input, select, label, form")
+      || target.closest(".speaker-identity-controls")
+    );
   }
   function setEditingSpeaker(speakerId, options = {}) {
     const requestedId = speakerId || "";
     const collapse = requestedId && ctx.owners.reference.editingSpeakerId === requestedId && !options.keepOpen;
     ctx.owners.reference.editingSpeakerId = collapse ? "" : requestedId;
-    ctx.owners.reference.pendingSpeakerNameFocusId = ctx.owners.reference.editingSpeakerId && options.focusName !== false
+    ctx.owners.reference.pendingSpeakerNameFocusId = ctx.owners.reference.editingSpeakerId && options.focusName === true
       ? ctx.owners.reference.editingSpeakerId
       : "";
     if (ctx.owners.reference.editingSpeakerId) {
@@ -306,11 +326,15 @@ export function installSpeakerPanel(ctx) {
     renderSpeakerPanel();
   }
   function syncSpeakerEditor(speaker) {
-    if (!speaker || savedSessionReviewOpen()) {
+    if (!speaker || savedSessionReviewOpen() || !speaker.person_id) {
       referenceSpeakerForm.hidden = true;
       speakerEditorDock.appendChild(referenceSpeakerForm);
       return;
     }
+    ctx.owners.reference.voiceSamplePersonId = speaker.person_id;
+    const person = personById(speaker.person_id);
+    const title = referenceSpeakerForm.querySelector(".speaker-reference-title");
+    if (title) title.textContent = `Add voice sample to ${person ? person.name : "Person"}`;
     referenceSpeakerForm.hidden = false;
   }
   function syncManualSpeakerComposer() {
@@ -338,6 +362,8 @@ export function installSpeakerPanel(ctx) {
     manualSpeakerName.value = "";
   }
   function selectedSpeakerReferenceName() {
+    const targetPerson = personById(ctx.owners.reference.voiceSamplePersonId || "");
+    if (targetPerson) return targetPerson.name;
     if (ctx.owners.reference.manualSpeakerComposerOpen) {
       return manualSpeakerName.value.trim();
     }
@@ -348,8 +374,8 @@ export function installSpeakerPanel(ctx) {
     return speaker ? speakerPanelName(speaker).trim() : "";
   }
   async function commitSpeakerNameInput(speaker, input) {
-    if (!speaker || !input || input.dataset.saving === "1") return;
-    const currentName = speakerPanelName(speaker);
+    if (!speaker || !input || input.dataset.saving === "1") return false;
+    const currentName = speakerMeetingName(speaker);
     const name = input.value.trim();
     if (!name) {
       input.value = currentName;
@@ -378,8 +404,9 @@ export function installSpeakerPanel(ctx) {
         input.dataset.saving = "";
         input.value = currentName;
         log(`Rename failed: ${error.message}`);
+        return false;
       }
-      return;
+      return true;
     }
     try {
       await ensureSessionOwner("rename speakers");
@@ -387,16 +414,18 @@ export function installSpeakerPanel(ctx) {
       input.disabled = false;
       input.dataset.saving = "";
       log(error.message);
-      return;
+      return false;
     }
     try {
       const result = await post("/api/speakers/rename", {speaker_id: speaker.id, name});
       updateSpeakerState(result.speaker_state);
+      return true;
     } catch (error) {
       input.disabled = false;
       input.dataset.saving = "";
       input.value = currentName;
       log(`Rename failed: ${error.message}`);
+      return false;
     }
   }
   function speakerGroupFileName(name) {
@@ -420,6 +449,323 @@ export function installSpeakerPanel(ctx) {
     link.remove();
     URL.revokeObjectURL(url);
   }
+  function identityActionButton(label, className, action, disabledReason = "") {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `speaker-identity-button ${className || ""}`.trim();
+    button.textContent = label;
+    button.disabled = Boolean(disabledReason);
+    if (disabledReason) button.title = disabledReason;
+    button.addEventListener("click", async event => {
+      event.stopPropagation();
+      button.disabled = true;
+      try {
+        if (!savedSessionReviewOpen()) await ensureSessionOwner("manage remembered people");
+        await action();
+      } catch (error) {
+        log(error.message || String(error));
+      } finally {
+        button.disabled = false;
+      }
+    });
+    return button;
+  }
+  function peopleState() {
+    return Array.isArray(ctx.owners.speakers.speakerLibraryState.people)
+      ? ctx.owners.speakers.speakerLibraryState.people
+      : [];
+  }
+  function personById(personId) {
+    return peopleState().find(person => person.id === personId) || null;
+  }
+  function choosePersonTarget(speaker) {
+    const people = peopleState();
+    const choices = people.map((person, index) => `${index + 1}. ${person.name} (${String(person.id).slice(0, 6)})`).join("\n");
+    const defaultName = String(speaker.name || "").trim();
+    const answer = window.prompt(
+      `${choices ? `Choose an existing Person by number:\n${choices}\n\n` : ""}Enter a number, or enter a new Person name:`,
+      defaultName,
+    );
+    if (answer === null) return null;
+    const selectedIndex = Number(answer.trim());
+    if (Number.isInteger(selectedIndex) && selectedIndex >= 1 && selectedIndex <= people.length) {
+      return {person_id: people[selectedIndex - 1].id, person_name: ""};
+    }
+    const personName = answer.trim();
+    return personName ? {person_id: "", person_name: personName} : null;
+  }
+  function openVoiceSampleForm(person) {
+    ctx.owners.reference.voiceSamplePersonId = person.id;
+    ctx.owners.reference.manualSpeakerComposerOpen = false;
+    ctx.owners.reference.editingSpeakerId = "";
+    referenceSpeakerForm.hidden = false;
+    const title = referenceSpeakerForm.querySelector(".speaker-reference-title");
+    if (title) title.textContent = `Add voice sample to ${person.name}`;
+    peopleList.appendChild(referenceSpeakerForm);
+  }
+  function createSpeakerIdentityControls(speaker) {
+    const controls = document.createElement("span");
+    controls.className = "speaker-identity-controls";
+    const saved = savedSessionReviewOpen();
+    if (!saved && speaker.identity_status === "suggested" && speaker.suggested_person_id) {
+      const status = document.createElement("span");
+      status.className = "speaker-identity-status suggested";
+      status.textContent = `Likely ${speaker.suggested_person_name}`;
+      controls.appendChild(status);
+      controls.appendChild(identityActionButton("Confirm", "confirm", async () => {
+        const result = await post("/api/people/confirm", {
+          speaker_id: speaker.id,
+          person_id: speaker.suggested_person_id,
+        });
+        updateSpeakerState(result.speaker_state);
+        log(`Confirmed ${speaker.suggested_person_name}.`);
+      }));
+      controls.appendChild(identityActionButton(`Not ${speaker.suggested_person_name}`, "reject", async () => {
+        const result = await post("/api/people/reject", {
+          speaker_id: speaker.id,
+          person_id: speaker.suggested_person_id,
+        });
+        updateSpeakerState(result.speaker_state);
+        log(`Kept ${speaker.id} unidentified.`);
+      }));
+      return controls;
+    }
+    if (speaker.identity_status === "confirmed" && speaker.person_id) {
+      const person = personById(speaker.person_id);
+      const personName = person ? person.name : (speaker.name || "Person");
+      const status = document.createElement("span");
+      status.className = "speaker-identity-status confirmed";
+      status.textContent = `Linked to ${personName} · Recognition active`;
+      controls.appendChild(status);
+      if (!saved && person) {
+        controls.appendChild(identityActionButton("Add voice sample", "sample", async () => openVoiceSampleForm(person)));
+      }
+      controls.appendChild(identityActionButton("Unlink", "reject", async () => {
+        const result = saved
+          ? await post("/api/sessions/people/unlink", {session_id: ctx.owners.sessions.openedSavedSessionId, speaker_id: speaker.id})
+          : await post("/api/people/unlink", {speaker_id: speaker.id});
+        if (saved && result.session) loadSavedSessionReview(result.session, {quiet:true});
+        else updateSpeakerState(result.speaker_state);
+      }));
+      return controls;
+    }
+    const unavailable = saved && speaker.future_recognition && !speaker.future_recognition.available
+      ? (speaker.future_recognition.explanation || "Compatible saved voice evidence is unavailable.")
+      : "";
+    controls.appendChild(identityActionButton("Link to Person…", "remember", async () => {
+      const target = choosePersonTarget(speaker);
+      if (!target) return;
+      if (saved) {
+        const result = await post("/api/sessions/people/link", {
+          session_id: ctx.owners.sessions.openedSavedSessionId,
+          speaker_id: speaker.id,
+          ...target,
+        });
+        if (result.session) loadSavedSessionReview(result.session, {quiet:true});
+      } else {
+        const result = await post("/api/people/remember", {
+          speaker_id: speaker.id,
+          name: target.person_name,
+          person_id: target.person_id,
+        });
+        updateSpeakerState(result.speaker_state);
+      }
+    }, unavailable));
+    if (unavailable) {
+      const reason = document.createElement("span");
+      reason.className = "speaker-identity-unavailable";
+      reason.textContent = unavailable;
+      controls.appendChild(reason);
+    }
+    return controls;
+  }
+  function renderPeopleList() {
+    if (!peopleList) return;
+    peopleList.textContent = "";
+    const people = peopleState();
+    if (!people.length) {
+      const empty = document.createElement("span");
+      empty.className = "people-empty";
+      empty.textContent = "No People yet. Create a Person here or link a meeting Speaker.";
+      peopleList.appendChild(empty);
+      return false;
+    }
+    const filterActive = Boolean(ctx.owners.speakers.speakerLibraryState.expected_people_filter_active);
+    const expected = new Set(filterActive
+      ? (ctx.owners.speakers.speakerLibraryState.expected_person_ids || [])
+      : people.map(person => person.id));
+    people.forEach(person => {
+      const row = document.createElement("div");
+      row.className = "person-row";
+      const heading = document.createElement("div");
+      heading.className = "person-heading";
+      const identity = document.createElement("div");
+      identity.className = "person-identity";
+      const name = document.createElement("strong");
+      name.className = "person-name";
+      name.textContent = person.name;
+      identity.appendChild(name);
+      const details = document.createElement("span");
+      details.className = "person-details";
+      details.textContent = person.recognition_ready
+        ? `${person.active_voice_sample_count} active Voice sample${person.active_voice_sample_count === 1 ? "" : "s"}`
+        : "Recognition unavailable · No active compatible Voice samples";
+      identity.appendChild(details);
+      heading.appendChild(identity);
+      const expectedLabel = document.createElement("label");
+      expectedLabel.className = "person-candidate";
+      const expectedCheckbox = document.createElement("input");
+      expectedCheckbox.type = "checkbox";
+      expectedCheckbox.checked = expected.has(person.id);
+      expectedCheckbox.disabled = savedSessionReviewOpen();
+      expectedCheckbox.addEventListener("change", async () => {
+        if (expectedCheckbox.checked) expected.add(person.id); else expected.delete(person.id);
+        try {
+          await ensureSessionOwner("set expected People");
+          const result = await post("/api/people/expected", {person_ids: [...expected]});
+          updateSpeakerState(result.speaker_state);
+        } catch (error) {
+          expectedCheckbox.checked = !expectedCheckbox.checked;
+          log(error.message || String(error));
+        }
+      });
+      expectedLabel.appendChild(expectedCheckbox);
+      expectedLabel.appendChild(document.createTextNode("Expected this meeting"));
+      heading.appendChild(expectedLabel);
+      const recognition = document.createElement("label");
+      recognition.className = "person-recognition person-policy-toggle";
+      const recognitionCheckbox = document.createElement("input");
+      recognitionCheckbox.type = "checkbox";
+      recognitionCheckbox.checked = Boolean(person.recognition_enabled);
+      recognitionCheckbox.addEventListener("change", async () => {
+        try {
+          await ensureSessionOwner("change Person recognition");
+          const result = await post("/api/people/recognition", {person_id: person.id, enabled: recognitionCheckbox.checked});
+          updateSpeakerState(result.speaker_state);
+        } catch (error) { recognitionCheckbox.checked = !recognitionCheckbox.checked; log(error.message || String(error)); }
+      });
+      recognition.appendChild(recognitionCheckbox);
+      const recognitionCopy = document.createElement("span");
+      recognitionCopy.className = "setting-copy";
+      const recognitionTitle = document.createElement("strong");
+      recognitionTitle.textContent = "Recognition active";
+      const recognitionHint = document.createElement("span");
+      recognitionHint.textContent = "Allow compatible Voice samples from this Person to participate in matching.";
+      recognitionCopy.appendChild(recognitionTitle);
+      recognitionCopy.appendChild(recognitionHint);
+      recognition.appendChild(recognitionCopy);
+      const policy = document.createElement("details");
+      policy.className = "person-policy";
+      const policySummary = document.createElement("summary");
+      policySummary.textContent = "Recognition sources";
+      policy.appendChild(policySummary);
+      [["manual_samples", "Manually added Voice samples"], ["meeting_samples", "Confirmed meeting samples"], ["learn_from_confirmed_meetings", "Learn from confirmed meetings"]].forEach(([key, label]) => {
+        const control = document.createElement("label");
+        control.className = "person-policy-option";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = Boolean((person.recognition_policy || {})[key]);
+        input.addEventListener("change", async () => {
+          try {
+            await ensureSessionOwner("customize recognition policy");
+            const result = await post("/api/people/policy", {person_id: person.id, recognition_policy: {[key]: input.checked}});
+            updateSpeakerState(result.speaker_state);
+          } catch (error) { input.checked = !input.checked; log(error.message || String(error)); }
+        });
+        control.appendChild(input); control.appendChild(document.createTextNode(label)); policy.appendChild(control);
+      });
+      const actions = document.createElement("span");
+      actions.className = "person-actions";
+      const addSample = document.createElement("button");
+      addSample.type = "button";
+      addSample.className = "person-primary-action";
+      addSample.textContent = "Add Voice sample";
+      addSample.addEventListener("click", () => openVoiceSampleForm(person));
+      const forget = document.createElement("button");
+      forget.type = "button";
+      forget.className = "person-forget-button";
+      forget.textContent = "Forget voice data";
+      forget.disabled = !person.voice_sample_count;
+      forget.addEventListener("click", async () => {
+        if (!window.confirm(`Permanently delete all retained audio and Voice samples for ${person.name}? The Person and historical transcript labels will be kept.`)) return;
+        forget.disabled = true;
+        try {
+          await ensureSessionOwner("forget Voice data");
+          const result = await post("/api/people/forget-voice", {person_id: person.id});
+          updateSpeakerState(result.speaker_state);
+          log(`Forgot Voice data for ${person.name}; transcript labels were kept.`);
+        } catch (error) {
+          log(error.message || String(error));
+        }
+      });
+      actions.appendChild(addSample); actions.appendChild(forget);
+      const deletePerson = document.createElement("button");
+      deletePerson.type = "button";
+      deletePerson.className = "person-danger-action";
+      deletePerson.textContent = "Delete Person";
+      deletePerson.addEventListener("click", async () => {
+        if (!window.confirm(`Delete Person ${person.name} and all Voice data? Historical transcript labels will be kept.`)) return;
+        try {
+          await ensureSessionOwner("delete a Person");
+          const result = await post("/api/people/delete", {person_id: person.id});
+          updateSpeakerState(result.speaker_state);
+        } catch (error) { log(error.message || String(error)); }
+      });
+      actions.appendChild(deletePerson);
+      const samples = document.createElement("div");
+      samples.className = "voice-sample-list";
+      const samplesHeading = document.createElement("div");
+      samplesHeading.className = "voice-sample-heading";
+      samplesHeading.textContent = person.voice_sample_count
+        ? `Voice samples (${person.voice_sample_count})`
+        : "No Voice samples yet";
+      samples.appendChild(samplesHeading);
+      (person.voice_samples || []).forEach(sample => {
+        const sampleRow = document.createElement("div");
+        sampleRow.className = "voice-sample-row";
+        const kind = sample.kind === "manual_reference" ? "Manual" : "Confirmed meeting";
+        const sampleCopy = document.createElement("span");
+        sampleCopy.className = "voice-sample-copy";
+        const sampleLabel = document.createElement("strong");
+        sampleLabel.textContent = sample.label;
+        const sampleMeta = document.createElement("span");
+        sampleMeta.textContent = `${kind} · ${sample.speech_seconds}s · ${sample.effective_state}`;
+        sampleCopy.appendChild(sampleLabel);
+        sampleCopy.appendChild(sampleMeta);
+        sampleRow.appendChild(sampleCopy);
+        if (sample.raw_audio_retained) sampleRow.title = "Original audio is retained locally for audit and re-embedding.";
+        const sampleActions = document.createElement("span");
+        sampleActions.className = "voice-sample-actions";
+        const toggle = document.createElement("button");
+        toggle.type = "button"; toggle.textContent = sample.state === "disabled" ? "Enable" : "Disable";
+        toggle.addEventListener("click", async () => {
+          try {
+            await ensureSessionOwner("manage Voice samples");
+            const result = await post("/api/people/sample/state", {person_id: person.id, sample_id: sample.id, enabled: sample.state === "disabled"});
+            updateSpeakerState(result.speaker_state);
+          } catch (error) { log(error.message || String(error)); }
+        });
+        const remove = document.createElement("button");
+        remove.type = "button"; remove.textContent = "Delete";
+        remove.addEventListener("click", async () => {
+          if (!window.confirm(`Permanently delete ${sample.label}, including retained audio and derived representations? Historical transcript labels will not change.`)) return;
+          try {
+            await ensureSessionOwner("delete a Voice sample");
+            const result = await post("/api/people/sample/delete", {person_id: person.id, sample_id: sample.id});
+            updateSpeakerState(result.speaker_state);
+          } catch (error) { log(error.message || String(error)); }
+        });
+        sampleActions.appendChild(toggle); sampleActions.appendChild(remove);
+        sampleRow.appendChild(sampleActions); samples.appendChild(sampleRow);
+      });
+      row.appendChild(heading);
+      row.appendChild(recognition);
+      row.appendChild(policy);
+      row.appendChild(actions);
+      row.appendChild(samples);
+      peopleList.appendChild(row);
+    });
+  }
   function renderSpeakerPanel() {
     const controlsLocked = sessionControlsLocked();
     const reviewMode = savedSessionReviewOpen();
@@ -428,6 +774,7 @@ export function installSpeakerPanel(ctx) {
     addReferenceSpeakerButton.disabled = controlsLocked || reviewMode;
     manualSpeakerName.disabled = controlsLocked || reviewMode;
     syncManualSpeakerComposer();
+    renderPeopleList();
     speakerList.textContent = "";
     if (!ctx.owners.speakers.speakerLibraryState.speakers.length) {
       const empty = document.createElement("div");
@@ -437,7 +784,7 @@ export function installSpeakerPanel(ctx) {
       if (!ctx.owners.reference.manualSpeakerComposerOpen) {
         syncSpeakerEditor(null);
       }
-      return;
+      return true;
     }
     const speakerIds = ctx.owners.speakers.speakerLibraryState.speakers.map(speaker => speaker.id).filter(Boolean);
     if (ctx.owners.reference.editingSpeakerId && !speakerIds.includes(ctx.owners.reference.editingSpeakerId)) {
@@ -451,7 +798,7 @@ export function installSpeakerPanel(ctx) {
       row.classList.toggle("live-speaker", Boolean(ctx.owners.transcript.currentLiveSpeakerId) && speaker.id === ctx.owners.transcript.currentLiveSpeakerId);
       row.dataset.speakerId = speaker.id || "";
       const color = speakerColor(speaker.id);
-      row.style.setProperty("--speaker-color", color || "transparent");
+      row.style.setProperty("--speaker-color", color || "#8AA0B5");
       const summary = document.createElement("div");
       summary.className = "speaker-item-summary";
       summary.setAttribute("role", "button");
@@ -473,48 +820,30 @@ export function installSpeakerPanel(ctx) {
 
       const body = document.createElement("span");
       body.className = "speaker-summary-body";
-      let title;
-      if (isEditing) {
-        title = document.createElement("input");
-        title.className = "speaker-row-name-input";
-        title.type = "text";
-        title.value = speakerPanelName(speaker);
-        title.disabled = controlsLocked;
-        title.setAttribute("aria-label", "Speaker name");
-        title.setAttribute("autocomplete", "off");
-        title.addEventListener("click", event => event.stopPropagation());
-        title.addEventListener("keydown", event => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            title.blur();
-          }
-        });
-        title.addEventListener("blur", () => {
-          commitSpeakerNameInput(speaker, title);
-        });
-      } else {
-        title = document.createElement("span");
-        title.className = "speaker-row-title";
-        title.textContent = speakerPanelName(speaker);
-        title.addEventListener("click", event => {
-          event.stopPropagation();
-          if (controlsLocked) return;
-          setEditingSpeaker(speaker.id || "", {focusName: true});
-        });
-      }
+      const panelSentenceCount = speakerPanelSentenceCount(speaker);
+      const panelSpeakingSeconds = speakerPanelSpeakingSeconds(speaker);
+      const isEmpty = panelSentenceCount === 0 && panelSpeakingSeconds === 0;
+      row.classList.toggle("empty-speaker", isEmpty);
+      const title = document.createElement("span");
+      title.className = "speaker-row-title";
+      title.textContent = speakerMeetingName(speaker);
       const titleRow = document.createElement("span");
       titleRow.className = "speaker-title-row";
       titleRow.appendChild(title);
+      if (isEmpty) {
+        const emptyBadge = document.createElement("span");
+        emptyBadge.className = "speaker-empty-badge";
+        emptyBadge.textContent = "Empty Speaker";
+        titleRow.appendChild(emptyBadge);
+      }
       if (ctx.owners.transcript.currentLiveSpeakerId && speaker.id === ctx.owners.transcript.currentLiveSpeakerId) {
         titleRow.appendChild(createSpeakerLiveIndicator());
       }
       const sentenceCount = document.createElement("span");
       sentenceCount.className = "speaker-sentence-count";
-      sentenceCount.textContent = speakerSentenceText(
-        speakerPanelSentenceCount(speaker),
-        speakerPanelSpeakingSeconds(speaker),
-        speakerPanelCountUnit(),
-      );
+      sentenceCount.textContent = isEmpty
+        ? "No transcript assigned"
+        : speakerSentenceText(panelSentenceCount, panelSpeakingSeconds, speakerPanelCountUnit());
       body.appendChild(titleRow);
       body.appendChild(sentenceCount);
       if (hasReference) {
@@ -529,14 +858,15 @@ export function installSpeakerPanel(ctx) {
         referenceStatus.appendChild(referenceText);
         body.appendChild(referenceStatus);
       }
-      if (isEditing && !reviewMode) {
-        const editControls = document.createElement("span");
-        editControls.className = "speaker-edit-controls";
-        if (ctx.owners.speakers.speakerLibraryState.speakers.length > 1) {
-          editControls.appendChild(createSpeakerMergeControls(speaker));
-        }
-        editControls.appendChild(createSpeakerDeleteButton(speaker));
-        body.appendChild(editControls);
+      const showIdentityControls = !isEmpty || speaker.identity_status === "suggested" || speaker.identity_status === "confirmed" || hasReference;
+      if (showIdentityControls) {
+        const identityControls = createSpeakerIdentityControls(speaker);
+        if (identityControls.children.length) body.appendChild(identityControls);
+      }
+      if (isEmpty && !reviewMode && speaker.identity_status !== "confirmed" && !hasReference) {
+        const emptyAction = createSpeakerDeleteButton(speaker, "Remove empty Speaker");
+        emptyAction.classList.add("speaker-empty-remove");
+        body.appendChild(emptyAction);
       }
 
       const tail = document.createElement("span");
@@ -546,11 +876,6 @@ export function installSpeakerPanel(ctx) {
       filterControls.appendChild(createSpeakerFilterToggle(speaker, "solo"));
       filterControls.appendChild(createSpeakerFilterToggle(speaker, "mute"));
       tail.appendChild(filterControls);
-      const transcriptActions = document.createElement("span");
-      transcriptActions.className = "speaker-transcript-actions";
-      transcriptActions.appendChild(createTranscriptActionButton("copy", speaker));
-      transcriptActions.appendChild(createTranscriptActionButton("download", speaker));
-      tail.appendChild(transcriptActions);
       const chevron = document.createElement("span");
       chevron.className = "speaker-chevron";
       chevron.setAttribute("aria-hidden", "true");
@@ -560,13 +885,104 @@ export function installSpeakerPanel(ctx) {
       summary.appendChild(tail);
       row.appendChild(summary);
       if (isEditing) {
+        const expanded = document.createElement("div");
+        expanded.className = "speaker-expanded-panel";
+
+        const identitySection = document.createElement("section");
+        identitySection.className = "speaker-expanded-section speaker-name-section";
+        const identityHeading = document.createElement("h3");
+        identityHeading.textContent = "Identity";
+        const nameLabel = document.createElement("label");
+        nameLabel.className = "speaker-field-label";
+        nameLabel.textContent = "Meeting display name";
+        const nameEditor = document.createElement("div");
+        nameEditor.className = "speaker-name-editor";
+        const nameInput = document.createElement("input");
+        nameInput.className = "speaker-row-name-input";
+        nameInput.type = "text";
+        nameInput.value = speakerMeetingName(speaker);
+        nameInput.disabled = controlsLocked;
+        nameInput.setAttribute("aria-label", "Meeting display name");
+        nameInput.setAttribute("autocomplete", "off");
+        const saveName = document.createElement("button");
+        saveName.type = "button";
+        saveName.className = "speaker-name-save";
+        saveName.textContent = "Save";
+        saveName.disabled = controlsLocked;
+        const cancelName = document.createElement("button");
+        cancelName.type = "button";
+        cancelName.className = "speaker-name-cancel";
+        cancelName.textContent = "Cancel";
+        saveName.addEventListener("click", async () => {
+          if (await commitSpeakerNameInput(speaker, nameInput)) {
+            ctx.owners.reference.editingSpeakerId = "";
+            renderSpeakerPanel();
+          }
+        });
+        cancelName.addEventListener("click", () => setEditingSpeaker(""));
+        nameInput.addEventListener("keydown", event => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            saveName.click();
+          } else if (event.key === "Escape") {
+            event.preventDefault();
+            cancelName.click();
+          }
+        });
+        nameEditor.appendChild(nameInput);
+        nameEditor.appendChild(saveName);
+        nameEditor.appendChild(cancelName);
+        identitySection.appendChild(identityHeading);
+        identitySection.appendChild(nameLabel);
+        identitySection.appendChild(nameEditor);
         syncSpeakerEditor(speaker);
-        row.appendChild(referenceSpeakerForm);
-        if (ctx.owners.reference.pendingSpeakerNameFocusId === speaker.id && title instanceof HTMLInputElement) {
+        identitySection.appendChild(referenceSpeakerForm);
+        expanded.appendChild(identitySection);
+
+        const transcriptSection = document.createElement("section");
+        transcriptSection.className = "speaker-expanded-section speaker-transcript-section";
+        const transcriptHeading = document.createElement("h3");
+        transcriptHeading.textContent = "Transcript";
+        const transcriptActions = document.createElement("div");
+        transcriptActions.className = "speaker-transcript-actions";
+        transcriptActions.appendChild(createTranscriptActionButton("copy", speaker, {visibleLabel:true}));
+        transcriptActions.appendChild(createTranscriptActionButton("download", speaker, {visibleLabel:true}));
+        transcriptSection.appendChild(transcriptHeading);
+        transcriptSection.appendChild(transcriptActions);
+        expanded.appendChild(transcriptSection);
+
+        if (!reviewMode && ctx.owners.speakers.speakerLibraryState.speakers.length > 1) {
+          const correctionSection = document.createElement("section");
+          correctionSection.className = "speaker-expanded-section speaker-correction-section";
+          const correctionHeading = document.createElement("h3");
+          correctionHeading.textContent = "Speaker correction";
+          const correctionHint = document.createElement("p");
+          correctionHint.textContent = "Move this Speaker's transcript into another detected Speaker.";
+          correctionSection.appendChild(correctionHeading);
+          correctionSection.appendChild(correctionHint);
+          correctionSection.appendChild(createSpeakerMergeControls(speaker));
+          expanded.appendChild(correctionSection);
+        }
+        if (!reviewMode) {
+          const dangerSection = document.createElement("section");
+          dangerSection.className = "speaker-expanded-section speaker-danger-section";
+          const dangerHeading = document.createElement("h3");
+          dangerHeading.textContent = "Danger zone";
+          const dangerHint = document.createElement("p");
+          dangerHint.textContent = panelSentenceCount > 0
+            ? "Delete this Speaker and move its transcript to Unknown."
+            : "Delete this empty Speaker.";
+          dangerSection.appendChild(dangerHeading);
+          dangerSection.appendChild(dangerHint);
+          dangerSection.appendChild(createSpeakerDeleteButton(speaker));
+          expanded.appendChild(dangerSection);
+        }
+        row.appendChild(expanded);
+        if (ctx.owners.reference.pendingSpeakerNameFocusId === speaker.id) {
           ctx.owners.reference.pendingSpeakerNameFocusId = "";
           requestAnimationFrame(() => {
-            title.focus();
-            title.select();
+            nameInput.focus();
+            nameInput.select();
           });
         }
       }
@@ -586,7 +1002,7 @@ export function installSpeakerPanel(ctx) {
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onerror = () => reject(new Error("Could not read reference audio."));
+      reader.onerror = () => reject(new Error("Could not read Voice sample audio."));
       reader.onload = () => resolve(String(reader.result || ""));
       reader.readAsDataURL(file);
     });
@@ -599,7 +1015,7 @@ export function installSpeakerPanel(ctx) {
     if (recordReferenceButtonLabel) {
       recordReferenceButtonLabel.textContent = recording ? "Stop and add" : "Record from mic";
     }
-    recordReferenceButton.setAttribute("aria-label", recording ? "Stop and add reference recording" : "Record reference from microphone");
+    recordReferenceButton.setAttribute("aria-label", recording ? "Stop and add Voice sample recording" : "Record Voice sample from microphone");
   }
   function arrayBufferToBase64(buffer) {
     const bytes = new Uint8Array(buffer);
@@ -747,15 +1163,15 @@ export function installSpeakerPanel(ctx) {
       }, 100);
       ctx.owners.reference.referenceRecordPending = false;
       updateReferenceRecordingControls(true);
-      log(`Recording reference clip for ${name}.`);
+      log(`Recording a Voice sample for ${name}.`);
     } catch (error) {
       ctx.owners.reference.referenceRecordPending = false;
       stopReferenceRecording();
-      log(`Reference recording failed: ${error.message}`);
+      log(`Voice sample recording failed: ${error.message}`);
     }
   }
   async function stopAndAddReferenceRecording() {
-    await ensureSessionOwner("add reference speakers");
+    await ensureSessionOwner("add a Voice sample");
     const name = selectedSpeakerReferenceName();
     const recording = stopReferenceRecording();
     if (!name) {
@@ -763,19 +1179,21 @@ export function installSpeakerPanel(ctx) {
       return;
     }
     if (recording.seconds < 0.5) {
-      log("Reference clip is too short.");
+      log("Voice sample recording is too short.");
       return;
     }
     recordReferenceButton.disabled = true;
     try {
       const audio_b64 = encodeWavDataUrl(recording.samples, recording.sampleRate);
-      const result = await post("/api/speakers/reference", {name, filename: `${name}.wav`, audio_b64});
+      const personId = ctx.owners.reference.voiceSamplePersonId || "";
+      if (!personId) throw new Error("Choose a Person before recording a Voice sample.");
+      const result = await post("/api/people/sample/add", {person_id: personId, label: "Microphone recording", source_type: "manual_recording", filename: `${name}.wav`, audio_b64});
       closeManualSpeakerComposerAfterReference();
       updateSpeakerState(result.speaker_state);
       referenceRecordSeconds.textContent = "0.0s";
-      log(`Added recorded reference speaker ${name}.`);
+      log(`Added a recorded Voice sample to ${name}. The original audio is retained locally.`);
     } catch (error) {
-      log(`Add recorded reference failed: ${error.message}`);
+      log(`Add recorded Voice sample failed: ${error.message}`);
     } finally {
       updateReferenceRecordingControls(false);
     }

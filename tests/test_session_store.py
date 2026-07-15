@@ -4,6 +4,7 @@ import json
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import numpy as np
@@ -15,9 +16,110 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from window.session_store import SessionStore
+from window.saved_person_identity import SavedPersonIdentityService
+from speakers.person_library import PersonLibrary
 
 
 class SessionStoreTests(unittest.TestCase):
+    def test_saved_speaker_person_link_is_session_specific_persistent_and_idempotent(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = SessionStore(root / "sessions")
+            people = PersonLibrary(root / "people" / "people.json")
+            service = SavedPersonIdentityService(store, people)
+            store.save_snapshot(self.sample_snapshot(), status_label="Saved")
+            alice = people.create_person("Alice")
+
+            linked = service.link(
+                "20260707-test-session",
+                "S1",
+                person_id=alice["id"],
+            )
+            saved_speaker = linked["speaker_state"]["speakers"][0]
+            self.assertEqual(saved_speaker["person_id"], alice["id"])
+            self.assertEqual(saved_speaker["identity_status"], "confirmed")
+            self.assertTrue(saved_speaker["future_recognition"]["available"])
+            self.assertEqual(people.public_state()[0]["meeting_sample_count"], 1)
+
+            service.link("20260707-test-session", "S1", person_id=alice["id"])
+            self.assertEqual(people.public_state()[0]["voice_sample_count"], 1)
+            reopened = service.decorate_session(store.open_session("20260707-test-session"))
+            self.assertEqual(reopened["speaker_state"]["speakers"][0]["person_id"], alice["id"])
+            self.assertFalse((root / "sessions" / "20260707-test-session" / ".person-identity-transaction.json").exists())
+
+    def test_saved_correction_recomputes_only_that_session_sample(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = SessionStore(root / "sessions")
+            people = PersonLibrary(root / "people" / "people.json")
+            service = SavedPersonIdentityService(store, people)
+            store.save_snapshot(self.sample_snapshot(), status_label="Saved")
+            alice = people.create_person("Alice")
+            people.add_meeting_sample(
+                alice["id"], [0.8, 0.6], embedding_provider="test-provider",
+                session_id="independent-meeting",
+            )
+            service.link("20260707-test-session", "S1", person_id=alice["id"])
+
+            store.reassign_rows("20260707-test-session", [1], "S2")
+            service.recompute_linked_samples("20260707-test-session")
+            raw = people.get(alice["id"])
+            assert raw is not None
+            sessions = {
+                sample["source"]["session_id"]
+                for sample in raw["voice_samples"]
+                if sample["kind"] == "meeting_template"
+            }
+            self.assertEqual(sessions, {"independent-meeting"})
+            self.assertEqual(
+                store.open_session("20260707-test-session")["speaker_state"]["speakers"][0]["person_id"],
+                alice["id"],
+            )
+
+    def test_saved_enrollment_reports_stable_reason_when_embeddings_are_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = SessionStore(root / "sessions")
+            people = PersonLibrary(root / "people" / "people.json")
+            service = SavedPersonIdentityService(store, people)
+            snapshot = self.sample_snapshot()
+            snapshot["embedding_records"] = []
+            store.save_snapshot(snapshot, status_label="Saved")
+            availability = service.availability("20260707-test-session", "S1")
+            self.assertFalse(availability["available"])
+            self.assertEqual(availability["reason"], "missing_embeddings")
+            self.assertIn("no compatible stored voice evidence", availability["explanation"])
+
+    def test_saved_link_retry_repairs_interrupted_second_write_without_duplication(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = SessionStore(root / "sessions")
+            people = PersonLibrary(root / "people" / "people.json")
+            service = SavedPersonIdentityService(store, people)
+            store.save_snapshot(self.sample_snapshot(), status_label="Saved")
+            alice = people.create_person("Alice")
+            original_write = store._write_json
+            failed = False
+
+            def fail_speaker_write_once(path, payload):
+                nonlocal failed
+                if Path(path).name == "speakers.json" and not failed:
+                    failed = True
+                    raise OSError("simulated second-write failure")
+                return original_write(path, payload)
+
+            with mock.patch.object(store, "_write_json", side_effect=fail_speaker_write_once):
+                with self.assertRaisesRegex(OSError, "second-write"):
+                    service.link("20260707-test-session", "S1", person_id=alice["id"])
+            intent = root / "sessions" / "20260707-test-session" / ".person-identity-transaction.json"
+            self.assertTrue(intent.is_file())
+            self.assertEqual(people.public_state()[0]["voice_sample_count"], 1)
+
+            service.link("20260707-test-session", "S1", person_id=alice["id"])
+            self.assertFalse(intent.exists())
+            self.assertEqual(people.public_state()[0]["voice_sample_count"], 1)
+            self.assertEqual(store.open_session("20260707-test-session")["speaker_state"]["speakers"][0]["person_id"], alice["id"])
+
     def sample_snapshot(self) -> dict[str, object]:
         return {
             "id": "20260707-test-session",
@@ -95,6 +197,10 @@ class SessionStoreTests(unittest.TestCase):
             self.assertEqual(len(opened["transcript_rows"]), 2)
             self.assertEqual(opened["speaker_state"]["speakers"][0]["display_name"], "Alice")
             self.assertEqual(opened["embedding_count"], 2)
+            public_json = json.dumps(opened)
+            self.assertNotIn(str(ROOT), public_json)
+            self.assertNotIn('"centroid"', public_json)
+            self.assertNotIn('"centroid_b64"', public_json)
 
             self.assertEqual(len(store.list_sessions("active")), 1)
             archived = store.archive_session("20260707-test-session")

@@ -153,4 +153,6 @@ class WindowRuntimeStateMixin:
         self._final_sentence_count = 0
         self._last_final_sentence_ended_strong = True
         self._reset_realtime_preview_state()
+        self._reset_person_learning_state()
+        self._expected_person_ids = None
         return self.emit_speaker_state() if emit else self.speaker_state()
