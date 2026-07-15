@@ -48,15 +48,15 @@ See [Configuration](configuration.md#asr-no-speech-filtering) for the tuning fla
 
 During a run you can:
 
-- Rename a speaker.
-- Clear speaker memory.
-- Link a meeting Speaker to a Person with **Link to Person…**.
+- Rename a meeting-local Speaker without creating a persistent identity.
+- Link a Speaker to a persistent Person with **Link to Person…**.
+- Review **Likely Person** with **Confirm** or **Not Person**.
 - Add independently manageable manual Voice samples to a Person.
-- Save a speaker group locally.
-- Export a portable speaker group JSON.
-- Import a speaker group JSON from disk.
+- Use **Reset live speaker detection…** to clear current Speakers and the live transcript while keeping People and their Voice samples.
 
-Saved speakers are most useful after a complete pass over a representative clip.
+Automatic suggestions require the Person to be included in the persistent recognition roster, Recognition active to be on, and at least one compatible active Voice sample. See [People And Voice Recognition](people-and-recognition.md) for the full workflow and control semantics.
+
+The Settings tab also retains legacy Speaker-group load/save/import/export controls for compatibility. Those files do not contain or back up People.
 
 ## Saved Sessions
 
@@ -86,7 +86,8 @@ Short single-session transcripts are sent to the configured large language model
 
 ## Practical Tips
 
-- Let the full clip finish before saving a speaker group.
+- Let recurring participants contribute several clean finalized sentences before linking them, so WhoSpeaks can enroll safe evidence rather than only the meeting identity.
+- Keep the automatic-recognition roster limited to plausible upcoming attendees.
 - Use Archive to remove old saved sessions from the default Active list without deleting them.
 - Use a remote GPU server for smoother local UI work when using large ASR and embedding models.
 - Disable live speaker assignment during local bottleneck tests to separate final ASR speed from live embedding contention.

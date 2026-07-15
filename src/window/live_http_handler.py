@@ -730,7 +730,7 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
             elif path == "/api/people/sample/delete":
                 self._require_session(payload)
-                state = self.server.controller.delete_voice_sample(
+                state = self.server.delete_person_voice_sample(
                     str(payload.get("person_id") or ""),
                     str(payload.get("sample_id") or ""),
                 )
@@ -744,11 +744,11 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
             elif path == "/api/people/forget-voice":
                 self._require_session(payload)
-                state = self.server.controller.forget_person_voice(str(payload.get("person_id") or ""))
+                state = self.server.forget_person_voice(str(payload.get("person_id") or ""))
                 self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
             elif path == "/api/people/delete":
                 self._require_session(payload)
-                state = self.server.controller.delete_person(str(payload.get("person_id") or ""))
+                state = self.server.delete_person(str(payload.get("person_id") or ""))
                 self._send_json({"ok": True, "speaker_state": state, "session": self.server.session_status(str(payload.get("client_id") or ""))})
             else:
                 self.send_error(404)

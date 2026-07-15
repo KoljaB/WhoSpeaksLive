@@ -14,13 +14,15 @@ After a sentence split succeeds, the loop waits for the configured interval befo
 
 For each accepted sentence, the app extracts the matching audio and sends it to an embedding provider. A speaker embedding is a vector: a list of numbers that captures voice characteristics in the coordinate system of a specific model.
 
-The speaker memory compares the new vector with existing speaker profiles:
+The meeting-local speaker memory compares the new vector with existing Speaker profiles:
 
 - If it is close to a known speaker, the sentence is assigned to that speaker.
 - If it is not close enough, the app may create a new speaker.
 - If the evidence is weak, the sentence may stay unknown until later refinement.
 
 The final speaker profile is updated over time as more sentences are assigned.
+
+This first layer does not establish a persistent real-person identity. Cross-meeting recognition is a separate, suggestion-first Person layer. It considers only People deliberately included in the recognition roster, requires a compatible active Voice sample, waits for sufficient finalized evidence, and still permits no match. See [People And Voice Recognition](people-and-recognition.md).
 
 ## Live Speaker Versus Final Speaker
 

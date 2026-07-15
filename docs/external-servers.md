@@ -17,6 +17,8 @@ The examples use two HTTP services:
 - ASR server: `http://YOUR_GPU_SERVER_IP:8650`
 - Embeddings server: `http://YOUR_GPU_SERVER_IP:8660`
 
+These plain-HTTP examples assume a trusted private network. Speech audio sent to them is not encrypted and the services do not become safe merely because they are self-hosted. Use firewall rules plus a VPN or authenticated TLS proxy outside that threat model, and never expose these ports directly to the public internet. See [Security And Data Privacy](security-and-data-privacy.md#data-flow).
+
 Find the Linux server IP:
 
 ```bash

@@ -168,7 +168,7 @@ Main browser app for media download/playback, final ASR, speaker assignment, liv
 | Embedding backend and speaker library | `--remote-embeddings-timeout-seconds`<br>`--remote-embedding-timeout-seconds` | `DEFAULT_REMOTE_EMBEDDINGS_TIMEOUT_SECONDS` | HTTP timeout for remote embedding health, load, and embed requests. |
 | Embedding backend and speaker library | `--remote-embeddings-device`<br>`--remote-embedding-device` | `auto` | Device query parameter sent to the remote embeddings server. |
 | Embedding backend and speaker library | `--embedding-helper-response-timeout-seconds` | `DEFAULT_EMBEDDING_HELPER_RESPONSE_TIMEOUT_SECONDS` | Maximum time to wait for an embedding helper response. First startup of the default high-quality stacked provider may need several minutes while models download and initialize. |
-| Embedding backend and speaker library | `--speaker-library-dir` | `DEFAULT_SPEAKER_LIBRARY_DIR` | Directory for saved speaker groups and uploaded reference audio. |
+| Embedding backend and speaker library | `--speaker-library-dir` | `DEFAULT_SPEAKER_LIBRARY_DIR` | Sensitive storage root for `people.json`, retained manual Voice-sample audio, migration backups, and legacy Speaker-group files. Use one process per directory. |
 | Embedding backend and speaker library | `--new-speaker-sensitivity` |  | Optional five-step new-speaker spawning sensitivity preset. Position 3 matches the tuned defaults. Choices: `{1,2,3,4,5}`. |
 | Speaker assignment thresholds | `--same-speaker-similarity` | 0.43 | Similarity needed before a sentence can update or reuse an existing speaker. |
 | Speaker assignment thresholds | `--similarity-temperature` | 0.061 | Softmax temperature for similarity scores; lower values make the best match dominate. |
@@ -662,7 +662,7 @@ Environment variables set defaults before command-line arguments are parsed. A C
 | `WHOSPEAKS_RUNTIME_DIR` | Top-level mutable runtime directory for media, caches, outputs, and speakers. |
 | `WHOSPEAKS_SENTENCE_TOKENIZER` | Default sentence tokenizer override, for example `nltk+rule-based`. |
 | `WHOSPEAKS_SILERO_VAD_ONNX_MODEL_PATH` | Default Silero ONNX VAD model path. |
-| `WHOSPEAKS_SPEAKER_LIBRARY_DIR` | Directory for saved speaker groups and uploaded reference audio. |
+| `WHOSPEAKS_SPEAKER_LIBRARY_DIR` | Sensitive storage root for People, Person-owned Voice samples, retained manual audio, migration backups, and legacy Speaker-group files. |
 | `XDG_CONFIG_HOME` | Non-Windows base directory for the default starter profile when `WHOSPEAKS_CONFIG` is unset. |
 
 ## Coverage Check

@@ -1,49 +1,56 @@
-# Speaker Libraries
+# Legacy Speaker-Group Files
 
-Speaker libraries let the app reuse known voices across sessions instead of rediscovering every speaker from scratch.
+Speaker-group JSON files are the older portable workflow for seeding meeting-local Speaker profiles; use [People And Voice Recognition](people-and-recognition.md) for persistent real-person identities.
 
-For new workflows, use [People and recognition](people-and-recognition.md). It keeps persistent people separate from meeting-local speaker labels, suggests uncertain matches before confirmation, and stores multiple confirmed meeting conditions. Speaker groups remain supported as the legacy file-oriented workflow.
+## Choose The Right Model
+
+| People | Speaker-group file |
+| --- | --- |
+| Persistent Person identity | Meeting-local Speaker seed |
+| Several independently managed Voice samples | One exported set of profiles |
+| Suggestion, confirmation, and roster controls | Explicit load/import before a run |
+| Stored in `people.json` and `voice-samples/` | Stored as a portable JSON file |
+
+Speaker-group export does **not** contain People, Person settings, Person-owned Voice samples, or retained manual audio. It is not a People backup.
 
 ## Concepts
 
-A speaker profile contains a speaker label, display metadata, speech duration, sentence count, and a centroid. A centroid is the average embedding vector used to represent that speaker.
+A legacy speaker profile contains a meeting label, display metadata, speech duration, sentence count, and a centroid. A centroid is the average embedding vector used to represent that meeting Speaker.
 
-When the final embedding provider and live-speaker embedding provider differ, the app can keep separate live-speaker profiles. This matters because embeddings from different providers are not directly comparable.
+When the final and live-speaker embedding providers differ, a group can contain separate live profiles. Embeddings from different provider contracts are not directly comparable.
 
-## Saving Speakers
+## Save And Load
 
-Save a speaker group after the app has processed enough speech for each speaker. A complete run usually gives better profiles than a short partial run.
+Save a group only after the app has processed representative speech for each Speaker. Load it before another run when the older workflow is specifically required.
 
-Saved speaker groups go under the speaker library directory:
+Local groups share the speaker-library directory with the People library by default:
 
 ```text
 runtime/speakers/
 ```
 
-You can move this directory with `WHOSPEAKS_SPEAKER_LIBRARY_DIR`.
-
-## Loading Speakers
-
-Load a speaker group before starting a new run when you want immediate assignment for known voices. Loaded groups should provide:
-
-- Final profiles for completed sentence assignment.
-- Live profiles when the group was saved with a separate live-speaker embedding provider that matches the current live provider.
-
-If the current live provider differs from the saved live provider, the app avoids using incompatible live profiles.
+Move the directory with `WHOSPEAKS_SPEAKER_LIBRARY_DIR` or `--speaker-library-dir`. Back up the complete directory—not only group files—when People are also in use.
 
 ## Import And Export
 
-Export creates a portable JSON speaker group. Import reads that JSON back into the current speaker library.
+Export creates a portable Speaker-group JSON. Import loads that JSON into current meeting memory.
 
-Use export when you want to:
+Use it to:
 
-- Move speakers to another checkout.
-- Share a known-speaker set with another machine.
-- Preserve a snapshot before experiments.
+- reproduce an older workflow;
+- seed a controlled validation run; or
+- move a legacy meeting-local profile set.
 
-## Best Practices
+Do not use it as the primary workflow for recurring participants or as a privacy backup.
 
-- Keep provider settings consistent when comparing sessions.
-- Use descriptive speaker names after a full run, then save the group.
-- Prefer export for backups; prefer save/load for day-to-day local use.
-- If live speaker assignment does not activate immediately after loading a group, check that `--live-speaker-embedding-provider` matches the provider used when the group was saved.
+## Migrate A Group To People
+
+1. Load the legacy group once.
+2. Let the meeting Speakers appear.
+3. Use **Link to Person…** for each recurring participant.
+4. Create or select the corresponding Person.
+5. Verify in **Settings → People** that a compatible Voice sample was safely enrolled.
+6. Turn on **Include in automatic recognition** only for plausible upcoming attendees.
+7. Use People in later meetings; the group no longer needs to be loaded routinely.
+
+If an immediate live assignment does not activate after loading a legacy group, check that `--live-speaker-embedding-provider` matches the provider used when the group was saved.

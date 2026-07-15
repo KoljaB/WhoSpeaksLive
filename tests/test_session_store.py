@@ -120,6 +120,67 @@ class SessionStoreTests(unittest.TestCase):
             self.assertEqual(people.public_state()[0]["voice_sample_count"], 1)
             self.assertEqual(store.open_session("20260707-test-session")["speaker_state"]["speakers"][0]["person_id"], alice["id"])
 
+    def test_saved_link_retry_with_new_person_does_not_leave_a_duplicate(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = SessionStore(root / "sessions")
+            people = PersonLibrary(root / "people" / "people.json")
+            service = SavedPersonIdentityService(store, people)
+            store.save_snapshot(self.sample_snapshot(), status_label="Saved")
+            original_write = store._write_json
+            failed = False
+
+            def fail_speaker_write_once(path, payload):
+                nonlocal failed
+                if Path(path).name == "speakers.json" and not failed:
+                    failed = True
+                    raise OSError("simulated second-write failure")
+                return original_write(path, payload)
+
+            with mock.patch.object(store, "_write_json", side_effect=fail_speaker_write_once):
+                with self.assertRaisesRegex(OSError, "second-write"):
+                    service.link("20260707-test-session", "S1", person_name="Alice")
+
+            recovered = service.link("20260707-test-session", "S1", person_name="Alice")
+            self.assertEqual([person["name"] for person in recovered["speaker_state"]["people"]], ["Alice"])
+            self.assertEqual(len(people.public_state()), 1)
+            self.assertEqual(people.public_state()[0]["voice_sample_count"], 1)
+
+    def test_deleted_saved_meeting_sample_is_not_recreated_by_correction_recompute(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = SessionStore(root / "sessions")
+            people = PersonLibrary(root / "people" / "people.json")
+            service = SavedPersonIdentityService(store, people)
+            store.save_snapshot(self.sample_snapshot(), status_label="Saved")
+            alice = people.create_person("Alice")
+            people.set_recognition_enabled(alice["id"], False)
+            service.link("20260707-test-session", "S1", person_id=alice["id"])
+            self.assertFalse(people.get(alice["id"])["recognition_enabled"])
+            sample_id = people.public_state()[0]["voice_samples"][0]["id"]
+
+            people.delete_sample(alice["id"], sample_id)
+            service.recompute_linked_samples("20260707-test-session")
+
+            self.assertEqual(people.public_state()[0]["voice_sample_count"], 0)
+            self.assertFalse(people.get(alice["id"])["recognition_enabled"])
+
+    def test_forget_cleanup_unlinks_saved_history_and_session_cleanup_removes_samples(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = SessionStore(root / "sessions")
+            people = PersonLibrary(root / "people" / "people.json")
+            service = SavedPersonIdentityService(store, people)
+            store.save_snapshot(self.sample_snapshot(), status_label="Saved")
+            alice = people.create_person("Alice")
+            service.link("20260707-test-session", "S1", person_id=alice["id"])
+
+            self.assertEqual(service.unlink_person_everywhere(alice["id"]), 1)
+            saved = store.open_session("20260707-test-session")
+            self.assertNotIn("person_id", saved["speaker_state"]["speakers"][0])
+            self.assertEqual(service.remove_session_samples("20260707-test-session"), 1)
+            self.assertEqual(people.public_state()[0]["voice_sample_count"], 0)
+
     def sample_snapshot(self) -> dict[str, object]:
         return {
             "id": "20260707-test-session",

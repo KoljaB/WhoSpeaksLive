@@ -136,13 +136,13 @@ If final ASR is still slow with live speaker scoring disabled:
 - Stop other GPU-heavy processes before testing.
 - Prefer remote ASR and remote embeddings if the local GPU must also run realtime preview and browser work.
 
-## Loaded Speakers Do Not Assign Immediately
+## A Legacy Loaded Speaker Group Does Not Assign Immediately
 
 Check whether final and live providers changed.
 
 If `--embedding-provider` differs from `--live-speaker-embedding-provider`, the app needs live profiles made with the live provider. A speaker group saved before that live provider existed may still work for final sentences but may not provide immediate live assignment.
 
-Save a fresh group after a complete run with the current provider settings.
+Save a fresh group after a complete run with the current provider settings. For normal recurring-participant recognition, migrate the group to [People](people-and-recognition.md#legacy-speaker-group-files) instead.
 
 ## Speaker Colors Flicker In The Live Transcript
 
@@ -160,8 +160,36 @@ Common causes:
 
 - Short sentences with too little voice information.
 - Background audio or imitation voices.
-- A speaker library saved with different provider settings.
+- A legacy Speaker group saved with different provider settings.
 - A live provider used for final comparison by mistake.
+
+## A Saved Person Is Never Suggested
+
+Automatic recognition requires all three:
+
+1. **Include in automatic recognition** is on for that Person.
+2. **Recognition active** is on.
+3. At least one active Voice sample matches the current embedding provider and vector dimension.
+
+An empty included roster means no People are automatically considered. Also check the manual/meeting source controls, wait for at least two finalized sentences or about four seconds from the detected Speaker, and remember that an ambiguous match is intentionally left unidentified.
+
+If the Person was enrolled during the smoke-provider Quickstart and the production provider is now active, add a compatible sample with the production provider. Samples are not automatically re-embedded.
+
+## A Person Suggestion Appears Late
+
+WhoSpeaks reevaluates recognition as finalized evidence grows. The first short utterance may remain unidentified; a later sentence can produce **Likely Person** in the same session. Noise, overlap, fragments, and changing recording conditions can require more evidence.
+
+## The Wrong Person Is Suggested
+
+Choose **Not Person** for that meeting Speaker, then use **Link to Person…** if the correct identity is known. Review duplicate People, weak samples, and an unnecessarily large included roster. A suggestion is not identity authentication.
+
+## Person Controls Are Gray In A Saved Session
+
+Opening a saved session enters historical review. **+ Add person**, the persistent inclusion roster, and **Reset live speaker detection…** are live-state controls and remain disabled. Use the saved Speaker's **Link to Person…** or **Unlink** action instead.
+
+If saved Link is disabled, read its explanation. The saved session may lack a provider record, compatible sentence embeddings, sufficient coherent speech, or separation from another Speaker or Person.
+
+See [People And Voice Recognition](people-and-recognition.md) for the complete control and deletion matrix.
 
 ## Tests Fail After Documentation Changes
 

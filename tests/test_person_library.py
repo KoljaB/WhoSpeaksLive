@@ -108,6 +108,64 @@ class PersonLibraryTests(unittest.TestCase):
             self.assertFalse(charlie["expected"])
             self.assertEqual(reloaded.expected_person_ids(), {alice["id"]})
 
+    def test_adding_voice_samples_never_reenables_recognition(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            library = PersonLibrary(Path(tmp) / "people.json")
+            alice = library.create_person("Alice")
+            library.set_recognition_enabled(alice["id"], False)
+
+            library.add_meeting_sample(
+                alice["id"], [1.0, 0.0], embedding_provider="mock", session_id="meeting-1",
+            )
+            self.assertFalse(library.get(alice["id"])["recognition_enabled"])
+
+            library.add_manual_sample(
+                alice["id"], [1.0, 0.0], embedding_provider="mock",
+                raw_audio=b"manual-audio", filename="alice.wav",
+            )
+            self.assertFalse(library.get(alice["id"])["recognition_enabled"])
+
+    def test_deleted_meeting_sample_stays_suppressed_until_explicit_restore(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            library = PersonLibrary(Path(tmp) / "people.json")
+            alice = library.create_person("Alice")
+            sample = library.add_meeting_sample(
+                alice["id"], [1.0, 0.0], embedding_provider="mock", session_id="meeting-1",
+            )
+
+            library.delete_sample(alice["id"], sample["id"])
+            suppressed = library.add_meeting_sample(
+                alice["id"], [0.9, 0.1], embedding_provider="mock", session_id="meeting-1",
+            )
+            self.assertTrue(suppressed["suppressed"])
+            self.assertEqual(library.public_state()[0]["voice_sample_count"], 0)
+
+            restored = library.add_meeting_sample(
+                alice["id"], [0.9, 0.1], embedding_provider="mock", session_id="meeting-1",
+                allow_restore=True,
+            )
+            self.assertFalse(restored.get("suppressed", False))
+            self.assertEqual(library.public_state()[0]["voice_sample_count"], 1)
+
+    def test_deleting_source_session_clears_orphaned_suppression_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            library = PersonLibrary(Path(tmp) / "people.json")
+            alice = library.create_person("Alice")
+            sample = library.add_meeting_sample(
+                alice["id"], [1.0, 0.0], embedding_provider="mock",
+                session_id="meeting-to-delete",
+            )
+            library.delete_sample(alice["id"], sample["id"])
+            before = library.get(alice["id"])
+            assert before is not None
+            self.assertEqual(len(before["suppressed_meeting_samples"]), 1)
+
+            self.assertEqual(library.remove_session_samples("meeting-to-delete"), 0)
+
+            after = library.get(alice["id"])
+            assert after is not None
+            self.assertEqual(after["suppressed_meeting_samples"], [])
+
     def test_multiple_manual_samples_can_be_disabled_and_deleted_with_audio(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

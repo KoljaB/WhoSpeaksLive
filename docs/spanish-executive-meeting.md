@@ -24,14 +24,14 @@ Meeting-intelligence server (--report-language es --auto-generate)
 Spanish report with evidence links
 ```
 
-`--max-speakers 6` is a guardrail, not a guarantee: it prevents a noisy room from creating unlimited speaker profiles. Build a named speaker library for the CEO and the five managers before relying on names in the report.
+`--max-speakers 6` is a guardrail, not a guarantee: it prevents a noisy room from creating unlimited meeting Speaker profiles. Create persistent People for the CEO and five managers before relying on names in the report.
 
 ## One-Time Preparation
 
 1. Install the local stack or configure the remote GPU ASR and embeddings services following [Quickstart](quickstart.md).
 2. Use a room microphone or conferencing source that captures every participant clearly. A microphone close to only the CEO cannot reliably label the other five people.
-3. In the live window, collect a clean reference recording for the CEO and each manager; rename them and save/export the six-person speaker group. Load that group before each weekly meeting. See [Speaker libraries](speaker-libraries.md).
-4. Obtain the required participant notice/consent and have the company validate its retention, access, and deletion policy before recording meetings.
+3. In the live window, create a Person for the CEO and each manager. Add a clean Voice sample or link each Person after several clean finalized sentences. In **Settings → People**, include only the six expected attendees in automatic recognition. See [People And Voice Recognition](people-and-recognition.md).
+4. Obtain the required participant notice/authorization and have the company validate its retention, access, and deletion policy before recording meetings. Follow [Security And Data Privacy](security-and-data-privacy.md).
 
 ## Start The Weekly Meeting
 
@@ -50,7 +50,7 @@ Start it before the meeting:
 whospeaks launch
 ```
 
-In the browser, load the saved six-person speaker group, choose the meeting microphone/audio source, create a new session named for the weekly meeting, and press **Start**. The live transcript appears during the conversation. At the end, let processing reach its normal finished state so the session is saved with status `Saved`; do not close the window while it is still finalizing sentences.
+In the browser, verify that the six plausible attendees are included in automatic recognition, choose the meeting microphone/audio source, create a new session named for the weekly meeting, and press **Start**. Review every **Likely Person** suggestion with **Confirm** or **Not Person**; a suggestion is not proof of identity. At the end, let processing reach its normal finished state so the session is saved with status `Saved`; do not close the window while it is still finalizing sentences.
 
 ## Start Automatic Spanish Reporting
 
