@@ -25,35 +25,37 @@ whospeaks
 
 ### uv alternative
 
-uv can install the same lightweight PyPI launcher into an ordinary, persistent virtual environment:
+Use uv's tool installer for the same globally available `whospeaks` command:
 
 ```powershell
-uv venv --python 3.11 --seed .venv
-uv pip install --python .venv whospeaks
-.\.venv\Scripts\whospeaks.exe
+uv tool install --python 3.11 whospeaks
+uv tool update-shell
 ```
 
-The `--seed` option places pip in the environment too; the launcher then ensures setuptools and wheel are present where needed. WhoSpeaks needs that compatibility layer for native installers such as Kroko, even when uv performs the normal Python package installs.
+`uv tool install` keeps WhoSpeaks in an isolated, persistent environment and exposes its console commands through uv's tool executable directory. `uv tool update-shell` adds that directory to `PATH`; it is only needed once per machine. Open a new terminal after it completes, then start the launcher from any directory:
+
+```powershell
+whospeaks
+```
 
 After the launcher starts, choose **uv** in the Setup tab to use it for the larger target-specific dependency sets, PyTorch, managed macOS services, translation sidecars, and the Python-package portion of a Kroko sidecar. The scriptable equivalent is:
 
 ```powershell
-.\.venv\Scripts\whospeaks.exe install --target local --installer uv --yes
+whospeaks install --target local --installer uv --yes
 ```
 
-pip remains the default because it is bundled with normal Python installations and has the broadest compatibility. Set `WHOSPEAKS_INSTALLER=uv` to change the launcher default, or pass `--installer pip` / `--installer uv` explicitly. WhoSpeaks always gives uv an explicit target interpreter, so both installers modify the same intended environment.
+pip remains the default because it is bundled with normal Python installations and has the broadest compatibility. Set `WHOSPEAKS_INSTALLER=uv` to change the launcher default, or pass `--installer pip` / `--installer uv` explicitly. WhoSpeaks always gives uv an explicit target interpreter, so the second-stage packages are added to the same environment that runs the launcher, including an environment created by `uv tool install`.
 
-Do not use `uv tool install whospeaks` or `uvx whospeaks` yet. Those commands create isolated tool environments whose contents are expected to be managed as a unit, while the current launcher intentionally installs the selected heavy runtime into its own environment. A normal venv has clear ownership and remains available to the launcher after setup.
+Do not use `uvx whospeaks` for guided setup. `uvx` uses an ephemeral environment, while WhoSpeaks needs a persistent environment for the heavier runtime selected in the launcher.
 
-To test a development build from TestPyPI, use a disposable environment and replace `<version>` with the published development version:
+To test a development build from TestPyPI, replace `<version>` with the published development version:
 
 ```powershell
-uv venv --python 3.11 --seed .venv-test
-uv pip install --python .venv-test --index https://pypi.org/simple/ --index https://test.pypi.org/simple/ --index-strategy unsafe-first-match "whospeaks==<version>"
-.\.venv-test\Scripts\whospeaks.exe
+uv tool install --python 3.11 --index https://pypi.org/simple/ --index https://test.pypi.org/simple/ --index-strategy unsafe-first-match --refresh-package whospeaks "whospeaks==<version>"
+uv tool update-shell
 ```
 
-The explicit index strategy is limited to this TestPyPI workflow. PyPI is deliberately listed first so ordinary dependencies use its complete wheel set; the exact WhoSpeaks development version then falls through to TestPyPI. This avoids both TestPyPI placeholder packages and incomplete TestPyPI file sets, such as a release that lacks a CPython 3.11 Windows wheel. Normal PyPI installations keep uv's safer default strategy. Once installed, the launcher recognizes the development version and applies the same PyPI-first TestPyPI fallback when uv expands the selected WhoSpeaks extras.
+Open a new terminal and run `whospeaks`. The explicit index strategy is limited to this TestPyPI workflow. PyPI is deliberately listed first so ordinary dependencies use its complete wheel set; the exact WhoSpeaks development version then falls through to TestPyPI. This avoids both TestPyPI placeholder packages and incomplete TestPyPI file sets, such as a release that lacks a CPython 3.11 Windows wheel. Normal PyPI installations keep uv's safer default strategy. Once installed, the launcher recognizes the development version and applies the same PyPI-first TestPyPI fallback when uv expands the selected WhoSpeaks extras.
 
 The base install includes the Textual setup interface, doctor checks, profile storage, and launch-command generator. The Setup tab asks what you want on this machine:
 
@@ -98,24 +100,24 @@ The native Kroko runtime is handled as a post-install setup step instead of a Py
 
 The short command opens the Textual setup and launcher application; the browser app itself is started by the longer `whospeaks-window` command that the launcher builds from your saved profile. The scriptable subcommands do not start Textual.
 
-`pip install whospeaks` and `uv pip install --python .venv whospeaks` install console scripts from the package metadata. A console script is a command-line wrapper that imports a Python function. In this package:
+`pip install whospeaks` and `uv tool install whospeaks` install console scripts from the package metadata. A console script is a command-line wrapper that imports a Python function. In this package:
 
 - `whospeaks` runs `whospeaks_cli.main:main`.
 - `whospeaks-window` runs `window.youtube_window_diarize_gui:main`.
 
-When the active environment is on `PATH`, you can type:
+With a normal pip environment on `PATH`, or after running `uv tool update-shell`, you can type this from any directory:
 
 ```powershell
 whospeaks
 ```
 
-Without activation, use the environment-local executable:
+Developers who deliberately install into a project-local virtual environment can activate it or use its environment-local executable:
 
 ```powershell
 .\.venv\Scripts\whospeaks.exe
 ```
 
-You can keep WhoSpeaks installed in a venv and still type the short command. Command lookup is controlled by the operating system `PATH`, not by whether the package is installed globally. On Windows, adding `.venv\Scripts` to the user `PATH` makes `whospeaks` resolve to that venv's console script; on Linux/macOS, adding `.venv/bin` does the same. Installer scripts should add that directory only if it is not already present.
+Command lookup is controlled by the operating system `PATH`. For a persistent end-user UV installation, prefer `uv tool install` and `uv tool update-shell` over adding a project-specific `.venv` directory to the user `PATH`.
 
 The launcher stores a profile in:
 

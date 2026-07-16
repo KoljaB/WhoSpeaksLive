@@ -1,6 +1,6 @@
 # PyPI Package Scope
 
-The base `pip install whospeaks` or `uv pip install --python .venv whospeaks` stays lightweight by installing the setup and launcher application first, then adding model runtimes only after the user chooses a deployment mode.
+The base `pip install whospeaks` or `uv tool install whospeaks` stays lightweight by installing the setup and launcher application first, then adding model runtimes only after the user chooses a deployment mode.
 
 ## Base Install
 
