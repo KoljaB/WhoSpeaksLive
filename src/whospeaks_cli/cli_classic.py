@@ -37,6 +37,7 @@ from .planning import (
     build_reports_command,
     build_translation_command,
     install_plan_for_target,
+    service_resource_path,
 )
 from .profiles import (
     EDITABLE_PROFILE_FIELDS,
@@ -117,17 +118,14 @@ def launch_profile_with_reports(profile: Profile) -> int:
 
 
 def build_server_launch_lines() -> list[str]:
-    root = Path(__file__).resolve().parents[2]
-    asr_dir = root / "vendor" / "remote_servers" / "faster-whisper-asr"
-    embeddings_dir = root / "vendor" / "remote_servers" / "voice-embeddings-server"
+    asr_dir = service_resource_path("faster-whisper-asr", "asr_server.py").parent
+    embeddings_dir = service_resource_path("voice-embeddings-server", "embeddings_server.py").parent
 
     def line(directory: Path, app: str, port: int) -> str:
         command = format_command([sys.executable, "-m", "uvicorn", app, "--host", "0.0.0.0", "--port", str(port)])
-        if directory.is_dir():
-            if os.name == "nt":
-                return f'cd /d "{directory}" && {command}'
-            return f"cd {shlex.quote(str(directory))} && {command}"
-        return command
+        if os.name == "nt":
+            return f'cd /d "{directory}" && {command}'
+        return f"cd {shlex.quote(str(directory))} && {command}"
 
     return [
         line(asr_dir, "asr_server:app", 8650),

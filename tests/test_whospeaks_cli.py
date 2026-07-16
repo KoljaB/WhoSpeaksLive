@@ -125,8 +125,9 @@ class WhoSpeaksCliTests(unittest.TestCase):
             wheel_directory.mkdir()
             for name in ("pyproject.toml", "README.md", "LICENSE", "THIRD_PARTY_NOTICES.md"):
                 shutil.copy2(ROOT / name, source / name)
-            shutil.copytree(ROOT / "src", source / "src")
-            shutil.copytree(ROOT / "vendor", source / "vendor")
+            clean_copy = shutil.ignore_patterns("__pycache__", "*.egg-info", "*.pyc", "*.pyo")
+            shutil.copytree(ROOT / "src", source / "src", ignore=clean_copy)
+            shutil.copytree(ROOT / "vendor", source / "vendor", ignore=clean_copy)
             completed = subprocess.run(
                 [
                     sys.executable,
@@ -147,13 +148,44 @@ class WhoSpeaksCliTests(unittest.TestCase):
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             wheel = next(wheel_directory.glob("*.whl"))
+            installed = temporary_root / "installed"
             with zipfile.ZipFile(wheel) as archive:
                 names = set(archive.namelist())
+                archive.extractall(installed)
+
+            smoke = subprocess.run(
+                [
+                    sys.executable,
+                    "-I",
+                    "-c",
+                    (
+                        "import json,sys; "
+                        f"sys.path.insert(0, {str(installed)!r}); "
+                        "from whospeaks_cli.cli_classic import build_server_launch_lines; "
+                        "print(json.dumps(build_server_launch_lines()))"
+                    ),
+                ],
+                cwd=temporary_root,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(smoke.returncode, 0, smoke.stderr)
+            launch_lines = json.loads(smoke.stdout)
 
         self.assertIn("remote_servers/launcher.py", names)
+        self.assertIn("remote_servers/faster-whisper-asr/asr_server.py", names)
         self.assertIn("remote_servers/faster-whisper-asr/mlx_asr_server.py", names)
+        self.assertIn("remote_servers/faster-whisper-asr/requirements.txt", names)
         self.assertIn("remote_servers/voice-embeddings-server/embeddings_server.py", names)
         self.assertIn("remote_servers/voice-embeddings-server/requirements-macos.txt", names)
+        self.assertIn("remote_servers/voice-embeddings-server/requirements.txt", names)
+        self.assertNotIn("remote_servers/faster-whisper-asr/test_parent_watchdog.py", names)
+        self.assertNotIn("remote_servers/voice-embeddings-server/tools/benchmark_voice_embeddings.py", names)
+        self.assertEqual(len(launch_lines), 2)
+        self.assertIn(str(installed / "remote_servers" / "faster-whisper-asr"), launch_lines[0])
+        self.assertIn(str(installed / "remote_servers" / "voice-embeddings-server"), launch_lines[1])
 
     def test_macos_install_profile_keeps_remote_backends_and_managed_marker(self) -> None:
         with (
