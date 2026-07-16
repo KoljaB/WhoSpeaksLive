@@ -274,13 +274,14 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(app.query_one("#title-bar").region.height, 3)
                     self.assertEqual(app.query_one("#status-row").region.height, 2)
                     self.assertEqual(app.query_one("#operation-banner").region.height, 0)
-                    self.assertEqual(app.query_one("#setup-options").region.height, 6)
+                    self.assertEqual(app.query_one("#setup-options").region.height, 8)
                     self.assertEqual(app.query_one("#setup-actions").region.height, 4)
                     actions = app.query_one("#setup-actions").region
                     self.assertLessEqual(app.query_one("#install-button", Button).region.bottom, actions.bottom)
                     self.assertEqual(app.query_one("#quick-language-select", Select).value, "en")
                     self.assertTrue(app.query_one("#live-speakers-checkbox", Checkbox).value)
                     self.assertEqual(app.query_one("#translation-install-select", Select).value, "off")
+                    self.assertEqual(app.query_one("#installer-select", Select).value, "pip")
                     self.assertGreaterEqual(
                         app.query_one("#language-label").region.x,
                         app.query_one("#target-select").region.right,
@@ -430,6 +431,9 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
                     self.assertIn("sherpa_onnx", app.pending_install_command)
                     self.assertIn("--translation-model-profile", app.pending_install_command)
                     self.assertIn("nllb-200-600m", app.pending_install_command)
+                    self.assertIn("--installer", app.pending_install_command)
+                    installer_index = app.pending_install_command.index("--installer")
+                    self.assertEqual(app.pending_install_command[installer_index + 1], "pip")
 
                     await pilot.click("#cancel-install")
                     await pilot.pause()
@@ -861,6 +865,7 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
                     self.assertFalse(app.query_one("#view-activity-button", Button).disabled)
                     self.assertTrue(app.query_one("#target-select", RadioSet).disabled)
                     self.assertTrue(app.query_one("#realtime-select", RadioSet).disabled)
+                    self.assertTrue(app.query_one("#installer-select", Select).disabled)
                     self.assertTrue(app.query_one("#save-settings", Button).disabled)
 
                     release.set()
@@ -898,6 +903,7 @@ class WhoSpeaksTuiTests(unittest.IsolatedAsyncioTestCase):
         app.operation_step = "Running installer"
         self.assertEqual(app._install_step_for_line("PyTorch install selection: CUDA"), "Installing PyTorch runtime")
         self.assertEqual(app._install_step_for_line("Downloading numpy.whl"), "Installing Python packages")
+        self.assertEqual(app._install_step_for_line("Resolved 83 packages"), "Installing Python packages")
         self.assertEqual(app._install_step_for_line("Downloading Nemotron model archive"), "Preparing Nemotron realtime ASR")
         self.assertEqual(app._install_step_for_line("Building Kroko native runtime"), "Preparing Kroko realtime ASR")
         self.assertEqual(app._install_step_for_line("Saved profile"), "Saving configuration")

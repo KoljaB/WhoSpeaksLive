@@ -5,6 +5,8 @@ KROKO_INSTALL_MODULE = "RealtimeSTT.install_kroko"
 KROKO_PREVIEW_VENV_ENV = "WHOSPEAKS_KROKO_PREVIEW_VENV"
 TRANSLATION_VENV_ROOT_ENV = "WHOSPEAKS_TRANSLATION_VENV_ROOT"
 TRANSLATION_MODEL_ROOT_ENV = "WHOSPEAKS_TRANSLATION_MODEL_ROOT"
+INSTALLER_BACKEND_ENV = "WHOSPEAKS_INSTALLER"
+PYPI_SIMPLE_URL = "https://pypi.org/simple/"
 TESTPYPI_SIMPLE_URL = "https://test.pypi.org/simple/"
 PIP_INDEX_URL_ENV = "WHOSPEAKS_PIP_INDEX_URL"
 PIP_EXTRA_INDEX_URL_ENV = "WHOSPEAKS_PIP_EXTRA_INDEX_URL"
@@ -23,6 +25,7 @@ PYTORCH_CPU_INDEX_URL = "https://download.pytorch.org/whl/cpu"
 TORCH_PACKAGE_SPECS = ("torch>=2.2", "torchaudio>=2.2")
 KROKO_LANGUAGE_MENU_CODES = ("en", "de", "es", "fr", "it", "nl", "pt", "sv", "tr", "he")
 TORCH_INSTALL_POLICY_CHOICES = ("auto", "cuda", "cpu", "skip")
+INSTALLER_BACKEND_CHOICES = ("pip", "uv")
 STATUS_ORDER = {"ok": 0, "skip": 1, "warn": 2, "fail": 3}
 STATUS_LABEL = {
     "ok": "OK",

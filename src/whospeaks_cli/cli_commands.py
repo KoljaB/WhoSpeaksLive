@@ -59,6 +59,7 @@ def _save_profile(profile: Profile) -> Any:
 
 
 def cmd_install(args: argparse.Namespace) -> int:
+    requested_installer = getattr(args, "installer", None)
     if args.with_kroko and args.without_kroko:
         raise SystemExit("Choose either --with-kroko or --without-kroko, not both.")
 
@@ -105,6 +106,13 @@ def cmd_install(args: argparse.Namespace) -> int:
         translation_profile = "off"
         print("Local translation is not selected. Pass --translation-model-profile nllb-200-600m to include it.")
 
+    if requested_installer is not None:
+        installer_backend = normalize_installer_backend(requested_installer)
+    elif sys.stdin.isatty() and not args.yes:
+        installer_backend = prompt_installer_backend()
+    else:
+        installer_backend = normalize_installer_backend(None)
+
     plan = install_plan_for_target(
         target,
         realtime_preview_engine=preview_engine,
@@ -127,13 +135,17 @@ def cmd_install(args: argparse.Namespace) -> int:
         save_path = _save_profile(profile)
         print(f"Saved {profile.mode} profile to {save_path}")
 
-    print_install_plan(plan, profile)
+    print_install_plan(plan, profile, installer_backend=installer_backend)
     if not confirm_install_start(args.yes, args.dry_run):
         print("Install skipped.")
         return 0
 
     if plan.target == "macos":
-        code = install_macos_runtime(assume_yes=True, dry_run=args.dry_run)
+        code = install_macos_runtime(
+            assume_yes=True,
+            dry_run=args.dry_run,
+            installer_backend=installer_backend,
+        )
     else:
         code = install_extra_and_maybe_kroko(
             profile,
@@ -143,6 +155,7 @@ def cmd_install(args: argparse.Namespace) -> int:
             install_kroko=plan.install_kroko,
             kroko_assume_yes=True if plan.install_kroko else False,
             torch_policy=getattr(args, "torch", None),
+            installer_backend=installer_backend,
         )
     if code:
         return code
@@ -157,6 +170,7 @@ def cmd_install(args: argparse.Namespace) -> int:
             model_dir=getattr(args, "translation_model_dir", None),
             torch_policy=getattr(args, "torch", None),
             download_model=not bool(getattr(args, "skip_translation_model_download", False)),
+            installer_backend=installer_backend,
         )
         if code:
             return code
@@ -177,10 +191,12 @@ def cmd_install_translation(args: argparse.Namespace) -> int:
         model_dir=args.model_dir,
         torch_policy=args.torch,
         download_model=not args.skip_model_download,
+        installer_backend=normalize_installer_backend(getattr(args, "installer", None)),
     )
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
+    installer_backend = normalize_installer_backend(getattr(args, "installer", None))
     profile = _load_profile()
     if args.mode and args.mode != "auto":
         profile = configure_profile_for_mode(profile, args.mode)
@@ -207,6 +223,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
                 assume_yes=args.yes,
                 dry_run=args.dry_run,
                 torch_policy=getattr(args, "torch", None),
+                installer_backend=installer_backend,
             )
             if code:
                 return code
@@ -216,6 +233,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 
 def cmd_setup(args: argparse.Namespace) -> int:
+    installer_backend = normalize_installer_backend(getattr(args, "installer", None))
     profile = _load_profile()
     profile = configure_profile_for_mode(profile, args.mode)
     if args.language:
@@ -285,6 +303,7 @@ def cmd_setup(args: argparse.Namespace) -> int:
                 dry_run=args.dry_run,
                 install_kroko=preview_engine_uses_kroko(profile) and not args.skip_kroko,
                 torch_policy=getattr(args, "torch", None),
+                installer_backend=installer_backend,
             )
     print("Launch command:")
     print(f"  {format_command(build_launch_command(profile))}")
@@ -308,6 +327,7 @@ def cmd_install_kroko(args: argparse.Namespace) -> int:
         variant=args.variant,
         work_dir=args.work_dir,
         soft_fail=False,
+        installer_backend=normalize_installer_backend(getattr(args, "installer", None)),
     )
 
 

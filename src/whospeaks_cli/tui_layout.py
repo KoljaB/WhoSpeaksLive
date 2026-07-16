@@ -84,6 +84,8 @@ def compose_setup_app(app: Any) -> ComposeResult:
         ("NLLB-200 600M (CC-BY-NC)", "nllb-200-600m"),
         ("MADLAD-400 3B (Apache-2.0)", "madlad-400-3b"),
     ]
+    installer_backend = backend.normalize_installer_backend(None)
+    uv_label = "uv (faster)" if backend.installer_backend_available("uv") else "uv (not found on PATH)"
 
     with Vertical(id="app-body"):
         with Horizontal(id="title-bar"):
@@ -150,6 +152,17 @@ def compose_setup_app(app: Any) -> ComposeResult:
                             value=app.profile.translation_model_profile if app.profile.translation_enabled else "off",
                             allow_blank=False,
                             id="translation-install-select",
+                        )
+                    with Horizontal(id="installer-row"):
+                        yield Label("Installer:", id="installer-label")
+                        yield Select(
+                            [
+                                ("pip (compatibility default)", "pip"),
+                                (uv_label, "uv"),
+                            ],
+                            value=installer_backend,
+                            allow_blank=False,
+                            id="installer-select",
                         )
                     yield Static("", id="compatibility-note", markup=False)
                 yield Static(id="compact-plan", markup=False)

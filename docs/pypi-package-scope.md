@@ -1,10 +1,12 @@
 # PyPI Package Scope
 
-The base `pip install whospeaks` stays lightweight by installing the setup and launcher application first, then adding model runtimes only after the user chooses a deployment mode.
+The base `pip install whospeaks` or `uv pip install --python .venv whospeaks` stays lightweight by installing the setup and launcher application first, then adding model runtimes only after the user chooses a deployment mode.
 
 ## Base Install
 
 The only required third-party dependency of the base package is Textual, which powers the terminal setup application. GPU frameworks, speech models, media libraries, translation models, and server stacks remain optional dependencies or are installed by the guided setup for the selected target.
+
+pip and uv install the same wheel and therefore have the same base-package boundary. The launcher keeps pip as the compatibility default and can use uv as an explicit backend for the later optional dependency sets. This changes resolution and installation speed, not which files belong to the published WhoSpeaks package.
 
 The wheel contains only files needed by an installed WhoSpeaks runtime:
 
