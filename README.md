@@ -35,16 +35,22 @@ pip install whospeaks
 whospeaks
 ```
 
-Or install the same lightweight launcher as a persistent uv-managed tool:
+Or use this same uv command for both the first installation and later updates:
 
 ```powershell
-uv tool install --python 3.11 whospeaks
+uv tool install --force --python 3.11 whospeaks
 uv tool update-shell
 ```
 
-`uv tool update-shell` is a one-time setup step. Open a new terminal after it
-finishes; `whospeaks` will then start the launcher from any directory, just as
-it does after a normal pip installation.
+Open a new terminal, then run:
+
+```powershell
+whospeaks
+```
+
+`--force` replaces an older uv installation with the latest stable release.
+`uv tool update-shell` only changes `PATH` when needed, so the two commands are
+safe to reuse together.
 
 The command above installs the lightweight production CLI from PyPI. It brings
 only the terminal setup dependency; model runtimes and other heavy optional
