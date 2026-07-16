@@ -167,19 +167,19 @@ Tab.-active {
 }
 
 #setup-options {
-    height: 6;
+    height: 8;
     layout: vertical;
     padding: 0 2;
     background: #0d1117;
 }
 
-#target-row, #realtime-row, #translation-install-row {
+#target-row, #realtime-row, #translation-install-row, #installer-row {
     width: 1fr;
     height: 2;
     align-vertical: middle;
 }
 
-#target-label, #realtime-label, #translation-install-label {
+#target-label, #realtime-label, #translation-install-label, #installer-label {
     width: 12;
     height: 1;
     color: #8f9db8;
@@ -230,7 +230,7 @@ Tab.-active {
 }
 
 Screen.preview-incompatible #setup-options {
-    height: 7;
+    height: 9;
 }
 
 Screen.preview-incompatible #compatibility-note {
@@ -507,7 +507,7 @@ Screen.compact #settings-grid {
     grid-columns: 1fr;
 }
 
-Screen.narrow #target-row, Screen.narrow #realtime-row, Screen.narrow #translation-install-row {
+Screen.narrow #target-row, Screen.narrow #realtime-row, Screen.narrow #translation-install-row, Screen.narrow #installer-row {
     width: 1fr;
     height: 2;
 }

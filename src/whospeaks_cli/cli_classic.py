@@ -745,10 +745,21 @@ def select_profile_interactively(profile: Profile, mode: str) -> int | None:
     if extra is None:
         print("No Python package install action is missing for this profile.")
         return None
-    print(f"Next installer action: {format_command(build_install_command(extra))}")
+    installer_backend = normalize_installer_backend(None)
+    print(
+        "Next installer action: "
+        f"{format_command(build_install_command(extra, installer_backend=installer_backend))}"
+    )
     answer = read_input("Install the required Python packages now? [y/N] ", "n").strip().lower()
     if answer in {"y", "yes"}:
-        return install_extra_and_maybe_kroko(profile, extra, assume_yes=True, kroko_assume_yes=False)
+        installer_backend = prompt_installer_backend()
+        return install_extra_and_maybe_kroko(
+            profile,
+            extra,
+            assume_yes=True,
+            kroko_assume_yes=False,
+            installer_backend=installer_backend,
+        )
     print("Install skipped. Choose the install action later to run it.")
     return None
 
@@ -759,12 +770,17 @@ def install_missing_group_interactively(profile: Profile, report: DoctorReport |
     if extra is None:
         print("No Python package install action is missing for this profile.")
         return None
-    return install_extra_and_maybe_kroko(profile, extra)
+    return install_extra_and_maybe_kroko(
+        profile,
+        extra,
+        installer_backend=prompt_installer_backend(),
+    )
 
 
 def install_components_interactively(profile: Profile) -> int | None:
     target = prompt_install_target()
     preview_engine, preview_preset = prompt_realtime_preview(target)
+    installer_backend = prompt_installer_backend()
     plan = install_plan_for_target(
         target,
         realtime_preview_engine=preview_engine,
@@ -774,7 +790,7 @@ def install_components_interactively(profile: Profile) -> int | None:
     validate_realtime_preview_language(profile)
     save_path = save_profile(profile)
     print(f"Saved {profile.mode} profile to {save_path}")
-    print_install_plan(plan, profile)
+    print_install_plan(plan, profile, installer_backend=installer_backend)
     if not confirm_install_start(False, False):
         print("Install skipped.")
         return None
@@ -784,6 +800,7 @@ def install_components_interactively(profile: Profile) -> int | None:
         assume_yes=True,
         install_kroko=plan.install_kroko,
         kroko_assume_yes=True if plan.install_kroko else False,
+        installer_backend=installer_backend,
     )
 
 
@@ -861,7 +878,11 @@ def interactive_dashboard(profile: Profile) -> int:
         _facade_callable("render_dashboard", render_dashboard)(profile, report)
         extra = _facade_callable("recommended_install_extra", recommended_install_extra)(profile, report)
         if extra:
-            print(f"Recommended package action: {format_command(build_install_command(extra))}")
+            installer_backend = normalize_installer_backend(None)
+            print(
+                "Recommended package action: "
+                f"{format_command(build_install_command(extra, installer_backend=installer_backend))}"
+            )
         print(main_menu_text())
         choice = _facade_callable("read_input", read_input)("> ", "q").strip().lower()
         if choice in {"1", "i", "install", "s", "setup"}:

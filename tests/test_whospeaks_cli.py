@@ -75,6 +75,29 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertEqual(command[-2:], ["install", "whospeaks[complete,preview]==0.0.1"])
         self.assertIn("whospeaks[complete,preview]==0.0.1", cli.format_command(command))
 
+    def test_uv_install_command_targets_the_requested_python(self) -> None:
+        target_python = Path("runtime") / "Scripts" / "python.exe"
+        with (
+            mock.patch.object(cli.shutil, "which", return_value=r"C:\tools\uv.exe"),
+            mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1"),
+        ):
+            command = cli.build_install_command(
+                "server",
+                python_executable=target_python,
+                installer_backend="uv",
+            )
+
+        self.assertEqual(
+            command[:5],
+            [r"C:\tools\uv.exe", "pip", "install", "--python", str(target_python)],
+        )
+        self.assertEqual(command[-1], "whospeaks[server]==0.0.1")
+
+    def test_uv_backend_fails_clearly_when_uv_is_unavailable(self) -> None:
+        with mock.patch.object(cli.shutil, "which", return_value=None):
+            with self.assertRaisesRegex(SystemExit, "uv.*not found"):
+                cli.build_install_command("server", installer_backend="uv")
+
     def test_install_command_for_dev_build_keeps_testpypi_available(self) -> None:
         with mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1.dev18"):
             command = cli.build_install_command()
@@ -82,6 +105,23 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn("--extra-index-url", command)
         self.assertIn(cli.TESTPYPI_SIMPLE_URL, command)
         self.assertIn("whospeaks[complete,preview]==0.0.1.dev18", command)
+        self.assertNotIn("--index-strategy", command)
+
+    def test_uv_dev_build_prefers_pypi_files_before_falling_through_to_testpypi(self) -> None:
+        with (
+            mock.patch.object(cli.shutil, "which", return_value="uv"),
+            mock.patch.object(cli, "installed_distribution_version", return_value="0.0.4.dev3"),
+        ):
+            command = cli.build_install_command("server", installer_backend="uv")
+
+        strategy_index = command.index("--index-strategy")
+        self.assertEqual(command[strategy_index + 1], "unsafe-first-match")
+        first_index = command.index("--index")
+        second_index = command.index("--index", first_index + 1)
+        self.assertEqual(command[first_index + 1], cli.PYPI_SIMPLE_URL)
+        self.assertEqual(command[second_index + 1], cli.TESTPYPI_SIMPLE_URL)
+        self.assertNotIn("--extra-index-url", command)
+        self.assertIn("whospeaks[server]==0.0.4.dev3", command)
 
     def test_torch_auto_installs_cuda_when_nvidia_driver_is_visible(self) -> None:
         completed = subprocess.CompletedProcess(
@@ -120,6 +160,35 @@ class WhoSpeaksCliTests(unittest.TestCase):
 
         self.assertEqual(command, [])
         self.assertEqual(selection.mode, "skip")
+
+    def test_uv_torch_command_targets_sidecar_python(self) -> None:
+        with mock.patch.object(cli.shutil, "which", return_value="uv"):
+            command, selection = cli.build_torch_install_command(
+                "cpu",
+                python_executable="sidecar-python",
+                installer_backend="uv",
+            )
+
+        self.assertEqual(command[:5], ["uv", "pip", "install", "--python", "sidecar-python"])
+        self.assertEqual(selection.mode, "cpu")
+
+    def test_uv_translation_commands_target_the_isolated_environment(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            environment = Path(directory) / "translation-venv"
+            with mock.patch.object(cli.shutil, "which", return_value="uv"):
+                commands, python_executable, _model_path, _selection = cli.build_translation_install_commands(
+                    "nllb-200-600m",
+                    venv_dir=environment,
+                    torch_policy="skip",
+                    download_model=False,
+                    installer_backend="uv",
+                )
+
+        uv_commands = [command for command in commands if command[:3] == ["uv", "pip", "install"]]
+        self.assertGreaterEqual(len(uv_commands), 2)
+        self.assertTrue(
+            all(command[3:5] == ["--python", str(python_executable)] for command in uv_commands)
+        )
 
     def test_install_extra_runs_torch_preinstall_before_whospeaks_extra(self) -> None:
         torch_command = ["python", "-m", "pip", "install", "torch"]
@@ -186,6 +255,34 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn("whospeaks[preview]==0.0.1.dev19", output)
         self.assertIn("config", output)
         self.assertIn("realtime-preview-python", output)
+
+    def test_uv_kroko_sidecar_uses_seeded_python312_environment(self) -> None:
+        original_venv = os.environ.get(cli.KROKO_PREVIEW_VENV_ENV)
+        with tempfile.TemporaryDirectory() as directory:
+            os.environ[cli.KROKO_PREVIEW_VENV_ENV] = str(Path(directory) / "preview-venv")
+            stdout = io.StringIO()
+            try:
+                with (
+                    mock.patch.object(cli.shutil, "which", return_value="uv"),
+                    contextlib.redirect_stdout(stdout),
+                ):
+                    code = cli.install_kroko_sidecar(
+                        cli.Profile(),
+                        None,
+                        assume_yes=True,
+                        dry_run=True,
+                        installer_backend="uv",
+                    )
+            finally:
+                if original_venv is None:
+                    os.environ.pop(cli.KROKO_PREVIEW_VENV_ENV, None)
+                else:
+                    os.environ[cli.KROKO_PREVIEW_VENV_ENV] = original_venv
+
+        self.assertEqual(code, 0)
+        output = stdout.getvalue()
+        self.assertIn("uv venv --python 3.12 --seed", output)
+        self.assertIn("uv pip install --python", output)
 
     def test_windows_python312_command_falls_back_to_common_install_path(self) -> None:
         fake_path = Path(r"C:\Python\Python312\python.exe")
@@ -261,6 +358,43 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertNotIn("Run with --with-kroko", output)
         self.assertIn("whospeaks[complete]==0.0.1.dev21", output)
         self.assertNotIn("whospeaks[complete,preview]==0.0.1.dev21", output)
+        self.assertFalse(config_path.exists())
+
+    def test_install_server_uv_dry_run_propagates_installer_backend(self) -> None:
+        original_config = os.environ.get("WHOSPEAKS_CONFIG")
+        with tempfile.TemporaryDirectory() as directory:
+            config_path = Path(directory) / "config.json"
+            os.environ["WHOSPEAKS_CONFIG"] = str(config_path)
+            stdout = io.StringIO()
+            try:
+                with (
+                    mock.patch.object(cli.shutil, "which", return_value="uv"),
+                    mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1"),
+                    mock.patch.object(cli, "run_doctor", return_value=cli.DoctorReport("server", [])),
+                    contextlib.redirect_stdout(stdout),
+                ):
+                    code = cli.main([
+                        "install",
+                        "--target",
+                        "server",
+                        "--installer",
+                        "uv",
+                        "--torch",
+                        "skip",
+                        "--dry-run",
+                        "--yes",
+                    ])
+            finally:
+                if original_config is None:
+                    os.environ.pop("WHOSPEAKS_CONFIG", None)
+                else:
+                    os.environ["WHOSPEAKS_CONFIG"] = original_config
+
+        self.assertEqual(code, 0)
+        output = stdout.getvalue()
+        self.assertIn("Python package installer: uv", output)
+        self.assertIn("uv pip install --python", output)
+        self.assertIn("whospeaks[server]==0.0.1", output)
         self.assertFalse(config_path.exists())
 
     def test_install_local_with_nemotron_dry_run_uses_complete_and_model_preset(self) -> None:

@@ -347,6 +347,7 @@ class WhoSpeaksSetupApp(
             self._select_realtime_engine("off")
         realtime_select.disabled = target == "server" or bool(self.active_operation)
         plan = self._selected_plan()
+        installer_backend = self._selected_installer_backend()
         realtime = realtime_plan_label(plan)
         component_lines, compact_components = self._plan_components(plan)
         summary = "\n".join(
@@ -357,6 +358,7 @@ class WhoSpeaksSetupApp(
                 "",
                 f"Realtime text: {realtime}",
                 f"Translation: {plan.translation_model_profile if plan.translation_model_profile != 'off' else 'off'}",
+                f"Package installer: {installer_backend}",
             )
         )
         self.query_one("#mode-pill", Static).update(
@@ -600,6 +602,7 @@ class WhoSpeaksSetupApp(
         self.query_one("#target-select", RadioSet).disabled = bool(operation)
         self.query_one("#realtime-select", RadioSet).disabled = bool(operation) or self._selected_target() == "server"
         self.query_one("#translation-install-select", Select).disabled = bool(operation)
+        self.query_one("#installer-select", Select).disabled = bool(operation)
         self.query_one("#quick-language-select", Select).disabled = bool(operation)
         self.query_one("#live-speakers-checkbox", Checkbox).disabled = bool(operation)
         self.query_one("#save-settings", Button).disabled = bool(operation)
@@ -647,6 +650,10 @@ class WhoSpeaksSetupApp(
                 "building wheel",
                 "successfully installed",
                 "pip install",
+                "uv pip",
+                "resolved ",
+                "prepared ",
+                "installed ",
             )
         ):
             return "Installing Python packages"
@@ -673,6 +680,10 @@ class WhoSpeaksSetupApp(
 
     @on(Select.Changed, "#translation-install-select")
     def translation_install_changed(self) -> None:
+        self._update_plan()
+
+    @on(Select.Changed, "#installer-select")
+    def installer_changed(self) -> None:
         self._update_plan()
 
     @on(Select.Changed, "#quick-language-select")
@@ -795,6 +806,12 @@ class WhoSpeaksSetupApp(
             return
         if self.active_operation:
             self.notify("Another operation is already running", severity="warning")
+            return
+        installer_backend = self._selected_installer_backend()
+        if not backend.installer_backend_available(installer_backend):
+            message = "uv was selected, but it was not found on PATH. Install uv or choose pip."
+            self._set_feedback("error", "Installer unavailable", message)
+            self.notify(message, title="Could not start installation", severity="error")
             return
         if not self._save_settings(notify=False):
             return

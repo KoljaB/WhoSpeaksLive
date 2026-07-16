@@ -11,6 +11,11 @@ from . import main as backend
 
 
 class ProfileActionsMixin:
+    def _selected_installer_backend(self) -> str:
+        return backend.normalize_installer_backend(
+            str(self.query_one("#installer-select", Select).value or "pip")
+        )
+
     def _install_command(self, plan: backend.InstallPlan) -> list[str]:
         command = [
             sys.executable,
@@ -19,6 +24,8 @@ class ProfileActionsMixin:
             "install",
             "--target",
             plan.target,
+            "--installer",
+            self._selected_installer_backend(),
             "--yes",
         ]
         if plan.target != "server":

@@ -23,6 +23,38 @@ pip install whospeaks
 whospeaks
 ```
 
+### uv alternative
+
+uv can install the same lightweight PyPI launcher into an ordinary, persistent virtual environment:
+
+```powershell
+uv venv --python 3.11 --seed .venv
+uv pip install --python .venv whospeaks
+.\.venv\Scripts\whospeaks.exe
+```
+
+The `--seed` option places pip in the environment too; the launcher then ensures setuptools and wheel are present where needed. WhoSpeaks needs that compatibility layer for native installers such as Kroko, even when uv performs the normal Python package installs.
+
+After the launcher starts, choose **uv** in the Setup tab to use it for the larger target-specific dependency sets, PyTorch, managed macOS services, translation sidecars, and the Python-package portion of a Kroko sidecar. The scriptable equivalent is:
+
+```powershell
+.\.venv\Scripts\whospeaks.exe install --target local --installer uv --yes
+```
+
+pip remains the default because it is bundled with normal Python installations and has the broadest compatibility. Set `WHOSPEAKS_INSTALLER=uv` to change the launcher default, or pass `--installer pip` / `--installer uv` explicitly. WhoSpeaks always gives uv an explicit target interpreter, so both installers modify the same intended environment.
+
+Do not use `uv tool install whospeaks` or `uvx whospeaks` yet. Those commands create isolated tool environments whose contents are expected to be managed as a unit, while the current launcher intentionally installs the selected heavy runtime into its own environment. A normal venv has clear ownership and remains available to the launcher after setup.
+
+To test a development build from TestPyPI, use a disposable environment and replace `<version>` with the published development version:
+
+```powershell
+uv venv --python 3.11 --seed .venv-test
+uv pip install --python .venv-test --index https://pypi.org/simple/ --index https://test.pypi.org/simple/ --index-strategy unsafe-first-match "whospeaks==<version>"
+.\.venv-test\Scripts\whospeaks.exe
+```
+
+The explicit index strategy is limited to this TestPyPI workflow. PyPI is deliberately listed first so ordinary dependencies use its complete wheel set; the exact WhoSpeaks development version then falls through to TestPyPI. This avoids both TestPyPI placeholder packages and incomplete TestPyPI file sets, such as a release that lacks a CPython 3.11 Windows wheel. Normal PyPI installations keep uv's safer default strategy. Once installed, the launcher recognizes the development version and applies the same PyPI-first TestPyPI fallback when uv expands the selected WhoSpeaks extras.
+
 The base install includes the Textual setup interface, doctor checks, profile storage, and launch-command generator. The Setup tab asks what you want on this machine:
 
 - Full local installation: browser controller, final ASR, and speaker embeddings on one machine.
@@ -51,21 +83,22 @@ whospeaks install --target local --without-kroko --yes
 whospeaks install --target local --with-kroko --yes
 whospeaks install --target core --without-kroko --yes
 whospeaks install --target server --yes
+whospeaks install --target server --installer uv --yes
 ```
 
-Internally, the installer still uses PyPI optional dependency sets to install the right Python packages, but users should treat those as implementation details. For a full local install without Kroko, it installs the local Python stack. With Kroko selected, it also installs lightweight preview support and then checks whether realtime preview still lacks the native `kroko_onnx` runtime. If it is missing, the CLI offers a separate Kroko install/build step using the vendored RealtimeSTT installer:
+Internally, the installer uses PyPI optional dependency sets to install the right Python packages through the selected pip or uv backend, but users should treat those as implementation details. For a full local install without Kroko, it installs the local Python stack. With Kroko selected, it also installs lightweight preview support and then checks whether realtime preview still lacks the native `kroko_onnx` runtime. If it is missing, the CLI offers a separate Kroko install/build step using the vendored RealtimeSTT installer:
 
 ```powershell
 whospeaks install-kroko
 ```
 
-The native Kroko runtime is handled as a post-install setup step instead of a PyPI dependency because it may need an upstream source build, Docker, or a Python 3.12 sidecar on Windows. System prerequisites such as GPU drivers, `ffmpeg`, model downloads, Hugging Face access, and native build tooling are still verified by `whospeaks doctor` because they cannot be safely guaranteed by pip alone. Use `--deep` when you want checks that may touch provider parsing or load endpoints; plain doctor avoids expensive model startup.
+The native Kroko runtime is handled as a post-install setup step instead of a PyPI dependency because it may need an upstream source build, Docker, or a Python 3.12 sidecar on Windows. With uv selected, the launcher can ask uv for Python 3.12 while creating that seeded sidecar; Kroko's own native build then continues to use its upstream installer. System prerequisites such as GPU drivers, `ffmpeg`, model downloads, Hugging Face access, and native build tooling are still verified by `whospeaks doctor` because no Python package installer can safely guarantee them. Use `--deep` when you want checks that may touch provider parsing or load endpoints; plain doctor avoids expensive model startup.
 
 ## How The Short `whospeaks` Command Works
 
 The short command opens the Textual setup and launcher application; the browser app itself is started by the longer `whospeaks-window` command that the launcher builds from your saved profile. The scriptable subcommands do not start Textual.
 
-`pip install whospeaks` installs console scripts from the package metadata. A console script is a command-line wrapper that imports a Python function. In this package:
+`pip install whospeaks` and `uv pip install --python .venv whospeaks` install console scripts from the package metadata. A console script is a command-line wrapper that imports a Python function. In this package:
 
 - `whospeaks` runs `whospeaks_cli.main:main`.
 - `whospeaks-window` runs `window.youtube_window_diarize_gui:main`.
@@ -95,9 +128,10 @@ The normal interactive flow is:
 
 1. Run `whospeaks` and select the installation target on the Setup tab.
 2. Select whether to include Kroko realtime text.
-3. Review the plan and start installation; live output appears on the Activity tab.
-4. Use Diagnostics to verify the resulting component state.
-5. Launch the browser UI from Setup.
+3. Select pip or uv as the Python package installer.
+4. Review the plan and start installation; live output appears on the Activity tab.
+5. Use Diagnostics to verify the resulting component state.
+6. Launch the browser UI from Setup.
 
 The equivalent automation interfaces remain `whospeaks install`, `whospeaks doctor`, `whospeaks config`, and `whospeaks launch`.
 

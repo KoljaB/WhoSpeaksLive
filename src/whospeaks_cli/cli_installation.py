@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import importlib.metadata
+import importlib.util
 import json
 import os
 import platform
@@ -10,8 +12,11 @@ import shutil
 import subprocess
 import sys
 import textwrap
+import tomllib
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote, urlparse
+from urllib.request import url2pathname
 
 from window.realtime_preview_backends import (
     get_preview_backend_spec,
@@ -36,12 +41,15 @@ from .planning import (
 from .profiles import Profile, config_path, normalize_mode, save_profile, update_profile_in_place
 from .runtime_constants import (
     DEFAULT_PYTORCH_CUDA_BUILD,
+    INSTALLER_BACKEND_CHOICES,
+    INSTALLER_BACKEND_ENV,
     KROKO_INSTALL_MODULE,
     KROKO_PREVIEW_VENV_ENV,
     PACKAGE_NAME,
     PIP_EXTRA_INDEX_URL_ENV,
     PIP_FIND_LINKS_ENV,
     PIP_INDEX_URL_ENV,
+    PYPI_SIMPLE_URL,
     PYTORCH_CPU_INDEX_URL,
     PYTORCH_CPU_INDEX_URL_ENV,
     PYTORCH_CUDA_BUILD_ENV,
@@ -56,13 +64,14 @@ from .runtime_constants import (
 )
 
 __all__ = [
+    "normalize_installer_backend", "installer_backend_available", "package_install_prefix",
     "package_extra_spec", "configure_profile_for_install", "version_is_prerelease",
-    "pip_index_args_for_installed_package", "build_install_command",
+    "pip_index_args_for_installed_package", "package_index_args_for_installed_package", "build_install_command",
     "normalize_torch_install_policy", "normalize_pytorch_cuda_build", "extra_needs_torch",
     "detect_nvidia_cuda", "select_torch_install", "build_torch_install_command",
     "report_torch_runtime", "format_command", "recommended_install_extra", "install_extra",
     "print_install_plan", "prompt_install_target", "prompt_realtime_preview",
-    "prompt_translation_model", "prompt_kroko_install", "confirm_install_start",
+    "prompt_translation_model", "prompt_installer_backend", "prompt_kroko_install", "confirm_install_start",
     "preview_engine_is_enabled", "preview_engine_uses_kroko",
     "validate_realtime_preview_language", "build_kroko_install_command",
     "default_kroko_preview_venv_path", "venv_python_path", "default_translation_venv_dir",
@@ -79,6 +88,47 @@ def _facade_callable(name: str, fallback: Any) -> Any:
 
     facade = sys.modules.get("whospeaks_cli.main")
     return getattr(facade, name, fallback) if facade is not None else fallback
+
+
+def normalize_installer_backend(value: str | None = None) -> str:
+    """Return the selected Python package installer without silently changing tools."""
+
+    selected = value if value is not None else os.environ.get(INSTALLER_BACKEND_ENV, "pip")
+    normalized = str(selected or "pip").strip().lower().replace("-", "_")
+    normalized = {"python": "pip", "uv_pip": "uv"}.get(normalized, normalized)
+    if normalized not in INSTALLER_BACKEND_CHOICES:
+        raise SystemExit(
+            "Unknown installer backend {0!r}. Choose one of: {1}.".format(
+                selected,
+                ", ".join(INSTALLER_BACKEND_CHOICES),
+            )
+        )
+    return normalized
+
+
+def installer_backend_available(value: str | None = None) -> bool:
+    backend = normalize_installer_backend(value)
+    return backend == "pip" or bool(shutil.which("uv"))
+
+
+def package_install_prefix(
+    python_executable: str | Path = sys.executable,
+    *,
+    installer_backend: str | None = None,
+) -> list[str]:
+    """Build an install prefix that targets one explicit Python environment."""
+
+    backend = normalize_installer_backend(installer_backend)
+    python = str(python_executable)
+    if backend == "pip":
+        return [python, "-m", "pip", "install"]
+    uv = shutil.which("uv")
+    if not uv:
+        raise SystemExit(
+            "The uv installer was selected, but `uv` was not found on PATH. "
+            "Install uv or rerun with --installer pip."
+        )
+    return [uv, "pip", "install", "--python", python]
 
 
 def package_extra_spec(extra: str) -> str:
@@ -117,16 +167,192 @@ def pip_index_args_for_installed_package() -> list[str]:
     return args
 
 
-def build_install_command(extra: str = LOCAL_EXTRA) -> list[str]:
+def package_index_args_for_installed_package(
+    installer_backend: str | None = None,
+) -> list[str]:
+    """Return index arguments adjusted for the selected package installer."""
+
+    args = pip_index_args_for_installed_package()
+    backend = normalize_installer_backend(installer_backend)
+    if backend == "uv" and any("test.pypi.org" in arg.lower() for arg in args):
+        # TestPyPI contains placeholders and incomplete file sets for packages
+        # that also exist on PyPI. Keep PyPI first so normal dependencies use
+        # its complete wheel set, then let the exact WhoSpeaks development
+        # version fall through to TestPyPI. Stable PyPI installs retain uv's
+        # safer default first-index strategy.
+        primary_index = PYPI_SIMPLE_URL
+        test_index = TESTPYPI_SIMPLE_URL
+        remaining: list[str] = []
+        offset = 0
+        while offset < len(args):
+            flag = args[offset]
+            if flag in {"--index-url", "--extra-index-url"} and offset + 1 < len(args):
+                value = args[offset + 1]
+                if "test.pypi.org" in value.lower():
+                    test_index = value
+                elif flag == "--index-url":
+                    primary_index = value
+                else:
+                    remaining.extend((flag, value))
+                offset += 2
+                continue
+            remaining.append(flag)
+            offset += 1
+        return [
+            "--index", primary_index,
+            "--index", test_index,
+            "--index-strategy", "unsafe-first-match",
+            *remaining,
+        ]
+    return args
+
+
+def build_install_command(
+    extra: str = LOCAL_EXTRA,
+    *,
+    python_executable: str | Path = sys.executable,
+    installer_backend: str | None = None,
+) -> list[str]:
     extra = str(extra or LOCAL_EXTRA).strip()
     return [
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        *pip_index_args_for_installed_package(),
+        *package_install_prefix(
+            python_executable,
+            installer_backend=installer_backend,
+        ),
+        *package_index_args_for_installed_package(installer_backend),
         package_extra_spec(extra),
     ]
+
+
+def installed_package_source() -> tuple[Path | None, bool]:
+    try:
+        direct_url = importlib.metadata.distribution(PACKAGE_NAME).read_text("direct_url.json")
+        payload = json.loads(direct_url or "{}")
+    except (importlib.metadata.PackageNotFoundError, OSError, ValueError, TypeError):
+        payload = {}
+    parsed = urlparse(str(payload.get("url") or ""))
+    if parsed.scheme == "file":
+        path = Path(url2pathname(unquote(parsed.path)))
+        if path.exists():
+            editable = bool((payload.get("dir_info") or {}).get("editable"))
+            return path, editable
+    spec = importlib.util.find_spec("whospeaks_cli")
+    locations = (spec.submodule_search_locations or ()) if spec is not None else ()
+    for location in locations:
+        for candidate in Path(location).resolve().parents:
+            pyproject = candidate / "pyproject.toml"
+            try:
+                project_name = tomllib.loads(pyproject.read_text(encoding="utf-8"))["project"]["name"]
+            except (FileNotFoundError, OSError, KeyError, TypeError, tomllib.TOMLDecodeError):
+                continue
+            if str(project_name).strip().lower() == PACKAGE_NAME:
+                return candidate, True
+    return None, False
+
+
+def macos_package_install_command(
+    python_executable: str | Path,
+    *,
+    extra: str = "",
+    no_deps: bool = False,
+    installer_backend: str | None = None,
+) -> list[str]:
+    command = package_install_prefix(
+        python_executable,
+        installer_backend=installer_backend,
+    )
+    if no_deps:
+        command.append("--no-deps")
+    source, editable = _facade_callable("installed_package_source", installed_package_source)()
+    if source is not None:
+        target = f"{source}[{extra}]" if extra else str(source)
+        if editable:
+            command.append("-e")
+        command.append(target)
+        return command
+    command.extend(package_index_args_for_installed_package(installer_backend))
+    if extra:
+        command.append(package_extra_spec(extra))
+    else:
+        version = _facade_callable("installed_distribution_version", installed_distribution_version)(PACKAGE_NAME)
+        command.append(f"{PACKAGE_NAME}=={version}" if version else PACKAGE_NAME)
+    return command
+
+
+def build_macos_install_commands(
+    runtime_root: Path | None = None,
+    *,
+    installer_backend: str | None = None,
+) -> list[list[str]]:
+    root = (runtime_root or default_macos_runtime_root()).expanduser()
+    asr_venv = root / "mlx-asr"
+    embeddings_venv = root / "embeddings"
+    asr_python = venv_python_path(asr_venv)
+    embeddings_python = venv_python_path(embeddings_venv)
+    requirements = service_resource_path("voice-embeddings-server", "requirements-macos.txt")
+    return [
+        macos_package_install_command(
+            sys.executable,
+            extra=CONTROLLER_EXTRA,
+            installer_backend=installer_backend,
+        ),
+        [sys.executable, "-m", "venv", str(asr_venv)],
+        [
+            *package_install_prefix(asr_python, installer_backend=installer_backend),
+            "--upgrade", "pip", "setuptools", "wheel",
+        ],
+        [
+            *package_install_prefix(asr_python, installer_backend=installer_backend),
+            "mlx-whisper", "fastapi>=0.110", "numpy>=2,<3", "uvicorn[standard]>=0.29",
+        ],
+        macos_package_install_command(
+            asr_python,
+            no_deps=True,
+            installer_backend=installer_backend,
+        ),
+        [sys.executable, "-m", "venv", str(embeddings_venv)],
+        [
+            *package_install_prefix(embeddings_python, installer_backend=installer_backend),
+            "--upgrade", "pip", "setuptools", "wheel",
+        ],
+        [
+            *package_install_prefix(embeddings_python, installer_backend=installer_backend),
+            "-r", str(requirements),
+        ],
+        macos_package_install_command(
+            embeddings_python,
+            no_deps=True,
+            installer_backend=installer_backend,
+        ),
+    ]
+
+
+def install_macos_runtime(
+    *,
+    assume_yes: bool = False,
+    dry_run: bool = False,
+    runtime_root: Path | None = None,
+    installer_backend: str | None = None,
+) -> int:
+    backend = normalize_installer_backend(installer_backend)
+    commands = build_macos_install_commands(
+        runtime_root,
+        installer_backend=backend,
+    )
+    print("Apple Silicon managed runtime install commands:")
+    print(f"Python package installer: {backend}")
+    for command in commands:
+        print(f"  {format_command(command)}")
+    if dry_run:
+        return 0
+    if not assume_yes:
+        answer = read_input("Install the controller and managed macOS services now? [y/N] ", "n").strip().lower()
+        if answer not in {"y", "yes"}:
+            print("macOS runtime installation skipped.")
+            return 0
+    root = (runtime_root or default_macos_runtime_root()).expanduser()
+    root.mkdir(parents=True, exist_ok=True)
+    return run_command_sequence(commands)
 
 
 def normalize_torch_install_policy(value: str | None) -> str:
@@ -240,15 +466,20 @@ def select_torch_install(policy: str | None = None) -> TorchInstallSelection:
     return TorchInstallSelection("cpu", cpu_index, detail)
 
 
-def build_torch_install_command(policy: str | None = None) -> tuple[list[str], TorchInstallSelection]:
+def build_torch_install_command(
+    policy: str | None = None,
+    *,
+    python_executable: str | Path = sys.executable,
+    installer_backend: str | None = None,
+) -> tuple[list[str], TorchInstallSelection]:
     selection = select_torch_install(policy)
     if not selection.should_install:
         return [], selection
     command = [
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
+        *package_install_prefix(
+            python_executable,
+            installer_backend=installer_backend,
+        ),
         "--upgrade",
     ]
     if selection.index_url:
@@ -334,14 +565,19 @@ def install_extra(
     dry_run: bool = False,
     *,
     torch_policy: str | None = None,
+    installer_backend: str | None = None,
 ) -> int:
-    command = _facade_callable("build_install_command", build_install_command)(extra)
+    backend = normalize_installer_backend(installer_backend)
+    command = _facade_callable("build_install_command", build_install_command)(
+        extra,
+        installer_backend=backend,
+    )
     torch_command: list[str] = []
     torch_selection = TorchInstallSelection("skip", "", "Torch is not needed for this dependency set.")
     if extra_needs_torch(extra):
         torch_command, torch_selection = _facade_callable(
             "build_torch_install_command", build_torch_install_command
-        )(torch_policy)
+        )(torch_policy, installer_backend=backend)
         print("PyTorch install selection:")
         print(f"  {torch_selection.reason}")
         if torch_command:
@@ -350,6 +586,7 @@ def install_extra(
         else:
             print("PyTorch install command:")
             print("  skipped")
+    print(f"Python package installer: {backend}")
     print("WhoSpeaks package install command:")
     print(f"  {format_command(command)}")
     if dry_run:
@@ -370,7 +607,13 @@ def install_extra(
     return int(completed.returncode)
 
 
-def print_install_plan(plan: InstallPlan, profile: Profile) -> None:
+def print_install_plan(
+    plan: InstallPlan,
+    profile: Profile,
+    *,
+    installer_backend: str | None = None,
+) -> None:
+    backend = normalize_installer_backend(installer_backend)
     print("WhoSpeaks install plan")
     print("=" * 72)
     print(f"Target: {plan.title}")
@@ -393,8 +636,9 @@ def print_install_plan(plan: InstallPlan, profile: Profile) -> None:
         print(f"Translation: isolated local {plan.translation_model_profile} sidecar and model files.")
     print(f"Language: {language_summary(profile.language)}")
     print(f"Internal dependency set: {plan.extra}")
-    print("Underlying pip command:")
-    print(f"  {format_command(build_install_command(plan.extra))}")
+    print(f"Python package installer: {backend}")
+    print("Underlying package command:")
+    print(f"  {format_command(build_install_command(plan.extra, installer_backend=backend))}")
     print("=" * 72)
 
 
@@ -468,6 +712,26 @@ def prompt_translation_model() -> str:
         if answer in {"4", "off", "none", "no"}:
             return "off"
         print("Choose 1, 2, 3, or 4.")
+
+
+def prompt_installer_backend() -> str:
+    default = normalize_installer_backend(None)
+    uv_note = "available" if installer_backend_available("uv") else "not found on PATH"
+    print()
+    print("Python package installer")
+    print("  1. pip: compatibility default")
+    print(f"  2. uv: faster dependency resolution and installation ({uv_note})")
+    while True:
+        default_choice = "2" if default == "uv" else "1"
+        answer = read_input("Choose installer [1/2] ", default_choice).strip().lower()
+        if answer in {"1", "pip", "python"}:
+            return "pip"
+        if answer in {"2", "uv", "uv-pip", "uv_pip"}:
+            if installer_backend_available("uv"):
+                return "uv"
+            print("uv was not found on PATH. Install uv first or choose pip.")
+            continue
+        print("Choose 1 or 2.")
 
 
 def prompt_kroko_install(target: str) -> bool:
@@ -552,13 +816,21 @@ def default_translation_model_dir(model_profile: str) -> Path:
     return root / model_profile
 
 
-def translation_package_install_command(python_executable: Path) -> list[str]:
+def translation_package_install_command(
+    python_executable: Path,
+    *,
+    installer_backend: str | None = None,
+) -> list[str]:
+    prefix = package_install_prefix(
+        python_executable,
+        installer_backend=installer_backend,
+    )
     source_root = Path(__file__).resolve().parents[2]
     if (source_root / "pyproject.toml").is_file():
-        return [str(python_executable), "-m", "pip", "install", "-e", f"{source_root}[translation]"]
+        return [*prefix, "-e", f"{source_root}[translation]"]
     return [
-        str(python_executable), "-m", "pip", "install",
-        *pip_index_args_for_installed_package(), package_extra_spec("translation"),
+        *prefix,
+        *package_index_args_for_installed_package(installer_backend), package_extra_spec("translation"),
     ]
 
 
@@ -569,24 +841,36 @@ def build_translation_install_commands(
     model_dir: Path | None = None,
     torch_policy: str | None = None,
     download_model: bool = True,
+    installer_backend: str | None = None,
 ) -> tuple[list[list[str]], Path, Path, TorchInstallSelection]:
     if model_profile not in TRANSLATION_INSTALL_PROFILE_CHOICES or model_profile == "off":
         raise SystemExit("Choose nllb-200-600m, translate-gemma-4b, or madlad-400-3b.")
     environment = (venv_dir or default_translation_venv_dir(model_profile)).expanduser().resolve()
     model_path = (model_dir or default_translation_model_dir(model_profile)).expanduser().resolve()
     python_executable = venv_python_path(environment)
+    backend = normalize_installer_backend(installer_backend)
     torch_command, selection = _facade_callable(
         "build_torch_install_command", build_torch_install_command
-    )(torch_policy)
-    if torch_command:
-        torch_command[0] = str(python_executable)
+    )(
+        torch_policy,
+        python_executable=python_executable,
+        installer_backend=backend,
+    )
     commands: list[list[str]] = [
         [sys.executable, "-m", "venv", str(environment)],
-        [str(python_executable), "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"],
+        [
+            *package_install_prefix(python_executable, installer_backend=backend),
+            "--upgrade", "pip", "setuptools", "wheel",
+        ],
     ]
     if torch_command:
         commands.append(torch_command)
-    commands.append(translation_package_install_command(python_executable))
+    commands.append(
+        translation_package_install_command(
+            python_executable,
+            installer_backend=backend,
+        )
+    )
     prepare = [
         str(python_executable), "-m", "window.translation_installer",
         "--model-profile", model_profile, "--model-dir", str(model_path),
@@ -607,17 +891,21 @@ def install_translation_runtime(
     model_dir: Path | None = None,
     torch_policy: str | None = None,
     download_model: bool = True,
+    installer_backend: str | None = None,
 ) -> int:
+    backend = normalize_installer_backend(installer_backend)
     commands, python_executable, model_path, selection = build_translation_install_commands(
         model_profile,
         venv_dir=venv_dir,
         model_dir=model_dir,
         torch_policy=torch_policy,
         download_model=download_model,
+        installer_backend=backend,
     )
     print(f"Translation model: {model_profile}")
     print(f"Translation environment: {python_executable.parent.parent}")
     print(f"Translation model files: {model_path}")
+    print(f"Python package installer: {backend}")
     print(f"PyTorch: {selection.reason}")
     for command in commands:
         print(f"  {format_command(command)}")
@@ -759,25 +1047,39 @@ def install_kroko_in_python(
 
 def install_kroko_sidecar(
     profile: Profile,
-    python312_command: list[str],
+    python312_command: list[str] | None,
     *,
     assume_yes: bool = False,
     dry_run: bool = False,
     variant: str = "free",
     work_dir: str | Path | None = None,
     soft_fail: bool = False,
+    installer_backend: str | None = None,
 ) -> int:
+    backend = normalize_installer_backend(installer_backend)
     venv_dir = default_kroko_preview_venv_path()
     preview_python = venv_python_path(venv_dir)
+    if backend == "uv":
+        uv = shutil.which("uv")
+        if not uv:
+            raise SystemExit(
+                "The uv installer was selected, but `uv` was not found on PATH. "
+                "Install uv or rerun with --installer pip."
+            )
+        create_environment = [uv, "venv", "--python", "3.12", "--seed", str(venv_dir)]
+    elif python312_command:
+        create_environment = [*python312_command, "-m", "venv", str(venv_dir)]
+    else:
+        raise SystemExit("Python 3.12 is required to create the Kroko sidecar with pip.")
     commands = [
-        [*python312_command, "-m", "venv", str(venv_dir)],
-        [str(preview_python), "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"],
+        create_environment,
         [
-            str(preview_python),
-            "-m",
-            "pip",
-            "install",
-            *pip_index_args_for_installed_package(),
+            *package_install_prefix(preview_python, installer_backend=backend),
+            "--upgrade", "pip", "setuptools", "wheel",
+        ],
+        [
+            *package_install_prefix(preview_python, installer_backend=backend),
+            *package_index_args_for_installed_package(backend),
             package_extra_spec(PREVIEW_EXTRA),
         ],
         build_kroko_install_command(preview_python, variant=variant, work_dir=work_dir),
@@ -791,6 +1093,7 @@ def install_kroko_sidecar(
         str(preview_python),
     ]
     print("Kroko native runtime setup will use a Python 3.12 realtime-preview sidecar:")
+    print(f"Python package installer: {backend}")
     for command in commands:
         print(f"  {format_command(command)}")
     print(f"  {format_command(config_command)}")
@@ -826,7 +1129,9 @@ def install_kroko_runtime(
     variant: str = "free",
     work_dir: str | Path | None = None,
     soft_fail: bool = False,
+    installer_backend: str | None = None,
 ) -> int:
+    backend = normalize_installer_backend(installer_backend)
     if not preview_engine_uses_kroko(profile):
         print("Kroko native runtime install skipped because realtime preview is disabled.")
         return 0
@@ -840,6 +1145,17 @@ def install_kroko_runtime(
             soft_fail=soft_fail,
         )
     if os.name == "nt" and sys.version_info[:2] != (3, 12):
+        if backend == "uv":
+            return install_kroko_sidecar(
+                profile,
+                None,
+                assume_yes=assume_yes,
+                dry_run=dry_run,
+                variant=variant,
+                work_dir=work_dir,
+                soft_fail=soft_fail,
+                installer_backend=backend,
+            )
         python312 = _facade_callable("windows_python312_command", windows_python312_command)()
         if python312:
             return install_kroko_sidecar(
@@ -850,6 +1166,7 @@ def install_kroko_runtime(
                 variant=variant,
                 work_dir=work_dir,
                 soft_fail=soft_fail,
+                installer_backend=backend,
             )
         print(
             "Kroko realtime preview on Windows currently needs CPython 3.12 x64 for the native build path. "
@@ -876,8 +1193,16 @@ def install_extra_and_maybe_kroko(
     install_kroko: bool = True,
     kroko_assume_yes: bool | None = None,
     torch_policy: str | None = None,
+    installer_backend: str | None = None,
 ) -> int:
-    code = install_extra(extra, assume_yes=assume_yes, dry_run=dry_run, torch_policy=torch_policy)
+    backend = normalize_installer_backend(installer_backend)
+    code = install_extra(
+        extra,
+        assume_yes=assume_yes,
+        dry_run=dry_run,
+        torch_policy=torch_policy,
+        installer_backend=backend,
+    )
     if code:
         return code
     preview_engine = normalize_preview_engine(profile.realtime_preview_engine)
@@ -901,6 +1226,7 @@ def install_extra_and_maybe_kroko(
         assume_yes=assume_yes if kroko_assume_yes is None else kroko_assume_yes,
         dry_run=dry_run,
         soft_fail=True,
+        installer_backend=backend,
     )
 
 

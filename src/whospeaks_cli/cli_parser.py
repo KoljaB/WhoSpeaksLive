@@ -19,7 +19,19 @@ from .cli_commands import (
 )
 from .planning import INSTALL_TARGET_CHOICES, TRANSLATION_INSTALL_PROFILE_CHOICES
 from .profiles import PROVIDER_PRESET_CHOICES
-from .runtime_constants import TORCH_INSTALL_POLICY_CHOICES
+from .runtime_constants import INSTALLER_BACKEND_CHOICES, TORCH_INSTALL_POLICY_CHOICES
+
+
+def _add_installer_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--installer",
+        choices=INSTALLER_BACKEND_CHOICES,
+        default=None,
+        help=(
+            "Python package installer: pip (compatibility default) or uv. "
+            "Defaults to WHOSPEAKS_INSTALLER, then pip."
+        ),
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -49,8 +61,8 @@ def build_parser() -> argparse.ArgumentParser:
     doctor.add_argument("--json", action="store_true")
     doctor.add_argument("--deep", action="store_true", help="Run expensive provider/cache checks such as remote /load.")
     doctor.add_argument("--strict", action="store_true", help="Return non-zero when required checks fail.")
-    doctor.add_argument("--fix", action="store_true", help="Offer the recommended pip install action after checks.")
-    doctor.add_argument("--yes", action="store_true", help="Do not prompt before running the pip install action.")
+    doctor.add_argument("--fix", action="store_true", help="Offer the recommended package install action after checks.")
+    doctor.add_argument("--yes", action="store_true", help="Do not prompt before running the package install action.")
     doctor.add_argument("--dry-run", action="store_true", help="Print installer commands without running them.")
     doctor.add_argument(
         "--torch",
@@ -58,6 +70,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
         help="Torch wheel policy for --fix: auto-detect CUDA, force cuda/cpu, or skip Torch preinstall.",
     )
+    _add_installer_argument(doctor)
     doctor.set_defaults(func=cmd_doctor)
 
     install = subparsers.add_parser(
@@ -117,6 +130,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
         help="Torch wheel policy: auto-detect CUDA, force cuda/cpu, or skip Torch preinstall.",
     )
+    _add_installer_argument(install)
     install.set_defaults(func=cmd_install)
 
     install_translation = subparsers.add_parser(
@@ -130,6 +144,7 @@ def build_parser() -> argparse.ArgumentParser:
     install_translation.add_argument("--yes", action="store_true")
     install_translation.add_argument("--dry-run", action="store_true")
     install_translation.add_argument("--torch", choices=TORCH_INSTALL_POLICY_CHOICES, default="auto")
+    _add_installer_argument(install_translation)
     install_translation.set_defaults(func=cmd_install_translation)
 
     setup = subparsers.add_parser("setup", help="Choose a setup mode and optionally install dependencies.")
@@ -167,6 +182,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
         help="Torch wheel policy: auto-detect CUDA, force cuda/cpu, or skip Torch preinstall.",
     )
+    _add_installer_argument(setup)
     setup.set_defaults(func=cmd_setup)
 
     install_kroko = subparsers.add_parser(
@@ -183,6 +199,7 @@ def build_parser() -> argparse.ArgumentParser:
     install_kroko.add_argument("--work-dir", type=Path, default=None)
     install_kroko.add_argument("--yes", action="store_true", help="Do not prompt before building/installing Kroko.")
     install_kroko.add_argument("--dry-run", action="store_true", help="Print Kroko installer commands without running them.")
+    _add_installer_argument(install_kroko)
     install_kroko.set_defaults(func=cmd_install_kroko)
 
     launch = subparsers.add_parser("launch", help="Print or run the current whospeaks-window launch command.")
