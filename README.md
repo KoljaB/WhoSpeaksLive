@@ -35,13 +35,16 @@ pip install whospeaks
 whospeaks
 ```
 
-Or install the same lightweight launcher into a persistent uv-managed environment:
+Or install the same lightweight launcher as a persistent uv-managed tool:
 
 ```powershell
-uv venv --python 3.11 --seed .venv
-uv pip install --python .venv whospeaks
-.\.venv\Scripts\whospeaks.exe
+uv tool install --python 3.11 whospeaks
+uv tool update-shell
 ```
+
+`uv tool update-shell` is a one-time setup step. Open a new terminal after it
+finishes; `whospeaks` will then start the launcher from any directory, just as
+it does after a normal pip installation.
 
 The command above installs the lightweight production CLI from PyPI. It brings
 only the terminal setup dependency; model runtimes and other heavy optional
@@ -49,7 +52,7 @@ components are installed after you choose a deployment mode. See
 [PyPI package scope](docs/pypi-package-scope.md) for the exact inclusion and
 exclusion policy.
 
-The setup application keeps pip as its compatibility default and also offers uv for the larger target-specific install. For automation, pass `--installer uv`, for example `whospeaks install --target local --installer uv --yes`. Use a normal virtual environment for now; `uv tool install` and `uvx` are not supported because the launcher intentionally adds the selected runtime packages to its own environment.
+The setup application keeps pip as its compatibility default and also offers uv for the larger target-specific install. For automation, pass `--installer uv`, for example `whospeaks install --target local --installer uv --yes`. A persistent `uv tool install` is supported and recommended for a globally available command. Do not use `uvx`: it creates an ephemeral environment that is not suitable for the runtime packages added by the guided setup.
 
 The full-screen setup application opens on the Setup tab. Select the full local stack, the core/controller for remote ASR and embeddings servers, or the ASR/embeddings server packages, then choose whether to include optional realtime preview text. Kroko remains optional because its native runtime may require Python 3.12, Docker Desktop on Windows, or a prebuilt `kroko_onnx` wheel. Nemotron 3.5 is available as a manual CPU preview option while the installer flow is being integrated.
 
