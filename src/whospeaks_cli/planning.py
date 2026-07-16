@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 import dataclasses
+import importlib.metadata
+import os
 import shlex
 import shutil
 import sys
+from importlib import resources
+from pathlib import Path
 
 from window.language_config import normalize_language_code
 from window.realtime_preview_backends import (
@@ -46,6 +50,33 @@ class LaunchPlan:
     live: tuple[str, ...]
     reports: tuple[str, ...] | None = None
     translation: tuple[str, ...] | None = None
+
+
+def service_resource_path(*parts: str) -> Path:
+    """Resolve a server resource from an installed wheel or a source checkout."""
+    relative = Path("remote_servers", *parts)
+    try:
+        resource = Path(os.fspath(resources.files("remote_servers").joinpath(*parts)))
+        if resource.is_file():
+            return resource
+    except (ModuleNotFoundError, NotADirectoryError, TypeError):
+        pass
+    try:
+        import remote_servers
+
+        for package_root in remote_servers.__path__:
+            resource = Path(package_root, *parts)
+            if resource.is_file():
+                return resource
+    except (ImportError, TypeError):
+        pass
+    distribution = importlib.metadata.distribution("whospeaks")
+    for entry in distribution.files or ():
+        if Path(str(entry)).as_posix().endswith(relative.as_posix()):
+            resource = Path(distribution.locate_file(entry))
+            if resource.is_file():
+                return resource
+    raise FileNotFoundError(f"Packaged service resource is missing: {relative}")
 
 
 def normalize_install_target(value: str | None) -> str:

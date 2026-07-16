@@ -5,11 +5,13 @@ import contextlib
 import io
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 import tomllib
 import unittest
+import zipfile
 from unittest import mock
 from pathlib import Path
 
@@ -24,6 +26,74 @@ from whospeaks_cli.tui import provider_preset_label
 
 
 class WhoSpeaksCliTests(unittest.TestCase):
+    def test_clean_wheel_contains_server_resources_and_uses_packaged_directories(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temporary_root = Path(directory)
+            source = temporary_root / "source"
+            wheel_directory = temporary_root / "wheel"
+            source.mkdir()
+            wheel_directory.mkdir()
+            for name in ("pyproject.toml", "README.md", "LICENSE"):
+                shutil.copy2(ROOT / name, source / name)
+            clean_copy = shutil.ignore_patterns("__pycache__", "*.egg-info", "*.pyc", "*.pyo")
+            shutil.copytree(ROOT / "src", source / "src", ignore=clean_copy)
+            shutil.copytree(ROOT / "vendor", source / "vendor", ignore=clean_copy)
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "wheel",
+                    "--no-deps",
+                    "--no-build-isolation",
+                    "-w",
+                    str(wheel_directory),
+                    ".",
+                ],
+                cwd=source,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            wheel = next(wheel_directory.glob("*.whl"))
+            installed = temporary_root / "installed"
+            with zipfile.ZipFile(wheel) as archive:
+                names = set(archive.namelist())
+                archive.extractall(installed)
+
+            smoke = subprocess.run(
+                [
+                    sys.executable,
+                    "-I",
+                    "-c",
+                    (
+                        "import json,sys; "
+                        f"sys.path.insert(0, {str(installed)!r}); "
+                        "from whospeaks_cli.cli_classic import build_server_launch_lines; "
+                        "print(json.dumps(build_server_launch_lines()))"
+                    ),
+                ],
+                cwd=temporary_root,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(smoke.returncode, 0, smoke.stderr)
+            launch_lines = json.loads(smoke.stdout)
+
+        self.assertIn("remote_servers/faster-whisper-asr/asr_server.py", names)
+        self.assertIn("remote_servers/faster-whisper-asr/requirements.txt", names)
+        self.assertIn("remote_servers/voice-embeddings-server/embeddings_server.py", names)
+        self.assertIn("remote_servers/voice-embeddings-server/requirements.txt", names)
+        self.assertNotIn("remote_servers/faster-whisper-asr/test_parent_watchdog.py", names)
+        self.assertNotIn("remote_servers/voice-embeddings-server/tools/benchmark_voice_embeddings.py", names)
+        self.assertEqual(len(launch_lines), 2)
+        self.assertIn(str(installed / "remote_servers" / "faster-whisper-asr"), launch_lines[0])
+        self.assertIn(str(installed / "remote_servers" / "voice-embeddings-server"), launch_lines[1])
+
     def test_profile_and_install_planners_are_copy_on_write(self) -> None:
         profile = cli.Profile(model="large-v2", translation_enabled=False)
         updated = profile.with_updates(model="small")
