@@ -104,6 +104,7 @@ def application_style(font_family: str = "Segoe UI") -> str:
         background: {c.canvas};
         border-top: 1px solid {c.border};
     }}
+    QFrame#actionBar[seamless="true"] {{ border-top: 0; }}
     QFrame[separator="true"] {{ background: {c.border}; border: 0; max-height: 1px; }}
     QLabel[iconTile="true"] {{
         background: {c.surface_1};
@@ -123,7 +124,6 @@ def application_style(font_family: str = "Segoe UI") -> str:
     QPushButton:pressed {{ background: {c.surface_pressed}; }}
     QPushButton:focus {{ border: 2px solid {c.focus}; }}
     QPushButton[compactAction="true"] {{ min-height: 32px; max-height: 32px; padding: 0 8px; }}
-    QPushButton[diagnosticAction="true"] {{ min-height: 78px; max-height: 78px; }}
     QPushButton:disabled {{ color: {c.text_muted}; border-color: {c.border}; background: transparent; }}
     QPushButton[primary="true"] {{
         min-height: 56px;
@@ -136,6 +136,30 @@ def application_style(font_family: str = "Segoe UI") -> str:
     QPushButton[primary="true"]:hover {{ background: {c.accent_hover}; border-color: {c.accent_hover}; }}
     QPushButton[primary="true"]:pressed {{ background: {c.accent_pressed}; border-color: {c.accent_pressed}; }}
     QPushButton[primary="true"]:disabled {{ color: {c.text_muted}; background: {c.surface_2}; border-color: {c.surface_2}; }}
+    QPushButton[footerAction="true"] {{
+        min-height: 45px;
+        max-height: 45px;
+        padding: 0 18px;
+        background: {c.surface_2};
+        border: 1px solid {c.border_strong};
+        border-bottom: 2px solid {c.border};
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 550;
+    }}
+    QPushButton[footerAction="true"]:hover {{ background: {c.surface_selected}; border-color: {c.focus}; }}
+    QPushButton[footerAction="true"]:pressed {{ background: {c.surface_pressed}; border-bottom-width: 1px; }}
+    QPushButton[footerAction="true"][primary="true"] {{
+        color: {c.canvas};
+        background: {c.accent};
+        border-color: {c.accent};
+        border-bottom-color: {c.accent_pressed};
+        font-weight: 650;
+    }}
+    QPushButton[footerAction="true"][primary="true"]:hover {{ background: {c.accent_hover}; border-color: {c.accent_hover}; }}
+    QPushButton[footerAction="true"][primary="true"]:pressed {{ background: {c.accent_pressed}; border-color: {c.accent_pressed}; }}
+    QPushButton[footerAction="true"]:disabled {{ color: {c.text_muted}; background: {c.canvas}; border-color: {c.border}; }}
+    QPushButton[footerAction="true"][primary="true"]:disabled {{ color: {c.text_muted}; background: {c.surface_2}; border-color: {c.border}; }}
     QPushButton[danger="true"] {{ color: {c.error}; border-color: {c.error}; }}
     QPushButton[danger="true"]:hover {{ background: rgba(255, 98, 98, 0.12); }}
     QPushButton[danger="true"]:pressed {{ background: rgba(255, 98, 98, 0.20); }}

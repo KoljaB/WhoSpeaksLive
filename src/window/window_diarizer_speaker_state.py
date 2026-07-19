@@ -192,6 +192,7 @@ class WindowSpeakerStateMixin:
             "embedding_provider": self.args.embedding_provider,
             "people": self.person_library.public_state(
                 embedding_provider=str(self.args.embedding_provider),
+                embedding_length=(len(profiles[0].get("centroid") or []) if profiles else 0),
             ),
             "expected_person_ids": sorted(self._expected_person_ids),
             "expected_people_filter_active": True,

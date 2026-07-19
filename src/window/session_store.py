@@ -317,7 +317,35 @@ class SessionStore:
         manifest = self._read_json(session_dir / "manifest.json")
         if not manifest:
             raise FileNotFoundError(f"Session {session_id} does not exist.")
-        return manifest
+        return self._with_transcript_duration(session_id, manifest)
+
+    def _with_transcript_duration(
+        self,
+        session_id: str,
+        manifest: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Give legacy manifests the new transcript-duration semantics in memory."""
+
+        if "transcript_duration_seconds" in manifest:
+            return manifest
+        transcript = self._read_json(
+            self._session_dir(session_id) / "transcript.json",
+            {"rows": []},
+        )
+        rows = [row for row in (transcript.get("rows") or []) if isinstance(row, dict)]
+        transcript_duration = _duration_from_rows(rows)
+        source = manifest.get("source") if isinstance(manifest.get("source"), dict) else {}
+        source_duration = float(
+            source.get("duration_seconds")
+            or manifest.get("source_duration_seconds")
+            or manifest.get("duration_seconds")
+            or 0.0
+        )
+        ready = dict(manifest)
+        ready["source_duration_seconds"] = round(source_duration, 4)
+        ready["transcript_duration_seconds"] = transcript_duration
+        ready["duration_seconds"] = transcript_duration
+        return ready
 
     def create_session(
         self,
@@ -382,6 +410,8 @@ class SessionStore:
             "audio": {},
             "audio_error": "",
             "duration_seconds": 0.0,
+            "transcript_duration_seconds": 0.0,
+            "source_duration_seconds": float(ready_source.get("duration_seconds") or 0.0),
             "speaker_count": 0,
             "speaker_names": [],
             "transcript_rows": 0,
@@ -406,6 +436,12 @@ class SessionStore:
         return self._summary_from_manifest(manifest)
 
     def _summary_from_manifest(self, manifest: dict[str, Any]) -> dict[str, Any]:
+        source = manifest.get("source") if isinstance(manifest.get("source"), dict) else {}
+        transcript_duration = float(
+            manifest.get("transcript_duration_seconds")
+            if manifest.get("transcript_duration_seconds") is not None
+            else manifest.get("duration_seconds") or 0.0
+        )
         return {
             "id": str(manifest.get("id") or ""),
             "title": str(manifest.get("title") or ""),
@@ -414,8 +450,14 @@ class SessionStore:
             "started_at": str(manifest.get("started_at") or manifest.get("created_at") or ""),
             "ended_at": str(manifest.get("ended_at") or manifest.get("updated_at") or ""),
             "archived": bool(manifest.get("archived")),
-            "duration_seconds": float(manifest.get("duration_seconds") or 0.0),
-            "source": manifest.get("source") if isinstance(manifest.get("source"), dict) else {},
+            "duration_seconds": transcript_duration,
+            "transcript_duration_seconds": transcript_duration,
+            "source_duration_seconds": float(
+                manifest.get("source_duration_seconds")
+                or source.get("duration_seconds")
+                or 0.0
+            ),
+            "source": source,
             "speaker_count": int(manifest.get("speaker_count") or 0),
             "speaker_names": list(manifest.get("speaker_names") or []),
             "transcript_rows": int(manifest.get("transcript_rows") or 0),
@@ -445,9 +487,10 @@ class SessionStore:
                 continue
             try:
                 manifest = self._read_json(child / "manifest.json")
-            except (OSError, json.JSONDecodeError):
-                continue
-            if not manifest:
+                if not manifest:
+                    continue
+                manifest = self._with_transcript_duration(child.name, manifest)
+            except (OSError, json.JSONDecodeError, ValueError):
                 continue
             archived = bool(manifest.get("archived"))
             if mode == "active" and archived:
@@ -508,9 +551,15 @@ class SessionStore:
             for payload in (self._embedding_payload(dict(record)) for record in (snapshot.get("embedding_records") or []))
             if payload is not None
         ]
-        duration_seconds = float(snapshot.get("duration_seconds") or 0.0)
-        if duration_seconds <= 0.0:
-            duration_seconds = _duration_from_rows(rows)
+        transcript_duration_seconds = max(
+            float(snapshot.get("duration_seconds") or 0.0),
+            _duration_from_rows(rows),
+        )
+        source_duration_seconds = float(
+            source.get("duration_seconds")
+            or snapshot.get("source_duration_seconds")
+            or 0.0
+        )
 
         self._write_json(session_dir / "transcript.json", {
             "version": SESSION_FORMAT_VERSION,
@@ -590,7 +639,11 @@ class SessionStore:
             "source": source,
             "audio": audio,
             "audio_error": audio_error,
-            "duration_seconds": round(float(duration_seconds), 4),
+            # ``duration_seconds`` remains as a compatibility alias for the
+            # duration represented by this transcript, not the full source.
+            "duration_seconds": round(float(transcript_duration_seconds), 4),
+            "transcript_duration_seconds": round(float(transcript_duration_seconds), 4),
+            "source_duration_seconds": round(float(source_duration_seconds), 4),
             "speaker_count": len(speaker_names),
             "speaker_names": speaker_names,
             "transcript_rows": len(rows),

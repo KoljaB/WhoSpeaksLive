@@ -302,12 +302,14 @@
                 </svg>
               </button>
               <div id="transcriptSettingsPanel" class="transcript-settings-panel" hidden>
-                <label><input id="showTranscriptTags" type="checkbox" checked> Show tags</label>
+                <label title="Show the NEW marker when a sentence creates a speaker."><input id="showTranscriptNewTags" type="checkbox" checked> Show new tags</label>
+                <label title="Show processing and revision tags such as Live, Embedding, Error, Tentative, and Revised."><input id="showTranscriptTags" type="checkbox"> Show tags</label>
+                <label title="Show the sentence total on grouped same-speaker turns."><input id="showTranscriptSentenceCount" type="checkbox"> Show number of sentences</label>
                 <label><input id="showTranscriptTime" type="checkbox" checked> Show time information</label>
                 <label title="Display only; original sentence boundaries are preserved."><input id="groupTranscriptTurns" type="checkbox" checked> Group consecutive same-speaker sentences</label>
                 <label><input id="showTranscriptReviewHints" type="checkbox"> Show review hints</label>
-                <label><input id="showTranscriptSpeechRate" type="checkbox" checked> Show speech/audio rate</label>
-                <label><input id="showTranscriptProbabilities" type="checkbox" checked> Show probabilities</label>
+                <label><input id="showTranscriptSpeechRate" type="checkbox"> Show speech/audio rate</label>
+                <label><input id="showTranscriptProbabilities" type="checkbox"> Show probabilities</label>
               </div>
             </div>
           </div>

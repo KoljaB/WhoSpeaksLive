@@ -166,6 +166,7 @@ class ReviewFlagTests(unittest.TestCase):
 class CorrectionControllerTests(unittest.TestCase):
     def test_session_snapshot_serializes_embeddings_after_review_refactor(self) -> None:
         diarizer = _fake_diarizer()
+        diarizer.set_playback_time(2.5, reset=True)
 
         diarizer.reassign_sentence(1, "S2")
         snapshot = diarizer.session_snapshot()
@@ -175,6 +176,8 @@ class CorrectionControllerTests(unittest.TestCase):
         self.assertEqual(snapshot["transcript_rows"][0]["correction"]["status"], "user_corrected")
         self.assertEqual(snapshot["embedding_records"][0]["index"], 1)
         self.assertEqual(snapshot["embedding_records"][0]["assigned_speaker"], "S2")
+        self.assertEqual(snapshot["duration_seconds"], 2.5)
+        self.assertEqual(snapshot["source"]["duration_seconds"], 4.1)
 
     def test_reassign_sentence_updates_row_and_can_undo(self) -> None:
         diarizer = _fake_diarizer()

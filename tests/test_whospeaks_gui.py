@@ -12,18 +12,26 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 PYSIDE_AVAILABLE = importlib.util.find_spec("PySide6") is not None
 
 if PYSIDE_AVAILABLE:
-    from PySide6.QtCore import Qt
+    from PySide6.QtCore import QPoint, Qt
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication, QAbstractButton, QCheckBox, QComboBox, QDialog, QLabel, QLineEdit
 
     from whospeaks_gui.demo import DEMO_STATES, DemoLauncherController
     from whospeaks_gui.main import _configure_fonts
-    from whospeaks_gui.pages import LanguageTargetSelector, PathPicker, suitable_openai_llm_models
+    from whospeaks_gui.pages import (
+        LanguageTargetSelector,
+        PathPicker,
+        SettingsHelpDialog,
+        _SETTINGS_HELP,
+        suitable_openai_llm_models,
+    )
+    from whospeaks_gui.settings_help import SETTINGS_MORE_HELP
     from whospeaks_gui.tokens import COMPACT_RAIL_WIDTH, application_style
     from whospeaks_gui.window import LauncherWindow
     from whospeaks_cli.cli_diagnostics import CheckResult, DoctorReport
     from whospeaks_cli.launcher_controller import LauncherController
     from whospeaks_cli.profiles import PROVIDER_PRESETS, Profile
+    from window.language_config import SUPPORTED_LANGUAGE_CONFIGS
 
 
 @unittest.skipUnless(PYSIDE_AVAILABLE, "PySide6 is an optional GUI dependency")
@@ -505,8 +513,120 @@ class WhoSpeaksGuiTests(unittest.TestCase):
             self.assertTrue(window.settings.section_list.item(index).isHidden())
         for field in ("host", "port", "realtime_preview_engine", "reports_enabled", "translation_enabled"):
             self.assertFalse(window.settings.fields[field].isVisible())
-        self.assertIn("not launched", window.settings.launch_effect_detail.text())
+        self.assertIn("not started", window.settings.context_help_detail.text())
         self.assertEqual(window.settings.values()["mode"], "server")
+
+    def test_every_settings_control_has_tooltip_and_accessible_help(self) -> None:
+        window = self.make_window("settings")
+
+        for field, widget in window.settings.fields.items():
+            with self.subTest(field=field):
+                self.assertTrue(widget.toolTip().strip())
+                self.assertTrue(widget.accessibleDescription().strip())
+        self.assertTrue(window.settings.text_embedding_preset.toolTip().strip())
+        self.assertTrue(window.settings.section_list.toolTip().strip())
+        self.assertTrue(window.settings.save_button.toolTip().strip())
+        self.assertTrue(window.settings.discard_button.toolTip().strip())
+
+    def test_focused_control_updates_persistent_context_help(self) -> None:
+        window = self.make_window("settings")
+        window.navigate(2)
+        deployment = window.settings.fields["mode"]
+        language = window.settings.fields["language"]
+        runtime = window.settings.fields["realtime_preview_model_dir"]
+        assert isinstance(deployment, QComboBox)
+        assert isinstance(language, QComboBox)
+        assert isinstance(runtime, PathPicker)
+
+        deployment.setCurrentIndex(deployment.findData("remote"))
+        deployment.setFocus(Qt.FocusReason.TabFocusReason)
+        self.app.processEvents()
+        self.assertEqual(window.settings.context_help_title.text(), "Deployment")
+        self.assertEqual(window.settings.context_help_value.text(), "Remote ASR + embeddings")
+        self.assertIn("another machine", window.settings.context_help_detail.text())
+
+        language.setFocus(Qt.FocusReason.TabFocusReason)
+        self.app.processEvents()
+        self.assertEqual(window.settings.context_help_title.text(), "Language")
+        self.assertIn("transcription", window.settings.context_help_detail.text())
+
+        window.settings.section_list.setCurrentRow(1)
+        runtime.edit.setFocus(Qt.FocusReason.TabFocusReason)
+        self.app.processEvents()
+        self.assertEqual(window.settings.context_help_title.text(), "Nemotron model folder")
+        self.assertEqual(window.settings.context_help_value.text(), "Automatic")
+
+    def test_f1_opens_more_help_for_focused_control(self) -> None:
+        window = self.make_window("settings")
+        window.navigate(2)
+        deployment = window.settings.fields["mode"]
+        assert isinstance(deployment, QComboBox)
+        deployment.setFocus(Qt.FocusReason.TabFocusReason)
+        self.app.processEvents()
+
+        with mock.patch.object(SettingsHelpDialog, "exec", autospec=True) as show_dialog:
+            QTest.keyClick(deployment, Qt.Key.Key_F1)
+            self.app.processEvents()
+
+        show_dialog.assert_called_once()
+        dialog = window.settings._help_dialog
+        assert dialog is not None
+        self.assertEqual(dialog.windowTitle(), "Deployment help")
+        self.assertIn("Full local starts the browser app", dialog.help_text.toPlainText())
+        self.assertIn("trusted LAN", dialog.help_text.toPlainText())
+
+    def test_every_f1_target_has_distinct_expanded_help(self) -> None:
+        window = self.make_window("settings")
+        special_targets = {
+            "settings_sections": window.settings.section_list,
+            "save_changes": window.settings.save_button,
+            "discard_changes": window.settings.discard_button,
+            "text_embedding_preset": window.settings.text_embedding_preset,
+        }
+
+        self.assertEqual(set(SETTINGS_MORE_HELP), set(_SETTINGS_HELP))
+        for key, (_summary, context) in _SETTINGS_HELP.items():
+            with self.subTest(key=key):
+                expanded = SETTINGS_MORE_HELP[key]
+                self.assertNotEqual(expanded.strip(), context.strip())
+                self.assertGreater(len(expanded), len(context))
+                self.assertIn("\n\n", expanded)
+                widget = window.settings.fields.get(key) or special_targets[key]
+                rendered = window.settings._expanded_control_help(key, widget)
+                self.assertGreaterEqual(len(rendered), len(expanded))
+
+    def test_complex_f1_help_includes_runtime_specific_details(self) -> None:
+        window = self.make_window("settings")
+        settings = window.settings
+
+        final_provider = settings.fields["embedding_provider"]
+        live_provider = settings.fields["live_speaker_embedding_provider"]
+        target_languages = settings.fields["translation_target_languages"]
+        final_help = settings._expanded_control_help("embedding_provider", final_provider)
+        live_help = settings._expanded_control_help(
+            "live_speaker_embedding_provider", live_provider
+        )
+        language_help = settings._expanded_control_help(
+            "translation_target_languages", target_languages
+        )
+
+        self.assertIn("committed sentence audio", final_help)
+        self.assertIn("weights scale vectors and are not probabilities", final_help)
+        self.assertIn("Selected preset:", final_help)
+        self.assertIn("provisional speaker names", live_help)
+        self.assertIn("Final provider", live_help)
+        for code, config in SUPPORTED_LANGUAGE_CONFIGS.items():
+            self.assertIn(f"{code} — {config.display_name}", language_help)
+
+        dialog = SettingsHelpDialog(
+            "Target languages",
+            _SETTINGS_HELP["translation_target_languages"][0],
+            language_help,
+            current_value="German, French",
+            parent=settings,
+        )
+        self.assertLessEqual(dialog.maximumHeight(), 560)
+        self.assertTrue(dialog.help_text.verticalScrollBarPolicy() != Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     def test_remote_profile_hides_local_asr_runtime_settings(self) -> None:
         window = self.make_window("settings")
@@ -677,6 +797,59 @@ class WhoSpeaksGuiTests(unittest.TestCase):
             window.settings._apply_openai_models(["gpt-account-text-a"])
             self.assertEqual(window.settings.values()["report_llm_model"], "gpt-account-specific")
 
+    def test_openai_catalog_loads_off_the_gui_thread(self) -> None:
+        with mock.patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}), mock.patch(
+            "whospeaks_gui.pages._fetch_openai_model_ids",
+            return_value=(["gpt-account-text-a", "gpt-account-text-b"], ""),
+        ) as fetch_models:
+            window = self.make_window("settings")
+            provider = window.settings.fields["report_llm_provider"]
+            model = window.settings.fields["report_llm_model"]
+            assert isinstance(provider, QComboBox)
+            assert isinstance(model, QComboBox)
+
+            provider.setCurrentIndex(provider.findData("openai"))
+            for _ in range(50):
+                self.app.processEvents()
+                if model.count() == 2:
+                    break
+                QTest.qWait(10)
+
+            fetch_models.assert_called_once_with("test-key")
+            self.assertEqual(
+                [model.itemData(index) for index in range(model.count())],
+                ["gpt-account-text-a", "gpt-account-text-b"],
+            )
+            self.assertIn("2 suitable models", window.settings.openai_key_status.text())
+
+    def test_openai_catalog_waits_until_model_popup_closes_before_rebuilding(self) -> None:
+        window = self.make_window("settings")
+        window.navigate(2)
+        provider = window.settings.fields["report_llm_provider"]
+        model = window.settings.fields["report_llm_model"]
+        assert isinstance(provider, QComboBox)
+        assert isinstance(model, QComboBox)
+
+        with mock.patch.object(window.settings, "_request_openai_models"):
+            provider.setCurrentIndex(provider.findData("openai"))
+        model.addItem("Current model", "gpt-current")
+        model.setCurrentIndex(0)
+        model.showPopup()
+        self.app.processEvents()
+        self.assertTrue(model.view().isVisible())
+
+        window.settings._apply_openai_models(["gpt-new"])
+        self.assertEqual(model.itemData(0), "gpt-current")
+        self.assertEqual(window.settings._pending_openai_models, ["gpt-new"])
+
+        model.hidePopup()
+        window.settings._apply_pending_openai_models()
+        self.assertEqual(
+            [model.itemData(index) for index in range(model.count())],
+            ["gpt-current", "gpt-new"],
+        )
+        self.assertIsNone(window.settings._pending_openai_models)
+
     def test_provider_catalogs_have_no_invented_installed_models(self) -> None:
         from window.meeting_server_support import LLM_PROVIDER_OPTIONS
 
@@ -709,6 +882,143 @@ class WhoSpeaksGuiTests(unittest.TestCase):
 
         self.assertEqual(window.overview.setup_installer_value(), "pip")
         self.assertEqual(window.overview.setup_installer.currentData(), "pip")
+
+    def test_launch_profile_controls_stay_inside_the_right_panel(self) -> None:
+        window = self.make_window("ready")
+
+        for width in (1200, 1440):
+            with self.subTest(width=width):
+                window.resize(width, 900)
+                self.app.processEvents()
+                panel_right = window.overview.profile_panel.contentsRect().right()
+                installer = window.overview.profile_installer
+                self.assertLessEqual(
+                    installer.geometry().right(),
+                    panel_right,
+                )
+                self.assertGreaterEqual(installer.width(), 190)
+                for value in window.overview.profile_labels.values():
+                    self.assertTrue(value.wordWrap())
+                    self.assertLessEqual(value.geometry().right(), panel_right)
+                    self.assertEqual(value.toolTip(), value.text())
+
+    def test_overview_action_bar_does_not_duplicate_workspace_border(self) -> None:
+        window = self.make_window("ready")
+
+        self.assertTrue(window.overview.action_bar.property("seamless"))
+        self.assertFalse(bool(window.settings.action_bar.property("seamless")))
+
+    def test_overview_diagnostics_and_activity_use_one_summary_header_pattern(self) -> None:
+        window = self.make_window("ready")
+        window.resize(1440, 900)
+        operation = mock.Mock()
+        operation.name = ""
+        operation.status = "success"
+        operation.title = "Readiness check completed"
+        operation.step = ""
+        window.activity.set_operation(operation)
+        self.app.processEvents()
+
+        summaries = (
+            (0, window.overview.summary),
+            (1, window.diagnostics.summary),
+            (3, window.activity.summary),
+        )
+        for page_index, summary in summaries:
+            window.navigate(page_index)
+            self.app.processEvents()
+            self.assertEqual(summary.height(), 68)
+            self.assertGreaterEqual(summary.state_label.font().weight(), 600)
+            self.assertLessEqual(
+                abs(summary.mark.geometry().center().y() - summary.state_label.geometry().center().y()),
+                1,
+            )
+
+        self.assertEqual(window.activity.operation_state.text(), "SUCCESS")
+        self.assertEqual(window.activity.operation_label.text(), "Readiness check completed")
+        self.assertEqual(window.activity.operation_label.property("role"), "secondary")
+
+        window.navigate(1)
+        self.app.processEvents()
+        diagnostics_summary_bottom = window.diagnostics.summary.mapTo(
+            window.diagnostics, QPoint(0, window.diagnostics.summary.height())
+        ).y()
+        diagnostics_table_top = window.diagnostics.table.mapTo(
+            window.diagnostics, QPoint(0, 0)
+        ).y()
+        self.assertEqual(diagnostics_table_top - diagnostics_summary_bottom, 12)
+
+        window.navigate(3)
+        self.app.processEvents()
+        activity_summary_bottom = window.activity.summary.mapTo(
+            window.activity, QPoint(0, window.activity.summary.height())
+        ).y()
+        activity_log_top = window.activity.log.mapTo(window.activity, QPoint(0, 0)).y()
+        self.assertEqual(activity_log_top - activity_summary_bottom, 12)
+
+        window.navigate(0)
+        self.app.processEvents()
+        overview_summary_bottom = window.overview.summary.mapTo(
+            window.overview, QPoint(0, window.overview.summary.height())
+        ).y()
+        overview_workspace_top = window.overview.workspace_scroll.mapTo(
+            window.overview, QPoint(0, 0)
+        ).y()
+        self.assertEqual(overview_workspace_top - overview_summary_bottom, 12)
+
+    def test_interactive_pages_share_one_footer_action_pattern(self) -> None:
+        window = self.make_window("ready")
+
+        footers = (
+            (window.overview.action_bar, window.overview.primary_button),
+            (window.diagnostics.action_bar, window.diagnostics.complete_button),
+            (window.settings.action_bar, window.settings.save_button),
+            (window.activity.action_bar, window.activity.copy_button),
+        )
+        for footer, primary in footers:
+            self.assertEqual(footer.height(), 88)
+            self.assertIs(footer.actions.itemAt(0).widget(), primary)
+            self.assertTrue(primary.property("footerAction"))
+            self.assertTrue(primary.property("primary"))
+            self.assertEqual(primary.height(), 48)
+            self.assertEqual(primary.iconSize().width(), 22)
+            self.assertEqual(primary.iconSize().height(), 22)
+
+        first_action_x = set()
+        for page_index, (_footer, primary) in enumerate(footers):
+            window.navigate(page_index)
+            self.app.processEvents()
+            first_action_x.add(primary.mapTo(window, QPoint(0, 0)).x())
+        self.assertEqual(len(first_action_x), 1)
+
+        self.assertIs(
+            window.diagnostics.action_bar.actions.itemAt(1).widget(),
+            window.diagnostics.quick_button,
+        )
+        self.assertIs(
+            window.diagnostics.action_bar.actions.itemAt(2).widget(),
+            window.diagnostics.copy_button,
+        )
+        self.assertIsNone(window.diagnostics.action_bar.actions.itemAt(3).widget())
+        for secondary in (
+            window.overview.refresh_button,
+            window.overview.command_button,
+            window.diagnostics.quick_button,
+            window.diagnostics.copy_button,
+            window.settings.discard_button,
+            window.activity.clear_button,
+        ):
+            self.assertTrue(secondary.property("footerAction"))
+            self.assertFalse(bool(secondary.property("primary")))
+            self.assertEqual(secondary.height(), 48)
+
+        self.assertFalse(window.settings.save_button.isEnabled())
+        host = window.settings.fields["host"]
+        assert isinstance(host, QLineEdit)
+        host.setText("localhost")
+        self.assertTrue(window.settings.save_button.isEnabled())
+        window.settings.set_profile(window.settings.profile)
+        self.assertFalse(window.settings.save_button.isEnabled())
 
     def test_install_busy_state_replaces_install_action_on_overview(self) -> None:
         controller = LauncherController(

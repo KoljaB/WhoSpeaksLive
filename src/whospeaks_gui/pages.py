@@ -6,17 +6,21 @@ import json
 import os
 import platform
 import re
+import threading
+import urllib.error
+import urllib.request
 from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QEvent, QRectF, QSize, Qt, QTimer, QUrl, Signal
-from PySide6.QtGui import QColor, QFont, QPainter, QPen, QStandardItem, QStandardItemModel, QTextCursor, QTextOption
-from PySide6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
+from PySide6.QtCore import QEvent, QObject, QRectF, QSize, Qt, QTimer, Signal
+from PySide6.QtGui import QColor, QFont, QKeySequence, QPainter, QPen, QShortcut, QStandardItem, QStandardItemModel, QTextCursor, QTextOption
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
+    QDialog,
+    QDialogButtonBox,
     QFormLayout,
     QFrame,
     QFileDialog,
@@ -27,13 +31,13 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QListWidget,
     QPlainTextEdit,
-    QProgressBar,
     QPushButton,
     QScrollArea,
     QSizePolicy,
     QSpinBox,
     QStackedWidget,
     QTableView,
+    QTextBrowser,
     QVBoxLayout,
     QWidget,
 )
@@ -45,8 +49,9 @@ from window.language_config import SUPPORTED_LANGUAGE_CONFIGS
 from window.meeting_server_support import LLM_PROVIDER_OPTIONS
 
 from .icons import line_icon
+from .settings_help import SETTINGS_MORE_HELP
 from .tokens import COLORS
-from .widgets import PageHeader, StatusMark, SummaryStrip, section_label
+from .widgets import ActionFooter, PageHeader, SummaryStrip, section_label
 
 
 _OPENAI_TEXT_MODEL_PREFIXES = ("gpt-", "chatgpt-", "o1", "o3", "o4")
@@ -85,6 +90,117 @@ _ASR_MODEL_CHOICES = (
     ("Whisper base", "base"),
     ("Whisper tiny", "tiny"),
 )
+
+
+_SETTINGS_HELP: dict[str, tuple[str, str]] = {
+    "settings_sections": ("Choose a settings category.", "The category list changes the visible group without saving or discarding any edits."),
+    "save_changes": ("Validate and save the edited launch profile.", "WhoSpeaks checks the complete profile first. Invalid values remain visible and are marked beside the exact control that needs attention."),
+    "discard_changes": ("Restore every field to the last saved profile.", "This removes all unsaved edits on every settings category."),
+    "mode": (
+        "Choose where transcription and speaker recognition run.",
+        "Full local runs everything on this computer. Remote controller connects this app to ASR and speaker-embedding servers on another machine. Server exposes those two services for another controller.",
+    ),
+    "language": ("Choose the primary spoken language.", "This language is used for transcription, speaker labels, reports, and as the source language for translation."),
+    "realtime_preview_engine": ("Choose the fast engine that produces live text while speech is still in progress.", "Nemotron favors quality, Kroko/Banafo uses fewer resources, and Off disables provisional live text without disabling final transcription."),
+    "realtime_preview_model_preset": ("Choose the latency or model preset for the selected live-text engine.", "Lower-latency presets update sooner; larger or more stable presets may trade responsiveness for quality."),
+    "live_speaker_assignment": ("Show identified speakers beside live transcript text.", "Turn this off to keep live transcription visible without assigning speaker names in the live window."),
+    "host": ("Choose the network interface used by the local browser controller.", "Use 127.0.0.1 for access from this computer only. Use a LAN address only when another trusted device must connect."),
+    "port": ("Choose the local browser controller port.", "The launcher checks this port before startup. Change it when another application already uses the default."),
+    "model": ("Choose the final ASR model.", "Standard faster-whisper models can be selected directly; an advanced compatible Hugging Face model ID can also be entered."),
+    "device": ("Choose the processor used for final transcription.", "Automatic selects an available accelerator when possible. Choose CPU or CUDA only when you need to force a specific runtime."),
+    "compute_type": ("Choose the numeric precision used by faster-whisper.", "Automatic is safest. Lower-precision modes reduce memory use, while float modes may improve compatibility or accuracy."),
+    "vad_backend": ("Choose how WhoSpeaks detects speech and silence.", "RMS is lightweight and predictable. Silero uses a neural voice-activity detector and may handle noisy audio better."),
+    "realtime_preview_model_dir": ("Choose a local Nemotron model folder.", "Leave this empty to use automatic model discovery and download. Select a folder only for a manually managed model."),
+    "realtime_preview_python": ("Choose the Python runtime for Kroko/Banafo live text.", "Leave this empty to use the managed or current runtime. Set it only when the live-text engine is installed in another environment."),
+    "embedding_python": ("Choose the Python runtime for local speaker embeddings.", "Leave this empty to use the current runtime. Set it only when speaker models are installed in a separate environment."),
+    "provider_preset": ("Choose a tested speaker-model combination.", "The preset updates both final and live speaker providers together. Choose Custom only when you need to edit provider expressions manually."),
+    "embedding_provider": ("Review or customize the provider used for final speaker recognition.", "This value follows Speaker model preset. Select Custom before editing it directly."),
+    "live_speaker_embedding_provider": ("Review or customize the provider used for live speaker labels.", "This value follows Speaker model preset. Select Custom before editing it directly."),
+    "remote_asr_url": ("Enter the final ASR server address.", "The launcher verifies that this remote service is reachable before starting a remote-controller profile."),
+    "remote_embeddings_url": ("Enter the speaker-embeddings server address.", "The launcher verifies that this remote service is reachable before starting a remote-controller profile."),
+    "reports_enabled": ("Start Meeting Intelligence with the live window.", "This enables saved meeting reports and grounded Ask. It can be turned off without affecting transcription."),
+    "reports_port": ("Choose the local Meeting Intelligence port.", "Change it when another application already uses the default port."),
+    "report_language": ("Choose the language used for reports and summaries.", "Follow live language keeps reports aligned with transcription; select another language to translate generated reports."),
+    "report_llm_provider": ("Choose the language-model service used for reports and Ask.", "Local providers keep requests on your network. Cloud providers require their corresponding API-key environment variable."),
+    "report_llm_base_url": ("Enter the language-model API address.", "Provider defaults are filled automatically. Change this only for a custom or self-hosted compatible endpoint."),
+    "report_llm_model": ("Choose the language model used for reports and Ask.", "OpenAI models are loaded from the account linked to OPENAI_API_KEY; compatible providers also accept a model ID entered manually."),
+    "text_embedding_preset": ("Choose whether long and cross-session Ask uses semantic search.", "OpenAI presets send transcript chunks to the embeddings API. Not configured keeps short single-session Ask available without external embeddings."),
+    "text_embedding_base_url": ("Enter the text-embedding API address.", "This endpoint is used only to index and search meeting text for long or cross-session Ask."),
+    "text_embedding_model": ("Choose the text-embedding model.", "The model must be supported by the configured embedding endpoint and should remain stable for an existing index."),
+    "text_embedding_api_key_env": ("Enter the name of the environment variable containing the embedding API key.", "Only the variable name is saved; WhoSpeaks never stores the secret in the launch profile."),
+    "report_auto_generate": ("Generate reports when a meeting is finalized.", "When off, meetings are still saved and reports can be generated manually later."),
+    "translation_enabled": ("Translate stable transcript text.", "Translation runs only after text has stabilized, so provisional live words are not repeatedly translated."),
+    "translation_browser_preferred": ("Prefer Chrome's on-device Translator API when it supports the language pair.", "Supported translations remain on the device. The configured provider is retained as the fallback."),
+    "translation_provider": ("Choose the translation service or local runtime.", "The fields below adapt to this choice and show only configuration used by the selected provider."),
+    "translation_target_languages": ("Choose one or more translation targets.", "The live transcription language cannot also be selected as a target."),
+    "translation_max_targets": ("Limit how many translations can run at once.", "A lower limit reduces latency and resource usage when many target languages are selected."),
+    "translation_model_profile": ("Choose a tested local translation model.", "The profile supplies a suitable default model and runtime configuration for local translation."),
+    "translation_model": ("Enter an optional provider-specific model override.", "Leave this empty to use the selected profile or provider default unless your endpoint requires a particular model ID."),
+    "translation_base_url": ("Enter the translation API address.", "Provider defaults are filled automatically. Change this for a custom endpoint or self-hosted service."),
+    "translation_api_key_env": ("Enter the name of the environment variable containing the translation API key.", "Only the variable name is saved; the secret remains in the process environment."),
+    "translation_region": ("Enter the cloud region required by the translation provider.", "This field is shown only for providers, such as Azure Translator, that require a region."),
+    "translation_python": ("Choose the Python runtime for the local translation sidecar.", "Leave this empty to use the managed or current runtime. Set it only for a separately installed environment."),
+    "translation_port": ("Choose the local translation-sidecar port.", "Change it when another application already uses the default port."),
+    "translation_device": ("Choose the processor used for local translation.", "Automatic selects an available accelerator. Choose CPU or CUDA only when you need to force the runtime."),
+    "advanced_args": ("Append advanced command-line arguments to the validated launch profile.", "Use this only for supported options that are not represented elsewhere. These arguments are passed verbatim at launch."),
+}
+
+
+def _supported_language_code_help() -> str:
+    entries = [
+        f"{code} — {config.display_name}"
+        for code, config in sorted(SUPPORTED_LANGUAGE_CONFIGS.items())
+    ]
+    rows = [", ".join(entries[index : index + 8]) for index in range(0, len(entries), 8)]
+    return "Supported WhoSpeaks language codes:\n" + "\n".join(rows)
+
+
+class SettingsHelpDialog(QDialog):
+    """Bounded, scrollable F1 help that remains usable on smaller displays."""
+
+    def __init__(
+        self,
+        title: str,
+        summary: str,
+        detail: str,
+        *,
+        current_value: str = "",
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle(f"{title} help")
+        self.setModal(True)
+        self.setMinimumSize(580, 360)
+        self.setMaximumSize(820, 560)
+        self.resize(720, 500)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 22, 24, 20)
+        layout.setSpacing(12)
+
+        heading = section_label(title)
+        heading.setAccessibleName(f"{title} help")
+        layout.addWidget(heading)
+        orientation = QLabel(summary)
+        orientation.setWordWrap(True)
+        orientation.setProperty("role", "secondary")
+        layout.addWidget(orientation)
+        if current_value:
+            value = QLabel(f"Current value: {current_value}")
+            value.setWordWrap(True)
+            value.setProperty("role", "code")
+            value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            layout.addWidget(value)
+
+        self.help_text = QTextBrowser()
+        self.help_text.setObjectName("settingsHelpText")
+        self.help_text.setOpenExternalLinks(False)
+        self.help_text.setPlainText(detail)
+        self.help_text.setAccessibleName(f"Detailed help for {title}")
+        layout.addWidget(self.help_text, 1)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
 
 
 class PathPicker(QWidget):
@@ -280,6 +396,44 @@ def suitable_openai_llm_models(model_ids: list[str]) -> list[str]:
     return sorted(suitable, key=sort_key)
 
 
+def _fetch_openai_model_ids(api_key: str) -> tuple[list[str], str]:
+    """Fetch account-visible OpenAI model IDs without using Qt's network stack."""
+
+    request = urllib.request.Request(
+        "https://api.openai.com/v1/models",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Accept": "application/json",
+            "User-Agent": f"WhoSpeaks/{__version__}",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=12) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        return [], f"OpenAI returned HTTP {exc.code}"
+    except urllib.error.URLError as exc:
+        return [], f"Could not reach OpenAI · {exc.reason}"
+    except TimeoutError:
+        return [], "OpenAI model loading timed out"
+    except OSError as exc:
+        return [], f"Could not load OpenAI models · {exc}"
+    except (UnicodeDecodeError, json.JSONDecodeError, AttributeError, TypeError) as exc:
+        return [], f"Could not read OpenAI model catalog · {exc}"
+
+    records = payload.get("data", []) if isinstance(payload, dict) else []
+    model_ids = [
+        str(record.get("id") or "")
+        for record in records
+        if isinstance(record, dict)
+    ]
+    return suitable_openai_llm_models(model_ids), ""
+
+
+class _OpenAIModelCatalogBridge(QObject):
+    completed = Signal(int, object, str)
+
+
 def _page_root(title: str, subtitle: str) -> tuple[QWidget, QVBoxLayout, PageHeader]:
     page = QWidget()
     layout = QVBoxLayout(page)
@@ -298,15 +452,15 @@ class DiagnosticsPage(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 32, 18, 36)
+        layout.setContentsMargins(10, 32, 18, 0)
         layout.setSpacing(0)
         header = PageHeader("Diagnostics", "Check the launcher, runtimes, models, ports, and configured services.")
         header.layout().setContentsMargins(22, 0, 14, 0)
         layout.addWidget(header)
         layout.addSpacing(28)
         self.summary = SummaryStrip()
-        self.summary.setFixedHeight(82)
         layout.addWidget(self.summary)
+        layout.addSpacing(12)
         self.table = QTableView()
         self.table.setAlternatingRowColors(True)
         self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
@@ -330,28 +484,31 @@ class DiagnosticsPage(QWidget):
         self.table.setIconSize(QSize(28, 28))
         results_panel = QWidget()
         results_layout = QVBoxLayout(results_panel)
-        results_layout.setContentsMargins(0, 12, 0, 20)
-        results_layout.setSpacing(50)
+        results_layout.setContentsMargins(0, 0, 0, 0)
+        results_layout.setSpacing(0)
         results_layout.addWidget(self.table, 1)
-        actions = QHBoxLayout()
-        actions.setSpacing(18)
+        self.action_bar = ActionFooter()
+        actions = self.action_bar.actions
         self.quick_button = QPushButton("Quick check")
         self.quick_button.setIcon(line_icon("refresh"))
         self.complete_button = QPushButton("Complete check")
-        self.complete_button.setProperty("primary", True)
         self.complete_button.setIcon(line_icon("play", COLORS.canvas))
         self.copy_button = QPushButton("Copy results")
         self.copy_button.setIcon(line_icon("copy"))
-        for button in (self.quick_button, self.complete_button, self.copy_button):
-            button.setFixedHeight(80)
-            button.setProperty("diagnosticAction", True)
+        self.action_bar.configure_button(self.complete_button, primary=True)
+        self.action_bar.configure_button(self.quick_button)
+        self.action_bar.configure_button(self.copy_button)
         self.quick_button.clicked.connect(self.quick_requested)
         self.complete_button.clicked.connect(self.deep_requested)
         self.copy_button.clicked.connect(self.copy_results)
-        actions.addWidget(self.quick_button, 1)
-        actions.addWidget(self.complete_button, 1)
-        actions.addWidget(self.copy_button, 1)
-        results_layout.addLayout(actions)
+        self.complete_button.setMinimumWidth(270)
+        self.quick_button.setMinimumWidth(230)
+        self.copy_button.setMinimumWidth(240)
+        actions.addWidget(self.complete_button)
+        actions.addWidget(self.quick_button)
+        actions.addWidget(self.copy_button)
+        actions.addStretch(1)
+        results_layout.addWidget(self.action_bar)
         layout.addWidget(results_panel, 1)
         self._checks: list[CheckResult] = []
 
@@ -460,6 +617,8 @@ class FormSection(QScrollArea):
     def add_field(self, label: str, widget: QWidget, help_text: str = "") -> None:
         label_widget = QLabel(label)
         label_widget.setMinimumWidth(190)
+        widget.setProperty("settingsHelpTitle", label)
+        widget.setProperty("settingsHelpSummary", help_text)
         if help_text:
             container = QWidget()
             column = QVBoxLayout(container)
@@ -517,6 +676,8 @@ class GeneralSettingsSection(QScrollArea):
         block_layout.setContentsMargins(0, 0, 0, 0)
         block_layout.setSpacing(6)
         block_layout.addWidget(QLabel(label))
+        widget.setProperty("settingsHelpTitle", label)
+        widget.setProperty("settingsHelpSummary", help_text)
         block_layout.addWidget(widget)
         if help_text:
             help_label = QLabel(help_text)
@@ -569,10 +730,22 @@ class SettingsPage(QWidget):
         self._field_sections: dict[str, int] = {}
         self._validation_rows: list[tuple[QFormLayout, QLabel]] = []
         self._openai_models: list[str] = []
-        self._openai_model_reply: QNetworkReply | None = None
+        self._openai_request_serial = 0
+        self._openai_request_running = False
+        self._openai_catalog_threads: dict[int, threading.Thread] = {}
+        self._pending_openai_models: list[str] | None = None
         self._openai_catalog_status = ""
         self._openai_catalog_role = "secondary"
-        self._network = QNetworkAccessManager(self)
+        self._help_targets: dict[QWidget, tuple[str, QWidget]] = {}
+        self._active_help_key = "mode"
+        self._active_help_widget: QWidget | None = None
+        self._help_dialog: SettingsHelpDialog | None = None
+        self._openai_catalog_bridge = _OpenAIModelCatalogBridge(self)
+        self._openai_catalog_bridge.completed.connect(self._openai_models_finished)
+        self._openai_apply_timer = QTimer(self)
+        self._openai_apply_timer.setSingleShot(True)
+        self._openai_apply_timer.setInterval(100)
+        self._openai_apply_timer.timeout.connect(self._apply_pending_openai_models)
         root = QVBoxLayout(self)
         self.root_layout = root
         root.setContentsMargins(10, 32, 18, 0)
@@ -612,18 +785,27 @@ class SettingsPage(QWidget):
         effect_icon = QLabel()
         effect_icon.setPixmap(line_icon("info", COLORS.info, 26).pixmap(26, 26))
         effect_text = QVBoxLayout()
-        effect_text.setSpacing(6)
-        effect_title = QLabel("Launch summary")
-        effect_title.setProperty("role", "secondary")
-        self.launch_effect_detail = QLabel(
-            "The saved profile summary appears here."
-        )
-        self.launch_effect_detail.setWordWrap(True)
-        self.launch_effect_detail.setProperty("role", "secondary")
-        effect_text.addWidget(effect_title)
-        effect_text.addWidget(self.launch_effect_detail)
+        effect_text.setSpacing(3)
+        self.context_help_title = QLabel("Deployment")
+        help_title_font = self.context_help_title.font()
+        help_title_font.setWeight(QFont.Weight.DemiBold)
+        self.context_help_title.setFont(help_title_font)
+        self.context_help_value = QLabel("Remote ASR + embeddings")
+        self.context_help_value.setProperty("role", "secondary")
+        self.context_help_detail = QLabel("Help for the focused setting appears here.")
+        self.launch_effect_detail = self.context_help_detail
+        self.context_help_detail.setWordWrap(True)
+        self.context_help_detail.setProperty("role", "secondary")
+        self.context_help_hint = QLabel("F1  More help")
+        self.context_help_hint.setProperty("role", "muted")
+        self.context_help_hint.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.context_help_hint.setAccessibleName("Press F1 for more help about the focused setting")
+        effect_text.addWidget(self.context_help_title)
+        effect_text.addWidget(self.context_help_value)
+        effect_text.addWidget(self.context_help_detail)
         effect_layout.addWidget(effect_icon)
         effect_layout.addLayout(effect_text, 1)
+        effect_layout.addWidget(self.context_help_hint)
         effect_shell = QWidget()
         effect_shell_layout = QHBoxLayout(effect_shell)
         self.launch_effect_shell_layout = effect_shell_layout
@@ -631,18 +813,14 @@ class SettingsPage(QWidget):
         effect_shell_layout.addWidget(self.launch_effect)
         body_layout.addWidget(effect_shell)
         root.addWidget(body, 1)
-        action_bar = QFrame()
-        self.action_bar = action_bar
-        action_bar.setObjectName("actionBar")
-        action_bar.setFixedHeight(123)
-        actions = QHBoxLayout(action_bar)
+        self.action_bar = ActionFooter()
+        actions = self.action_bar.actions
         self.action_layout = actions
-        actions.setContentsMargins(16, 20, 16, 20)
-        actions.setSpacing(16)
         self.save_button = QPushButton("Save changes")
-        self.save_button.setProperty("primary", True)
         self.save_button.setMinimumWidth(256)
         self.discard_button = QPushButton("Discard")
+        self.action_bar.configure_button(self.save_button, primary=True)
+        self.action_bar.configure_button(self.discard_button)
         self.status = QLabel("No unsaved changes")
         self.status.setProperty("role", "success")
         actions.addWidget(self.save_button)
@@ -650,7 +828,7 @@ class SettingsPage(QWidget):
         actions.addSpacing(12)
         actions.addWidget(self.status)
         actions.addStretch(1)
-        root.addWidget(action_bar)
+        root.addWidget(self.action_bar)
         self._build_sections()
         for field, widget in self.fields.items():
             for index in range(self.sections.count()):
@@ -666,13 +844,14 @@ class SettingsPage(QWidget):
         self.save_button.clicked.connect(self._emit_save)
         self.discard_button.clicked.connect(lambda: self.set_profile(self.profile))
         self._connect_dirty_signals()
+        self._install_control_help()
         self.set_profile(profile)
 
     def set_compact_layout(self, compact: bool) -> None:
         """Keep complete settings rows visible on smaller supported windows."""
         self.root_layout.setContentsMargins(10, 16 if compact else 32, 18, 0)
         self.header_gap.setFixedHeight(14 if compact else 28)
-        self.launch_effect.setMinimumHeight(70 if compact else 94)
+        self.launch_effect.setMinimumHeight(92 if compact else 110)
         self.launch_effect_layout.setContentsMargins(
             18 if compact else 24,
             10 if compact else 16,
@@ -685,13 +864,159 @@ class SettingsPage(QWidget):
             22,
             8 if compact else 16,
         )
-        self.action_bar.setFixedHeight(90 if compact else 123)
-        self.action_layout.setContentsMargins(
-            16,
-            12 if compact else 20,
-            16,
-            12 if compact else 20,
+
+    def _install_control_help(self) -> None:
+        for field, widget in self.fields.items():
+            self._register_help_target(field, widget)
+        self._register_help_target("text_embedding_preset", self.text_embedding_preset)
+        self._register_help_target("settings_sections", self.section_list, title="Settings categories")
+        self._register_help_target("save_changes", self.save_button, title="Save changes")
+        self._register_help_target("discard_changes", self.discard_button, title="Discard changes")
+        self.section_list.currentRowChanged.connect(self._refresh_context_help)
+        self._help_shortcut = QShortcut(QKeySequence(Qt.Key.Key_F1), self)
+        self._help_shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
+        self._help_shortcut.activated.connect(self._show_more_help)
+
+    def _register_help_target(
+        self,
+        key: str,
+        widget: QWidget,
+        *,
+        title: str = "",
+    ) -> None:
+        summary, detail = _SETTINGS_HELP[key]
+        resolved_title = title or str(widget.property("settingsHelpTitle") or widget.accessibleName() or key.replace("_", " ").title())
+        widget.setProperty("settingsHelpTitle", resolved_title)
+        widget.setToolTip(summary)
+        widget.setAccessibleDescription(detail)
+        targets = [widget, *widget.findChildren(QWidget)]
+        for target in targets:
+            target.setToolTip(summary)
+            target.installEventFilter(self)
+            self._help_targets[target] = (key, widget)
+
+    def eventFilter(self, watched: object, event: QEvent) -> bool:
+        if isinstance(watched, QWidget) and watched in self._help_targets:
+            if event.type() in {QEvent.Type.FocusIn, QEvent.Type.Enter}:
+                key, root_widget = self._help_targets[watched]
+                self._show_control_help(key, root_widget)
+        return super().eventFilter(watched, event)
+
+    def _control_value_text(self, key: str, widget: QWidget) -> str:
+        if key == "settings_sections":
+            item = self.section_list.currentItem()
+            return item.text() if item is not None else ""
+        if key in {"save_changes", "discard_changes"}:
+            return ""
+        if key == "text_embedding_preset":
+            return self.text_embedding_preset.currentText()
+        if isinstance(widget, QComboBox):
+            return widget.currentText().strip() or "Not selected"
+        if isinstance(widget, QCheckBox):
+            return "On" if widget.isChecked() else "Off"
+        if isinstance(widget, QSpinBox):
+            return widget.text()
+        if isinstance(widget, QLineEdit):
+            return widget.text().strip() or "Not set"
+        if isinstance(widget, PathPicker):
+            return widget.text().strip() or "Automatic"
+        return ""
+
+    def _control_help_detail(self, key: str, widget: QWidget) -> str:
+        validation_message = str(widget.property("validationMessage") or "").strip()
+        if validation_message:
+            return f"Needs attention: {validation_message}"
+        if key == "mode":
+            mode = str(self._value("mode"))
+            return {
+                "local": "Runs final ASR and speaker embeddings inside the local live-window process on this computer.",
+                "remote": "Connects this app to ASR and speaker-embedding servers on another machine. Configure their addresses under Connections.",
+                "server": "Starts the final ASR and speaker-embedding services for another WhoSpeaks controller. The browser app is not started by this profile.",
+                "macos": "Runs ASR and speaker embeddings as launcher-managed Apple Silicon services on this Mac.",
+            }.get(mode, _SETTINGS_HELP[key][1])
+        return _SETTINGS_HELP[key][1]
+
+    def _show_control_help(self, key: str, widget: QWidget) -> None:
+        self._active_help_key = key
+        self._active_help_widget = widget
+        title = str(widget.property("settingsHelpTitle") or widget.accessibleName() or key.replace("_", " ").title())
+        self.context_help_title.setText(title)
+        value = self._control_value_text(key, widget)
+        self.context_help_value.setText(value)
+        self.context_help_value.setVisible(bool(value))
+        self.context_help_detail.setText(self._control_help_detail(key, widget))
+
+    def _refresh_context_help(self, *_args: object) -> None:
+        if self._active_help_widget is not None:
+            self._show_control_help(self._active_help_key, self._active_help_widget)
+
+    def _expanded_control_help(self, key: str, widget: QWidget) -> str:
+        detail = SETTINGS_MORE_HELP[key]
+        if key == "translation_target_languages":
+            detail = detail.format(language_codes=_supported_language_code_help())
+        if key in {
+            "provider_preset",
+            "embedding_provider",
+            "live_speaker_embedding_provider",
+        }:
+            preset_id = str(self._value("provider_preset"))
+            preset = PROVIDER_PRESETS.get(preset_id)
+            if preset is not None:
+                selected = (
+                    f"Selected preset: {preset.name} ({preset.id})\n"
+                    f"{preset.summary} {preset.details}\n"
+                    f"Operational note: {preset.score_note or 'Validate this stack on representative audio.'}\n"
+                    f"Final: {preset.embedding_provider}\n"
+                    f"Live: {preset.live_speaker_embedding_provider}"
+                )
+                detail = f"{detail}\n\n{selected}"
+        if key in {"report_llm_provider", "report_llm_base_url", "report_llm_model"}:
+            provider_id = str(self._value("report_llm_provider"))
+            option = LLM_PROVIDER_OPTIONS.get(provider_id)
+            if option is not None:
+                credential = str(option.get("api_key_env_var") or "No API key required by the default local configuration")
+                selected = (
+                    f"Selected provider: {option['label']} ({provider_id})\n"
+                    f"Default API root: {option['default_base_url']}\n"
+                    f"Credential: {credential}"
+                )
+                detail = f"{detail}\n\n{selected}"
+        if key in {
+            "translation_provider",
+            "translation_base_url",
+            "translation_api_key_env",
+        }:
+            provider_id = str(self._value("translation_provider"))
+            option = TRANSLATION_PROVIDER_OPTIONS.get(provider_id)
+            if option is not None:
+                endpoint = str(option.get("default_base_url") or "No fixed endpoint")
+                credential = str(option.get("default_api_key_env") or "No default key variable")
+                selected = (
+                    f"Selected provider: {option['label']} ({provider_id})\n"
+                    f"Default endpoint: {endpoint}\n"
+                    f"Default key variable: {credential}"
+                )
+                detail = f"{detail}\n\n{selected}"
+        return detail
+
+    def _show_more_help(self) -> None:
+        widget = self._active_help_widget
+        if widget is None:
+            widget = self.fields["mode"]
+            self._show_control_help("mode", widget)
+        title = self.context_help_title.text()
+        summary = _SETTINGS_HELP[self._active_help_key][0]
+        detail = self._expanded_control_help(self._active_help_key, widget)
+        dialog = SettingsHelpDialog(
+            title,
+            summary,
+            detail,
+            current_value=self._control_value_text(self._active_help_key, widget),
+            parent=self,
         )
+        self._help_dialog = dialog
+        dialog.exec()
+
     def _combo(self, field: str, choices: list[tuple[str, object]]) -> QComboBox:
         widget = QComboBox()
         for label, value in choices:
@@ -964,7 +1289,7 @@ class SettingsPage(QWidget):
     def _connect_dirty_signals(self) -> None:
         for widget in self.fields.values():
             if isinstance(widget, QLineEdit):
-                widget.textEdited.connect(self._mark_dirty)
+                widget.textChanged.connect(self._mark_dirty)
             elif isinstance(widget, PathPicker):
                 widget.textEdited.connect(self._mark_dirty)
             elif isinstance(widget, LanguageTargetSelector):
@@ -1065,51 +1390,51 @@ class SettingsPage(QWidget):
                 "warning",
             )
             return
-        if self._openai_model_reply is not None and self._openai_model_reply.isRunning():
+        if self._openai_request_running:
             return
 
         self._set_openai_catalog_status(
             "OPENAI_API_KEY detected · loading available models…",
             "info",
         )
-        request = QNetworkRequest(QUrl("https://api.openai.com/v1/models"))
-        request.setRawHeader(b"Authorization", f"Bearer {api_key}".encode("utf-8"))
-        request.setRawHeader(b"Accept", b"application/json")
-        request.setRawHeader(b"User-Agent", f"WhoSpeaks/{__version__}".encode("ascii"))
-        request.setTransferTimeout(12_000)
-        reply = self._network.get(request)
-        self._openai_model_reply = reply
-        reply.finished.connect(lambda current=reply: self._openai_models_finished(current))
+        self._openai_request_running = True
+        self._openai_request_serial += 1
+        serial = self._openai_request_serial
+        bridge = self._openai_catalog_bridge
 
-    def _openai_models_finished(self, reply: QNetworkReply) -> None:
-        if reply is not self._openai_model_reply:
-            reply.deleteLater()
+        def load_catalog() -> None:
+            models, error = _fetch_openai_model_ids(api_key)
+            try:
+                bridge.completed.emit(serial, models, error)
+            except RuntimeError:
+                # The launcher was closed while the request was in flight.
+                pass
+
+        thread = threading.Thread(
+            target=load_catalog,
+            name=f"whospeaks-openai-models-{serial}",
+            daemon=True,
+        )
+        self._openai_catalog_threads[serial] = thread
+        thread.start()
+
+    def _openai_models_finished(
+        self,
+        serial: int,
+        returned_models: object,
+        error: str,
+    ) -> None:
+        self._openai_catalog_threads.pop(serial, None)
+        if serial != self._openai_request_serial:
             return
-        self._openai_model_reply = None
-        if reply.error() != QNetworkReply.NetworkError.NoError:
+        self._openai_request_running = False
+        if error:
             self._set_openai_catalog_status(
-                f"Could not load OpenAI models · {reply.errorString()}",
+                error,
                 "warning",
             )
-            reply.deleteLater()
             return
-        try:
-            payload = json.loads(bytes(reply.readAll()).decode("utf-8"))
-            records = payload.get("data", []) if isinstance(payload, dict) else []
-            model_ids = [
-                str(record.get("id") or "")
-                for record in records
-                if isinstance(record, dict)
-            ]
-            models = suitable_openai_llm_models(model_ids)
-        except (UnicodeDecodeError, json.JSONDecodeError, AttributeError, TypeError) as exc:
-            self._set_openai_catalog_status(
-                f"Could not read OpenAI model catalog · {exc}",
-                "warning",
-            )
-            reply.deleteLater()
-            return
-        reply.deleteLater()
+        models = [str(model) for model in returned_models] if isinstance(returned_models, list) else []
         if not models:
             self._set_openai_catalog_status(
                 "OpenAI returned no suitable text-generation models",
@@ -1128,6 +1453,15 @@ class SettingsPage(QWidget):
     def _apply_openai_models(self, models: list[str]) -> None:
         model = self.fields["report_llm_model"]
         assert isinstance(model, QComboBox)
+        if model.view().isVisible():
+            self._pending_openai_models = list(models)
+            self._openai_apply_timer.start()
+            self._set_openai_catalog_status(
+                f"OPENAI_API_KEY detected · {len(models)} suitable models loaded from OpenAI",
+                "success",
+            )
+            return
+        self._pending_openai_models = None
         selected = str(self._value("report_llm_model") or "")
         choices = list(models)
         if selected and selected not in choices:
@@ -1148,6 +1482,18 @@ class SettingsPage(QWidget):
             f"OPENAI_API_KEY detected · {len(models)} suitable models loaded from OpenAI",
             "success",
         )
+
+    def _apply_pending_openai_models(self) -> None:
+        if self._pending_openai_models is None:
+            return
+        model = self.fields["report_llm_model"]
+        assert isinstance(model, QComboBox)
+        if model.view().isVisible():
+            self._openai_apply_timer.start()
+            return
+        models = self._pending_openai_models
+        self._pending_openai_models = None
+        self._apply_openai_models(models)
 
     def _set_openai_catalog_status(self, text: str, role: str) -> None:
         self._openai_catalog_status = text
@@ -1232,10 +1578,12 @@ class SettingsPage(QWidget):
         model.blockSignals(False)
 
     def _mark_dirty(self, *_args: object) -> None:
+        self.save_button.setEnabled(True)
         self.status.setText("Unsaved changes")
         self.status.setProperty("role", "warning")
         self.status.style().unpolish(self.status)
         self.status.style().polish(self.status)
+        self._refresh_context_help()
 
     def _set_field_visible(self, field: str, visible: bool) -> None:
         widget = self.fields[field]
@@ -1378,37 +1726,7 @@ class SettingsPage(QWidget):
             self.section_list.item(index).setHidden(server_profile)
         if server_profile and self.section_list.currentRow() in {1, 2, 4, 5, 6}:
             self.section_list.setCurrentRow(0)
-        mode_label = {
-            "local": "Full local: ASR and speaker embeddings run here",
-            "remote": "Local app: ASR and speaker embeddings run remotely",
-            "server": "ASR + embeddings server profile",
-        }.get(mode, mode)
-        preview_label = {
-            "sherpa_onnx": "live text via Nemotron",
-            "kroko_onnx": "live text via Kroko/Banafo",
-            "off": "live text disabled",
-        }.get(engine, f"live text via {engine}")
-        intelligence_label = (
-            "Meeting Intelligence starts"
-            if bool(self._value("reports_enabled"))
-            else "Meeting Intelligence stays off"
-        )
-        translation_label = (
-            "translation enabled" if translation_enabled else "translation stays off"
-        )
-        if server_profile:
-            summary = (
-                "ASR + embeddings server profile; use Overview to view the two service commands. "
-                "The browser app, Meeting Intelligence, and translation are not launched by this profile."
-            )
-        else:
-            model_label = str(self.fields["realtime_preview_model_preset"].currentText())
-            if engine != "off" and model_label:
-                preview_label += f" ({model_label})"
-            summary = (
-                f"{mode_label}; {preview_label}; {intelligence_label}; {translation_label}."
-            )
-        self.launch_effect_detail.setText(summary)
+        self._refresh_context_help()
         self._update_openai_key_status()
 
     def _value(self, field: str) -> object:
@@ -1520,13 +1838,21 @@ class SettingsPage(QWidget):
         self._sync_provider_preset()
         self._sync_dependencies()
         self.status.setText("No unsaved changes")
+        self.save_button.setDisabled(True)
         self.status.setProperty("role", "success")
         self.status.style().unpolish(self.status)
         self.status.style().polish(self.status)
+        if self._active_help_widget is None:
+            self._show_control_help("mode", mode_widget)
+        else:
+            self._refresh_context_help()
 
     def clear_validation(self) -> None:
-        for widget in self.fields.values():
+        for field, widget in self.fields.items():
             widget.setProperty("invalid", False)
+            widget.setProperty("validationMessage", "")
+            if field in _SETTINGS_HELP:
+                widget.setAccessibleDescription(_SETTINGS_HELP[field][1])
             widget.style().unpolish(widget)
             widget.style().polish(widget)
         for form, label in self._validation_rows:
@@ -1572,6 +1898,7 @@ class SettingsPage(QWidget):
                 elif widget.isEditable():
                     widget.setEditText(str(value))
         widget.setProperty("invalid", True)
+        widget.setProperty("validationMessage", message)
         widget.setAccessibleDescription(message)
         widget.style().unpolish(widget)
         widget.style().polish(widget)
@@ -1591,18 +1918,21 @@ class SettingsPage(QWidget):
                 self._validation_rows.append((section.form, error))
                 break
         widget.setFocus(Qt.FocusReason.OtherFocusReason)
+        self._show_control_help(field, widget)
         self.status.setText("1 setting needs attention")
         self.status.setProperty("role", "error")
         self.status.style().unpolish(self.status)
         self.status.style().polish(self.status)
 
     def show_saved(self, path: str) -> None:
+        self.save_button.setDisabled(True)
         self.status.setText(f"Saved · {path}")
         self.status.setProperty("role", "success")
         self.status.style().unpolish(self.status)
         self.status.style().polish(self.status)
 
     def show_error(self, message: str) -> None:
+        self.save_button.setEnabled(True)
         self.status.setText(message)
         self.status.setProperty("role", "error")
         self.status.style().unpolish(self.status)
@@ -1615,36 +1945,24 @@ class ActivityPage(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 32, 18, 24)
-        layout.setSpacing(28)
+        layout.setContentsMargins(10, 32, 18, 0)
+        layout.setSpacing(0)
         header = PageHeader("Activity", "Installation, checks, and service events from this launcher session.")
         header.layout().setContentsMargins(22, 0, 14, 0)
         layout.addWidget(header)
-        operation = QFrame()
-        operation.setProperty("group", True)
-        operation.setFixedHeight(88)
-        op_layout = QVBoxLayout(operation)
-        op_layout.setContentsMargins(18, 12, 18, 12)
-        op_layout.setSpacing(7)
-        top = QHBoxLayout()
-        top.setSpacing(12)
-        self.operation_mark = StatusMark("stopped")
-        top.addWidget(self.operation_mark)
-        self.operation_label = QLabel("IDLE · No operation is running")
-        self.operation_label.setProperty("role", "secondary")
-        top.addWidget(self.operation_label)
-        top.addStretch(1)
+        layout.addSpacing(28)
+        self.summary = SummaryStrip()
+        self.operation_mark = self.summary.mark
+        self.operation_state = self.summary.state_label
+        self.operation_label = self.summary.detail_label
         self.cancel_button = QPushButton("Cancel")
         self.cancel_button.setProperty("danger", True)
         self.cancel_button.hide()
         self.cancel_button.clicked.connect(self.cancel_requested)
-        top.addWidget(self.cancel_button)
-        self.progress = QProgressBar()
-        self.progress.setTextVisible(False)
-        self.progress.hide()
-        op_layout.addLayout(top)
-        op_layout.addWidget(self.progress)
-        layout.addWidget(operation)
+        self.summary.add_trailing_widget(self.cancel_button)
+        self.progress = self.summary.progress
+        layout.addWidget(self.summary)
+        layout.addSpacing(12)
         self.log = QPlainTextEdit()
         self.log.setObjectName("activityLog")
         self.log.setReadOnly(True)
@@ -1656,22 +1974,25 @@ class ActivityPage(QWidget):
         self.log.setFont(font)
         self.log.setAccessibleName("Launcher activity log")
         layout.addWidget(self.log, 1)
-        tools = QHBoxLayout()
+        self.action_bar = ActionFooter()
+        tools = self.action_bar.actions
         self.copy_button = QPushButton("Copy all")
-        self.copy_button.setIcon(line_icon("copy"))
+        self.copy_button.setIcon(line_icon("copy", COLORS.canvas))
         self.wrap_check = QCheckBox("Wrap long lines")
         self.clear_button = QPushButton("Clear")
+        self.action_bar.configure_button(self.copy_button, primary=True)
+        self.action_bar.configure_button(self.clear_button)
         self.line_count = QLabel("0 lines")
         self.line_count.setProperty("role", "secondary")
         self.copy_button.clicked.connect(lambda: QApplication.clipboard().setText(self.log.toPlainText()))
         self.wrap_check.toggled.connect(self._toggle_wrap)
         self.clear_button.clicked.connect(self.clear)
         tools.addWidget(self.copy_button)
+        tools.addWidget(self.clear_button)
         tools.addWidget(self.wrap_check)
         tools.addStretch(1)
-        tools.addWidget(self.clear_button)
         tools.addWidget(self.line_count)
-        layout.addLayout(tools)
+        layout.addWidget(self.action_bar)
 
     def _toggle_wrap(self, enabled: bool) -> None:
         self.log.setLineWrapMode(
@@ -1702,24 +2023,20 @@ class ActivityPage(QWidget):
         title = str(getattr(operation, "title", "Setup is idle"))
         step = str(getattr(operation, "step", ""))
         if name:
-            pieces = (title.upper(), step)
-            self.operation_label.setText(" · ".join(piece for piece in pieces if piece))
-            self.operation_label.setProperty("role", "info" if status == "running" else status)
+            state = title
+            detail = step
+            semantic = "info" if status == "running" else status
         else:
-            self.operation_label.setText(f"{status.upper()} · {title}")
-            self.operation_label.setProperty(
-                "role",
-                {
-                    "success": "success",
-                    "warning": "warning",
-                    "cancelled": "warning",
-                    "error": "error",
-                }.get(status, "secondary"),
-            )
-        self.operation_label.style().unpolish(self.operation_label)
-        self.operation_label.style().polish(self.operation_label)
+            state = status
+            detail = title
+            semantic = {
+                "success": "success",
+                "warning": "warning",
+                "cancelled": "warning",
+                "error": "error",
+            }.get(status, "secondary")
+        self.summary.set_summary(state, detail, semantic=semantic)
         running = bool(name)
-        self.operation_mark.set_status("starting" if running else status)
         self.progress.setVisible(running or status in {"cancelled", "success", "warning", "error"})
         self.progress.setRange(0, 0 if running else 100)
         self.cancel_button.setVisible(name in {"install", "launch"})

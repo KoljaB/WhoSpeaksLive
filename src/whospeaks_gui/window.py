@@ -66,7 +66,7 @@ from .tokens import (
     MINIMUM_SIZE,
     RAIL_WIDTH,
 )
-from .widgets import PageHeader, ServiceRow, StatusMark, SummaryStrip, section_label, separator
+from .widgets import ActionFooter, PageHeader, ServiceRow, StatusMark, SummaryStrip, section_label, separator
 
 
 class BrandMark(QWidget):
@@ -442,6 +442,7 @@ class OverviewPage(QWidget):
         summary_layout.setContentsMargins(10, 0, 18, 0)
         summary_layout.addWidget(self.summary)
         root.addWidget(summary_shell)
+        root.addSpacing(12)
         self.workspace_stack = QStackedWidget()
         self.normal_workspace = self._build_normal_workspace()
         self.first_run_workspace = self._build_first_run_workspace()
@@ -459,33 +460,28 @@ class OverviewPage(QWidget):
         workspace_layout.setContentsMargins(10, 0, 18, 0)
         workspace_layout.addWidget(workspace_scroll)
         root.addWidget(workspace_shell, 1)
-        self.action_bar = QFrame()
-        self.action_bar.setObjectName("actionBar")
-        self.action_bar.setFixedHeight(126)
-        actions = QHBoxLayout(self.action_bar)
+        self.action_bar = ActionFooter(seamless=True)
+        actions = self.action_bar.actions
         self.action_layout = actions
-        actions.setContentsMargins(28, 8, 18, 18)
-        actions.setSpacing(14)
+        actions.setContentsMargins(28, 20, 18, 20)
         self.primary_button = QPushButton("Launch WhoSpeaks")
-        self.primary_button.setProperty("primary", True)
         self.primary_button.setIcon(line_icon("play", COLORS.canvas))
-        self.primary_button.setIconSize(QSize(22, 22))
         self.primary_button.setMinimumWidth(366)
-        self.primary_button.setFixedHeight(68)
         self.refresh_button = QPushButton("Refresh checks")
         self.refresh_button.setMinimumWidth(230)
-        self.refresh_button.setFixedHeight(68)
         self.refresh_button.setIcon(line_icon("refresh"))
         self.command_button = QPushButton("View command")
         self.command_button.setMinimumWidth(240)
-        self.command_button.setFixedHeight(68)
         self.command_button.setIcon(line_icon("terminal"))
         self.stop_button = QPushButton("Stop services")
         self.stop_button.setMinimumWidth(260)
-        self.stop_button.setFixedHeight(68)
         self.stop_button.setProperty("danger", True)
         self.stop_button.setIcon(line_icon("stop", COLORS.error))
         self.stop_button.hide()
+        self.action_bar.configure_button(self.primary_button, primary=True)
+        self.action_bar.configure_button(self.refresh_button)
+        self.action_bar.configure_button(self.command_button)
+        self.action_bar.configure_button(self.stop_button)
         self.primary_button.clicked.connect(self._primary_clicked)
         self.refresh_button.clicked.connect(self._refresh_clicked)
         self.command_button.clicked.connect(self._command_clicked)
@@ -574,18 +570,32 @@ class OverviewPage(QWidget):
         profile_layout = QVBoxLayout(profile)
         profile_layout.setContentsMargins(22, 22, 22, 20)
         profile_layout.setSpacing(9)
-        title_row = QHBoxLayout()
+        title_row = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.profile_title_layout = title_row
         title_row.setSpacing(12)
         self.profile_heading = section_label("Launch profile")
+        self.profile_heading.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Preferred,
+        )
         title_row.addWidget(self.profile_heading)
-        title_row.addStretch(1)
+        installer_controls = QWidget()
+        self.profile_installer_controls = installer_controls
+        installer_controls_layout = QHBoxLayout(installer_controls)
+        installer_controls_layout.setContentsMargins(0, 0, 0, 0)
+        installer_controls_layout.setSpacing(12)
         installer_label = QLabel("Installer")
         installer_label.setProperty("role", "secondary")
-        title_row.addWidget(installer_label)
+        installer_controls_layout.addWidget(installer_label)
         self.profile_installer = self._installer_combo("Launch profile package installer")
-        self.profile_installer.setMinimumWidth(280)
-        self.profile_installer.setMaximumWidth(280)
-        title_row.addWidget(self.profile_installer)
+        self.profile_installer.setMinimumWidth(190)
+        self.profile_installer.setMaximumWidth(230)
+        self.profile_installer.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Fixed,
+        )
+        installer_controls_layout.addWidget(self.profile_installer, 1)
+        title_row.addWidget(installer_controls)
         profile_layout.addLayout(title_row)
         self.profile_grid = QGridLayout()
         self.profile_grid.setHorizontalSpacing(14)
@@ -611,6 +621,9 @@ class OverviewPage(QWidget):
             label.setProperty("role", "secondary")
             value = QLabel("")
             value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            value.setWordWrap(True)
+            value.setMinimumWidth(0)
+            value.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.profile_labels[key] = value
             self.profile_grid.addWidget(icon, row_index, 0)
             self.profile_grid.addWidget(label, row_index, 1)
@@ -618,7 +631,7 @@ class OverviewPage(QWidget):
             self.profile_grid_rows[key] = (row_index, (icon, label, value))
             self.profile_grid_widgets.extend((icon, label, value))
             self.profile_grid.setRowMinimumHeight(row_index, 44)
-        self.profile_grid.setColumnMinimumWidth(1, 225)
+        self.profile_grid.setColumnMinimumWidth(1, 180)
         self.profile_grid.setColumnStretch(2, 1)
         profile_layout.addLayout(self.profile_grid)
         self.profile_separator = separator()
@@ -1097,6 +1110,11 @@ class OverviewPage(QWidget):
         )
         self.normal_layout.setDirection(direction)
         self.first_run_layout.setDirection(direction)
+        self.profile_title_layout.setDirection(
+            QBoxLayout.Direction.TopToBottom
+            if compact
+            else QBoxLayout.Direction.LeftToRight
+        )
         self.workspace_divider.setVisible(not compact)
         self.profile_panel.setMinimumWidth(0 if compact else 360)
         self.workspace_stack.setMinimumSize(0 if compact else 860, 900 if compact else 480)
@@ -1112,21 +1130,6 @@ class OverviewPage(QWidget):
             0,
         )
         self.header_gap.setFixedHeight(6 if compact else 27)
-        self.action_bar.setFixedHeight(80 if compact else 126)
-        self.action_layout.setContentsMargins(
-            18 if compact else 28,
-            8,
-            18,
-            8 if compact else 18,
-        )
-        button_height = 52 if compact else 68
-        for button in (
-            self.primary_button,
-            self.refresh_button,
-            self.command_button,
-            self.stop_button,
-        ):
-            button.setFixedHeight(button_height)
         self.primary_button.setMinimumWidth(280 if compact else 366)
         self.refresh_button.setMinimumWidth(140 if compact else 230)
         self.command_button.setMinimumWidth(160 if compact else 240)
@@ -1200,6 +1203,8 @@ class OverviewPage(QWidget):
         else:
             translation_label = TRANSLATION_PROVIDER_OPTIONS[profile.translation_provider]["label"]
         self.profile_labels["translation"].setText(translation_label)
+        for value in self.profile_labels.values():
+            value.setToolTip(value.text())
         self.service_rows["live"].endpoint.setText(f"{profile.host}:{profile.port}")
         self.service_rows["reports"].endpoint.setText(f"{profile.host}:{profile.reports_port}")
         self.service_rows["translation"].endpoint.setText(f"{profile.host}:{profile.translation_port}")
@@ -1432,7 +1437,6 @@ class OverviewPage(QWidget):
             if self.profile.mode in {"local", "remote"}:
                 service_count += 2
         self.workspace_stack.setCurrentWidget(self.first_run_workspace if state == "first_run" else self.normal_workspace)
-        self.action_bar.setFixedHeight(80 if self._compact else 126)
         self.stop_button.hide()
         self.command_button.show()
         self.refresh_button.show()
@@ -1459,7 +1463,6 @@ class OverviewPage(QWidget):
         for line in self.side_lines:
             line.hide()
         if state == "first_run":
-            self.action_bar.setFixedHeight(80 if self._compact else 126)
             self.header.set_text("Finish setup", "Choose how WhoSpeaks will run, then install the missing components.")
             self.set_report(self.current_report)
             self.primary_button.setText("Install components")

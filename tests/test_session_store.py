@@ -279,6 +279,44 @@ class SessionStoreTests(unittest.TestCase):
             self.assertTrue(deleted["deleted"])
             self.assertEqual(store.list_sessions("all"), [])
 
+    def test_session_summary_separates_transcribed_and_full_source_duration(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = SessionStore(root)
+            snapshot = self.sample_snapshot()
+            snapshot["duration_seconds"] = 12.0
+            snapshot["source"]["duration_seconds"] = 3600.0
+
+            summary = store.save_snapshot(snapshot, status_label="Saved")
+
+            self.assertEqual(summary["duration_seconds"], 12.0)
+            self.assertEqual(summary["transcript_duration_seconds"], 12.0)
+            self.assertEqual(summary["source_duration_seconds"], 3600.0)
+            manifest = json.loads(
+                (root / "20260707-test-session" / "manifest.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(manifest["duration_seconds"], 12.0)
+            self.assertEqual(manifest["source_duration_seconds"], 3600.0)
+
+    def test_legacy_session_list_derives_duration_from_saved_transcript(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = SessionStore(root)
+            store.save_snapshot(self.sample_snapshot(), status_label="Saved")
+            manifest_path = root / "20260707-test-session" / "manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest.pop("transcript_duration_seconds", None)
+            manifest.pop("source_duration_seconds", None)
+            manifest["duration_seconds"] = 3600.0
+            manifest["source"]["duration_seconds"] = 3600.0
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+            summary = store.list_sessions("active")[0]
+
+            self.assertEqual(summary["duration_seconds"], 4.2)
+            self.assertEqual(summary["transcript_duration_seconds"], 4.2)
+            self.assertEqual(summary["source_duration_seconds"], 3600.0)
+
     def test_saved_speaker_rename_updates_speaker_state_and_rows(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             store = SessionStore(Path(directory))

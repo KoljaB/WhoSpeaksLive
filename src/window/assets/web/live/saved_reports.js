@@ -192,9 +192,10 @@ export function installSavedReports(ctx) {
       const meta = document.createElement("div");
       meta.className = "session-row-meta";
       const speakerCount = Number(item.speaker_count || 0);
+      const transcriptDuration = Number(item.transcript_duration_seconds ?? item.duration_seconds ?? 0);
       const metaParts = [
         savedSessionTimeRangeLabel(item),
-        savedSessionDurationLabel(item.duration_seconds),
+        `${savedSessionDurationLabel(transcriptDuration)} transcribed`,
         `${speakerCount} ${speakerCount === 1 ? "speaker" : "speakers"}`,
       ].filter(Boolean);
       meta.textContent = metaParts.join(" - ");
@@ -624,7 +625,7 @@ export function installSavedReports(ctx) {
       "audio-file": "Audio file",
       youtube: "YouTube",
     }[mode] || "Source";
-    const duration = Number(summary.duration_seconds || manifest.duration_seconds || sourceInfo.duration_seconds || 0);
+    const duration = Number(sourceInfo.duration_seconds || summary.source_duration_seconds || manifest.source_duration_seconds || summary.duration_seconds || manifest.duration_seconds || 0);
     sourceKind.textContent = label;
     sourceTitle.textContent = savedSessionTitle(sessionData);
     mediaTime.textContent = duration > 0 ? `Saved ${clockLabel(duration)}` : "Saved session";

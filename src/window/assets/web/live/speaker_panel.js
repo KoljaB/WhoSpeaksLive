@@ -611,6 +611,67 @@ export function installSpeakerPanel(ctx) {
     }
     return controls;
   }
+  function embeddingStackDescription(stack, options = {}) {
+    if (!stack) return "Unknown embedding stack";
+    const parts = [stack.label || "Unknown embedding stack"];
+    if (Number(stack.dimensions) > 0) parts.push(`${stack.dimensions} dimensions`);
+    if (options.sampleCount && Number(stack.sample_count) > 0) {
+      const count = Number(stack.sample_count);
+      parts.push(`${count} sample${count === 1 ? "" : "s"}`);
+    }
+    return parts.join(" · ");
+  }
+  function appendEmbeddingStackDetails(parent, label, stack, options = {}) {
+    const row = document.createElement("div");
+    row.className = "embedding-stack-detail";
+    const heading = document.createElement("strong");
+    heading.textContent = label;
+    const summary = document.createElement("span");
+    summary.textContent = embeddingStackDescription(stack, options);
+    const identifier = document.createElement("code");
+    identifier.textContent = stack && stack.identifier ? stack.identifier : "Provider identifier unavailable";
+    row.appendChild(heading);
+    row.appendChild(summary);
+    row.appendChild(identifier);
+    parent.appendChild(row);
+  }
+  function createEmbeddingMismatchDetails(person) {
+    const details = document.createElement("details");
+    details.className = "embedding-mismatch-details";
+    const summary = document.createElement("summary");
+    summary.textContent = "Saved samples and this session use different embedding stacks.";
+    details.appendChild(summary);
+    const content = document.createElement("div");
+    content.className = "embedding-mismatch-content";
+    appendEmbeddingStackDetails(content, "Current session", person.current_embedding_stack);
+    (person.active_sample_embedding_stacks || []).forEach((stack, index) => {
+      appendEmbeddingStackDetails(
+        content,
+        index ? `Saved samples ${index + 1}` : "Saved samples",
+        stack,
+        {sampleCount:true},
+      );
+    });
+    details.appendChild(content);
+    return details;
+  }
+  function recognitionStatusText(person) {
+    if (person.recognition_ready) {
+      return `${person.active_voice_sample_count} active Voice sample${person.active_voice_sample_count === 1 ? "" : "s"}`;
+    }
+    if (["embedding_provider_mismatch", "embedding_dimension_mismatch"].includes(person.recognition_unavailable_reason)) {
+      return "Recognition unavailable · Speaker embedding mismatch";
+    }
+    if (person.recognition_unavailable_reason === "no_voice_samples") return "Recognition unavailable · No Voice samples";
+    if (person.recognition_unavailable_reason === "no_active_voice_samples") return "Recognition unavailable · No active Voice samples";
+    return "Recognition unavailable · No active compatible Voice samples";
+  }
+  function voiceSampleStateLabel(sample) {
+    if (sample.state && sample.state !== "active") return sample.state;
+    if (sample.compatibility_reason === "embedding_provider_mismatch") return "different embedding stack";
+    if (sample.compatibility_reason === "embedding_dimension_mismatch") return "different embedding dimensions";
+    return sample.effective_state;
+  }
   function renderPeopleList() {
     if (!peopleList) return;
     peopleList.textContent = "";
@@ -636,10 +697,11 @@ export function installSpeakerPanel(ctx) {
       identity.appendChild(name);
       const details = document.createElement("span");
       details.className = "person-details";
-      details.textContent = person.recognition_ready
-        ? `${person.active_voice_sample_count} active Voice sample${person.active_voice_sample_count === 1 ? "" : "s"}`
-        : "Recognition unavailable · No active compatible Voice samples";
+      details.textContent = recognitionStatusText(person);
       identity.appendChild(details);
+      if (["embedding_provider_mismatch", "embedding_dimension_mismatch"].includes(person.recognition_unavailable_reason)) {
+        identity.appendChild(createEmbeddingMismatchDetails(person));
+      }
       heading.appendChild(identity);
       const persistentToggles = document.createElement("div");
       persistentToggles.className = "person-persistent-toggles";
@@ -769,7 +831,7 @@ export function installSpeakerPanel(ctx) {
         const sampleLabel = document.createElement("strong");
         sampleLabel.textContent = sample.label;
         const sampleMeta = document.createElement("span");
-        sampleMeta.textContent = `${kind} · ${sample.speech_seconds}s · ${sample.effective_state}`;
+        sampleMeta.textContent = `${kind} · ${sample.speech_seconds}s · ${voiceSampleStateLabel(sample)}`;
         sampleCopy.appendChild(sampleLabel);
         sampleCopy.appendChild(sampleMeta);
         sampleRow.appendChild(sampleCopy);

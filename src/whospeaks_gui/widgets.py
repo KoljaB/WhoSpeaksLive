@@ -8,6 +8,8 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QProgressBar,
+    QPushButton,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
@@ -15,6 +17,10 @@ from PySide6.QtWidgets import (
 
 from .icons import line_icon
 from .tokens import COLORS
+
+
+FOOTER_HEIGHT = 88
+FOOTER_ACTION_HEIGHT = 48
 
 
 class StatusMark(QWidget):
@@ -137,9 +143,12 @@ class SummaryStrip(QFrame):
         super().__init__(parent)
         self.setObjectName("summaryStrip")
         self.setFixedHeight(68)
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(18, 0, 18, 0)
-        layout.setSpacing(12)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        self.row_layout = QHBoxLayout()
+        self.row_layout.setContentsMargins(18, 0, 18, 0)
+        self.row_layout.setSpacing(12)
         self.mark = StatusMark("stopped")
         self.state_label = QLabel("NOT CHECKED")
         self.state_label.setProperty("role", "muted")
@@ -149,11 +158,19 @@ class SummaryStrip(QFrame):
         self.detail_label = QLabel("Readiness has not been checked")
         self.detail_label.setProperty("role", "secondary")
         self.detail_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        layout.addWidget(self.mark)
-        layout.addWidget(self.state_label)
-        layout.addWidget(QLabel("·"))
-        layout.addWidget(self.detail_label)
-        layout.addStretch(1)
+        self.row_layout.addWidget(self.mark)
+        self.row_layout.addWidget(self.state_label)
+        self.row_layout.addWidget(QLabel("·"))
+        self.row_layout.addWidget(self.detail_label)
+        self.row_layout.addStretch(1)
+        layout.addLayout(self.row_layout, 1)
+        self.progress = QProgressBar()
+        self.progress.setTextVisible(False)
+        self.progress.hide()
+        layout.addWidget(self.progress)
+
+    def add_trailing_widget(self, widget: QWidget) -> None:
+        self.row_layout.insertWidget(self.row_layout.count() - 1, widget)
 
     def set_summary(self, state: str, detail: str, *, semantic: str) -> None:
         self.state_label.setText(state.upper())
@@ -170,6 +187,27 @@ class SummaryStrip(QFrame):
         }.get(semantic, "stopped")
         self.mark.set_status(mark_status)
         self.setAccessibleName(f"{state}. {detail}")
+
+
+class ActionFooter(QFrame):
+    """Shared bottom action area used by all interactive launcher pages."""
+
+    def __init__(self, *, seamless: bool = False, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setObjectName("actionBar")
+        self.setProperty("seamless", seamless)
+        self.setFixedHeight(FOOTER_HEIGHT)
+        self.actions = QHBoxLayout(self)
+        self.actions.setContentsMargins(18, 20, 18, 20)
+        self.actions.setSpacing(16)
+
+    def configure_button(self, button: QPushButton, *, primary: bool = False) -> QPushButton:
+        button.setProperty("footerAction", True)
+        if primary:
+            button.setProperty("primary", True)
+        button.setFixedHeight(FOOTER_ACTION_HEIGHT)
+        button.setIconSize(QSize(22, 22))
+        return button
 
 
 class ServiceRow(QWidget):

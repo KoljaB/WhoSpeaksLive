@@ -16,6 +16,13 @@ import re
 from pathlib import Path
 from typing import Any
 
+from embeddings.provider_identity import (
+    FAST_LIVE_PROVIDER,
+    PROMOTED_PUBLIC_PROVIDER,
+    PUBLIC_PROVIDER,
+    SINGLE_ESPNET_PROVIDER,
+    SPEECHBRAIN_ECAPA_PROVIDER,
+)
 from window.language_config import normalize_language_code
 from window.realtime_preview_backends import (
     get_preview_backend_spec,
@@ -27,16 +34,7 @@ from window.realtime_preview_backends import (
 DEFAULT_REMOTE_ASR_URL = "http://127.0.0.1:8650"
 DEFAULT_MACOS_ASR_URL = "http://127.0.0.1:8651"
 DEFAULT_REMOTE_EMBEDDINGS_URL = "http://127.0.0.1:8660"
-SMOKE_PROVIDER = "speechbrain_ecapa"
-SINGLE_ESPNET_PROVIDER = "espnet_ecapa_wavlm_joint"
-PUBLIC_PROVIDER = (
-    "espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+"
-    "speechbrain_resnet=0.38+resemblyzer=0.12"
-)
-PROMOTED_PUBLIC_PROVIDER = (
-    "espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37"
-)
-FAST_LIVE_PROVIDER = "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50"
+SMOKE_PROVIDER = SPEECHBRAIN_ECAPA_PROVIDER
 
 TRANSLATION_PROVIDER_OPTIONS: dict[str, dict[str, str]] = {
     "sidecar": {"label": "Local sidecar", "default_base_url": "", "default_api_key_env": ""},

@@ -17,6 +17,7 @@ from typing import Any, Iterable, Mapping
 
 import numpy as np
 
+from embeddings.provider_identity import summarize_embedding_stack
 from speakers.speaker_embedding_cluster import cosine_similarity, normalize_vector
 
 
@@ -718,9 +719,41 @@ class PersonLibrary:
                 for sample in self._samples(person):
                     source = sample.get("source") if isinstance(sample.get("source"), Mapping) else {}; evidence = sample.get("evidence") if isinstance(sample.get("evidence"), Mapping) else {}
                     reps = [rep for rep in sample.get("representations") or [] if isinstance(rep, Mapping)]
-                    compatible = not embedding_provider or any(str(rep.get("embedding_provider") or "") == embedding_provider and (not embedding_length or int(rep.get("embedding_length") or 0) == embedding_length) for rep in reps)
+                    provider_matches = [rep for rep in reps if str(rep.get("embedding_provider") or "") == embedding_provider]
+                    compatible = not embedding_provider or any(not embedding_length or int(rep.get("embedding_length") or 0) == embedding_length for rep in provider_matches)
+                    if compatible:
+                        compatibility_reason = ""
+                    elif provider_matches:
+                        compatibility_reason = "embedding_dimension_mismatch"
+                    elif reps:
+                        compatibility_reason = "embedding_provider_mismatch"
+                    else:
+                        compatibility_reason = "missing_embedding_representation"
                     state = str(sample.get("state") or ACTIVE_SAMPLE)
-                    public_samples.append({"id": str(sample.get("id") or ""), "kind": str(sample.get("kind") or ""), "state": state, "effective_state": state if compatible else "incompatible", "compatibility_reason": "" if compatible else "incompatible_provider_or_dimension", "label": _clean(sample.get("label"), 120), "created_at": str(sample.get("created_at") or ""), "updated_at": str(sample.get("updated_at") or ""), "source_type": str(source.get("type") or ""), "session_id": str(source.get("session_id") or ""), "session_title": _clean(source.get("session_title"), 120), "speech_seconds": round(float(evidence.get("speech_seconds") or 0.0), 1), "sentence_count": int(evidence.get("sentence_count") or 0), "quality": round(float(evidence.get("quality") or 0.0), 2), "raw_audio_retained": bool(isinstance(sample.get("raw_audio"), Mapping) and sample["raw_audio"].get("retained"))})
+                    public_samples.append({"id": str(sample.get("id") or ""), "kind": str(sample.get("kind") or ""), "state": state, "effective_state": state if compatible else "incompatible", "compatibility_reason": compatibility_reason, "embedding_stacks": [summarize_embedding_stack(rep.get("embedding_provider"), rep.get("embedding_length")) for rep in reps], "label": _clean(sample.get("label"), 120), "created_at": str(sample.get("created_at") or ""), "updated_at": str(sample.get("updated_at") or ""), "source_type": str(source.get("type") or ""), "session_id": str(source.get("session_id") or ""), "session_title": _clean(source.get("session_title"), 120), "speech_seconds": round(float(evidence.get("speech_seconds") or 0.0), 1), "sentence_count": int(evidence.get("sentence_count") or 0), "quality": round(float(evidence.get("quality") or 0.0), 2), "raw_audio_retained": bool(isinstance(sample.get("raw_audio"), Mapping) and sample["raw_audio"].get("retained"))})
                 active = [item for item in public_samples if item["effective_state"] == ACTIVE_SAMPLE]
-                people.append({"id": str(person.get("id") or ""), "name": _clean(person.get("name")), "expected": bool(person.get("expected", False)), "recognition_enabled": bool(person.get("recognition_enabled", True)), "recognition_policy": _policy(person.get("recognition_policy")), "recognition_ready": bool(active), "recognition_unavailable_reason": "" if active else "no_active_compatible_voice_samples", "voice_sample_count": len(public_samples), "active_voice_sample_count": len(active), "manual_sample_count": sum(item["kind"] == MANUAL_SAMPLE for item in public_samples), "meeting_sample_count": sum(item["kind"] == MEETING_SAMPLE for item in public_samples), "template_count": len(public_samples), "profile_version": int(person.get("profile_version") or 0), "last_confirmed_at": max((item["updated_at"] for item in public_samples), default=""), "voice_samples": public_samples})
+                stored_active = [item for item in public_samples if item["state"] == ACTIVE_SAMPLE]
+                stack_counts: dict[tuple[str, int], dict[str, Any]] = {}
+                for item in stored_active:
+                    seen: set[tuple[str, int]] = set()
+                    for stack in item["embedding_stacks"]:
+                        key = (str(stack["identifier"]), int(stack["dimensions"]))
+                        if key in seen:
+                            continue
+                        seen.add(key)
+                        grouped = stack_counts.setdefault(key, {**stack, "sample_count": 0})
+                        grouped["sample_count"] += 1
+                if active:
+                    unavailable_reason = ""
+                elif not public_samples:
+                    unavailable_reason = "no_voice_samples"
+                elif not stored_active:
+                    unavailable_reason = "no_active_voice_samples"
+                elif any(item["compatibility_reason"] == "embedding_dimension_mismatch" for item in stored_active):
+                    unavailable_reason = "embedding_dimension_mismatch"
+                elif any(item["compatibility_reason"] == "embedding_provider_mismatch" for item in stored_active):
+                    unavailable_reason = "embedding_provider_mismatch"
+                else:
+                    unavailable_reason = "no_active_compatible_voice_samples"
+                people.append({"id": str(person.get("id") or ""), "name": _clean(person.get("name")), "expected": bool(person.get("expected", False)), "recognition_enabled": bool(person.get("recognition_enabled", True)), "recognition_policy": _policy(person.get("recognition_policy")), "recognition_ready": bool(active), "recognition_unavailable_reason": unavailable_reason, "current_embedding_stack": summarize_embedding_stack(embedding_provider, embedding_length) if embedding_provider else None, "active_sample_embedding_stacks": sorted(stack_counts.values(), key=lambda item: (item["label"].casefold(), item["identifier"], item["dimensions"])), "active_incompatible_voice_sample_count": sum(item["effective_state"] == "incompatible" and item["state"] == ACTIVE_SAMPLE for item in public_samples), "voice_sample_count": len(public_samples), "active_voice_sample_count": len(active), "manual_sample_count": sum(item["kind"] == MANUAL_SAMPLE for item in public_samples), "meeting_sample_count": sum(item["kind"] == MEETING_SAMPLE for item in public_samples), "template_count": len(public_samples), "profile_version": int(person.get("profile_version") or 0), "last_confirmed_at": max((item["updated_at"] for item in public_samples), default=""), "voice_samples": public_samples})
             return sorted(people, key=lambda item: (item["name"].casefold(), item["id"]))

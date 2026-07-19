@@ -294,7 +294,9 @@ class WindowSessionViewMixin:
             return {
                 "id": str(self._session_id or ""),
                 "created_at": datetime.now().isoformat(timespec="seconds"),
-                "duration_seconds": float(source.get("duration_seconds") or self.duration),
+                # The top-level duration describes how far this session was
+                # processed. The complete media length remains in ``source``.
+                "duration_seconds": float(self.playback_time()),
                 "source": source,
                 "transcript_rows": rows,
                 "speaker_state": speaker_state,

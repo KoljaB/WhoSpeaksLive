@@ -41,6 +41,36 @@
   font-size: 11px;
   line-height:1.35;
 }
+.embedding-mismatch-details {
+  color:#91A0AF;
+  font-size:11px;
+  line-height:1.4;
+  min-width:0;
+}
+.embedding-mismatch-details > summary {
+  cursor:pointer;
+  list-style-position:inside;
+  overflow-wrap:anywhere;
+  user-select:none;
+}
+.embedding-mismatch-content {
+  background:#0B131B;
+  border:1px solid #20303E;
+  border-radius:7px;
+  display:grid;
+  gap:9px;
+  margin-top:7px;
+  padding:9px;
+}
+.embedding-stack-detail { display:grid; gap:2px; min-width:0; }
+.embedding-stack-detail strong { color:#D7DEE8; font-size:11px; }
+.embedding-stack-detail code {
+  color:#8291A0;
+  font-family:ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size:10px;
+  overflow-wrap:anywhere;
+  white-space:normal;
+}
 
 .person-heading,
 .person-actions,
@@ -591,7 +621,9 @@
     .badge.new { color:var(--text); border-color:#ef4444; background:#b91c1c; text-transform:uppercase; letter-spacing:0; }
     .badge.state { color:#d7dee8; border-color:var(--line); background:#0B1015; font-weight:400; }
     .badge.group-count { color:#C6D0DC; border-color:#304255; background:#121C26; }
-    .transcript-panel.hide-tags .badge.new, .transcript-panel.hide-tags .badge.state, .transcript-panel.hide-tags .badge.group-count { display:none; }
+    .transcript-panel.hide-new-tags .badge.new { display:none; }
+    .transcript-panel.hide-tags .badge.state { display:none; }
+    .transcript-panel.hide-sentence-count .badge.group-count { display:none; }
     .transcript-panel.hide-time .sentence-duration, .transcript-panel.hide-time .sentence-range { display:none; }
     .transcript-panel.hide-speech-rate .sentence-speech-rate { display:none; }
     .transcript-panel.hide-probabilities .prob { display:none; }

@@ -125,6 +125,43 @@ class PersonLibraryTests(unittest.TestCase):
             )
             self.assertFalse(library.get(alice["id"])["recognition_enabled"])
 
+    def test_public_state_explains_provider_and_dimension_mismatches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            library = PersonLibrary(Path(tmp) / "people.json")
+            alice = library.create_person("Alice")
+            library.add_meeting_sample(
+                alice["id"], [1.0, 0.0], embedding_provider="saved_a=1.0+saved_b=0.5",
+                session_id="meeting-1",
+            )
+
+            provider_mismatch = library.public_state(
+                embedding_provider="current_provider", embedding_length=3,
+            )[0]
+            self.assertFalse(provider_mismatch["recognition_ready"])
+            self.assertEqual(provider_mismatch["recognition_unavailable_reason"], "embedding_provider_mismatch")
+            self.assertEqual(provider_mismatch["active_incompatible_voice_sample_count"], 1)
+            self.assertEqual(provider_mismatch["current_embedding_stack"]["identifier"], "current_provider")
+            self.assertEqual(provider_mismatch["active_sample_embedding_stacks"][0]["sample_count"], 1)
+            self.assertEqual(
+                provider_mismatch["voice_samples"][0]["compatibility_reason"],
+                "embedding_provider_mismatch",
+            )
+
+            dimension_mismatch = library.public_state(
+                embedding_provider="saved_a=1.0+saved_b=0.5", embedding_length=3,
+            )[0]
+            self.assertEqual(dimension_mismatch["recognition_unavailable_reason"], "embedding_dimension_mismatch")
+            self.assertEqual(
+                dimension_mismatch["voice_samples"][0]["compatibility_reason"],
+                "embedding_dimension_mismatch",
+            )
+
+            compatible = library.public_state(
+                embedding_provider="saved_a=1.0+saved_b=0.5", embedding_length=2,
+            )[0]
+            self.assertTrue(compatible["recognition_ready"])
+            self.assertEqual(compatible["recognition_unavailable_reason"], "")
+
     def test_deleted_meeting_sample_stays_suppressed_until_explicit_restore(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             library = PersonLibrary(Path(tmp) / "people.json")
