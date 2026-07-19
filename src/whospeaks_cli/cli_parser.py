@@ -43,23 +43,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--no-interactive",
         action="store_true",
-        help="Print the dashboard once and exit instead of opening the interactive starter CLI.",
+        help="Print readiness once and exit instead of opening the desktop launcher.",
     )
-    interface = parser.add_mutually_exclusive_group()
-    interface.add_argument(
-        "--classic",
-        action="store_true",
-        help="Open the classic numbered interface instead of the Textual setup application.",
-    )
-    interface.add_argument(
-        "--tui",
-        action="store_true",
-        help="Open the Textual setup application even when the optional desktop GUI is installed.",
-    )
-    interface.add_argument(
+    parser.add_argument(
         "--gui",
         action="store_true",
-        help="Open the optional PySide6 desktop launcher. Install whospeaks[gui] if unavailable.",
+        help="Open the PySide6 desktop launcher even when stdin is not interactive.",
     )
     subparsers = parser.add_subparsers(dest="command")
 
@@ -277,7 +266,6 @@ def build_parser() -> argparse.ArgumentParser:
     config = subparsers.add_parser("config", help="Show or update the saved starter profile.")
     config.add_argument("--set", action="append", default=[], metavar="NAME=VALUE", help="Set any saved profile field.")
     config.add_argument("--reset", action="store_true", help="Reset the saved profile before applying other changes.")
-    config.add_argument("--edit", action="store_true", help="Open the interactive full profile editor.")
     config.add_argument("--json", action="store_true", help="Print the profile as JSON.")
     config.add_argument("--mode", choices=("local", "remote", "server"), default=None)
     config.add_argument("--host", default=None)

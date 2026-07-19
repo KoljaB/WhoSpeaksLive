@@ -26,7 +26,7 @@ if str(SRC) not in sys.path:
 
 from whospeaks_cli import main as cli
 from whospeaks_cli import profiles as profiles_module
-from whospeaks_cli.tui import provider_preset_label
+from whospeaks_cli.profiles import provider_preset_label
 
 
 class WhoSpeaksCliTests(unittest.TestCase):
@@ -1331,127 +1331,32 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertIn("WhoSpeaks setup, doctor, and launcher", completed.stdout)
 
-    def test_default_dashboard_uses_simple_menu_labels(self) -> None:
-        output = cli.main_menu_text()
-
-        self.assertIn("1. Install or repair WhoSpeaks", output)
-        self.assertIn("2. Launch browser UI", output)
-        self.assertIn("3. Doctor / complete diagnostics", output)
-        self.assertIn("4. Language and realtime text", output)
-        self.assertIn("5. Speaker provider quality", output)
-        self.assertIn("p. Print exact launch command", output)
-        self.assertIn("r. Remote/server profiles", output)
-        self.assertEqual(output.count("Install or repair WhoSpeaks"), 1)
-        self.assertNotIn("Guided install", output)
-        self.assertNotIn("Controller + remote GPU services profile", output)
-
-    def test_classic_whospeaks_menu_starts_installer_from_option_one(self) -> None:
-        profile = cli.Profile()
-        report = cli.DoctorReport("local", [])
-        stdout = io.StringIO()
-
+    def test_plain_whospeaks_opens_desktop_launcher(self) -> None:
         with (
             mock.patch.object(cli.sys.stdin, "isatty", return_value=True),
-            mock.patch.object(cli, "load_profile", return_value=profile),
-            mock.patch.object(cli, "run_doctor", return_value=report),
-            mock.patch.object(cli, "render_dashboard"),
-            mock.patch.object(cli, "recommended_install_extra", return_value=None),
-            mock.patch.object(cli, "install_components_interactively", return_value=None) as installer,
-            mock.patch.object(cli, "read_input", side_effect=["1", "q"]),
-            contextlib.redirect_stdout(stdout),
-        ):
-            code = cli.main(["--classic"])
-
-        self.assertEqual(code, 0)
-        installer.assert_called_once_with(profile)
-        self.assertIn("1. Install or repair WhoSpeaks", stdout.getvalue())
-
-    def test_plain_whospeaks_starts_textual_dashboard(self) -> None:
-        profile = cli.Profile()
-
-        with (
-            mock.patch.object(cli.sys.stdin, "isatty", return_value=True),
-            mock.patch.object(cli, "load_profile", return_value=profile),
-            mock.patch.object(cli, "desktop_gui_available", return_value=False),
-            mock.patch.object(cli, "run_textual_dashboard", return_value=0) as dashboard,
-        ):
-            code = cli.main([])
-
-        self.assertEqual(code, 0)
-        dashboard.assert_called_once_with(profile)
-
-    def test_plain_whospeaks_prefers_desktop_gui_when_installed(self) -> None:
-        with (
-            mock.patch.object(cli.sys.stdin, "isatty", return_value=True),
-            mock.patch.object(cli, "load_profile", return_value=cli.Profile()),
-            mock.patch.object(cli, "desktop_gui_available", return_value=True),
             mock.patch.object(cli, "desktop_session_available", return_value=True),
             mock.patch.object(cli, "run_desktop_dashboard", return_value=0) as desktop,
-            mock.patch.object(cli, "run_textual_dashboard") as textual,
         ):
             code = cli.main([])
 
         self.assertEqual(code, 0)
         desktop.assert_called_once_with()
-        textual.assert_not_called()
 
-    def test_tui_flag_preserves_textual_entry_path(self) -> None:
-        profile = cli.Profile()
+    def test_gui_flag_can_open_desktop_launcher_from_noninteractive_shell(self) -> None:
         with (
-            mock.patch.object(cli.sys.stdin, "isatty", return_value=True),
-            mock.patch.object(cli, "load_profile", return_value=profile),
-            mock.patch.object(cli, "desktop_gui_available", return_value=True),
-            mock.patch.object(cli, "run_textual_dashboard", return_value=0) as dashboard,
+            mock.patch.object(cli.sys.stdin, "isatty", return_value=False),
+            mock.patch.object(cli, "desktop_session_available", return_value=True),
+            mock.patch.object(cli, "run_desktop_dashboard", return_value=0) as desktop,
         ):
-            code = cli.main(["--tui"])
+            code = cli.main(["--gui"])
 
         self.assertEqual(code, 0)
-        dashboard.assert_called_once_with(profile)
+        desktop.assert_called_once_with()
 
-    def test_interface_flags_are_mutually_exclusive(self) -> None:
-        with self.assertRaises(SystemExit):
-            cli.build_parser().parse_args(["--gui", "--tui"])
-
-    def test_configuration_menu_exposes_important_launcher_parameters(self) -> None:
-        output = cli.configuration_menu_text(cli.Profile(language="de"))
-
-        self.assertIn("Language and realtime text", output)
-        self.assertIn("Speaker provider quality", output)
-        self.assertIn("Backends and remote URLs", output)
-        self.assertIn("ASR model, device, and compute", output)
-        self.assertIn("Browser host and port", output)
-        self.assertIn("All saved profile fields", output)
-        self.assertIn("German (de", output)
-
-    def test_classic_backend_menu_exposes_modes_without_fake_custom_backends(self) -> None:
-        with (
-            mock.patch("whospeaks_cli.cli_classic.read_input", side_effect=["b"]),
-            contextlib.redirect_stdout(io.StringIO()) as output,
-        ):
-            cli.backend_menu(cli.Profile())
-
-        rendered = output.getvalue()
-        self.assertIn("Full local ASR and embeddings", rendered)
-        self.assertIn("Controller with remote ASR and embeddings", rendered)
-        self.assertIn("Embedding helper Python", rendered)
-        self.assertNotIn("Custom ASR backend", rendered)
-        self.assertNotIn("Custom embeddings backend", rendered)
-
-    def test_classic_asr_menu_uses_finite_device_and_vad_choices(self) -> None:
-        with (
-            mock.patch(
-                "whospeaks_cli.cli_classic.read_input",
-                side_effect=["2", "2", "4", "2", "b"],
-            ),
-            mock.patch("whospeaks_cli.cli_classic.try_save_profile_updates") as save_updates,
-            contextlib.redirect_stdout(io.StringIO()),
-        ):
-            cli.asr_runtime_menu(cli.Profile())
-
-        self.assertEqual(
-            save_updates.call_args_list,
-            [mock.call(mock.ANY, [("device", "cuda")]), mock.call(mock.ANY, [("vad_backend", "silero")])],
-        )
+    def test_removed_terminal_launcher_flags_are_rejected(self) -> None:
+        for flag in ("--tui", "--classic"):
+            with self.subTest(flag=flag), self.assertRaises(SystemExit):
+                cli.build_parser().parse_args([flag])
 
     def test_full_profile_editor_lists_every_saved_field_once(self) -> None:
         output = cli.full_profile_editor_text(cli.Profile())
@@ -1675,7 +1580,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
             "whospeaks_gui.main:main",
         )
         extras = pyproject["project"]["optional-dependencies"]
-        self.assertEqual(extras["gui"], ["PySide6>=6.8,<7"])
+        self.assertEqual(extras["gui"], [])
         self.assertIn("controller", extras)
         self.assertNotIn("librosa>=0.10.1", extras["controller"])
         self.assertIn("server", extras)
@@ -1689,7 +1594,10 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertNotIn("RealTimeSTT==0.1.13", extras["all"])
         self.assertIn("numpy>=2,<3", extras["preview"])
         self.assertIn("webrtcvad==2.0.10", extras["preview"])
-        self.assertIn("textual>=8.2,<9", pyproject["project"]["dependencies"])
+        self.assertIn("PySide6>=6.8,<7", pyproject["project"]["dependencies"])
+        self.assertFalse(
+            any(dependency.startswith("textual") for dependency in pyproject["project"]["dependencies"])
+        )
 
 
 if __name__ == "__main__":

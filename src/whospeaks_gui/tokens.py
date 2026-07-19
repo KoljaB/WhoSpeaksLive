@@ -169,6 +169,21 @@ def application_style(font_family: str = "Segoe UI") -> str:
     QPushButton[recoveryPrimary="true"]:hover {{ background: {c.accent_hover}; border-color: {c.accent_hover}; }}
     QPushButton[linkButton="true"] {{ min-height: 36px; padding: 0; border: 0; background: transparent; }}
     QPushButton[linkButton="true"]:hover {{ color: {c.text_primary}; background: transparent; border: 0; }}
+    QPushButton[endpointLink="true"] {{
+        color: {c.accent};
+        min-height: 26px;
+        max-height: 26px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        font-size: 17px;
+        font-weight: 400;
+    }}
+    QPushButton[endpointLink="true"]:hover {{ color: {c.accent_hover}; background: transparent; border: 0; }}
+    QPushButton[endpointLink="true"]:pressed {{ color: {c.accent_pressed}; background: transparent; border: 0; }}
+    QPushButton[endpointLink="true"]:focus {{ border: 1px solid {c.focus}; border-radius: 3px; }}
+    QPushButton[endpointLink="true"]:disabled {{ color: {c.text_secondary}; background: transparent; border: 0; }}
     QPushButton[nav="true"] {{
         min-height: 64px;
         text-align: left;
@@ -222,12 +237,12 @@ def application_style(font_family: str = "Segoe UI") -> str:
     QListWidget#settingsSections::item {{ min-height: 48px; padding: 0 14px; border-radius: 5px; }}
     QListWidget#settingsSections::item:hover {{ background: {c.surface_2}; }}
     QListWidget#settingsSections::item:selected {{ background: {c.surface_selected}; color: {c.text_primary}; }}
-    QScrollBar:vertical {{ background: transparent; width: 14px; margin: 0; }}
-    QScrollBar::handle:vertical {{ background: {c.border}; min-height: 32px; border-radius: 5px; margin: 2px; }}
-    QScrollBar::handle:vertical:hover {{ background: {c.border_strong}; }}
-    QScrollBar:horizontal {{ background: transparent; height: 14px; margin: 0; }}
-    QScrollBar::handle:horizontal {{ background: {c.border}; min-width: 32px; border-radius: 5px; margin: 2px; }}
-    QScrollBar::handle:horizontal:hover {{ background: {c.border_strong}; }}
+    QScrollBar:vertical {{ background: transparent; width: 16px; margin: 0; }}
+    QScrollBar::handle:vertical {{ background: {c.border_strong}; min-height: 36px; border-radius: 6px; margin: 2px; }}
+    QScrollBar::handle:vertical:hover {{ background: {c.text_muted}; }}
+    QScrollBar:horizontal {{ background: transparent; height: 16px; margin: 0; }}
+    QScrollBar::handle:horizontal {{ background: {c.border_strong}; min-width: 36px; border-radius: 6px; margin: 2px; }}
+    QScrollBar::handle:horizontal:hover {{ background: {c.text_muted}; }}
     QScrollBar::add-page, QScrollBar::sub-page {{ background: transparent; }}
     QScrollBar::add-line, QScrollBar::sub-line {{ width: 0; height: 0; }}
     QProgressBar {{ min-height: 5px; max-height: 5px; background: {c.surface_2}; border: 0; border-radius: 2px; }}

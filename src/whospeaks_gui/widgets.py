@@ -210,6 +210,37 @@ class ActionFooter(QFrame):
         return button
 
 
+class EndpointLink(QPushButton):
+    """A compact browser link that occupies the same space as endpoint text."""
+
+    def __init__(self, text: str = "", parent: QWidget | None = None) -> None:
+        super().__init__(text, parent)
+        self.setProperty("endpointLink", True)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setIconSize(QSize(14, 14))
+        self.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
+        self.setEnabled(False)
+        self._sync_presentation(False)
+
+    def set_available(self, available: bool, *, interface_name: str) -> None:
+        self.setEnabled(available)
+        self._sync_presentation(available)
+        endpoint = self.text()
+        if available:
+            self.setAccessibleName(f"Open {interface_name} at {endpoint}")
+            self.setToolTip(f"Open {interface_name} in your browser")
+        else:
+            self.setAccessibleName(f"{interface_name} at {endpoint}; not available yet")
+            self.setToolTip(f"{interface_name} can be opened after the service is running")
+
+    def _sync_presentation(self, available: bool) -> None:
+        self.setIcon(
+            line_icon("external_link", COLORS.accent, 14)
+            if available
+            else line_icon("external_link", COLORS.text_muted, 14)
+        )
+
+
 class ServiceRow(QWidget):
     def __init__(
         self,
@@ -217,6 +248,8 @@ class ServiceRow(QWidget):
         subtitle: str,
         endpoint: str,
         icon_name: str,
+        *,
+        endpoint_link: bool = False,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -237,9 +270,12 @@ class ServiceRow(QWidget):
         self.title.setProperty("role", "serviceTitle")
         self.subtitle = QLabel(subtitle)
         self.subtitle.setProperty("role", "secondary")
-        self.endpoint = QLabel(endpoint)
-        self.endpoint.setProperty("role", "secondary")
-        self.endpoint.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        if endpoint_link:
+            self.endpoint = EndpointLink(endpoint)
+        else:
+            self.endpoint = QLabel(endpoint)
+            self.endpoint.setProperty("role", "secondary")
+            self.endpoint.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         detail_row = QHBoxLayout()
         detail_row.setSpacing(14)
         detail_row.addWidget(self.subtitle)
@@ -261,6 +297,10 @@ class ServiceRow(QWidget):
         layout.addLayout(text_col, 1)
         layout.addLayout(state_box)
         self.setAccessibleName(f"{title}, stopped, {subtitle}, {endpoint}")
+
+    def set_endpoint_available(self, available: bool) -> None:
+        if isinstance(self.endpoint, EndpointLink):
+            self.endpoint.set_available(available, interface_name=self.title.text())
 
     def set_state(self, state: str, *, label: str | None = None) -> None:
         normalized = str(state or "stopped").lower()

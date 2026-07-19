@@ -20,7 +20,7 @@ Run the core regression suite:
 .\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_core_*.py"
 ```
 
-Run the desktop controller and optional GUI checks without contacting services:
+Run the desktop controller and GUI checks without contacting services:
 
 ```powershell
 $env:PYTHONPATH = "src"

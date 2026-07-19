@@ -380,7 +380,9 @@
     .session-row-title:focus-visible { outline:1px solid #17B7FE; outline-offset:2px; border-radius:4px; }
     .session-row-title-input { min-width:0; width:100%; height:24px; margin:-2px -5px; border:1px solid #20303E; border-radius:5px; padding:0 4px; background:#0B1015; color:#E8EEF5; font:inherit; font-size:13px; font-weight:600; outline:none; }
     .session-row-title-input:focus { border-color:#17B7FE; }
-    .session-row-meta, .session-row-status { min-width:0; display:flex; flex-wrap:wrap; align-items:center; gap:6px; color:#AEB9C5; font-size:12px; }
+    .session-row-meta { min-width:0; display:grid; gap:2px; color:#AEB9C5; font-size:12px; }
+    .session-row-meta-date, .session-row-meta-details { min-width:0; display:block; }
+    .session-row-status { min-width:0; display:flex; flex-wrap:wrap; align-items:center; gap:6px; color:#AEB9C5; font-size:12px; }
     .session-row-dot { width:8px; height:8px; border-radius:50%; background:#3DC77C; box-shadow:0 0 12px rgba(61,199,124,.35); }
     .session-row-dot.muted { background:#7D8997; box-shadow:none; }
     .session-row-actions { display:flex; align-items:center; gap:7px; }

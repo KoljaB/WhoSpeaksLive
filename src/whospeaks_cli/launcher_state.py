@@ -1,6 +1,6 @@
-"""Explicit state owners for the Textual setup application.
+"""UI-independent operation and service state for the desktop launcher.
 
-The UI renders immutable snapshots from these classes.  Process handles stay
+Presentation layers render immutable snapshots from these classes. Process handles stay
 inside :class:`ServerSupervisor`; they are never inferred from listening ports.
 """
 

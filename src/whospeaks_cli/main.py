@@ -4,9 +4,7 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
-import importlib
 import importlib.metadata
-import importlib.util
 import json
 import os
 import platform
@@ -151,15 +149,6 @@ from window.sherpa_onnx_models import (
 )
 
 
-def desktop_gui_available() -> bool:
-    """Return whether the optional desktop package and Qt runtime are importable."""
-
-    return (
-        importlib.util.find_spec("PySide6") is not None
-        and importlib.util.find_spec("whospeaks_gui") is not None
-    )
-
-
 def desktop_session_available() -> bool:
     return platform.system() in {"Windows", "Darwin"} or bool(
         os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")
@@ -167,7 +156,15 @@ def desktop_session_available() -> bool:
 
 
 def run_desktop_dashboard() -> int:
-    from whospeaks_gui.main import main as run_desktop_gui
+    try:
+        from whospeaks_gui.main import main as run_desktop_gui
+    except ModuleNotFoundError as exc:
+        if exc.name not in {"PySide6", "whospeaks_gui"}:
+            raise
+        raise RuntimeError(
+            "The WhoSpeaks desktop launcher is missing from this installation. "
+            "Reinstall the base package with `pip install --force-reinstall whospeaks`."
+        ) from exc
 
     return int(run_desktop_gui([]))
 
@@ -179,35 +176,33 @@ def main(argv: list[str] | None = None) -> int:
             return int(args.func(args))
         except ProfileLoadError as exc:
             parser.error(str(exc))
-    gui_installed = desktop_gui_available()
     desktop_session = desktop_session_available()
     if args.gui or (
-        gui_installed
-        and desktop_session
+        desktop_session
         and sys.stdin.isatty()
         and not args.no_interactive
-        and not args.classic
-        and not args.tui
     ):
-        if not gui_installed:
+        if not desktop_session:
             parser.error(
-                "The desktop launcher requires the optional GUI dependency: "
-                "pip install 'whospeaks[gui]'"
+                "No graphical desktop session is available. Run a command such as "
+                "`whospeaks doctor`, `whospeaks install`, or `whospeaks launch` instead."
             )
-        return run_desktop_dashboard()
+        try:
+            return run_desktop_dashboard()
+        except RuntimeError as exc:
+            parser.error(str(exc))
     try:
         profile = load_profile()
     except ProfileLoadError as exc:
         parser.error(str(exc))
-    if args.no_interactive or not sys.stdin.isatty():
+    if args.no_interactive or not sys.stdin.isatty() or not desktop_session:
         report = run_doctor(profile)
         render_dashboard(profile, report)
-        print("Run `whospeaks` in an interactive terminal to open the setup application.")
+        if desktop_session:
+            print("Run `whospeaks` in an interactive terminal to open the desktop launcher.")
+        else:
+            print("No graphical desktop session was detected; use the scriptable subcommands below.")
         print("For automation, run `whospeaks install --target local --without-kroko --yes`.")
         print("Run `whospeaks launch --print` to see the exact browser command.")
         return 0
-    if args.classic:
-        return interactive_dashboard(profile)
-    if args.tui:
-        return run_textual_dashboard(profile)
-    return run_textual_dashboard(profile)
+    return 0

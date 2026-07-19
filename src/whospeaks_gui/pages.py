@@ -2135,7 +2135,6 @@ class AboutPage(QWidget):
         interfaces.addWidget(section_label("Interfaces"))
         for icon_name, label in (
             ("video", "Desktop launcher — Primary local experience"),
-            ("terminal", "Textual TUI — Terminal and SSH"),
             ("terminal", "CLI — Automation and headless operation"),
         ):
             row = QHBoxLayout()

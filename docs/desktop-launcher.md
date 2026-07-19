@@ -4,22 +4,19 @@ The desktop launcher gives WhoSpeaks one native, production-oriented place to ch
 
 ## Install and open it
 
-The GUI is an optional dependency, so a terminal-only installation stays small and does not import Qt.
+The native PySide6 launcher is the standard WhoSpeaks interface.
 
 ```powershell
-pip install "whospeaks[gui]"
+pip install whospeaks
 whospeaks
 ```
 
-When PySide6 is installed and a desktop session is available, plain `whospeaks` opens the desktop launcher. Routing is explicit and backward compatible:
+In a graphical desktop session, plain `whospeaks` opens the desktop launcher:
 
-- `whospeaks --gui` requests the desktop launcher and explains how to install the extra if it is unavailable.
-- `whospeaks --tui` always opens the Textual full-screen terminal interface.
-- `whospeaks --classic` always opens the numbered terminal interface.
-- `whospeaks --no-interactive` and all existing subcommands remain non-GUI automation paths.
-- A base `pip install whospeaks` has no PySide6 dependency and falls back to Textual in an interactive terminal.
-
-The interface flags are mutually exclusive, preventing an ambiguous request such as `--gui --tui`.
+- `whospeaks --gui` explicitly requests the desktop launcher, including from a non-interactive shell.
+- `whospeaks --no-interactive` prints readiness once and exits.
+- Subcommands such as `doctor`, `install`, `config`, and `launch` remain non-GUI automation paths.
+- On a machine without a graphical desktop session, plain `whospeaks` prints readiness and points to those subcommands instead of starting a terminal user interface.
 
 ## How the workflow is organized
 
@@ -45,7 +42,7 @@ All controls use native Qt focus and keyboard behavior, with visible focus treat
 
 `LauncherController` is a typed, UI-independent adapter around the existing profile, diagnostics, planning, installation, and server-supervision modules. An immutable snapshot is a read-only copy of current profile, diagnostics, services, and operation state. The controller publishes snapshots and structured events; the Qt bridge moves slow work to worker threads and delivers results back to the UI thread.
 
-This boundary lets the desktop UI and existing terminal surfaces reuse the same profile and command-planning rules. It also makes cancellation and ownership testable without starting real services.
+This boundary lets the desktop UI and scriptable CLI subcommands reuse the same profile and command-planning rules. It also makes cancellation and ownership testable without starting real services.
 
 ## Deterministic demo and screenshots
 
@@ -67,10 +64,10 @@ Supported demo states are `first_run`, `ready`, `starting`, `stopping`, `running
 
 ## Source-tree development
 
-Install the project and GUI extra in the active environment:
+Install the project in the active environment:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -e ".[gui]"
+.\.venv\Scripts\python.exe -m pip install -e .
 ```
 
 Then run the focused verification:

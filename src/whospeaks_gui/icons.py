@@ -33,6 +33,7 @@ PATHS: dict[str, str] = {
     "monitor": '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
     "server": '<rect x="3" y="4" width="18" height="7" rx="1"/><rect x="3" y="13" width="18" height="7" rx="1"/><path d="M7 7.5h.01M7 16.5h.01M11 7.5h7M11 16.5h7"/>',
     "message": '<path d="M4 4h16v12H9l-5 4V4Z"/><path d="M9 8h.01M12 8h.01M15 8h.01"/>',
+    "external_link": '<path d="M14 5h5v5M19 5l-8 8"/><path d="M17 13v6H5V7h6"/>',
 }
 
 

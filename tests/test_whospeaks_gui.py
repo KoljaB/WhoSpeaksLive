@@ -14,7 +14,17 @@ PYSIDE_AVAILABLE = importlib.util.find_spec("PySide6") is not None
 if PYSIDE_AVAILABLE:
     from PySide6.QtCore import QPoint, Qt
     from PySide6.QtTest import QTest
-    from PySide6.QtWidgets import QApplication, QAbstractButton, QCheckBox, QComboBox, QDialog, QLabel, QLineEdit
+    from PySide6.QtWidgets import (
+        QApplication,
+        QAbstractButton,
+        QBoxLayout,
+        QCheckBox,
+        QComboBox,
+        QDialog,
+        QFrame,
+        QLabel,
+        QLineEdit,
+    )
 
     from whospeaks_gui.demo import DEMO_STATES, DemoLauncherController
     from whospeaks_gui.main import _configure_fonts
@@ -34,7 +44,7 @@ if PYSIDE_AVAILABLE:
     from window.language_config import SUPPORTED_LANGUAGE_CONFIGS
 
 
-@unittest.skipUnless(PYSIDE_AVAILABLE, "PySide6 is an optional GUI dependency")
+@unittest.skipUnless(PYSIDE_AVAILABLE, "PySide6 is required for launcher tests")
 class WhoSpeaksGuiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -173,6 +183,34 @@ class WhoSpeaksGuiTests(unittest.TestCase):
 
         opened = open_url.call_args.args[0]
         self.assertEqual(opened.toString(), "http://127.0.0.1:8796")
+
+    def test_running_interface_endpoints_are_links_and_open_their_urls(self) -> None:
+        window = self.make_window("running")
+        live = window.overview.service_rows["live"].endpoint
+        reports = window.overview.service_rows["reports"].endpoint
+
+        self.assertTrue(live.isEnabled())
+        self.assertTrue(reports.isEnabled())
+        self.assertFalse(live.icon().isNull())
+        self.assertFalse(reports.icon().isNull())
+        self.assertIn("Open Live window", live.accessibleName())
+        self.assertIn("Open Meeting Intelligence", reports.accessibleName())
+
+        with mock.patch(
+            "whospeaks_gui.window.QDesktopServices.openUrl",
+            return_value=True,
+        ) as open_url:
+            reports.click()
+
+        self.assertEqual(open_url.call_args.args[0].toString(), "http://127.0.0.1:8798")
+
+    def test_interface_endpoints_are_disabled_until_the_services_run(self) -> None:
+        window = self.make_window("ready")
+
+        for key in ("live", "reports"):
+            self.assertFalse(window.overview.service_rows[key].endpoint.isEnabled())
+        self.assertFalse(window.overview.profile_labels["browser"].isEnabled())
+        self.assertFalse(window.overview.profile_labels["reports"].isEnabled())
 
     def test_remote_backends_are_visible_with_their_configured_endpoints(self) -> None:
         window = self.make_window("ready")
@@ -859,6 +897,8 @@ class WhoSpeaksGuiTests(unittest.TestCase):
 
     def test_first_run_rows_do_not_overlap_and_show_installer_choice(self) -> None:
         window = self.make_window("first_run")
+        window.resize(1600, 1000)
+        self.app.processEvents()
         deployment_detail = window.overview.setup_target_help
         language_heading = next(
             label
@@ -870,6 +910,68 @@ class WhoSpeaksGuiTests(unittest.TestCase):
 
         self.assertLess(deployment_bottom, language_top)
         self.assertIn(window.overview.setup_installer_value(), {"uv", "pip"})
+
+    def test_first_run_form_uses_one_consistent_grid_without_icon_tiles(self) -> None:
+        window = self.make_window("first_run")
+        window.resize(1600, 1000)
+        self.app.processEvents()
+
+        overview = window.overview
+        language_top = overview.setup_language_row.mapTo(
+            overview,
+            overview.setup_language_row.rect().topLeft(),
+        ).y()
+        installer_top = overview.setup_installer.mapTo(
+            overview,
+            overview.setup_installer.rect().topLeft(),
+        ).y()
+        translation_top = overview.setup_translation_row.mapTo(
+            overview,
+            overview.setup_translation_row.rect().topLeft(),
+        ).y()
+        speakers_top = overview.setup_speakers_row.mapTo(
+            overview,
+            overview.setup_speakers_row.rect().topLeft(),
+        ).y()
+
+        self.assertLessEqual(abs(language_top - installer_top), 32)
+        self.assertEqual(translation_top, speakers_top)
+        self.assertFalse(
+            any(
+                bool(label.property("iconTile"))
+                for label in overview.first_run_workspace.findChildren(QLabel)
+            )
+        )
+
+    def test_first_run_workspace_stacks_in_linux_sized_window(self) -> None:
+        window = self.make_window("first_run")
+        window.resize(1152, 750)
+        self.app.processEvents()
+
+        overview = window.overview
+        self.assertEqual(
+            overview.first_run_layout.direction(),
+            QBoxLayout.Direction.TopToBottom,
+        )
+        self.assertEqual(
+            overview.setup_workspace_divider.frameShape(),
+            QFrame.Shape.HLine,
+        )
+        self.assertEqual(
+            overview.workspace_scroll.verticalScrollBarPolicy(),
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded,
+        )
+
+    def test_overview_scrollbar_is_available_in_wide_windows_when_content_overflows(self) -> None:
+        window = self.make_window("first_run")
+        window.resize(1600, 700)
+        self.app.processEvents()
+
+        self.assertEqual(
+            window.overview.workspace_scroll.verticalScrollBarPolicy(),
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded,
+        )
+        self.assertTrue(window.overview.workspace_scroll.verticalScrollBar().isVisible())
 
     def test_ready_overview_keeps_installer_choice_visible_and_synchronized(self) -> None:
         window = self.make_window("ready")
@@ -898,9 +1000,16 @@ class WhoSpeaksGuiTests(unittest.TestCase):
                 )
                 self.assertGreaterEqual(installer.width(), 190)
                 for value in window.overview.profile_labels.values():
-                    self.assertTrue(value.wordWrap())
+                    if isinstance(value, QLabel):
+                        self.assertTrue(value.wordWrap())
+                    else:
+                        self.assertIsInstance(value, QAbstractButton)
                     self.assertLessEqual(value.geometry().right(), panel_right)
-                    self.assertEqual(value.toolTip(), value.text())
+                    if isinstance(value, QAbstractButton):
+                        self.assertTrue(value.toolTip().strip())
+                        self.assertIn(value.text(), value.accessibleName())
+                    else:
+                        self.assertEqual(value.toolTip(), value.text())
 
     def test_overview_action_bar_does_not_duplicate_workspace_border(self) -> None:
         window = self.make_window("ready")

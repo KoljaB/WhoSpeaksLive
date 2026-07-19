@@ -7,7 +7,7 @@ from pathlib import Path
 from whospeaks_cli.cli_diagnostics import CheckResult, DoctorReport
 from whospeaks_cli.launcher_controller import EventKind, LauncherController
 from whospeaks_cli.profiles import Profile
-from whospeaks_cli.tui_state import ServerSupervisor
+from whospeaks_cli.launcher_state import ServerSupervisor
 
 
 DEMO_STATES = (
@@ -74,16 +74,16 @@ def canonical_profile() -> Profile:
 def canonical_report(*, first_run: bool = False) -> DoctorReport:
     if first_run:
         return DoctorReport(
-            "local",
+            "remote",
             [
                 CheckResult("Python", "ok", "CPython 3.12.4"),
                 CheckResult("WhoSpeaks package", "ok", "WhoSpeaks 0.0.4"),
                 CheckResult("ffmpeg", "ok", "ffmpeg 7.1"),
                 CheckResult("Browser UI port", "ok", "127.0.0.1:8796 is available"),
-                CheckResult("Launch profile", "ok", "local profile"),
-                CheckResult("Local ASR runtime", "fail", "Runtime is not installed", "Run install."),
-                CheckResult("Speaker embedding models", "fail", "Model cache is empty", "Run install."),
+                CheckResult("Launch profile", "ok", "remote controller"),
+                CheckResult("Controller runtime", "fail", "Required controller modules are not installed", "Run install."),
                 CheckResult("Nemotron model files", "fail", "Model files are missing", "Run install."),
+                CheckResult("Translation model files", "fail", "NLLB-200 600M is not installed", "Run install."),
             ],
         )
     return DoctorReport(

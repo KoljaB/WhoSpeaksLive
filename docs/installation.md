@@ -12,14 +12,14 @@ whospeaks install-translation --model-profile madlad-400-3b --torch auto --yes
 
 Each command creates a separate virtual environment and model directory on Windows or Linux. NLLB is the recommended broad, lower-memory default. TranslateGemma requires accepting the Gemma terms on Hugging Face. MADLAD uses considerably more memory than NLLB. See [Live translation](translation.md) for paths, licensing, launch behavior, and offline verification.
 
-Install the `whospeaks` command with its optional desktop interface, then let it guide the full local, controller, or server setup.
+Install the `whospeaks` command with its native desktop interface, then let it guide the full local, controller, or server setup.
 
 ## Recommended First Command
 
 From a Python 3.11 environment:
 
 ```powershell
-pip install "whospeaks[gui]"
+pip install whospeaks
 whospeaks
 ```
 
@@ -28,7 +28,7 @@ whospeaks
 Use uv's tool installer for the same globally available `whospeaks` command:
 
 ```powershell
-uv tool install --python 3.11 "whospeaks[gui]"
+uv tool install --python 3.11 whospeaks
 uv tool update-shell
 ```
 
@@ -51,13 +51,13 @@ Do not use `uvx whospeaks` for guided setup. `uvx` uses an ephemeral environment
 To test a development build from TestPyPI, replace `<version>` with the published development version:
 
 ```powershell
-uv tool install --python 3.11 --index https://pypi.org/simple/ --index https://test.pypi.org/simple/ --index-strategy unsafe-first-match --refresh-package whospeaks "whospeaks[gui]==<version>"
+uv tool install --python 3.11 --index https://pypi.org/simple/ --index https://test.pypi.org/simple/ --index-strategy unsafe-first-match --refresh-package whospeaks "whospeaks==<version>"
 uv tool update-shell
 ```
 
 Open a new terminal and run `whospeaks`. The explicit index strategy is limited to this TestPyPI workflow. PyPI is deliberately listed first so ordinary dependencies use its complete wheel set; the exact WhoSpeaks development version then falls through to TestPyPI. This avoids both TestPyPI placeholder packages and incomplete TestPyPI file sets, such as a release that lacks a CPython 3.11 Windows wheel. Normal PyPI installations keep uv's safer default strategy. Once installed, the launcher recognizes the development version and applies the same PyPI-first TestPyPI fallback when uv expands the selected WhoSpeaks extras.
 
-The base install includes the Textual setup interface, doctor checks, profile storage, and launch-command generator. The optional `gui` extra adds the primary native desktop launcher; a base-only install remains appropriate for SSH/headless use. Overview asks what you want on this machine:
+The base install includes PySide6, the native desktop launcher, doctor checks, profile storage, and the launch-command generator. GPU frameworks, speech models, media libraries, and translation runtimes remain optional and are installed only for the deployment you select. On SSH/headless machines, use the scriptable CLI subcommands rather than an interactive terminal launcher. Overview asks what you want on this machine:
 
 - Full local installation: browser controller, final ASR, and speaker embeddings on one machine.
 - Core/controller: browser UI on this machine, with ASR and embeddings served by remote HTTP services.
@@ -72,12 +72,6 @@ The interface has five operational views:
 - Settings: language, speaker provider, ASR runtime, browser address, and remote service URLs.
 - Activity: live installer output and cancellation for a running operation.
 - About: version, project links, interfaces, and keyboard shortcuts.
-
-Use the classic numbered interface when needed:
-
-```powershell
-whospeaks --classic
-```
 
 The `whospeaks install` subcommand exposes the same installer for automation and advanced use:
 
@@ -99,12 +93,12 @@ The native Kroko runtime is handled as a post-install setup step instead of a Py
 
 ## How The Short `whospeaks` Command Works
 
-The short command opens the native desktop launcher when the GUI extra is installed in a desktop session, otherwise it opens the Textual setup application. The browser app itself is started by the longer `whospeaks-window` command built from your saved profile. `--gui`, `--tui`, and `--classic` choose a surface explicitly; scriptable subcommands open none of them.
+The short command opens the native desktop launcher in a graphical desktop session. On a headless machine it prints readiness once and points to the scriptable subcommands. The browser app itself is started by the longer `whospeaks-window` command built from your saved profile. `--gui` explicitly requests the desktop surface; scriptable subcommands open none.
 
 `pip install whospeaks` and `uv tool install whospeaks` install console scripts from the package metadata. A console script is a command-line wrapper that imports a Python function. In this package:
 
 - `whospeaks` runs `whospeaks_cli.main:main`.
-- `whospeaks-gui` runs `whospeaks_gui.main:main` when the optional PySide6 dependency is installed.
+- `whospeaks-gui` runs `whospeaks_gui.main:main` directly.
 - `whospeaks-window` runs `window.youtube_window_diarize_gui:main`.
 
 With a normal pip environment on `PATH`, or after running `uv tool update-shell`, you can type this from any directory:
@@ -135,7 +129,7 @@ The normal interactive flow is:
 3. Select pip or uv as the Python package installer.
 4. Review the plan and start installation; live output appears on the Activity tab.
 5. Use Diagnostics to verify the resulting component state.
-6. Launch the browser UI from Setup.
+6. Launch the browser UI from Overview.
 
 The equivalent automation interfaces remain `whospeaks install`, `whospeaks doctor`, `whospeaks config`, and `whospeaks launch`.
 
@@ -143,7 +137,7 @@ For local embeddings and realtime preview, the launcher passes explicit helper i
 
 ## Setup Modes
 
-The starter CLI supports these profiles:
+The desktop launcher supports these profiles:
 
 - Full local installation: ASR, embeddings, browser controller, and Kroko realtime preview on one machine.
 - Controller with remote GPU services: browser UI on this machine, ASR and embeddings behind HTTP endpoints.
@@ -166,7 +160,7 @@ This keeps the interactive UI responsive and avoids loading several large ML mod
 2. Install the lightweight `whospeaks` command.
 3. Run `whospeaks` and choose a setup mode.
 4. Let `whospeaks doctor` verify local packages, `ffmpeg`, ports, services, providers, and model/cache state.
-5. Launch from the starter CLI or with the command printed by `whospeaks launch --print`.
+5. Launch from the desktop launcher or with the command printed by `whospeaks launch --print`.
 
 ## Windows Prerequisites
 

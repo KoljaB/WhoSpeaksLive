@@ -66,7 +66,16 @@ from .tokens import (
     MINIMUM_SIZE,
     RAIL_WIDTH,
 )
-from .widgets import ActionFooter, PageHeader, ServiceRow, StatusMark, SummaryStrip, section_label, separator
+from .widgets import (
+    ActionFooter,
+    EndpointLink,
+    PageHeader,
+    ServiceRow,
+    StatusMark,
+    SummaryStrip,
+    section_label,
+    separator,
+)
 
 
 class BrandMark(QWidget):
@@ -403,6 +412,7 @@ class OverviewPage(QWidget):
     stop_requested = Signal()
     retry_requested = Signal(str)
     cancel_requested = Signal()
+    interface_requested = Signal(str)
 
     def __init__(
         self,
@@ -547,8 +557,12 @@ class OverviewPage(QWidget):
                 "http://127.0.0.1:8660",
                 "users",
             ),
-            "live": ServiceRow("Live window", "Browser UI", "127.0.0.1:8796", "video"),
-            "reports": ServiceRow("Meeting Intelligence", "Reports + Ask", "127.0.0.1:8798", "users"),
+            "live": ServiceRow(
+                "Live window", "Browser UI", "127.0.0.1:8796", "video", endpoint_link=True
+            ),
+            "reports": ServiceRow(
+                "Meeting Intelligence", "Reports + Ask", "127.0.0.1:8798", "users", endpoint_link=True
+            ),
             "translation": ServiceRow("Translation", "Translation sidecar", "127.0.0.1:8799", "globe"),
         }
         self.service_rows["macos_asr"].extra.setText("Required for accurate final transcription")
@@ -556,6 +570,12 @@ class OverviewPage(QWidget):
         self.service_rows["live"].extra.setText("Live speaker labels  On")
         self.service_rows["reports"].extra.setText("Reports and grounded session questions")
         self.service_rows["translation"].extra.setText("Starts only when sidecar translation is enabled")
+        self.service_rows["live"].endpoint.clicked.connect(
+            lambda: self.interface_requested.emit("live")
+        )
+        self.service_rows["reports"].endpoint.clicked.connect(
+            lambda: self.interface_requested.emit("reports")
+        )
         self.service_separators: list[QFrame] = []
         for index, row in enumerate(self.service_rows.values()):
             services_layout.addWidget(row)
@@ -600,7 +620,7 @@ class OverviewPage(QWidget):
         self.profile_grid = QGridLayout()
         self.profile_grid.setHorizontalSpacing(14)
         self.profile_grid.setVerticalSpacing(0)
-        self.profile_labels: dict[str, QLabel] = {}
+        self.profile_labels: dict[str, QLabel | EndpointLink] = {}
         self.profile_grid_rows: dict[str, tuple[int, tuple[QWidget, QWidget, QWidget]]] = {}
         self.profile_grid_widgets: list[QWidget] = []
         rows = (
@@ -619,9 +639,13 @@ class OverviewPage(QWidget):
             icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
             label = QLabel(label_text)
             label.setProperty("role", "secondary")
-            value = QLabel("")
-            value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-            value.setWordWrap(True)
+            value: QLabel | EndpointLink
+            if key in {"browser", "reports"}:
+                value = EndpointLink("")
+            else:
+                value = QLabel("")
+                value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+                value.setWordWrap(True)
             value.setMinimumWidth(0)
             value.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             self.profile_labels[key] = value
@@ -631,6 +655,12 @@ class OverviewPage(QWidget):
             self.profile_grid_rows[key] = (row_index, (icon, label, value))
             self.profile_grid_widgets.extend((icon, label, value))
             self.profile_grid.setRowMinimumHeight(row_index, 44)
+        self.profile_labels["browser"].clicked.connect(
+            lambda: self.interface_requested.emit("live")
+        )
+        self.profile_labels["reports"].clicked.connect(
+            lambda: self.interface_requested.emit("reports")
+        )
         self.profile_grid.setColumnMinimumWidth(1, 180)
         self.profile_grid.setColumnStretch(2, 1)
         profile_layout.addLayout(self.profile_grid)
@@ -696,7 +726,7 @@ class OverviewPage(QWidget):
         return frame
 
     def _build_first_run_workspace(self) -> QWidget:
-        """Build the canonical first-run form with real controls in reference-aligned rows."""
+        """Build a compact setup form and an installation preview that remain readable."""
         frame = QFrame()
         frame.setProperty("group", True)
         layout = QHBoxLayout(frame)
@@ -704,71 +734,32 @@ class OverviewPage(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        def icon_tile(name: str) -> QLabel:
-            icon = QLabel()
-            icon.setPixmap(line_icon(name, size=25).pixmap(25, 25))
-            icon.setProperty("iconTile", True)
-            icon.setFixedSize(54, 54)
-            icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            return icon
-
-        def secondary(text: str, *, indent: int = 0) -> QLabel:
+        def secondary(text: str) -> QLabel:
             label = QLabel(text)
-            label.setContentsMargins(indent, 0, 0, 2)
             label.setProperty("role", "secondary")
+            label.setWordWrap(True)
             return label
+
+        def field_block(title: str, control: QWidget, detail: str = "") -> QWidget:
+            block = QWidget()
+            block_layout = QVBoxLayout(block)
+            block_layout.setContentsMargins(0, 0, 0, 0)
+            block_layout.setSpacing(4)
+            block_layout.addWidget(QLabel(title))
+            block_layout.addWidget(control)
+            if detail:
+                block_layout.addWidget(secondary(detail))
+            return block
 
         choices = QWidget()
         choices_layout = QVBoxLayout(choices)
-        choices_layout.setContentsMargins(22, 22, 24, 18)
-        choices_layout.setSpacing(0)
+        choices_layout.setContentsMargins(24, 20, 24, 18)
+        choices_layout.setSpacing(16)
+        choices_layout.addWidget(section_label("Choose this machine's role"))
+        choices_layout.addWidget(
+            secondary("Select where the controller, final transcription, and speaker recognition will run.")
+        )
 
-        def choice_cell(icon_name: str, content: QWidget) -> QWidget:
-            row = QWidget()
-            row_layout = QHBoxLayout(row)
-            row_layout.setContentsMargins(0, 0, 0, 0)
-            row_layout.setSpacing(22)
-            row_layout.addWidget(icon_tile(icon_name), 0, Qt.AlignmentFlag.AlignTop)
-            row_layout.addWidget(content, 1)
-            return row
-
-        def add_choice_section(icon_name: str, content: QWidget, *, divider: bool = True) -> tuple[QWidget, QFrame | None]:
-            row = choice_cell(icon_name, content)
-            choices_layout.addWidget(row)
-            row_separator = None
-            if divider:
-                row_separator = separator()
-                choices_layout.addWidget(row_separator)
-            return row, row_separator
-
-        def add_choice_pair(
-            left_icon: str,
-            left_content: QWidget,
-            right_icon: str,
-            right_content: QWidget,
-            *,
-            divider: bool = True,
-        ) -> tuple[QWidget, QWidget, QFrame | None, QWidget]:
-            pair = QWidget()
-            pair_layout = QHBoxLayout(pair)
-            pair_layout.setContentsMargins(0, 0, 0, 0)
-            pair_layout.setSpacing(22)
-            left = choice_cell(left_icon, left_content)
-            right = choice_cell(right_icon, right_content)
-            pair_layout.addWidget(left, 1)
-            pair_layout.addWidget(right, 1)
-            choices_layout.addWidget(pair)
-            row_separator = None
-            if divider:
-                row_separator = separator()
-                choices_layout.addWidget(row_separator)
-            return left, right, row_separator, pair
-
-        deployment = QWidget()
-        deployment_layout = QVBoxLayout(deployment)
-        deployment_layout.setContentsMargins(0, 0, 0, 0)
-        deployment_layout.setSpacing(5)
-        deployment_layout.addWidget(section_label("Deployment"))
         self.setup_target = QComboBox()
         self.setup_target.setAccessibleName("Deployment")
         for title, value in (
@@ -777,17 +768,11 @@ class OverviewPage(QWidget):
             ("ASR + embeddings server", "server"),
         ):
             self.setup_target.addItem(title, value)
-        deployment_layout.addWidget(self.setup_target)
+        deployment = field_block("Deployment", self.setup_target)
         self.setup_target_help = secondary("")
-        self.setup_target_help.setWordWrap(True)
-        deployment_layout.addWidget(self.setup_target_help)
-        add_choice_section("monitor", deployment)
+        deployment.layout().addWidget(self.setup_target_help)
+        choices_layout.addWidget(deployment)
 
-        language = QWidget()
-        language_layout = QVBoxLayout(language)
-        language_layout.setContentsMargins(0, 0, 0, 0)
-        language_layout.setSpacing(3)
-        language_layout.addWidget(section_label("Language"))
         self.setup_language = QComboBox()
         for code, config in sorted(
             SUPPORTED_LANGUAGE_CONFIGS.items(),
@@ -795,33 +780,29 @@ class OverviewPage(QWidget):
         ):
             self.setup_language.addItem(config.display_name, code)
         self.setup_language.setAccessibleName("Language")
-        language_layout.addWidget(self.setup_language)
-        installer = QWidget()
-        installer_layout = QVBoxLayout(installer)
-        installer_layout.setContentsMargins(0, 0, 0, 0)
-        installer_layout.setSpacing(3)
-        installer_layout.addWidget(section_label("Package installer"))
+        self.setup_language_row = field_block("Language", self.setup_language)
+        self.setup_language_separator = None
         self.setup_installer = self._installer_combo("Python package installer")
-        installer_layout.addWidget(self.setup_installer)
-        (
-            self.setup_language_row,
-            _setup_installer_row,
-            self.setup_language_separator,
-            _language_installer_pair,
-        ) = add_choice_pair("globe", language, "download", installer)
+        installer = field_block("Package installer", self.setup_installer)
+        basics = QWidget()
+        basics_layout = QHBoxLayout(basics)
+        basics_layout.setContentsMargins(0, 4, 0, 2)
+        basics_layout.setSpacing(16)
+        basics_layout.addWidget(self.setup_language_row, 1)
+        basics_layout.addWidget(installer, 1)
+        choices_layout.addWidget(basics)
 
-        live_text = QWidget()
-        live_text_layout = QVBoxLayout(live_text)
-        live_text_layout.setContentsMargins(0, 0, 0, 0)
-        live_text_layout.setSpacing(5)
-        live_text_layout.addWidget(section_label("Live text"))
-        selector_row = QHBoxLayout()
-        selector_row.setContentsMargins(0, 0, 0, 0)
-        selector_row.setSpacing(12)
-        engine_column = QVBoxLayout()
-        engine_column.setContentsMargins(0, 0, 0, 0)
-        engine_column.setSpacing(3)
-        engine_column.addWidget(secondary("Engine"))
+        optional_header = QWidget()
+        optional_header_layout = QVBoxLayout(optional_header)
+        optional_header_layout.setContentsMargins(0, 10, 0, 0)
+        optional_header_layout.setSpacing(2)
+        optional_header_layout.addWidget(section_label("Optional local features"))
+        optional_header_layout.addWidget(
+            secondary("Choose low-latency live text, local translation, and speaker labels for the browser window.")
+        )
+        self.setup_optional_header = optional_header
+        choices_layout.addWidget(optional_header)
+
         self.setup_live_text = QComboBox()
         self.setup_live_text.setAccessibleName("Live text engine")
         for title, value in (
@@ -830,26 +811,28 @@ class OverviewPage(QWidget):
             ("Off", "off"),
         ):
             self.setup_live_text.addItem(title, value)
-        engine_column.addWidget(self.setup_live_text)
-        model_column = QVBoxLayout()
-        model_column.setContentsMargins(0, 0, 0, 0)
-        model_column.setSpacing(3)
-        model_column.addWidget(secondary("Model"))
         self.setup_preview_model = QComboBox()
         self.setup_preview_model.setAccessibleName("Live model")
-        model_column.addWidget(self.setup_preview_model)
-        selector_row.addLayout(engine_column, 1)
-        selector_row.addLayout(model_column, 1)
+        engine = field_block("Engine", self.setup_live_text)
+        model = field_block("Model", self.setup_preview_model)
+        self.setup_preview_model_row = model
+        live_text = QWidget()
+        live_text_layout = QVBoxLayout(live_text)
+        live_text_layout.setContentsMargins(0, 0, 0, 0)
+        live_text_layout.setSpacing(4)
+        live_text_layout.addWidget(QLabel("Live text"))
+        selector_row = QHBoxLayout()
+        selector_row.setContentsMargins(0, 0, 0, 0)
+        selector_row.setSpacing(12)
+        selector_row.addWidget(engine, 1)
+        selector_row.addWidget(model, 1)
         live_text_layout.addLayout(selector_row)
         self.setup_live_text_help = secondary("")
         live_text_layout.addWidget(self.setup_live_text_help)
-        self.setup_live_text_row, self.setup_live_text_separator = add_choice_section("message", live_text)
+        self.setup_live_text_row = live_text
+        self.setup_live_text_separator = None
+        choices_layout.addWidget(live_text)
 
-        translation = QWidget()
-        translation_layout = QVBoxLayout(translation)
-        translation_layout.setContentsMargins(0, 0, 0, 0)
-        translation_layout.setSpacing(3)
-        translation_layout.addWidget(section_label("Local translation"))
         self.setup_translation_profile = QComboBox()
         self.setup_translation_profile.setAccessibleName("Local translation model")
         for label, value in (
@@ -859,46 +842,41 @@ class OverviewPage(QWidget):
             ("MADLAD-400 3B", "madlad-400-3b"),
         ):
             self.setup_translation_profile.addItem(label, value)
-        translation_layout.addWidget(self.setup_translation_profile)
-        translation_layout.addWidget(
-            secondary("Installs an isolated local sidecar and its model files")
+        self.setup_translation_row = field_block(
+            "Local translation",
+            self.setup_translation_profile,
+            "Installs an isolated local sidecar and its model files.",
         )
-        self.setup_speakers = QCheckBox("Live speaker labels")
+        self.setup_speakers = QCheckBox("Show live speaker labels")
         self.setup_speakers.setChecked(True)
-        speaker_shell = QWidget()
-        speaker_layout = QVBoxLayout(speaker_shell)
-        speaker_layout.setContentsMargins(0, 0, 0, 0)
-        speaker_layout.setSpacing(0)
-        speaker_layout.addWidget(self.setup_speakers)
-        speaker_layout.addWidget(secondary("On", indent=37))
-        (
-            self.setup_translation_row,
-            self.setup_speakers_row,
-            self.setup_translation_separator,
-            self.setup_translation_pair,
-        ) = add_choice_pair(
-            "globe",
-            translation,
-            "users",
-            speaker_shell,
-            divider=False,
+        self.setup_speakers_row = field_block(
+            "Speaker labels",
+            self.setup_speakers,
+            "Shown in the live browser window.",
         )
+        self.setup_translation_separator = None
+        self.setup_translation_pair = QWidget()
+        optional_pair_layout = QHBoxLayout(self.setup_translation_pair)
+        optional_pair_layout.setContentsMargins(0, 2, 0, 0)
+        optional_pair_layout.setSpacing(16)
+        optional_pair_layout.addWidget(self.setup_translation_row, 58)
+        optional_pair_layout.addWidget(self.setup_speakers_row, 42)
+        choices_layout.addWidget(self.setup_translation_pair)
         choices_layout.addStretch(1)
 
         plan = QWidget()
         plan_layout = QVBoxLayout(plan)
-        plan_layout.setContentsMargins(18, 18, 18, 14)
-        plan_layout.setSpacing(4)
-        plan_layout.addWidget(section_label("Installation plan"))
+        plan_layout.setContentsMargins(24, 20, 24, 18)
+        plan_layout.setSpacing(8)
+        plan_layout.addWidget(section_label("What will be installed"))
         self.setup_plan_summary = secondary("These components will be installed on this machine.")
-        self.setup_plan_summary.setWordWrap(True)
         plan_layout.addWidget(self.setup_plan_summary)
 
         def plan_row(icon_name: str, title: str, detail: str, *, missing: bool = False) -> tuple[QWidget, QLabel, QLabel, QLabel | None]:
             row = QWidget()
             row_layout = QHBoxLayout(row)
             row_layout.setContentsMargins(0, 0, 0, 0)
-            row_layout.setSpacing(10)
+            row_layout.setSpacing(12)
             mark_shell = QWidget()
             mark_shell.setFixedSize(34, 34)
             mark_layout = QHBoxLayout(mark_shell)
@@ -909,14 +887,14 @@ class OverviewPage(QWidget):
                 mark = None
             else:
                 mark = QLabel()
-                mark.setPixmap(line_icon(icon_name, size=25).pixmap(25, 25))
+                mark.setPixmap(line_icon(icon_name, size=23).pixmap(23, 23))
                 mark_layout.addWidget(mark)
             text_column = QVBoxLayout()
-            text_column.setSpacing(0)
+            text_column.setContentsMargins(0, 0, 0, 0)
+            text_column.setSpacing(1)
             title_label = QLabel(title)
             title_label.setWordWrap(True)
             detail_label = secondary(detail)
-            detail_label.setWordWrap(True)
             text_column.addWidget(title_label)
             text_column.addWidget(detail_label)
             row_layout.addWidget(mark_shell)
@@ -928,18 +906,27 @@ class OverviewPage(QWidget):
             components = plan_row("server", "", "")
             self.setup_plan_rows.append(components)
             plan_layout.addWidget(components[0])
+        plan_layout.addSpacing(2)
         plan_layout.addWidget(separator())
-        self.setup_missing_title = section_label("Current saved-profile findings")
+        self.setup_missing_title = section_label("Detected issues")
         self.setup_missing_title.setProperty("role", "error")
         plan_layout.addWidget(self.setup_missing_title)
+        self.setup_findings_note = secondary("Based on the most recent readiness check.")
+        plan_layout.addWidget(self.setup_findings_note)
         self.setup_missing_rows: list[tuple[QWidget, QLabel, QLabel, QLabel | None]] = []
-        for _index in range(4):
+        for _index in range(3):
             finding = plan_row("", "", "", missing=True)
             self.setup_missing_rows.append(finding)
             plan_layout.addWidget(finding[0])
         plan_layout.addStretch(1)
-        layout.addWidget(choices, 50)
-        layout.addWidget(plan, 50)
+
+        self.setup_workspace_divider = QFrame()
+        self.setup_workspace_divider.setFrameShape(QFrame.Shape.VLine)
+        self.setup_workspace_divider.setProperty("separator", True)
+        self.setup_workspace_divider.setFixedWidth(1)
+        layout.addWidget(choices, 55)
+        layout.addWidget(self.setup_workspace_divider)
+        layout.addWidget(plan, 45)
         self.setup_target.currentIndexChanged.connect(self._update_setup_plan)
         self.setup_live_text.currentIndexChanged.connect(self._update_setup_plan)
         self.setup_preview_model.currentIndexChanged.connect(self._update_setup_plan)
@@ -983,6 +970,7 @@ class OverviewPage(QWidget):
             }[engine]
         )
         show_preview = target != "server"
+        self.setup_optional_header.setVisible(show_preview)
         self.setup_language_row.setVisible(target != "server")
         if self.setup_language_separator is not None:
             self.setup_language_separator.setVisible(target != "server")
@@ -1015,7 +1003,7 @@ class OverviewPage(QWidget):
             self.setup_preview_model.addItem(label, value)
         index = self.setup_preview_model.findData(selected)
         self.setup_preview_model.setCurrentIndex(index if index >= 0 else 0)
-        self.setup_preview_model.setVisible(bool(choices))
+        self.setup_preview_model_row.setVisible(bool(choices))
         self.setup_preview_model.blockSignals(False)
 
         if target == "local":
@@ -1055,11 +1043,11 @@ class OverviewPage(QWidget):
         for row, component in zip(self.setup_plan_rows, components, strict=False):
             widget, title, detail, icon = row
             icon_name, title_text, detail_text = component
-            title.setText(f"{title_text} — {detail_text}" if detail_text else title_text)
-            detail.clear()
-            detail.hide()
+            title.setText(title_text)
+            detail.setText(detail_text)
+            detail.setVisible(bool(detail_text))
             if icon is not None:
-                icon.setPixmap(line_icon(icon_name, size=25).pixmap(25, 25))
+                icon.setPixmap(line_icon(icon_name, size=23).pixmap(23, 23))
             widget.show()
         for row in self.setup_plan_rows[len(components):]:
             row[0].hide()
@@ -1067,11 +1055,29 @@ class OverviewPage(QWidget):
 
     def _update_setup_findings(self) -> None:
         failures = [check for check in self.current_report.checks if check.status == "fail"]
+        selected_mode = {"local": "local", "core": "remote", "server": "server"}[
+            self.setup_target_value()
+        ]
+        selection_differs = selected_mode != self.profile.mode
         self.setup_missing_title.setText(
-            f"Current saved-profile findings ({len(failures)})"
+            f"Detected issues ({len(failures)})"
             if failures
-            else "Current saved-profile findings"
+            else "No blocking issues detected"
         )
+        if selection_differs:
+            saved_name = {
+                "local": "Full local",
+                "remote": "Remote ASR + embeddings",
+                "server": "ASR + embeddings server",
+            }.get(self.profile.mode, self.profile.mode)
+            self.setup_findings_note.setText(
+                f"These results belong to the saved {saved_name} profile. "
+                "The installation uses the selection on the left."
+            )
+        else:
+            self.setup_findings_note.setText(
+                "Based on the most recent readiness check; run checks again after installation."
+            )
         self.setup_missing_title.setProperty("role", "error" if failures else "success")
         self.setup_missing_title.style().unpolish(self.setup_missing_title)
         self.setup_missing_title.style().polish(self.setup_missing_title)
@@ -1080,19 +1086,17 @@ class OverviewPage(QWidget):
             visible_failures = failures[: len(self.setup_missing_rows) - 1]
         for row, check in zip(self.setup_missing_rows, visible_failures, strict=False):
             widget, title, detail, _icon = row
-            title.setText(f"{check.name} — {check.detail}" if check.detail else check.name)
-            detail.clear()
-            detail.hide()
+            title.setText(check.name)
+            detail.setText(check.detail)
+            detail.setVisible(bool(check.detail))
             widget.show()
         shown_count = len(visible_failures)
         if len(failures) > len(self.setup_missing_rows):
             widget, title, detail, _icon = self.setup_missing_rows[shown_count]
-            title.setText(f"{len(failures) - shown_count} more findings")
-            title.setText(
-                f"{len(failures) - shown_count} more findings — open Diagnostics for the complete readiness report."
-            )
-            detail.clear()
-            detail.hide()
+            remaining = len(failures) - shown_count
+            title.setText(f"{remaining} more issue{'s' if remaining != 1 else ''}")
+            detail.setText("Open Diagnostics for the complete readiness report.")
+            detail.show()
             widget.show()
             shown_count += 1
         for row in self.setup_missing_rows[shown_count:]:
@@ -1110,6 +1114,15 @@ class OverviewPage(QWidget):
         )
         self.normal_layout.setDirection(direction)
         self.first_run_layout.setDirection(direction)
+        self.setup_workspace_divider.setFrameShape(
+            QFrame.Shape.HLine if compact else QFrame.Shape.VLine
+        )
+        if compact:
+            self.setup_workspace_divider.setMinimumSize(0, 1)
+            self.setup_workspace_divider.setMaximumSize(16777215, 1)
+        else:
+            self.setup_workspace_divider.setMinimumSize(1, 0)
+            self.setup_workspace_divider.setMaximumSize(1, 16777215)
         self.profile_title_layout.setDirection(
             QBoxLayout.Direction.TopToBottom
             if compact
@@ -1120,8 +1133,6 @@ class OverviewPage(QWidget):
         self.workspace_stack.setMinimumSize(0 if compact else 860, 900 if compact else 480)
         self.workspace_scroll.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAsNeeded
-            if compact
-            else Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
         self.header_layout.setContentsMargins(
             24 if compact else 32,
@@ -1338,6 +1349,14 @@ class OverviewPage(QWidget):
         by_kind = {item.kind: item for item in services}
         for kind, row in self.service_rows.items():
             snapshot = by_kind.get(kind)
+            if kind in {"live", "reports"}:
+                available = snapshot is not None and snapshot.status == "running"
+                row.set_endpoint_available(available)
+                profile_link = self.profile_labels[
+                    "browser" if kind == "live" else "reports"
+                ]
+                if isinstance(profile_link, EndpointLink):
+                    profile_link.set_available(available, interface_name=row.title.text())
             if snapshot is not None:
                 label = None
                 if snapshot.ownership == "external" and snapshot.status == "running":
@@ -1859,6 +1878,7 @@ class LauncherWindow(QMainWindow):
         self.overview.activity_requested.connect(lambda: self.navigate(3))
         self.overview.launch_requested.connect(self.launch)
         self.overview.open_requested.connect(self.open_live_window)
+        self.overview.interface_requested.connect(self.open_interface)
         self.overview.refresh_requested.connect(self.run_quick_check)
         self.overview.command_requested.connect(self.show_command)
         self.overview.install_requested.connect(self.request_install)
@@ -2145,9 +2165,20 @@ class LauncherWindow(QMainWindow):
             self.navigate(0)
 
     def open_live_window(self) -> None:
-        url = QUrl(f"http://{self.controller.profile.host}:{self.controller.profile.port}")
+        self.open_interface("live")
+
+    @Slot(str)
+    def open_interface(self, kind: str) -> None:
+        interface = {
+            "live": ("live window", self.controller.profile.port),
+            "reports": ("Meeting Intelligence", self.controller.profile.reports_port),
+        }.get(kind)
+        if interface is None:
+            return
+        label, port = interface
+        url = QUrl(f"http://{self.controller.profile.host}:{port}")
         if not QDesktopServices.openUrl(url):
-            self._show_error("Could not open live window", url.toString())
+            self._show_error(f"Could not open {label}", url.toString())
 
     def retry_service(self, kind: str) -> None:
         if isinstance(self.controller, DemoLauncherController):
@@ -2329,7 +2360,7 @@ class LauncherWindow(QMainWindow):
             compact=compact,
             canonical=self.width() >= CANONICAL_RAIL_BREAKPOINT,
         )
-        self.overview.set_compact_layout(self.width() < 1060)
+        self.overview.set_compact_layout(self.width() < 1280)
         self.settings.set_compact_layout(compact)
 
     def closeEvent(self, event: QCloseEvent) -> None:

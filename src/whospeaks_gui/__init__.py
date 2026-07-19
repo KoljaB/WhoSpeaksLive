@@ -1,4 +1,4 @@
-"""Optional PySide6 desktop launcher for WhoSpeaks."""
+"""Native PySide6 desktop launcher for WhoSpeaks."""
 
 from __future__ import annotations
 

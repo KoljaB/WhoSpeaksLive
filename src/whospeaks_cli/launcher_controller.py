@@ -48,7 +48,7 @@ from .service_processes import (
     terminate_service_processes,
     wait_for_service_health,
 )
-from .tui_state import ServerState, ServerSupervisor, SetupCoordinator
+from .launcher_state import ServerState, ServerSupervisor, SetupCoordinator
 from window.language_config import normalize_language_code
 from window.realtime_preview_backends import (
     normalize_preview_engine,

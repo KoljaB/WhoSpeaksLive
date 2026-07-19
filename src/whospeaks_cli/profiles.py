@@ -1,8 +1,8 @@
 """Profile model and persistence for the WhoSpeaks command-line applications.
 
-This module is intentionally independent from command execution and Textual.  A
-profile is the persisted launch configuration; callers should construct a new
-validated value with :meth:`Profile.with_updates` and only then replace their
+This module is intentionally independent from command execution and user-interface
+toolkits. A profile is the persisted launch configuration; callers should construct
+a new validated value with :meth:`Profile.with_updates` and only then replace their
 current snapshot.
 """
 
@@ -46,6 +46,18 @@ TRANSLATION_PROVIDER_OPTIONS: dict[str, dict[str, str]] = {
     "reports_llm": {"label": "Meeting Intelligence LLM", "default_base_url": "", "default_api_key_env": ""},
     "openai_compatible": {"label": "OpenAI-compatible", "default_base_url": "", "default_api_key_env": ""},
 }
+
+
+def provider_preset_label(preset_id: str, preset: "ProviderPreset") -> str:
+    """Describe an embedding stack by its user-visible tradeoff."""
+
+    return {
+        "smoke": "Low VRAM - SpeechBrain ECAPA",
+        "single_espnet": "Single model - ESPnet ECAPA",
+        "smoke_fast_live": "Low VRAM final + fast live",
+        "public_quality": "High quality - public ensemble",
+        "promoted_public": "Recommended - public ensemble",
+    }.get(preset_id, preset.name)
 
 
 EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (

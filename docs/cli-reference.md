@@ -27,10 +27,8 @@ Starter command for setup, health checks, saved profiles, and launching `whospea
 
 | Scope | Parameter | Default | What it does |
 | --- | --- | --- | --- |
-| global | `--no-interactive` | off unless passed | Print the dashboard once and exit instead of opening the interactive starter CLI. |
-| global | `--gui` | auto when installed in a desktop session | Open the optional PySide6 desktop launcher; mutually exclusive with `--tui` and `--classic`. |
-| global | `--tui` | off unless passed | Force the Textual full-screen terminal interface even when the GUI extra is installed. |
-| global | `--classic` | off unless passed | Force the classic numbered terminal interface. |
+| global | `--no-interactive` | off unless passed | Print readiness once and exit instead of opening the desktop launcher. |
+| global | `--gui` | auto in an interactive desktop session | Explicitly request the PySide6 desktop launcher, including from a non-interactive shell. |
 | doctor | `--mode` | `auto` | Select which topology to check: auto-detect, all-local, remote controller plus servers, or server-only. Choices: `auto`, `local`, `remote`, `server`. |
 | doctor | `--remote-asr-url` | empty | Remote ASR server URL to check instead of the saved profile value. |
 | doctor | `--remote-embeddings-url` | empty | Remote embeddings server URL to check instead of the saved profile value. |
@@ -63,7 +61,7 @@ Use `whospeaks config --set text_embedding_base_url=... --set text_embedding_mod
 
 ### `whospeaks-gui`
 
-Optional native desktop setup and launcher installed by `pip install "whospeaks[gui]"`. See [Desktop launcher](desktop-launcher.md) for the workflow and safety model.
+Native desktop setup and launcher installed by `pip install whospeaks`. See [Desktop launcher](desktop-launcher.md) for the workflow and safety model.
 
 | Parameter | Default | What it does |
 | --- | --- | --- |

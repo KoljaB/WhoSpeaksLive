@@ -193,12 +193,21 @@ export function installSavedReports(ctx) {
       meta.className = "session-row-meta";
       const speakerCount = Number(item.speaker_count || 0);
       const transcriptDuration = Number(item.transcript_duration_seconds ?? item.duration_seconds ?? 0);
-      const metaParts = [
-        savedSessionTimeRangeLabel(item),
+      const dateLabel = savedSessionTimeRangeLabel(item);
+      const detailParts = [
         `${savedSessionDurationLabel(transcriptDuration)} transcribed`,
         `${speakerCount} ${speakerCount === 1 ? "speaker" : "speakers"}`,
       ].filter(Boolean);
-      meta.textContent = metaParts.join(" - ");
+      if (dateLabel) {
+        const dateLine = document.createElement("span");
+        dateLine.className = "session-row-meta-date";
+        dateLine.textContent = dateLabel;
+        meta.appendChild(dateLine);
+      }
+      const detailLine = document.createElement("span");
+      detailLine.className = "session-row-meta-details";
+      detailLine.textContent = detailParts.join(" - ");
+      meta.appendChild(detailLine);
       copy.appendChild(meta);
 
       const status = document.createElement("div");

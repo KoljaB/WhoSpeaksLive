@@ -409,7 +409,7 @@ def check_port(host: str, port: int) -> CheckResult:
             "Browser UI port",
             "fail",
             f"{host}:{port} is not available: {exc}",
-            "Choose a different port in the starter CLI or stop the process using this port.",
+            "Choose a different port in the desktop launcher or stop the process using this port.",
         )
     return CheckResult("Browser UI port", "ok", f"{host}:{port} is available.")
 

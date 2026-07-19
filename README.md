@@ -30,19 +30,19 @@ For faster realtime ASR preview text like shown in the demo, WhoSpeaksLive suppo
 
 ## Start Here
 
-For the primary desktop setup and launcher, install the optional Qt interface and start WhoSpeaks:
+Install WhoSpeaks and start its native desktop setup and launcher:
 
 ```powershell
-pip install "whospeaks[gui]"
+pip install whospeaks
 whospeaks
 ```
 
-The desktop launcher keeps readiness checks, installation, service state, settings, activity, and safe shutdown in one native window. Use `whospeaks --tui` for the full-screen terminal interface or `whospeaks --classic` for the numbered interface. A base `pip install whospeaks` remains GUI-free and automatically uses the terminal interface.
+The desktop launcher keeps readiness checks, installation, service state, settings, activity, and safe shutdown in one native window. The old interactive terminal launchers are no longer shipped; headless and automated workflows use subcommands such as `whospeaks doctor`, `whospeaks install`, `whospeaks config`, and `whospeaks launch`.
 
 Or use this same uv command for both the first installation and later updates:
 
 ```powershell
-uv tool install --force --python 3.11 "whospeaks[gui]"
+uv tool install --force --python 3.11 whospeaks
 uv tool update-shell
 ```
 
@@ -56,9 +56,8 @@ whospeaks
 `uv tool update-shell` only changes `PATH` when needed, so the two commands are
 safe to reuse together.
 
-The base package remains a lightweight production CLI. It brings only the
-terminal setup dependency; the `gui` extra adds PySide6, while model runtimes
-and other heavy optional components are installed after you choose a deployment mode. See
+The base package includes PySide6 and the native launcher, while model runtimes
+and other heavy optional components are installed only after you choose a deployment mode. See
 [PyPI package scope](docs/pypi-package-scope.md) for the exact inclusion and
 exclusion policy.
 

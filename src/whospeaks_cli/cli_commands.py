@@ -516,10 +516,7 @@ def cmd_config(args: argparse.Namespace) -> int:
             updates.append((key, value))
     if updates:
         profile = apply_profile_updates(profile, updates)
-    if args.edit:
-        profile = edit_profile(profile)
-        profile = Profile.from_mapping(profile.as_dict())
-    if args.reset or updates or args.edit:
+    if args.reset or updates:
         _save_profile(profile)
     if args.json:
         print(json.dumps(profile.as_dict(), indent=2, sort_keys=True))

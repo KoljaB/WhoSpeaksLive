@@ -65,6 +65,9 @@ class WindowWebLayoutContractTests(unittest.TestCase):
         self.assertNotIn(">Filter<", HTML)
         self.assertIn("item.transcript_duration_seconds ?? item.duration_seconds", HTML)
         self.assertIn("`${savedSessionDurationLabel(transcriptDuration)} transcribed`", HTML)
+        self.assertIn('dateLine.className = "session-row-meta-date";', HTML)
+        self.assertIn('detailLine.className = "session-row-meta-details";', HTML)
+        self.assertIn("detailLine.textContent = detailParts.join(\" - \");", HTML)
 
     def test_playback_clock_ignores_early_media_end_jumps(self) -> None:
         self.assertIn("playbackClockStartedAt", HTML)

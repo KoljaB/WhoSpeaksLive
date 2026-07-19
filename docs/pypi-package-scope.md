@@ -4,9 +4,9 @@ The base `pip install whospeaks` or `uv tool install whospeaks` stays lightweigh
 
 ## Base Install
 
-The only required third-party dependency of the base package is Textual, which powers the terminal setup application. GPU frameworks, speech models, media libraries, translation models, and server stacks remain optional dependencies or are installed by the guided setup for the selected target.
+The required third-party dependency of the base package is PySide6, which powers the native desktop setup and launcher. GPU frameworks, speech models, media libraries, translation models, and server stacks remain optional dependencies or are installed by the guided setup for the selected target.
 
-`pip install "whospeaks[gui]"` adds PySide6 for the native desktop launcher. The launcher Python package and its small SVG check asset are present in the same wheel, but the base CLI does not import them unless the GUI is selected. A base install therefore remains usable without Qt on headless and SSH systems.
+The former `gui` extra is retained as an empty compatibility alias so older install commands do not fail, but it no longer changes the installed dependency set. Headless and SSH workflows use the same package and call scriptable subcommands such as `whospeaks doctor`, `whospeaks install`, and `whospeaks launch`; they do not start a terminal user interface.
 
 pip and uv install the same wheel and therefore have the same base-package boundary. The launcher keeps pip as the compatibility default and can use uv as an explicit backend for the later optional dependency sets. This changes resolution and installation speed, not which files belong to the published WhoSpeaks package.
 
