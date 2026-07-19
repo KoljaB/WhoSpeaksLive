@@ -36,7 +36,7 @@ if PYSIDE_AVAILABLE:
         suitable_openai_llm_models,
     )
     from whospeaks_gui.settings_help import SETTINGS_MORE_HELP
-    from whospeaks_gui.tokens import COMPACT_RAIL_WIDTH, application_style
+    from whospeaks_gui.tokens import COLORS, COMPACT_RAIL_WIDTH, application_style
     from whospeaks_gui.window import LauncherWindow
     from whospeaks_cli.cli_diagnostics import CheckResult, DoctorReport
     from whospeaks_cli.launcher_controller import LauncherController
@@ -1076,6 +1076,11 @@ class WhoSpeaksGuiTests(unittest.TestCase):
         self.assertEqual(overview_workspace_top - overview_summary_bottom, 12)
 
     def test_interactive_pages_share_one_footer_action_pattern(self) -> None:
+        self.assertEqual(COLORS.button_secondary, "#1E2E3C")
+        style = application_style("Segoe UI")
+        self.assertGreaterEqual(style.count("background: #1E2E3C;"), 3)
+        self.assertIn('QPushButton[inputAction="true"]', style)
+        self.assertIn("chevron-up.svg", style)
         window = self.make_window("ready")
 
         footers = (

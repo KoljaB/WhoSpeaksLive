@@ -10,8 +10,6 @@ from stream2sentence.avoid_pause_words import AVOID_PAUSE_WORDS
 from stream2sentence.delimiter_ignore_prefixes import DELIMITER_IGNORE_PREFIXES
 
 
-init_tokenizer("nltk")
-
 WORDS_PER_TOKEN = 0.75
 preferred_sentence_fragment_delimiters_global = []
 sentence_fragment_delimiters_global = []
@@ -138,6 +136,7 @@ def generate_sentences_time_based(
         Iterator[str]: An iterator of complete sentences constructed from the
           input text stream.
     """
+    init_tokenizer("nltk")
     global preferred_sentence_fragment_delimiters_global, sentence_fragment_delimiters_global, delimiter_ignore_prefixes_global
     preferred_sentence_fragment_delimiters_global = set(preferred_sentence_fragment_delimiters)
     sentence_fragment_delimiters_global = set(sentence_fragment_delimiters)

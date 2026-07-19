@@ -13,6 +13,9 @@ class Colors:
     surface_2: str = "#101D22"
     surface_selected: str = "#12343A"
     surface_pressed: str = "#0D292E"
+    button_secondary: str = "#1E2E3C"
+    button_secondary_hover: str = "#263B4B"
+    button_secondary_pressed: str = "#172631"
     border: str = "#334247"
     border_strong: str = "#526167"
     text_primary: str = "#F1F5F4"
@@ -44,6 +47,7 @@ def application_style(font_family: str = "Segoe UI") -> str:
     c = COLORS
     check_icon = (Path(__file__).with_name("assets") / "check.svg").resolve().as_posix()
     combo_arrow = (Path(__file__).with_name("assets") / "chevron-down.svg").resolve().as_posix()
+    spin_up_arrow = (Path(__file__).with_name("assets") / "chevron-up.svg").resolve().as_posix()
     return f"""
     * {{
         color: {c.text_primary};
@@ -124,6 +128,9 @@ def application_style(font_family: str = "Segoe UI") -> str:
     QPushButton:pressed {{ background: {c.surface_pressed}; }}
     QPushButton:focus {{ border: 2px solid {c.focus}; }}
     QPushButton[compactAction="true"] {{ min-height: 32px; max-height: 32px; padding: 0 8px; }}
+    QPushButton[inputAction="true"] {{ background: {c.button_secondary}; }}
+    QPushButton[inputAction="true"]:hover {{ background: {c.button_secondary_hover}; }}
+    QPushButton[inputAction="true"]:pressed {{ background: {c.button_secondary_pressed}; }}
     QPushButton:disabled {{ color: {c.text_muted}; border-color: {c.border}; background: transparent; }}
     QPushButton[primary="true"] {{
         min-height: 56px;
@@ -140,15 +147,15 @@ def application_style(font_family: str = "Segoe UI") -> str:
         min-height: 45px;
         max-height: 45px;
         padding: 0 18px;
-        background: {c.surface_2};
+        background: {c.button_secondary};
         border: 1px solid {c.border_strong};
         border-bottom: 2px solid {c.border};
         border-radius: 8px;
         font-size: 16px;
         font-weight: 550;
     }}
-    QPushButton[footerAction="true"]:hover {{ background: {c.surface_selected}; border-color: {c.focus}; }}
-    QPushButton[footerAction="true"]:pressed {{ background: {c.surface_pressed}; border-bottom-width: 1px; }}
+    QPushButton[footerAction="true"]:hover {{ background: {c.button_secondary_hover}; border-color: {c.focus}; }}
+    QPushButton[footerAction="true"]:pressed {{ background: {c.button_secondary_pressed}; border-bottom-width: 1px; }}
     QPushButton[footerAction="true"][primary="true"] {{
         color: {c.canvas};
         background: {c.accent};
@@ -198,7 +205,7 @@ def application_style(font_family: str = "Segoe UI") -> str:
     QLineEdit, QComboBox, QSpinBox {{
         min-height: 46px;
         padding: 0 12px;
-        background: {c.surface_1};
+        background: {c.button_secondary};
         border: 1px solid {c.border};
         border-radius: 6px;
         selection-background-color: {c.surface_selected};
@@ -210,8 +217,12 @@ def application_style(font_family: str = "Segoe UI") -> str:
     QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled {{ color: {c.text_muted}; background: {c.canvas}; }}
     QComboBox::drop-down {{ border: 0; width: 32px; }}
     QComboBox::down-arrow {{ image: url("{combo_arrow}"); width: 14px; height: 14px; }}
+    QSpinBox::up-button, QSpinBox::down-button {{ background: {c.button_secondary}; border: 0; width: 32px; }}
+    QSpinBox::up-button:hover, QSpinBox::down-button:hover {{ background: {c.button_secondary_hover}; }}
+    QSpinBox::up-arrow {{ image: url("{spin_up_arrow}"); width: 14px; height: 14px; }}
+    QSpinBox::down-arrow {{ image: url("{combo_arrow}"); width: 14px; height: 14px; }}
     QComboBox QAbstractItemView {{
-        background: {c.surface_1};
+        background: {c.button_secondary};
         border: 1px solid {c.border_strong};
         selection-background-color: {c.surface_selected};
         selection-color: {c.text_primary};

@@ -101,7 +101,7 @@ _SETTINGS_HELP: dict[str, tuple[str, str]] = {
         "Full local runs everything on this computer. Remote controller connects this app to ASR and speaker-embedding servers on another machine. Server exposes those two services for another controller.",
     ),
     "language": ("Choose the primary spoken language.", "This language is used for transcription, speaker labels, reports, and as the source language for translation."),
-    "realtime_preview_engine": ("Choose the fast engine that produces live text while speech is still in progress.", "Nemotron favors quality, Kroko/Banafo uses fewer resources, and Off disables provisional live text without disabling final transcription."),
+    "realtime_preview_engine": ("Choose the fast engine that produces live text while speech is still in progress.", "Nemotron is usually easier to install on Windows through its CPU-only sherpa-onnx backend. Kroko/Banafo uses a separate native streaming runtime. Off disables provisional live text without disabling final transcription."),
     "realtime_preview_model_preset": ("Choose the latency or model preset for the selected live-text engine.", "Lower-latency presets update sooner; larger or more stable presets may trade responsiveness for quality."),
     "live_speaker_assignment": ("Show identified speakers beside live transcript text.", "Turn this off to keep live transcription visible without assigning speaker names in the live window."),
     "host": ("Choose the network interface used by the local browser controller.", "Use 127.0.0.1 for access from this computer only. Use a LAN address only when another trusted device must connect."),
@@ -217,6 +217,7 @@ class PathPicker(QWidget):
         self.edit = QLineEdit()
         self.edit.setAccessibleName(accessible_name)
         self.browse_button = QPushButton("Browse…")
+        self.browse_button.setProperty("inputAction", True)
         self.browse_button.setAccessibleName(f"Browse for {accessible_name.lower()}")
         self.browse_button.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.edit, 1)

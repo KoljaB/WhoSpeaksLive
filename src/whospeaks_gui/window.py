@@ -964,8 +964,8 @@ class OverviewPage(QWidget):
         )
         self.setup_live_text_help.setText(
             {
-                "sherpa_onnx": "Higher-quality live transcription.",
-                "kroko_onnx": "Lower-resource live transcription.",
+                "sherpa_onnx": "Easier Windows setup through CPU-only sherpa-onnx.",
+                "kroko_onnx": "Native Kroko/Banafo streaming runtime; separate setup may be required.",
                 "off": "Live transcription is disabled.",
             }[engine]
         )
