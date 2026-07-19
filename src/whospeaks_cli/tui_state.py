@@ -196,6 +196,14 @@ class ServerSupervisor:
         self._states[kind] = state
         return state
 
+    def clear(self, kind: str) -> ServerState:
+        """Forget one owned process after its tree has been synchronously terminated."""
+
+        self._processes[kind] = None
+        state = ServerState()
+        self._states[kind] = state
+        return state
+
     @staticmethod
     def return_code(process: object | None) -> int | None:
         if process is None:
@@ -206,6 +214,64 @@ class ServerSupervisor:
     def process_is_running(self, kind: str) -> bool:
         process = self._processes[kind]
         return process is not None and self.return_code(process) is None
+
+    def observe_backend(self, kind: str, *, available: bool) -> ServerTransition:
+        """Record current health for a required ASR or embeddings backend."""
+
+        previous = self._states[kind]
+        process = self._processes[kind]
+        return_code = self.return_code(process)
+        exit_code: int | None = None
+        if process is not None and return_code is None:
+            current = ServerState("running" if available else "unavailable", "app")
+        elif process is not None:
+            exit_code = return_code
+            self._processes[kind] = None
+            current = ServerState("failed", "app")
+        else:
+            current = ServerState("running" if available else "unavailable", "external")
+        self._states[kind] = current
+        return ServerTransition(
+            kind=kind,
+            previous=previous,
+            current=current,
+            became_app_ready=(
+                previous.ownership == "app"
+                and previous.status != "running"
+                and current.ownership == "app"
+                and current.status == "running"
+            ),
+            app_failed=(
+                current.ownership == "app"
+                and current.status == "failed"
+                and previous.status != "failed"
+            ),
+            exit_code=exit_code,
+        )
+
+    def mirror_component(self, kind: str, source: ServerState) -> ServerTransition:
+        """Mirror a component that lives inside another supervised process."""
+
+        previous = self._states[kind]
+        self._processes[kind] = None
+        current = ServerState(source.status, source.ownership)
+        self._states[kind] = current
+        return ServerTransition(
+            kind=kind,
+            previous=previous,
+            current=current,
+            became_app_ready=(
+                previous.ownership == "app"
+                and previous.status != "running"
+                and current.ownership == "app"
+                and current.status == "running"
+            ),
+            app_failed=(
+                current.ownership == "app"
+                and current.status == "failed"
+                and previous.status != "failed"
+            ),
+        )
 
     def observe(self, kind: str, *, listening: bool, probe_due: bool) -> ServerTransition:
         previous = self._states[kind]

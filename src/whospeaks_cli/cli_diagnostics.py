@@ -30,6 +30,7 @@ from window.realtime_preview_backends import (
     normalize_preview_engine,
     normalize_preview_model_preset,
 )
+from window.meeting_server_support import LLM_PROVIDER_OPTIONS
 from window.sherpa_onnx_models import (
     default_sherpa_onnx_model_dir,
     missing_sherpa_onnx_model_files,
@@ -340,7 +341,7 @@ def check_import_group(name: str, modules: list[tuple[str, str]], required: bool
         name,
         status,
         "Missing: " + ", ".join(missing),
-        "Open `whospeaks` and use Install / repair on the Setup tab.",
+        "Run `whospeaks install`, choose the matching target, then restart WhoSpeaks.",
     )
 
 
@@ -493,7 +494,7 @@ def detect_torch_cuda() -> CheckResult:
             "CUDA visibility",
             "warn",
             "torch is not importable, so CUDA availability cannot be checked.",
-            "Open `whospeaks` and use Install / repair on the Setup tab before local GPU checks.",
+            "Open `whospeaks`, choose Full local on Overview, and install the missing components before local GPU checks.",
         )
     try:
         import torch  # type: ignore
@@ -664,17 +665,19 @@ def check_meeting_intelligence_entrypoint(required: bool) -> CheckResult:
 
 
 def check_meeting_intelligence_llm(profile: Profile, *, deep: bool) -> CheckResult:
-    defaults = {
-        "llama_cpp": ("http://127.0.0.1:8081/v1", "local", ""),
-        "ollama": ("http://127.0.0.1:11434/v1", "gemma3", ""),
-        "lm_studio": ("http://127.0.0.1:1234/v1", "local-model", ""),
-        "openai_compatible": ("http://127.0.0.1:8000/v1", "local-model", ""),
-        "openai": ("https://api.openai.com/v1", "gpt-5.6-luna", "OPENAI_API_KEY"),
-        "openrouter": ("https://openrouter.ai/api/v1", "google/gemma-3-12b-it", "OPENROUTER_API_KEY"),
-    }
-    base_url, model, key_env = defaults.get(profile.report_llm_provider, defaults["llama_cpp"])
-    base_url = str(profile.report_llm_base_url or base_url).rstrip("/")
-    model = str(profile.report_llm_model or model)
+    option = LLM_PROVIDER_OPTIONS[profile.report_llm_provider]
+    base_url = str(
+        profile.report_llm_base_url or option["default_base_url"]
+    ).rstrip("/")
+    model = str(profile.report_llm_model or "").strip()
+    key_env = str(option["api_key_env_var"])
+    if not model:
+        return CheckResult(
+            "Meeting Intelligence LLM",
+            "fail",
+            f"No model is selected for {profile.report_llm_provider}.",
+            "Choose an account-visible model in Settings > Meeting Intelligence.",
+        )
     if key_env and not (os.getenv(key_env) or os.getenv("WHOSPEAKS_MI_LLM_API_KEY")):
         return CheckResult(
             "Meeting Intelligence LLM",
@@ -709,9 +712,9 @@ def check_text_embedding_provider(profile: Profile, *, deep: bool) -> CheckResul
     if not base_url or not model:
         return CheckResult(
             "Text embedding endpoint",
-            "warn",
-            "Not configured; short single-session chat works, but long and cross-session chat do not.",
-            "Set the text embedding URL and model in the Meeting Intelligence tab.",
+            "skip",
+            "Optional semantic search is not configured; short single-session chat still works.",
+            "Choose a Semantic search preset in Settings > Meeting Intelligence for long or multi-session Ask.",
         )
     if key_env and not os.getenv(key_env):
         return CheckResult(
@@ -828,33 +831,44 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
         "Install ffmpeg and open a new shell so PATH is refreshed.",
     ))
 
+    controller_modules = [
+        ("av", "av"),
+        ("numpy", "numpy"),
+        ("soundfile", "soundfile"),
+        ("nltk", "nltk"),
+        ("yt_dlp", "yt-dlp"),
+        ("onnxruntime", "onnxruntime"),
+    ]
+    # librosa is a local audio/embedding fallback.  A remote controller can
+    # capture and forward audio without importing it, so it must not block a
+    # remote launch.
+    if local_required:
+        controller_modules.append(("librosa", "librosa"))
     checks.append(check_import_group(
         "Controller Python modules",
-        [
-            ("av", "av"),
-            ("numpy", "numpy"),
-            ("soundfile", "soundfile"),
-            ("librosa", "librosa"),
-            ("nltk", "nltk"),
-            ("yt_dlp", "yt-dlp"),
-            ("onnxruntime", "onnxruntime"),
-        ],
+        controller_modules,
         required=local_required or remote_required,
     ))
 
     if macos_managed:
         checks.append(CheckResult("Local ASR modules", "skip", "MLX ASR uses its isolated managed runtime."))
-    else:
+    elif local_required:
         checks.append(check_import_group(
             "Local ASR modules",
             [("faster_whisper", "faster-whisper")],
-            required=local_required,
+            required=True,
+        ))
+    else:
+        checks.append(CheckResult(
+            "Local ASR modules",
+            "skip",
+            "This profile uses an external ASR service and does not need local final-ASR packages.",
         ))
     checks.append(check_faster_whisper_cache(profile.model, required=local_required))
 
     if macos_managed:
         checks.append(CheckResult("Local embedding modules", "skip", "Embeddings use their isolated managed runtime."))
-    else:
+    elif local_required:
         checks.append(check_import_group(
             "Local embedding modules",
             [
@@ -864,7 +878,13 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
                 ("pyannote.audio", "pyannote.audio"),
                 ("resemblyzer", "resemblyzer"),
             ],
-            required=local_required,
+            required=True,
+        ))
+    else:
+        checks.append(CheckResult(
+            "Local embedding modules",
+            "skip",
+            "This profile uses an external embeddings service and does not need local embedding packages.",
         ))
     checks.append(check_embedding_cache(required=local_required))
     if local_required and deep:
@@ -883,7 +903,7 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
 
     if macos_managed:
         checks.append(CheckResult("Server Python modules", "skip", "Managed services use isolated runtimes."))
-    else:
+    elif server_required:
         checks.append(check_import_group(
             "Server Python modules",
             [
@@ -891,7 +911,13 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
                 ("uvicorn", "uvicorn"),
                 ("faster_whisper", "faster-whisper"),
             ],
-            required=server_required,
+            required=True,
+        ))
+    else:
+        checks.append(CheckResult(
+            "Server Python modules",
+            "skip",
+            "Standalone ASR/embeddings server packages are not needed for this profile.",
         ))
 
     if profile.reports_enabled:

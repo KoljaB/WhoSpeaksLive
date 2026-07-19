@@ -61,6 +61,15 @@ class TranslationCliTests(unittest.TestCase):
         self.assertIn("http://reports.local:11434/v1", command)
         self.assertIn("gemma-report", command)
 
+    def test_reports_llm_translation_never_invents_an_installed_model(self) -> None:
+        with self.assertRaisesRegex(ValueError, "explicit Meeting Intelligence model ID"):
+            build_launch_command(Profile(
+                translation_enabled=True,
+                translation_provider="reports_llm",
+                report_llm_provider="ollama",
+                report_llm_model="",
+            ))
+
     def test_managed_provider_uses_secret_variable_name_without_serializing_secret(self) -> None:
         profile = Profile(
             translation_enabled=True,
@@ -80,7 +89,20 @@ class TranslationCliTests(unittest.TestCase):
             "MY_AZURE_TRANSLATOR_KEY",
         )
         self.assertEqual(command[command.index("--translation-region") + 1], "westeurope")
-        self.assertNotIn("--translation-base-url", command)
+        self.assertEqual(
+            command[command.index("--translation-base-url") + 1],
+            "https://api.cognitive.microsofttranslator.com",
+        )
+
+    def test_managed_provider_does_not_receive_a_stale_local_model_override(self) -> None:
+        command = build_launch_command(Profile(
+            translation_enabled=True,
+            translation_provider="deepl",
+            translation_model="old-local-model",
+        ))
+
+        self.assertNotIn("--translation-model", command)
+        self.assertNotIn("old-local-model", command)
 
     def test_managed_providers_receive_safe_default_key_variable_names(self) -> None:
         defaults = {
@@ -99,6 +121,17 @@ class TranslationCliTests(unittest.TestCase):
                     command[command.index("--translation-api-key-env") + 1],
                     env_name,
                 )
+
+    def test_generic_openai_compatible_provider_never_assumes_an_openai_key(self) -> None:
+        command = build_launch_command(Profile(
+            translation_enabled=True,
+            translation_provider="openai_compatible",
+            translation_base_url="http://translation.internal/v1",
+            translation_model="translation-model",
+        ))
+
+        self.assertNotIn("--translation-api-key-env", command)
+        self.assertNotIn("OPENAI_API_KEY", command)
 
     def test_chrome_preference_keeps_selected_backend_as_fallback(self) -> None:
         command = build_launch_command(Profile(
@@ -125,6 +158,21 @@ class TranslationCliTests(unittest.TestCase):
     def test_saved_translation_targets_reject_unknown_language_codes(self) -> None:
         with self.assertRaises(SystemExit):
             cli.apply_profile_updates(Profile(), [("translation_target_languages", "de,not-a-language")])
+
+    def test_profile_updates_reject_test_only_provider_instead_of_normalizing_it(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "Unsupported translation provider"):
+            cli.apply_profile_updates(Profile(), [("translation_provider", "mock")])
+
+    def test_profile_updates_require_a_model_when_enabling_reports(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "Choose the Meeting Intelligence model"):
+            cli.apply_profile_updates(
+                Profile(),
+                [
+                    ("reports_enabled", "true"),
+                    ("report_llm_provider", "openai"),
+                    ("report_llm_model", ""),
+                ],
+            )
 
 
 if __name__ == "__main__":

@@ -32,6 +32,7 @@ from window.meeting_intelligence_server import (
     make_handler,
     parse_timecode,
     parse_whospeakslive_transcript,
+    runtime_config_from_args,
     speaker_id_from_name,
 )
 from window.meeting_intelligence_pipeline import MockMeetingLLMClient
@@ -67,6 +68,16 @@ def demo_service(root: Path, **overrides: object) -> MeetingIntelligenceService:
 
 
 class MeetingIntelligenceServerTests(unittest.TestCase):
+    def test_runtime_requires_an_explicit_real_llm_model(self) -> None:
+        args = build_arg_parser().parse_args([])
+
+        with patch.dict(os.environ, {"WHOSPEAKS_MI_LLM_MODEL": ""}, clear=False):
+            with self.assertRaisesRegex(ValueError, "explicit --llm-model"):
+                runtime_config_from_args(args)
+
+        mock_args = build_arg_parser().parse_args(["--mock-llm"])
+        self.assertTrue(runtime_config_from_args(mock_args).meeting.mock_llm)
+
     def test_demo_transcript_parser_preserves_times_speakers_and_rows(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             transcript_path = Path(directory) / "demo.txt"
@@ -475,13 +486,13 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
             with patch.dict(os.environ, {"OPENAI_API_KEY": ""}):
                 updated = service.update_llm_config({
                     "provider": "openai",
-                    "model": "gpt-5.6-terra",
+                    "model": "gpt-account-text-b",
                     "base_url": "https://api.openai.com/v1",
                 })
 
             self.assertEqual(updated["provider"], "openai")
-            self.assertEqual(updated["model"], "gpt-5.6-terra")
-            self.assertEqual(updated["expected_report_provider"], "openai:gpt-5.6-terra")
+            self.assertEqual(updated["model"], "gpt-account-text-b")
+            self.assertEqual(updated["expected_report_provider"], "openai:gpt-account-text-b")
             self.assertEqual(updated["api_key_env_var"], "OPENAI_API_KEY")
             self.assertFalse(updated["api_key_configured"])
             self.assertTrue(any(provider["id"] == "openai" for provider in updated["providers"]))
@@ -489,7 +500,7 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
     def test_model_list_filter_keeps_text_models_and_prefers_cheaper_names(self) -> None:
         models = extract_model_ids({
             "data": [
-                {"id": "gpt-5.6-luna"},
+                {"id": "gpt-account-text-a"},
                 {"id": "text-embedding-3-small"},
                 {"id": "gpt-4.1-mini"},
                 {"id": "gpt-4.1-nano"},
@@ -499,7 +510,7 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
         })
 
         self.assertEqual(models[:2], ["gpt-4.1-nano", "gpt-4.1-mini"])
-        self.assertIn("gpt-5.6-luna", models)
+        self.assertIn("gpt-account-text-a", models)
         self.assertNotIn("text-embedding-3-small", models)
 
     def test_openai_generation_fails_fast_without_server_side_api_key(self) -> None:
@@ -513,7 +524,7 @@ class MeetingIntelligenceServerTests(unittest.TestCase):
                     cache_dir=root / "reports",
                     template_dir=root / "templates",
                     demo_transcript=transcript_path,
-                    llm_config=default_llm_config("openai", api_key="", model="gpt-5.6-luna"),
+                    llm_config=default_llm_config("openai", api_key="", model="gpt-account-text-a"),
                     max_segment_rows=12,
                 )
             )

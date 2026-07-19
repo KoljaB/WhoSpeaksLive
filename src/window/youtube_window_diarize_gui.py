@@ -56,11 +56,15 @@ def main() -> int:
     controller = WindowDiarizer(args, media, bus)
     server: WindowServer | None = None
     try:
-        server = WindowServer((args.host, args.port), args, media, bus, controller)
         if args.startup_warmup_before_url:
             controller.prepare_before_browser_release()
         else:
             bus.emit("status", {"message": "Startup model warmup skipped; models will warm before playback."})
+        # Do not bind the browser port until startup warm-up is complete.  A
+        # bound-but-unserved socket makes browsers connect successfully and
+        # then wait on a blank page, while launchers mistake that connection
+        # for application readiness.
+        server = WindowServer((args.host, args.port), args, media, bus, controller)
         page_url = f"http://{server.server_address[0]}:{server.server_address[1]}/"
         print(f"Serving growing-window diarization GUI at {page_url}", flush=True)
         if not args.no_browser:

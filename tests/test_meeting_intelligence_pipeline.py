@@ -249,10 +249,12 @@ class MeetingIntelligencePipelineTests(unittest.TestCase):
 
     def test_default_config_supports_openai_compatible_providers(self) -> None:
         self.assertEqual(default_llm_config("llama-cpp").base_url, "http://127.0.0.1:8081/v1")
+        self.assertEqual(default_llm_config("llama-cpp").model, "")
         self.assertEqual(default_llm_config("ollama").base_url, "http://127.0.0.1:11434/v1")
+        self.assertEqual(default_llm_config("ollama").model, "")
         self.assertEqual(default_llm_config("lm_studio").base_url, "http://127.0.0.1:1234/v1")
         self.assertEqual(default_llm_config("openai").base_url, "https://api.openai.com/v1")
-        self.assertEqual(default_llm_config("openai").model, "gpt-5.6-luna")
+        self.assertEqual(default_llm_config("openai").model, "")
         self.assertEqual(default_llm_config("openrouter").base_url, "https://openrouter.ai/api/v1")
         with self.assertRaises(ValueError):
             default_llm_config("unsupported")

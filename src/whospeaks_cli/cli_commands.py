@@ -365,7 +365,10 @@ def cmd_launch(args: argparse.Namespace) -> int:
         if not args.print_only and not args.dry_run:
             print("Start each command in a separate shell so both services stay running.")
         return 0
-    launch_plan = build_launch_plan(profile, args.extra_args or "")
+    try:
+        launch_plan = build_launch_plan(profile, args.extra_args or "")
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     command = list(launch_plan.live)
     reports_command: list[str] | None = None
     translation_command: list[str] | None = None
@@ -425,7 +428,10 @@ def cmd_launch(args: argparse.Namespace) -> int:
 def cmd_reports(args: argparse.Namespace) -> int:
     profile = _load_profile()
     values = report_launch_values(profile, args)
-    command = build_reports_command(profile, **values)
+    try:
+        command = build_reports_command(profile, **values)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     print(format_command(command))
     if args.print_only or args.dry_run:
         return 0

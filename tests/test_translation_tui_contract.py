@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from textual.widgets import Checkbox, Input, Select, Static, TabbedContent
+from textual.widgets import Checkbox, Select, SelectionList, Static, TabbedContent
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,7 +39,7 @@ class TranslationTuiContractTests(unittest.IsolatedAsyncioTestCase):
                 profile = backend.Profile(
                     translation_enabled=True,
                     translation_provider="sidecar",
-                    translation_python="translation-python",
+                    translation_python=os.sys.executable,
                     translation_port=8897,
                 )
                 app = WhoSpeaksSetupApp(profile, auto_doctor=False, popen_factory=popen_factory)
@@ -48,8 +48,11 @@ class TranslationTuiContractTests(unittest.IsolatedAsyncioTestCase):
                 async with app.run_test(size=(120, 36)) as pilot:
                     app.query_one("#main-tabs", TabbedContent).active = "translation-tab"
                     await pilot.pause()
-                    app.query_one("#translation-targets-input", Input).value = "de fr,ja"
-                    app.query_one("#translation-max-targets-input", Input).value = "2"
+                    targets = app.query_one("#translation-targets-select", SelectionList)
+                    targets.deselect_all()
+                    targets.select("de")
+                    targets.select("fr")
+                    app.query_one("#translation-max-targets-input", Select).value = 2
                     app.query_one("#translation-model-profile-select", Select).value = "nllb-200-600m"
                     await pilot.click("#save-translation-settings")
                     await pilot.pause()
@@ -72,7 +75,7 @@ class TranslationTuiContractTests(unittest.IsolatedAsyncioTestCase):
                         PendingAction.NONE,
                     )
                     translation_command, live_command = calls
-                    self.assertEqual(translation_command[0], "translation-python")
+                    self.assertEqual(translation_command[0], os.sys.executable)
                     self.assertIn("window.translation_server", translation_command)
                     self.assertIn("--translation-provider", live_command)
                     self.assertLess(calls.index(translation_command), calls.index(live_command))

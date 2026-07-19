@@ -16,6 +16,7 @@ Follow these in order for a new machine:
 
 - [Overview](overview.md): what WhoSpeaksLive does and where it fits.
 - [Installation](installation.md): install the `whospeaks` starter CLI and choose local or remote setup.
+- [Desktop launcher](desktop-launcher.md): use the native setup, diagnostics, settings, activity, launch, and shutdown surface.
 - [Quickstart](quickstart.md): launch the browser app locally or after remote services are healthy.
 - [Docker](docker.md): build and run the Linux containerized browser UI server.
 
@@ -42,6 +43,7 @@ Follow these in order for a new machine:
 - [Speaker model presets](speaker-model-presets.md): compare the exact final/live embedding stacks exposed by the launcher.
 - [Docker](docker.md): container build/run path, volumes, and validation commands.
 - [CLI reference](cli-reference.md): look up every command-line parameter and environment variable.
+- [Desktop launcher](desktop-launcher.md): install the optional GUI, understand command routing, and capture deterministic demo states.
 - [Modal deployment](modal-deployment.md): deploy supported remote components on Modal.
 
 ## Technical Reference

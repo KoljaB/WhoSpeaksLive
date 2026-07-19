@@ -55,7 +55,8 @@ Profile locations:
 - Windows: `%APPDATA%\WhoSpeaks\config.json`
 - Linux/macOS: `$XDG_CONFIG_HOME/whospeaks/config.json` or `~/.config/whospeaks/config.json`
 - Override: `WHOSPEAKS_CONFIG`
-- Fallback when the user config cannot be written: `.whospeaks/config.json`
+
+If the selected config path cannot be written, WhoSpeaks reports the error and leaves the existing profile unchanged.
 
 Use these commands for non-interactive changes:
 

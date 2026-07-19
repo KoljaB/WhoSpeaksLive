@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 from typing import Any
 
-from textual.widgets import Checkbox, Input, Select
+from textual.widgets import Checkbox, Input, Select, SelectionList
 
 from . import main as backend
 
@@ -72,13 +72,23 @@ class ProfileActionsMixin:
         return True
 
     def _save_settings(self, *, notify: bool = True) -> bool:
+        target = self._selected_target()
+        mode = {"core": "remote", "macos": "remote"}.get(target, target)
+        deployment_target = "macos" if target == "macos" else ""
         updates: list[tuple[str, Any]] = [
+            ("mode", mode),
+            ("deployment_target", deployment_target),
+            ("asr_backend", "remote" if mode == "remote" else "local"),
+            ("embeddings_backend", "remote" if mode == "remote" else "local"),
             ("language", self.query_one("#language-select", Select).value),
             ("provider_preset", self.query_one("#provider-select", Select).value),
+            ("embedding_provider", self.query_one("#embedding-provider-input", Input).value),
+            ("live_speaker_embedding_provider", self.query_one("#live-embedding-provider-input", Input).value),
             ("live_speaker_assignment", self.query_one("#live-speakers-checkbox", Checkbox).value),
             ("model", self.query_one("#model-input", Input).value),
             ("device", self.query_one("#device-select", Select).value),
             ("compute_type", self.query_one("#compute-input", Input).value),
+            ("vad_backend", self.query_one("#vad-backend-select", Select).value),
             ("host", self.query_one("#host-input", Input).value),
             ("port", self.query_one("#port-input", Input).value),
             ("remote_asr_url", self.query_one("#asr-url-input", Input).value),
@@ -86,6 +96,9 @@ class ProfileActionsMixin:
             ("realtime_preview_engine", self.query_one("#realtime-engine-select", Select).value),
             ("realtime_preview_model_preset", self.query_one("#realtime-preset-select", Select).value),
             ("realtime_preview_model_dir", self.query_one("#realtime-model-dir-input", Input).value),
+            ("realtime_preview_python", self.query_one("#realtime-python-input", Input).value),
+            ("embedding_python", self.query_one("#embedding-python-input", Input).value),
+            ("advanced_args", self.query_one("#advanced-args-input", Input).value),
         ]
         return self._persist_profile_updates(
             updates,
@@ -123,12 +136,13 @@ class ProfileActionsMixin:
         return True
 
     def _save_translation_settings(self, *, notify: bool = True) -> bool:
+        target_selector = self.query_one("#translation-targets-select", SelectionList)
         updates: list[tuple[str, Any]] = [
             ("translation_enabled", self.query_one("#translation-enabled-checkbox", Checkbox).value),
             ("translation_browser_preferred", self.query_one("#translation-browser-preferred-checkbox", Checkbox).value),
             ("translation_provider", self.query_one("#translation-provider-select", Select).value),
-            ("translation_target_languages", self.query_one("#translation-targets-input", Input).value),
-            ("translation_max_targets", self.query_one("#translation-max-targets-input", Input).value),
+            ("translation_target_languages", ",".join(str(value) for value in target_selector.selected)),
+            ("translation_max_targets", self.query_one("#translation-max-targets-input", Select).value),
             ("translation_model_profile", self.query_one("#translation-model-profile-select", Select).value),
             ("translation_model", self.query_one("#translation-model-input", Input).value),
             ("translation_base_url", self.query_one("#translation-base-url-input", Input).value),
@@ -148,8 +162,11 @@ class ProfileActionsMixin:
         )
         if not saved:
             return False
-        self.query_one("#translation-targets-input", Input).value = self.profile.translation_target_languages
-        self.query_one("#translation-max-targets-input", Input).value = str(self.profile.translation_max_targets)
+        target_selector.deselect_all()
+        for value in self.profile.translation_target_languages.split(","):
+            if value:
+                target_selector.select(value)
+        self.query_one("#translation-max-targets-input", Select).value = self.profile.translation_max_targets
         self._sync_translation_settings()
         self._sync_action_buttons()
         return True

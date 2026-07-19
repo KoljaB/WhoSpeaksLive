@@ -12,14 +12,14 @@ whospeaks install-translation --model-profile madlad-400-3b --torch auto --yes
 
 Each command creates a separate virtual environment and model directory on Windows or Linux. NLLB is the recommended broad, lower-memory default. TranslateGemma requires accepting the Gemma terms on Hugging Face. MADLAD uses considerably more memory than NLLB. See [Live translation](translation.md) for paths, licensing, launch behavior, and offline verification.
 
-Install the lightweight `whospeaks` command first, then let it guide the full local, controller, or server setup.
+Install the `whospeaks` command with its optional desktop interface, then let it guide the full local, controller, or server setup.
 
 ## Recommended First Command
 
 From a Python 3.11 environment:
 
 ```powershell
-pip install whospeaks
+pip install "whospeaks[gui]"
 whospeaks
 ```
 
@@ -28,7 +28,7 @@ whospeaks
 Use uv's tool installer for the same globally available `whospeaks` command:
 
 ```powershell
-uv tool install --python 3.11 whospeaks
+uv tool install --python 3.11 "whospeaks[gui]"
 uv tool update-shell
 ```
 
@@ -38,26 +38,26 @@ uv tool update-shell
 whospeaks
 ```
 
-After the launcher starts, choose **uv** in the Setup tab to use it for the larger target-specific dependency sets, PyTorch, managed macOS services, translation sidecars, and the Python-package portion of a Kroko sidecar. The scriptable equivalent is:
+After the launcher starts, it checks `PATH` for **uv** and selects it by default when available; otherwise it selects **pip**. The Overview setup form still lets you switch between the available installers. The selected backend is used for the larger target-specific dependency sets, PyTorch, managed macOS services, translation sidecars, and the Python-package portion of a Kroko sidecar. The scriptable equivalent is:
 
 ```powershell
 whospeaks install --target local --installer uv --yes
 ```
 
-pip remains the default because it is bundled with normal Python installations and has the broadest compatibility. Set `WHOSPEAKS_INSTALLER=uv` to change the launcher default, or pass `--installer pip` / `--installer uv` explicitly. WhoSpeaks always gives uv an explicit target interpreter, so the second-stage packages are added to the same environment that runs the launcher, including an environment created by `uv tool install`.
+For non-interactive CLI commands, pip remains the default because it is bundled with normal Python installations and has the broadest compatibility; the desktop launcher performs the automatic uv detection described above. Pass `--installer pip` / `--installer uv` explicitly for scripted installs. WhoSpeaks always gives uv an explicit target interpreter, so the second-stage packages are added to the same environment that runs the launcher, including an environment created by `uv tool install`. When pip is selected, the guided installer first attempts a best-effort pip update and continues with the existing version if that update fails.
 
 Do not use `uvx whospeaks` for guided setup. `uvx` uses an ephemeral environment, while WhoSpeaks needs a persistent environment for the heavier runtime selected in the launcher.
 
 To test a development build from TestPyPI, replace `<version>` with the published development version:
 
 ```powershell
-uv tool install --python 3.11 --index https://pypi.org/simple/ --index https://test.pypi.org/simple/ --index-strategy unsafe-first-match --refresh-package whospeaks "whospeaks==<version>"
+uv tool install --python 3.11 --index https://pypi.org/simple/ --index https://test.pypi.org/simple/ --index-strategy unsafe-first-match --refresh-package whospeaks "whospeaks[gui]==<version>"
 uv tool update-shell
 ```
 
 Open a new terminal and run `whospeaks`. The explicit index strategy is limited to this TestPyPI workflow. PyPI is deliberately listed first so ordinary dependencies use its complete wheel set; the exact WhoSpeaks development version then falls through to TestPyPI. This avoids both TestPyPI placeholder packages and incomplete TestPyPI file sets, such as a release that lacks a CPython 3.11 Windows wheel. Normal PyPI installations keep uv's safer default strategy. Once installed, the launcher recognizes the development version and applies the same PyPI-first TestPyPI fallback when uv expands the selected WhoSpeaks extras.
 
-The base install includes the Textual setup interface, doctor checks, profile storage, and launch-command generator. The Setup tab asks what you want on this machine:
+The base install includes the Textual setup interface, doctor checks, profile storage, and launch-command generator. The optional `gui` extra adds the primary native desktop launcher; a base-only install remains appropriate for SSH/headless use. Overview asks what you want on this machine:
 
 - Full local installation: browser controller, final ASR, and speaker embeddings on one machine.
 - Core/controller: browser UI on this machine, with ASR and embeddings served by remote HTTP services.
@@ -65,12 +65,13 @@ The base install includes the Textual setup interface, doctor checks, profile st
 
 For local or core/controller installs, use the realtime text selection to include or exclude optional preview support. Kroko setup is still a native post-install step, while Nemotron 3.5 preview can be enabled manually with the `sherpa_onnx` runtime option while the installer flow is being integrated. Leave preview off when you want the cleanest install first; final ASR and speaker diarization can still run without live preview text.
 
-The interface has four operational views:
+The interface has five operational views:
 
-- Setup: installation target, Kroko selection, component readiness, install/repair, and launch.
+- Overview: first-run installation choices, component readiness, launch, and live service state.
 - Diagnostics: quick and complete doctor reports with remediation details.
 - Settings: language, speaker provider, ASR runtime, browser address, and remote service URLs.
 - Activity: live installer output and cancellation for a running operation.
+- About: version, project links, interfaces, and keyboard shortcuts.
 
 Use the classic numbered interface when needed:
 
@@ -98,11 +99,12 @@ The native Kroko runtime is handled as a post-install setup step instead of a Py
 
 ## How The Short `whospeaks` Command Works
 
-The short command opens the Textual setup and launcher application; the browser app itself is started by the longer `whospeaks-window` command that the launcher builds from your saved profile. The scriptable subcommands do not start Textual.
+The short command opens the native desktop launcher when the GUI extra is installed in a desktop session, otherwise it opens the Textual setup application. The browser app itself is started by the longer `whospeaks-window` command built from your saved profile. `--gui`, `--tui`, and `--classic` choose a surface explicitly; scriptable subcommands open none of them.
 
 `pip install whospeaks` and `uv tool install whospeaks` install console scripts from the package metadata. A console script is a command-line wrapper that imports a Python function. In this package:
 
 - `whospeaks` runs `whospeaks_cli.main:main`.
+- `whospeaks-gui` runs `whospeaks_gui.main:main` when the optional PySide6 dependency is installed.
 - `whospeaks-window` runs `window.youtube_window_diarize_gui:main`.
 
 With a normal pip environment on `PATH`, or after running `uv tool update-shell`, you can type this from any directory:
@@ -124,11 +126,11 @@ The launcher stores a profile in:
 - Windows: `%APPDATA%\WhoSpeaks\config.json`
 - Linux/macOS: `$XDG_CONFIG_HOME/whospeaks/config.json` or `~/.config/whospeaks/config.json`
 
-Set `WHOSPEAKS_CONFIG` to use a specific config file. If the user config location is not writable, the launcher falls back to `.whospeaks/config.json` in the current directory.
+Set `WHOSPEAKS_CONFIG` to use a specific config file. If the selected location is not writable, the launcher reports the error and leaves the existing profile unchanged.
 
 The normal interactive flow is:
 
-1. Run `whospeaks` and select the installation target on the Setup tab.
+1. Run `whospeaks` and select the installation target in Overview.
 2. Select whether to include Kroko realtime text.
 3. Select pip or uv as the Python package installer.
 4. Review the plan and start installation; live output appears on the Activity tab.
@@ -327,7 +329,7 @@ The guided path is:
 .\.venv\Scripts\whospeaks.exe doctor --mode local --deep
 ```
 
-Select Full local on the Setup tab, then use Install / repair. The launcher uses `--device auto` for this path. If pip installed a CPU-only PyTorch build, speaker embeddings fall back to CPU instead of crashing; install a CUDA-enabled PyTorch build when you need GPU embeddings. The realtime text selection controls whether native Kroko setup is included; Nemotron preview can also be enabled manually with `--realtime-preview-engine sherpa_onnx`.
+On the first-run Overview, select Full local and then Install components. For an existing installation, run `whospeaks install --target local` to add or repair runtime components. The launcher uses `--device auto` for this path. If pip installed a CPU-only PyTorch build, speaker embeddings fall back to CPU instead of crashing; install a CUDA-enabled PyTorch build when you need GPU embeddings. The Live text and Live model controls determine which preview runtime is configured.
 
 The older manual path installs the larger historical environment directly:
 
@@ -371,7 +373,7 @@ On Windows, Kroko builds may be available only for Python 3.12 while the main Wh
 whospeaks config --realtime-preview-python C:\path\to\kroko-preview\Scripts\python.exe
 ```
 
-The launcher passes the installed WhoSpeaks package path to that subprocess, so the Python 3.12 environment only needs the preview runtime packages and native `kroko_onnx` wheel. Normal users should open `whospeaks`, enable Kroko on the Setup tab, and use Install / repair instead of installing preview internals by hand. The `install` and `install-kroko` subcommands remain available for automation and troubleshooting.
+The launcher passes the installed WhoSpeaks package path to that subprocess, so the Python 3.12 environment only needs the preview runtime packages and native `kroko_onnx` wheel. During first-run setup, choose Kroko / Banafo under Live text before installing components. On an existing installation, use `whospeaks install-kroko` to add or repair that runtime. The `install` and `install-kroko` subcommands remain available for automation and troubleshooting.
 
 ## Next Step
 

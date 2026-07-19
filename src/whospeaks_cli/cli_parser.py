@@ -45,10 +45,21 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print the dashboard once and exit instead of opening the interactive starter CLI.",
     )
-    parser.add_argument(
+    interface = parser.add_mutually_exclusive_group()
+    interface.add_argument(
         "--classic",
         action="store_true",
         help="Open the classic numbered interface instead of the Textual setup application.",
+    )
+    interface.add_argument(
+        "--tui",
+        action="store_true",
+        help="Open the Textual setup application even when the optional desktop GUI is installed.",
+    )
+    interface.add_argument(
+        "--gui",
+        action="store_true",
+        help="Open the optional PySide6 desktop launcher. Install whospeaks[gui] if unavailable.",
     )
     subparsers = parser.add_subparsers(dest="command")
 
@@ -229,7 +240,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="LLM provider used by --with-meeting-intelligence (or its --with-reports compatibility alias).",
     )
     launch.add_argument("--report-llm-base-url", default=None, help="Optional report LLM base URL.")
-    launch.add_argument("--report-llm-model", default=None, help="Optional report LLM model id.")
+    launch.add_argument(
+        "--report-llm-model",
+        default=None,
+        help="Meeting Intelligence model ID (required when reports are enabled).",
+    )
     launch.add_argument("--no-report-auto-generate", dest="report_auto_generate", action="store_false", default=None, help="Do not automatically generate reports for newly saved sessions.")
     launch.set_defaults(func=cmd_launch)
 
@@ -319,7 +334,6 @@ def build_parser() -> argparse.ArgumentParser:
             "google_cloud",
             "azure_translator",
             "libretranslate",
-            "mock",
         ),
         default=None,
     )

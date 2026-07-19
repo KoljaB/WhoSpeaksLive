@@ -119,9 +119,9 @@ Supported provider values:
 | --- | --- | --- | --- |
 | `llama_cpp` | `http://127.0.0.1:8081/v1` | `local` | Good for local or SSH-tunneled llama.cpp servers. |
 | `ollama` | `http://127.0.0.1:11434/v1` | `gemma3` | Uses Ollama's OpenAI-compatible endpoint. |
-| `lm_studio` | `http://127.0.0.1:1234/v1` | `local-model` | Uses LM Studio's local OpenAI-compatible server. |
-| `openai` | `https://api.openai.com/v1` | `gpt-5.6-luna` | Requires an API key. The browser can load the models available to the configured account and select cheaper models such as `gpt-4.1-nano` when available. |
-| `openrouter` | `https://openrouter.ai/api/v1` | `google/gemma-3-12b-it` | Requires an API key. |
+| `lm_studio` | `http://127.0.0.1:1234/v1` | None; select one explicitly | Uses LM Studio's local OpenAI-compatible server. |
+| `openai` | `https://api.openai.com/v1` | None; select one explicitly | Requires an API key. The launcher and browser can load the models available to the configured account. |
+| `openrouter` | `https://openrouter.ai/api/v1` | None; select one explicitly | Requires an API key. |
 
 Command-line flags override provider defaults:
 

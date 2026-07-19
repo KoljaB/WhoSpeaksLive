@@ -262,6 +262,7 @@ def coerce_profile_value(profile: Profile, key: str, value: str) -> Any:
 def apply_profile_updates(profile: Profile, updates: list[tuple[str, Any]]) -> Profile:
     candidate = Profile.from_mapping(profile.as_dict())
     explicit_provider_preset: str | None = None
+    validation_updates: dict[str, object] = {}
     fields = profile_field_names()
     for raw_key, raw_value in updates:
         key = str(raw_key).strip().replace("-", "_")
@@ -270,17 +271,27 @@ def apply_profile_updates(profile: Profile, updates: list[tuple[str, Any]]) -> P
             allowed = ", ".join(sorted(fields))
             raise SystemExit(f"Unknown profile field {key!r}. Known fields: {allowed}.")
         if key == "mode":
+            validation_updates[key] = value
             candidate = configure_profile_for_mode(candidate, value)
             continue
         if key == "provider_preset":
             explicit_provider_preset = value
+            validation_updates[key] = value
             continue
         try:
+            coerced = coerce_profile_value(candidate, key, value)
+            validation_updates[key] = coerced
             candidate = candidate.with_updates(
-                **{key: coerce_profile_value(candidate, key, value)}
+                **{key: coerced}
             )
         except (TypeError, ValueError) as exc:
             raise SystemExit(str(exc)) from exc
+    from .launcher_controller import LauncherController, ProfileValidationError
+
+    try:
+        LauncherController(profile).validate_profile_updates(validation_updates)
+    except ProfileValidationError as exc:
+        raise SystemExit(str(exc)) from exc
     candidate = Profile.from_mapping(candidate.as_dict())
     if explicit_provider_preset is not None:
         candidate = apply_provider_preset(candidate, explicit_provider_preset)
@@ -454,10 +465,22 @@ def language_menu(profile: Profile) -> None:
             try_save_profile_updates(profile, [("realtime_preview_engine", "off")])
             continue
         if choice in {"e", "engine"}:
-            try_save_profile_updates(
-                profile,
-                [("realtime_preview_engine", prompt_value("Realtime preview engine", profile.realtime_preview_engine))],
-            )
+            print("1. Nemotron 3.5")
+            print("2. Kroko / Banafo")
+            print("3. Off")
+            engine_choice = read_input("Realtime text engine> ", "1").strip().lower()
+            engine = {
+                "1": "sherpa_onnx",
+                "nemotron": "sherpa_onnx",
+                "2": "kroko_onnx",
+                "kroko": "kroko_onnx",
+                "3": "off",
+                "off": "off",
+            }.get(engine_choice)
+            if engine is None:
+                print("Choose 1, 2, or 3.")
+                continue
+            try_save_profile_updates(profile, [("realtime_preview_engine", engine)])
             continue
         if choice in {"p", "python"}:
             try_save_profile_updates(
@@ -510,29 +533,31 @@ def backend_menu(profile: Profile) -> None:
         print("2. Controller with remote ASR and embeddings")
         print("3. Remote ASR URL")
         print("4. Remote embeddings URL")
-        print("5. Custom ASR backend")
-        print("6. Custom embeddings backend")
-        print("7. Embedding helper Python")
+        print("5. Embedding helper Python")
         print("b. Back")
         choice = read_input("> ", "b").strip().lower()
         if choice in {"b", "back", "q", "quit"}:
             return
         if choice == "1":
-            profile.mode = "local"
-            profile.asr_backend = "local"
-            profile.embeddings_backend = "local"
-            profile.device = "auto"
-            update_profile_in_place(profile, Profile.from_mapping(profile.as_dict()))
-            save_profile(profile)
-            print("Saved local backend profile.")
+            try_save_profile_updates(
+                profile,
+                [
+                    ("mode", "local"),
+                    ("asr_backend", "local"),
+                    ("embeddings_backend", "local"),
+                    ("device", "auto"),
+                ],
+            )
         elif choice == "2":
-            profile.mode = "remote"
-            profile.asr_backend = "remote"
-            profile.embeddings_backend = "remote"
-            profile.device = "auto"
-            update_profile_in_place(profile, Profile.from_mapping(profile.as_dict()))
-            save_profile(profile)
-            print("Saved remote backend profile.")
+            try_save_profile_updates(
+                profile,
+                [
+                    ("mode", "remote"),
+                    ("asr_backend", "remote"),
+                    ("embeddings_backend", "remote"),
+                    ("device", "auto"),
+                ],
+            )
         elif choice == "3":
             try_save_profile_updates(profile, [("remote_asr_url", prompt_value("Remote ASR URL", profile.remote_asr_url))])
         elif choice == "4":
@@ -541,13 +566,6 @@ def backend_menu(profile: Profile) -> None:
                 [("remote_embeddings_url", prompt_value("Remote embeddings URL", profile.remote_embeddings_url))],
             )
         elif choice == "5":
-            try_save_profile_updates(profile, [("asr_backend", prompt_value("ASR backend local/remote", profile.asr_backend))])
-        elif choice == "6":
-            try_save_profile_updates(
-                profile,
-                [("embeddings_backend", prompt_value("Embeddings backend local/remote", profile.embeddings_backend))],
-            )
-        elif choice == "7":
             try_save_profile_updates(
                 profile,
                 [("embedding_python", prompt_value("Embedding helper Python path", profile.embedding_python))],
@@ -564,10 +582,12 @@ def asr_runtime_menu(profile: Profile) -> None:
         print(f"Model: {profile.model}")
         print(f"Device: {profile.device}")
         print(f"Compute type: {profile.compute_type}")
+        print(f"Voice activity detector: {profile.vad_backend}")
         print("-" * 72)
         print("1. ASR model")
         print("2. Device")
         print("3. Compute type")
+        print("4. Voice activity detector")
         print("b. Back")
         choice = read_input("> ", "b").strip().lower()
         if choice in {"b", "back", "q", "quit"}:
@@ -575,9 +595,38 @@ def asr_runtime_menu(profile: Profile) -> None:
         if choice == "1":
             try_save_profile_updates(profile, [("model", prompt_value("ASR model", profile.model))])
         elif choice == "2":
-            try_save_profile_updates(profile, [("device", prompt_value("Device auto/cuda/cpu", profile.device))])
+            print("1. Auto")
+            print("2. CUDA")
+            print("3. CPU")
+            device_choice = read_input("Device> ", "1").strip().lower()
+            device = {
+                "1": "auto",
+                "auto": "auto",
+                "2": "cuda",
+                "cuda": "cuda",
+                "3": "cpu",
+                "cpu": "cpu",
+            }.get(device_choice)
+            if device is None:
+                print("Choose 1, 2, or 3.")
+                continue
+            try_save_profile_updates(profile, [("device", device)])
         elif choice == "3":
             try_save_profile_updates(profile, [("compute_type", prompt_value("Compute type", profile.compute_type))])
+        elif choice == "4":
+            print("1. RMS (lightweight)")
+            print("2. Silero")
+            vad_choice = read_input("Voice activity detector> ", "1").strip().lower()
+            vad = {
+                "1": "rms",
+                "rms": "rms",
+                "2": "silero",
+                "silero": "silero",
+            }.get(vad_choice)
+            if vad is None:
+                print("Choose 1 or 2.")
+                continue
+            try_save_profile_updates(profile, [("vad_backend", vad)])
         else:
             print("Choose one of the listed options.")
 
@@ -701,18 +750,21 @@ def provider_preset_menu(profile: Profile) -> None:
         if choice in {"b", "back", "q", "quit"}:
             return
         if choice in {"c", "custom"}:
-            profile.embedding_provider = prompt_value("Final embedding provider", profile.embedding_provider)
-            profile.live_speaker_embedding_provider = prompt_value(
+            final_provider = prompt_value(
+                "Final embedding provider", profile.embedding_provider
+            )
+            live_provider = prompt_value(
                 "Live embedding provider",
                 profile.live_speaker_embedding_provider,
             )
-            profile.provider_preset = infer_provider_preset_id(
-                "custom",
-                profile.embedding_provider,
-                profile.live_speaker_embedding_provider,
+            try_save_profile_updates(
+                profile,
+                [
+                    ("provider_preset", "custom"),
+                    ("embedding_provider", final_provider),
+                    ("live_speaker_embedding_provider", live_provider),
+                ],
             )
-            save_path = save_profile(profile)
-            print(f"Saved provider preset {profile.provider_preset} to {save_path}.")
             continue
         try:
             selected = int(choice)
@@ -724,9 +776,7 @@ def provider_preset_menu(profile: Profile) -> None:
             print("Choose one of the listed preset numbers.")
             continue
         preset = presets[selected - 1]
-        apply_provider_preset(profile, preset.id)
-        save_path = save_profile(profile)
-        print(f"Saved provider preset {preset.name} ({preset.id}) to {save_path}.")
+        try_save_profile_updates(profile, [("provider_preset", preset.id)])
 
 
 def select_profile_interactively(profile: Profile, mode: str) -> int | None:

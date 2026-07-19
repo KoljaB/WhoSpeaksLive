@@ -65,6 +65,9 @@ from .runtime_constants import (
     TRANSLATION_VENV_ROOT_ENV,
 )
 
+
+SETUPTOOLS_RUNTIME_SPEC = "setuptools>=68,<82"
+
 __all__ = [
     "normalize_installer_backend", "installer_backend_available", "package_install_prefix",
     "package_extra_spec", "configure_profile_for_install", "version_is_prerelease",
@@ -94,9 +97,12 @@ def _facade_callable(name: str, fallback: Any) -> Any:
 
 
 def normalize_installer_backend(value: str | None = None) -> str:
-    """Return the selected Python package installer without silently changing tools."""
+    """Return an explicit installer, or prefer available uv when none was selected."""
 
-    selected = value if value is not None else os.environ.get(INSTALLER_BACKEND_ENV, "pip")
+    configured = os.environ.get(INSTALLER_BACKEND_ENV)
+    selected = value if value is not None else configured
+    if selected is None:
+        selected = "uv" if shutil.which("uv") else "pip"
     normalized = str(selected or "pip").strip().lower().replace("-", "_")
     normalized = {"python": "pip", "uv_pip": "uv"}.get(normalized, normalized)
     if normalized not in INSTALLER_BACKEND_CHOICES:
@@ -302,7 +308,7 @@ def build_macos_install_commands(
         [sys.executable, "-m", "venv", str(asr_venv)],
         [
             *package_install_prefix(asr_python, installer_backend=installer_backend),
-            "--upgrade", "pip", "setuptools", "wheel",
+            "--upgrade", "pip", SETUPTOOLS_RUNTIME_SPEC, "wheel",
         ],
         [
             *package_install_prefix(asr_python, installer_backend=installer_backend),
@@ -316,7 +322,7 @@ def build_macos_install_commands(
         [sys.executable, "-m", "venv", str(embeddings_venv)],
         [
             *package_install_prefix(embeddings_python, installer_backend=installer_backend),
-            "--upgrade", "pip", "setuptools", "wheel",
+            "--upgrade", "pip", SETUPTOOLS_RUNTIME_SPEC, "wheel",
         ],
         [
             *package_install_prefix(embeddings_python, installer_backend=installer_backend),
@@ -576,6 +582,11 @@ def install_extra(
     installer_backend: str | None = None,
 ) -> int:
     backend = normalize_installer_backend(installer_backend)
+    pip_bootstrap_command = (
+        [sys.executable, "-m", "pip", "install", "--upgrade", "pip", SETUPTOOLS_RUNTIME_SPEC]
+        if backend == "pip"
+        else []
+    )
     command = _facade_callable("build_install_command", build_install_command)(
         extra,
         installer_backend=backend,
@@ -595,6 +606,9 @@ def install_extra(
             print("PyTorch install command:")
             print("  skipped")
     print(f"Python package installer: {backend}")
+    if pip_bootstrap_command:
+        print("pip bootstrap command:")
+        print(f"  {format_command(pip_bootstrap_command)}")
     print("WhoSpeaks package install command:")
     print(f"  {format_command(command)}")
     if dry_run:
@@ -604,6 +618,10 @@ def install_extra(
         if answer not in {"y", "yes"}:
             print("Install skipped.")
             return 0
+    if pip_bootstrap_command:
+        completed = subprocess.run(pip_bootstrap_command, check=False)
+        if completed.returncode != 0:
+            print("Warning: pip could not be updated; continuing with the installed pip version.")
     if torch_command:
         completed = subprocess.run(torch_command, check=False)
         if completed.returncode != 0:
@@ -730,8 +748,8 @@ def prompt_installer_backend() -> str:
     uv_note = "available" if installer_backend_available("uv") else "not found on PATH"
     print()
     print("Python package installer")
-    print("  1. pip: compatibility default")
-    print(f"  2. uv: faster dependency resolution and installation ({uv_note})")
+    print("  1. pip: compatibility option")
+    print(f"  2. uv: preferred faster dependency resolution and installation ({uv_note})")
     while True:
         default_choice = "2" if default == "uv" else "1"
         answer = read_input("Choose installer [1/2] ", default_choice).strip().lower()
@@ -871,7 +889,7 @@ def build_translation_install_commands(
         [sys.executable, "-m", "venv", str(environment)],
         [
             *package_install_prefix(python_executable, installer_backend=backend),
-            "--upgrade", "pip", "setuptools", "wheel",
+            "--upgrade", "pip", SETUPTOOLS_RUNTIME_SPEC, "wheel",
         ],
     ]
     if torch_command:
@@ -1086,7 +1104,7 @@ def install_kroko_sidecar(
         create_environment,
         [
             *package_install_prefix(preview_python, installer_backend=backend),
-            "--upgrade", "pip", "setuptools", "wheel",
+            "--upgrade", "pip", SETUPTOOLS_RUNTIME_SPEC, "wheel",
         ],
         [
             *package_install_prefix(preview_python, installer_backend=backend),
@@ -1182,7 +1200,7 @@ def install_kroko_runtime(
         print(
             "Kroko realtime preview on Windows currently needs CPython 3.12 x64 for the native build path. "
             "Install Python 3.12 x64 or set realtime_preview_python to a prepared Python 3.12 environment, "
-            "then open `whospeaks`, enable Kroko on the Setup tab, and install again."
+            "then open `whospeaks`, select Kroko under Settings > General, and install again from Overview."
         )
         return 0 if (soft_fail or dry_run) else 1
     return install_kroko_in_python(

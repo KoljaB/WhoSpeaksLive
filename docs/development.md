@@ -17,8 +17,25 @@ Develop against small, repeatable checks first, then validate full media workflo
 Run the core regression suite:
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest tests.test_core_regressions
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_core_*.py"
 ```
+
+Run the desktop controller and optional GUI checks without contacting services:
+
+```powershell
+$env:PYTHONPATH = "src"
+$env:QT_QPA_PLATFORM = "offscreen"
+.\.venv\Scripts\python.exe -m unittest tests.test_whospeaks_launcher_controller tests.test_whospeaks_gui
+```
+
+Capture a deterministic launcher state and compare it with its design reference:
+
+```powershell
+.\.venv\Scripts\python.exe -m whospeaks_gui.main --demo-state ready --screenshot .tmp-ready.png
+.\.venv\Scripts\python.exe tools\compare_gui_screenshots.py design-artifacts\desktop-launcher-v1\design-master-v1.png .tmp-ready.png .tmp-ready-comparison
+```
+
+Screenshot mode requires a demo state by design, so it cannot launch processes, probe ports, or write the real profile.
 
 Check whitespace before committing:
 

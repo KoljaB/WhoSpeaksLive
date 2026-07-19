@@ -29,7 +29,7 @@ Screen {
     color: #8292b4;
 }
 
-#status-row {
+#status-row, #backend-status-row {
     height: 2;
     padding: 0 2 1 2;
     background: #0d1117;
@@ -396,6 +396,15 @@ DataTable {
 
 .field {
     height: 5;
+}
+
+.field.language-target-field {
+    height: 14;
+}
+
+#translation-targets-select {
+    height: 12;
+    border: solid #34424b;
 }
 
 .field Label {

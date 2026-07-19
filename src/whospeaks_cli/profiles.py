@@ -38,6 +38,17 @@ PROMOTED_PUBLIC_PROVIDER = (
 )
 FAST_LIVE_PROVIDER = "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50"
 
+TRANSLATION_PROVIDER_OPTIONS: dict[str, dict[str, str]] = {
+    "sidecar": {"label": "Local sidecar", "default_base_url": "", "default_api_key_env": ""},
+    "transformers": {"label": "Local in live process", "default_base_url": "", "default_api_key_env": ""},
+    "deepl": {"label": "DeepL", "default_base_url": "https://api-free.deepl.com/v2", "default_api_key_env": "DEEPL_API_KEY"},
+    "google_cloud": {"label": "Google Cloud", "default_base_url": "https://translation.googleapis.com/language/translate/v2", "default_api_key_env": "GOOGLE_TRANSLATE_API_KEY"},
+    "azure_translator": {"label": "Azure Translator", "default_base_url": "https://api.cognitive.microsofttranslator.com", "default_api_key_env": "AZURE_TRANSLATOR_KEY"},
+    "libretranslate": {"label": "LibreTranslate", "default_base_url": "http://127.0.0.1:5000", "default_api_key_env": "LIBRETRANSLATE_API_KEY"},
+    "reports_llm": {"label": "Meeting Intelligence LLM", "default_base_url": "", "default_api_key_env": ""},
+    "openai_compatible": {"label": "OpenAI-compatible", "default_base_url": "", "default_api_key_env": ""},
+}
+
 
 EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("mode", "Profile mode", "local, remote, or server. Mode also aligns the ASR and embeddings backends."),
@@ -340,7 +351,7 @@ class Profile:
         )
         if profile.translation_provider not in {
             "sidecar", "transformers", "reports_llm", "openai_compatible", "deepl", "google_cloud",
-            "azure_translator", "libretranslate", "mock",
+            "azure_translator", "libretranslate",
         }:
             object.__setattr__(profile, "translation_provider", "sidecar")
         if profile.translation_model_profile not in {"translate-gemma-4b", "nllb-200-600m", "madlad-400-3b"}:
@@ -371,6 +382,62 @@ class Profile:
         """Return a validated profile snapshot with ``updates`` applied."""
 
         return type(self).from_mapping({**self.as_dict(), **updates})
+
+
+class ProfileLoadError(ValueError):
+    """An existing profile could not be loaded without changing its meaning."""
+
+    def __init__(self, path: Path, detail: str) -> None:
+        self.path = path
+        self.detail = detail
+        super().__init__(
+            f"WhoSpeaks could not use the saved profile at {path}: {detail} "
+            "Fix that file or explicitly reset it with `whospeaks config --reset`."
+        )
+
+
+_INTEGER_PROFILE_FIELDS = {"port", "reports_port", "translation_port", "translation_max_targets"}
+_BOOLEAN_PROFILE_FIELDS = {
+    "live_speaker_assignment",
+    "reports_enabled",
+    "report_auto_generate",
+    "translation_enabled",
+    "translation_browser_preferred",
+}
+
+
+def _profile_from_saved_mapping(value: dict[str, Any], path: Path) -> Profile:
+    """Load a persisted profile only when normalization would preserve every saved value."""
+
+    fields = {field.name for field in dataclasses.fields(Profile)}
+    unknown = sorted(set(value) - fields)
+    if unknown:
+        raise ProfileLoadError(path, f"unknown setting(s): {', '.join(unknown)}")
+    for field, raw_value in value.items():
+        if field in _INTEGER_PROFILE_FIELDS:
+            if isinstance(raw_value, bool) or not isinstance(raw_value, int):
+                raise ProfileLoadError(path, f"{field} must be stored as an integer")
+        elif field in _BOOLEAN_PROFILE_FIELDS:
+            if not isinstance(raw_value, bool):
+                raise ProfileLoadError(path, f"{field} must be stored as true or false")
+        elif not isinstance(raw_value, str):
+            raise ProfileLoadError(path, f"{field} must be stored as text")
+    try:
+        profile = Profile.from_mapping(value)
+    except (TypeError, ValueError, argparse.ArgumentTypeError) as exc:
+        raise ProfileLoadError(path, str(exc)) from exc
+    changed = [
+        field
+        for field, raw_value in value.items()
+        if getattr(profile, field) != raw_value
+    ]
+    if changed:
+        detail = ", ".join(
+            f"{field}={value[field]!r} is not valid (would become {getattr(profile, field)!r})"
+            for field in changed
+        )
+        raise ProfileLoadError(path, detail)
+    return profile
 
 
 def profile_with_provider_preset(profile: Profile, preset_id: str) -> Profile:
@@ -436,27 +503,22 @@ def load_profile(path: Path | None = None) -> Profile:
             continue
         try:
             data = json.loads(selected.read_text(encoding="utf-8"))
-        except (FileNotFoundError, OSError, ValueError, TypeError):
+        except FileNotFoundError:
             continue
-        if isinstance(data, dict):
-            return Profile.from_mapping(data)
+        except (OSError, ValueError, TypeError) as exc:
+            raise ProfileLoadError(selected, str(exc)) from exc
+        if not isinstance(data, dict):
+            raise ProfileLoadError(selected, "the JSON root must be an object")
+        return _profile_from_saved_mapping(data, selected)
     return Profile()
 
 
 def save_profile(profile: Profile, path: Path | None = None) -> Path:
     selected = path or config_path()
     payload = json.dumps(profile.as_dict(), indent=2, sort_keys=True) + "\n"
-    try:
-        selected.parent.mkdir(parents=True, exist_ok=True)
-        selected.write_text(payload, encoding="utf-8")
-        return selected
-    except OSError:
-        if path is not None or os.environ.get("WHOSPEAKS_CONFIG"):
-            raise
-    fallback = local_config_path()
-    fallback.parent.mkdir(parents=True, exist_ok=True)
-    fallback.write_text(payload, encoding="utf-8")
-    return fallback
+    selected.parent.mkdir(parents=True, exist_ok=True)
+    selected.write_text(payload, encoding="utf-8")
+    return selected
 
 
 def update_profile_in_place(profile: Profile, updated: Profile) -> Profile:

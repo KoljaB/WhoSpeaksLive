@@ -64,12 +64,18 @@ class TranslationInstallerTests(unittest.TestCase):
             self.assertEqual(cli.cmd_install_translation(parsed), 0)
         self.assertFalse(profile.translation_enabled)
 
-    def test_install_plan_persists_selected_translation_sidecar(self) -> None:
-        plan = cli.install_plan_for_target("server", translation_model_profile="madlad-400-3b")
+    def test_controller_install_plan_persists_selected_translation_sidecar(self) -> None:
+        plan = cli.install_plan_for_target("core", translation_model_profile="madlad-400-3b")
         profile = cli.configure_profile_for_install(cli.Profile(), plan)
         self.assertTrue(profile.translation_enabled)
         self.assertEqual(profile.translation_provider, "sidecar")
         self.assertEqual(profile.translation_model_profile, "madlad-400-3b")
+
+    def test_server_install_plan_does_not_enable_controller_translation(self) -> None:
+        plan = cli.install_plan_for_target("server", translation_model_profile="madlad-400-3b")
+        profile = cli.configure_profile_for_install(cli.Profile(), plan)
+        self.assertFalse(profile.translation_enabled)
+        self.assertEqual(plan.translation_model_profile, "off")
 
 
 if __name__ == "__main__":

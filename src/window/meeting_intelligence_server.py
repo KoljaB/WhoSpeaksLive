@@ -730,6 +730,9 @@ def make_handler(service: MeetingIntelligenceService) -> type[BaseHTTPRequestHan
                 if parsed.path in {"", "/"}:
                     self._send_html(read_web_asset("reports/index.html").decode("utf-8"))
                     return
+                if parsed.path == "/health":
+                    self._send_json({"ok": True, "ready": True, "service": "meeting-intelligence"})
+                    return
                 report_asset = {
                     "/assets/web/reports/styles-base.css": "reports/styles-base.css",
                     "/assets/web/reports/styles-components.css": "reports/styles-components.css",
@@ -981,10 +984,16 @@ def config_from_args(args: argparse.Namespace) -> MeetingIntelligenceServerConfi
 
 
 def runtime_config_from_args(args: argparse.Namespace) -> MeetingIntelligenceRuntimeConfig:
+    meeting = config_from_args(args)
+    if not meeting.mock_llm and not meeting.llm_config.model.strip():
+        raise ValueError(
+            "Meeting Intelligence requires an explicit --llm-model (or "
+            "WHOSPEAKS_MI_LLM_MODEL). No installed model is assumed."
+        )
     return MeetingIntelligenceRuntimeConfig(
         host=str(args.host),
         port=int(args.port),
-        meeting=config_from_args(args),
+        meeting=meeting,
     )
 
 

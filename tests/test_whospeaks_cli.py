@@ -25,10 +25,26 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from whospeaks_cli import main as cli
+from whospeaks_cli import profiles as profiles_module
 from whospeaks_cli.tui import provider_preset_label
 
 
 class WhoSpeaksCliTests(unittest.TestCase):
+    def test_profile_save_failure_is_reported_without_writing_a_second_config(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            primary = Path(directory) / "global" / "config.json"
+            fallback = Path(directory) / ".whospeaks" / "config.json"
+            with (
+                mock.patch.object(profiles_module, "config_path", return_value=primary),
+                mock.patch.object(profiles_module, "local_config_path", return_value=fallback),
+                mock.patch.object(Path, "write_text", side_effect=PermissionError("read only")) as write,
+            ):
+                with self.assertRaisesRegex(PermissionError, "read only"):
+                    profiles_module.save_profile(profiles_module.Profile())
+
+        self.assertEqual(write.call_count, 1)
+        self.assertFalse(fallback.exists())
+
     def test_speechbrain_encoder_initialization_supports_current_and_older_pretrained_locations(self) -> None:
         module_path = (
             ROOT
@@ -354,6 +370,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
                 "deployment_target": "macos",
                 "mode": "remote",
                 "reports_enabled": True,
+                "report_llm_model": "test-report-model",
             }
         )
         port_failure = cli.CheckResult("Port 8898", "fail", "already in use")
@@ -469,6 +486,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
     def test_launch_plan_captures_detached_commands(self) -> None:
         profile = cli.Profile(
             reports_enabled=True,
+            report_llm_model="test-report-model",
             translation_enabled=True,
             translation_provider="sidecar",
         )
@@ -495,7 +513,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
 
     def test_install_command_uses_local_preview_extra(self) -> None:
         with mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1"):
-            command = cli.build_install_command()
+            command = cli.build_install_command(installer_backend="pip")
 
         self.assertEqual(command[:3], [sys.executable, "-m", "pip"])
         self.assertEqual(command[-2:], ["install", "whospeaks[complete,preview]==0.0.1"])
@@ -524,9 +542,19 @@ class WhoSpeaksCliTests(unittest.TestCase):
             with self.assertRaisesRegex(SystemExit, "uv.*not found"):
                 cli.build_install_command("server", installer_backend="uv")
 
+    def test_default_installer_prefers_uv_only_when_it_is_available(self) -> None:
+        with mock.patch.object(cli.shutil, "which", return_value=r"C:\tools\uv.exe"):
+            with mock.patch.dict(os.environ, {}, clear=False):
+                os.environ.pop(cli.INSTALLER_BACKEND_ENV, None)
+                self.assertEqual(cli.normalize_installer_backend(None), "uv")
+        with mock.patch.object(cli.shutil, "which", return_value=None):
+            with mock.patch.dict(os.environ, {}, clear=False):
+                os.environ.pop(cli.INSTALLER_BACKEND_ENV, None)
+                self.assertEqual(cli.normalize_installer_backend(None), "pip")
+
     def test_install_command_for_dev_build_keeps_testpypi_available(self) -> None:
         with mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1.dev18"):
-            command = cli.build_install_command()
+            command = cli.build_install_command(installer_backend="pip")
 
         self.assertIn("--extra-index-url", command)
         self.assertIn(cli.TESTPYPI_SIMPLE_URL, command)
@@ -633,11 +661,28 @@ class WhoSpeaksCliTests(unittest.TestCase):
             mock.patch.object(cli, "build_install_command", return_value=package_command),
             mock.patch.object(cli.subprocess, "run", side_effect=fake_run),
         ):
-            code = cli.install_extra("complete", assume_yes=True, torch_policy="cuda")
+            code = cli.install_extra(
+                "complete",
+                assume_yes=True,
+                torch_policy="cuda",
+                installer_backend="pip",
+            )
 
         self.assertEqual(code, 0)
-        self.assertEqual(calls[0], torch_command)
-        self.assertEqual(calls[2], package_command)
+        self.assertEqual(
+            calls[0],
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "--upgrade",
+                "pip",
+                "setuptools>=68,<82",
+            ],
+        )
+        self.assertEqual(calls[1], torch_command)
+        self.assertEqual(calls[3], package_command)
 
     def test_kroko_install_command_uses_realtimestt_builder(self) -> None:
         command = cli.build_kroko_install_command("python", variant="free", work_dir=Path("kroko-work"))
@@ -933,13 +978,19 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertEqual(profile.realtime_preview_model_preset, "community-64l")
 
     def test_install_server_profile_disables_realtime_preview(self) -> None:
-        plan = cli.install_plan_for_target("server", install_kroko=True)
+        plan = cli.install_plan_for_target(
+            "server",
+            install_kroko=True,
+            translation_model_profile="nllb-200-600m",
+        )
         profile = cli.configure_profile_for_install(cli.Profile(), plan)
 
         self.assertEqual(plan.extra, cli.SERVER_EXTRA)
         self.assertFalse(plan.install_kroko)
         self.assertEqual(profile.mode, "server")
         self.assertEqual(profile.realtime_preview_engine, "off")
+        self.assertEqual(plan.translation_model_profile, "off")
+        self.assertFalse(profile.translation_enabled)
 
     def test_remote_launch_command_includes_remote_urls(self) -> None:
         profile = cli.configure_profile_for_mode(cli.Profile(), "remote")
@@ -960,6 +1011,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn("http://gpu.example:8650", command)
         self.assertIn("--remote-embeddings-url", command)
         self.assertIn("http://gpu.example:8660", command)
+        self.assertEqual(command[:3], [sys.executable, "-m", "window.youtube_window_diarize_gui"])
 
     def test_reports_command_inherits_the_live_profile_language(self) -> None:
         profile = cli.Profile(
@@ -983,6 +1035,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertEqual(command[command.index("--text-embedding-base-url") + 1], "http://embeddings.example/v1")
         self.assertEqual(command[command.index("--text-embedding-model") + 1], "multilingual-e5")
         self.assertEqual(command[command.index("--text-embedding-api-key-env") + 1], "EMBEDDING_API_KEY")
+        self.assertEqual(command[:3], [sys.executable, "-m", "window.meeting_intelligence_server"])
 
     def test_preferred_meeting_intelligence_flag_configures_live_proxy(self) -> None:
         profile = cli.Profile(language="en", host="0.0.0.0", reports_port=8898)
@@ -992,7 +1045,8 @@ class WhoSpeaksCliTests(unittest.TestCase):
             contextlib.redirect_stdout(stdout),
         ):
             code = cli.main([
-                "launch", "--with-meeting-intelligence", "--reports-port", "8899", "--print",
+                "launch", "--with-meeting-intelligence", "--reports-port", "8899",
+                "--report-llm-model", "test-report-model", "--print",
             ])
 
         self.assertEqual(code, 0)
@@ -1025,9 +1079,16 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn("--llm-model gpt-4.1-nano", output)
         self.assertIn("Live window command:", output)
 
+    def test_launch_with_reports_refuses_to_assume_an_llm_model(self) -> None:
+        profile = cli.Profile(language="en")
+        with mock.patch.object(cli, "load_profile", return_value=profile):
+            with self.assertRaisesRegex(SystemExit, "explicit model ID"):
+                cli.main(["launch", "--with-reports", "--print"])
+
     def test_launch_with_reports_and_translation_prints_one_live_header(self) -> None:
         profile = cli.Profile(
             reports_enabled=True,
+            report_llm_model="test-report-model",
             translation_enabled=True,
             translation_provider="sidecar",
         )
@@ -1216,6 +1277,43 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertEqual(called_profile.mode, "remote")
         self.assertEqual(called_mode, "auto")
 
+    def test_remote_doctor_skips_unneeded_local_runtime_packages(self) -> None:
+        profile = cli.Profile(
+            mode="remote",
+            asr_backend="remote",
+            embeddings_backend="remote",
+            realtime_preview_engine="off",
+        )
+        with (
+            mock.patch(
+                "whospeaks_cli.cli_diagnostics.command_version",
+                return_value=(True, "ffmpeg"),
+            ),
+            mock.patch(
+                "whospeaks_cli.cli_diagnostics.check_import_group",
+                side_effect=lambda name, *_args, **_kwargs: cli.CheckResult(name, "ok", "available"),
+            ),
+            mock.patch.object(
+                cli,
+                "check_remote_health",
+                side_effect=lambda name, *_args, **_kwargs: cli.CheckResult(name, "ok", "reachable"),
+            ),
+            mock.patch(
+                "whospeaks_cli.cli_diagnostics.check_remote_providers",
+                return_value=cli.CheckResult("Remote embeddings providers", "ok", "available"),
+            ),
+        ):
+            report = cli.run_doctor(profile)
+
+        local_asr = next(check for check in report.checks if check.name == "Local ASR modules")
+        local_embeddings = next(
+            check for check in report.checks if check.name == "Local embedding modules"
+        )
+        self.assertEqual(local_asr.status, "skip")
+        self.assertEqual(local_embeddings.status, "skip")
+        self.assertIn("external ASR service", local_asr.detail)
+        self.assertIn("external embeddings service", local_embeddings.detail)
+
     def test_module_entrypoint_prints_help(self) -> None:
         env = dict(os.environ)
         env["PYTHONPATH"] = str(SRC) + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
@@ -1274,12 +1372,45 @@ class WhoSpeaksCliTests(unittest.TestCase):
         with (
             mock.patch.object(cli.sys.stdin, "isatty", return_value=True),
             mock.patch.object(cli, "load_profile", return_value=profile),
+            mock.patch.object(cli, "desktop_gui_available", return_value=False),
             mock.patch.object(cli, "run_textual_dashboard", return_value=0) as dashboard,
         ):
             code = cli.main([])
 
         self.assertEqual(code, 0)
         dashboard.assert_called_once_with(profile)
+
+    def test_plain_whospeaks_prefers_desktop_gui_when_installed(self) -> None:
+        with (
+            mock.patch.object(cli.sys.stdin, "isatty", return_value=True),
+            mock.patch.object(cli, "load_profile", return_value=cli.Profile()),
+            mock.patch.object(cli, "desktop_gui_available", return_value=True),
+            mock.patch.object(cli, "desktop_session_available", return_value=True),
+            mock.patch.object(cli, "run_desktop_dashboard", return_value=0) as desktop,
+            mock.patch.object(cli, "run_textual_dashboard") as textual,
+        ):
+            code = cli.main([])
+
+        self.assertEqual(code, 0)
+        desktop.assert_called_once_with()
+        textual.assert_not_called()
+
+    def test_tui_flag_preserves_textual_entry_path(self) -> None:
+        profile = cli.Profile()
+        with (
+            mock.patch.object(cli.sys.stdin, "isatty", return_value=True),
+            mock.patch.object(cli, "load_profile", return_value=profile),
+            mock.patch.object(cli, "desktop_gui_available", return_value=True),
+            mock.patch.object(cli, "run_textual_dashboard", return_value=0) as dashboard,
+        ):
+            code = cli.main(["--tui"])
+
+        self.assertEqual(code, 0)
+        dashboard.assert_called_once_with(profile)
+
+    def test_interface_flags_are_mutually_exclusive(self) -> None:
+        with self.assertRaises(SystemExit):
+            cli.build_parser().parse_args(["--gui", "--tui"])
 
     def test_configuration_menu_exposes_important_launcher_parameters(self) -> None:
         output = cli.configuration_menu_text(cli.Profile(language="de"))
@@ -1291,6 +1422,36 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn("Browser host and port", output)
         self.assertIn("All saved profile fields", output)
         self.assertIn("German (de", output)
+
+    def test_classic_backend_menu_exposes_modes_without_fake_custom_backends(self) -> None:
+        with (
+            mock.patch("whospeaks_cli.cli_classic.read_input", side_effect=["b"]),
+            contextlib.redirect_stdout(io.StringIO()) as output,
+        ):
+            cli.backend_menu(cli.Profile())
+
+        rendered = output.getvalue()
+        self.assertIn("Full local ASR and embeddings", rendered)
+        self.assertIn("Controller with remote ASR and embeddings", rendered)
+        self.assertIn("Embedding helper Python", rendered)
+        self.assertNotIn("Custom ASR backend", rendered)
+        self.assertNotIn("Custom embeddings backend", rendered)
+
+    def test_classic_asr_menu_uses_finite_device_and_vad_choices(self) -> None:
+        with (
+            mock.patch(
+                "whospeaks_cli.cli_classic.read_input",
+                side_effect=["2", "2", "4", "2", "b"],
+            ),
+            mock.patch("whospeaks_cli.cli_classic.try_save_profile_updates") as save_updates,
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
+            cli.asr_runtime_menu(cli.Profile())
+
+        self.assertEqual(
+            save_updates.call_args_list,
+            [mock.call(mock.ANY, [("device", "cuda")]), mock.call(mock.ANY, [("vad_backend", "silero")])],
+        )
 
     def test_full_profile_editor_lists_every_saved_field_once(self) -> None:
         output = cli.full_profile_editor_text(cli.Profile())
@@ -1339,6 +1500,24 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn(cli.PUBLIC_PROVIDER, command)
         self.assertIn("--live-speaker-embedding-provider", command)
         self.assertIn(cli.FAST_LIVE_PROVIDER, command)
+
+    def test_existing_corrupt_profile_is_reported_instead_of_silently_reset(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            config_path = Path(directory) / "config.json"
+            config_path.write_text("{not-json", encoding="utf-8")
+
+            with self.assertRaisesRegex(cli.ProfileLoadError, "could not use the saved profile"):
+                cli.load_profile(config_path)
+
+    def test_existing_invalid_profile_value_is_not_silently_normalized(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            config_path = Path(directory) / "config.json"
+            payload = cli.Profile().as_dict()
+            payload["translation_provider"] = "mock"
+            config_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            with self.assertRaisesRegex(cli.ProfileLoadError, "translation_provider"):
+                cli.load_profile(config_path)
 
     def test_provider_preset_is_custom_when_provider_strings_do_not_match(self) -> None:
         profile = cli.Profile.from_mapping({
@@ -1428,7 +1607,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
                     code = cli.main([
                         "config",
                         "--embedding-python",
-                        "/opt/whospeaks/bin/python",
+                        sys.executable,
                         "--json",
                     ])
                 payload = json.loads(stdout.getvalue())
@@ -1440,8 +1619,8 @@ class WhoSpeaksCliTests(unittest.TestCase):
                     os.environ["WHOSPEAKS_CONFIG"] = original_config
 
         self.assertEqual(code, 0)
-        self.assertEqual(payload["embedding_python"], "/opt/whospeaks/bin/python")
-        self.assertEqual(profile.embedding_python, "/opt/whospeaks/bin/python")
+        self.assertEqual(payload["embedding_python"], sys.executable)
+        self.assertEqual(profile.embedding_python, sys.executable)
 
     def test_launch_language_flag_overrides_without_saving(self) -> None:
         original_config = os.environ.get("WHOSPEAKS_CONFIG")
@@ -1491,8 +1670,14 @@ class WhoSpeaksCliTests(unittest.TestCase):
             pyproject["project"]["scripts"]["whospeaks"],
             "whospeaks_cli.main:main",
         )
+        self.assertEqual(
+            pyproject["project"]["scripts"]["whospeaks-gui"],
+            "whospeaks_gui.main:main",
+        )
         extras = pyproject["project"]["optional-dependencies"]
+        self.assertEqual(extras["gui"], ["PySide6>=6.8,<7"])
         self.assertIn("controller", extras)
+        self.assertNotIn("librosa>=0.10.1", extras["controller"])
         self.assertIn("server", extras)
         self.assertIn("complete", extras)
         self.assertIn("all", extras)

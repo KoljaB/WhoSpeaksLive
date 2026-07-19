@@ -28,6 +28,9 @@ Starter command for setup, health checks, saved profiles, and launching `whospea
 | Scope | Parameter | Default | What it does |
 | --- | --- | --- | --- |
 | global | `--no-interactive` | off unless passed | Print the dashboard once and exit instead of opening the interactive starter CLI. |
+| global | `--gui` | auto when installed in a desktop session | Open the optional PySide6 desktop launcher; mutually exclusive with `--tui` and `--classic`. |
+| global | `--tui` | off unless passed | Force the Textual full-screen terminal interface even when the GUI extra is installed. |
+| global | `--classic` | off unless passed | Force the classic numbered terminal interface. |
 | doctor | `--mode` | `auto` | Select which topology to check: auto-detect, all-local, remote controller plus servers, or server-only. Choices: `auto`, `local`, `remote`, `server`. |
 | doctor | `--remote-asr-url` | empty | Remote ASR server URL to check instead of the saved profile value. |
 | doctor | `--remote-embeddings-url` | empty | Remote embeddings server URL to check instead of the saved profile value. |
@@ -57,6 +60,20 @@ Starter command for setup, health checks, saved profiles, and launching `whospea
 | config | `--reset` | off unless passed | Reset the saved starter profile to defaults before applying any `--set` values. |
 
 Use `whospeaks config --set text_embedding_base_url=... --set text_embedding_model=...` to save the long and multi-session Ask search provider. Add `--set text_embedding_api_key_env=NAME` when the endpoint reads its secret from an environment variable.
+
+### `whospeaks-gui`
+
+Optional native desktop setup and launcher installed by `pip install "whospeaks[gui]"`. See [Desktop launcher](desktop-launcher.md) for the workflow and safety model.
+
+| Parameter | Default | What it does |
+| --- | --- | --- |
+| `--demo-state` | none | Use deterministic fake data for one of `first_run`, `ready`, `starting`, `running`, `partial_failure`, `failed`, `diagnostics`, `settings`, or `activity`; performs no external action. |
+| `--screenshot PATH` | none | Capture the client area and exit; requires `--demo-state`. |
+| `--width` | `1600` | Set screenshot client width. |
+| `--height` | `1000` | Set screenshot client height. |
+| `--no-auto-check` | off unless passed | Skip the initial quick diagnostic check. |
+| `--reduced-motion` | off unless passed | Disable nonessential transitions and animated activity marks. |
+| `--motion-phase` | none | Select deterministic design-review activity phase `0` through `11`. |
 
 ### `whospeaks-meeting-intelligence`
 

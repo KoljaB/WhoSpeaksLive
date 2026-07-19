@@ -68,33 +68,33 @@ def default_llm_config(provider: str = "llama_cpp", **overrides: Any) -> Meeting
     defaults: dict[str, dict[str, Any]] = {
         "llama_cpp": {
             "base_url": os.environ.get("WHOSPEAKS_MI_LLM_BASE_URL", "http://127.0.0.1:8081/v1"),
-            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", "local"),
+            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", ""),
             "schema_mode": "both",
         },
         "ollama": {
             "base_url": os.environ.get("WHOSPEAKS_MI_LLM_BASE_URL", "http://127.0.0.1:11434/v1"),
-            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", "gemma3"),
+            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", ""),
             "schema_mode": "response_format",
         },
         "lm_studio": {
             "base_url": os.environ.get("WHOSPEAKS_MI_LLM_BASE_URL", "http://127.0.0.1:1234/v1"),
-            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", "local-model"),
+            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", ""),
             "schema_mode": "response_format",
         },
         "openai_compatible": {
             "base_url": os.environ.get("WHOSPEAKS_MI_LLM_BASE_URL", "http://127.0.0.1:8000/v1"),
-            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", "local-model"),
+            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", ""),
             "schema_mode": "response_format",
         },
         "openai": {
             "base_url": os.environ.get("WHOSPEAKS_MI_LLM_BASE_URL", "https://api.openai.com/v1"),
-            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", "gpt-5.6-luna"),
+            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", ""),
             "schema_mode": "response_format",
             "api_key": os.environ.get("OPENAI_API_KEY", ""),
         },
         "openrouter": {
             "base_url": os.environ.get("WHOSPEAKS_MI_LLM_BASE_URL", "https://openrouter.ai/api/v1"),
-            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", "google/gemma-3-12b-it"),
+            "model": os.environ.get("WHOSPEAKS_MI_LLM_MODEL", ""),
             "schema_mode": "response_format",
             "api_key": os.environ.get("OPENROUTER_API_KEY", ""),
         },

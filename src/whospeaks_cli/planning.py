@@ -7,13 +7,13 @@ import importlib.metadata
 import os
 import platform
 import shlex
-import shutil
 import sys
 from pathlib import Path
 from importlib import resources
 from typing import Any
 
 from window.language_config import normalize_language_code
+from window.meeting_server_support import LLM_PROVIDER_OPTIONS
 from window.realtime_preview_backends import (
     get_preview_backend_spec,
     normalize_preview_engine,
@@ -25,6 +25,7 @@ from .profiles import (
     DEFAULT_REMOTE_ASR_URL,
     DEFAULT_REMOTE_EMBEDDINGS_URL,
     Profile,
+    TRANSLATION_PROVIDER_OPTIONS,
     normalize_mode,
     profile_with_provider_preset,
 )
@@ -230,7 +231,7 @@ def install_plan_for_target(
         install_kroko=False,
         summary="Service-side dependencies for the remote faster-whisper ASR and embeddings endpoints.",
         realtime_preview_engine="off",
-        translation_model_profile=translation_profile,
+        translation_model_profile="off",
     )
 
 
@@ -316,8 +317,10 @@ def profile_for_install(profile: Profile, plan: InstallPlan) -> Profile:
 
 
 def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
-    executable = shutil.which("whospeaks-window")
-    command = [executable] if executable else [sys.executable, "-m", "window.youtube_window_diarize_gui"]
+    # Always launch the module with the interpreter that owns this launcher.
+    # A same-named executable earlier on PATH may belong to an obsolete or
+    # removed WhoSpeaks environment.
+    command = [sys.executable, "-m", "window.youtube_window_diarize_gui"]
     command.extend([
         "--host", str(profile.host),
         "--port", str(int(profile.port)),
@@ -352,32 +355,34 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
     if profile.embeddings_backend == "remote":
         command.extend(["--remote-embeddings-url", str(profile.remote_embeddings_url)])
     translation_provider = profile.translation_provider if profile.translation_enabled else "off"
+    if translation_provider == "reports_llm" and not profile.report_llm_model.strip():
+        raise ValueError(
+            "Meeting Intelligence translation requires an explicit Meeting Intelligence model ID."
+        )
     translation_base_url = str(profile.translation_base_url or "").strip()
     translation_model = str(profile.translation_model or "").strip()
     translation_api_key_env = str(profile.translation_api_key_env or "").strip()
     if translation_provider == "sidecar":
         translation_base_url = translation_base_url or f"http://127.0.0.1:{int(profile.translation_port)}"
     elif translation_provider == "reports_llm":
-        defaults = {
-            "llama_cpp": ("http://127.0.0.1:8081/v1", "local", ""),
-            "ollama": ("http://127.0.0.1:11434/v1", "gemma3", ""),
-            "lm_studio": ("http://127.0.0.1:1234/v1", "local-model", ""),
-            "openai_compatible": ("http://127.0.0.1:8000/v1", "local-model", ""),
-            "openai": ("https://api.openai.com/v1", "", "OPENAI_API_KEY"),
-            "openrouter": ("https://openrouter.ai/api/v1", "", "OPENROUTER_API_KEY"),
-        }
-        default_url, default_model, translation_api_key_env = defaults[profile.report_llm_provider]
+        report_option = LLM_PROVIDER_OPTIONS[profile.report_llm_provider]
         translation_provider = "openai_compatible"
-        translation_base_url = translation_base_url or profile.report_llm_base_url or default_url
-        translation_model = translation_model or profile.report_llm_model or default_model
+        translation_base_url = (
+            translation_base_url
+            or profile.report_llm_base_url
+            or str(report_option["default_base_url"])
+        )
+        translation_model = translation_model or profile.report_llm_model
+        translation_api_key_env = str(report_option["api_key_env_var"])
     else:
-        translation_api_key_env = translation_api_key_env or {
-            "openai_compatible": "OPENAI_API_KEY",
-            "deepl": "DEEPL_API_KEY",
-            "google_cloud": "GOOGLE_TRANSLATE_API_KEY",
-            "azure_translator": "AZURE_TRANSLATOR_KEY",
-            "libretranslate": "LIBRETRANSLATE_API_KEY",
-        }.get(translation_provider, "")
+        provider_option = TRANSLATION_PROVIDER_OPTIONS.get(translation_provider, {})
+        translation_base_url = translation_base_url or provider_option.get("default_base_url", "")
+        translation_api_key_env = (
+            translation_api_key_env
+            or provider_option.get("default_api_key_env", "")
+        )
+        if translation_provider not in {"openai_compatible"}:
+            translation_model = ""
     command.extend([
         "--translation-provider", translation_provider,
         "--translation-max-targets", str(int(profile.translation_max_targets)),
@@ -413,18 +418,24 @@ def build_reports_command(
     llm_model: str = "",
     auto_generate: bool = True,
 ) -> list[str]:
-    executable = shutil.which("whospeaks-meeting-intelligence")
-    command = [executable] if executable else [sys.executable, "-m", "window.meeting_intelligence_server"]
+    option = LLM_PROVIDER_OPTIONS.get(str(llm_provider))
+    if option is None:
+        raise ValueError(f"Unsupported Meeting Intelligence provider: {llm_provider}")
+    resolved_base_url = str(llm_base_url or option["default_base_url"]).strip()
+    resolved_model = str(llm_model or "").strip()
+    if not resolved_model:
+        raise ValueError(
+            "Meeting Intelligence requires an explicit model ID; no installed model is assumed."
+        )
+    command = [sys.executable, "-m", "window.meeting_intelligence_server"]
     command.extend([
         "--host", str(profile.host),
         "--port", str(int(port)),
         "--report-language", normalize_language_code(report_language or profile.language),
         "--llm-provider", str(llm_provider),
+        "--llm-base-url", resolved_base_url,
+        "--llm-model", resolved_model,
     ])
-    if llm_base_url:
-        command.extend(["--llm-base-url", str(llm_base_url)])
-    if llm_model:
-        command.extend(["--llm-model", str(llm_model)])
     if profile.text_embedding_base_url:
         command.extend(["--text-embedding-base-url", str(profile.text_embedding_base_url)])
     if profile.text_embedding_model:
@@ -437,8 +448,7 @@ def build_reports_command(
 
 
 def build_translation_command(profile: Profile) -> list[str]:
-    executable = shutil.which("whospeaks-translation-server") if not profile.translation_python else None
-    command = [executable] if executable else [str(profile.translation_python or sys.executable), "-m", "window.translation_server"]
+    command = [str(profile.translation_python or sys.executable), "-m", "window.translation_server"]
     command.extend([
         "--host", str(profile.host),
         "--port", str(int(profile.translation_port)),

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import platform
 from typing import Any
 
@@ -17,12 +18,15 @@ from textual.widgets import (
     RadioSet,
     RichLog,
     Select,
+    SelectionList,
     Static,
     TabbedContent,
     TabPane,
 )
+from window.meeting_server_support import LLM_PROVIDER_OPTIONS
 
 from . import main as backend
+from .profiles import TRANSLATION_PROVIDER_OPTIONS
 
 
 def provider_preset_label(preset_id: str, preset: backend.ProviderPreset) -> str:
@@ -58,7 +62,7 @@ def compose_setup_app(app: Any) -> ComposeResult:
     provider_options = [
         (provider_preset_label(preset_id, preset), preset_id)
         for preset_id, preset in backend.PROVIDER_PRESETS.items()
-    ]
+    ] + [("Custom provider expressions", "custom")]
     report_language_options = [("Follow live language", ""), *language_options]
     report_provider_options = [
         ("llama.cpp", "llama_cpp"),
@@ -68,23 +72,41 @@ def compose_setup_app(app: Any) -> ComposeResult:
         ("OpenAI", "openai"),
         ("OpenRouter", "openrouter"),
     ]
+    report_option = LLM_PROVIDER_OPTIONS[app.profile.report_llm_provider]
+    report_base_url = str(
+        app.profile.report_llm_base_url or report_option["default_base_url"]
+    )
+    report_models = [str(item) for item in report_option.get("models") or []]
+    report_model = str(
+        app.profile.report_llm_model or (report_models[0] if report_models else "")
+    )
     translation_provider_options = [
-        ("Local sidecar (recommended)", "sidecar"),
-        ("Local model in live process", "transformers"),
-        ("DeepL API", "deepl"),
-        ("Google Cloud Translation", "google_cloud"),
-        ("Azure Translator", "azure_translator"),
-        ("LibreTranslate endpoint", "libretranslate"),
-        ("Reuse Meeting Intelligence LLM", "reports_llm"),
-        ("OpenAI-compatible API", "openai_compatible"),
-        ("Mock (testing)", "mock"),
+        (option["label"], provider_id)
+        for provider_id, option in TRANSLATION_PROVIDER_OPTIONS.items()
     ]
+    translation_option = TRANSLATION_PROVIDER_OPTIONS[app.profile.translation_provider]
+    translation_base_url = str(
+        app.profile.translation_base_url or translation_option["default_base_url"]
+    )
+    translation_api_key_env = str(
+        app.profile.translation_api_key_env or translation_option["default_api_key_env"]
+    )
     translation_model_options = [
         ("TranslateGemma 4B (recommended)", "translate-gemma-4b"),
         ("NLLB-200 600M (CC-BY-NC)", "nllb-200-600m"),
         ("MADLAD-400 3B (Apache-2.0)", "madlad-400-3b"),
     ]
-    installer_backend = backend.normalize_installer_backend(None)
+    selected_translation_targets = {
+        item.strip()
+        for item in app.profile.translation_target_languages.split(",")
+        if item.strip()
+    }
+    configured_installer = os.environ.get(backend.INSTALLER_BACKEND_ENV)
+    installer_backend = (
+        backend.normalize_installer_backend(configured_installer)
+        if configured_installer is not None
+        else ("uv" if backend.installer_backend_available("uv") else "pip")
+    )
     uv_label = "uv (faster)" if backend.installer_backend_available("uv") else "uv (not found on PATH)"
 
     with Vertical(id="app-body"):
@@ -95,6 +117,9 @@ def compose_setup_app(app: Any) -> ComposeResult:
             yield Static("full local", id="mode-pill", markup=False)
             yield Static("not checked", id="readiness-text", markup=False)
             yield Static("", id="server-status-spacer", markup=False)
+        with Horizontal(id="backend-status-row"):
+            yield Static("Final ASR: stopped", id="asr-server-state", classes="server-state", markup=False)
+            yield Static("Speaker embeddings: stopped", id="embeddings-server-state", classes="server-state", markup=False)
             yield Static("Live: stopped", id="live-server-state", classes="server-state", markup=False)
             yield Static("Reports: stopped", id="reports-server-state", classes="server-state", markup=False)
             yield Static("Translation: stopped", id="translation-server-state", classes="server-state", markup=False)
@@ -157,7 +182,7 @@ def compose_setup_app(app: Any) -> ComposeResult:
                         yield Label("Installer:", id="installer-label")
                         yield Select(
                             [
-                                ("pip (compatibility default)", "pip"),
+                                ("pip (compatibility)", "pip"),
                                 (uv_label, "uv"),
                             ],
                             value=installer_backend,
@@ -179,7 +204,6 @@ def compose_setup_app(app: Any) -> ComposeResult:
                     yield Button("Exit", id="exit-button")
                     yield Button("Refresh", id="refresh-button")
                     yield Button("Launch", id="launch-button")
-                    yield Button("Activity", id="view-activity-button")
                     yield Button("Install", id="install-button", variant="primary")
             with TabPane("Diagnostics", id="diagnostics-tab"):
                 yield DataTable(id="doctor-table", zebra_stripes=True, cursor_type="row")
@@ -203,7 +227,7 @@ def compose_setup_app(app: Any) -> ComposeResult:
                                 [
                                     ("Nemotron 3.5 (recommended)", "sherpa_onnx"),
                                     ("Kroko / Banafo", "kroko_onnx"),
-                                    ("Disabled", "off"),
+                                    ("Off", "off"),
                                 ],
                                 value=preview_engine if preview_engine in {"sherpa_onnx", "kroko_onnx", "off"} else "off",
                                 allow_blank=False,
@@ -228,12 +252,56 @@ def compose_setup_app(app: Any) -> ComposeResult:
                                 id="realtime-model-dir-input",
                             )
                         with Vertical(classes="field"):
+                            yield Label("Realtime preview Python")
+                            yield Input(
+                                app.profile.realtime_preview_python,
+                                placeholder="Use the WhoSpeaks Python",
+                                id="realtime-python-input",
+                            )
+                        with Vertical(classes="field"):
+                            yield Label("Embedding helper Python")
+                            yield Input(
+                                app.profile.embedding_python,
+                                placeholder="Use the WhoSpeaks Python",
+                                id="embedding-python-input",
+                            )
+                        with Vertical(classes="field"):
                             yield Label("Speaker model preset")
                             yield Select(
                                 provider_options,
-                                value=app.profile.provider_preset if app.profile.provider_preset in backend.PROVIDER_PRESETS else "smoke",
+                                value=(
+                                    app.profile.provider_preset
+                                    if app.profile.provider_preset in backend.PROVIDER_PRESETS
+                                    else "custom"
+                                ),
                                 allow_blank=False,
                                 id="provider-select",
+                            )
+                        with Vertical(classes="field", id="embedding-provider-edit-row"):
+                            yield Label("Final speaker provider")
+                            yield Input(
+                                app.profile.embedding_provider,
+                                id="embedding-provider-input",
+                            )
+                        with Vertical(classes="field", id="live-embedding-provider-edit-row"):
+                            yield Label("Live speaker provider")
+                            yield Input(
+                                app.profile.live_speaker_embedding_provider,
+                                id="live-embedding-provider-input",
+                            )
+                        with Vertical(classes="field", id="embedding-provider-summary-row"):
+                            yield Label("Final speaker provider")
+                            yield Static(
+                                app.profile.embedding_provider,
+                                id="embedding-provider-summary",
+                                markup=False,
+                            )
+                        with Vertical(classes="field", id="live-embedding-provider-summary-row"):
+                            yield Label("Live speaker provider")
+                            yield Static(
+                                app.profile.live_speaker_embedding_provider,
+                                id="live-embedding-provider-summary",
+                                markup=False,
                             )
                         with Vertical(classes="field"):
                             yield Label("ASR model")
@@ -250,6 +318,14 @@ def compose_setup_app(app: Any) -> ComposeResult:
                             yield Label("Compute type")
                             yield Input(app.profile.compute_type, id="compute-input")
                         with Vertical(classes="field"):
+                            yield Label("Voice activity detector")
+                            yield Select(
+                                [("RMS - lightweight", "rms"), ("Silero - neural", "silero")],
+                                value=app.profile.vad_backend,
+                                allow_blank=False,
+                                id="vad-backend-select",
+                            )
+                        with Vertical(classes="field"):
                             yield Label("Browser host")
                             yield Input(app.profile.host, id="host-input")
                         with Vertical(classes="field"):
@@ -261,6 +337,13 @@ def compose_setup_app(app: Any) -> ComposeResult:
                         with Vertical(classes="field"):
                             yield Label("Remote embeddings URL")
                             yield Input(app.profile.remote_embeddings_url, id="embeddings-url-input")
+                        with Vertical(classes="field"):
+                            yield Label("Advanced launch arguments")
+                            yield Input(
+                                app.profile.advanced_args,
+                                placeholder="Optional additional whospeaks-window arguments",
+                                id="advanced-args-input",
+                            )
                 with Horizontal(id="settings-actions"):
                     yield Button("Save settings", id="save-settings", variant="primary")
             with TabPane("Meeting Intelligence", id="reports-tab"):
@@ -294,10 +377,10 @@ def compose_setup_app(app: Any) -> ComposeResult:
                             )
                         with Vertical(classes="field"):
                             yield Label("Report LLM base URL")
-                            yield Input(app.profile.report_llm_base_url, placeholder="Provider default", id="report-llm-base-url-input")
+                            yield Input(report_base_url, id="report-llm-base-url-input")
                         with Vertical(classes="field"):
                             yield Label("Report LLM model")
-                            yield Input(app.profile.report_llm_model, placeholder="Provider default", id="report-llm-model-input")
+                            yield Input(report_model, placeholder="Enter the model ID exposed by this provider", id="report-llm-model-input")
                         with Vertical(classes="field"):
                             yield Label("Text embedding base URL")
                             yield Input(app.profile.text_embedding_base_url, placeholder="OpenAI-compatible /v1", id="text-embedding-base-url-input")
@@ -342,18 +425,22 @@ def compose_setup_app(app: Any) -> ComposeResult:
                                 allow_blank=False,
                                 id="translation-provider-select",
                             )
-                        with Vertical(classes="field"):
-                            yield Label("Target language codes")
-                            yield Input(
-                                app.profile.translation_target_languages,
-                                placeholder="de, fr, ja",
-                                id="translation-targets-input",
+                        with Vertical(classes="field language-target-field"):
+                            yield Label("Target languages")
+                            yield SelectionList(
+                                *(
+                                    (label, code, code in selected_translation_targets)
+                                    for label, code in language_options
+                                    if code != app.profile.language
+                                ),
+                                id="translation-targets-select",
                             )
                         with Vertical(classes="field"):
                             yield Label("Maximum simultaneous targets")
-                            yield Input(
-                                str(app.profile.translation_max_targets),
-                                type="integer",
+                            yield Select(
+                                [(str(value), value) for value in range(1, 17)],
+                                value=app.profile.translation_max_targets,
+                                allow_blank=False,
                                 id="translation-max-targets-input",
                             )
                         with Vertical(classes="field"):
@@ -374,15 +461,15 @@ def compose_setup_app(app: Any) -> ComposeResult:
                         with Vertical(classes="field"):
                             yield Label("API / sidecar base URL (optional)")
                             yield Input(
-                                app.profile.translation_base_url,
-                                placeholder="Provider default",
+                                translation_base_url,
+                                placeholder="Enter the provider endpoint",
                                 id="translation-base-url-input",
                             )
                         with Vertical(classes="field"):
                             yield Label("API-key environment variable")
                             yield Input(
-                                app.profile.translation_api_key_env,
-                                placeholder="Provider default",
+                                translation_api_key_env,
+                                placeholder="Optional environment-variable name",
                                 id="translation-api-key-env-input",
                             )
                         with Vertical(classes="field"):

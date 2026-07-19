@@ -31,10 +31,12 @@ from textual.widgets import (
     TabbedContent,
     TabPane,
 )
+from window.meeting_server_support import LLM_PROVIDER_OPTIONS
 
 from . import main as backend
 from .tui_actions import ProfileActionsMixin
 from .tui_layout import compose_setup_app, provider_preset_label
+from .profiles import TRANSLATION_PROVIDER_OPTIONS
 from .tui_servers import ServerLifecycleMixin
 from .tui_styles import APP_CSS
 from .tui_state import PendingAction, ServerSupervisor, SetupCoordinator
@@ -58,7 +60,7 @@ def realtime_plan_label(plan: backend.InstallPlan) -> str:
         return "Nemotron 3.5 live text (560 ms)"
     if plan.realtime_preview_engine == "kroko_onnx":
         return "Kroko / Banafo live text"
-    return "Live text disabled"
+    return "Live text off"
 
 
 class ConfirmInstallScreen(ModalScreen[bool]):
@@ -136,6 +138,8 @@ class WhoSpeaksSetupApp(
         self.install_process: subprocess.Popen[str] | None = None
         self.last_server_probe_at = 0.0
         self.language_selection_changed = False
+        self._report_provider_value = self.profile.report_llm_provider
+        self._translation_provider_value = self.profile.translation_provider
 
     @property
     def active_operation(self) -> str:
@@ -215,7 +219,9 @@ class WhoSpeaksSetupApp(
     def on_mount(self) -> None:
         self._configure_tables()
         self._apply_size_classes(self.size.width, self.size.height)
+        self._sync_deployment_controls()
         self._sync_realtime_settings()
+        self._sync_speaker_provider_settings()
         self._sync_translation_settings()
         self._update_plan(announce=False)
         self._sync_preview_compatibility()
@@ -599,7 +605,10 @@ class WhoSpeaksSetupApp(
             or self.translation_server_state == "running"
         )
         incompatible = self._preview_compatibility_error() is not None
-        if live_running:
+        server_target = self._selected_target() == "server"
+        if server_target:
+            launch.label = "Server install only"
+        elif live_running:
             launch.label = "Live running"
         elif reports_enabled and translation_sidecar_enabled:
             launch.label = "Launch + services"
@@ -609,9 +618,7 @@ class WhoSpeaksSetupApp(
             launch.label = "Launch + translation"
         else:
             launch.label = "Launch"
-        launch.disabled = bool(operation) or live_running or incompatible
-        self.query_one("#view-activity-button", Button).disabled = False
-
+        launch.disabled = bool(operation) or live_running or incompatible or server_target
         install = self.query_one("#install-button", Button)
         install.label = "Installing" if installing else "Install"
         install.disabled = bool(operation) or incompatible
@@ -685,7 +692,10 @@ class WhoSpeaksSetupApp(
     def target_changed(self) -> None:
         if self._selected_target() == "macos":
             self._select_realtime_engine("off")
+        self._sync_deployment_controls()
+        self._sync_speaker_provider_settings()
         self._update_plan()
+        self._sync_action_buttons()
 
     @on(RadioSet.Changed, "#realtime-select")
     def realtime_changed(self) -> None:
@@ -750,6 +760,91 @@ class WhoSpeaksSetupApp(
     def reports_enabled_changed(self) -> None:
         self._sync_action_buttons()
 
+    @on(Select.Changed, "#report-llm-provider-select")
+    def report_llm_provider_changed(self) -> None:
+        provider = str(self.query_one("#report-llm-provider-select", Select).value or "llama_cpp")
+        if provider == self._report_provider_value:
+            self._sync_action_buttons()
+            return
+        self._report_provider_value = provider
+        option = LLM_PROVIDER_OPTIONS[provider]
+        base_url = self.query_one("#report-llm-base-url-input", Input)
+        model = self.query_one("#report-llm-model-input", Input)
+        base_url.value = str(option["default_base_url"])
+        models = [str(item) for item in option.get("models") or []]
+        model.value = models[0] if models else ""
+        self._sync_action_buttons()
+
+    @on(Select.Changed, "#provider-select")
+    def speaker_provider_changed(self) -> None:
+        self._sync_speaker_provider_settings()
+
+    def _sync_speaker_provider_settings(self) -> None:
+        selected = str(self.query_one("#provider-select", Select).value or "custom")
+        final_provider = self.query_one("#embedding-provider-input", Input)
+        live_provider = self.query_one("#live-embedding-provider-input", Input)
+        custom = selected == "custom"
+        preset = backend.PROVIDER_PRESETS.get(selected)
+        if preset is not None:
+            final_provider.value = preset.embedding_provider
+            live_provider.value = preset.live_speaker_embedding_provider
+        self.query_one("#embedding-provider-summary", Static).update(final_provider.value)
+        self.query_one("#live-embedding-provider-summary", Static).update(live_provider.value)
+        server = self._selected_target() == "server"
+        self.query_one("#embedding-provider-edit-row").styles.display = (
+            "block" if custom and not server else "none"
+        )
+        self.query_one("#live-embedding-provider-edit-row").styles.display = (
+            "block" if custom and not server else "none"
+        )
+        self.query_one("#embedding-provider-summary-row").styles.display = (
+            "block" if not custom and not server else "none"
+        )
+        self.query_one("#live-embedding-provider-summary-row").styles.display = (
+            "block" if not custom and not server else "none"
+        )
+
+    def _sync_deployment_controls(self) -> None:
+        target = self._selected_target()
+        server = target == "server"
+        local = target == "local"
+        remote = target == "core"
+        self.query_one("#translation-install-row").styles.display = (
+            "none" if server else "block"
+        )
+        self.query_one("#realtime-row").styles.display = "none" if server else "block"
+        self.query_one("#language-label").styles.display = "none" if server else "block"
+        self.query_one("#quick-language-select").styles.display = (
+            "none" if server else "block"
+        )
+        field_visibility = {
+            "#language-select": not server,
+            "#realtime-engine-select": not server,
+            "#embedding-python-input": local,
+            "#provider-select": not server,
+            "#embedding-provider-input": not server,
+            "#live-embedding-provider-input": not server,
+            "#model-input": local,
+            "#device-select": local,
+            "#compute-input": local,
+            "#vad-backend-select": not server,
+            "#host-input": not server,
+            "#port-input": not server,
+            "#asr-url-input": remote,
+            "#embeddings-url-input": remote,
+            "#advanced-args-input": not server,
+        }
+        for selector, visible in field_visibility.items():
+            widget = self.query_one(selector)
+            if widget.parent is not None:
+                widget.parent.styles.display = "block" if visible else "none"
+        tabs = self.query_one("#main-tabs", TabbedContent)
+        for tab_id in ("settings-tab", "reports-tab", "translation-tab"):
+            if server:
+                tabs.hide_tab(tab_id)
+            else:
+                tabs.show_tab(tab_id)
+
     @on(Checkbox.Changed, "#translation-enabled-checkbox")
     def translation_enabled_changed(self) -> None:
         self._sync_translation_settings()
@@ -757,32 +852,89 @@ class WhoSpeaksSetupApp(
 
     @on(Select.Changed, "#translation-provider-select")
     def translation_provider_changed(self) -> None:
+        provider = str(self.query_one("#translation-provider-select", Select).value or "sidecar")
+        if provider != self._translation_provider_value:
+            self._translation_provider_value = provider
+            option = TRANSLATION_PROVIDER_OPTIONS[provider]
+            base_url = self.query_one("#translation-base-url-input", Input)
+            key_env = self.query_one("#translation-api-key-env-input", Input)
+            base_url.value = str(option["default_base_url"])
+            key_env.value = str(option["default_api_key_env"])
         self._sync_translation_settings()
         self._sync_action_buttons()
 
     def _sync_realtime_settings(self) -> None:
+        if getattr(self, "_syncing_realtime_settings", False):
+            return
+        self._syncing_realtime_settings = True
+        try:
+            self._sync_realtime_settings_inner()
+        finally:
+            self._syncing_realtime_settings = False
+
+    def _sync_realtime_settings_inner(self) -> None:
         engine = str(self.query_one("#realtime-engine-select", Select).value or "off")
-        enabled = engine == "sherpa_onnx"
-        self.query_one("#realtime-preset-select", Select).disabled = not enabled
-        self.query_one("#realtime-model-dir-input", Input).disabled = not enabled
+        preset = self.query_one("#realtime-preset-select", Select)
+        options = {
+            "sherpa_onnx": [
+                ("560 ms: stable", "nemotron-3.5-560ms-int8"),
+                ("160 ms: lower latency", "nemotron-3.5-160ms-int8"),
+            ],
+            "kroko_onnx": [
+                ("Community 64L", "community-64l"),
+                ("Pro 16L", "pro-16l"),
+            ],
+            "off": [("No live model", "")],
+        }[engine]
+        allowed = {value for _label, value in options}
+        current = str(preset.value or "")
+        selected = current if current in allowed else options[0][1]
+        preset.set_options(options)
+        preset.value = selected
+        visibility = {
+            "#realtime-preset-select": engine != "off",
+            "#realtime-model-dir-input": engine == "sherpa_onnx",
+            "#realtime-python-input": engine == "kroko_onnx",
+        }
+        for selector, visible in visibility.items():
+            widget = self.query_one(selector)
+            widget.disabled = False
+            if widget.parent is not None:
+                widget.parent.styles.display = "block" if visible else "none"
 
     def _sync_translation_settings(self) -> None:
         provider = str(self.query_one("#translation-provider-select", Select).value or "sidecar")
         local_model = provider in {"sidecar", "transformers"}
         sidecar = provider == "sidecar"
-        self.query_one("#translation-model-profile-select", Select).disabled = not local_model
-        self.query_one("#translation-device-select", Select).disabled = not local_model
-        self.query_one("#translation-port-input", Input).disabled = not sidecar
-        self.query_one("#translation-python-input", Input).disabled = not sidecar
-        self.query_one("#translation-base-url-input", Input).disabled = provider in {"transformers", "mock"}
-        self.query_one("#translation-api-key-env-input", Input).disabled = provider in {
+        model_provider = provider in {
             "sidecar",
             "transformers",
             "reports_llm",
-            "mock",
+            "openai_compatible",
         }
-        self.query_one("#translation-region-input", Input).disabled = provider != "azure_translator"
-        self.query_one("#translation-model-input", Input).disabled = provider == "mock"
+        endpoint_provider = provider not in {"sidecar", "transformers", "reports_llm"}
+        key_provider = provider in {
+            "deepl",
+            "google_cloud",
+            "azure_translator",
+            "libretranslate",
+            "openai_compatible",
+        }
+        visibility = {
+            "#translation-model-profile-select": local_model,
+            "#translation-device-select": local_model,
+            "#translation-model-input": model_provider,
+            "#translation-port-input": sidecar,
+            "#translation-python-input": sidecar,
+            "#translation-base-url-input": endpoint_provider,
+            "#translation-api-key-env-input": key_provider,
+            "#translation-region-input": provider == "azure_translator",
+        }
+        for selector, visible in visibility.items():
+            widget = self.query_one(selector)
+            widget.disabled = False
+            if widget.parent is not None:
+                widget.parent.styles.display = "block" if visible else "none"
 
     @on(Button.Pressed)
     def handle_button(self, event: Button.Pressed) -> None:
@@ -810,8 +962,6 @@ class WhoSpeaksSetupApp(
                 self._request_cancel()
             else:
                 self.exit()
-        elif button_id == "view-activity-button":
-            self._show_activity()
         elif button_id == "cancel-operation":
             self._request_cancel()
         elif button_id == "clear-log":
@@ -866,6 +1016,14 @@ class WhoSpeaksSetupApp(
         self.run_doctor_worker(False)
 
     def action_launch(self) -> None:
+        if self._selected_target() == "server":
+            self._set_feedback(
+                "warning",
+                "Server deployment has no local live window",
+                "Use Install to prepare the ASR and embeddings service packages.",
+            )
+            self.notify("Install the server deployment instead of launching a live window", severity="warning")
+            return
         if self.profile.deployment_target == "macos":
             try:
                 backend.require_apple_silicon_macos()

@@ -11,12 +11,12 @@ from typing import Any
 
 DEFAULT_ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 LLM_PROVIDER_OPTIONS = {
-    "llama_cpp": {"label": "llama.cpp", "default_base_url": "http://127.0.0.1:8081/v1", "models": ["gemma-4-12b-it-Q6_K.gguf", "local"], "requires_api_key": False, "api_key_env_var": ""},
-    "ollama": {"label": "Ollama", "default_base_url": "http://127.0.0.1:11434/v1", "models": ["gemma3", "llama3.1"], "requires_api_key": False, "api_key_env_var": ""},
-    "lm_studio": {"label": "LM Studio", "default_base_url": "http://127.0.0.1:1234/v1", "models": ["local-model"], "requires_api_key": False, "api_key_env_var": ""},
-    "openai_compatible": {"label": "OpenAI-compatible", "default_base_url": "http://127.0.0.1:8000/v1", "models": ["local-model"], "requires_api_key": False, "api_key_env_var": ""},
-    "openai": {"label": "OpenAI", "default_base_url": "https://api.openai.com/v1", "models": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"], "requires_api_key": True, "api_key_env_var": "OPENAI_API_KEY"},
-    "openrouter": {"label": "OpenRouter", "default_base_url": "https://openrouter.ai/api/v1", "models": ["google/gemma-3-12b-it"], "requires_api_key": True, "api_key_env_var": "OPENROUTER_API_KEY"},
+    "llama_cpp": {"label": "llama.cpp", "default_base_url": "http://127.0.0.1:8081/v1", "models": [], "requires_api_key": False, "api_key_env_var": ""},
+    "ollama": {"label": "Ollama", "default_base_url": "http://127.0.0.1:11434/v1", "models": [], "requires_api_key": False, "api_key_env_var": ""},
+    "lm_studio": {"label": "LM Studio", "default_base_url": "http://127.0.0.1:1234/v1", "models": [], "requires_api_key": False, "api_key_env_var": ""},
+    "openai_compatible": {"label": "OpenAI-compatible", "default_base_url": "http://127.0.0.1:8000/v1", "models": [], "requires_api_key": False, "api_key_env_var": ""},
+    "openai": {"label": "OpenAI", "default_base_url": "https://api.openai.com/v1", "models": [], "requires_api_key": True, "api_key_env_var": "OPENAI_API_KEY"},
+    "openrouter": {"label": "OpenRouter", "default_base_url": "https://openrouter.ai/api/v1", "models": [], "requires_api_key": True, "api_key_env_var": "OPENROUTER_API_KEY"},
 }
 TRANSCRIPT_LINE_RE = re.compile(
     r"^\[(?P<start>\d+(?::\d+){1,2}(?:\.\d+)?)\s+-\s+"
@@ -105,7 +105,7 @@ def is_likely_text_generation_model(model_id: str) -> bool:
 def sort_model_ids(model_ids: list[str]) -> list[str]:
     def sort_key(model_id: str) -> tuple[int, str]:
         text = model_id.lower()
-        for rank, marker in enumerate(("nano", "mini", "luna", "terra", "sol")):
+        for rank, marker in enumerate(("nano", "mini")):
             if marker in text:
                 return rank, text
         return 5, text

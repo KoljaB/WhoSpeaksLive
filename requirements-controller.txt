@@ -6,7 +6,6 @@
 textual>=8.2,<9
 av>=11.0.0
 emoji>=2.15.0
-librosa>=0.10.1
 nltk>=3.9.4
 numpy>=2,<3
 onnxruntime>=1.17

@@ -224,6 +224,8 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/":
             html = render_live_index(self._bootstrap_payload())
             self._send_bytes(html.encode("utf-8"), "text/html; charset=utf-8")
+        elif path == "/health":
+            self._send_json({"ok": True, "ready": True, "service": "live-window"})
         elif path == "/events":
             self._serve_events()
         elif path == "/api/events":

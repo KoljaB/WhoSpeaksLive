@@ -11,6 +11,7 @@ from typing import Any
 from textual.widgets import Static
 
 from . import main as backend
+from .launcher_controller import LauncherController
 from .tui_state import PendingAction
 
 
@@ -34,11 +35,25 @@ class ServerLifecycleMixin:
         widget = matches[0]
         for state_class in ("running", "starting", "failed"):
             widget.remove_class(state_class)
-        if state in {"running", "starting", "failed"}:
+        if state in {"running", "available"}:
+            widget.add_class("running")
+        elif state in {"starting", "failed"}:
             widget.add_class(state)
         widget.update(f"{label}: {state}")
 
+    def _backend_display_status(self, kind: str) -> str:
+        state = self._servers.state(kind)
+        if self.profile.mode == "remote" and state.status == "running":
+            return "available"
+        return state.display_status
+
     def _render_server_states(self) -> None:
+        self._render_server_state(
+            "#asr-server-state", "Final ASR", self._backend_display_status("macos_asr")
+        )
+        self._render_server_state(
+            "#embeddings-server-state", "Speaker embeddings", self._backend_display_status("macos_embeddings")
+        )
         self._render_server_state(
             "#live-server-state", "Live", self._servers.state("live").display_status
         )
@@ -102,7 +117,7 @@ class ServerLifecycleMixin:
                         f"The browser controller was not started. Check {spec.health_url} and service logs.",
                     )
         transitions = []
-        for kind in ("live", "reports", "translation", "macos_asr", "macos_embeddings"):
+        for kind in ("live", "reports", "translation"):
             transition = self._servers.observe(
                 kind,
                 listening=bool(listening.get(kind, False)),
@@ -115,6 +130,47 @@ class ServerLifecycleMixin:
                 )
             if transition.previous != transition.current:
                 changed = True
+        if self.profile.deployment_target == "macos":
+            for kind in ("macos_asr", "macos_embeddings"):
+                transition = self._servers.observe(
+                    kind,
+                    listening=bool(listening.get(kind, False)),
+                    probe_due=probe_due,
+                )
+                transitions.append(transition)
+                if transition.exit_code is not None:
+                    self._append_log(
+                        f"{self._server_label(kind)} exited with code {transition.exit_code}."
+                    )
+                if transition.previous != transition.current:
+                    changed = True
+        elif self.profile.mode == "remote":
+            for kind, base_url in (
+                ("macos_asr", self.profile.remote_asr_url),
+                ("macos_embeddings", self.profile.remote_embeddings_url),
+            ):
+                transition = self._servers.observe_backend(
+                    kind,
+                    available=(
+                        LauncherController._remote_backend_available(base_url, timeout=0.03)
+                        if probe_due
+                        else self._servers.state(kind).status == "running"
+                    ),
+                )
+                transitions.append(transition)
+                if transition.previous != transition.current:
+                    changed = True
+        elif self.profile.mode == "local":
+            live_state = self._servers.state("live")
+            for kind in ("macos_asr", "macos_embeddings"):
+                transition = self._servers.mirror_component(kind, live_state)
+                transitions.append(transition)
+                if transition.previous != transition.current:
+                    changed = True
+        else:
+            for kind in ("macos_asr", "macos_embeddings"):
+                self._servers.clear(kind)
+                transitions.append(self._servers.observe(kind, listening=False, probe_due=probe_due))
         if changed:
             self._render_server_states()
             self._sync_action_buttons()

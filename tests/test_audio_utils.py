@@ -32,6 +32,26 @@ class AudioUtilsTests(unittest.TestCase):
         self.assertEqual(sample_rate, 16000)
         self.assertTrue(np.allclose(audio, expected))
 
+    def test_resampling_uses_av_when_librosa_is_not_installed(self) -> None:
+        source = np.array([0.0, 0.25, -0.25], dtype=np.float32)
+        expected = np.array([0.0, -0.1], dtype=np.float32)
+        path = Path("sample.wav")
+
+        with (
+            mock.patch("soundfile.read", return_value=(source, 44100)),
+            mock.patch.dict(sys.modules, {"librosa": None}),
+            mock.patch.object(
+                audio_utils,
+                "_load_audio_file_with_av",
+                return_value=(expected, 16000),
+            ) as av_loader,
+        ):
+            audio, sample_rate = audio_utils.load_audio_file(path)
+
+        av_loader.assert_called_once_with(path, 16000)
+        self.assertEqual(sample_rate, 16000)
+        self.assertTrue(np.allclose(audio, expected))
+
 
 if __name__ == "__main__":
     unittest.main()

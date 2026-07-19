@@ -38,6 +38,7 @@ from .profiles import (
     SINGLE_ESPNET_PROVIDER,
     SMOKE_PROVIDER,
     Profile,
+    ProfileLoadError,
     ProviderPreset,
     apply_provider_preset,
     config_path,
@@ -149,12 +150,55 @@ from window.sherpa_onnx_models import (
     missing_sherpa_onnx_model_files,
 )
 
+
+def desktop_gui_available() -> bool:
+    """Return whether the optional desktop package and Qt runtime are importable."""
+
+    return (
+        importlib.util.find_spec("PySide6") is not None
+        and importlib.util.find_spec("whospeaks_gui") is not None
+    )
+
+
+def desktop_session_available() -> bool:
+    return platform.system() in {"Windows", "Darwin"} or bool(
+        os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")
+    )
+
+
+def run_desktop_dashboard() -> int:
+    from whospeaks_gui.main import main as run_desktop_gui
+
+    return int(run_desktop_gui([]))
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     if hasattr(args, "func"):
-        return int(args.func(args))
-    profile = load_profile()
+        try:
+            return int(args.func(args))
+        except ProfileLoadError as exc:
+            parser.error(str(exc))
+    gui_installed = desktop_gui_available()
+    desktop_session = desktop_session_available()
+    if args.gui or (
+        gui_installed
+        and desktop_session
+        and sys.stdin.isatty()
+        and not args.no_interactive
+        and not args.classic
+        and not args.tui
+    ):
+        if not gui_installed:
+            parser.error(
+                "The desktop launcher requires the optional GUI dependency: "
+                "pip install 'whospeaks[gui]'"
+            )
+        return run_desktop_dashboard()
+    try:
+        profile = load_profile()
+    except ProfileLoadError as exc:
+        parser.error(str(exc))
     if args.no_interactive or not sys.stdin.isatty():
         report = run_doctor(profile)
         render_dashboard(profile, report)
@@ -164,4 +208,6 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.classic:
         return interactive_dashboard(profile)
+    if args.tui:
+        return run_textual_dashboard(profile)
     return run_textual_dashboard(profile)

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "whospeaks"
-version = "0.0.4"
+version = "0.0.5.dev3"
 description = "Local speaker diarization and realtime voice-labeling tools."
 readme = "README.md"
 license = "MIT"
@@ -27,13 +27,15 @@ Repository = "https://github.com/KoljaB/WhoSpeaksLive"
 Documentation = "https://github.com/KoljaB/WhoSpeaksLive/tree/master/docs"
 
 [project.optional-dependencies]
+gui = [
+    "PySide6>=6.8,<7",
+]
 intelligence = [
     "numpy>=2,<3",
 ]
 controller = [
     "av>=11.0.0",
     "emoji>=2.15.0",
-    "librosa>=0.10.1",
     "nltk>=3.9.4",
     "numpy>=2,<3",
     "onnxruntime>=1.17",
@@ -61,12 +63,15 @@ local = [
     "torch>=2.2",
     "torchaudio>=2.2",
     "transformers>=4.39,<5",
+    "setuptools>=68,<82",
+    "webrtcvad==2.0.10",
     "yt-dlp>=2024.3.10",
 ]
 preview = [
     "numpy>=2,<3",
     "sherpa-onnx>=1.13.4,<1.14",
     "sherpa-onnx-bin>=1.13.4,<1.14",
+    "setuptools>=68,<82",
     "webrtcvad==2.0.10",
 ]
 translation = [
@@ -123,6 +128,8 @@ complete = [
     "torch>=2.2",
     "torchaudio>=2.2",
     "transformers>=4.39,<5",
+    "setuptools>=68,<82",
+    "webrtcvad==2.0.10",
     "yt-dlp>=2024.3.10",
 ]
 all = [
@@ -150,11 +157,13 @@ all = [
     "python-multipart>=0.0.9",
     "uvicorn[standard]>=0.29",
     "yt-dlp>=2024.3.10",
+    "setuptools>=68,<82",
     "webrtcvad==2.0.10",
 ]
 
 [project.scripts]
 whospeaks = "whospeaks_cli.main:main"
+whospeaks-gui = "whospeaks_gui.main:main"
 whospeaks-window = "window.youtube_window_diarize_gui:main"
 whospeaks-realtime = "realtime.realtime_speakerdiarize:main"
 whospeaks-filefeed-replay = "replay.youtube_local_filefeed_replay:main"
@@ -171,6 +180,7 @@ where = ["src", "vendor"]
 namespaces = false
 
 [tool.setuptools.package-data]
+whospeaks_gui = ["assets/*.svg"]
 remote_servers = [
     "faster-whisper-asr/asr_server.py",
     "faster-whisper-asr/mlx_asr_server.py",

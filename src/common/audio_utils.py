@@ -171,15 +171,18 @@ def load_audio_file(path: Path, sample_rate: int = SAMPLE_RATE) -> tuple[np.ndar
 
             audio = librosa.resample(audio, orig_sr=source_rate, target_sr=sample_rate)
         except ModuleNotFoundError:
-            import torch
-            import torchaudio.functional as audio_functional
+            try:
+                return _load_audio_file_with_av(path, sample_rate)
+            except ModuleNotFoundError:
+                import torch
+                import torchaudio.functional as audio_functional
 
-            tensor = torch.from_numpy(np.asarray(audio, dtype=np.float32))
-            audio = audio_functional.resample(
-                tensor,
-                orig_freq=int(source_rate),
-                new_freq=int(sample_rate),
-            ).cpu().numpy()
+                tensor = torch.from_numpy(np.asarray(audio, dtype=np.float32))
+                audio = audio_functional.resample(
+                    tensor,
+                    orig_freq=int(source_rate),
+                    new_freq=int(sample_rate),
+                ).cpu().numpy()
         source_rate = sample_rate
     audio = np.nan_to_num(audio, nan=0.0, posinf=0.0, neginf=0.0)
     return np.asarray(audio, dtype=np.float32), source_rate

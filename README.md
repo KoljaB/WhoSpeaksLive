@@ -30,17 +30,19 @@ For faster realtime ASR preview text like shown in the demo, WhoSpeaksLive suppo
 
 ## Start Here
 
-For a guided setup, install the lightweight CLI and run its compatibility check to find the best configuration for your system:
+For the primary desktop setup and launcher, install the optional Qt interface and start WhoSpeaks:
 
 ```powershell
-pip install whospeaks
+pip install "whospeaks[gui]"
 whospeaks
 ```
+
+The desktop launcher keeps readiness checks, installation, service state, settings, activity, and safe shutdown in one native window. Use `whospeaks --tui` for the full-screen terminal interface or `whospeaks --classic` for the numbered interface. A base `pip install whospeaks` remains GUI-free and automatically uses the terminal interface.
 
 Or use this same uv command for both the first installation and later updates:
 
 ```powershell
-uv tool install --force --python 3.11 whospeaks
+uv tool install --force --python 3.11 "whospeaks[gui]"
 uv tool update-shell
 ```
 
@@ -54,17 +56,17 @@ whospeaks
 `uv tool update-shell` only changes `PATH` when needed, so the two commands are
 safe to reuse together.
 
-The command above installs the lightweight production CLI from PyPI. It brings
-only the terminal setup dependency; model runtimes and other heavy optional
-components are installed after you choose a deployment mode. See
+The base package remains a lightweight production CLI. It brings only the
+terminal setup dependency; the `gui` extra adds PySide6, while model runtimes
+and other heavy optional components are installed after you choose a deployment mode. See
 [PyPI package scope](docs/pypi-package-scope.md) for the exact inclusion and
 exclusion policy.
 
 The setup application keeps pip as its compatibility default and also offers uv for the larger target-specific install. For automation, pass `--installer uv`, for example `whospeaks install --target local --installer uv --yes`. A persistent `uv tool install` is supported and recommended for a globally available command. Do not use `uvx`: it creates an ephemeral environment that is not suitable for the runtime packages added by the guided setup.
 
-The full-screen setup application opens on the Setup tab. Select the full local stack, the core/controller for remote ASR and embeddings servers, or the ASR/embeddings server packages, then choose whether to include optional realtime preview text. Kroko remains optional because its native runtime may require Python 3.12, Docker Desktop on Windows, or a prebuilt `kroko_onnx` wheel. Nemotron 3.5 is available as a manual CPU preview option while the installer flow is being integrated.
+The desktop launcher opens on Overview. Select the full local stack, the core/controller for remote ASR and embeddings servers, or the ASR/embeddings server packages, then choose whether to include optional realtime preview text. Kroko remains optional because its native runtime may require Python 3.12, Docker Desktop on Windows, or a prebuilt `kroko_onnx` wheel. Nemotron 3.5 is available as a manual CPU preview option while the installer flow is being integrated.
 
-The `whospeaks` setup application keeps component readiness, diagnostics, settings, installation progress, logs, cancellation, and browser launch in one terminal interface. Run `whospeaks --classic` when the full-screen terminal interface is unavailable or you prefer the numbered menu.
+The `whospeaks` setup application keeps component readiness, diagnostics, settings, installation progress, logs, cancellation, and browser launch together. See the [desktop launcher guide](docs/desktop-launcher.md) for interface routing, deterministic demo states, and safe-shutdown behavior.
 
 The short `whospeaks` command is a setup and launcher wrapper. It saves a small profile, runs doctor checks, and expands that profile into the longer `whospeaks-window ...` browser-server command when you launch.
 
@@ -130,6 +132,7 @@ Optional translation weights are also downloaded separately and retain their own
 | Documentation map | [docs/index.md](docs/index.md) |
 | Product overview and use cases | [docs/overview.md](docs/overview.md) |
 | Installation | [docs/installation.md](docs/installation.md) |
+| Desktop setup and launcher | [docs/desktop-launcher.md](docs/desktop-launcher.md) |
 | macOS setup | [docs/macos-setup.md](docs/macos-setup.md) |
 | Quickstart | [docs/quickstart.md](docs/quickstart.md) |
 | Live window workflow | [docs/live-window-workflow.md](docs/live-window-workflow.md) |
