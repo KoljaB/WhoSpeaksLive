@@ -185,6 +185,8 @@ class WindowSpeakerStateMixin:
                 "suggested_person_id": str(metadata.get("suggested_person_id") or ""),
                 "suggested_person_name": suggested_name,
             })
+        first_centroid = profiles[0].get("centroid") if profiles else None
+        embedding_length = len(first_centroid) if first_centroid is not None else 0
         return {
             "group_name": group_name,
             "groups": list_speaker_groups(self.speaker_library_dir),
@@ -192,7 +194,7 @@ class WindowSpeakerStateMixin:
             "embedding_provider": self.args.embedding_provider,
             "people": self.person_library.public_state(
                 embedding_provider=str(self.args.embedding_provider),
-                embedding_length=(len(profiles[0].get("centroid") or []) if profiles else 0),
+                embedding_length=embedding_length,
             ),
             "expected_person_ids": sorted(self._expected_person_ids),
             "expected_people_filter_active": True,
