@@ -56,6 +56,22 @@ class RepositoryStructureTests(unittest.TestCase):
         ):
             self.assertTrue((ROOT / relative_path).is_file(), relative_path)
 
+    def test_desktop_launcher_svg_assets_are_release_inputs(self) -> None:
+        for filename in ("check.svg", "chevron-down.svg"):
+            asset = ROOT / "src" / "whospeaks_gui" / "assets" / filename
+            self.assertTrue(asset.is_file(), filename)
+            self.assertIn("<svg", asset.read_text(encoding="utf-8"))
+
+        pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        self.assertIn('whospeaks_gui = ["assets/*.svg"]', pyproject)
+
+        gitignore_lines = {
+            line.strip()
+            for line in (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+        }
+        self.assertIn("!src/whospeaks_gui/assets/", gitignore_lines)
+        self.assertIn("!src/whospeaks_gui/assets/**", gitignore_lines)
+
     def test_package_imports_do_not_require_tools_on_sys_path(self) -> None:
         env = dict(os.environ)
         env["PYTHONPATH"] = os.pathsep.join((str(SRC), str(ROOT / "vendor")))

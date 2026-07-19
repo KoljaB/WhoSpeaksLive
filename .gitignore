@@ -31,6 +31,8 @@ realtime_output/
 benchmarks/
 youtube2transcripts/
 assets/
+!src/whospeaks_gui/assets/
+!src/whospeaks_gui/assets/**
 !src/window/assets/
 !src/window/assets/flags/
 !src/window/assets/flags/**

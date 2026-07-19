@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "whospeaks"
-version = "0.0.5"
+version = "0.0.6"
 description = "Local speaker diarization and realtime voice-labeling tools."
 readme = "README.md"
 license = "MIT"
