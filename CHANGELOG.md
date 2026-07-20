@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.0 - 2026-07-20
+
 - Added a production CPU-only profile using Kroko/Nemotron fixed transcripts, guarded faster-whisper Base forced alignment, SpeechBrain CPU embeddings, bounded worker pools, native-timestamp fallback, launcher controls, diagnostics, and dedicated installation/docs.
 - Made the Windows Kroko community-wheel build explicitly CPU-only and staged its downloaded ONNX Runtime DLL for reliable `delvewheel` packaging.
 - Kept the base `whospeaks` launcher importable before NumPy and the CPU runtime extras are installed.
