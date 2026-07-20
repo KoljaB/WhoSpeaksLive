@@ -1,5 +1,5 @@
 export function installMediaCapture(ctx) {
-  const {allowSpeakerReassignment, audio, audioFileInput, captureDescription, captureLevelFill, captureLevelText, capturePreRollSeconds, captureStartRmsThreshold, captureTitle, chooseAudioFileButton, fileDropTitle, fileDropZone, filePreviewName, groupTranscriptTurns, initialSource, inputMode, languageConfig, languageFlag, languageName, languageSummary, load, mediaCard, mediaCurrentTime, mediaDuration, mediaTime, micGain, micGainValue, newSpeakerSensitivity, newSpeakerSensitivityLabel, preset, presetVideos, sessionClientIdStorageKey, sessionTokenStorageKey, showTranscriptReviewHints, source, sourceKind, sourceModeButton, sourceModeMenu, sourceModeOptionButtons, sourceModeOptions, sourceTitle, speakerCountLabel, speakerCountNumber, speakerRefinementConfig, speakerRefinementUnknownCommit, speakerRefinementUnknownTentative, speakerSensitivityConfig, start, state, stop, streamHint, targetCaptureSampleRate, timelineFill, timelineThumb, transcriptGroupTurnsStorageKey, transcriptReviewHintsStorageKey, video, youtubeFrame} = ctx;
+  const {allowSpeakerReassignment, audio, audioFileInput, captureDescription, captureLevelFill, captureLevelText, capturePreRollSeconds, captureStartRmsThreshold, captureTitle, chooseAudioFileButton, fastProcessing, fastProcessingControl, fastProcessingStorageKey, fileDropTitle, fileDropZone, filePreviewName, groupTranscriptTurns, initialSource, inputMode, languageConfig, languageFlag, languageName, languageSummary, load, mediaCard, mediaCurrentTime, mediaDuration, mediaTime, micGain, micGainValue, newSpeakerSensitivity, newSpeakerSensitivityLabel, preset, presetVideos, sessionClientIdStorageKey, sessionTokenStorageKey, showTranscriptReviewHints, source, sourceKind, sourceModeButton, sourceModeMenu, sourceModeOptionButtons, sourceModeOptions, sourceTitle, speakerCountLabel, speakerCountNumber, speakerRefinementConfig, speakerRefinementUnknownCommit, speakerRefinementUnknownTentative, speakerSensitivityConfig, start, state, stop, streamHint, targetCaptureSampleRate, timelineFill, timelineThumb, transcriptGroupTurnsStorageKey, transcriptReviewHintsStorageKey, video, youtubeFrame} = ctx;
   const connect = (...args) => ctx.api.connect(...args), ensureSessionOwner = (...args) => ctx.api.ensureSessionOwner(...args), initializeTranslationControls = (...args) => ctx.api.initializeTranslationControls(...args), log = (...args) => ctx.api.log(...args), mediaSeconds = (...args) => ctx.api.mediaSeconds(...args), post = (...args) => ctx.api.post(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), sessionControlsLocked = (...args) => ctx.api.sessionControlsLocked(...args), syncSessionControlLock = (...args) => ctx.api.syncSessionControlLock(...args), updateNewRunButtonState = (...args) => ctx.api.updateNewRunButtonState(...args), updateSpeakerState = (...args) => ctx.api.updateSpeakerState(...args);
   function randomSessionId() {
     if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
@@ -69,6 +69,9 @@ export function installMediaCapture(ctx) {
     else if (lower.includes("loading silero onnx vad")) nextState = "Loading VAD";
     else if (lower.includes("asr warmup transcription")) nextState = "Warming ASR";
     else if (lower.includes("loading realtime preview")) nextState = "Loading preview";
+    else if (lower.includes("fast processing started") || lower.includes("fast processing worker started")) nextState = "Processing";
+    else if (lower.includes("fast asr")) nextState = "Transcribing";
+    else if (lower.includes("fast processing speaker embeddings") || (lower.includes("queued") && lower.includes("sentence embeddings"))) nextState = "Diarizing";
     else if (lower.includes("synchronized playback can begin") || lower.includes("growing-window transcription started") || lower.includes("realtime preview started")) nextState = ctx.owners.capture.browserStreamMode ? "Capturing" : "Playing";
     else if (lower.includes("transcribing window")) nextState = "Transcribing";
     else if (lower.includes("queued speaker embedding") || lower.includes("embedded sentence")) nextState = "Diarizing";
@@ -97,10 +100,13 @@ export function installMediaCapture(ctx) {
     sourceModeButton.disabled = disabled;
     audioFileInput.disabled = disabled;
     chooseAudioFileButton.disabled = disabled;
+    fastProcessing.disabled = disabled;
+    fastProcessingControl.classList.toggle("disabled", disabled);
     fileDropZone.classList.toggle("disabled", disabled);
     fileDropZone.setAttribute("aria-disabled", disabled ? "true" : "false");
     sourceModeOptionButtons.forEach(button => { button.disabled = disabled; });
     if (!disabled) syncSessionControlLock();
+    syncFastProcessingControls();
     syncSourceReadyState();
     updateNewRunButtonState();
   }
@@ -143,6 +149,7 @@ export function installMediaCapture(ctx) {
     return {
       source_title: mode === "file" ? ctx.owners.capture.localAudioFileName : (match && !ctx.owners.capture.browserStreamMode ? match.title : ""),
       session_id: ctx.owners.sessions.draftSavedSessionId,
+      processing_mode: fastProcessingEnabled() ? "fast" : "playback",
     };
   }
   function currentSessionSourceMetadata(startedAt = new Date().toISOString()) {
@@ -186,6 +193,7 @@ export function installMediaCapture(ctx) {
         capture_mode: "audio-file",
         title: ctx.owners.capture.localAudioFileName || "Audio file",
         size_bytes: ctx.owners.capture.localAudioFileSize,
+        processing_mode: fastProcessingEnabled() ? "fast" : "playback",
         started_at: startedAt,
       };
     }
@@ -194,6 +202,7 @@ export function installMediaCapture(ctx) {
       video_id: "",
       capture_mode: "youtube",
       title: match ? match.title : "",
+      processing_mode: fastProcessingEnabled() ? "fast" : "playback",
       started_at: startedAt,
     };
   }
@@ -239,7 +248,7 @@ export function installMediaCapture(ctx) {
     } else if (mode === "file") {
       const hasFile = source.value.trim().startsWith("local-audio://");
       const name = ctx.owners.capture.localAudioFileName || (hasFile ? sourceTitleForUrl(source.value) : "No audio file selected");
-      sourceKind.textContent = "Audio file";
+      sourceKind.textContent = "Audio/video file";
       sourceTitle.textContent = name;
       fileDropTitle.textContent = name;
       filePreviewName.textContent = name;
@@ -259,7 +268,24 @@ export function installMediaCapture(ctx) {
       sourceTitle.textContent = sourceTitleForUrl(source.value);
       updateMediaTimeline();
     }
+    syncFastProcessingControls();
     syncSourceReadyState();
+  }
+  function fastProcessingEnabled() {
+    const mode = inputMode.value || "youtube";
+    return !ctx.owners.capture.browserStreamMode
+      && (mode === "youtube" || mode === "file")
+      && Boolean(fastProcessing.checked);
+  }
+  function syncFastProcessingControls() {
+    const mode = inputMode.value || "youtube";
+    const available = !ctx.owners.capture.browserStreamMode && (mode === "youtube" || mode === "file");
+    fastProcessingControl.hidden = !available;
+    if (!ctx.owners.capture.resumePlaybackPending && stop.disabled) {
+      start.textContent = available && fastProcessing.checked
+        ? (mode === "file" ? "Process file" : "Process video")
+        : "Start transcription";
+    }
   }
   function syncSourceReadyState() {
     if ((inputMode.value || "youtube") !== "file") return;
@@ -728,9 +754,14 @@ export function installMediaCapture(ctx) {
     log(`Browser audio capture armed at ${Math.round(ctx.owners.capture.captureAudioContext.sampleRate)} Hz; waiting for audible input.`);
   }
 
-  Object.assign(ctx.api, {applySpeakerRefinementSettings, applySpeakerSensitivity, applySpeakerSensitivityIfDirty, browserStreamSourceUrl, captureGainValue, clockLabel, copyCaptureSamples, currentMediaSeconds, currentSessionDraftTitle, currentSessionSourceMetadata, currentStartSessionMetadata, extractYouTubeId, float32ToBase64, flushBrowserAudio, flushCapturePreRoll, initializeInputModeFromSource, initializeSessionIdentity, mediaDurationSeconds, microphoneGainValue, normalizeUrl, populatePresetVideos, prepareBrowserStreamSession, presetForUrl, queueBrowserAudioChunk, randomSessionId, reflectRuntimeStatus, rememberCapturePreRoll, requestDisplayAudioCapture, requestMicrophoneCapture, resampleFloat32, rms, selectedSpeakerSensitivityPreset, setBrowserStreamMode, setCaptureLevel, setSourceControlsDisabled, setSourceModeMenuOpen, setState, setStreamHint, sourceTitleForUrl, speakerRefinementPayload, startBrowserAudioCapture, stopBrowserAudioCapture, stopCaptureStream, storeBooleanValue, storeSessionValue, storedBooleanValue, storedSessionValue, syncPresetSelection, syncSourceReadyState, syncSpeakerRefinementSettings, updateLanguageIndicator, updateMediaMode, updateMediaTimeline, updateMicGainLabel, updateSpeakerCount, updateSpeakerSensitivityLabel, youtubeEmbedUrl});
+  Object.assign(ctx.api, {applySpeakerRefinementSettings, applySpeakerSensitivity, applySpeakerSensitivityIfDirty, browserStreamSourceUrl, captureGainValue, clockLabel, copyCaptureSamples, currentMediaSeconds, currentSessionDraftTitle, currentSessionSourceMetadata, currentStartSessionMetadata, extractYouTubeId, fastProcessingEnabled, float32ToBase64, flushBrowserAudio, flushCapturePreRoll, initializeInputModeFromSource, initializeSessionIdentity, mediaDurationSeconds, microphoneGainValue, normalizeUrl, populatePresetVideos, prepareBrowserStreamSession, presetForUrl, queueBrowserAudioChunk, randomSessionId, reflectRuntimeStatus, rememberCapturePreRoll, requestDisplayAudioCapture, requestMicrophoneCapture, resampleFloat32, rms, selectedSpeakerSensitivityPreset, setBrowserStreamMode, setCaptureLevel, setSourceControlsDisabled, setSourceModeMenuOpen, setState, setStreamHint, sourceTitleForUrl, speakerRefinementPayload, startBrowserAudioCapture, stopBrowserAudioCapture, stopCaptureStream, storeBooleanValue, storeSessionValue, storedBooleanValue, storedSessionValue, syncFastProcessingControls, syncPresetSelection, syncSourceReadyState, syncSpeakerRefinementSettings, updateLanguageIndicator, updateMediaMode, updateMediaTimeline, updateMicGainLabel, updateSpeakerCount, updateSpeakerSensitivityLabel, youtubeEmbedUrl});
   ctx.activators.push(() => {
     groupTranscriptTurns.checked = storedBooleanValue(transcriptGroupTurnsStorageKey, true);
+    fastProcessing.checked = storedBooleanValue(fastProcessingStorageKey, true);
+    fastProcessing.addEventListener("change", () => {
+      storeBooleanValue(fastProcessingStorageKey, fastProcessing.checked);
+      syncFastProcessingControls();
+    });
     showTranscriptReviewHints.checked = storedBooleanValue(transcriptReviewHintsStorageKey, false);
     initializeTranslationControls();
     initializeSessionIdentity();

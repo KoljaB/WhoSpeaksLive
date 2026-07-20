@@ -37,7 +37,13 @@ def _safe_console_text(text: object) -> str:
 
 
 def _console_print(text: object) -> None:
-    print(_safe_console_text(text), flush=True)
+    try:
+        print(_safe_console_text(text), flush=True)
+    except (OSError, ValueError):
+        # A launcher may detach the GUI server from cmd.exe while leaving
+        # sys.stdout backed by an invalid or already-closed Windows handle.
+        # Console logging must never abort media loading or another request.
+        return
 
 
 def _env_float(name: str, default: float) -> float:

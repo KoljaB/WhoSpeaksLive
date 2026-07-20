@@ -168,28 +168,64 @@ class WindowModelRuntimeMixin:
             self.bus.emit("status", {"message": "Importing faster-whisper."})
             from faster_whisper import WhisperModel
 
-            self.bus.emit("status", {"message": f"Loading faster-whisper {self.args.model} for {getattr(self.args, 'language', 'en')} on {self.args.device} before playback."})
+            self.bus.emit("status", {"message": f"Loading faster-whisper {self.args.model} for {getattr(self.args, 'language', 'en')} on {self.args.device}."})
             self._model = WhisperModel(
                 self.args.model,
                 device=self.args.device,
                 compute_type=self.args.compute_type,
                 download_root=str(self.args.download_root) if self.args.download_root else None,
             )
-            self.bus.emit("status", {"message": "faster-whisper ready; starting synchronized playback."})
+            self.bus.emit("status", {"message": "faster-whisper ready."})
 
-    def _transcribe_audio_words(self, model: Any, audio: np.ndarray, sample_rate: int) -> tuple[list[TimedWord], int]:
+    def _transcribe_audio_words(
+        self,
+        model: Any,
+        audio: np.ndarray,
+        sample_rate: int,
+        *,
+        batched: bool = False,
+        batch_size: int = 16,
+    ) -> tuple[list[TimedWord], int]:
         if isinstance(model, RemoteWindowAsrClient):
-            words, segment_count = model.transcribe_window(audio, sample_rate, self.args.beam_size)
+            words, segment_count = model.transcribe_window(
+                audio,
+                sample_rate,
+                self.args.beam_size,
+                batched=batched,
+                batch_size=batch_size,
+            )
             return self._filter_asr_no_speech_words(words), segment_count
 
-        segments, _info = model.transcribe(
+        transcriber = model
+        extra_options: dict[str, Any] = {}
+        if batched:
+            try:
+                from faster_whisper import BatchedInferencePipeline
+            except ImportError:
+                batched = False
+                self.bus.emit(
+                    "status",
+                    {"message": "Installed faster-whisper has no batched pipeline; using full-file inference."},
+                )
+            else:
+                cached = getattr(self, "_batched_asr_pipeline", None)
+                if cached is None or getattr(cached, "model", None) is not model:
+                    cached = BatchedInferencePipeline(model=model)
+                    self._batched_asr_pipeline = cached
+                transcriber = cached
+                extra_options = {
+                    "batch_size": max(1, int(batch_size)),
+                }
+
+        segments, _info = transcriber.transcribe(
             audio,
             language=getattr(self.args, "language", "en"),
             task="transcribe",
             beam_size=self.args.beam_size,
             word_timestamps=True,
-            vad_filter=False,
+            vad_filter=batched,
             condition_on_previous_text=False,
+            **extra_options,
         )
         words: list[TimedWord] = []
         segment_count = 0
@@ -313,8 +349,20 @@ class WindowModelRuntimeMixin:
         left: float,
         right: float,
         speech_spans: list[tuple[float, float]] | None = None,
+        *,
+        batched: bool = False,
+        batch_size: int = 16,
     ) -> tuple[list[TimedWord], int]:
         spans = speech_spans if speech_spans is not None else [(left, right)]
+        if batched and speech_spans is None and left <= 0.0 and right >= float(self.duration):
+            snapshot = self._audio_timeline.snapshot(copy_audio=False)
+            return self._transcribe_audio_words(
+                model,
+                snapshot.audio,
+                snapshot.sample_rate,
+                batched=True,
+                batch_size=batch_size,
+            )
         words: list[TimedWord] = []
         segment_count = 0
         for span_left, span_right in spans:
@@ -325,7 +373,20 @@ class WindowModelRuntimeMixin:
             window, sample_rate = self._audio_window_copy(span_left, span_right)
             if window.size <= 0:
                 continue
-            relative_words, relative_segment_count = self._transcribe_audio_words(model, window, sample_rate)
+            if batched:
+                relative_words, relative_segment_count = self._transcribe_audio_words(
+                    model,
+                    window,
+                    sample_rate,
+                    batched=True,
+                    batch_size=batch_size,
+                )
+            else:
+                relative_words, relative_segment_count = self._transcribe_audio_words(
+                    model,
+                    window,
+                    sample_rate,
+                )
             segment_count += relative_segment_count
             for word in relative_words:
                 start = span_left + float(word.start)

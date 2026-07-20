@@ -25,6 +25,9 @@ export function installSessionTransport(ctx) {
     if (!newRunSessionButton) return;
     const disabled = sessionControlsLocked() || runInProgress();
     newRunSessionButton.disabled = disabled;
+    newRunSessionButton.dataset.disabledHelp = disabled
+      ? (sessionControlsLocked() ? "Another browser currently controls the live session." : "Finish the current run before creating a new session.")
+      : "";
     newRunSessionButton.title = disabled
       ? "New session is available when the current run is idle."
       : "Create a new session";

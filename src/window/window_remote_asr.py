@@ -46,7 +46,15 @@ class RemoteWindowAsrClient:
             return {"raw": text}
         return data if isinstance(data, dict) else {"value": data}
 
-    def transcribe_window(self, window: np.ndarray, sample_rate: int, beam_size: int) -> tuple[list[TimedWord], int]:
+    def transcribe_window(
+        self,
+        window: np.ndarray,
+        sample_rate: int,
+        beam_size: int,
+        *,
+        batched: bool = False,
+        batch_size: int = 16,
+    ) -> tuple[list[TimedWord], int]:
         query = urlencode({
             "sample_rate": int(sample_rate),
             "encoding": "float32",
@@ -56,6 +64,8 @@ class RemoteWindowAsrClient:
             "word_timestamps": "true",
             "vad_filter": "false",
             "condition_on_previous_text": "false",
+            "batched": "true" if batched else "false",
+            "batch_size": max(1, int(batch_size)),
         })
         url = f"{self.base_url}/transcribe-window?{query}"
         audio_bytes = np.ascontiguousarray(window.astype(np.float32, copy=False)).tobytes()

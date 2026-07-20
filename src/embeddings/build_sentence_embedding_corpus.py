@@ -17,29 +17,17 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from common.audio_utils import SAMPLE_RATE, load_audio_file, normalize_vector, pad_audio, trim_silence
-from embeddings.embedding_providers import RemoteEmbeddingClient, create_embedding_provider
+from embeddings.embedding_providers import (
+    SUPPORTED_SINGLE_EMBEDDING_PROVIDER_IDS,
+    RemoteEmbeddingClient,
+    create_embedding_provider,
+)
 
 
 DEFAULT_INPUT_ROOT = Path("data") / "baselines" / "elevenlabs_scribe"
 DEFAULT_OUTPUT_ROOT = DEFAULT_INPUT_ROOT / "_sentence_embeddings"
 DEFAULT_REMOTE_EMBEDDINGS_URL = os.environ.get("WHOSPEAKS_REMOTE_EMBEDDINGS_URL", "http://127.0.0.1:8660")
-LOCAL_PROVIDER_IDS = [
-    "resemblyzer",
-    "speechbrain_ecapa",
-    "speechbrain_resnet",
-    "speechbrain_xvector",
-    "wespeaker_campplus",
-    "wespeaker_resnet34_lm_onnx",
-    "pyannote_wespeaker_resnet34_lm",
-    "pyannote_embedding",
-    "speaker3d_campplus",
-    "speaker3d_eres2netv2",
-    "nemo_titanet_large",
-    "wavlm_base_sv",
-    "jungjee_rawnet3",
-    "espnet_rawnet3",
-    "espnet_ecapa_wavlm_joint",
-]
+LOCAL_PROVIDER_IDS = list(SUPPORTED_SINGLE_EMBEDDING_PROVIDER_IDS)
 
 
 class LocalEmbeddingClient:

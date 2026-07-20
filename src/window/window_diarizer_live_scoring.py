@@ -95,11 +95,81 @@ from window.window_speaker_refinement import (
     user_deleted_speaker_label,
     user_confirmed_speaker_label,
 )
+from window.live_profile_tape import emit_live_profile_snapshot
+from window.live_speaker_algorithm import (
+    ALGORITHM_ID as LIVE_SPEAKER_ALGORITHM_ID,
+    CausalLiveSpeakerAlgorithm,
+    LiveSpeakerAlgorithmConfig,
+    LiveSpeakerStep,
+)
+from window.live_speaker_replay import blend_live_speaker_embeddings
 
 
 
 
 class WindowLiveScoringMixin:
+    def _shared_live_speaker_lock(self) -> threading.Lock:
+        lock = getattr(self, "_shared_live_speaker_state_lock", None)
+        if lock is None:
+            lock = threading.Lock()
+            self._shared_live_speaker_state_lock = lock
+        return lock
+
+    def _shared_live_speaker_config(self) -> LiveSpeakerAlgorithmConfig:
+        return LiveSpeakerAlgorithmConfig(
+            min_similarity=float(getattr(self.args, "realtime_preview_diarize_min_similarity", 0.45)),
+            min_margin=float(getattr(self.args, "realtime_preview_diarize_min_margin", 0.08)),
+            min_known_probability=float(
+                getattr(self.args, "realtime_preview_diarize_min_known_probability", 0.5)
+            ),
+            ema_count=max(1, int(getattr(self.args, "live_speaker_ema_count", 1))),
+            ema_alpha=float(getattr(self.args, "live_speaker_ema_alpha", 0.55)),
+            acquire_count=max(1, int(getattr(self.args, "live_speaker_acquire_count", 1))),
+            switch_count=max(1, int(getattr(self.args, "live_speaker_switch_count", 1))),
+            unknown_release_count=max(
+                1, int(getattr(self.args, "live_speaker_probe_clear_unknown_count", 2) or 1)
+            ),
+            silence_release_count=max(
+                1, int(getattr(self.args, "live_speaker_probe_clear_silence_count", 1))
+            ),
+        )
+
+    def _shared_live_speaker_algorithm(self) -> CausalLiveSpeakerAlgorithm:
+        config = self._shared_live_speaker_config()
+        algorithm = getattr(self, "_shared_live_speaker_core", None)
+        if algorithm is None or algorithm.config != config:
+            algorithm = CausalLiveSpeakerAlgorithm(config=config)
+            self._shared_live_speaker_core = algorithm
+        return algorithm
+
+    def _shared_live_speaker_step(
+        self,
+        *,
+        media_time: float,
+        speech: bool,
+        embedding: np.ndarray | None,
+        duration_seconds: float,
+        probe_scheduled: bool,
+        release_signal: bool = False,
+        embedding_latency_seconds: float | None = None,
+        skipped_reason: str = "",
+    ) -> Any:
+        with self._shared_live_speaker_lock():
+            algorithm = self._shared_live_speaker_algorithm()
+            algorithm.sync_profiles(self.live_memory.export_profiles())
+            decision = algorithm.step(LiveSpeakerStep(
+                media_time=max(0.0, float(media_time)),
+                speech=bool(speech),
+                embedding=None if embedding is None else np.asarray(embedding, dtype=np.float32),
+                duration_seconds=max(0.0, float(duration_seconds)),
+                probe_scheduled=bool(probe_scheduled),
+                release_signal=bool(release_signal),
+                embedding_latency_seconds=embedding_latency_seconds,
+                skipped_reason=str(skipped_reason),
+            ))
+        self.bus.emit("live_speaker_shared_core_decision", decision.trace_record())
+        return decision
+
     def _realtime_unknown_speaker_payload(self) -> dict[str, Any]:
         return {
             "assigned_speaker": None,
@@ -547,6 +617,10 @@ class WindowLiveScoringMixin:
         audio: np.ndarray,
         duration_seconds: float,
         min_audio_seconds: float | None = None,
+        *,
+        context_audio: np.ndarray | None = None,
+        context_duration_seconds: float | None = None,
+        context_weight: float = 0.0,
     ) -> dict[str, Any]:
         if not self._live_speaker_assignment_enabled():
             return self._realtime_unknown_speaker_payload()
@@ -561,28 +635,54 @@ class WindowLiveScoringMixin:
         chunk = pad_audio(trim_silence(audio, self.sample_rate), self.args.min_embed_seconds, self.sample_rate)
         try:
             embed_started = time.monotonic()
-            embedding = self._embed_live_audio_chunk(chunk, self.sample_rate, ".live.wav")
-            self._record_live_speaker_embedding_latency(time.monotonic() - embed_started)
-            decision = memory.score_existing(
-                embedding,
-                duration_seconds,
-                min_similarity=self.args.realtime_preview_diarize_min_similarity,
-                min_margin=self.args.realtime_preview_diarize_min_margin,
+            embedding = self._embed_live_audio_chunk(chunk, self.sample_rate, ".live.short.wav")
+            applied_context_weight = 0.0
+            effective_duration = float(duration_seconds)
+            requested_context_weight = max(0.0, min(1.0, float(context_weight)))
+            if context_audio is not None and requested_context_weight > 0.0:
+                context_chunk = pad_audio(
+                    trim_silence(context_audio, self.sample_rate),
+                    self.args.min_embed_seconds,
+                    self.sample_rate,
+                )
+                context_embedding = self._embed_live_audio_chunk(
+                    context_chunk, self.sample_rate, ".live.context.wav"
+                )
+                embedding = blend_live_speaker_embeddings(
+                    embedding, context_embedding, requested_context_weight
+                )
+                applied_context_weight = requested_context_weight
+                effective_duration = max(
+                    effective_duration,
+                    float(context_duration_seconds or 0.0),
+                )
+            embedding_latency_seconds = time.monotonic() - embed_started
+            self._record_live_speaker_embedding_latency(embedding_latency_seconds)
+            core_decision = self._shared_live_speaker_step(
+                media_time=self.playback_time(),
+                speech=True,
+                embedding=embedding,
+                duration_seconds=effective_duration,
+                probe_scheduled=True,
+                embedding_latency_seconds=embedding_latency_seconds,
             )
         except Exception as exc:
             self.bus.emit("status", {"message": f"Realtime preview speaker scoring error: {type(exc).__name__}: {exc}"})
             return self._realtime_unknown_speaker_payload()
 
-        raw_probabilities = dict(decision.probabilities)
-        smoothed_probabilities = self._live_speaker_ema_probabilities(raw_probabilities)
-        assigned_speaker = self._assign_live_speaker_from_probabilities(
-            smoothed_probabilities,
-            decision.assigned_speaker,
-        )
-        assist_payload: dict[str, Any] = {}
-        if not assigned_speaker:
-            assigned_speaker, assist_payload = self._maybe_assign_weak_profile_live_speaker(decision)
+        raw_probabilities = dict(core_decision.raw_probabilities)
+        smoothed_probabilities = dict(core_decision.probabilities)
+        assigned_speaker = core_decision.visible_speaker
         self._ensure_speaker_metadata(assigned_speaker)
+
+        known_similarities = list(core_decision.similarities.values())
+        ordered_similarities = sorted((float(value) for value in known_similarities), reverse=True)
+        top_similarity = ordered_similarities[0] if ordered_similarities else None
+        margin = (
+            ordered_similarities[0] - ordered_similarities[1]
+            if len(ordered_similarities) > 1
+            else (1.0 if ordered_similarities else None)
+        )
 
         return {
             "assigned_speaker": assigned_speaker,
@@ -590,21 +690,22 @@ class WindowLiveScoringMixin:
             "created_speaker": False,
             "probabilities": smoothed_probabilities,
             "raw_probabilities": raw_probabilities,
-            "similarities": decision.similarities,
-            "unknown_probability": decision.unknown_probability,
-            "top_similarity": decision.top_similarity,
-            "margin": decision.margin,
-            "quality": decision.quality,
-            **assist_payload,
-            "assignment_source": (
-                "live_weak_profile_assist"
-                if assist_payload
-                else (
-                    "live_fast_embedding_ema"
-                    if self._live_embedding_separate
-                    else "realtime_preview_embedding_ema"
-                )
+            "similarities": core_decision.similarities,
+            "unknown_probability": float(smoothed_probabilities.get("unknown", 1.0)),
+            "top_similarity": top_similarity,
+            "margin": margin,
+            "quality": None,
+            "live_speaker_core_action": core_decision.action,
+            "live_speaker_core_reason": core_decision.reason,
+            "live_speaker_algorithm_id": LIVE_SPEAKER_ALGORITHM_ID,
+            "live_speaker_short_window_seconds": round(float(duration_seconds), 4),
+            "live_speaker_context_window_seconds": (
+                round(float(context_duration_seconds), 4)
+                if applied_context_weight > 0.0 and context_duration_seconds is not None
+                else None
             ),
+            "live_speaker_context_weight": applied_context_weight,
+            "assignment_source": "shared_causal_live_speaker_core",
         }
 
     def _update_live_speaker_memory(
@@ -615,6 +716,8 @@ class WindowLiveScoringMixin:
         duration_seconds: float,
         suffix: str = ".live-profile.wav",
         speaker_generation: int | None = None,
+        sentence_start: float | None = None,
+        sentence_end: float | None = None,
     ) -> None:
         if not getattr(self, "_live_embedding_separate", False) or not speaker_id:
             return
@@ -633,6 +736,8 @@ class WindowLiveScoringMixin:
                 getattr(self, "_speaker_label_generations", {}).get(str(speaker_id), 0)
             ),
             run_id=str(getattr(getattr(self, "_active_run", None), "run_id", "")),
+            sentence_start=sentence_start,
+            sentence_end=sentence_end,
         )
         jobs = getattr(self, "_live_memory_update_jobs", None)
         if jobs is None:
@@ -687,6 +792,15 @@ class WindowLiveScoringMixin:
                     embedding,
                     duration_seconds=job.duration_seconds,
                     sentence_count=1,
+                )
+                emit_live_profile_snapshot(
+                    self,
+                    self.live_memory,
+                    job.speaker_id,
+                    self._current_live_embedding_provider(),
+                    source="async_live_sentence_reembedding_complete",
+                    sentence_start=job.sentence_start,
+                    sentence_end=job.sentence_end,
                 )
         except Exception as exc:
             self.bus.emit(

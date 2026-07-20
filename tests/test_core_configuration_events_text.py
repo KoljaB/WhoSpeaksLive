@@ -23,6 +23,14 @@ from tests.window_diarizer_support import make_window_diarizer
 
 
 class WindowEventBusTests(unittest.TestCase):
+    def test_status_event_survives_detached_console(self) -> None:
+        bus = RecordingEventBus()
+        with mock.patch("builtins.print", side_effect=OSError(22, "Invalid argument")):
+            bus.emit("status", {"message": "Loading media"})
+
+        self.assertEqual(bus.records[0]["event"], "status")
+        self.assertEqual(bus.records[0]["payload"], {"message": "Loading media"})
+
     def test_recording_event_bus_records_json_safe_payloads(self) -> None:
         bus = RecordingEventBus()
 

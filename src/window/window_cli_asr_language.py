@@ -279,6 +279,18 @@ def add_asr_language_arguments(parser: argparse.ArgumentParser, *, default_vad_m
     parser.add_argument("--download-root", type=Path, default=default_faster_whisper_download_root())
     parser.add_argument("--beam-size", type=int, default=5)
     parser.add_argument(
+        "--fast-asr-batch-size",
+        type=int,
+        default=16,
+        help="Maximum faster-whisper batch size used for offline fast processing.",
+    )
+    parser.add_argument(
+        "--fast-embedding-queue-size",
+        type=int,
+        default=24,
+        help="Maximum number of sentence-audio chunks retained while fast embeddings catch up.",
+    )
+    parser.add_argument(
         "--interval-seconds",
         type=float,
         default=0.7,

@@ -253,12 +253,14 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(self.server.meeting_chat_job(str((query.get("job_id") or [""])[0])))
         elif path == "/api/bootstrap":
             self._send_json({"ok": True, **self._bootstrap_payload()})
-        elif re.fullmatch(
-            r"/assets/web/live/(?:styles\.css|(?:app|app_store|live_context|media_capture|session_transport|saved_reports|meeting_chat|transcript_translation|transcript_review|speaker_panel|transcript_render|live_bindings)\.js)",
-            path,
-        ):
+        elif re.fullmatch(r"/assets/web/live/[a-z][a-z0-9_]*\.(?:css|js)", path):
             name = path.removeprefix("/assets/web/")
-            self._send_bytes(read_web_asset(name), web_asset_content_type(name))
+            try:
+                payload = read_web_asset(name)
+            except FileNotFoundError:
+                self.send_error(404)
+            else:
+                self._send_bytes(payload, web_asset_content_type(name))
         elif path == "/api/sessions":
             query = parse_qs(parsed.query)
             filter_mode = str((query.get("filter") or ["active"])[0])
@@ -440,6 +442,7 @@ class Handler(BaseHTTPRequestHandler):
                 speaker_state = self.server.controller.start(StartSessionRequest(
                     session_id=str(payload.get("session_id") or ""),
                     source_title=str(payload.get("source_title") or ""),
+                    processing_mode=str(payload.get("processing_mode") or "playback"),
                 ))
                 self.server.translation.begin_session(self.server.controller.current_session_id())
                 self.server.mark_session_running(session_token)

@@ -65,6 +65,16 @@ class LiveWindowApplicationTests(unittest.TestCase):
             self.assertEqual(server.current_media(), media)
             self.assertEqual(server.server_address[0], "127.0.0.1")
 
+            with self.assertRaises(OSError):
+                WindowServer(
+                    ("127.0.0.1", server.server_address[1]),
+                    config,
+                    media,
+                    bus,
+                    controller,
+                    application=application,
+                )
+
             server.server_close()
             server.server_close()
             application.close()

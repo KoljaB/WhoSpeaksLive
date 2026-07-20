@@ -95,6 +95,7 @@ from window.window_speaker_refinement import (
     user_deleted_speaker_label,
     user_confirmed_speaker_label,
 )
+from window.live_speech_gate import rms_speech_present
 
 
 
@@ -640,10 +641,7 @@ class WindowRuntimeAudioMixin:
         )
 
     def _audio_has_rms_speech(self, audio: np.ndarray, sample_rate: int) -> bool:
-        if audio.size <= 0 or sample_rate <= 0:
-            return False
         frame_seconds = max(0.01, float(getattr(self.args, "vad_frame_seconds", 0.03)))
-        frame_samples = max(1, int(sample_rate * frame_seconds))
         threshold = max(0.0, float(getattr(self.args, "vad_speech_rms_threshold", 0.003)))
         min_speech_seconds = max(
             0.0,
@@ -655,18 +653,13 @@ class WindowRuntimeAudioMixin:
                 )
             ),
         )
-        speech_seconds = 0.0
-        for start in range(0, audio.size, frame_samples):
-            end = min(audio.size, start + frame_samples)
-            if end - start < max(1, frame_samples // 2):
-                break
-            frame = audio[start:end]
-            rms_value = float(np.sqrt(np.mean(frame * frame)))
-            if rms_value >= threshold:
-                speech_seconds += (end - start) / float(sample_rate)
-                if speech_seconds >= min_speech_seconds:
-                    return True
-        return False
+        return rms_speech_present(
+            audio,
+            sample_rate,
+            frame_seconds=frame_seconds,
+            threshold=threshold,
+            min_speech_seconds=min_speech_seconds,
+        )
 
     def _audio_has_live_probe_speech(
         self,

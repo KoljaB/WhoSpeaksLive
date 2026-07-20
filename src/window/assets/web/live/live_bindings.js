@@ -122,14 +122,15 @@ export function installLiveBindings(ctx) {
     clearSelectionButton.addEventListener("click", clearTranscriptSelection);
     applyTranscriptDisplaySettings();
     start.addEventListener("click", async () => {
-      if (ctx.owners.capture.resumePlaybackPending && !ctx.owners.capture.browserStreamMode) {
+      const useFastProcessing = ctx.api.fastProcessingEnabled();
+      if (ctx.owners.capture.resumePlaybackPending && !ctx.owners.capture.browserStreamMode && !useFastProcessing) {
         start.disabled = true;
         await startSynchronizedPlaybackFromGesture();
         return;
       }
       leaveSavedSessionReview();
       let playbackUnlockResults = null;
-      if (!ctx.owners.capture.browserStreamMode) {
+      if (!ctx.owners.capture.browserStreamMode && !useFastProcessing) {
         playbackUnlockResults = await unlockPlayback();
       }
       try {
@@ -178,6 +179,11 @@ export function installLiveBindings(ctx) {
         if (result.saved_session) fetchSavedSessions().catch(() => {});
       } catch (error) {
         start.disabled = false; stop.disabled = true; setSourceControlsDisabled(false); setState("Ready"); log(`Start failed: ${error.message}`);
+        return;
+      }
+      if (useFastProcessing) {
+        setState("Processing");
+        log("Processing the complete media without real-time playback.");
         return;
       }
       setState("Starting playback");

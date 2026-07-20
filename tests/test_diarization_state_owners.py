@@ -138,10 +138,13 @@ class DiarizationRunTests(unittest.TestCase):
         self.assertEqual(run.state, DiarizationRunState.IDLE)
 
     def test_start_request_normalizes_and_validates_identity(self) -> None:
-        request = StartSessionRequest("session-1", "  Weekly   sync  ")
+        request = StartSessionRequest("session-1", "  Weekly   sync  ", "FAST")
         self.assertEqual(request.source_title, "Weekly sync")
+        self.assertEqual(request.processing_mode, "fast")
         with self.assertRaises(ValueError):
             StartSessionRequest("not/a/session")
+        with self.assertRaisesRegex(ValueError, "processing_mode"):
+            StartSessionRequest(processing_mode="turbo")
 
     def test_embedding_completion_from_previous_run_is_discarded_before_model_work(self) -> None:
         harness = _TranscriptionHarness(DiarizationRun(run_id="new-run"))

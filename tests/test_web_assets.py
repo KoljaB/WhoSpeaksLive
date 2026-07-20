@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 import unittest
 
 from window.web_assets import read_web_asset, read_web_text, render_live_index, web_asset_content_type
@@ -24,6 +25,7 @@ class PackagedWebAssetTests(unittest.TestCase):
     def test_asset_whitelist_and_content_types(self) -> None:
         self.assertTrue(read_web_asset("live/app.js").startswith(b"import "))
         self.assertIn(b"installMeetingChat", read_web_asset("live/meeting_chat.js"))
+        self.assertIn(b"installHelpSystem", read_web_asset("live/help_system.js"))
         self.assertEqual(web_asset_content_type("live/app.js"), "text/javascript")
         self.assertEqual(web_asset_content_type("live/styles.css"), "text/css")
         with self.assertRaises(FileNotFoundError):
@@ -58,6 +60,22 @@ class PackagedWebAssetTests(unittest.TestCase):
 
         saved_reports = read_web_text("live/saved_reports.js")
         self.assertIn('const legacyChat = /^ROW-(\\d+)$/.exec(value);', saved_reports)
+
+    def test_live_page_exposes_context_help(self) -> None:
+        page = read_web_text("live/index.html")
+        app = read_web_text("live/app.js")
+        script = read_web_text("live/help_system.js")
+        handler = (Path(__file__).resolve().parents[1] / "src" / "window" / "live_http_handler.py").read_text(encoding="utf-8")
+
+        self.assertNotIn('id="helpButton"', page)
+        self.assertNotIn('class="inline-help-button"', page)
+        self.assertIn('id="helpDrawer"', page)
+        self.assertIn('event.key === "F1"', script)
+        self.assertIn('import("./help_system.js")', app)
+        self.assertIn("the core live app remains available", app)
+        self.assertIn("disabledReason", script)
+        self.assertIn("Speakers are meeting-local voice clusters", script)
+        self.assertIn(r'/assets/web/live/[a-z][a-z0-9_]*\.(?:css|js)', handler)
 
 
 if __name__ == "__main__":

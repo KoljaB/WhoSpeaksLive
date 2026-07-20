@@ -297,6 +297,8 @@ Main browser app for media download/playback, final ASR, speaker assignment, liv
 | Live speaker feedback | `--live-speaker-probe-interval-seconds` | 0.75 | Seconds between fallback live-speaker probes. |
 | Live speaker feedback | `--live-speaker-probe-attack-interval-seconds` | 0.0 | Optional faster probe interval while acquiring a speaker or resolving UNKNOWN; 0 disables. |
 | Live speaker feedback | `--live-speaker-probe-window-seconds` | 1.0 | Recent audio window scored by the fallback live-speaker probe. |
+| Live speaker feedback | `--live-speaker-probe-context-window-seconds` | 0.0 | Optional longer live-audio context window blended with the fast probe; 0 disables. |
+| Live speaker feedback | `--live-speaker-probe-context-weight` | 0.0 | Weight in [0,1] assigned to the optional longer live-speaker context embedding. |
 | Live speaker feedback | `--live-speaker-probe-hold-seconds` | 1.0 | Seconds the browser keeps a fallback live-speaker highlight after a matching probe. |
 | Live speaker feedback | `--live-speaker-probe-min-advance-seconds` | 0.75 | Minimum playback advance before rescoring the fallback live-speaker probe window. |
 | Live speaker feedback | `--live-speaker-probe-attack-min-advance-seconds` | 0.0 | Optional faster minimum playback advance during attack cadence; 0 uses the attack interval. |

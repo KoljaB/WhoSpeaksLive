@@ -23,6 +23,7 @@ class CachedWindowReplayResult:
     records: list[dict[str, Any]]
     analysis_records: list[dict[str, Any]]
     final_payloads: list[dict[str, Any]]
+    profile_events: list[dict[str, Any]]
 
 
 class CachedReplayEventBus:
@@ -36,7 +37,7 @@ class CachedReplayEventBus:
         if event == "done":
             self.done.set()
             return
-        if event != "sentence":
+        if event not in {"sentence", "live_speaker_profile_snapshot"}:
             return
         self.records.append({"time": 0.0, "event": event, "payload": dict(payload)})
 
@@ -138,6 +139,12 @@ def _install_cached_replay_state(
     controller._live_memory_update_jobs = None
     controller._live_memory_update_lock = threading.Lock()
     controller._preview_paused = True
+    controller._playback_lock = threading.Lock()
+    controller._playback_time = 0.0
+    controller.duration = float("inf")
+    controller._streaming_audio = True
+    controller._playback_clock_started_at = None
+    controller._last_playback_jump_warning_at = 0.0
     controller.emit_speaker_state = lambda: {}
     controller._maybe_emit_sentence_live_speaker_hint = lambda *_args, **_kwargs: None
     controller._update_live_speaker_memory = lambda *_args, **_kwargs: None
@@ -158,6 +165,9 @@ def replay_cached_window_diarizer(
     emit_done: bool = False,
     defer_speaker_refinement: bool = True,
     max_refinement_passes: int = 8,
+    live_profile_embeddings: Sequence[Any] | None = None,
+    live_profile_provider: str | None = None,
+    profile_availability_lag_seconds: float = 0.0,
 ) -> CachedWindowReplayResult:
     """Replay cached rows through the live assignment logic without ASR or embedding work.
 
@@ -168,14 +178,28 @@ def replay_cached_window_diarizer(
     """
     if len(embeddings) < len(sentences):
         raise ValueError("Expected at least one cached embedding per sentence row.")
+    if live_profile_embeddings is not None and len(live_profile_embeddings) < len(sentences):
+        raise ValueError("Expected at least one cached live-profile embedding per sentence row.")
+    if live_profile_embeddings is not None and not str(live_profile_provider or "").strip():
+        raise ValueError("live_profile_provider is required with live_profile_embeddings.")
     from window.youtube_window_diarize_gui import build_window_validation_records
 
     replay_args = args if isinstance(args, WindowConfig) else WindowConfig.from_namespace(args)
     bus = CachedReplayEventBus()
     controller = CachedReplayDiarizer(replay_args, bus)
+    profile_events: list[dict[str, Any]] = []
+    if live_profile_embeddings is not None:
+        controller._live_embedding_separate = True
+        controller.live_memory = controller._new_memory()
 
     for position, sentence in enumerate(sentences):
         part = cached_sentence_part(dict(sentence))
+        available_at = max(
+            0.0,
+            float(part.end) + max(0.0, float(profile_availability_lag_seconds)),
+        )
+        with controller._playback_lock:
+            controller._playback_time = available_at
         index = cached_sentence_index(dict(sentence), position)
         window_left = float(sentence.get("window_left") or part.start)
         window_right = float(sentence.get("window_right") or part.end)
@@ -219,7 +243,7 @@ def replay_cached_window_diarizer(
                 payload,
             )
             continue
-        controller._apply_sentence_embedding_decision(
+        sentence_payload = controller._apply_sentence_embedding_decision(
             index=index,
             base_payload=base_payload,
             text=part.text,
@@ -228,6 +252,28 @@ def replay_cached_window_diarizer(
             emit_status=False,
             run_speaker_refinement=not defer_speaker_refinement,
         )
+        if live_profile_embeddings is not None:
+            speaker_id = sentence_payload.get("assigned_speaker")
+            if speaker_id:
+                from window.live_profile_tape import emit_live_profile_snapshot
+
+                controller.live_memory.upsert_profile(
+                    str(speaker_id),
+                    np.asarray(live_profile_embeddings[position], dtype=np.float32),
+                    duration_seconds=max(0.0, part.end - part.start),
+                    sentence_count=1,
+                )
+                event = emit_live_profile_snapshot(
+                    controller,
+                    controller.live_memory,
+                    str(speaker_id),
+                    str(live_profile_provider),
+                    source="cached_final_sentence_live_profile_replay",
+                    sentence_start=part.start,
+                    sentence_end=part.end,
+                )
+                if event is not None:
+                    profile_events.append(event)
 
     controller._revisit_unknown_sentences()
     if defer_speaker_refinement and bool(getattr(replay_args, "speaker_refinement", True)):
@@ -266,6 +312,7 @@ def replay_cached_window_diarizer(
         records=list(bus.records),
         analysis_records=analysis_records,
         final_payloads=final_payloads,
+        profile_events=profile_events,
     )
 
 

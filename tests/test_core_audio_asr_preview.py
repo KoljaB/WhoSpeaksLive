@@ -337,11 +337,19 @@ class RemoteWindowAsrClientTests(unittest.TestCase):
 
         with mock.patch("window.window_remote_asr.urlopen", side_effect=fake_urlopen):
             client = RemoteWindowAsrClient("http://127.0.0.1:8650", 7.0, language="de")
-            words, segment_count = client.transcribe_window(np.zeros(160, dtype=np.float32), 16000, 5)
+            words, segment_count = client.transcribe_window(
+                np.zeros(160, dtype=np.float32),
+                16000,
+                5,
+                batched=True,
+                batch_size=12,
+            )
 
         self.assertEqual(words, [])
         self.assertEqual(segment_count, 0)
         self.assertIn("language=de", captured["url"])
+        self.assertIn("batched=true", captured["url"])
+        self.assertIn("batch_size=12", captured["url"])
         self.assertEqual(captured["timeout"], "7.0")
 
     def test_remote_asr_client_retries_transient_http_500(self) -> None:

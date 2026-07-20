@@ -95,6 +95,7 @@ from window.window_speaker_refinement import (
     user_deleted_speaker_label,
     user_confirmed_speaker_label,
 )
+from window.live_profile_tape import emit_live_profile_snapshot
 
 
 
@@ -480,8 +481,21 @@ class WindowTranscriptionMixin:
         final_flush: bool = False,
         previous_text_ended_sentence: bool = False,
         speech_spans: list[tuple[float, float]] | None = None,
+        *,
+        batched: bool = False,
+        batch_size: int = 16,
     ) -> WindowTranscript:
-        words, segment_count = self._transcribe_window_audio_words(model, left, right, speech_spans)
+        if batched:
+            words, segment_count = self._transcribe_window_audio_words(
+                model,
+                left,
+                right,
+                speech_spans,
+                batched=True,
+                batch_size=batch_size,
+            )
+        else:
+            words, segment_count = self._transcribe_window_audio_words(model, left, right, speech_spans)
         words.sort(key=lambda item: (item.start, item.end))
         parts = split_words_with_stream2sentence(
             words,
@@ -809,12 +823,15 @@ class WindowTranscriptionMixin:
                 duration_seconds,
                 live_memory_suffix,
                 speaker_generation=self._speaker_generation if speaker_generation is None else speaker_generation,
+                sentence_start=base_payload.get("start"),
+                sentence_end=base_payload.get("end"),
             )
         if decision.assigned_speaker is None:
             self._remember_unknown_sentence(index, base_payload, embedding, duration_seconds)
         elif decision.created_speaker:
             self.emit_speaker_state()
-            self._revisit_unknown_sentences()
+            if run_speaker_refinement:
+                self._revisit_unknown_sentences()
         elif self._refresh_person_identity_suggestions(self.memory.export_profiles()):
             # An existing Speaker can cross the Person-recognition evidence gate
             # after its first state event. Notify the UI only when the public
@@ -822,6 +839,15 @@ class WindowTranscriptionMixin:
             self.emit_speaker_state()
         if run_speaker_refinement:
             self._refine_speaker_assignments()
+        emit_live_profile_snapshot(
+            self,
+            self.memory,
+            decision.assigned_speaker,
+            str(self.args.embedding_provider),
+            source="synchronous_final_sentence_memory_update",
+            sentence_start=base_payload.get("start"),
+            sentence_end=base_payload.get("end"),
+        )
         self._maybe_checkpoint_confirmed_people()
         return sentence_payload
 
@@ -852,18 +878,21 @@ class WindowTranscriptionMixin:
             if job.speaker_generation != self._speaker_generation:
                 self.bus.emit("status", {"message": f"Discarded stale speaker embedding for sentence {index}."})
                 return
+            active_run = getattr(self, "_active_run", None)
+            fast_processing = active_run is not None and active_run.processing_mode == "fast"
             self._apply_sentence_embedding_decision(
                 index=index,
                 base_payload=base_payload,
                 text=job.text,
                 embedding=embedding,
                 duration_seconds=duration_seconds,
-                live_memory_audio=chunk,
-                live_memory_sample_rate=job.sample_rate,
+                live_memory_audio=None if fast_processing else chunk,
+                live_memory_sample_rate=None if fast_processing else job.sample_rate,
                 live_memory_suffix=".live-sentence.wav",
                 speaker_generation=job.speaker_generation,
                 emit_status=True,
                 elapsed_seconds=time.monotonic() - embed_started,
+                run_speaker_refinement=not fast_processing,
             )
         except Exception as exc:
             self.bus.emit("status", {"message": f"Embedding failed for sentence {index}: {type(exc).__name__}: {exc}"})

@@ -82,6 +82,12 @@ export function installSavedReports(ctx) {
     archiveSelectedSessionsButton.disabled = ctx.owners.sessions.savedSessionBulkActionBusy || !selected.some(item => !item.archived);
     restoreSelectedSessionsButton.disabled = ctx.owners.sessions.savedSessionBulkActionBusy || !selected.some(item => item.archived);
     deleteSelectedSessionsButton.disabled = ctx.owners.sessions.savedSessionBulkActionBusy || !selectedCount;
+    const busyReason = ctx.owners.sessions.savedSessionBulkActionBusy ? "Wait for the current session action to finish." : "";
+    selectAllSessionsButton.dataset.disabledHelp = busyReason || (!ctx.owners.sessions.savedSessions.length ? "There are no sessions in this view." : (allSelected ? "All visible sessions are already selected." : ""));
+    unselectAllSessionsButton.dataset.disabledHelp = busyReason || (!selectedCount ? "No sessions are selected." : "");
+    archiveSelectedSessionsButton.dataset.disabledHelp = busyReason || (!selected.some(item => !item.archived) ? "Select at least one active session to archive." : "");
+    restoreSelectedSessionsButton.dataset.disabledHelp = busyReason || (!selected.some(item => item.archived) ? "Select at least one archived session to restore." : "");
+    deleteSelectedSessionsButton.dataset.disabledHelp = busyReason || (!selectedCount ? "Select one or more sessions before deleting." : "");
   }
   function selectAllSavedSessions() {
     ctx.owners.sessions.savedSessions.forEach(item => {
@@ -538,6 +544,9 @@ export function installSavedReports(ctx) {
   function renderMeetingIntelligencePanel() {
     const sessionId = currentMeetingIntelligenceSessionId();
     meetingIntelligenceGenerate.disabled = ctx.owners.reports.meetingIntelligenceBusy || !sessionId;
+    meetingIntelligenceGenerate.dataset.disabledHelp = ctx.owners.reports.meetingIntelligenceBusy
+      ? "Wait for the current report generation to finish."
+      : (!sessionId ? "Open a completed saved session before generating insights." : "");
     meetingIntelligenceObjects.textContent = "";
     meetingIntelligenceStats.textContent = "";
     if (!ctx.owners.reports.meetingIntelligenceReport) {

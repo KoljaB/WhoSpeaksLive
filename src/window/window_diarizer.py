@@ -102,6 +102,7 @@ from window.window_speaker_refinement import (
 class StartSessionRequest:
     session_id: str = ""
     source_title: str = ""
+    processing_mode: str = "playback"
 
     def __post_init__(self) -> None:
         session_id = str(self.session_id or "").strip()
@@ -109,6 +110,10 @@ class StartSessionRequest:
             raise ValueError("Invalid session id.")
         object.__setattr__(self, "session_id", session_id)
         object.__setattr__(self, "source_title", " ".join(str(self.source_title or "").split())[:120])
+        processing_mode = str(self.processing_mode or "playback").strip().lower()
+        if processing_mode not in {"playback", "fast"}:
+            raise ValueError("processing_mode must be 'playback' or 'fast'.")
+        object.__setattr__(self, "processing_mode", processing_mode)
 
 
 @dataclass(frozen=True)
@@ -133,11 +138,12 @@ from window.window_diarizer_models import WindowModelRuntimeMixin
 from window.window_diarizer_live_scoring import WindowLiveScoringMixin
 from window.window_diarizer_live_probe import WindowLiveProbeMixin
 from window.window_diarizer_transcription import WindowTranscriptionMixin
+from window.window_fast_processing import WindowFastProcessingMixin
 from window.window_diarizer_runtime_state import WindowRuntimeStateMixin
 from window.window_diarizer_people import WindowPersonIdentityMixin
 
 
-class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSpeakerStateMixin, WindowSpeakerReviewMixin, WindowSpeakerLibraryMixin, WindowRuntimeAudioMixin, WindowRuntimeStateMixin, WindowAssignmentDecisionMixin, WindowRefinementRulesMixin, WindowRefinementMixin, WindowModelRuntimeMixin, WindowLiveScoringMixin, WindowLiveProbeMixin, WindowTranscriptionMixin):
+class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSpeakerStateMixin, WindowSpeakerReviewMixin, WindowSpeakerLibraryMixin, WindowRuntimeAudioMixin, WindowRuntimeStateMixin, WindowAssignmentDecisionMixin, WindowRefinementRulesMixin, WindowRefinementMixin, WindowModelRuntimeMixin, WindowLiveScoringMixin, WindowLiveProbeMixin, WindowTranscriptionMixin, WindowFastProcessingMixin):
     def __init__(
         self,
         args: argparse.Namespace | DiarizationConfig,
@@ -372,7 +378,7 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
             session_id=getattr(self, "_next_session_id", ""),
             source_title=getattr(self, "_session_source_title", ""),
         )
-        self.bus.emit("status", {"message": "Start requested; preparing models before playback."})
+        self.bus.emit("status", {"message": "Start requested; preparing models."})
         self.stop()
         with self._lifecycle_lock:
             if self._active_run is not None:
@@ -380,15 +386,18 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
                     f"Previous diarization run {self._active_run.run_id} did not stop cleanly: "
                     f"{self._active_run.failure or self._active_run.state.value}"
                 )
-            run = DiarizationRun()
+            run = DiarizationRun(processing_mode=request.processing_mode)
             self._active_run = run
         refresh_runtime_warmup = self._should_refresh_start_runtime_warmup()
         self._prepare_model_dependencies(
             include_asr_probe=refresh_runtime_warmup,
             force_runtime_warmup=refresh_runtime_warmup,
         )
-        self.bus.emit("status", {"message": "Loading realtime preview engine."})
-        self._load_realtime_preview()
+        if request.processing_mode == "playback":
+            self.bus.emit("status", {"message": "Loading realtime preview engine."})
+            self._load_realtime_preview()
+        else:
+            self._preview_transcriber = None
         speaker_state = self._reset_runtime_session_state()
         self._stop = run.stop_event
         self._session_id = request.session_id or uuid.uuid4().hex
@@ -396,7 +405,7 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
         self._next_session_id = ""
         self._session_started_at = datetime.now().astimezone().isoformat(timespec="seconds")
         self.set_playback_time(0.0, reset=True)
-        self._playback_clock_started_at = time.monotonic()
+        self._playback_clock_started_at = time.monotonic() if request.processing_mode == "playback" else None
         self._last_playback_jump_warning_at = 0.0
         cancelled_transcriber: RealtimePreviewTranscriber | None = None
         launched = False
@@ -406,7 +415,8 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
                 self._preview_transcriber = None
             else:
                 self._start_embedding_worker()
-                self._start_live_memory_update_worker()
+                if run.processing_mode == "playback":
+                    self._start_live_memory_update_worker()
                 run.main_thread = self.dependencies.thread_factory(
                     target=self._run_main_worker,
                     args=(run,),
@@ -414,7 +424,7 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
                     daemon=True,
                 )
                 self._thread = run.main_thread
-                if self._preview_transcriber is not None:
+                if run.processing_mode == "playback" and self._preview_transcriber is not None:
                     run.preview_thread = self.dependencies.thread_factory(
                         target=self._run_realtime_preview,
                         args=(run.stop_event,),
@@ -422,7 +432,7 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
                         daemon=True,
                     )
                     self._preview_thread = run.preview_thread
-                if self._live_speaker_assignment_enabled() and bool(getattr(self.args, "live_speaker_probe", True)):
+                if run.processing_mode == "playback" and self._live_speaker_assignment_enabled() and bool(getattr(self.args, "live_speaker_probe", True)):
                     run.live_probe_thread = self.dependencies.thread_factory(
                         target=self._run_live_speaker_probe,
                         args=(run.stop_event,),
@@ -443,12 +453,20 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
             cancelled_transcriber.close()
         if not launched:
             raise RuntimeError("Diarization start was cancelled before worker launch.")
-        self.bus.emit("status", {"message": "Diarization worker started; synchronized playback can begin."})
+        message = (
+            "Fast processing worker started; media playback is not required."
+            if run.processing_mode == "fast"
+            else "Diarization worker started; synchronized playback can begin."
+        )
+        self.bus.emit("status", {"message": message})
         return speaker_state
 
     def _run_main_worker(self, run: DiarizationRun) -> None:
         try:
-            self._run(run.stop_event)
+            if run.processing_mode == "fast":
+                self._run_fast_processing(run.stop_event)
+            else:
+                self._run(run.stop_event)
         except BaseException as exc:
             run.mark_failed(f"{type(exc).__name__}: {exc}")
         finally:

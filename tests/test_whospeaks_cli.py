@@ -330,6 +330,10 @@ class WhoSpeaksCliTests(unittest.TestCase):
         with (
             mock.patch.object(cli, "load_profile", return_value=profile),
             mock.patch.object(cli, "require_apple_silicon_macos"),
+            mock.patch(
+                "whospeaks_cli.cli_commands.check_port",
+                return_value=cli.CheckResult("Browser UI port", "ok", "available"),
+            ),
             mock.patch.object(cli, "service_health_ready", return_value=False),
             mock.patch.object(cli, "start_service_process", side_effect=fake_start),
             mock.patch.object(cli, "wait_for_service_health", side_effect=fake_wait),
@@ -351,6 +355,10 @@ class WhoSpeaksCliTests(unittest.TestCase):
         with (
             mock.patch.object(cli, "load_profile", return_value=profile),
             mock.patch.object(cli, "require_apple_silicon_macos"),
+            mock.patch(
+                "whospeaks_cli.cli_commands.check_port",
+                return_value=cli.CheckResult("Browser UI port", "ok", "available"),
+            ),
             mock.patch.object(cli, "service_health_ready", side_effect=lambda _url: next(health_results)),
             mock.patch.object(cli, "start_service_process", return_value=process) as start,
             mock.patch.object(cli, "wait_for_service_health", side_effect=RuntimeError("unhealthy")),
@@ -373,6 +381,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
                 "report_llm_model": "test-report-model",
             }
         )
+        browser_ok = cli.CheckResult("Browser UI port", "ok", "available")
         port_failure = cli.CheckResult("Port 8898", "fail", "already in use")
         with (
             mock.patch.dict(
@@ -381,7 +390,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
             ),
             mock.patch.object(cli, "load_profile", return_value=profile),
             mock.patch.object(cli, "require_apple_silicon_macos"),
-            mock.patch("whospeaks_cli.cli_commands.check_port", return_value=port_failure),
+            mock.patch("whospeaks_cli.cli_commands.check_port", side_effect=(browser_ok, port_failure)),
             mock.patch.object(cli, "start_service_process") as start_service,
             mock.patch.object(cli.subprocess, "Popen") as popen,
             mock.patch.object(cli.subprocess, "run") as run,
@@ -390,6 +399,21 @@ class WhoSpeaksCliTests(unittest.TestCase):
 
         self.assertEqual(code, 2)
         start_service.assert_not_called()
+        popen.assert_not_called()
+        run.assert_not_called()
+
+    def test_cli_checks_browser_port_before_starting_any_process(self) -> None:
+        profile = cli.Profile.from_mapping({"mode": "remote"})
+        port_failure = cli.CheckResult("Browser UI port", "fail", "already in use")
+        with (
+            mock.patch.object(cli, "load_profile", return_value=profile),
+            mock.patch("whospeaks_cli.cli_commands.check_port", return_value=port_failure),
+            mock.patch.object(cli.subprocess, "Popen") as popen,
+            mock.patch.object(cli.subprocess, "run") as run,
+        ):
+            code = cli.main(["launch"])
+
+        self.assertEqual(code, 2)
         popen.assert_not_called()
         run.assert_not_called()
 

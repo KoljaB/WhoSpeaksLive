@@ -218,12 +218,67 @@
     .speaker-count-number { position:relative; top:2px; font-size:16px; font-weight:600; line-height:1; color:#FF9F1C; }
     .speaker-count-label { font-size:13px; font-weight:400; }
     .transport { flex:0 0 auto; display:flex; gap:8px; align-items:center; }
+    .heading-with-help { min-width:0; display:inline-flex; align-items:center; gap:7px; }
     button { min-height:32px; border:1px solid var(--line); border-radius:7px; padding:0 12px; font-size:13px; font-weight:400; cursor:pointer; background:#0F161F; color:var(--text); }
     #start { border-color:#3DC77C; background:#0F161F; color:#3DC77C; }
     #start:disabled, #stop:disabled { display:none; }
     #stop { display:inline-flex; align-items:center; gap:8px; border-color:#DF3C36; background:#981D20; color:var(--text); box-shadow:inset 0 1px 0 rgba(255,255,255,.18); }
     .stop-icon { width:10px; height:10px; border-radius:2px; background:#FFFFFF; display:inline-block; }
     button:disabled { opacity:.45; cursor:not-allowed; }
+    .help-backdrop {
+      position:fixed;
+      inset:0;
+      z-index:89;
+      background:rgba(2,7,12,.58);
+      backdrop-filter:blur(2px);
+    }
+    .help-backdrop[hidden], .help-drawer[hidden], .help-tooltip[hidden] { display:none; }
+    .help-drawer {
+      position:fixed;
+      z-index:90;
+      top:0;
+      right:0;
+      width:min(430px, 92vw);
+      height:100dvh;
+      display:grid;
+      grid-template-rows:auto minmax(0,1fr);
+      border-left:1px solid #2B3D4D;
+      background:#0D151E;
+      box-shadow:-24px 0 70px rgba(0,0,0,.48);
+    }
+    .help-drawer-header {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:20px;
+      padding:22px 20px 18px;
+      border-bottom:1px solid var(--line);
+    }
+    .help-eyebrow { color:#17B7FE; font-size:11px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; }
+    .help-drawer h2 { margin:5px 0 0; color:#F1F5F8; font-size:19px; line-height:1.25; }
+    .help-close-button { width:32px; min-height:32px; padding:0; font-size:24px; line-height:1; }
+    .help-drawer-body { overflow:auto; padding:22px 20px 32px; }
+    .help-summary { margin:0; color:#E6EDF4; font-size:15px; line-height:1.5; }
+    .help-current { margin-top:16px; padding:10px 12px; border:1px solid #29445A; border-radius:7px; background:#0B1A26; color:#A9D8F5; font-size:13px; }
+    .help-detail { margin:18px 0 0; color:#ABB8C5; font-size:14px; line-height:1.65; white-space:pre-line; }
+    .help-shortcut { margin-top:28px; padding-top:16px; border-top:1px solid var(--line); display:flex; align-items:center; gap:10px; color:#8292A1; font-size:12px; }
+    .help-shortcut kbd { min-width:34px; padding:3px 7px; border:1px solid #3A4C5C; border-bottom-width:2px; border-radius:5px; background:#111D28; color:#D7E1EA; font:12px ui-monospace, SFMono-Regular, Consolas, monospace; text-align:center; }
+    .help-tooltip {
+      position:fixed;
+      z-index:100;
+      width:max-content;
+      max-width:360px;
+      padding:9px 11px;
+      border:1px solid #31485B;
+      border-radius:7px;
+      background:#111C26;
+      color:#E5EDF4;
+      box-shadow:0 12px 34px rgba(0,0,0,.46);
+      font-size:12px;
+      line-height:1.45;
+      pointer-events:none;
+    }
+    .help-tooltip[data-state="disabled"] { border-color:#765A2D; background:#1C180F; color:#F0D39C; }
     .session-banner { min-height:34px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:6px 12px 6px 16px; border-top:1px solid rgba(255,255,255,.035); border-bottom:1px solid var(--line); background:#0F161F; color:#B7C1CD; font-size:13px; }
     .session-banner[hidden] { display:none; }
     .session-banner.available { color:#3DC77C; background:#0B1015; }
@@ -297,11 +352,18 @@
     .file-preview-name { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#E8EEF5; font-size:13px; }
     .media-card.mode-file .video-frame video, .media-card.mode-file .youtube-stream { display:none; }
     .media-card.mode-file .file-preview { display:grid; }
-    .media-controls { min-width:0; min-height:100%; display:grid; grid-template-rows:auto minmax(0,1fr) auto; align-items:center; gap:8px; }
+    .media-controls { min-width:0; min-height:100%; display:grid; grid-template-rows:auto auto minmax(0,1fr) auto; align-items:center; gap:8px; }
     .youtube-source-controls { align-self:start; }
     .file-source-controls { align-self:start; display:none; }
     .media-card.mode-file .file-source-controls { display:block; }
     .media-card.mode-microphone .youtube-source-controls, .media-card.mode-system .youtube-source-controls, .media-card.mode-both .youtube-source-controls, .media-card.mode-file .youtube-source-controls { display:none; }
+    .fast-processing-control { display:flex; align-items:flex-start; gap:9px; padding:7px 10px; border:1px solid #29445A; border-radius:7px; background:#0B151E; color:#DCE6EF; cursor:pointer; }
+    .fast-processing-control input { margin:2px 0 0; accent-color:#17B7FE; }
+    .fast-processing-control span { min-width:0; display:grid; gap:2px; }
+    .fast-processing-control strong { font-size:13px; font-weight:600; }
+    .fast-processing-control small { color:#92A3B3; font-size:11px; line-height:1.35; }
+    .fast-processing-control.disabled { opacity:.55; cursor:not-allowed; }
+    .media-card.mode-microphone .fast-processing-control, .media-card.mode-system .fast-processing-control, .media-card.mode-both .fast-processing-control { display:none; }
     .file-input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
     .file-drop-zone { min-height:76px; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; padding:10px 12px; border:1px dashed #315064; border-radius:7px; background:#0B1015; color:#C6D0DC; cursor:pointer; }
     .file-drop-zone.dragover { border-color:#17B7FE; background:#102436; }
@@ -715,6 +777,8 @@
       .top { display:grid; grid-template-columns:1fr; gap:6px; }
       .prob { width:100%; flex-basis:auto; }
       .text { font-size:15px; line-height:1.36; }
+      .help-drawer { width:min(430px, 100vw); }
+      .help-tooltip { max-width:calc(100vw - 24px); }
     }
     @media (max-width: 460px) {
       .topbar { align-items:stretch; }

@@ -205,9 +205,10 @@ test("live ES modules bootstrap and dispose with explicit owners", async () => {
 
   assert.ok(fetchCalls.some(call => call.path === "/api/sessions/create"));
   assert.ok(fetchCalls.some(call => call.path === "/api/start"));
+  const startCall = fetchCalls.find(call => call.path === "/api/start");
+  assert.equal(JSON.parse(startCall.options.body).processing_mode, "fast");
   assert.equal(eventSources.length, 1);
-  assert.equal(elements.get("state").textContent, "Playing");
-  assert.ok(activeIntervals.size > 0);
+  assert.equal(elements.get("state").textContent, "Processing");
 
   const events = eventSources[0];
   events.emit("speakers", {

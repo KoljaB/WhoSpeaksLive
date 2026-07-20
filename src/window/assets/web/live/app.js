@@ -11,6 +11,7 @@ import {installLiveBindings} from "./live_bindings.js";
 
 export function bootstrapLiveApp() {
   const context = createLiveAppContext();
+  let disposed = false;
   installMediaCapture(context);
   installSessionTransport(context);
   installSavedReports(context);
@@ -21,7 +22,17 @@ export function bootstrapLiveApp() {
   installTranscriptRender(context);
   installLiveBindings(context);
   for (const activate of context.activators) activate();
-  return () => context.appResources.dispose();
+  import("./help_system.js")
+    .then(({installHelpSystem}) => {
+      if (!disposed) installHelpSystem(context);
+    })
+    .catch(error => {
+      console.warn("Context help could not be loaded; the core live app remains available.", error);
+    });
+  return () => {
+    disposed = true;
+    context.appResources.dispose();
+  };
 }
 
 const disposeLiveApp = bootstrapLiveApp();

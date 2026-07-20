@@ -16,6 +16,7 @@ _ALLOWED_ASSETS = frozenset({
     "live/app.js",
     "live/app_store.js",
     "live/live_context.js",
+    "live/help_system.js",
     "live/media_capture.js",
     "live/session_transport.js",
     "live/saved_reports.js",

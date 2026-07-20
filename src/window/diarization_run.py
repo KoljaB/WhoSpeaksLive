@@ -28,6 +28,7 @@ class DiarizationRun:
     live_probe_thread: threading.Thread | None = None
     done_emitted: bool = False
     failure: str = ""
+    processing_mode: str = "playback"
 
     def threads(self) -> tuple[threading.Thread, ...]:
         return tuple(

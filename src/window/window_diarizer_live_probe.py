@@ -112,6 +112,14 @@ class WindowLiveProbeMixin:
             float(getattr(self.args, "live_speaker_probe_attack_interval_seconds", 0.0)),
         )
         window_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_window_seconds", 1.25)))
+        context_window_seconds = max(
+            window_seconds,
+            float(getattr(self.args, "live_speaker_probe_context_window_seconds", 0.0)),
+        )
+        context_weight = max(
+            0.0,
+            min(1.0, float(getattr(self.args, "live_speaker_probe_context_weight", 0.0))),
+        )
         min_advance = max(0.0, float(getattr(self.args, "live_speaker_probe_min_advance_seconds", interval_seconds)))
         attack_min_advance = max(
             0.0,
@@ -159,7 +167,16 @@ class WindowLiveProbeMixin:
                     clear_sample_rate,
                 ):
                     consecutive_silence += 1
-                    if consecutive_silence >= clear_silence_count:
+                    core_decision = self._shared_live_speaker_step(
+                        media_time=right,
+                        speech=False,
+                        embedding=None,
+                        duration_seconds=max(0.0, right - clear_left),
+                        probe_scheduled=False,
+                        release_signal=True,
+                        skipped_reason="production_silence_release_gate",
+                    )
+                    if core_decision.action == "clear":
                         self.bus.emit(
                             "live_speaker_clear",
                             {
@@ -192,15 +209,74 @@ class WindowLiveProbeMixin:
                 continue
             if not self._try_reserve_live_speaker_embedding():
                 continue
+            context_audio: np.ndarray | None = None
+            context_duration_seconds: float | None = None
+            if context_weight > 0.0 and context_window_seconds > window_seconds:
+                context_left = max(0.0, right - context_window_seconds)
+                candidate_context, context_sample_rate = self._audio_window_copy(
+                    context_left, right
+                )
+                candidate_duration = (
+                    candidate_context.size / float(context_sample_rate)
+                    if context_sample_rate > 0 else 0.0
+                )
+                if (
+                    context_sample_rate == sample_rate
+                    and candidate_duration + 1e-3 >= context_window_seconds
+                ):
+                    context_audio = candidate_context
+                    context_duration_seconds = candidate_duration
             speaker_payload = self._score_realtime_preview_speaker(
                 audio,
                 duration_seconds,
                 min_audio_seconds=probe_min_audio_seconds,
+                context_audio=context_audio,
+                context_duration_seconds=context_duration_seconds,
+                context_weight=context_weight,
             )
             speaker_payload = self._maybe_promote_raw_live_speaker_change(active_speaker, speaker_payload)
             if stop_event.is_set():
                 break
             assigned_speaker = speaker_payload.get("assigned_speaker")
+            if speaker_payload.get("live_speaker_algorithm_id"):
+                core_action = str(speaker_payload.get("live_speaker_core_action") or "")
+                core_reason = str(speaker_payload.get("live_speaker_core_reason") or "")
+                if assigned_speaker:
+                    active_speaker = str(assigned_speaker)
+                    consecutive_unknown = 0
+                    consecutive_silence = 0
+                    self.bus.emit(
+                        "live_speaker",
+                        {
+                            **speaker_payload,
+                            "speaker_id": active_speaker,
+                            "live": True,
+                            "fallback": True,
+                            "start": round(float(left), 4),
+                            "end": round(float(right), 4),
+                            "audio_length_seconds": round(float(duration_seconds), 4),
+                            "hold_seconds": round(float(hold_seconds), 4),
+                            "assignment_source": "shared_causal_live_speaker_core",
+                        },
+                    )
+                else:
+                    consecutive_unknown += 1
+                    if active_speaker and core_action == "clear":
+                        self.bus.emit(
+                            "live_speaker_clear",
+                            {
+                                "speaker_id": active_speaker,
+                                "live": False,
+                                "fallback": True,
+                                "start": round(float(left), 4),
+                                "end": round(float(right), 4),
+                                "reason": core_reason or "unknown",
+                                "unknown_count": consecutive_unknown,
+                                "assignment_source": "shared_causal_live_speaker_core",
+                            },
+                        )
+                        active_speaker = None
+                continue
             if not assigned_speaker:
                 if (
                     bool(getattr(self.args, "live_speaker_provisional_new_speaker", False))

@@ -184,6 +184,9 @@ export function installTranscriptReview(ctx) {
   function syncCorrectionUndoState(enabled = ctx.owners.transcript.hasUndoableCorrection) {
     ctx.owners.transcript.hasUndoableCorrection = Boolean(enabled);
     undoCorrectionButton.disabled = !ctx.owners.transcript.hasUndoableCorrection || sessionControlsLocked() || savedSessionReviewOpen();
+    undoCorrectionButton.dataset.disabledHelp = sessionControlsLocked()
+      ? "Another browser currently controls transcript corrections."
+      : (savedSessionReviewOpen() ? "Undo is available only for corrections made in the current live session." : (!ctx.owners.transcript.hasUndoableCorrection ? "There is no supported transcript correction to undo yet." : ""));
   }
   function transcriptRowSelectionKey(row) {
     if (!row || row.dataset.realtime === "true" || row.dataset.selectable !== "true") return "";
@@ -325,10 +328,16 @@ export function installTranscriptReview(ctx) {
       || count <= 0
       || !selectedSpeakerId
       || (createSpeakerSelected ? !canCreateSpeaker : !selectedRowsNeedSpeakerChange(rows, selectedSpeakerId));
+    bulkReassignButton.dataset.disabledHelp = locked
+      ? "Another browser currently controls transcript corrections."
+      : (count <= 0 ? "Select one or more transcript rows first." : (!selectedSpeakerId ? "Choose the destination speaker first." : (createSpeakerSelected && !canCreateSpeaker ? "Creating a Speaker requires selected rows from one known Speaker." : "The selected rows already use this Speaker.")));
     bulkReassignButton.title = createSpeakerSelected && !canCreateSpeaker
       ? "Create new speaker requires selected rows from one known speaker."
       : "";
     bulkMarkCorrectButton.disabled = locked || count <= 0 || !selectedRowsHaveUnconfirmed(rows);
+    bulkMarkCorrectButton.dataset.disabledHelp = locked
+      ? "Another browser currently controls transcript corrections."
+      : (count <= 0 ? "Select one or more transcript rows first." : (!selectedRowsHaveUnconfirmed(rows) ? "All selected rows are already confirmed." : ""));
     clearSelectionButton.disabled = count <= 0;
   }
   function syncTranscriptSelectionState() {

@@ -26,6 +26,7 @@ model_cache = modal.Volume.from_name("whospeaks-faster-whisper-cache", create_if
 app = modal.App(APP_NAME, image=image)
 
 _model: Any = None
+_batched_model: Any = None
 _loaded_at: float | None = None
 
 
@@ -43,6 +44,18 @@ def _get_model() -> Any:
         )
         _loaded_at = time.monotonic() - started
     return _model
+
+
+def _get_transcriber(batched: bool) -> Any:
+    global _batched_model
+    model = _get_model()
+    if not batched:
+        return model
+    if _batched_model is None or getattr(_batched_model, "model", None) is not model:
+        from faster_whisper import BatchedInferencePipeline
+
+        _batched_model = BatchedInferencePipeline(model=model)
+    return _batched_model
 
 
 @app.function(
@@ -70,6 +83,7 @@ def create_asgi_app():
             "language": DEFAULT_LANGUAGE,
             "model_loaded": _model is not None,
             "model_load_seconds": _loaded_at,
+            "batched_inference": True,
         }
 
     @web.post("/transcribe-window")
@@ -83,6 +97,8 @@ def create_asgi_app():
         word_timestamps: bool = Query(True),
         vad_filter: bool = Query(False),
         condition_on_previous_text: bool = Query(False),
+        batched: bool = Query(False),
+        batch_size: int = Query(16, ge=1),
     ) -> dict[str, Any]:
         if encoding != "float32":
             raise HTTPException(status_code=400, detail="Only float32 raw audio is supported.")
@@ -107,7 +123,7 @@ def create_asgi_app():
                 "sample_rate": sample_rate,
             }
 
-        model = _get_model()
+        model = _get_transcriber(batched)
         started = time.monotonic()
         segments_iter, info = model.transcribe(
             audio,
@@ -115,8 +131,9 @@ def create_asgi_app():
             task=task,
             beam_size=beam_size,
             word_timestamps=word_timestamps,
-            vad_filter=vad_filter,
+            vad_filter=True if batched else vad_filter,
             condition_on_previous_text=condition_on_previous_text,
+            **({"batch_size": batch_size} if batched else {}),
         )
 
         segments: list[dict[str, Any]] = []

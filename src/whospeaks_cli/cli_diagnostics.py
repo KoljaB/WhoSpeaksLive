@@ -402,7 +402,8 @@ def command_version(command: str, args: list[str], timeout_seconds: float = 5.0)
 def check_port(host: str, port: int) -> CheckResult:
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            if os.name == "nt" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
             sock.bind((host, int(port)))
     except OSError as exc:
         return CheckResult(

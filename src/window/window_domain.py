@@ -108,3 +108,5 @@ class LiveSpeakerMemoryUpdateJob:
     speaker_generation: int = 0
     speaker_label_generation: int = 0
     run_id: str = ""
+    sentence_start: float | None = None
+    sentence_end: float | None = None

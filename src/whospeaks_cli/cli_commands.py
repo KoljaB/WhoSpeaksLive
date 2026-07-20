@@ -387,6 +387,13 @@ def cmd_launch(args: argparse.Namespace) -> int:
         print(f"Managed {spec.name}: {format_command(list(spec.command))}")
     if args.print_only or args.dry_run:
         return 0
+    browser_port_check = check_port(profile.host, profile.port)
+    if browser_port_check.status == "fail":
+        print(
+            f"WhoSpeaks Live was not started because {profile.host}:{profile.port} "
+            "is already owned by another process."
+        )
+        return 2
     if reports_command is not None:
         port_check = check_port(profile.host, profile.reports_port)
         if port_check.status == "fail":

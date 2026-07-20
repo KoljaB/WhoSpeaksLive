@@ -16,6 +16,11 @@ from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
 from faster_whisper import WhisperModel
 
+try:
+    from faster_whisper import BatchedInferencePipeline
+except ImportError:  # faster-whisper < 1.1
+    BatchedInferencePipeline = None  # type: ignore[assignment,misc]
+
 MODEL_NAME = os.environ.get("ASR_MODEL", "large-v2")
 DEFAULT_LANGUAGE = os.environ.get("ASR_LANGUAGE", os.environ.get("WHOSPEAKS_ASR_LANGUAGE", "en"))
 DEVICE = os.environ.get("ASR_DEVICE", "cuda")
@@ -27,6 +32,7 @@ TARGET_SAMPLE_RATE = 16000
 
 app = FastAPI(title="faster-whisper ASR", version="1.2.0")
 model: WhisperModel | None = None
+batched_model: BatchedInferencePipeline | None = None
 model_loaded_at: float | None = None
 
 
@@ -34,6 +40,16 @@ def get_model() -> WhisperModel:
     if model is None:
         raise HTTPException(status_code=503, detail="model_not_loaded")
     return model
+
+
+def get_transcriber(batched: bool) -> Any:
+    global batched_model
+    loaded = get_model()
+    if not batched or BatchedInferencePipeline is None:
+        return loaded
+    if batched_model is None or batched_model.model is not loaded:
+        batched_model = BatchedInferencePipeline(model=loaded)
+    return batched_model
 
 
 def start_parent_watchdog() -> None:
@@ -78,6 +94,7 @@ def health() -> dict[str, Any]:
         "compute_type": COMPUTE_TYPE,
         "language": DEFAULT_LANGUAGE,
         "model_loaded_seconds": model_loaded_at,
+        "batched_inference": BatchedInferencePipeline is not None,
         "routes": [
             "/transcribe",
             "/transcribe-memory",
@@ -350,9 +367,16 @@ def run_transcription(
     options: dict[str, Any],
     input_mode: str,
     decode_seconds: float | None = None,
+    batched: bool = False,
+    batch_size: int = 16,
 ) -> JSONResponse:
     started = time.perf_counter()
-    segments_iter, info = get_model().transcribe(audio, **options)
+    effective_batched = bool(batched and BatchedInferencePipeline is not None)
+    transcribe_options = dict(options)
+    if effective_batched:
+        transcribe_options["batch_size"] = max(1, int(batch_size))
+        transcribe_options["vad_filter"] = True
+    segments_iter, info = get_transcriber(effective_batched).transcribe(audio, **transcribe_options)
 
     segments = []
     all_words = []
@@ -400,6 +424,8 @@ def run_transcription(
             "device": DEVICE,
             "compute_type": COMPUTE_TYPE,
             "options": options,
+            "batched": effective_batched,
+            "batch_size": max(1, int(batch_size)) if effective_batched else None,
             "segments": segments,
             "segment_count": len(segments),
             "words": all_words,
@@ -420,11 +446,15 @@ async def transcribe_memory(
     decode_started = time.perf_counter()
     audio = decode_audio_bytes(audio_bytes)
     decode_seconds = time.perf_counter() - decode_started
+    batched = parse_bool(value_or_default(values, "batched", False), "batched")
+    batch_size = parse_int(value_or_default(values, "batch_size", 16), "batch_size")
     return run_transcription(
         audio,
         options=transcribe_options(values),
         input_mode="encoded_memory",
         decode_seconds=decode_seconds,
+        batched=batched,
+        batch_size=batch_size,
     )
 
 
@@ -441,11 +471,15 @@ async def transcribe_pcm16(
     encoding = str(value_or_default(values, "encoding", "pcm16"))
     audio = pcm_bytes_to_float32(audio_bytes, sample_rate, encoding)
     decode_seconds = time.perf_counter() - decode_started
+    batched = parse_bool(value_or_default(values, "batched", False), "batched")
+    batch_size = parse_int(value_or_default(values, "batch_size", 16), "batch_size")
     return run_transcription(
         audio,
         options=transcribe_options(values),
         input_mode=encoding.lower(),
         decode_seconds=decode_seconds,
+        batched=batched,
+        batch_size=batch_size,
     )
 
 
@@ -460,6 +494,8 @@ async def transcribe_window(request: Request) -> JSONResponse:
     encoding = str(value_or_default(values, "encoding", "float32"))
     audio = pcm_bytes_to_float32(audio_bytes, sample_rate, encoding)
     decode_seconds = time.perf_counter() - decode_started
+    batched = parse_bool(value_or_default(values, "batched", False), "batched")
+    batch_size = parse_int(value_or_default(values, "batch_size", 16), "batch_size")
     return run_transcription(
         audio,
         options=transcribe_options(
@@ -473,6 +509,8 @@ async def transcribe_window(request: Request) -> JSONResponse:
         ),
         input_mode=f"window_{encoding.lower()}",
         decode_seconds=decode_seconds,
+        batched=batched,
+        batch_size=batch_size,
     )
 
 
@@ -488,11 +526,15 @@ async def transcribe_file(
     with tempfile.NamedTemporaryFile(prefix="asr_", suffix=suffix, delete=True) as tmp:
         tmp.write(audio_bytes)
         tmp.flush()
+        batched = parse_bool(value_or_default(values, "batched", False), "batched")
+        batch_size = parse_int(value_or_default(values, "batch_size", 16), "batch_size")
         return run_transcription(
             tmp.name,
             options=transcribe_options(values),
             input_mode="temp_file",
             decode_seconds=None,
+            batched=batched,
+            batch_size=batch_size,
         )
 
 

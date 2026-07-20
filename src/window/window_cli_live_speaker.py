@@ -353,6 +353,18 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
         help="EMA weight for the newest live speaker probability snapshot.",
     )
     parser.add_argument(
+        "--live-speaker-acquire-count",
+        type=int,
+        default=1,
+        help="Consecutive known-speaker probes required before initially showing a live speaker.",
+    )
+    parser.add_argument(
+        "--live-speaker-switch-count",
+        type=int,
+        default=1,
+        help="Consecutive probes for a different speaker required before switching the live label.",
+    )
+    parser.add_argument(
         "--live-speaker-probe",
         action=argparse.BooleanOptionalAction,
         default=True,
@@ -375,6 +387,18 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
         type=float,
         default=1.0,
         help="Recent audio window scored by the fallback live-speaker probe.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-context-window-seconds",
+        type=float,
+        default=0.0,
+        help="Optional longer live-audio context window blended with the fast probe; 0 disables.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-context-weight",
+        type=float,
+        default=0.0,
+        help="Weight in [0,1] assigned to the optional longer live-speaker context embedding.",
     )
     parser.add_argument(
         "--live-speaker-probe-hold-seconds",

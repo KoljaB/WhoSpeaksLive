@@ -198,6 +198,9 @@ export function installMeetingChat(ctx) {
   function scheduleMeetingChatScopeRefresh() {
     const explicitlySelected = ctx.api.selectedSavedSessions ? ctx.api.selectedSavedSessions() : [];
     askSelectedMeetingsButton.disabled = explicitlySelected.length < 1;
+    askSelectedMeetingsButton.dataset.disabledHelp = explicitlySelected.length < 1
+      ? "Select one or more saved sessions first."
+      : "";
     if (!askPanelVisible() || ctx.owners.chat.busy) return;
     if (ctx.owners.chat.scopeRefreshTimer) clearTimeout(ctx.owners.chat.scopeRefreshTimer);
     ctx.owners.chat.scopeRefreshTimer = setTimeout(() => {

@@ -90,7 +90,7 @@
           <div id="mediaTime" class="media-time">00:00 / 00:00</div>
           <select id="inputMode" class="mode source-mode-select" aria-label="Input mode">
             <option value="youtube">YouTube video</option>
-            <option value="file">Audio file</option>
+            <option value="file">Audio/video file</option>
             <option value="microphone">Microphone</option>
             <option value="system">Computer audio</option>
             <option value="both">Computer audio + microphone</option>
@@ -99,7 +99,7 @@
             <button id="sourceModeButton" class="source-mode-button dropdown-control" type="button" aria-expanded="false" aria-controls="sourceModeOptions">Change source</button>
             <div id="sourceModeOptions" class="source-mode-options" hidden>
               <button class="source-mode-option" type="button" data-input-mode="youtube">YouTube video</button>
-              <button class="source-mode-option" type="button" data-input-mode="file">Audio file</button>
+              <button class="source-mode-option" type="button" data-input-mode="file">Audio/video file</button>
               <button class="source-mode-option" type="button" data-input-mode="microphone">Microphone</button>
               <button class="source-mode-option" type="button" data-input-mode="system">Computer audio</button>
               <button class="source-mode-option" type="button" data-input-mode="both">Computer audio + microphone</button>
@@ -132,15 +132,22 @@
               </div>
             </div>
             <div id="fileSourceControls" class="file-source-controls">
-              <input id="audioFileInput" class="file-input" type="file" accept=".wav,.mp3,.m4a,.aac,.flac,.ogg,.oga,.opus,.webm,.mp4,.aif,.aiff,audio/*">
-              <div id="fileDropZone" class="file-drop-zone" tabindex="0" aria-label="Choose or drop an audio file">
+              <input id="audioFileInput" class="file-input" type="file" accept=".wav,.mp3,.m4a,.aac,.flac,.ogg,.oga,.opus,.webm,.mp4,.aif,.aiff,audio/*,video/mp4,video/webm">
+              <div id="fileDropZone" class="file-drop-zone" tabindex="0" aria-label="Choose or drop an audio or video file">
                 <span class="file-drop-copy">
-                  <span id="fileDropTitle" class="file-drop-title">Drop audio file here</span>
+                  <span id="fileDropTitle" class="file-drop-title">Drop audio or video file here</span>
                   <span id="fileUploadStatus" class="file-upload-status">WAV, MP3, M4A, FLAC, OGG</span>
                 </span>
-                <button id="chooseAudioFile" class="choose-audio-file" type="button">Choose audio file</button>
+                <button id="chooseAudioFile" class="choose-audio-file" type="button">Choose media file</button>
               </div>
             </div>
+            <label id="fastProcessingControl" class="fast-processing-control">
+              <input id="fastProcessing" type="checkbox">
+              <span>
+                <strong>Fast processing</strong>
+                <small>Process the complete media without playing it in real time.</small>
+              </span>
+            </label>
             <div class="timeline-row" aria-label="Playback progress">
               <span id="mediaCurrentTime">00:00</span>
               <div id="timelineBar" class="timeline-bar" aria-hidden="true">
@@ -337,7 +344,9 @@
         </div>
         <div class="speaker-tab-panel" data-speaker-panel="speakers">
           <div class="speaker-panel-header">
-            <h2 id="speakerPanelTitle" class="speaker-panel-title">Detected speakers (0)</h2>
+            <span class="heading-with-help">
+              <h2 id="speakerPanelTitle" class="speaker-panel-title">Detected speakers (0)</h2>
+            </span>
             <span class="speaker-panel-actions">
               <button id="addReferenceSpeaker" class="add-speaker-button" type="button" aria-expanded="false">+ Add person</button>
               <details class="speaker-panel-menu">
@@ -428,7 +437,9 @@
         </div>
         <div class="speaker-tab-panel meeting-intelligence-panel" data-speaker-panel="intelligence" hidden>
           <div class="meeting-intelligence-header">
-            <h2 class="meeting-intelligence-title">Meeting intelligence</h2>
+            <span class="heading-with-help">
+              <h2 class="meeting-intelligence-title">Meeting intelligence</h2>
+            </span>
             <button id="meetingIntelligenceGenerate" class="meeting-intelligence-generate" type="button">Generate</button>
           </div>
           <div id="meetingIntelligenceStatus" class="meeting-intelligence-status">No report</div>
@@ -517,6 +528,23 @@
     </aside>
   </main>
 </div>
+<div id="helpBackdrop" class="help-backdrop" hidden></div>
+<aside id="helpDrawer" class="help-drawer" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
+  <header class="help-drawer-header">
+    <div>
+      <span class="help-eyebrow">Context help</span>
+      <h2 id="helpTitle">Help for WhoSpeaks Live</h2>
+    </div>
+    <button id="helpClose" class="help-close-button" type="button" aria-label="Close help">&times;</button>
+  </header>
+  <div class="help-drawer-body">
+    <p id="helpSummary" class="help-summary">Point at a control for a short explanation, or focus it and press F1 for details.</p>
+    <div id="helpCurrent" class="help-current" hidden></div>
+    <p id="helpDetail" class="help-detail"></p>
+    <div class="help-shortcut"><kbd>F1</kbd><span>Help for the last focused control</span></div>
+  </div>
+</aside>
+<div id="helpTooltip" class="help-tooltip" role="tooltip" hidden></div>
 <script id="bootstrap-data" type="application/json">__BOOTSTRAP_JSON__</script>
 <script type="module" src="/assets/web/live/app.js"></script>
 </body>

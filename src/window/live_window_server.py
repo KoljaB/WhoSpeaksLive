@@ -17,6 +17,7 @@ import os
 import queue
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -736,6 +737,8 @@ class LiveWindowApplication:
 class WindowServer(ThreadingHTTPServer):
     """HTTP transport that delegates application behavior to one owner."""
 
+    allow_reuse_address = False
+
     def __init__(
         self,
         address: tuple[str, int],
@@ -750,6 +753,11 @@ class WindowServer(ThreadingHTTPServer):
         self._transport_close_lock = threading.Lock()
         self._transport_closed = False
         super().__init__(address, Handler)
+
+    def server_bind(self) -> None:
+        if os.name == "nt" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
 
     def __getattr__(self, name: str) -> Any:
         application = self.__dict__.get("application")

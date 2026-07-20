@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 import os
 import queue
@@ -35,6 +36,24 @@ DEFAULT_HELPER_MODULE = "realtime.realtime_speakerdiarize"
 DEFAULT_EMBEDDING_PROVIDER = "speechbrain_ecapa"
 DEFAULT_SPEECHBRAIN_MODEL = "speechbrain/spkrec-ecapa-voxceleb"
 DEFAULT_SPEECHBRAIN_RESNET_MODEL = "speechbrain/spkrec-resnet-voxceleb"
+
+SUPPORTED_SINGLE_EMBEDDING_PROVIDER_IDS = (
+    "resemblyzer",
+    "speechbrain_ecapa",
+    "speechbrain_resnet",
+    "speechbrain_xvector",
+    "wespeaker_campplus",
+    "wespeaker_resnet34_lm_onnx",
+    "pyannote_wespeaker_resnet34_lm",
+    "pyannote_embedding",
+    "speaker3d_campplus",
+    "speaker3d_eres2netv2",
+    "nemo_titanet_large",
+    "wavlm_base_sv",
+    "jungjee_rawnet3",
+    "espnet_rawnet3",
+    "espnet_ecapa_wavlm_joint",
+)
 
 BENCHMARK_PROVIDER_ALIASES = {
     "espnet_voxcelebs12_ecapa_wavlm_joint": "espnet_ecapa_wavlm_joint",
@@ -270,7 +289,11 @@ class PyannoteModelProvider:
         if model is None:
             raise RuntimeError(f"{model_id} could not be loaded from the local pyannote cache.")
         inference_kwargs: dict[str, Any] = {"window": "whole", "device": self.device}
-        if token:
+        # pyannote.audio 3 accepted the Hugging Face token on Inference itself;
+        # pyannote.audio 4 removed that constructor argument. Model loading
+        # above is the only operation that may need authentication, so retain
+        # the legacy argument only when the installed API still exposes it.
+        if token and "use_auth_token" in inspect.signature(Inference).parameters:
             inference_kwargs["use_auth_token"] = token
         self.inference = Inference(model, **inference_kwargs)
 
@@ -639,10 +662,15 @@ class RemoteEmbeddingClient:
             return self._load_locked()
 
     def embed_audio(self, audio: np.ndarray, sample_rate: int = SAMPLE_RATE) -> np.ndarray:
+        prepared = pad_audio(trim_silence(np.asarray(audio, dtype=np.float32).reshape(-1), sample_rate), 0.5, sample_rate)
+        return self.embed_prepared_audio(prepared, sample_rate)
+
+    def embed_prepared_audio(self, audio: np.ndarray, sample_rate: int = SAMPLE_RATE) -> np.ndarray:
+        """Embed caller-prepared audio without applying another trim/pad pass."""
         with self._lock:
             if not self._loaded:
                 self._load_locked()
-            prepared = pad_audio(trim_silence(np.asarray(audio, dtype=np.float32).reshape(-1), sample_rate), 0.5, sample_rate)
+            prepared = np.asarray(audio, dtype=np.float32).reshape(-1)
             pcm16 = (np.clip(prepared, -1.0, 1.0) * 32767.0).astype(np.int16)
             query = urlencode({
                 "provider": self.provider,
@@ -671,6 +699,17 @@ class RemoteEmbeddingClient:
 
     def shutdown(self, lock_timeout_seconds: float = 5.0) -> None:
         return None
+
+    def unload(self) -> dict[str, Any]:
+        with self._lock:
+            query = urlencode({"provider": self.provider, "device": self.device})
+            request = Request(f"{self.base_url}/unload?{query}", data=b"", method="POST")
+            result = self._json_response(
+                self._open_request(request, timeout=min(self.timeout_seconds, 30.0)),
+                "unload",
+            )
+            self._loaded = False
+            return result
 
     def _load_locked(self) -> dict[str, Any]:
         if self._loaded:
@@ -728,6 +767,20 @@ class RemoteEmbeddingClient:
             raise RuntimeError(f"Remote embeddings HTTP {exc.code}: {detail[:300]}") from exc
         except URLError as exc:
             raise RuntimeError(f"Remote embeddings connection failed: {exc.reason}") from exc
+
+
+class RemotePreparedEmbeddingProvider:
+    """Provider adapter for windows already prepared by the live corpus builder."""
+
+    def __init__(self, base_url: str, provider: str, device: str, timeout_seconds: float = 300.0) -> None:
+        self.client = RemoteEmbeddingClient(base_url, provider, device, timeout_seconds)
+        self.client.load()
+
+    def embed(self, audio: np.ndarray, sample_rate: int) -> np.ndarray:
+        return self.client.embed_prepared_audio(audio, sample_rate)
+
+    def shutdown(self) -> dict[str, Any]:
+        return self.client.unload()
 
 
 def run_embedding_helper(args: argparse.Namespace) -> int:

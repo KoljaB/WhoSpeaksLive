@@ -95,6 +95,7 @@ class WindowRuntimeStateMixin:
             self._live_probability_history = history
         history.clear()
         self._live_speaker_verify_next_at = 0.0
+        self._shared_live_speaker_core = None
 
     def _live_memory_update_lock_obj(self) -> threading.Lock:
         lock = getattr(self, "_live_memory_update_lock", None)
