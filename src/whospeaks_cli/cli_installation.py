@@ -653,7 +653,8 @@ def print_install_plan(
         print(f"Realtime text: Nemotron 3.5 ({preset}; {latency_note}).")
         print("               sherpa-onnx packages install with WhoSpeaks; the verified model downloads on first launch.")
     elif plan.install_kroko:
-        print("Realtime text: enabled; Kroko native runtime will be offered after Python packages.")
+        print("Realtime text: Kroko through the official sherpa-onnx CPU runtime; Docker is not required.")
+        print("               The verified language model downloads automatically on first launch.")
     elif plan.target in {"local", "core", "macos"}:
         print("Realtime text: disabled for this install. Run the installer again and choose Kroko to try native live text.")
     else:
@@ -704,7 +705,7 @@ def prompt_realtime_preview(target: str) -> tuple[str, str]:
     print_wrapped(
         "1. Nemotron 3.5 (recommended on Windows): installs sherpa-onnx packages normally and downloads a verified model on first use. "
         "2. Nemotron 3.5 low latency: 160ms model, less robust. "
-        "3. Kroko/Banafo: native setup that can need Python 3.12 and Docker Desktop on Windows. "
+        "3. Kroko/Banafo: official sherpa-onnx CPU runtime; no Docker build required. "
         "4. Disable realtime text. Final ASR and speaker diarization work independently.",
         initial_indent="",
         subsequent_indent="",
@@ -1311,6 +1312,12 @@ def install_extra_and_maybe_kroko(
         print(
             f"Nemotron realtime preview is configured with {preset}. "
             "The verified model downloads automatically on first preview start."
+        )
+        return 0
+    if preview_engine == "kroko_onnx":
+        print(
+            "Kroko realtime preview uses the official sherpa-onnx CPU runtime. "
+            "The verified language model downloads automatically on first preview start; Docker is not required."
         )
         return 0
     if not install_kroko:

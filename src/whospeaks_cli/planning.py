@@ -389,7 +389,7 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
         command.extend(["--realtime-preview-model-preset", str(profile.realtime_preview_model_preset)])
     if preview_engine == "sherpa_onnx" and profile.realtime_preview_model_dir:
         command.extend(["--realtime-preview-model-dir", str(profile.realtime_preview_model_dir)])
-    if preview_engine == "sherpa_onnx":
+    if preview_engine in {"kroko_onnx", "sherpa_onnx"}:
         command.extend(["--realtime-preview-python", sys.executable])
     elif profile.realtime_preview_python or preview_engine not in {"off", "none", "false", "0"}:
         default_preview_python = (

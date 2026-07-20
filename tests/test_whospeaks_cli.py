@@ -1071,8 +1071,9 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         output = stdout.getvalue()
         self.assertIn("whospeaks[complete,preview]==0.0.1.dev21", output)
-        self.assertIn("whospeaks[preview]==0.0.1.dev21", output)
-        self.assertIn("RealtimeSTT.install_kroko", output)
+        self.assertNotIn("RealtimeSTT.install_kroko", output)
+        self.assertIn("official sherpa-onnx CPU runtime", output)
+        self.assertIn("Docker is not required", output)
         self.assertFalse(config_path.exists())
 
     def test_install_core_without_kroko_uses_controller_plan(self) -> None:
@@ -1319,7 +1320,7 @@ class WhoSpeaksCliTests(unittest.TestCase):
 
         self.assertNotIn("--embedding-python", command)
 
-    def test_kroko_launch_command_includes_saved_realtime_preview_python(self) -> None:
+    def test_kroko_launch_command_ignores_obsolete_native_preview_python(self) -> None:
         profile = cli.Profile(
             realtime_preview_engine="kroko_onnx",
             realtime_preview_model_preset="community-64l",
@@ -1329,7 +1330,8 @@ class WhoSpeaksCliTests(unittest.TestCase):
         command = cli.build_launch_command(profile)
 
         self.assertIn("--realtime-preview-python", command)
-        self.assertIn(r"C:\Python\Python312\python.exe", command)
+        self.assertIn(sys.executable, command)
+        self.assertNotIn(r"C:\Python\Python312\python.exe", command)
 
     def test_nemotron_launch_ignores_saved_kroko_preview_python(self) -> None:
         stale_kroko_python = r"C:\WhoSpeaks\kroko-preview-py312\Scripts\python.exe"

@@ -74,7 +74,11 @@ from window.window_preview import (
     create_realtime_preview_transcriber,
 )
 from window.realtime_preview_backends import normalize_preview_engine
-from window.sherpa_onnx_models import ensure_sherpa_onnx_model, validate_sherpa_onnx_model_dir
+from window.sherpa_onnx_models import (
+    ensure_kroko_sherpa_model,
+    ensure_sherpa_onnx_model,
+    validate_sherpa_onnx_model_dir,
+)
 from window.review_flags import annotate_review
 from window.window_remote_asr import RemoteWindowAsrClient
 from window.window_text import (
@@ -105,8 +109,8 @@ class WindowRuntimeAudioMixin:
         engine = normalize_preview_engine(getattr(self.args, "realtime_preview_engine", "off"))
         if engine in {"off", "mock"}:
             return
-        if engine == "sherpa_onnx":
-            model_dir = getattr(self.args, "realtime_preview_model_dir", None)
+        model_dir = getattr(self.args, "realtime_preview_model_dir", None)
+        if engine == "sherpa_onnx" or (engine == "kroko_onnx" and model_dir is not None):
             if model_dir is None:
                 raise RuntimeError("Nemotron realtime preview requires a model directory.")
             try:
@@ -117,13 +121,21 @@ class WindowRuntimeAudioMixin:
                 if not bool(getattr(self.args, "realtime_preview_auto_download", True)):
                     raise
             preset = str(getattr(self.args, "realtime_preview_model_preset", "") or "")
+            model_label = "Kroko" if engine == "kroko_onnx" else "Nemotron"
             self.bus.emit(
                 "status",
-                {"message": f"Nemotron preview model {preset} not found locally; downloading verified upstream archive."},
+                {"message": f"{model_label} preview model {preset} not found locally; downloading verified upstream archive."},
             )
-            ready_model_dir = ensure_sherpa_onnx_model(preset, target_dir=Path(model_dir))
+            ready_model_dir = (
+                ensure_kroko_sherpa_model(
+                    getattr(self.args, "realtime_preview_language", getattr(self.args, "language", "en")),
+                    target_dir=Path(model_dir),
+                )
+                if engine == "kroko_onnx"
+                else ensure_sherpa_onnx_model(preset, target_dir=Path(model_dir))
+            )
             self._update_config(realtime_preview_model_dir=ready_model_dir)
-            self.bus.emit("status", {"message": f"Nemotron preview model ready: {self.args.realtime_preview_model_dir}."})
+            self.bus.emit("status", {"message": f"{model_label} preview model ready: {self.args.realtime_preview_model_dir}."})
             return
 
         model_path = getattr(self.args, "realtime_preview_model_path", None)

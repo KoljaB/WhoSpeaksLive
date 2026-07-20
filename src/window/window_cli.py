@@ -154,7 +154,9 @@ from window.realtime_preview_backends import (  # noqa: E402
 )
 from window.sherpa_onnx_models import (  # noqa: E402
     DEFAULT_SHERPA_ONNX_PREVIEW_MODEL_PRESET,
+    default_kroko_sherpa_model_dir,
     default_sherpa_onnx_model_dir,
+    kroko_sherpa_model_preset,
     sherpa_onnx_model_preset,
 )
 from window.window_diarizer import StartSessionRequest, WindowDiarizer  # noqa: E402
@@ -254,20 +256,29 @@ def parse_args(argv: list[str] | None = None) -> WindowConfig:
         if preview_model_path_was_explicit and preview_model_dir_was_explicit:
             parser.error("--realtime-preview-model-path and --realtime-preview-model-dir cannot be used together.")
         if args.realtime_preview_engine == "kroko_onnx":
-            if preview_model_dir_was_explicit:
-                parser.error("--realtime-preview-model-dir is only valid for sherpa_onnx realtime preview.")
             requested_preset = args.realtime_preview_model_preset or DEFAULT_KROKO_PREVIEW_MODEL_PRESET
             args.realtime_preview_model_preset = normalize_preview_model_preset("kroko_onnx", requested_preset)
-            if args.realtime_preview_model is None:
-                args.realtime_preview_model = default_preview_model(
-                    "kroko_onnx", args.language, args.realtime_preview_model_preset
-                )
-            else:
+            use_legacy_native_model = preview_model_was_explicit or preview_model_path_was_explicit
+            if use_legacy_native_model:
+                if preview_model_dir_was_explicit:
+                    parser.error("A Kroko model file and model directory cannot be selected together.")
+                if args.realtime_preview_model is None:
+                    args.realtime_preview_model = default_preview_model(
+                        "kroko_onnx", args.language, args.realtime_preview_model_preset
+                    )
                 args.realtime_preview_model_preset = "custom"
-            args.realtime_preview_model_dir = None
+                args.realtime_preview_model_dir = None
+            else:
+                args.realtime_preview_model = args.realtime_preview_model_preset
+                args.realtime_preview_model_path = None
+                args.realtime_preview_model_dir = (
+                    args.realtime_preview_model_dir or default_kroko_sherpa_model_dir(args.language)
+                )
             if args.realtime_preview_startup_timeout_seconds is None:
-                args.realtime_preview_startup_timeout_seconds = default_kroko_preview_startup_timeout_seconds(
-                    args.realtime_preview_model_preset
+                args.realtime_preview_startup_timeout_seconds = (
+                    default_kroko_preview_startup_timeout_seconds(args.realtime_preview_model_preset)
+                    if use_legacy_native_model
+                    else kroko_sherpa_model_preset(args.language).startup_timeout_seconds
                 )
         elif args.realtime_preview_engine == "sherpa_onnx":
             if preview_model_path_was_explicit:
@@ -301,7 +312,12 @@ def parse_args(argv: list[str] | None = None) -> WindowConfig:
         args.browser_live_observation_output = args.browser_live_observation_output.resolve()
     if args.download_root is not None:
         args.download_root = args.download_root.resolve()
-    if args.realtime_preview_engine == "kroko_onnx" and args.realtime_preview_model_path is None and args.realtime_preview_model:
+    if (
+        args.realtime_preview_engine == "kroko_onnx"
+        and args.realtime_preview_model_dir is None
+        and args.realtime_preview_model_path is None
+        and args.realtime_preview_model
+    ):
         use_env_model_path = not (
             preview_model_was_explicit
             or preview_model_path_was_explicit
@@ -317,11 +333,15 @@ def parse_args(argv: list[str] | None = None) -> WindowConfig:
         args.realtime_preview_model_dir = (
             args.realtime_preview_model_dir or default_sherpa_onnx_model_dir(args.realtime_preview_model_preset)
         ).resolve()
+    elif args.realtime_preview_engine == "kroko_onnx" and args.realtime_preview_model_dir is not None:
+        args.realtime_preview_model_dir = args.realtime_preview_model_dir.resolve()
     if args.realtime_preview_download_root is not None:
         args.realtime_preview_download_root = args.realtime_preview_download_root.resolve()
     if args.realtime_preview_python is None:
         args.realtime_preview_python = (
-            DEFAULT_KROKO_PREVIEW_PYTHON if args.realtime_preview_engine == "kroko_onnx" else Path(sys.executable)
+            DEFAULT_KROKO_PREVIEW_PYTHON
+            if args.realtime_preview_engine == "kroko_onnx" and args.realtime_preview_model_dir is None
+            else Path(sys.executable)
         )
     args.realtime_preview_python = _absolute_path_preserving_symlinks(args.realtime_preview_python)
     if args.realtime_preview_realtimestt_root is not None:

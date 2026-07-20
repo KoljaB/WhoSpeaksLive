@@ -470,6 +470,17 @@ def patch_windows_free_wheel_only_build(repo_dir):
         "echo     Wheel: !WHEEL! ^(!_sz!^)",
         "echo     Wheel: !WHEEL!",
     )
+    # The upstream final summary calls :size_h for the NSIS installer even in
+    # the free wheel-only variant, where that file intentionally does not
+    # exist.  cmd.exe then expands an empty byte count into `if LSS 1024` and
+    # exits with 255 after the wheel was built successfully.
+    batch = batch.replace(
+        'call :size_h "!_inst!" _sz',
+        'set "_sz=not built for wheel-only variants"',
+    ).replace(
+        'call :size_h "%%~fW" _sz',
+        'set "_sz=ready"',
+    )
     if batch_marker not in batch:
         step_marker = "REM -- Step 3: build the NSIS installer ---------------------------------------"
         newline = "\r\n" if "\r\n" in batch else "\n"

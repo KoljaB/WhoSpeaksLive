@@ -1,4 +1,4 @@
-"""Pinned Nemotron model metadata and secure sherpa-onnx model installation."""
+"""Pinned streaming-ASR metadata and secure sherpa-onnx model installation."""
 
 from __future__ import annotations
 
@@ -23,6 +23,12 @@ REQUIRED_MODEL_FILES = (
     "joiner.int8.onnx",
     "tokens.txt",
 )
+KROKO_REQUIRED_MODEL_FILES = (
+    "encoder.onnx",
+    "decoder.onnx",
+    "joiner.onnx",
+    "tokens.txt",
+)
 MINIMUM_FREE_SPACE_BYTES = 2 * 1024 * 1024 * 1024
 
 
@@ -37,6 +43,8 @@ class SherpaOnnxModelPreset:
     recommended_interval_seconds: float = 0.10
     recommended_min_audio_seconds: float = 0.56
     startup_timeout_seconds: float = 30.0
+    family: str = "nemotron"
+    required_model_files: tuple[str, ...] = REQUIRED_MODEL_FILES
 
     @property
     def archive_url(self) -> str:
@@ -73,6 +81,49 @@ SHERPA_ONNX_PREVIEW_MODEL_PRESET_ALIASES = {
 }
 DEFAULT_SHERPA_ONNX_PREVIEW_MODEL_PRESET = "nemotron-3.5-560ms-int8"
 
+KROKO_SHERPA_MODEL_PRESETS = {
+    "en": SherpaOnnxModelPreset(
+        name="kroko-community-64l-en",
+        archive_name="sherpa-onnx-streaming-zipformer-en-kroko-2025-08-06.tar.bz2",
+        model_dir_name="sherpa-onnx-streaming-zipformer-en-kroko-2025-08-06",
+        archive_sha256="c8676e5ff9ac2a85296e53ee0fd4d5fb1db6770e7a7647166eeafe349ade6834",
+        internal_chunk_ms=640,
+        recommended_feed_seconds=0.16,
+        family="kroko",
+        required_model_files=KROKO_REQUIRED_MODEL_FILES,
+    ),
+    "de": SherpaOnnxModelPreset(
+        name="kroko-community-64l-de",
+        archive_name="sherpa-onnx-streaming-zipformer-de-kroko-2025-08-06.tar.bz2",
+        model_dir_name="sherpa-onnx-streaming-zipformer-de-kroko-2025-08-06",
+        archive_sha256="9e27b783c20e67b0d0f13a258c1861fce199917c969d9176a438bee38df64962",
+        internal_chunk_ms=640,
+        recommended_feed_seconds=0.16,
+        family="kroko",
+        required_model_files=KROKO_REQUIRED_MODEL_FILES,
+    ),
+    "es": SherpaOnnxModelPreset(
+        name="kroko-community-64l-es",
+        archive_name="sherpa-onnx-streaming-zipformer-es-kroko-2025-08-06.tar.bz2",
+        model_dir_name="sherpa-onnx-streaming-zipformer-es-kroko-2025-08-06",
+        archive_sha256="31b2230a95d23290b308b393da930015a4b2105cb3abb9367aed35f7fcf29cf1",
+        internal_chunk_ms=640,
+        recommended_feed_seconds=0.16,
+        family="kroko",
+        required_model_files=KROKO_REQUIRED_MODEL_FILES,
+    ),
+    "fr": SherpaOnnxModelPreset(
+        name="kroko-community-64l-fr",
+        archive_name="sherpa-onnx-streaming-zipformer-fr-kroko-2025-08-06.tar.bz2",
+        model_dir_name="sherpa-onnx-streaming-zipformer-fr-kroko-2025-08-06",
+        archive_sha256="e6ffd3dc43725cd6c8137b05c739f15607d0df946b9b90eb141e10059efca024",
+        internal_chunk_ms=640,
+        recommended_feed_seconds=0.16,
+        family="kroko",
+        required_model_files=KROKO_REQUIRED_MODEL_FILES,
+    ),
+}
+
 
 def normalize_sherpa_onnx_preview_model_preset(value: object) -> str:
     normalized = str(value or "").strip().lower().replace("_", "-")
@@ -84,16 +135,51 @@ def normalize_sherpa_onnx_preview_model_preset(value: object) -> str:
 
 
 def sherpa_onnx_model_preset(value: object) -> SherpaOnnxModelPreset:
+    if isinstance(value, SherpaOnnxModelPreset):
+        return value
     return SHERPA_ONNX_PREVIEW_MODEL_PRESETS[normalize_sherpa_onnx_preview_model_preset(value)]
+
+
+def kroko_sherpa_model_preset(language: object) -> SherpaOnnxModelPreset:
+    code = str(language or "en").strip().lower().replace("_", "-").split("-", 1)[0]
+    try:
+        return KROKO_SHERPA_MODEL_PRESETS[code]
+    except KeyError as exc:
+        allowed = ", ".join(KROKO_SHERPA_MODEL_PRESETS)
+        raise ValueError(f"official sherpa-onnx Kroko models support: {allowed}; got {language!r}") from exc
 
 
 def default_sherpa_onnx_model_dir(preset: object = DEFAULT_SHERPA_ONNX_PREVIEW_MODEL_PRESET) -> Path:
     return SHERPA_ONNX_MODEL_DIR / sherpa_onnx_model_preset(preset).model_dir_name
 
 
+def default_kroko_sherpa_model_dir(language: object) -> Path:
+    return SHERPA_ONNX_MODEL_DIR / kroko_sherpa_model_preset(language).model_dir_name
+
+
 def missing_sherpa_onnx_model_files(model_dir: Path) -> list[str]:
     directory = Path(model_dir).expanduser()
-    return [name for name in REQUIRED_MODEL_FILES if not (directory / name).is_file()]
+    if all((directory / name).is_file() for name in REQUIRED_MODEL_FILES):
+        return []
+    if all((directory / name).is_file() for name in KROKO_REQUIRED_MODEL_FILES):
+        return []
+    return [
+        "encoder.int8.onnx or encoder.onnx",
+        "decoder.int8.onnx or decoder.onnx",
+        "joiner.int8.onnx or joiner.onnx",
+        "tokens.txt",
+    ]
+
+
+def sherpa_onnx_model_files(model_dir: Path) -> tuple[Path, Path, Path, Path]:
+    directory = validate_sherpa_onnx_model_dir(model_dir)
+    suffix = ".int8.onnx" if (directory / "encoder.int8.onnx").is_file() else ".onnx"
+    return (
+        directory / f"encoder{suffix}",
+        directory / f"decoder{suffix}",
+        directory / f"joiner{suffix}",
+        directory / "tokens.txt",
+    )
 
 
 def validate_sherpa_onnx_model_dir(model_dir: Path) -> Path:
@@ -101,7 +187,7 @@ def validate_sherpa_onnx_model_dir(model_dir: Path) -> Path:
     missing = missing_sherpa_onnx_model_files(directory)
     if missing:
         raise RuntimeError(
-            f"Nemotron model is incomplete at {directory}: missing {', '.join(missing)}."
+            f"sherpa-onnx model is incomplete at {directory}: missing {', '.join(missing)}."
         )
     return directory
 
@@ -154,7 +240,7 @@ def ensure_sherpa_onnx_model(
     target_dir: Path | None = None,
     progress: Callable[[int, int | None], None] | None = None,
 ) -> Path:
-    """Download, verify, and atomically install one pinned Nemotron archive."""
+    """Download, verify, and atomically install one pinned sherpa-onnx archive."""
 
     selected = sherpa_onnx_model_preset(preset)
     final_dir = Path(target_dir).expanduser() if target_dir is not None else default_sherpa_onnx_model_dir(selected.name)
@@ -166,9 +252,7 @@ def ensure_sherpa_onnx_model(
 
     final_dir.parent.mkdir(parents=True, exist_ok=True)
     if shutil.disk_usage(final_dir.parent).free < MINIMUM_FREE_SPACE_BYTES:
-        raise RuntimeError(
-            f"Not enough free disk space to install Nemotron at {final_dir.parent}; at least 2 GB is required."
-        )
+        raise RuntimeError(f"Not enough free disk space to install ASR model at {final_dir.parent}; at least 2 GB is required.")
 
     lock_path = final_dir.parent / f".{selected.model_dir_name}.lock"
     lock_fd = _acquire_lock(lock_path)
@@ -183,7 +267,7 @@ def ensure_sherpa_onnx_model(
         actual_sha256 = _sha256(archive_path)
         if actual_sha256 != selected.archive_sha256:
             raise RuntimeError(
-                f"Nemotron archive SHA-256 mismatch for {selected.archive_name}: "
+                f"ASR archive SHA-256 mismatch for {selected.archive_name}: "
                 f"expected {selected.archive_sha256}, got {actual_sha256}."
             )
         with tempfile.TemporaryDirectory(prefix=f".{selected.model_dir_name}.", dir=final_dir.parent) as temporary:
@@ -194,7 +278,7 @@ def ensure_sherpa_onnx_model(
             validate_sherpa_onnx_model_dir(extracted)
             if final_dir.exists():
                 raise RuntimeError(
-                    f"Nemotron model directory already exists but is incomplete: {final_dir}. "
+                    f"ASR model directory already exists but is incomplete: {final_dir}. "
                     "Remove it manually before retrying the download."
                 )
             os.replace(extracted, final_dir)
@@ -203,3 +287,17 @@ def ensure_sherpa_onnx_model(
         archive_path.unlink(missing_ok=True)
         os.close(lock_fd)
         lock_path.unlink(missing_ok=True)
+
+
+def ensure_kroko_sherpa_model(
+    language: object,
+    *,
+    target_dir: Path | None = None,
+    progress: Callable[[int, int | None], None] | None = None,
+) -> Path:
+    selected = kroko_sherpa_model_preset(language)
+    return ensure_sherpa_onnx_model(
+        selected,
+        target_dir=target_dir or default_kroko_sherpa_model_dir(language),
+        progress=progress,
+    )

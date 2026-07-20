@@ -536,6 +536,11 @@ class SherpaOnnxSubprocessPreviewTranscriber(JsonLineSubprocessPreviewTranscribe
             "--model-dir", str(model_dir),
             "--language", str(getattr(args, "realtime_preview_language", getattr(args, "language", "en"))),
             "--num-threads", str(args.realtime_preview_num_threads),
+            "--model-family", (
+                "kroko"
+                if str(getattr(args, "realtime_preview_engine", "sherpa_onnx")) == "kroko_onnx"
+                else "nemotron"
+            ),
         ]
 
 
@@ -546,6 +551,8 @@ def create_realtime_preview_transcriber(args: argparse.Namespace) -> RealtimePre
     if engine == "mock":
         return MockRealtimePreviewTranscriber()
     if engine == "kroko_onnx":
+        if getattr(args, "realtime_preview_model_dir", None) is not None:
+            return SherpaOnnxSubprocessPreviewTranscriber(args)
         if args.realtime_preview_python is not None and Path(args.realtime_preview_python).is_file():
             return KrokoSubprocessPreviewTranscriber(args)
         return KrokoRealtimePreviewTranscriber(args)

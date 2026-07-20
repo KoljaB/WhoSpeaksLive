@@ -76,6 +76,27 @@ class SherpaPreviewWorkerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "float32"):
             decode_request_audio({"audio_b64": "AA==", "sample_rate": 16000})
 
+    def test_kroko_uses_official_model_names_without_nemotron_language_option(self) -> None:
+        from window.sherpa_onnx_models import KROKO_REQUIRED_MODEL_FILES
+        from workers.sherpa_onnx_realtime_preview_worker import NemotronRecognizer
+
+        stream = mock.Mock()
+        recognizer = mock.Mock()
+        recognizer.create_stream.return_value = stream
+        fake_module = SimpleNamespace(
+            OnlineRecognizer=SimpleNamespace(from_transducer=mock.Mock(return_value=recognizer))
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            model_dir = Path(directory)
+            for name in KROKO_REQUIRED_MODEL_FILES:
+                (model_dir / name).write_bytes(b"model")
+            with mock.patch.dict(sys.modules, {"sherpa_onnx": fake_module}):
+                NemotronRecognizer.load(model_dir, "de", 2, "cpu", "kroko")
+
+        call = fake_module.OnlineRecognizer.from_transducer.call_args.kwargs
+        self.assertTrue(call["encoder"].endswith("encoder.onnx"))
+        stream.set_option.assert_not_called()
+
     def test_resample_audio_preserves_target_type(self) -> None:
         from workers.sherpa_onnx_realtime_preview_worker import TARGET_SAMPLE_RATE, resample_audio
 

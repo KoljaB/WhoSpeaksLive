@@ -1,4 +1,4 @@
-"""JSON-lines subprocess worker for Nemotron 3.5 streaming preview text."""
+"""JSON-lines subprocess worker for sherpa-onnx streaming ASR."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from typing import Any
 
 import numpy as np
 
-from window.sherpa_onnx_models import validate_sherpa_onnx_model_dir
+from window.sherpa_onnx_models import sherpa_onnx_model_files, validate_sherpa_onnx_model_dir
 from workers.structured_realtime_result import structured_result_payload
 
 
@@ -29,6 +29,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--language", default="en")
     parser.add_argument("--num-threads", type=int, default=2)
     parser.add_argument("--provider", default="cpu")
+    parser.add_argument("--model-family", choices=("nemotron", "kroko"), default="nemotron")
     return parser.parse_args()
 
 
@@ -52,12 +53,21 @@ class NemotronRecognizer:
     recognizer: Any
     language: str
     stream: Any
+    model_family: str = "nemotron"
 
     @classmethod
-    def load(cls, model_dir: Path, language: str, num_threads: int, provider: str) -> "NemotronRecognizer":
+    def load(
+        cls,
+        model_dir: Path,
+        language: str,
+        num_threads: int,
+        provider: str,
+        model_family: str = "nemotron",
+    ) -> "NemotronRecognizer":
         if str(provider).strip().lower() != "cpu":
             raise ValueError("Nemotron realtime preview currently supports provider=cpu only.")
         directory = validate_sherpa_onnx_model_dir(model_dir)
+        encoder, decoder, joiner, tokens = sherpa_onnx_model_files(directory)
         try:
             import sherpa_onnx
         except Exception as exc:
@@ -66,10 +76,10 @@ class NemotronRecognizer:
                 "Install sherpa-onnx and sherpa-onnx-bin."
             ) from exc
         recognizer = sherpa_onnx.OnlineRecognizer.from_transducer(
-            tokens=str(directory / "tokens.txt"),
-            encoder=str(directory / "encoder.int8.onnx"),
-            decoder=str(directory / "decoder.int8.onnx"),
-            joiner=str(directory / "joiner.int8.onnx"),
+            tokens=str(tokens),
+            encoder=str(encoder),
+            decoder=str(decoder),
+            joiner=str(joiner),
             num_threads=max(1, int(num_threads)),
             provider="cpu",
             sample_rate=TARGET_SAMPLE_RATE,
@@ -77,13 +87,14 @@ class NemotronRecognizer:
             decoding_method="greedy_search",
             enable_endpoint_detection=False,
         )
-        instance = cls(recognizer=recognizer, language=language, stream=None)
+        instance = cls(recognizer=recognizer, language=language, stream=None, model_family=model_family)
         instance.reset()
         return instance
 
     def reset(self) -> None:
         self.stream = self.recognizer.create_stream()
-        self.stream.set_option("language", self.language)
+        if self.model_family == "nemotron":
+            self.stream.set_option("language", self.language)
 
     def accept(self, audio: np.ndarray, sample_rate: int) -> str:
         return result_text(self.accept_result(audio, sample_rate))
@@ -95,7 +106,7 @@ class NemotronRecognizer:
         if finalize:
             self.stream.accept_waveform(
                 TARGET_SAMPLE_RATE,
-                np.zeros(int(0.5 * TARGET_SAMPLE_RATE), dtype=np.float32),
+                np.zeros(int(1.0 * TARGET_SAMPLE_RATE), dtype=np.float32),
             )
             self.stream.input_finished()
         while self.recognizer.is_ready(self.stream):
@@ -122,7 +133,13 @@ def decode_request_audio(request: dict[str, Any]) -> tuple[np.ndarray, int]:
 def main() -> int:
     args = parse_args()
     try:
-        session = NemotronRecognizer.load(args.model_dir, args.language, args.num_threads, args.provider)
+        session = NemotronRecognizer.load(
+            args.model_dir,
+            args.language,
+            args.num_threads,
+            args.provider,
+            args.model_family,
+        )
     except Exception as exc:
         write_message({"ready": False, "error": f"{type(exc).__name__}: {exc}"})
         return 1
@@ -131,6 +148,7 @@ def main() -> int:
         {
             "ready": True,
             "backend": "sherpa_onnx",
+            "model_family": args.model_family,
             "model": args.model_dir.name,
             "language": args.language,
         }

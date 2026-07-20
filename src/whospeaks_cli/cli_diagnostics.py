@@ -32,6 +32,7 @@ from window.realtime_preview_backends import (
 )
 from window.meeting_server_support import LLM_PROVIDER_OPTIONS
 from window.sherpa_onnx_models import (
+    default_kroko_sherpa_model_dir,
     default_sherpa_onnx_model_dir,
     missing_sherpa_onnx_model_files,
 )
@@ -347,20 +348,20 @@ def check_import_group(name: str, modules: list[tuple[str, str]], required: bool
 
 
 def check_sherpa_onnx_runtime() -> CheckResult:
-    """Verify that this WhoSpeaks Python has the complete Nemotron runtime API."""
+    """Verify that this WhoSpeaks Python has the complete streaming-ASR API."""
 
     try:
         sherpa_onnx = importlib.import_module("sherpa_onnx")
     except Exception as exc:
         return CheckResult(
-            "Nemotron sherpa-onnx runtime",
+            "sherpa-onnx ASR runtime",
             "warn",
             f"{sys.executable} cannot import sherpa_onnx: {type(exc).__name__}: {exc}",
             "Install sherpa-onnx and sherpa-onnx-bin into the current WhoSpeaks Python environment.",
         )
     if getattr(sherpa_onnx, "OnlineRecognizer", None) is None:
         return CheckResult(
-            "Nemotron sherpa-onnx runtime",
+            "sherpa-onnx ASR runtime",
             "warn",
             (
                 f"{sys.executable} can import sherpa_onnx, but "
@@ -372,7 +373,7 @@ def check_sherpa_onnx_runtime() -> CheckResult:
             ),
         )
     return CheckResult(
-        "Nemotron sherpa-onnx runtime",
+        "sherpa-onnx ASR runtime",
         "ok",
         f"{sys.executable} provides sherpa_onnx.OnlineRecognizer.",
     )
@@ -1009,29 +1010,38 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
             f"Preview engine is {preview_engine}.",
             "CPU-only final ASR requires Kroko or Nemotron." if cpu_required else "",
         ))
-    elif preview_engine == "sherpa_onnx":
+    elif preview_engine in {"kroko_onnx", "sherpa_onnx"}:
+        model_label = "Kroko" if preview_engine == "kroko_onnx" else "Nemotron"
         try:
-            preset = normalize_preview_model_preset("sherpa_onnx", profile.realtime_preview_model_preset)
-            model_dir = Path(profile.realtime_preview_model_dir).expanduser() if profile.realtime_preview_model_dir else default_sherpa_onnx_model_dir(preset)
+            preset = normalize_preview_model_preset(preview_engine, profile.realtime_preview_model_preset)
+            model_dir = (
+                Path(profile.realtime_preview_model_dir).expanduser()
+                if profile.realtime_preview_model_dir
+                else (
+                    default_kroko_sherpa_model_dir(profile.language)
+                    if preview_engine == "kroko_onnx"
+                    else default_sherpa_onnx_model_dir(preset)
+                )
+            )
             missing_model_files = missing_sherpa_onnx_model_files(model_dir)
         except (OSError, ValueError) as exc:
-            checks.append(CheckResult("Nemotron model folder", "warn", str(exc)))
+            checks.append(CheckResult(f"{model_label} model folder", "warn", str(exc)))
         else:
             if model_dir.exists() and missing_model_files:
                 checks.append(CheckResult(
-                    "Nemotron model folder",
+                    f"{model_label} model folder",
                     "warn",
                     f"{model_dir} is incomplete: missing {', '.join(missing_model_files)}.",
-                    "Remove the incomplete folder, or select a complete unpacked Nemotron model folder.",
+                    f"Remove the incomplete folder, or select a complete unpacked {model_label} model folder.",
                 ))
             elif missing_model_files:
                 checks.append(CheckResult(
-                    "Nemotron model folder",
+                    f"{model_label} model folder",
                     "skip",
                     f"{preset} will download to {model_dir} on first realtime-preview start.",
                 ))
             else:
-                checks.append(CheckResult("Nemotron model folder", "ok", f"{preset} is ready at {model_dir}."))
+                checks.append(CheckResult(f"{model_label} model folder", "ok", f"{preset} is ready at {model_dir}."))
         runtime_check = _facade_callable("check_sherpa_onnx_runtime", check_sherpa_onnx_runtime)()
         if cpu_required and runtime_check.status == "warn":
             runtime_check.status = "fail"

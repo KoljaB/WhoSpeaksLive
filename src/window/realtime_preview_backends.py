@@ -42,7 +42,7 @@ class PreviewBackendSpec:
 
 
 PREVIEW_BACKENDS = {
-    "kroko_onnx": PreviewBackendSpec("kroko_onnx", "Kroko/Banafo", "file", "community-64l"),
+    "kroko_onnx": PreviewBackendSpec("kroko_onnx", "Kroko/Banafo via sherpa-onnx", "directory", "community-64l"),
     "sherpa_onnx": PreviewBackendSpec(
         "sherpa_onnx",
         "Nemotron 3.5 via sherpa-onnx",

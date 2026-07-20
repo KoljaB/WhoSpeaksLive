@@ -31,10 +31,12 @@ whospeaks config --mode cpu --cpu-alignment-model base --cpu-alignment-threads 2
 whospeaks launch
 ```
 
-The first run downloads the selected Kroko and faster-whisper weights. All inference remains local after the downloads complete.
+The first run downloads the selected Kroko and faster-whisper weights. Kroko runs through the prebuilt `sherpa-onnx` wheels installed by the CPU plan, so the normal setup needs neither Docker nor a second Python environment. The Kroko archives are pinned by filename and SHA-256 and support English, German, Spanish, and French. All inference remains local after the downloads complete.
+
+The explicit `whospeaks install-kroko --build` command remains available for developers who need the native `kroko_onnx` compatibility runtime. On Windows that optional source build uses Docker Desktop and CPython 3.12; it is not part of the launcher CPU installation.
 
 ## Operational checks
 
-Run `whospeaks doctor --mode cpu --deep` before a production meeting. It checks the CPU embedding runtime, faster-whisper aligner, model cache, Kroko worker, and native model path.
+Run `whospeaks doctor --mode cpu --deep` before a production meeting. It checks the CPU embedding runtime, faster-whisper aligner, model cache, sherpa-onnx runtime, and managed Kroko model folder.
 
 Watch the Activity page for `CPU forced alignment rejected`. Occasional fallback is safe; repeated fallback means the language/model does not match the audio, the transcript is badly wrong, or the audio window is unsuitable for forced alignment.
