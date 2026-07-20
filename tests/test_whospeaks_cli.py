@@ -1662,6 +1662,35 @@ class WhoSpeaksCliTests(unittest.TestCase):
             any(dependency.startswith("textual") for dependency in pyproject["project"]["dependencies"])
         )
 
+    def test_base_cli_import_does_not_require_numpy(self) -> None:
+        env = dict(os.environ)
+        env["PYTHONPATH"] = str(SRC)
+        script = (
+            "import importlib.abc,sys\n"
+            "class BlockNumpy(importlib.abc.MetaPathFinder):\n"
+            "    def find_spec(self, fullname, path=None, target=None):\n"
+            "        if fullname == 'numpy' or fullname.startswith('numpy.'):\n"
+            "            raise ModuleNotFoundError('NumPy intentionally unavailable')\n"
+            "        return None\n"
+            "sys.meta_path.insert(0, BlockNumpy())\n"
+            "import whospeaks_cli.main\n"
+            "print('base-cli-import-ok')\n"
+        )
+
+        completed = subprocess.run(
+            [sys.executable, "-c", script],
+            cwd=str(ROOT),
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn("base-cli-import-ok", completed.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

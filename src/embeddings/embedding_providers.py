@@ -31,7 +31,13 @@ from common.audio_utils import (
     write_wav,
 )
 from common.pythonpath import build_pythonpath
-from paths import CACHE_DIR, EMBEDDING_VENV, PROJECT_ROOT, SRC_ROOT, VENDOR_DIR
+from paths import (
+    CACHE_DIR,
+    PROJECT_ROOT,
+    SRC_ROOT,
+    VENDOR_DIR,
+    default_embedding_python,
+)
 
 DEFAULT_HELPER_MODULE = "realtime.realtime_speakerdiarize"
 
@@ -165,16 +171,6 @@ def canonical_embedding_provider_name(value: str) -> str:
     provider = re.sub(r"[^a-z0-9_]+", "_", provider).strip("_")
     provider = re.sub(r"_+", "_", provider)
     return BENCHMARK_PROVIDER_ALIASES.get(provider, provider)
-
-
-def default_embedding_python() -> Path:
-    for candidate in (
-        EMBEDDING_VENV / "Scripts" / "python.exe",
-        EMBEDDING_VENV / "bin" / "python",
-    ):
-        if candidate.exists():
-            return candidate
-    return Path(sys.executable)
 
 
 def _torch_cuda_available(torch_module: Any) -> bool:

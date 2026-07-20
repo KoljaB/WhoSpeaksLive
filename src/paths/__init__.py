@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 
@@ -38,6 +39,18 @@ CUNK_CANONICAL = CUNK_FIXTURE_DIR / "cunk_on_earth_clip.canonical_diarization.js
 MAIN_VENV = PROJECT_ROOT / ".venv"
 EMBEDDING_VENV = PROJECT_ROOT / ".venv-voice-embeddings"
 VENVS_DIR = PROJECT_ROOT / ".venvs"
+
+
+def default_embedding_python() -> Path:
+    """Return the prepared embedding interpreter, or the active Python."""
+
+    for candidate in (
+        EMBEDDING_VENV / "Scripts" / "python.exe",
+        EMBEDDING_VENV / "bin" / "python",
+    ):
+        if candidate.exists():
+            return candidate
+    return Path(sys.executable)
 
 
 def ensure_runtime_dirs() -> None:

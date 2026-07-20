@@ -4,6 +4,7 @@
 
 - Added a production CPU-only profile using Kroko/Nemotron fixed transcripts, guarded faster-whisper Base forced alignment, SpeechBrain CPU embeddings, bounded worker pools, native-timestamp fallback, launcher controls, diagnostics, and dedicated installation/docs.
 - Made the Windows Kroko community-wheel build explicitly CPU-only and staged its downloaded ONNX Runtime DLL for reliable `delvewheel` packaging.
+- Kept the base `whospeaks` launcher importable before NumPy and the CPU runtime extras are installed.
 - Added persistent People with Person-owned manual and meeting Voice samples, suggestion-first cross-meeting recognition, a deliberate recognition roster, and saved-session identity linking.
 - Added evidence-gated enrollment, persistent recognition opt-out, truthful linked-state UI, durable suppression of deleted meeting samples, interruption recovery for saved link/unlink, and cascading Person/sample cleanup.
 - Added a complete People workflow, legacy Speaker-group migration guide, and security/data-privacy documentation covering trusted deployment, storage, backup, retention, and deletion limits.

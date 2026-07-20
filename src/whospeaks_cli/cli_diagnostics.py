@@ -23,8 +23,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from embeddings.embedding_providers import default_embedding_python
-from paths import RUNTIME_DIR
+from paths import RUNTIME_DIR, default_embedding_python
 
 from window.realtime_preview_backends import (
     get_preview_backend_spec,

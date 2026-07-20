@@ -12,7 +12,7 @@ from pathlib import Path
 from importlib import resources
 from typing import Any
 
-from embeddings.embedding_providers import default_embedding_python
+from paths import default_embedding_python
 from window.language_config import normalize_language_code
 from window.window_config import default_kroko_preview_python
 from window.meeting_server_support import LLM_PROVIDER_OPTIONS
