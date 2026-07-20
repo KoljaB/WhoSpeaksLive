@@ -539,6 +539,8 @@ class OverviewPage(QWidget):
         layout.setSpacing(0)
         services = QWidget()
         self.services_panel = services
+        services.setMinimumWidth(0)
+        services.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         services_layout = QVBoxLayout(services)
         services_layout.setContentsMargins(20, 16, 12, 8)
         services_layout.setSpacing(0)
@@ -586,7 +588,7 @@ class OverviewPage(QWidget):
         services_layout.addStretch(1)
         profile = QWidget()
         self.profile_panel = profile
-        profile.setMinimumWidth(360)
+        profile.setMinimumWidth(460)
         profile_layout = QVBoxLayout(profile)
         profile_layout.setContentsMargins(22, 22, 22, 20)
         profile_layout.setSpacing(9)
@@ -723,6 +725,8 @@ class OverviewPage(QWidget):
         divider.setFixedWidth(1)
         layout.addWidget(divider)
         layout.addWidget(profile, 46)
+        layout.setStretchFactor(services, 54)
+        layout.setStretchFactor(profile, 46)
         return frame
 
     def _build_first_run_workspace(self) -> QWidget:
@@ -1141,7 +1145,7 @@ class OverviewPage(QWidget):
             else QBoxLayout.Direction.LeftToRight
         )
         self.workspace_divider.setVisible(not compact)
-        self.profile_panel.setMinimumWidth(0 if compact else 360)
+        self.profile_panel.setMinimumWidth(0 if compact else 460)
         self.workspace_stack.setMinimumSize(0 if compact else 860, 900 if compact else 480)
         self.workspace_scroll.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAsNeeded

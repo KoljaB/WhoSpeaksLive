@@ -297,7 +297,7 @@ class WhoSpeaksGuiTests(unittest.TestCase):
         window = self.make_window("starting")
         for row in window.overview.service_rows.values():
             if row.isVisible():
-                self.assertEqual(row.height(), 88)
+                self.assertEqual(row.height(), 96)
                 self.assertTrue(row.extra.isVisible())
                 self.assertTrue(row.extra.text().strip())
                 self.assertFalse(hasattr(row, "disclosure"))
@@ -1034,14 +1034,22 @@ class WhoSpeaksGuiTests(unittest.TestCase):
     def test_launch_profile_controls_stay_inside_the_right_panel(self) -> None:
         window = self.make_window("ready")
 
-        for width in (1200, 1440):
+        # 1320 logical pixels reproduces a maximized 1980px-wide Windows
+        # desktop at 150% scaling.  Long CPU-ASR details must yield space to
+        # the launch profile instead of pushing its controls out of bounds.
+        for width in (1200, 1320, 1440):
             with self.subTest(width=width):
                 window.resize(width, 900)
                 self.app.processEvents()
                 panel_right = window.overview.profile_panel.contentsRect().right()
+                if width >= 1280:
+                    self.assertGreaterEqual(window.overview.profile_panel.width(), 460)
                 installer = window.overview.profile_installer
                 self.assertLessEqual(
-                    installer.geometry().right(),
+                    installer.mapTo(
+                        window.overview.profile_panel,
+                        QPoint(installer.rect().right(), 0),
+                    ).x(),
                     panel_right,
                 )
                 self.assertGreaterEqual(installer.width(), 190)
