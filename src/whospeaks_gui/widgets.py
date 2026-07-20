@@ -253,11 +253,13 @@ class ServiceRow(QWidget):
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self.setFixedHeight(96)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        # Service descriptions can wrap at Windows 150% scaling.  A fixed row
+        # height clipped the second line beneath the following separator.
+        self.setMinimumHeight(112)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 5, 16, 5)
-        layout.setSpacing(24)
+        layout.setContentsMargins(0, 8, 12, 8)
+        layout.setSpacing(18)
         icon = QLabel()
         icon.setPixmap(line_icon(icon_name, size=25).pixmap(25, 25))
         icon.setProperty("iconTile", True)
@@ -274,7 +276,7 @@ class ServiceRow(QWidget):
         self.subtitle.setProperty("role", "secondary")
         self.subtitle.setWordWrap(True)
         self.subtitle.setMinimumWidth(0)
-        self.subtitle.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.subtitle.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         if endpoint_link:
             self.endpoint = EndpointLink(endpoint)
         else:
@@ -285,7 +287,7 @@ class ServiceRow(QWidget):
         self.endpoint.setMinimumWidth(0)
         self.endpoint.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         detail_row = QHBoxLayout()
-        detail_row.setSpacing(14)
+        detail_row.setSpacing(10)
         detail_row.addWidget(self.subtitle)
         detail_row.addWidget(self.endpoint)
         detail_row.addStretch(1)
@@ -301,6 +303,7 @@ class ServiceRow(QWidget):
         state_box.setSpacing(8)
         self.status_mark = StatusMark("stopped")
         self.status_label = QLabel("Stopped")
+        self.status_label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
         state_box.addWidget(self.status_mark)
         state_box.addWidget(self.status_label)
         layout.addWidget(icon)

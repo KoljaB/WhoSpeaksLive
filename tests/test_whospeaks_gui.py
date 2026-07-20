@@ -297,7 +297,7 @@ class WhoSpeaksGuiTests(unittest.TestCase):
         window = self.make_window("starting")
         for row in window.overview.service_rows.values():
             if row.isVisible():
-                self.assertEqual(row.height(), 96)
+                self.assertGreaterEqual(row.height(), 112)
                 self.assertTrue(row.extra.isVisible())
                 self.assertTrue(row.extra.text().strip())
                 self.assertFalse(hasattr(row, "disclosure"))
@@ -1089,6 +1089,40 @@ class WhoSpeaksGuiTests(unittest.TestCase):
                         self.assertIn(value.text(), value.accessibleName())
                     else:
                         self.assertEqual(value.toolTip(), value.text())
+
+    def test_cpu_service_text_stays_inside_each_row_at_windows_scaling_width(self) -> None:
+        controller = DemoLauncherController("starting")
+        controller.profile = Profile.from_mapping(
+            {
+                "mode": "cpu",
+                "language": "de",
+                "asr_backend": "cpu",
+                "embeddings_backend": "local",
+                "embedding_provider": "speechbrain_ecapa",
+                "realtime_preview_engine": "kroko_onnx",
+                "realtime_preview_model_preset": "community-64l",
+                "cpu_alignment_model": "base",
+                "reports_enabled": False,
+                "translation_enabled": False,
+            }
+        )
+        window = LauncherWindow(controller, auto_check=False, reduced_motion=True)
+        window.resize(1320, 853)
+        window.show()
+        self.app.processEvents()
+        self.addCleanup(window.bridge.close)
+        self.addCleanup(window.hide)
+
+        for key in ("macos_asr", "macos_embeddings", "live"):
+            row = window.overview.service_rows[key]
+            self.assertTrue(row.isVisible())
+            for label in (row.title, row.subtitle, row.endpoint, row.extra, row.status_label):
+                if not label.isVisible():
+                    continue
+                top = label.mapTo(row, QPoint(0, 0)).y()
+                bottom = top + label.height()
+                self.assertGreaterEqual(top, 0, f"{key}: {label.text()}")
+                self.assertLessEqual(bottom, row.height(), f"{key}: {label.text()}")
 
     def test_overview_action_bar_does_not_duplicate_workspace_border(self) -> None:
         window = self.make_window("ready")

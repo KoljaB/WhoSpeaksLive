@@ -24,8 +24,9 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
 
     def test_transcript_turn_grouping_defaults_to_enabled(self) -> None:
         self.assertIn('id="groupTranscriptTurns" type="checkbox" checked', HTML)
-        self.assertIn('const transcriptGroupTurnsStorageKey = "whospeaks.demo.group_transcript_turns.v2";', HTML)
+        self.assertIn('const transcriptGroupTurnsStorageKey = "whospeaks.demo.group_transcript_turns.v3";', HTML)
         self.assertIn("groupTranscriptTurns.checked = storedBooleanValue(transcriptGroupTurnsStorageKey, true);", HTML)
+        self.assertNotIn('groupTranscriptTurns.dispatchEvent(new Event("change"));', HTML)
 
     def test_saved_sessions_support_bulk_selection_and_actions(self) -> None:
         self.assertIn('id="selectAllSessions"', HTML)
@@ -214,7 +215,7 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn('post("/api/sessions/corrections/reassign", {', HTML)
         self.assertIn('post("/api/sessions/corrections/mark-correct", {', HTML)
         self.assertIn('row.dataset.selectable = (!item.realtime && !item.pending) ? "true" : "false";', HTML)
-        self.assertIn('groupTranscriptTurns.dispatchEvent(new Event("change"));', HTML)
+        self.assertIn("refreshTranscriptGrouping();", HTML)
         self.assertIn('post("/api/speakers/split", {speaker_id: speakerId, sentence_indices: indexes, update_memory: true})', HTML)
         self.assertIn('bulkReassignButton.addEventListener("click", () => reassignSelectedSentences());', HTML)
         self.assertNotIn('id="bulkSplit"', HTML)

@@ -174,7 +174,7 @@ export function createLiveAppContext() {
   const capturePreRollSeconds = 0.7;
   const audioUploadExtensions = new Set(["aac", "aif", "aiff", "flac", "m4a", "mp3", "mp4", "oga", "ogg", "opus", "wav", "webm"]);
   const playbackClockSlackSeconds = 3.0;
-  const transcriptGroupTurnsStorageKey = "whospeaks.demo.group_transcript_turns.v2";
+  const transcriptGroupTurnsStorageKey = "whospeaks.demo.group_transcript_turns.v3";
   const transcriptReviewHintsStorageKey = "whospeaks.demo.show_transcript_review_hints";
   const translationDisplayModeStorageKey = "whospeaks.demo.translation_display_mode.v1";
   const translationPrimaryTargetStorageKey = "whospeaks.demo.translation_primary_target.v1";

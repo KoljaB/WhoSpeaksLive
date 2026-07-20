@@ -387,7 +387,7 @@ export function installTranscriptReview(ctx) {
       if (selection.trim()) return;
       if (Number(row.dataset.groupSize || 1) > 1 && groupTranscriptTurns.checked) {
         groupTranscriptTurns.checked = false;
-        groupTranscriptTurns.dispatchEvent(new Event("change"));
+        refreshTranscriptGrouping();
       }
       const key = transcriptRowSelectionKey(row);
       setTranscriptRowSelected(row, !ctx.owners.transcript.selectedTranscriptRowIndexes.has(key), {range: event.shiftKey});
@@ -398,7 +398,7 @@ export function installTranscriptReview(ctx) {
       event.preventDefault();
       if (Number(row.dataset.groupSize || 1) > 1 && groupTranscriptTurns.checked) {
         groupTranscriptTurns.checked = false;
-        groupTranscriptTurns.dispatchEvent(new Event("change"));
+        refreshTranscriptGrouping();
       }
       const key = transcriptRowSelectionKey(row);
       setTranscriptRowSelected(row, !ctx.owners.transcript.selectedTranscriptRowIndexes.has(key), {range: event.shiftKey});
