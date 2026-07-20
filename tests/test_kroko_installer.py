@@ -152,6 +152,8 @@ class KrokoInstallerTests(unittest.TestCase):
                 "set \"VARIANT=%~1\"\r\n"
                 "if exist \"%HOST_OUT%\\wheel\" (\r\n"
                 "    echo Wheel\r\n"
+                "    call :size_h \"!WHEEL!\" _sz\r\n"
+                "    echo     Wheel: !WHEEL! ^(!_sz!^)\r\n"
                 ")\r\n"
                 "rmdir /S /Q \"%HOST_OUT%\" 2>nul\r\n"
                 "\r\n"
@@ -176,8 +178,44 @@ class KrokoInstallerTests(unittest.TestCase):
             self.assertIn("Skipping Windows websocket-server build for free wheel-only runtime.", first_script)
             self.assertNotIn("-DSHERPA_ONNX_ENABLE_WEBSOCKET=ON", first_script)
             self.assertIn("-DSHERPA_ONNX_ENABLE_WEBSOCKET=$KROKO_WEBSOCKET_FLAG", first_script)
+            self.assertIn("-DSHERPA_ONNX_ENABLE_GPU=OFF", first_script)
             self.assertIn("WhoSpeaks patch: skip NSIS for free wheel-only build", first_batch)
             self.assertIn('if /I "%VARIANT%"=="free"', first_batch)
+            self.assertNotIn('call :size_h "!WHEEL!" _sz', first_batch)
+            self.assertIn("echo     Wheel: !WHEEL!", first_batch)
+
+    def test_windows_free_build_stages_onnxruntime_for_delvewheel(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            script = repo / "in_windows_container.sh"
+            batch = repo / "build_windows.bat"
+            script.write_text(
+                "#!/bin/bash\n"
+                'echo "    Variant: $BUILD_VARIANT (KROKO_LICENSE=$KROKO_LICENSE_FLAG)"\n'
+                "echo\n"
+                "export SHERPA_ONNX_CMAKE_ARGS=\" \\\n"
+                "    -DSHERPA_ONNX_ENABLE_BINARY=OFF \\\n"
+                "    -DSHERPA_ONNX_ENABLE_WEBSOCKET=ON\"\n"
+                "python3 -m delvewheel repair \\\n"
+                '    --add-path "$INSTALL_DIR/bin" \\\n'
+                '    "$UNREPAIRED_WHEEL"\n',
+                encoding="utf-8",
+            )
+            batch.write_text(
+                "@echo off\r\n"
+                "REM -- Step 3: build the NSIS installer ---------------------------------------\r\n",
+                encoding="utf-8",
+            )
+
+            install_kroko.patch_windows_free_wheel_only_build(repo)
+            first = script.read_text(encoding="utf-8")
+            install_kroko.patch_windows_free_wheel_only_build(repo)
+            second = script.read_text(encoding="utf-8")
+
+            self.assertEqual(first, second)
+            self.assertIn("WhoSpeaks patch: stage the wheel build's ONNX Runtime DLL.", first)
+            self.assertIn('find "$SRC_RW/build" -type f -iname "onnxruntime.dll"', first)
+            self.assertIn('cp -f "$ONNXRUNTIME_DLL" "$INSTALL_DIR/bin/onnxruntime.dll"', first)
 
     def test_free_linux_patch_makes_openssl_license_only(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

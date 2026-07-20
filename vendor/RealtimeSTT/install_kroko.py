@@ -401,6 +401,35 @@ def patch_windows_free_wheel_only_build(repo_dir):
         "-DSHERPA_ONNX_ENABLE_WEBSOCKET=$KROKO_WEBSOCKET_FLAG \\",
     )
 
+    gpu_flag = "    -DSHERPA_ONNX_ENABLE_GPU=OFF \\\n"
+    if gpu_flag not in script:
+        binary_flag = "    -DSHERPA_ONNX_ENABLE_BINARY=OFF \\\n"
+        if binary_flag in script:
+            script = script.replace(binary_flag, binary_flag + gpu_flag, 1)
+        else:
+            print("Could not identify Kroko wheel CMake flags; leaving GPU mode unchanged.")
+
+    dll_marker = "WhoSpeaks patch: stage the wheel build's ONNX Runtime DLL."
+    delvewheel_command = "python3 -m delvewheel repair \\\n"
+    if dll_marker not in script and delvewheel_command in script:
+        dll_staging = (
+            "# {0}\n"
+            "# The free wheel skips the websocket-server build, so INSTALL_DIR/bin\n"
+            "# does not receive onnxruntime.dll through the server install step.\n"
+            "# setup.py still downloads the CPU runtime below SRC_RW/build; find it\n"
+            "# explicitly because delvewheel's --add-path is not recursive.\n"
+            'ONNXRUNTIME_DLL=$(find "$SRC_RW/build" -type f -iname "onnxruntime.dll" | head -n 1)\n'
+            'if [ -z "$ONNXRUNTIME_DLL" ]; then\n'
+            '    echo "ERROR: onnxruntime.dll missing from the Kroko wheel build tree" >&2\n'
+            "    exit 1\n"
+            "fi\n"
+            'mkdir -p "$INSTALL_DIR/bin"\n'
+            'cp -f "$ONNXRUNTIME_DLL" "$INSTALL_DIR/bin/onnxruntime.dll"\n'
+            'echo "Staged ONNX Runtime for delvewheel: $ONNXRUNTIME_DLL"\n'
+            "\n"
+        ).format(dll_marker)
+        script = script.replace(delvewheel_command, dll_staging + delvewheel_command, 1)
+
     wrap_marker = 'if [ "$KROKO_WHEEL_ONLY" = "1" ]; then'
     if wrap_marker not in script:
         start = script.find("# Configure. The websocket server is gated by SHERPA_ONNX_ENABLE_WEBSOCKET")
@@ -431,8 +460,16 @@ def patch_windows_free_wheel_only_build(repo_dir):
         print("Patched in_windows_container.sh for a free Windows wheel-only build.")
 
     batch = read_text(batch_path)
+    batch = batch.replace("\r\r\n", "\r\n")
     batch_original = batch
     batch_marker = "WhoSpeaks patch: skip NSIS for free wheel-only build"
+    batch = batch.replace(
+        'call :size_h "!WHEEL!" _sz',
+        "REM WhoSpeaks patch: avoid fragile cmd.exe wheel-size arithmetic",
+    ).replace(
+        "echo     Wheel: !WHEEL! ^(!_sz!^)",
+        "echo     Wheel: !WHEEL!",
+    )
     if batch_marker not in batch:
         step_marker = "REM -- Step 3: build the NSIS installer ---------------------------------------"
         newline = "\r\n" if "\r\n" in batch else "\n"
