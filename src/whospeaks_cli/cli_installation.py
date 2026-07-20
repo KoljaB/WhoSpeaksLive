@@ -84,6 +84,7 @@ __all__ = [
     "build_translation_install_commands", "install_translation_runtime",
     "installed_package_source", "build_macos_install_commands", "install_macos_runtime",
     "query_python_command_info", "windows_kroko_python_is_compatible", "windows_python312_command",
+    "windows_kroko_docker_readiness",
     "report_suggests_kroko_install",
     "run_command_sequence", "install_kroko_in_python", "install_kroko_sidecar",
     "install_kroko_runtime", "install_extra_and_maybe_kroko", "configure_profile_for_mode",
@@ -1037,6 +1038,40 @@ def windows_python312_command() -> list[str] | None:
     return None
 
 
+def windows_kroko_docker_readiness() -> tuple[bool, str]:
+    """Check the Docker Desktop Linux engine required by Kroko's Windows builder."""
+
+    if os.name != "nt":
+        return True, ""
+    docker = shutil.which("docker")
+    if not docker:
+        return False, (
+            "Docker Desktop is required to build Kroko on Windows, but the Docker CLI was not found. "
+            "Install Docker Desktop and enable Linux containers."
+        )
+    try:
+        completed = subprocess.run(
+            [docker, "version", "--format", "{{.Server.Os}}"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+    except Exception as exc:
+        return False, f"Docker Desktop could not be contacted: {exc}"
+    server_os = (completed.stdout or "").strip().lower()
+    if completed.returncode != 0:
+        return False, (
+            "Docker Desktop is installed, but its Linux engine is not running or cannot be reached."
+        )
+    if server_os != "linux":
+        return False, (
+            "Docker Desktop is running with Windows containers. Kroko requires the Linux container engine."
+        )
+    return True, ""
+
+
 def report_suggests_kroko_install(profile: Profile, report: DoctorReport) -> bool:
     if normalize_mode(profile.mode) not in {"local", "cpu"}:
         return False
@@ -1174,6 +1209,17 @@ def install_kroko_runtime(
     if not preview_engine_uses_kroko(profile):
         print("Kroko native runtime install skipped because realtime preview is disabled.")
         return 0
+    if os.name == "nt" and not dry_run:
+        docker_ready, docker_problem = windows_kroko_docker_readiness()
+        if not docker_ready:
+            print("Kroko setup cannot continue yet.")
+            print(docker_problem)
+            print(
+                "Required action: start Docker Desktop, wait until its Linux engine reports that it is running, "
+                "then return to WhoSpeaks and click Install again."
+            )
+            print("No Kroko sidecar was created or modified.")
+            return 1
     configured_python = str(profile.realtime_preview_python or "").strip()
     if configured_python:
         if os.name != "nt" or windows_kroko_python_is_compatible([configured_python]):
@@ -1190,10 +1236,7 @@ def install_kroko_runtime(
             "Kroko's Windows builder requires CPython 3.12 x64."
         )
         update_profile_in_place(profile, profile.with_updates(realtime_preview_python=""))
-    current_python_is_compatible = (
-        os.name != "nt" or windows_kroko_python_is_compatible([sys.executable])
-    )
-    if os.name == "nt" and not current_python_is_compatible:
+    if os.name == "nt":
         if backend == "uv":
             return install_kroko_sidecar(
                 profile,

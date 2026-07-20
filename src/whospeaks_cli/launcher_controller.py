@@ -689,6 +689,7 @@ class LauncherController:
             kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
         else:
             kwargs["start_new_session"] = True
+        actionable_failure = ""
         try:
             process = self._popen_factory(concrete, **kwargs)
             self.install_process = process
@@ -698,6 +699,8 @@ class LauncherController:
                 for raw in process.stdout:
                     line = raw.rstrip()
                     self._append_log(line)
+                    if line.lower().startswith("required action:"):
+                        actionable_failure = line.split(":", 1)[-1].strip()
                     self.coordinator.update_progress(step=self.install_step_for_line(line), latest=line)
                     self._emit(EventKind.OPERATION, line, self.coordinator.snapshot.operation)
             return_code = int(process.wait())
@@ -713,11 +716,18 @@ class LauncherController:
         elif return_code == 0:
             self.coordinator.finish_operation("success", "Installation completed", "Packages were installed.")
         else:
-            self.coordinator.finish_operation(
-                "error",
-                "Installation failed",
-                f"Installer stopped with exit code {return_code}.",
-            )
+            if actionable_failure:
+                self.coordinator.finish_operation(
+                    "error",
+                    "Docker Desktop required",
+                    actionable_failure,
+                )
+            else:
+                self.coordinator.finish_operation(
+                    "error",
+                    "Installation failed",
+                    f"Installer stopped with exit code {return_code}.",
+                )
         self._emit(EventKind.OPERATION, payload=self.coordinator.snapshot.operation)
         return return_code
 

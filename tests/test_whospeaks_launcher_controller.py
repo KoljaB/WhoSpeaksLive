@@ -200,6 +200,26 @@ class LauncherControllerTests(unittest.TestCase):
         self.assertIsNone(controller.install_process)
         self.assertTrue(any("Downloading sherpa" in line for line in controller.snapshot.logs))
 
+    def test_install_surfaces_kroko_docker_action_in_operation_summary(self) -> None:
+        action = (
+            "start Docker Desktop, wait until its Linux engine reports that it is running, "
+            "then return to WhoSpeaks and click Install again."
+        )
+        process = FakeProcess(
+            "Kroko setup cannot continue yet.\n"
+            "Docker Desktop is installed, but its Linux engine is not running or cannot be reached.\n"
+            f"Required action: {action}\n",
+            return_code=1,
+        )
+        controller = self.make_controller(popen_factory=lambda *_args, **_kwargs: process)
+
+        return_code = controller.install(["python", "-m", "installer"], title="CPU only")
+
+        self.assertEqual(return_code, 1)
+        self.assertEqual(controller.snapshot.operation.status, "error")
+        self.assertEqual(controller.snapshot.operation.title, "Docker Desktop required")
+        self.assertEqual(controller.snapshot.operation.latest, action)
+
     def test_cancel_terminates_the_owned_installer_tree(self) -> None:
         controller = self.make_controller()
         process = FakeProcess(return_code=None)

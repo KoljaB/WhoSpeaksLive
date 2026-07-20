@@ -796,9 +796,8 @@ class WhoSpeaksCliTests(unittest.TestCase):
 
         self.assertEqual(command, [str(fake_path)])
 
-    def test_kroko_install_ignores_stale_python311_and_uses_launcher_python312(self) -> None:
+    def test_kroko_install_ignores_stale_python311_and_uses_managed_sidecar(self) -> None:
         stale_python = r"D:\Projekte\SpeakerDiarization\.venv\Scripts\python.exe"
-        launcher_python = str(cli.sys.executable)
         profile = cli.Profile(
             realtime_preview_engine="kroko_onnx",
             realtime_preview_python=stale_python,
@@ -813,24 +812,89 @@ class WhoSpeaksCliTests(unittest.TestCase):
             mock.patch.object(cli.os, "name", "nt"),
             mock.patch.object(cli, "query_python_command_info", side_effect=fake_info),
             mock.patch(
+                "whospeaks_cli.cli_installation.windows_kroko_docker_readiness",
+                return_value=(True, ""),
+            ),
+            mock.patch(
                 "whospeaks_cli.cli_installation.install_kroko_in_python",
                 return_value=0,
-            ) as install,
-            mock.patch("whospeaks_cli.cli_installation.save_profile") as save,
+            ) as direct_install,
+            mock.patch(
+                "whospeaks_cli.cli_installation.install_kroko_sidecar",
+                return_value=0,
+            ) as sidecar_install,
         ):
-            code = cli.install_kroko_runtime(profile, assume_yes=True)
+            code = cli.install_kroko_runtime(profile, assume_yes=True, installer_backend="uv")
 
         self.assertEqual(code, 0)
-        install.assert_called_once_with(
-            launcher_python,
+        direct_install.assert_not_called()
+        sidecar_install.assert_called_once_with(
+            profile,
+            None,
             assume_yes=True,
             dry_run=False,
             variant="free",
             work_dir=None,
             soft_fail=False,
+            installer_backend="uv",
         )
-        self.assertEqual(profile.realtime_preview_python, launcher_python)
-        save.assert_called_once_with(profile)
+        self.assertEqual(profile.realtime_preview_python, "")
+
+    def test_kroko_install_stops_before_sidecar_when_docker_linux_engine_is_down(self) -> None:
+        profile = cli.Profile(realtime_preview_engine="kroko_onnx")
+        stdout = io.StringIO()
+        with (
+            mock.patch.object(cli.os, "name", "nt"),
+            mock.patch(
+                "whospeaks_cli.cli_installation.windows_kroko_docker_readiness",
+                return_value=(
+                    False,
+                    "Docker Desktop is installed, but its Linux engine is not running or cannot be reached.",
+                ),
+            ),
+            mock.patch(
+                "whospeaks_cli.cli_installation.install_kroko_sidecar",
+                return_value=0,
+            ) as sidecar_install,
+            contextlib.redirect_stdout(stdout),
+        ):
+            code = cli.install_kroko_runtime(
+                profile,
+                assume_yes=True,
+                soft_fail=True,
+                installer_backend="uv",
+            )
+
+        self.assertEqual(code, 1)
+        sidecar_install.assert_not_called()
+        output = stdout.getvalue()
+        self.assertIn("Kroko setup cannot continue yet", output)
+        self.assertIn("Linux engine is not running", output)
+        self.assertIn("start Docker Desktop", output)
+        self.assertIn("No Kroko sidecar was created or modified", output)
+
+    def test_kroko_install_checks_docker_before_reusing_configured_python312(self) -> None:
+        configured_python = r"C:\WhoSpeaks\kroko-preview-py312\Scripts\python.exe"
+        profile = cli.Profile(
+            realtime_preview_engine="kroko_onnx",
+            realtime_preview_python=configured_python,
+        )
+        with (
+            mock.patch.object(cli.os, "name", "nt"),
+            mock.patch(
+                "whospeaks_cli.cli_installation.windows_kroko_docker_readiness",
+                return_value=(False, "Docker Desktop Linux engine is not running."),
+            ),
+            mock.patch(
+                "whospeaks_cli.cli_installation.install_kroko_in_python",
+                return_value=0,
+            ) as direct_install,
+        ):
+            code = cli.install_kroko_runtime(profile, assume_yes=True)
+
+        self.assertEqual(code, 1)
+        direct_install.assert_not_called()
+        self.assertEqual(profile.realtime_preview_python, configured_python)
 
     def test_local_setup_dry_run_offers_complete_nemotron_install(self) -> None:
         original_config = os.environ.get("WHOSPEAKS_CONFIG")
