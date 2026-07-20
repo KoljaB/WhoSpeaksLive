@@ -796,6 +796,42 @@ class WhoSpeaksCliTests(unittest.TestCase):
 
         self.assertEqual(command, [str(fake_path)])
 
+    def test_kroko_install_ignores_stale_python311_and_uses_launcher_python312(self) -> None:
+        stale_python = r"D:\Projekte\SpeakerDiarization\.venv\Scripts\python.exe"
+        launcher_python = str(cli.sys.executable)
+        profile = cli.Profile(
+            realtime_preview_engine="kroko_onnx",
+            realtime_preview_python=stale_python,
+        )
+
+        def fake_info(command: list[str]) -> dict[str, object] | None:
+            executable = command[0]
+            version = [3, 11, 5] if executable == stale_python else [3, 12, 4]
+            return {"version": version, "bits": 64, "machine": "AMD64", "executable": executable}
+
+        with (
+            mock.patch.object(cli.os, "name", "nt"),
+            mock.patch.object(cli, "query_python_command_info", side_effect=fake_info),
+            mock.patch(
+                "whospeaks_cli.cli_installation.install_kroko_in_python",
+                return_value=0,
+            ) as install,
+            mock.patch("whospeaks_cli.cli_installation.save_profile") as save,
+        ):
+            code = cli.install_kroko_runtime(profile, assume_yes=True)
+
+        self.assertEqual(code, 0)
+        install.assert_called_once_with(
+            launcher_python,
+            assume_yes=True,
+            dry_run=False,
+            variant="free",
+            work_dir=None,
+            soft_fail=False,
+        )
+        self.assertEqual(profile.realtime_preview_python, launcher_python)
+        save.assert_called_once_with(profile)
+
     def test_local_setup_dry_run_offers_complete_nemotron_install(self) -> None:
         original_config = os.environ.get("WHOSPEAKS_CONFIG")
         with tempfile.TemporaryDirectory() as directory:
@@ -948,6 +984,10 @@ class WhoSpeaksCliTests(unittest.TestCase):
                     mock.patch.object(cli, "installed_distribution_version", return_value="0.0.1.dev21"),
                     mock.patch.object(cli, "run_doctor", return_value=report),
                     mock.patch.object(cli, "windows_python312_command", return_value=["py", "-3.12"]),
+                    mock.patch(
+                        "whospeaks_cli.cli_installation.windows_kroko_python_is_compatible",
+                        return_value=False,
+                    ),
                     contextlib.redirect_stdout(stdout),
                 ):
                     code = cli.main([

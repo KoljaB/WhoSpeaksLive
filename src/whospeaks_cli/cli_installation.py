@@ -83,7 +83,8 @@ __all__ = [
     "default_translation_model_dir", "translation_package_install_command",
     "build_translation_install_commands", "install_translation_runtime",
     "installed_package_source", "build_macos_install_commands", "install_macos_runtime",
-    "query_python_command_info", "windows_python312_command", "report_suggests_kroko_install",
+    "query_python_command_info", "windows_kroko_python_is_compatible", "windows_python312_command",
+    "report_suggests_kroko_install",
     "run_command_sequence", "install_kroko_in_python", "install_kroko_sidecar",
     "install_kroko_runtime", "install_extra_and_maybe_kroko", "configure_profile_for_mode",
 ]
@@ -998,6 +999,17 @@ def query_python_command_info(command: list[str]) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def windows_kroko_python_is_compatible(command: list[str]) -> bool:
+    """Return whether ``command`` is a CPython runtime supported by Kroko's Windows builder."""
+
+    info = _facade_callable("query_python_command_info", query_python_command_info)(command)
+    if not info:
+        return False
+    version = info.get("version") or []
+    bits = int(info.get("bits") or 0)
+    return len(version) >= 2 and version[0] == 3 and version[1] == 12 and bits == 64
+
+
 def windows_python312_command() -> list[str] | None:
     launcher = shutil.which("py")
     candidates: list[list[str]] = []
@@ -1020,12 +1032,7 @@ def windows_python312_command() -> list[str] | None:
         if key in seen:
             continue
         seen.add(key)
-        info = _facade_callable("query_python_command_info", query_python_command_info)(command)
-        if not info:
-            continue
-        version = info.get("version") or []
-        bits = int(info.get("bits") or 0)
-        if len(version) >= 2 and version[0] == 3 and version[1] == 12 and bits == 64:
+        if windows_kroko_python_is_compatible(command):
             return command
     return None
 
@@ -1167,16 +1174,26 @@ def install_kroko_runtime(
     if not preview_engine_uses_kroko(profile):
         print("Kroko native runtime install skipped because realtime preview is disabled.")
         return 0
-    if profile.realtime_preview_python:
-        return install_kroko_in_python(
-            profile.realtime_preview_python,
-            assume_yes=assume_yes,
-            dry_run=dry_run,
-            variant=variant,
-            work_dir=work_dir,
-            soft_fail=soft_fail,
+    configured_python = str(profile.realtime_preview_python or "").strip()
+    if configured_python:
+        if os.name != "nt" or windows_kroko_python_is_compatible([configured_python]):
+            return install_kroko_in_python(
+                configured_python,
+                assume_yes=assume_yes,
+                dry_run=dry_run,
+                variant=variant,
+                work_dir=work_dir,
+                soft_fail=soft_fail,
+            )
+        print(
+            f"Ignoring incompatible realtime preview Python {configured_python}. "
+            "Kroko's Windows builder requires CPython 3.12 x64."
         )
-    if os.name == "nt" and sys.version_info[:2] != (3, 12):
+        update_profile_in_place(profile, profile.with_updates(realtime_preview_python=""))
+    current_python_is_compatible = (
+        os.name != "nt" or windows_kroko_python_is_compatible([sys.executable])
+    )
+    if os.name == "nt" and not current_python_is_compatible:
         if backend == "uv":
             return install_kroko_sidecar(
                 profile,
@@ -1206,7 +1223,11 @@ def install_kroko_runtime(
             "then open `whospeaks`, select Kroko under Settings > General, and install again from Overview."
         )
         return 0 if (soft_fail or dry_run) else 1
-    return install_kroko_in_python(
+    update_profile_in_place(
+        profile,
+        profile.with_updates(realtime_preview_python=str(sys.executable)),
+    )
+    code = install_kroko_in_python(
         sys.executable,
         assume_yes=assume_yes,
         dry_run=dry_run,
@@ -1214,6 +1235,10 @@ def install_kroko_runtime(
         work_dir=work_dir,
         soft_fail=soft_fail,
     )
+    if not dry_run:
+        save_path = save_profile(profile)
+        print(f"Saved realtime preview Python to {save_path}.")
+    return code
 
 
 def install_extra_and_maybe_kroko(

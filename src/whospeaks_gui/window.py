@@ -1308,12 +1308,9 @@ class OverviewPage(QWidget):
         preview_index = self.setup_preview_model.findData(profile.realtime_preview_model_preset)
         if preview_index >= 0:
             self.setup_preview_model.setCurrentIndex(preview_index)
-        translation_profile = (
-            profile.translation_model_profile
-            if profile.translation_enabled and profile.translation_provider == "sidecar"
-            else "off"
-        )
-        translation_index = self.setup_translation_profile.findData(translation_profile)
+        # Installation choices are opt-in. A translation runtime saved in an
+        # existing launch profile must not silently turn it on for a new install.
+        translation_index = self.setup_translation_profile.findData("off")
         self.setup_translation_profile.setCurrentIndex(
             translation_index if translation_index >= 0 else 0
         )

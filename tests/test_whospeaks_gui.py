@@ -979,6 +979,16 @@ class WhoSpeaksGuiTests(unittest.TestCase):
             )
         )
 
+    def test_first_run_translation_install_defaults_off_for_existing_profile(self) -> None:
+        window = self.make_window("first_run")
+        window.overview.apply_profile(Profile.from_mapping({
+            "translation_enabled": True,
+            "translation_provider": "sidecar",
+            "translation_model_profile": "nllb-200-600m",
+        }))
+
+        self.assertEqual(window.overview.setup_translation_profile_value(), "off")
+
     def test_first_run_workspace_stacks_in_linux_sized_window(self) -> None:
         window = self.make_window("first_run")
         window.resize(1152, 750)
