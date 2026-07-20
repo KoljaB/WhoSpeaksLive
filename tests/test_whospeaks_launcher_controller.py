@@ -358,6 +358,19 @@ class LauncherControllerTests(unittest.TestCase):
 
         self.assertEqual(controller.servers.state("live").status, "running")
 
+    def test_unchanged_service_probe_emits_no_snapshot(self) -> None:
+        controller = self.make_controller()
+        events = []
+        controller.subscribe(events.append)
+
+        with mock.patch.object(controller, "_service_ready", return_value=False):
+            controller.refresh_services(force=True)
+        events.clear()
+        with mock.patch.object(controller, "_service_ready", return_value=False):
+            controller.refresh_services(force=True)
+
+        self.assertFalse(any(event.kind is EventKind.SNAPSHOT for event in events))
+
     def test_launch_stays_active_until_all_health_checks_pass(self) -> None:
         processes: list[FakeProcess] = []
 

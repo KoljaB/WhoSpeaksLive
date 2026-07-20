@@ -1133,6 +1133,7 @@ class LauncherController:
         now = self._clock()
         if not force and now - self._last_probe_at < 0.75:
             return tuple(self.servers.state(kind) for kind in self.SERVICE_KINDS)
+        previous_snapshot = self.snapshot
         self._last_probe_at = now
         ports = {
             "live": self.profile.port,
@@ -1186,7 +1187,9 @@ class LauncherController:
                         "No selected service became application-ready.",
                     )
                 self._emit(EventKind.OPERATION, payload=self.coordinator.snapshot.operation)
-        self._emit(EventKind.SNAPSHOT, payload=self.snapshot)
+        current_snapshot = self.snapshot
+        if current_snapshot != previous_snapshot:
+            self._emit(EventKind.SNAPSHOT, payload=current_snapshot)
         return tuple(self.servers.state(kind) for kind in self.SERVICE_KINDS)
 
     def stop_owned_services(self) -> None:

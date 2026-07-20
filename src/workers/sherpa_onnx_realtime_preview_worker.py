@@ -92,35 +92,53 @@ class NemotronRecognizer:
         return instance
 
     def reset(self) -> None:
-        self.stream = self.recognizer.create_stream()
+        self.stream = self._new_stream()
+
+    def _new_stream(self) -> Any:
+        stream = self.recognizer.create_stream()
         if self.model_family == "nemotron":
-            self.stream.set_option("language", self.language)
+            stream.set_option("language", self.language)
+        return stream
 
     def accept(self, audio: np.ndarray, sample_rate: int) -> str:
         return result_text(self.accept_result(audio, sample_rate))
 
-    def accept_result(self, audio: np.ndarray, sample_rate: int, *, finalize: bool = False) -> object:
+    def accept_result(
+        self,
+        audio: np.ndarray,
+        sample_rate: int,
+        *,
+        finalize: bool = False,
+        stream: Any | None = None,
+    ) -> object:
+        active_stream = self.stream if stream is None else stream
         samples = resample_audio(audio, sample_rate)
         if samples.size:
-            self.stream.accept_waveform(TARGET_SAMPLE_RATE, samples)
+            active_stream.accept_waveform(TARGET_SAMPLE_RATE, samples)
         if finalize:
-            self.stream.accept_waveform(
+            active_stream.accept_waveform(
                 TARGET_SAMPLE_RATE,
                 np.zeros(int(1.0 * TARGET_SAMPLE_RATE), dtype=np.float32),
             )
-            self.stream.input_finished()
-        while self.recognizer.is_ready(self.stream):
-            self.recognizer.decode_stream(self.stream)
+            active_stream.input_finished()
+        while self.recognizer.is_ready(active_stream):
+            self.recognizer.decode_stream(active_stream)
         get_result_all = getattr(self.recognizer, "get_result_all", None)
-        return get_result_all(self.stream) if callable(get_result_all) else self.recognizer.get_result(self.stream)
+        return get_result_all(active_stream) if callable(get_result_all) else self.recognizer.get_result(active_stream)
 
     def transcribe(self, audio: np.ndarray, sample_rate: int) -> str:
         self.reset()
         return self.accept(audio, sample_rate)
 
     def transcribe_final(self, audio: np.ndarray, sample_rate: int) -> object:
-        self.reset()
-        return self.accept_result(audio, sample_rate, finalize=True)
+        # Final sentence decoding must not reset the long-lived preview stream.
+        # This lets one loaded recognizer serve both realtime text and final ASR.
+        return self.accept_result(
+            audio,
+            sample_rate,
+            finalize=True,
+            stream=self._new_stream(),
+        )
 
 
 def decode_request_audio(request: dict[str, Any]) -> tuple[np.ndarray, int]:

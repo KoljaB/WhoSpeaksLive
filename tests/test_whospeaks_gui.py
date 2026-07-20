@@ -424,6 +424,31 @@ class WhoSpeaksGuiTests(unittest.TestCase):
 
         set_report.assert_not_called()
 
+    def test_launcher_has_no_continuous_paint_timer(self) -> None:
+        controller = LauncherController(
+            Profile(),
+            profile_saver=lambda _profile: Path("unused.json"),
+        )
+        window = LauncherWindow(controller, auto_check=False, reduced_motion=False)
+        self.addCleanup(window.bridge.close)
+
+        self.assertFalse(window.animation_timer.isActive())
+
+    def test_idle_launcher_does_not_keep_polling(self) -> None:
+        controller = LauncherController(
+            Profile(),
+            profile_saver=lambda _profile: Path("unused.json"),
+        )
+        original_refresh = controller.refresh_services
+        controller.refresh_services = mock.Mock(wraps=original_refresh)
+        window = LauncherWindow(controller, auto_check=False, reduced_motion=False)
+        self.addCleanup(window.bridge.close)
+
+        QTest.qWait(2200)
+
+        self.assertLessEqual(controller.refresh_services.call_count, 1)
+        self.assertFalse(window.probe_timer.isActive())
+
     def test_real_terminal_launch_error_drives_complete_failure_shell(self) -> None:
         controller = LauncherController(
             Profile(),

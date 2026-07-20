@@ -100,6 +100,7 @@ from window.window_speaker_refinement import (
     user_confirmed_speaker_label,
 )
 from window.live_speech_gate import rms_speech_present
+from window.cpu_forced_alignment import CpuHybridTranscriber
 
 
 
@@ -158,6 +159,7 @@ class WindowRuntimeAudioMixin:
 
     def _load_realtime_preview(self) -> None:
         self._preview_transcriber = None
+        self._preview_transcriber_owned = False
         engine = normalize_preview_engine(self.args.realtime_preview_engine)
         if engine == "off":
             self.bus.emit("status", {"message": "Realtime preview disabled."})
@@ -175,7 +177,13 @@ class WindowRuntimeAudioMixin:
             )
             if engine != "mock":
                 self._ensure_realtime_preview_model()
-            self._preview_transcriber = create_realtime_preview_transcriber(self.args)
+            model = getattr(self, "_model", None)
+            if isinstance(model, CpuHybridTranscriber):
+                self._preview_transcriber = model.source
+                self._preview_transcriber.reset_preview()
+            else:
+                self._preview_transcriber = create_realtime_preview_transcriber(self.args)
+                self._preview_transcriber_owned = True
             location = getattr(self.args, "realtime_preview_model_dir", None) or getattr(
                 self.args, "realtime_preview_model_path", None
             )
@@ -192,6 +200,7 @@ class WindowRuntimeAudioMixin:
             )
         except Exception as exc:
             self._preview_transcriber = None
+            self._preview_transcriber_owned = False
             self.bus.emit(
                 "status",
                 {

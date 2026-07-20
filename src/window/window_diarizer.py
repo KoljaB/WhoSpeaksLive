@@ -215,6 +215,7 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
         self._preview_thread: threading.Thread | None = None
         self._live_probe_thread: threading.Thread | None = None
         self._preview_transcriber: RealtimePreviewTranscriber | None = None
+        self._preview_transcriber_owned = False
         self._preview_lock = threading.Lock()
         self._preview_left = 0.0
         self._preview_generation = 0
@@ -398,6 +399,7 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
             self._load_realtime_preview()
         else:
             self._preview_transcriber = None
+            self._preview_transcriber_owned = False
         speaker_state = self._reset_runtime_session_state()
         self._stop = run.stop_event
         self._session_id = request.session_id or uuid.uuid4().hex
@@ -408,11 +410,14 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
         self._playback_clock_started_at = time.monotonic() if request.processing_mode == "playback" else None
         self._last_playback_jump_warning_at = 0.0
         cancelled_transcriber: RealtimePreviewTranscriber | None = None
+        cancelled_transcriber_owned = False
         launched = False
         with self._lifecycle_lock:
             if self._active_run is not run or run.stop_event.is_set():
                 cancelled_transcriber = self._preview_transcriber
+                cancelled_transcriber_owned = self._preview_transcriber_owned
                 self._preview_transcriber = None
+                self._preview_transcriber_owned = False
             else:
                 self._start_embedding_worker()
                 if run.processing_mode == "playback":
@@ -449,7 +454,7 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
                     run.live_probe_thread.start()
                 run.main_thread.start()
                 launched = True
-        if cancelled_transcriber is not None:
+        if cancelled_transcriber is not None and cancelled_transcriber_owned:
             cancelled_transcriber.close()
         if not launched:
             raise RuntimeError("Diarization start was cancelled before worker launch.")
@@ -497,8 +502,10 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
                     })
             with self._lifecycle_lock:
                 preview_transcriber = self._preview_transcriber
+                preview_transcriber_owned = self._preview_transcriber_owned
                 self._preview_transcriber = None
-            if preview_transcriber is not None:
+                self._preview_transcriber_owned = False
+            if preview_transcriber is not None and preview_transcriber_owned:
                 preview_transcriber.close()
             if not run.done_emitted:
                 run.done_emitted = True
@@ -553,9 +560,10 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
         self._thread = None
         self._preview_thread = None
         self._live_probe_thread = None
-        if self._preview_transcriber is not None:
+        if self._preview_transcriber is not None and self._preview_transcriber_owned:
             self._preview_transcriber.close()
         self._preview_transcriber = None
+        self._preview_transcriber_owned = False
         self._playback_clock_started_at = None
         self._drain_embedding_jobs()
         self._stop_embedding_worker()

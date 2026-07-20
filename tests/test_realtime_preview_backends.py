@@ -7,6 +7,7 @@ import tarfile
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 import numpy as np
@@ -19,6 +20,35 @@ if str(SRC) not in sys.path:
 
 
 class PreviewBackendTests(unittest.TestCase):
+    def test_cpu_mode_reuses_final_asr_source_for_realtime_preview(self) -> None:
+        from window.cpu_forced_alignment import CpuHybridTranscriber
+        from window.window_diarizer_runtime_audio import WindowRuntimeAudioMixin
+
+        source = mock.Mock()
+        runtime = WindowRuntimeAudioMixin()
+        runtime.args = SimpleNamespace(
+            realtime_preview_engine="kroko_onnx",
+            realtime_preview_provider="cpu",
+            realtime_preview_model_preset="community-64l",
+            realtime_preview_language="de",
+            realtime_preview_num_threads=2,
+            realtime_preview_model_dir=Path("C:/models/kroko"),
+            realtime_preview_model_path=None,
+        )
+        runtime._model = CpuHybridTranscriber(source, mock.Mock())
+        runtime.bus = mock.Mock()
+        runtime._ensure_realtime_preview_model = mock.Mock()
+
+        with mock.patch(
+            "window.window_diarizer_runtime_audio.create_realtime_preview_transcriber"
+        ) as create_transcriber:
+            runtime._load_realtime_preview()
+
+        create_transcriber.assert_not_called()
+        source.reset_preview.assert_called_once_with()
+        self.assertIs(runtime._preview_transcriber, source)
+        self.assertFalse(runtime._preview_transcriber_owned)
+
     def test_cpu_hybrid_uses_forced_alignment_when_health_checks_pass(self) -> None:
         from window.cpu_forced_alignment import AlignmentHealth, CpuHybridTranscriber
         from window.window_preview import FinalRealtimeTranscript, FinalRealtimeWord

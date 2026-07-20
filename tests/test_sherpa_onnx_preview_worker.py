@@ -76,6 +76,37 @@ class SherpaPreviewWorkerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "float32"):
             decode_request_audio({"audio_b64": "AA==", "sample_rate": 16000})
 
+    def test_final_decode_preserves_realtime_preview_stream(self) -> None:
+        from workers.sherpa_onnx_realtime_preview_worker import NemotronRecognizer
+
+        class FakeStream:
+            def __init__(self) -> None:
+                self.finished = False
+
+            def set_option(self, _name: str, _value: str) -> None:
+                return
+
+            def accept_waveform(self, _sample_rate: int, _audio: np.ndarray) -> None:
+                return
+
+            def input_finished(self) -> None:
+                self.finished = True
+
+        preview_stream = FakeStream()
+        final_stream = FakeStream()
+        recognizer = mock.Mock()
+        recognizer.create_stream.return_value = final_stream
+        recognizer.is_ready.return_value = False
+        recognizer.get_result_all = None
+        recognizer.get_result.return_value = SimpleNamespace(text="final")
+        session = NemotronRecognizer(recognizer, "de", preview_stream)
+
+        result = session.transcribe_final(np.zeros(160, dtype=np.float32), 16000)
+
+        self.assertIs(session.stream, preview_stream)
+        self.assertTrue(final_stream.finished)
+        self.assertEqual(result.text, "final")
+
     def test_kroko_uses_official_model_names_without_nemotron_language_option(self) -> None:
         from window.sherpa_onnx_models import KROKO_REQUIRED_MODEL_FILES
         from workers.sherpa_onnx_realtime_preview_worker import NemotronRecognizer

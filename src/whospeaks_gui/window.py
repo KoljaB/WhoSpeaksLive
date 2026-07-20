@@ -1876,15 +1876,18 @@ class LauncherWindow(QMainWindow):
         if isinstance(controller, DemoLauncherController):
             self._apply_demo_view(controller.demo_state)
         self.animation_timer = QTimer(self)
-        self.animation_timer.setInterval(92)
+        # Status marks are intentionally static in the production launcher.  A
+        # permanently running paint timer made native window moves noticeably
+        # janky on Windows/high-DPI displays, even while no service was active.
+        self.animation_timer.setInterval(250)
         self.animation_timer.timeout.connect(self._advance_activity_marks)
-        if not reduced_motion:
-            self.animation_timer.start()
         self.probe_timer = QTimer(self)
         self.probe_timer.setInterval(1000)
         self.probe_timer.timeout.connect(self._probe_services)
         if not isinstance(controller, DemoLauncherController):
-            self.probe_timer.start()
+            # Probe once at startup. Recurring health checks are enabled only
+            # while this launcher actually owns an active service.
+            QTimer.singleShot(0, self._probe_services)
         if auto_check and not isinstance(controller, DemoLauncherController):
             QTimer.singleShot(0, self.run_quick_check)
 
@@ -2067,10 +2070,13 @@ class LauncherWindow(QMainWindow):
 
     def apply_snapshot(self, snapshot: LauncherSnapshot) -> None:
         previous_snapshot = self._last_applied_snapshot
-        if snapshot == previous_snapshot and not snapshot.operation.name:
+        if snapshot == previous_snapshot:
             return
         self._last_applied_snapshot = snapshot
         profile_changed = previous_snapshot is None or snapshot.profile != previous_snapshot.profile
+        report_changed = previous_snapshot is None or snapshot.report != previous_snapshot.report
+        services_changed = previous_snapshot is None or snapshot.services != previous_snapshot.services
+        operation_changed = previous_snapshot is None or snapshot.operation != previous_snapshot.operation
         relevant = [item for item in snapshot.services if item.kind == "live"]
         backends: list[ServiceSnapshot] = []
         if snapshot.profile.mode in {"local", "cpu", "remote"}:
@@ -2127,8 +2133,10 @@ class LauncherWindow(QMainWindow):
             state = "ready"
         if profile_changed:
             self.overview.apply_profile(snapshot.profile)
-        self.overview.set_report(snapshot.report)
-        if not isinstance(self.controller, DemoLauncherController):
+        if report_changed:
+            self.overview.set_report(snapshot.report)
+        shell_changed = profile_changed or services_changed or operation_changed
+        if shell_changed and not isinstance(self.controller, DemoLauncherController):
             started_at = getattr(operation, "started_at", None)
             elapsed_seconds = (
                 max(0, int(time.monotonic() - float(started_at)))
@@ -2145,11 +2153,16 @@ class LauncherWindow(QMainWindow):
                 progress_step=str(getattr(operation, "step", "")),
                 elapsed_seconds=elapsed_seconds,
             )
-        self.overview.apply_services(snapshot.services)
-        self.diagnostics.set_report(snapshot.report)
-        self.activity.set_operation(snapshot.operation)
-        if operation_name == "install" or "install" in self.bridge.active:
+        if services_changed:
+            self.overview.apply_services(snapshot.services)
+        if report_changed:
+            self.diagnostics.set_report(snapshot.report)
+        if operation_changed:
+            self.activity.set_operation(snapshot.operation)
+        if operation_changed and (operation_name == "install" or "install" in self.bridge.active):
             self.overview.set_busy(True, operation="install")
+        if not shell_changed:
+            return
         if launch_running or "starting" in statuses:
             self.sidebar.set_system_state("starting", "Services are warming up")
         elif statuses & {"failed", "unavailable"}:
@@ -2160,6 +2173,15 @@ class LauncherWindow(QMainWindow):
             self.sidebar.set_system_state("stopped", "App stopped · 2 remote backends available")
         else:
             self.sidebar.set_system_state("stopped", "All services stopped")
+        if hasattr(self, "probe_timer"):
+            needs_probe = launch_running or any(
+                item.ownership == "app" and item.status in {"starting", "running", "unavailable"}
+                for item in snapshot.services
+            )
+            if needs_probe and not self.probe_timer.isActive():
+                self.probe_timer.start()
+            elif not needs_probe and self.probe_timer.isActive():
+                self.probe_timer.stop()
 
     def run_quick_check(self) -> None:
         if isinstance(self.controller, DemoLauncherController):
@@ -2186,6 +2208,7 @@ class LauncherWindow(QMainWindow):
             self.overview.set_demo_state("starting")
             return
         if self.bridge.run("launch", self.controller.launch):
+            self.probe_timer.start()
             self.overview.set_operational_state("starting")
             self.overview.set_busy(True, operation="launch")
             self.navigate(0)
@@ -2211,6 +2234,7 @@ class LauncherWindow(QMainWindow):
             self.overview.set_demo_state("starting")
             return
         if self.bridge.run("retry", lambda: self.controller.retry_service(kind)):
+            self.probe_timer.start()
             self.overview.set_operational_state("starting")
             self.navigate(0)
 
