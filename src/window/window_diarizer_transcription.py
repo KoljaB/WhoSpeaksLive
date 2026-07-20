@@ -843,7 +843,7 @@ class WindowTranscriptionMixin:
             self,
             self.memory,
             decision.assigned_speaker,
-            str(self.args.embedding_provider),
+            str(getattr(self.args, "embedding_provider", "cached_embedding")),
             source="synchronous_final_sentence_memory_update",
             sentence_start=base_payload.get("start"),
             sentence_end=base_payload.get("end"),

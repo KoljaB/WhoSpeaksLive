@@ -17,6 +17,7 @@ Follow these in order for a new machine:
 - [Overview](overview.md): what WhoSpeaksLive does and where it fits.
 - [Installation](installation.md): install the `whospeaks` desktop launcher and choose local or remote setup.
 - [Desktop launcher](desktop-launcher.md): use the native setup, diagnostics, settings, activity, launch, and shutdown surface.
+- [CPU-only mode](cpu-mode.md): run quality ASR, precise word alignment, and speaker embeddings without VRAM.
 - [Quickstart](quickstart.md): launch the browser app locally or after remote services are healthy.
 - [Docker](docker.md): build and run the Linux containerized browser UI server.
 

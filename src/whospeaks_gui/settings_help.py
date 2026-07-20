@@ -81,6 +81,18 @@ SETTINGS_MORE_HELP: dict[str, str] = {
         "This optional executable runs local speaker-embedding helper processes in a separate environment. It is useful when PyTorch, ONNX, or provider dependencies are isolated from the launcher environment.",
         "The environment must contain WhoSpeaks-compatible helper code and every dependency required by the chosen Final and Live provider expressions. Remote embeddings profiles do not launch this local helper.",
     ),
+    "embedding_device": _paragraphs(
+        "This selects the processor used by the local speaker-embedding helper. CPU-only mode fixes it to CPU so no CUDA allocation or VRAM is required.",
+        "Full local keeps CUDA as its existing default. SpeechBrain ECAPA remains fast enough for final and provisional live speaker embeddings on CPU.",
+    ),
+    "cpu_alignment_model": _paragraphs(
+        "CPU mode keeps the Kroko or Nemotron transcript fixed and uses Whisper only as a forced aligner: it locates those known words in the buffered audio instead of decoding new text.",
+        "Base is the measured quality default. Tiny roughly halves alignment CPU time, but its sentence-end and word-start boundaries are less precise.",
+    ),
+    "cpu_alignment_threads": _paragraphs(
+        "This is a hard worker-pool limit for the CTranslate2 alignment model. The production default is two threads, while Kroko and speaker embeddings use their own separately bounded pools.",
+        "Raising the value can reduce the short delay after an endpoint, but it also raises instantaneous CPU use and is not recommended for background desktop operation.",
+    ),
     "provider_preset": _paragraphs(
         "A speaker embedding is a numeric representation of a voice. The preset selects the exact model or weighted model stack used for committed sentences and for provisional live labels; it does not select an ASR model.",
         "Different provider expressions create incompatible vector spaces. After changing a preset, rebuild or reload speaker references made for the new exact stack. Multi-model presets also increase first-start downloads, warm-up time, RAM/VRAM use, and remote-server provider requirements.",

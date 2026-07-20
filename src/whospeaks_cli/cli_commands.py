@@ -90,7 +90,11 @@ def cmd_install(args: argparse.Namespace) -> int:
     elif args.with_kroko:
         preview_engine, preview_preset = "kroko_onnx", "community-64l"
     elif args.without_kroko:
+        if target == "cpu":
+            raise SystemExit("The CPU-only target requires Kroko or another structured CPU realtime engine.")
         preview_engine, preview_preset = "off", ""
+    elif target == "cpu":
+        preview_engine, preview_preset = "kroko_onnx", "community-64l"
     elif sys.stdin.isatty() and not args.yes:
         preview_engine, preview_preset = prompt_realtime_preview(target)
     else:
@@ -147,6 +151,9 @@ def cmd_install(args: argparse.Namespace) -> int:
             installer_backend=installer_backend,
         )
     else:
+        torch_policy = getattr(args, "torch", None)
+        if plan.target == "cpu" and torch_policy in {None, "auto"}:
+            torch_policy = "cpu"
         code = install_extra_and_maybe_kroko(
             profile,
             plan.extra,
@@ -154,7 +161,7 @@ def cmd_install(args: argparse.Namespace) -> int:
             dry_run=args.dry_run,
             install_kroko=plan.install_kroko,
             kroko_assume_yes=True if plan.install_kroko else False,
-            torch_policy=getattr(args, "torch", None),
+            torch_policy=torch_policy,
             installer_backend=installer_backend,
         )
     if code:
@@ -285,9 +292,9 @@ def cmd_setup(args: argparse.Namespace) -> int:
     print_report(report)
     if args.install:
         extra = recommended_install_extra(profile, report)
-        if profile.mode == "local":
+        if profile.mode in {"local", "cpu"}:
             extra = install_plan_for_target(
-                "local",
+                profile.mode,
                 realtime_preview_engine=profile.realtime_preview_engine,
                 realtime_preview_model_preset=profile.realtime_preview_model_preset,
             ).extra
@@ -296,13 +303,16 @@ def cmd_setup(args: argparse.Namespace) -> int:
         if extra is None and profile.mode == "remote":
             extra = "controller"
         if extra is not None:
+            torch_policy = getattr(args, "torch", None)
+            if profile.mode == "cpu" and torch_policy in {None, "auto"}:
+                torch_policy = "cpu"
             return install_extra_and_maybe_kroko(
                 profile,
                 extra,
                 assume_yes=args.yes,
                 dry_run=args.dry_run,
                 install_kroko=preview_engine_uses_kroko(profile) and not args.skip_kroko,
-                torch_policy=getattr(args, "torch", None),
+                torch_policy=torch_policy,
                 installer_backend=installer_backend,
             )
     print("Launch command:")
@@ -481,6 +491,9 @@ def cmd_config(args: argparse.Namespace) -> int:
         "live_speaker_embedding_provider",
         "live_speaker_assignment",
         "embedding_python",
+        "embedding_device",
+        "cpu_alignment_model",
+        "cpu_alignment_threads",
         "vad_backend",
         "realtime_preview_engine",
         "realtime_preview_model_preset",

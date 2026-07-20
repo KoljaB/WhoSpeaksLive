@@ -70,9 +70,11 @@ from window.diarization_session import DiarizationSession
 from window.speaker_assignment_engine import AssignmentRequest, SpeakerAssignmentEngine
 from window.window_media import resolve_browser_stream_id
 from window.window_preview import (
+    JsonLineSubprocessPreviewTranscriber,
     RealtimePreviewTranscriber,
     create_realtime_preview_transcriber,
 )
+from window.cpu_forced_alignment import CpuHybridTranscriber, WhisperTextAligner
 from window.realtime_preview_backends import normalize_preview_engine
 from window.sherpa_onnx_models import ensure_sherpa_onnx_model, validate_sherpa_onnx_model_dir
 from window.review_flags import annotate_review
@@ -165,6 +167,40 @@ class WindowModelRuntimeMixin:
                     },
                 )
                 return
+            if asr_backend == "cpu":
+                engine = normalize_preview_engine(getattr(self.args, "realtime_preview_engine", "off"))
+                if engine in {"off", "mock"}:
+                    raise RuntimeError(
+                        "CPU final ASR requires --realtime-preview-engine kroko_onnx or sherpa_onnx."
+                    )
+                self.bus.emit("status", {"message": f"Loading CPU transcript source ({engine})."})
+                self._ensure_realtime_preview_model()
+                client = create_realtime_preview_transcriber(self.args)
+                if not isinstance(client, JsonLineSubprocessPreviewTranscriber):
+                    client.close()
+                    raise RuntimeError(
+                        "CPU final ASR requires a subprocess preview Python so finalized word timestamps are available."
+                    )
+                alignment_model = str(getattr(self.args, "cpu_alignment_model", "base") or "base")
+                alignment_threads = max(1, int(getattr(self.args, "cpu_alignment_threads", 2)))
+                self.bus.emit(
+                    "status",
+                    {"message": f"Loading faster-whisper {alignment_model} CPU forced aligner (x{alignment_threads} threads)."},
+                )
+                aligner = WhisperTextAligner(
+                    alignment_model,
+                    language=getattr(self.args, "language", "en"),
+                    compute_type=getattr(self.args, "cpu_alignment_compute_type", "int8"),
+                    cpu_threads=alignment_threads,
+                    download_root=str(self.args.download_root) if self.args.download_root else None,
+                    minimum_mean_probability=float(getattr(self.args, "cpu_alignment_min_probability", 0.15)),
+                )
+                self._model = CpuHybridTranscriber(client, aligner)
+                self.bus.emit(
+                    "status",
+                    {"message": f"Quality CPU ASR ready: {engine} text + {alignment_model} forced alignment."},
+                )
+                return
             self.bus.emit("status", {"message": "Importing faster-whisper."})
             from faster_whisper import WhisperModel
 
@@ -195,6 +231,19 @@ class WindowModelRuntimeMixin:
                 batch_size=batch_size,
             )
             return self._filter_asr_no_speech_words(words), segment_count
+
+        if isinstance(model, (JsonLineSubprocessPreviewTranscriber, CpuHybridTranscriber)):
+            transcript = model.transcribe_final(audio, sample_rate)
+            words = [
+                TimedWord(word.text, word.start, word.end, probability=word.probability, segment_index=0)
+                for word in transcript.words
+            ]
+            if isinstance(model, CpuHybridTranscriber) and not model.last_health.used_alignment:
+                self.bus.emit(
+                    "status",
+                    {"message": f"CPU forced alignment rejected; using native timestamp fallback ({model.last_health.reason})."},
+                )
+            return self._filter_asr_no_speech_words(words), 1 if transcript.text or words else 0
 
         transcriber = model
         extra_options: dict[str, Any] = {}

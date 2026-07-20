@@ -23,6 +23,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+from embeddings.embedding_providers import default_embedding_python
 from paths import RUNTIME_DIR
 
 from window.realtime_preview_backends import (
@@ -35,6 +36,7 @@ from window.sherpa_onnx_models import (
     default_sherpa_onnx_model_dir,
     missing_sherpa_onnx_model_files,
 )
+from window.window_config import default_kroko_preview_python
 
 from . import __version__
 from .cli_console import print_wrapped
@@ -786,6 +788,7 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
         selected_mode = normalize_mode(profile.mode)
     remote_required = selected_mode == "remote"
     local_required = selected_mode == "local"
+    cpu_required = selected_mode == "cpu"
     server_required = selected_mode == "server"
     checks: list[CheckResult] = []
     macos_managed = profile.deployment_target == "macos"
@@ -827,7 +830,7 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
     ffmpeg_ok, ffmpeg_detail = command_version("ffmpeg", ["-version"])
     checks.append(CheckResult(
         "ffmpeg",
-        "ok" if ffmpeg_ok else ("fail" if local_required or remote_required else "warn"),
+        "ok" if ffmpeg_ok else ("fail" if local_required or cpu_required or remote_required else "warn"),
         ffmpeg_detail,
         "Install ffmpeg and open a new shell so PATH is refreshed.",
     ))
@@ -843,12 +846,12 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
     # librosa is a local audio/embedding fallback.  A remote controller can
     # capture and forward audio without importing it, so it must not block a
     # remote launch.
-    if local_required:
+    if local_required or cpu_required:
         controller_modules.append(("librosa", "librosa"))
     checks.append(check_import_group(
         "Controller Python modules",
         controller_modules,
-        required=local_required or remote_required,
+        required=local_required or cpu_required or remote_required,
     ))
 
     if macos_managed:
@@ -859,25 +862,51 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
             [("faster_whisper", "faster-whisper")],
             required=True,
         ))
+    elif cpu_required:
+        checks.append(check_import_group(
+            "CPU forced-alignment modules",
+            [("faster_whisper", "faster-whisper")],
+            required=True,
+        ))
     else:
         checks.append(CheckResult(
             "Local ASR modules",
             "skip",
             "This profile uses an external ASR service and does not need local final-ASR packages.",
         ))
-    checks.append(check_faster_whisper_cache(profile.model, required=local_required))
+    if local_required or cpu_required:
+        cache_model = profile.model if local_required else profile.cpu_alignment_model
+        checks.append(check_faster_whisper_cache(cache_model, required=True))
+    else:
+        checks.append(CheckResult(
+            "faster-whisper model cache",
+            "skip",
+            "faster-whisper is not used by this profile.",
+        ))
 
     if macos_managed:
         checks.append(CheckResult("Local embedding modules", "skip", "Embeddings use their isolated managed runtime."))
     elif local_required:
+        embedding_modules = [
+            ("torch", "torch"),
+            ("torchaudio", "torchaudio"),
+            ("speechbrain", "speechbrain"),
+            ("pyannote.audio", "pyannote.audio"),
+            ("resemblyzer", "resemblyzer"),
+        ]
         checks.append(check_import_group(
             "Local embedding modules",
+            embedding_modules,
+            required=True,
+        ))
+    elif cpu_required:
+        checks.append(check_python_imports(
+            "Local embedding modules",
+            profile.embedding_python or str(default_embedding_python()),
             [
                 ("torch", "torch"),
                 ("torchaudio", "torchaudio"),
                 ("speechbrain", "speechbrain"),
-                ("pyannote.audio", "pyannote.audio"),
-                ("resemblyzer", "resemblyzer"),
             ],
             required=True,
         ))
@@ -887,14 +916,14 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
             "skip",
             "This profile uses an external embeddings service and does not need local embedding packages.",
         ))
-    checks.append(check_embedding_cache(required=local_required))
-    if local_required and deep:
+    checks.append(check_embedding_cache(required=local_required or cpu_required))
+    if (local_required or cpu_required) and deep:
         checks.append(check_local_provider_syntax(profile.embedding_provider, required=True))
-    elif local_required:
+    elif local_required or cpu_required:
         checks.append(CheckResult(
             "Embedding provider syntax",
             "skip",
-            "Use `whospeaks doctor --mode local --deep` to parse the selected provider stack.",
+            f"Use `whospeaks doctor --mode {selected_mode} --deep` to parse the selected provider stack.",
         ))
 
     if local_required:
@@ -975,7 +1004,12 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
 
     preview_engine = normalize_preview_engine(profile.realtime_preview_engine)
     if preview_engine in {"off", "mock"}:
-        checks.append(CheckResult("Realtime preview", "skip", f"Preview engine is {preview_engine}."))
+        checks.append(CheckResult(
+            "Realtime preview",
+            "fail" if cpu_required else "skip",
+            f"Preview engine is {preview_engine}.",
+            "CPU-only final ASR requires Kroko or Nemotron." if cpu_required else "",
+        ))
     elif preview_engine == "sherpa_onnx":
         try:
             preset = normalize_preview_model_preset("sherpa_onnx", profile.realtime_preview_model_preset)
@@ -999,31 +1033,37 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
                 ))
             else:
                 checks.append(CheckResult("Nemotron model folder", "ok", f"{preset} is ready at {model_dir}."))
-        checks.append(_facade_callable("check_sherpa_onnx_runtime", check_sherpa_onnx_runtime)())
+        runtime_check = _facade_callable("check_sherpa_onnx_runtime", check_sherpa_onnx_runtime)()
+        if cpu_required and runtime_check.status == "warn":
+            runtime_check.status = "fail"
+        checks.append(runtime_check)
     else:
         checks.append(check_import_group(
             "Realtime preview",
             [("RealtimeSTT", "RealtimeSTT")],
-            required=False,
+            required=cpu_required,
         ))
-        if profile.realtime_preview_python:
+        preview_python = profile.realtime_preview_python or (
+            str(default_kroko_preview_python()) if cpu_required else ""
+        )
+        if preview_python:
             checks.append(_facade_callable("check_python_imports", check_python_imports)(
                 "Realtime preview Python",
-                profile.realtime_preview_python,
+                preview_python,
                 [
                     ("workers.kroko_realtime_preview_worker", "WhoSpeaks preview worker"),
                     ("RealtimeSTT", "RealtimeSTT"),
                     ("kroko_onnx", "kroko_onnx"),
                     ("numpy", "numpy"),
                 ],
-                required=False,
+                required=cpu_required,
             ))
         elif module_available("kroko_onnx"):
             checks.append(CheckResult("Kroko ONNX runtime", "ok", "kroko_onnx is importable."))
         else:
             checks.append(CheckResult(
                 "Kroko ONNX runtime",
-                "warn",
+                "fail" if cpu_required else "warn",
                 "kroko_onnx is not importable, so live Kroko text cannot start yet.",
                 "Install a kroko_onnx wheel for this Python, or run `python -m RealtimeSTT.install_kroko --build` where that build path is supported.",
             ))

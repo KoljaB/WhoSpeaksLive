@@ -13,6 +13,7 @@ from typing import Any
 import numpy as np
 
 from window.sherpa_onnx_models import validate_sherpa_onnx_model_dir
+from workers.structured_realtime_result import structured_result_payload
 
 
 TARGET_SAMPLE_RATE = 16000
@@ -85,16 +86,30 @@ class NemotronRecognizer:
         self.stream.set_option("language", self.language)
 
     def accept(self, audio: np.ndarray, sample_rate: int) -> str:
+        return result_text(self.accept_result(audio, sample_rate))
+
+    def accept_result(self, audio: np.ndarray, sample_rate: int, *, finalize: bool = False) -> object:
         samples = resample_audio(audio, sample_rate)
         if samples.size:
             self.stream.accept_waveform(TARGET_SAMPLE_RATE, samples)
+        if finalize:
+            self.stream.accept_waveform(
+                TARGET_SAMPLE_RATE,
+                np.zeros(int(0.5 * TARGET_SAMPLE_RATE), dtype=np.float32),
+            )
+            self.stream.input_finished()
         while self.recognizer.is_ready(self.stream):
             self.recognizer.decode_stream(self.stream)
-        return result_text(self.recognizer.get_result(self.stream))
+        get_result_all = getattr(self.recognizer, "get_result_all", None)
+        return get_result_all(self.stream) if callable(get_result_all) else self.recognizer.get_result(self.stream)
 
     def transcribe(self, audio: np.ndarray, sample_rate: int) -> str:
         self.reset()
         return self.accept(audio, sample_rate)
+
+    def transcribe_final(self, audio: np.ndarray, sample_rate: int) -> object:
+        self.reset()
+        return self.accept_result(audio, sample_rate, finalize=True)
 
 
 def decode_request_audio(request: dict[str, Any]) -> tuple[np.ndarray, int]:
@@ -132,11 +147,15 @@ def main() -> int:
                 session.reset()
                 write_message({"id": request_id, "ok": True, "text": ""})
                 continue
-            if command not in {"accept", "transcribe"}:
+            if command not in {"accept", "transcribe", "transcribe_final"}:
                 raise ValueError(f"Unknown command: {command}")
             audio, sample_rate = decode_request_audio(request)
-            text = session.accept(audio, sample_rate) if command == "accept" else session.transcribe(audio, sample_rate)
-            write_message({"id": request_id, "text": text})
+            if command == "transcribe_final":
+                result = session.transcribe_final(audio, sample_rate)
+                write_message({"id": request_id, **structured_result_payload(result)})
+            else:
+                text = session.accept(audio, sample_rate) if command == "accept" else session.transcribe(audio, sample_rate)
+                write_message({"id": request_id, "text": text})
         except Exception as exc:
             request_id = request.get("id") if isinstance(request, dict) else None
             write_message({"id": request_id, "error": f"{type(exc).__name__}: {exc}"})

@@ -53,7 +53,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command")
 
     doctor = subparsers.add_parser("doctor", help="Run setup and component checks.")
-    doctor.add_argument("--mode", choices=("auto", "local", "remote", "server"), default="auto")
+    doctor.add_argument("--mode", choices=("auto", "local", "cpu", "remote", "server"), default="auto")
     doctor.add_argument("--language", default="", help="Temporarily check a language profile without saving it.")
     doctor.add_argument("--remote-asr-url", default="")
     doctor.add_argument("--remote-embeddings-url", default="")
@@ -81,7 +81,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--target",
         choices=INSTALL_TARGET_CHOICES,
         default="",
-        help="Install target: local, macos, core, or server. Omit for an interactive choice.",
+        help="Install target: local, cpu, macos, core, or server. Omit for an interactive choice.",
     )
     install.add_argument("--language", default="", help="Save the setup profile with this language code, for example de.")
     install.add_argument("--provider-preset", choices=PROVIDER_PRESET_CHOICES, default="")
@@ -148,7 +148,7 @@ def build_parser() -> argparse.ArgumentParser:
     install_translation.set_defaults(func=cmd_install_translation)
 
     setup = subparsers.add_parser("setup", help="Choose a setup mode and optionally install dependencies.")
-    setup.add_argument("--mode", choices=("local", "remote", "server"), default="local")
+    setup.add_argument("--mode", choices=("local", "cpu", "remote", "server"), default="local")
     setup.add_argument("--language", default="", help="Save the setup profile with this language code, for example de.")
     setup.add_argument("--provider-preset", choices=PROVIDER_PRESET_CHOICES, default="")
     setup.add_argument("--install", action="store_true", help="Run the recommended package installer for this mode.")
@@ -267,14 +267,14 @@ def build_parser() -> argparse.ArgumentParser:
     config.add_argument("--set", action="append", default=[], metavar="NAME=VALUE", help="Set any saved profile field.")
     config.add_argument("--reset", action="store_true", help="Reset the saved profile before applying other changes.")
     config.add_argument("--json", action="store_true", help="Print the profile as JSON.")
-    config.add_argument("--mode", choices=("local", "remote", "server"), default=None)
+    config.add_argument("--mode", choices=("local", "cpu", "remote", "server"), default=None)
     config.add_argument("--host", default=None)
     config.add_argument("--port", type=int, default=None)
     config.add_argument("--language", default=None, help="Set the saved language code, for example de.")
     config.add_argument("--model", default=None)
     config.add_argument("--device", default=None)
     config.add_argument("--compute-type", dest="compute_type", default=None)
-    config.add_argument("--asr-backend", dest="asr_backend", choices=("local", "remote"), default=None)
+    config.add_argument("--asr-backend", dest="asr_backend", choices=("local", "remote", "cpu"), default=None)
     config.add_argument("--embeddings-backend", dest="embeddings_backend", choices=("local", "remote"), default=None)
     config.add_argument("--provider-preset", dest="provider_preset", choices=PROVIDER_PRESET_CHOICES, default=None)
     config.add_argument("--remote-asr-url", dest="remote_asr_url", default=None)
@@ -288,6 +288,9 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
     )
     config.add_argument("--embedding-python", dest="embedding_python", default=None)
+    config.add_argument("--embedding-device", dest="embedding_device", choices=("auto", "cuda", "cpu"), default=None)
+    config.add_argument("--cpu-alignment-model", dest="cpu_alignment_model", choices=("tiny", "base"), default=None)
+    config.add_argument("--cpu-alignment-threads", dest="cpu_alignment_threads", type=int, default=None)
     config.add_argument("--vad-backend", dest="vad_backend", default=None)
     config.add_argument("--realtime-preview-engine", dest="realtime_preview_engine", default=None)
     config.add_argument("--realtime-preview-model-preset", dest="realtime_preview_model_preset", default=None)

@@ -552,7 +552,7 @@ def recommended_install_extra(profile: Profile, report: DoctorReport) -> str | N
         return "intelligence"
     if report.mode == "server":
         return "server"
-    if report.mode == "local":
+    if report.mode in {"local", "cpu"}:
         for check in report.checks:
             if check.status == "fail" and check.name in {
                 "Controller Python modules",
@@ -560,7 +560,7 @@ def recommended_install_extra(profile: Profile, report: DoctorReport) -> str | N
                 "Local embedding modules",
             }:
                 return LOCAL_EXTRA
-        if any(check.status == "warn" and check.name == "CUDA visibility" for check in report.checks):
+        if report.mode == "local" and any(check.status == "warn" and check.name == "CUDA visibility" for check in report.checks):
             return LOCAL_EXTRA
         if any(check.status == "warn" and check.name == "Realtime preview" for check in report.checks):
             return PREVIEW_EXTRA
@@ -673,22 +673,25 @@ def prompt_install_target() -> str:
         """
         What do you want to install?
           1. Full local installation
-          2. Apple Silicon managed local services
-          3. Core/controller for remote ASR and embeddings servers
-          4. ASR and embeddings server packages
+          2. CPU-only local installation
+          3. Apple Silicon managed local services
+          4. Core/controller for remote ASR and embeddings servers
+          5. ASR and embeddings server packages
         """
     ).strip())
     while True:
         choice = read_input("> ", "1").strip().lower()
         if choice in {"1", "local", "full", "full local"}:
             return "local"
-        if choice in {"2", "macos", "mac", "apple silicon"}:
+        if choice in {"2", "cpu", "cpu only", "cpu-only"}:
+            return "cpu"
+        if choice in {"3", "macos", "mac", "apple silicon"}:
             return "macos"
-        if choice in {"3", "core", "controller", "remote"}:
+        if choice in {"4", "core", "controller", "remote"}:
             return "core"
-        if choice in {"4", "server", "gpu", "services"}:
+        if choice in {"5", "server", "gpu", "services"}:
             return "server"
-        print("Choose 1, 2, 3, or 4.")
+        print("Choose 1, 2, 3, 4, or 5.")
 
 
 def prompt_realtime_preview(target: str) -> tuple[str, str]:
@@ -1028,7 +1031,7 @@ def windows_python312_command() -> list[str] | None:
 
 
 def report_suggests_kroko_install(profile: Profile, report: DoctorReport) -> bool:
-    if normalize_mode(profile.mode) != "local":
+    if normalize_mode(profile.mode) not in {"local", "cpu"}:
         return False
     if not preview_engine_uses_kroko(profile):
         return False

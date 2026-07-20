@@ -189,11 +189,12 @@ class LauncherController:
 
     def service_address(self, kind: str) -> str:
         if kind == "macos_asr":
-            if self.profile.mode == "local":
-                return f"In process · {self.profile.model}"
+            if self.profile.mode in {"local", "cpu"}:
+                model = self.profile.model if self.profile.mode == "local" else self.profile.realtime_preview_model_preset
+                return f"In process · {model}"
             return self.profile.remote_asr_url
         if kind == "macos_embeddings":
-            if self.profile.mode == "local":
+            if self.profile.mode in {"local", "cpu"}:
                 preset = self.profile.provider_preset.replace("_", " ").title()
                 return f"In process · {preset} preset"
             return self.profile.remote_embeddings_url
@@ -245,9 +246,9 @@ class LauncherController:
         if "host" in values and not str(values["host"]).strip():
             raise ProfileValidationError("host", "Browser host cannot be empty.")
         enum_fields = {
-            "mode": {"local", "remote", "server"},
+            "mode": {"local", "cpu", "remote", "server"},
             "deployment_target": {"", "macos"},
-            "asr_backend": {"local", "remote"},
+            "asr_backend": {"local", "remote", "cpu"},
             "embeddings_backend": {"local", "remote"},
             "provider_preset": {"custom", *PROVIDER_PRESETS},
             "vad_backend": {"rms", "silero"},
@@ -276,6 +277,8 @@ class LauncherController:
             },
             "translation_device": {"auto", "cuda", "cpu"},
             "device": {"auto", "cuda", "cpu"},
+            "embedding_device": {"auto", "cuda", "cpu"},
+            "cpu_alignment_model": {"tiny", "base"},
         }
         for field, allowed in enum_fields.items():
             if field not in values:
@@ -287,6 +290,14 @@ class LauncherController:
                     f"Unsupported {field.replace('_', ' ')} {selected!r}. "
                     f"Choose one of: {', '.join(sorted(allowed)) or '(blank)'}."
                 )
+        if "cpu_alignment_threads" in values:
+            try:
+                alignment_threads = int(values["cpu_alignment_threads"])
+            except (TypeError, ValueError) as exc:
+                raise ProfileValidationError("cpu_alignment_threads", "Alignment threads must be an integer.") from exc
+            if not 1 <= alignment_threads <= 4:
+                raise ProfileValidationError("cpu_alignment_threads", "Choose between 1 and 4 alignment threads.")
+            values["cpu_alignment_threads"] = alignment_threads
         for field in ("language", "report_language"):
             if field not in values or (field == "report_language" and not str(values[field]).strip()):
                 continue
@@ -327,12 +338,17 @@ class LauncherController:
             else:
                 values["realtime_preview_model_preset"] = ""
         requested_mode = str(values.get("mode", self.profile.mode))
-        for backend_field in ("asr_backend", "embeddings_backend"):
-            if requested_mode in {"local", "remote"} and backend_field in values:
-                if str(values[backend_field]) != requested_mode:
+        expected_backends = {
+            "local": {"asr_backend": "local", "embeddings_backend": "local"},
+            "cpu": {"asr_backend": "cpu", "embeddings_backend": "local"},
+            "remote": {"asr_backend": "remote", "embeddings_backend": "remote"},
+        }.get(requested_mode, {})
+        for backend_field, expected_backend in expected_backends.items():
+            if backend_field in values:
+                if str(values[backend_field]) != expected_backend:
                     raise ProfileValidationError(
                         "mode",
-                        f"{backend_field.replace('_', ' ').title()} must be {requested_mode} "
+                        f"{backend_field.replace('_', ' ').title()} must be {expected_backend} "
                         f"for the selected deployment."
                     )
         if "translation_target_languages" in values:
@@ -487,6 +503,11 @@ class LauncherController:
         if preset is not None:
             current = profile_with_provider_preset(current, str(preset))
         candidate = current.with_updates(**values)
+        if candidate.mode == "cpu" and candidate.realtime_preview_engine not in {"kroko_onnx", "sherpa_onnx"}:
+            raise ProfileValidationError(
+                "realtime_preview_engine",
+                "CPU-only final ASR requires Kroko or Nemotron.",
+            )
         if candidate.mode != "server":
             if candidate.mode == "local" and not candidate.model.strip():
                 raise ProfileValidationError("model", "Choose a final ASR model.")
@@ -509,7 +530,7 @@ class LauncherController:
                 "Semantic search needs both a text embedding base URL and model, or neither.",
             )
         executable_fields = []
-        if candidate.mode == "local" and candidate.embedding_python.strip():
+        if candidate.mode in {"local", "cpu"} and candidate.embedding_python.strip():
             executable_fields.append("embedding_python")
         if candidate.realtime_preview_engine == "kroko_onnx" and candidate.realtime_preview_python.strip():
             executable_fields.append("realtime_preview_python")
@@ -831,7 +852,7 @@ class LauncherController:
                 connection.close()
 
     def _refresh_remote_backends(self) -> None:
-        if self.profile.mode == "local":
+        if self.profile.mode in {"local", "cpu"}:
             live_state = self.servers.state("live")
             for kind in ("macos_asr", "macos_embeddings"):
                 transition = self.servers.mirror_component(kind, live_state)
@@ -1126,7 +1147,7 @@ class LauncherController:
             relevant_kinds = ["live"]
             if self.profile.mode == "remote":
                 relevant_kinds = ["macos_asr", "macos_embeddings", *relevant_kinds]
-            elif self.profile.mode == "local":
+            elif self.profile.mode in {"local", "cpu"}:
                 relevant_kinds.extend(("macos_asr", "macos_embeddings"))
             if self.profile.reports_enabled:
                 relevant_kinds.append("reports")
@@ -1172,7 +1193,7 @@ class LauncherController:
         for kind in owned_kinds:
             self.servers.clear(kind)
             self._emit(EventKind.SERVICE, kind, self.servers.state(kind))
-        if self.profile.mode == "local":
+        if self.profile.mode in {"local", "cpu"}:
             self._refresh_remote_backends()
         self._append_log("Stopped services started by this launcher.")
         self._emit(EventKind.SNAPSHOT, payload=self.snapshot)

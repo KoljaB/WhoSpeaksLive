@@ -10,6 +10,7 @@ import queue
 import re
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -27,6 +28,7 @@ from common.audio_utils import (
     normalize_vector,
     pad_audio,
     trim_silence,
+    write_wav,
 )
 from common.pythonpath import build_pythonpath
 from paths import CACHE_DIR, EMBEDDING_VENV, PROJECT_ROOT, SRC_ROOT, VENDOR_DIR
@@ -138,6 +140,7 @@ def configure_embedding_env() -> None:
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
     os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
     os.environ.setdefault("OMP_NUM_THREADS", "1")
+    os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 
 def helper_pythonpath(existing_pythonpath: str | None = None) -> str:
@@ -150,7 +153,6 @@ def helper_pythonpath(existing_pythonpath: str | None = None) -> str:
         ),
         existing_pythonpath,
     )
-    os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 
 def sanitize(value: str) -> str:
@@ -483,6 +485,11 @@ class EmbeddingSubprocessClient:
         ]
         env = dict(os.environ)
         env["PYTHONPATH"] = helper_pythonpath(env.get("PYTHONPATH"))
+        # These must be present before the helper imports PyTorch.  Setting
+        # them later in configure_embedding_env() is too late when another
+        # imported module has already initialized the native thread pools.
+        env.setdefault("OMP_NUM_THREADS", "1")
+        env.setdefault("MKL_NUM_THREADS", "1")
         self._process = subprocess.Popen(
             command,
             cwd=str(PROJECT_ROOT),
@@ -531,6 +538,24 @@ class EmbeddingSubprocessClient:
             if not response.get("ok"):
                 raise RuntimeError(str(response.get("error") or "Embedding failed"))
             return normalize_vector(response["embedding"])
+
+    def embed_audio(self, audio: np.ndarray, sample_rate: int = SAMPLE_RATE) -> np.ndarray:
+        """Embed in-memory audio without touching the persistent output directory."""
+
+        with tempfile.NamedTemporaryFile(
+            suffix=".wav",
+            prefix="whospeaks-embedding-",
+            delete=False,
+        ) as handle:
+            wav_path = Path(handle.name)
+        try:
+            write_wav(wav_path, np.asarray(audio, dtype=np.float32).reshape(-1), sample_rate)
+            return self.embed_wav(wav_path)
+        finally:
+            try:
+                wav_path.unlink(missing_ok=True)
+            except Exception:
+                pass
 
     def shutdown(self, lock_timeout_seconds: float = 5.0) -> None:
         acquired = self._lock.acquire(timeout=max(0.0, float(lock_timeout_seconds)))

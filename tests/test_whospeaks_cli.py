@@ -1153,6 +1153,45 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn("--realtime-preview-python", command)
         self.assertEqual(command[command.index("--realtime-preview-python") + 1], sys.executable)
 
+    def test_cpu_profile_uses_structured_kroko_and_one_speechbrain_provider(self) -> None:
+        profile = cli.configure_profile_for_mode(cli.Profile(), "cpu")
+
+        self.assertEqual(profile.mode, "cpu")
+        self.assertEqual(profile.asr_backend, "cpu")
+        self.assertEqual(profile.embeddings_backend, "local")
+        self.assertEqual(profile.device, "cpu")
+        self.assertEqual(profile.compute_type, "int8")
+        self.assertEqual(profile.embedding_device, "cpu")
+        self.assertEqual(profile.embedding_provider, "speechbrain_ecapa")
+        self.assertEqual(profile.live_speaker_embedding_provider, "speechbrain_ecapa")
+        self.assertTrue(profile.live_speaker_assignment)
+        self.assertEqual(profile.realtime_preview_engine, "kroko_onnx")
+        self.assertEqual(profile.realtime_preview_model_preset, "community-64l")
+        self.assertEqual(profile.cpu_alignment_model, "base")
+        self.assertEqual(profile.cpu_alignment_threads, 2)
+
+        command = cli.build_launch_command(profile)
+        self.assertEqual(command[command.index("--asr-backend") + 1], "cpu")
+        self.assertEqual(command[command.index("--embedding-device") + 1], "cpu")
+        self.assertEqual(command[command.index("--embedding-provider") + 1], "speechbrain_ecapa")
+        self.assertEqual(command[command.index("--cpu-alignment-model") + 1], "base")
+        self.assertEqual(command[command.index("--cpu-alignment-threads") + 1], "2")
+        self.assertEqual(
+            command[command.index("--live-speaker-embedding-provider") + 1],
+            "speechbrain_ecapa",
+        )
+        self.assertTrue(command[command.index("--realtime-preview-python") + 1].endswith("python.exe"))
+
+    def test_local_profile_keeps_existing_gpu_defaults(self) -> None:
+        profile = cli.configure_profile_for_mode(cli.Profile(mode="cpu"), "local")
+        command = cli.build_launch_command(profile)
+
+        self.assertEqual(profile.asr_backend, "local")
+        self.assertEqual(profile.device, "auto")
+        self.assertEqual(profile.compute_type, "float16")
+        self.assertEqual(profile.embedding_device, "cuda")
+        self.assertEqual(command[command.index("--embedding-device") + 1], "cuda")
+
     def test_local_launch_command_uses_current_python_for_embedding_helper_by_default(self) -> None:
         profile = cli.Profile()
 

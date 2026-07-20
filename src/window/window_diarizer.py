@@ -611,6 +611,11 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
 
     def shutdown(self) -> None:
         self.stop()
+        model = self._model
+        close_model = getattr(model, "close", None)
+        if callable(close_model):
+            close_model()
+        self._model = None
         self.embedding.shutdown()
         if self.live_embedding is not self.embedding:
             self.live_embedding.shutdown()

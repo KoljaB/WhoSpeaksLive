@@ -12,7 +12,9 @@ from pathlib import Path
 from importlib import resources
 from typing import Any
 
+from embeddings.embedding_providers import default_embedding_python
 from window.language_config import normalize_language_code
+from window.window_config import default_kroko_preview_python
 from window.meeting_server_support import LLM_PROVIDER_OPTIONS
 from window.realtime_preview_backends import (
     get_preview_backend_spec,
@@ -33,10 +35,11 @@ from .profiles import (
 
 COMPLETE_EXTRA = "complete"
 LOCAL_EXTRA = "complete,preview"
+CPU_EXTRA = "cpu,preview"
 CONTROLLER_EXTRA = "controller"
 PREVIEW_EXTRA = "preview"
 SERVER_EXTRA = "server"
-INSTALL_TARGET_CHOICES = ("local", "macos", "core", "server")
+INSTALL_TARGET_CHOICES = ("local", "cpu", "macos", "core", "server")
 TRANSLATION_INSTALL_PROFILE_CHOICES = ("off", "nllb-200-600m", "translate-gemma-4b", "madlad-400-3b")
 
 
@@ -133,6 +136,8 @@ def normalize_install_target(value: str | None) -> str:
         "full": "local",
         "full_local": "local",
         "local_all_in_one": "local",
+        "cpu_only": "cpu",
+        "local_cpu": "cpu",
         "controller": "core",
         "controller_remote": "core",
         "remote": "core",
@@ -175,7 +180,7 @@ def install_plan_for_target(
     if selected == "server":
         engine = "off"
     elif realtime_preview_engine is None:
-        engine = "kroko_onnx" if install_kroko else "off"
+        engine = "kroko_onnx" if install_kroko or selected == "cpu" else "off"
     else:
         try:
             engine = normalize_preview_engine(realtime_preview_engine)
@@ -191,6 +196,18 @@ def install_plan_for_target(
         preset = ""
     kroko_selected = engine == "kroko_onnx"
     preview_selected = engine in {"kroko_onnx", "sherpa_onnx"}
+    if selected == "cpu":
+        return InstallPlan(
+            target=selected,
+            title="CPU-only installation",
+            mode="cpu",
+            extra=CPU_EXTRA,
+            install_kroko=True,
+            summary="Final ASR, word timestamps, embeddings, and live speaker assignment on CPU.",
+            realtime_preview_engine=engine,
+            realtime_preview_model_preset=preset,
+            translation_model_profile=translation_profile,
+        )
     if selected == "local":
         return InstallPlan(
             target=selected,
@@ -252,10 +269,30 @@ def profile_for_mode(profile: Profile, mode: str) -> Profile:
             asr_backend="local",
             embeddings_backend="local",
             device="auto",
+            compute_type="float16",
+            embedding_device="cuda",
             vad_backend="rms",
             realtime_preview_engine="sherpa_onnx",
             realtime_preview_model_preset="nemotron-3.5-560ms-int8",
             realtime_preview_model_dir="",
+            **deployment_updates,
+        )
+    if selected == "cpu":
+        base = profile_with_provider_preset(profile, "smoke")
+        return base.with_updates(
+            mode="cpu",
+            asr_backend="cpu",
+            embeddings_backend="local",
+            device="cpu",
+            compute_type="int8",
+            embedding_device="cpu",
+            vad_backend="rms",
+            realtime_preview_engine="kroko_onnx",
+            realtime_preview_model_preset="community-64l",
+            realtime_preview_model_dir="",
+            cpu_alignment_model="base",
+            cpu_alignment_threads=2,
+            live_speaker_assignment=True,
             **deployment_updates,
         )
     if selected == "remote":
@@ -295,7 +332,7 @@ def profile_for_install(profile: Profile, plan: InstallPlan) -> Profile:
             remote_asr_url=DEFAULT_MACOS_ASR_URL,
             remote_embeddings_url=DEFAULT_REMOTE_EMBEDDINGS_URL,
         )
-    if plan.target in {"local", "macos", "core"}:
+    if plan.target in {"local", "cpu", "macos", "core"}:
         updates.update(
             realtime_preview_engine=plan.realtime_preview_engine,
             realtime_preview_model_preset=plan.realtime_preview_model_preset,
@@ -340,7 +377,13 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
         connect_host = "127.0.0.1" if str(profile.host) in {"0.0.0.0", "::", "[::]"} else str(profile.host)
         command.extend(["--meeting-intelligence-url", f"http://{connect_host}:{int(profile.reports_port)}"])
     if profile.embeddings_backend == "local":
-        command.extend(["--embedding-python", str(profile.embedding_python or sys.executable)])
+        command.extend([
+            "--embedding-python", str(
+                profile.embedding_python
+                or (default_embedding_python() if profile.mode == "cpu" else sys.executable)
+            ),
+            "--embedding-device", str(profile.embedding_device),
+        ])
     preview_engine = normalize_preview_engine(profile.realtime_preview_engine)
     if preview_engine in {"kroko_onnx", "sherpa_onnx"} and profile.realtime_preview_model_preset:
         command.extend(["--realtime-preview-model-preset", str(profile.realtime_preview_model_preset)])
@@ -349,9 +392,20 @@ def build_launch_command(profile: Profile, extra_args: str = "") -> list[str]:
     if preview_engine == "sherpa_onnx":
         command.extend(["--realtime-preview-python", sys.executable])
     elif profile.realtime_preview_python or preview_engine not in {"off", "none", "false", "0"}:
-        command.extend(["--realtime-preview-python", str(profile.realtime_preview_python or sys.executable)])
+        default_preview_python = (
+            default_kroko_preview_python()
+            if profile.mode == "cpu" and preview_engine == "kroko_onnx"
+            else sys.executable
+        )
+        command.extend(["--realtime-preview-python", str(profile.realtime_preview_python or default_preview_python)])
     if profile.asr_backend == "remote":
         command.extend(["--remote-asr-url", str(profile.remote_asr_url)])
+    elif profile.asr_backend == "cpu":
+        command.extend([
+            "--cpu-alignment-model", str(profile.cpu_alignment_model),
+            "--cpu-alignment-threads", str(profile.cpu_alignment_threads),
+            "--cpu-alignment-compute-type", "int8",
+        ])
     if profile.embeddings_backend == "remote":
         command.extend(["--remote-embeddings-url", str(profile.remote_embeddings_url)])
     translation_provider = profile.translation_provider if profile.translation_enabled else "off"

@@ -764,6 +764,7 @@ class OverviewPage(QWidget):
         self.setup_target.setAccessibleName("Deployment")
         for title, value in (
             ("Full local", "local"),
+            ("CPU only", "cpu"),
             ("Remote ASR + embeddings", "core"),
             ("ASR + embeddings server", "server"),
         ):
@@ -954,10 +955,13 @@ class OverviewPage(QWidget):
 
     def _update_setup_plan(self, *_args: object) -> None:
         target = self.setup_target_value()
+        if target == "cpu" and str(self.setup_live_text.currentData() or "off") == "off":
+            self.setup_live_text.setCurrentIndex(self.setup_live_text.findData("kroko_onnx"))
         engine = "off" if target == "server" else self.setup_live_text_value()
         self.setup_target_help.setText(
             {
                 "local": "The app, final ASR, and speaker embeddings run on this machine.",
+                "cpu": "Final ASR with word timestamps and SpeechBrain speaker embeddings run without GPU or VRAM.",
                 "core": "The app runs here and connects to remote ASR and speaker-embedding services.",
                 "server": "Only the final-ASR and speaker-embedding HTTP services are installed.",
             }[target]
@@ -1013,6 +1017,13 @@ class OverviewPage(QWidget):
                 ("users", "Local speaker embeddings", "Speaker identification on this machine"),
             ]
             summary = "Install the complete local controller, final ASR, and speaker-embedding stack."
+        elif target == "cpu":
+            components = [
+                ("server", "Browser controller", "Web UI and local orchestration"),
+                ("activity", "CPU final ASR", "Kroko/Nemotron transcription with word timestamps"),
+                ("users", "SpeechBrain ECAPA", "Final and live speaker embeddings on CPU"),
+            ]
+            summary = "Install the CPU-only controller, structured streaming ASR, and one SpeechBrain embedding model."
         elif target == "core":
             components = [
                 ("server", "Browser controller", "Web UI and local orchestration"),
@@ -1055,7 +1066,7 @@ class OverviewPage(QWidget):
 
     def _update_setup_findings(self) -> None:
         failures = [check for check in self.current_report.checks if check.status == "fail"]
-        selected_mode = {"local": "local", "core": "remote", "server": "server"}[
+        selected_mode = {"local": "local", "cpu": "cpu", "core": "remote", "server": "server"}[
             self.setup_target_value()
         ]
         selection_differs = selected_mode != self.profile.mode
@@ -1067,6 +1078,7 @@ class OverviewPage(QWidget):
         if selection_differs:
             saved_name = {
                 "local": "Full local",
+                "cpu": "CPU only",
                 "remote": "Remote ASR + embeddings",
                 "server": "ASR + embeddings server",
             }.get(self.profile.mode, self.profile.mode)
@@ -1190,6 +1202,7 @@ class OverviewPage(QWidget):
         self.profile_labels["mode"].setText(
             {
                 "local": "Full local",
+                "cpu": "CPU only",
                 "remote": "Remote ASR + embeddings",
                 "server": "ASR + embeddings server",
             }.get(profile.mode, profile.mode)
@@ -1219,13 +1232,18 @@ class OverviewPage(QWidget):
         self.service_rows["live"].endpoint.setText(f"{profile.host}:{profile.port}")
         self.service_rows["reports"].endpoint.setText(f"{profile.host}:{profile.reports_port}")
         self.service_rows["translation"].endpoint.setText(f"{profile.host}:{profile.translation_port}")
-        show_core_components = profile.mode in {"local", "remote", "server"}
-        if profile.mode == "local":
+        show_core_components = profile.mode in {"local", "cpu", "remote", "server"}
+        if profile.mode in {"local", "cpu"}:
             asr_title = "Final ASR"
             embeddings_title = "Speaker embeddings"
             self.service_rows["macos_asr"].subtitle.setText("Runs inside Live window")
             self.service_rows["macos_embeddings"].subtitle.setText("Runs inside Live window")
-            self.service_rows["macos_asr"].endpoint.setText(f"{profile.model} model")
+            asr_model = (
+                profile.model
+                if profile.mode == "local"
+                else f"{profile.realtime_preview_model_preset} + Whisper {profile.cpu_alignment_model} alignment"
+            )
+            self.service_rows["macos_asr"].endpoint.setText(f"{asr_model} model")
             preset = profile.provider_preset.replace("_", " ").title()
             self.service_rows["macos_embeddings"].endpoint.setText(f"{preset} preset")
             self.service_rows["macos_asr"].extra.setText("Starts and warms up with the Live window")
@@ -1273,7 +1291,7 @@ class OverviewPage(QWidget):
             row_separator.setVisible(visible_rows[index] and any(visible_rows[index + 1 :]))
         self.service_rows["live"].extra.setText(f"Live speaker labels  {'On' if profile.live_speaker_assignment else 'Off'}")
 
-        target = {"local": "local", "remote": "core", "server": "server"}.get(profile.mode, "local")
+        target = {"local": "local", "cpu": "cpu", "remote": "core", "server": "server"}.get(profile.mode, "local")
         self.setup_target.blockSignals(True)
         target_index = self.setup_target.findData(target)
         self.setup_target.setCurrentIndex(target_index if target_index >= 0 else 0)
@@ -1374,7 +1392,7 @@ class OverviewPage(QWidget):
                         "translation": "Loading model…",
                     }.get(kind, "Starting…")
                 if (
-                    self.profile.mode == "local"
+                    self.profile.mode in {"local", "cpu"}
                     and kind in {"macos_asr", "macos_embeddings"}
                     and snapshot.status == "stopped"
                 ):
@@ -1386,7 +1404,7 @@ class OverviewPage(QWidget):
             self.side_title.setProperty("role", "info")
             self.side_title.show()
             relevant_kinds = ["live"]
-            if self.profile.mode in {"local", "remote"}:
+            if self.profile.mode in {"local", "cpu", "remote"}:
                 relevant_kinds = ["macos_asr", "macos_embeddings", *relevant_kinds]
             if self.profile.reports_enabled:
                 relevant_kinds.append("reports")
@@ -1453,8 +1471,8 @@ class OverviewPage(QWidget):
                 self.profile.translation_enabled
                 and self.profile.translation_provider == "sidecar"
             )
-            if self.profile.mode in {"local", "remote"}:
-                service_count += 2
+        if self.profile.mode in {"local", "cpu", "remote"}:
+            service_count += 2
         self.workspace_stack.setCurrentWidget(self.first_run_workspace if state == "first_run" else self.normal_workspace)
         self.stop_button.hide()
         self.command_button.show()
@@ -1732,7 +1750,7 @@ class OverviewPage(QWidget):
                     "Local ASR and speaker embeddings will warm up with the Live window. "
                     f"{service_count} components will start."
                 )
-                if self.profile.mode == "local"
+                if self.profile.mode in {"local", "cpu"}
                 else "The server packages are ready; start the two generated service commands."
             )
             self.header.set_text("Server profile ready" if self.profile.mode == "server" else "Ready to launch", subtitle)
@@ -1931,7 +1949,7 @@ class LauncherWindow(QMainWindow):
         self.overview.demo_state = overview_state
         profile = self.controller.profile
         relevant_kinds = ["live"]
-        if profile.mode in {"local", "remote"}:
+        if profile.mode in {"local", "cpu", "remote"}:
             relevant_kinds = ["macos_asr", "macos_embeddings", *relevant_kinds]
         if profile.reports_enabled:
             relevant_kinds.append("reports")
@@ -2048,7 +2066,7 @@ class LauncherWindow(QMainWindow):
     def apply_snapshot(self, snapshot: LauncherSnapshot) -> None:
         relevant = [item for item in snapshot.services if item.kind == "live"]
         backends: list[ServiceSnapshot] = []
-        if snapshot.profile.mode in {"local", "remote"}:
+        if snapshot.profile.mode in {"local", "cpu", "remote"}:
             backends = [
                 item
                 for item in snapshot.services

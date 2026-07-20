@@ -250,9 +250,9 @@ def add_server_media_arguments(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         "--asr-backend",
-        choices=("local", "remote"),
+        choices=("local", "remote", "cpu"),
         default="local",
-        help="ASR backend for final growing-window transcription.",
+        help="Final growing-window ASR: local faster-whisper, remote service, or CPU streaming ASR.",
     )
     parser.add_argument(
         "--remote-asr-url",

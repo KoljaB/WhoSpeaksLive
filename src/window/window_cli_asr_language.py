@@ -279,6 +279,25 @@ def add_asr_language_arguments(parser: argparse.ArgumentParser, *, default_vad_m
     parser.add_argument("--download-root", type=Path, default=default_faster_whisper_download_root())
     parser.add_argument("--beam-size", type=int, default=5)
     parser.add_argument(
+        "--cpu-alignment-model",
+        choices=("tiny", "base"),
+        default="base",
+        help="Whisper model used only to align the fixed CPU streaming-ASR transcript. Base is the quality default.",
+    )
+    parser.add_argument(
+        "--cpu-alignment-threads",
+        type=int,
+        default=2,
+        help="CPU threads reserved for final forced alignment; two keeps desktop load bounded.",
+    )
+    parser.add_argument("--cpu-alignment-compute-type", default="int8")
+    parser.add_argument(
+        "--cpu-alignment-min-probability",
+        type=float,
+        default=0.15,
+        help="Reject forced alignment below this mean token probability and use native timestamp fallback.",
+    )
+    parser.add_argument(
         "--fast-asr-batch-size",
         type=int,
         default=16,

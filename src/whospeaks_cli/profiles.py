@@ -61,7 +61,7 @@ def provider_preset_label(preset_id: str, preset: "ProviderPreset") -> str:
 
 
 EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
-    ("mode", "Profile mode", "local, remote, or server. Mode also aligns the ASR and embeddings backends."),
+    ("mode", "Profile mode", "local GPU, CPU-only, remote, or server. Mode also aligns the ASR and embeddings backends."),
     ("deployment_target", "Managed deployment", "Blank for standard profiles or macos for managed Apple Silicon services."),
     ("language", "Language", "Shared by final ASR, realtime preview model selection, and sentence splitting."),
     ("provider_preset", "Provider preset", "Named final/live speaker embedding stack, or custom."),
@@ -69,9 +69,12 @@ EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("live_speaker_embedding_provider", "Live provider", "Exact provider string used for live speaker feedback."),
     ("live_speaker_assignment", "Live speaker labels", "Show provisional speaker labels while speech is in progress."),
     ("embedding_python", "Embedding helper Python", "Optional Python executable for local speaker-embedding helper subprocesses."),
+    ("embedding_device", "Embedding device", "Device used by the local speaker-embedding helper."),
     ("realtime_preview_engine", "Realtime text engine", "Use sherpa_onnx for Nemotron, kroko_onnx for Kroko/Banafo, or off."),
     ("realtime_preview_model_preset", "Realtime model preset", "Nemotron: 560ms stable or 160ms low-latency. Kroko: a Kroko model preset."),
     ("realtime_preview_model_dir", "Nemotron model folder", "Optional explicit folder for the unpacked sherpa-onnx/Nemotron model."),
+    ("cpu_alignment_model", "CPU alignment model", "Whisper model used only to align the fixed Kroko/Nemotron transcript."),
+    ("cpu_alignment_threads", "CPU alignment threads", "Worker threads reserved for final word alignment."),
     ("realtime_preview_python", "Realtime preview Python", "Optional Python executable for the Kroko realtime worker. Nemotron always uses the current WhoSpeaks environment."),
     ("reports_enabled", "Start Meeting Intelligence", "Open the Reports + Ask service whenever the live window launches."),
     ("reports_port", "Meeting Intelligence port", "Port for Reports, hybrid search, and session chat."),
@@ -96,7 +99,7 @@ EDITABLE_PROFILE_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("translation_region", "Translation provider region", "Optional region, currently used by Azure Translator."),
     ("translation_python", "Translation sidecar Python", "Optional Python executable for an isolated translation environment."),
     ("translation_device", "Translation device", "auto, cuda, or cpu for an in-process/sidecar local model."),
-    ("asr_backend", "ASR backend", "local or remote."),
+    ("asr_backend", "ASR backend", "local faster-whisper, remote service, or CPU streaming ASR."),
     ("embeddings_backend", "Embeddings backend", "local or remote."),
     ("remote_asr_url", "Remote ASR URL", "Base URL for a remote faster-whisper service."),
     ("remote_embeddings_url", "Remote embeddings URL", "Base URL for a remote voice embeddings service."),
@@ -186,10 +189,12 @@ def normalize_mode(mode: str | None) -> str:
     value = {
         "all_in_one": "local",
         "full_local": "local",
+        "cpu_only": "cpu",
+        "local_cpu": "cpu",
         "controller_remote": "remote",
         "gpu_server": "server",
     }.get(value, value)
-    return value if value in {"auto", "local", "remote", "server"} else "local"
+    return value if value in {"auto", "local", "cpu", "remote", "server"} else "local"
 
 
 def normalize_provider_preset_id(value: str | None) -> str:
@@ -247,10 +252,13 @@ class Profile:
     live_speaker_embedding_provider: str = SMOKE_PROVIDER
     live_speaker_assignment: bool = True
     embedding_python: str = ""
+    embedding_device: str = "cuda"
     vad_backend: str = "rms"
     realtime_preview_engine: str = "sherpa_onnx"
     realtime_preview_model_preset: str = "nemotron-3.5-560ms-int8"
     realtime_preview_model_dir: str = ""
+    cpu_alignment_model: str = "base"
+    cpu_alignment_threads: int = 2
     realtime_preview_python: str = ""
     reports_enabled: bool = False
     reports_port: int = 8798
@@ -305,6 +313,15 @@ class Profile:
             object.__setattr__(profile, "language", normalize_language_code(profile.language))
         except ValueError:
             object.__setattr__(profile, "language", "en")
+        if profile.mode == "cpu":
+            object.__setattr__(profile, "asr_backend", "cpu")
+            object.__setattr__(profile, "embeddings_backend", "local")
+            object.__setattr__(profile, "device", "cpu")
+            object.__setattr__(profile, "compute_type", "int8")
+            object.__setattr__(profile, "embedding_device", "cpu")
+            object.__setattr__(profile, "provider_preset", "smoke")
+            object.__setattr__(profile, "embedding_provider", SMOKE_PROVIDER)
+            object.__setattr__(profile, "live_speaker_embedding_provider", SMOKE_PROVIDER)
         object.__setattr__(
             profile,
             "provider_preset",
@@ -317,6 +334,9 @@ class Profile:
         if profile.mode in {"remote", "local"}:
             object.__setattr__(profile, "asr_backend", profile.mode)
             object.__setattr__(profile, "embeddings_backend", profile.mode)
+        if profile.embedding_device not in {"auto", "cuda", "cpu"}:
+            object.__setattr__(profile, "embedding_device", "cuda")
+        object.__setattr__(profile, "cpu_alignment_threads", max(1, min(4, int(profile.cpu_alignment_threads))))
         try:
             object.__setattr__(
                 profile,
@@ -406,7 +426,13 @@ class ProfileLoadError(ValueError):
         )
 
 
-_INTEGER_PROFILE_FIELDS = {"port", "reports_port", "translation_port", "translation_max_targets"}
+_INTEGER_PROFILE_FIELDS = {
+    "port",
+    "reports_port",
+    "translation_port",
+    "translation_max_targets",
+    "cpu_alignment_threads",
+}
 _BOOLEAN_PROFILE_FIELDS = {
     "live_speaker_assignment",
     "reports_enabled",

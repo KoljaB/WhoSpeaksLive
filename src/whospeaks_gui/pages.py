@@ -98,7 +98,7 @@ _SETTINGS_HELP: dict[str, tuple[str, str]] = {
     "discard_changes": ("Restore every field to the last saved profile.", "This removes all unsaved edits on every settings category."),
     "mode": (
         "Choose where transcription and speaker recognition run.",
-        "Full local runs everything on this computer. Remote controller connects this app to ASR and speaker-embedding servers on another machine. Server exposes those two services for another controller.",
+        "Full local uses faster-whisper and GPU-capable embeddings. CPU only uses streaming ASR word timestamps and SpeechBrain ECAPA without VRAM. Remote connects to model servers.",
     ),
     "language": ("Choose the primary spoken language.", "This language is used for transcription, speaker labels, reports, and as the source language for translation."),
     "realtime_preview_engine": ("Choose the fast engine that produces live text while speech is still in progress.", "Nemotron is usually easier to install on Windows through its CPU-only sherpa-onnx backend. Kroko/Banafo uses a separate native streaming runtime. Off disables provisional live text without disabling final transcription."),
@@ -113,6 +113,9 @@ _SETTINGS_HELP: dict[str, tuple[str, str]] = {
     "realtime_preview_model_dir": ("Choose a local Nemotron model folder.", "Leave this empty to use automatic model discovery and download. Select a folder only for a manually managed model."),
     "realtime_preview_python": ("Choose the Python runtime for Kroko/Banafo live text.", "Leave this empty to use the managed or current runtime. Set it only when the live-text engine is installed in another environment."),
     "embedding_python": ("Choose the Python runtime for local speaker embeddings.", "Leave this empty to use the current runtime. Set it only when speaker models are installed in a separate environment."),
+    "embedding_device": ("Choose the processor used for speaker embeddings.", "CPU-only forces this to CPU. Full local keeps the existing CUDA default."),
+    "cpu_alignment_model": ("Choose the model that places the fixed CPU transcript on the audio timeline.", "Base is the quality default; Tiny uses less CPU but has less precise word boundaries."),
+    "cpu_alignment_threads": ("Limit CPU threads used by final word alignment.", "Two threads is the production default and keeps short alignment bursts bounded on typical desktop CPUs."),
     "provider_preset": ("Choose a tested speaker-model combination.", "The preset updates both final and live speaker providers together. Choose Custom only when you need to edit provider expressions manually."),
     "embedding_provider": ("Review or customize the provider used for final speaker recognition.", "This value follows Speaker model preset. Select Custom before editing it directly."),
     "live_speaker_embedding_provider": ("Review or customize the provider used for live speaker labels.", "This value follows Speaker model preset. Select Custom before editing it directly."),
@@ -931,6 +934,7 @@ class SettingsPage(QWidget):
             mode = str(self._value("mode"))
             return {
                 "local": "Runs final ASR and speaker embeddings inside the local live-window process on this computer.",
+                "cpu": "Runs final ASR, word timing, and SpeechBrain speaker embeddings entirely on CPU.",
                 "remote": "Connects this app to ASR and speaker-embedding servers on another machine. Configure their addresses under Connections.",
                 "server": "Starts the final ASR and speaker-embedding services for another WhoSpeaks controller. The browser app is not started by this profile.",
                 "macos": "Runs ASR and speaker embeddings as launcher-managed Apple Silicon services on this Mac.",
@@ -1072,6 +1076,7 @@ class SettingsPage(QWidget):
     def _build_sections(self) -> None:
         deployment_choices = [
             ("Full local", "local"),
+            ("CPU only", "cpu"),
             ("Remote ASR + embeddings", "remote"),
             ("ASR + embeddings server", "server"),
         ]
@@ -1170,6 +1175,17 @@ class SettingsPage(QWidget):
         transcription.add_field("Nemotron model folder", self._path("realtime_preview_model_dir", folder=True), "Leave empty for automatic model discovery or download.")
         transcription.add_field("Realtime preview Python", self._path("realtime_preview_python", folder=False))
         transcription.add_field("Embedding helper Python", self._path("embedding_python", folder=False))
+        transcription.add_field("Embedding device", self._combo("embedding_device", [("CUDA", "cuda"), ("CPU", "cpu"), ("Automatic", "auto")]))
+        transcription.add_field(
+            "CPU alignment quality",
+            self._combo("cpu_alignment_model", [("Base · best quality", "base"), ("Tiny · lower CPU", "tiny")]),
+            "Whisper aligns the fixed Kroko/Nemotron text; it does not replace that transcript.",
+        )
+        transcription.add_field(
+            "CPU alignment threads",
+            self._spin("cpu_alignment_threads", 1, 4),
+            "Two is recommended; higher values can exceed the desktop CPU budget.",
+        )
         self.sections.addWidget(transcription)
 
         speaker = FormSection()
@@ -1613,6 +1629,8 @@ class SettingsPage(QWidget):
         )
         if deployment == "local":
             topology = "Final ASR and speaker embeddings run inside the local Live window process."
+        elif deployment == "cpu":
+            topology = "Kroko/Nemotron final ASR and SpeechBrain speaker embeddings run entirely on CPU."
         elif deployment == "remote":
             topology = "The local controller connects to the two remote HTTP services below."
         elif deployment == "macos":
@@ -1624,11 +1642,14 @@ class SettingsPage(QWidget):
         self._set_field_visible("remote_embeddings_url", deployment == "remote")
         for field in ("language", "live_speaker_assignment", "host", "port"):
             self._set_field_visible(field, not server_profile)
-        self._set_field_visible("embedding_python", deployment == "local")
+        self._set_field_visible("embedding_python", deployment in {"local", "cpu"})
+        self._set_field_visible("embedding_device", deployment in {"local", "cpu"})
         self._set_field_visible("model", deployment == "local")
         self._set_field_visible("device", deployment == "local")
         self._set_field_visible("compute_type", deployment == "local")
-        self._set_field_visible("vad_backend", deployment in {"local", "remote", "macos"})
+        self._set_field_visible("cpu_alignment_model", deployment == "cpu")
+        self._set_field_visible("cpu_alignment_threads", deployment == "cpu")
+        self._set_field_visible("vad_backend", deployment in {"local", "cpu", "remote", "macos"})
 
         custom_speakers = str(self._value("provider_preset")) == "custom"
         for field in ("embedding_provider", "live_speaker_embedding_provider"):
@@ -1759,6 +1780,9 @@ class SettingsPage(QWidget):
         if values["mode"] in {"local", "remote"}:
             values["asr_backend"] = values["mode"]
             values["embeddings_backend"] = values["mode"]
+        elif values["mode"] == "cpu":
+            values["asr_backend"] = "cpu"
+            values["embeddings_backend"] = "local"
         return values
 
     def _emit_save(self) -> None:

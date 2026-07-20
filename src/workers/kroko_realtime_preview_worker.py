@@ -12,6 +12,8 @@ from typing import Any
 
 import numpy as np
 
+from workers.structured_realtime_result import structured_result_payload
+
 
 KROKO_KEY_ENV_NAMES = (
     "REALTIMESTT_KROKO_ONNX_KEY",
@@ -90,6 +92,16 @@ def create_session(args: argparse.Namespace):
     return engine.create_streaming_session(language=args.language, use_prompt=False)
 
 
+def native_session_result(session: object) -> object | None:
+    backend = getattr(session, "backend", None)
+    recognizer = getattr(backend, "recognizer", None)
+    stream = getattr(session, "stream", None)
+    get_result_all = getattr(recognizer, "get_result_all", None)
+    if callable(get_result_all) and stream is not None:
+        return get_result_all(stream)
+    return None
+
+
 def main() -> int:
     args = parse_args()
     try:
@@ -109,17 +121,24 @@ def main() -> int:
                 session.reset()
                 write_message({"id": request_id, "ok": True, "text": ""})
                 continue
-            if command not in {"accept", "transcribe"}:
+            if command not in {"accept", "transcribe", "transcribe_final"}:
                 raise ValueError(f"Unknown command: {command}")
 
             audio = np.frombuffer(base64.b64decode(request["audio_b64"]), dtype=np.float32).copy()
             sample_rate = int(request.get("sample_rate") or 16000)
-            if command == "transcribe":
+            if command in {"transcribe", "transcribe_final"}:
                 session.reset()
             session.accept_audio(audio, sample_rate=sample_rate)
-            session.decode()
-            result = session.get_result()
-            write_message({"id": request_id, "text": (result.text or "").strip()})
+            result = session.finish() if command == "transcribe_final" else None
+            if result is None:
+                session.decode()
+                result = session.get_result()
+            if command == "transcribe_final":
+                native = native_session_result(session)
+                payload = structured_result_payload(native, fallback_text=str(result.text or ""))
+                write_message({"id": request_id, **payload})
+            else:
+                write_message({"id": request_id, "text": (result.text or "").strip()})
         except Exception as exc:
             write_message({"id": request.get("id") if isinstance(request, dict) else None, "error": f"{type(exc).__name__}: {exc}"})
     return 0

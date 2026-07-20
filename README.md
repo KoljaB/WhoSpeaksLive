@@ -65,6 +65,8 @@ The setup application keeps pip as its compatibility default and also offers uv 
 
 The desktop launcher opens on Overview. Select the full local stack, the core/controller for remote ASR and embeddings servers, or the ASR/embeddings server packages, then choose whether to include optional realtime preview text. Kroko remains optional because its native runtime may require Python 3.12, Docker Desktop on Windows, or a prebuilt `kroko_onnx` wheel. Nemotron 3.5 is available as a manual CPU preview option while the installer flow is being integrated.
 
+For a zero-VRAM local setup, select **CPU only**. The production CPU profile combines Kroko Community 64L text with faster-whisper Base forced alignment and SpeechBrain ECAPA speaker embeddings. See [CPU-only mode](docs/cpu-mode.md) for resource limits, fallbacks, and unattended commands.
+
 The `whospeaks` setup application keeps component readiness, diagnostics, settings, installation progress, logs, cancellation, and browser launch together. See the [desktop launcher guide](docs/desktop-launcher.md) for interface routing, deterministic demo states, and safe-shutdown behavior.
 
 The short `whospeaks` command is a setup and launcher wrapper. It saves a small profile, runs doctor checks, and expands that profile into the longer `whospeaks-window ...` browser-server command when you launch.
@@ -88,7 +90,7 @@ For a manual full working setup, follow these in order:
 
 WhoSpeaksLive performs best on clean recordings where one person speaks at a time into good microphones. Diarization accuracy can degrade with background noise, background music, echo, crosstalk, overlapping speech, or low-quality microphones, and it may become less reliable as the active speaker count grows. The system assumes complete utterances can be assigned to a single speaker, so cases where one speaker starts a sentence and another finishes it are not expected to score well.
 
-CPU-only operation is not the recommended path for the current stack. The system is GPU-heavy today; a CPU-only setup may be possible, but should be treated as a separate optimization target and will likely require engineering work, slower processing, and some accuracy or throughput tradeoffs.
+CPU-only operation is supported as a quality-focused zero-VRAM profile. It uses bounded CPU workers and adds a short final-alignment delay after speech endpoints; GPU mode remains preferable when maximum throughput is more important than hardware reach.
 
 ## Realtime Preview Languages
 
@@ -132,6 +134,7 @@ Optional translation weights are also downloaded separately and retain their own
 | Product overview and use cases | [docs/overview.md](docs/overview.md) |
 | Installation | [docs/installation.md](docs/installation.md) |
 | Desktop setup and launcher | [docs/desktop-launcher.md](docs/desktop-launcher.md) |
+| CPU-only mode | [docs/cpu-mode.md](docs/cpu-mode.md) |
 | macOS setup | [docs/macos-setup.md](docs/macos-setup.md) |
 | Quickstart | [docs/quickstart.md](docs/quickstart.md) |
 | Live window workflow | [docs/live-window-workflow.md](docs/live-window-workflow.md) |
