@@ -1884,10 +1884,8 @@ class LauncherWindow(QMainWindow):
         self.probe_timer = QTimer(self)
         self.probe_timer.setInterval(1000)
         self.probe_timer.timeout.connect(self._probe_services)
-        if not isinstance(controller, DemoLauncherController):
-            # Probe once at startup. Recurring health checks are enabled only
-            # while this launcher actually owns an active service.
-            QTimer.singleShot(0, self._probe_services)
+        # No background service work runs while the launcher is idle. Launch
+        # and retry explicitly enable health polling for their owned services.
         if auto_check and not isinstance(controller, DemoLauncherController):
             QTimer.singleShot(0, self.run_quick_check)
 

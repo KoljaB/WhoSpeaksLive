@@ -446,7 +446,7 @@ class WhoSpeaksGuiTests(unittest.TestCase):
 
         QTest.qWait(2200)
 
-        self.assertLessEqual(controller.refresh_services.call_count, 1)
+        self.assertEqual(controller.refresh_services.call_count, 0)
         self.assertFalse(window.probe_timer.isActive())
 
     def test_real_terminal_launch_error_drives_complete_failure_shell(self) -> None:
