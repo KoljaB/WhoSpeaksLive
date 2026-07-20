@@ -389,6 +389,41 @@ class WhoSpeaksGuiTests(unittest.TestCase):
         self.assertIn("Preparing", window.overview.primary_button.text())
         self.assertNotIn("Launch WhoSpeaks", window.overview.primary_button.text())
 
+    def test_background_snapshot_preserves_first_run_setup_choices(self) -> None:
+        controller = LauncherController(
+            Profile(),
+            profile_saver=lambda _profile: Path("unused.json"),
+        )
+        window = LauncherWindow(controller, auto_check=False, reduced_motion=True)
+        self.addCleanup(window.bridge.close)
+
+        window.overview.setup_target.setCurrentIndex(
+            window.overview.setup_target.findData("cpu")
+        )
+        window.overview.setup_live_text.setCurrentIndex(
+            window.overview.setup_live_text.findData("sherpa_onnx")
+        )
+        selected_target = window.overview.setup_target.currentData()
+        selected_engine = window.overview.setup_live_text.currentData()
+
+        window.apply_snapshot(controller.snapshot)
+
+        self.assertEqual(window.overview.setup_target.currentData(), selected_target)
+        self.assertEqual(window.overview.setup_live_text.currentData(), selected_engine)
+
+    def test_idle_duplicate_snapshot_does_not_rebuild_overview(self) -> None:
+        controller = LauncherController(
+            Profile(),
+            profile_saver=lambda _profile: Path("unused.json"),
+        )
+        window = LauncherWindow(controller, auto_check=False, reduced_motion=True)
+        self.addCleanup(window.bridge.close)
+
+        with mock.patch.object(window.overview, "set_report") as set_report:
+            window.apply_snapshot(controller.snapshot)
+
+        set_report.assert_not_called()
+
     def test_real_terminal_launch_error_drives_complete_failure_shell(self) -> None:
         controller = LauncherController(
             Profile(),
@@ -580,7 +615,7 @@ class WhoSpeaksGuiTests(unittest.TestCase):
         deployment.setFocus(Qt.FocusReason.TabFocusReason)
         self.app.processEvents()
         self.assertEqual(window.settings.context_help_title.text(), "Deployment")
-        self.assertEqual(window.settings.context_help_value.text(), "Remote ASR + embeddings")
+        self.assertEqual(window.settings.context_help_value.text(), "Remote client (models run elsewhere)")
         self.assertIn("another machine", window.settings.context_help_detail.text())
 
         language.setFocus(Qt.FocusReason.TabFocusReason)
@@ -610,7 +645,8 @@ class WhoSpeaksGuiTests(unittest.TestCase):
         dialog = window.settings._help_dialog
         assert dialog is not None
         self.assertEqual(dialog.windowTitle(), "Deployment help")
-        self.assertIn("Full local starts the browser app", dialog.help_text.toPlainText())
+        self.assertIn("Local on NVIDIA GPU starts the browser app", dialog.help_text.toPlainText())
+        self.assertIn("allocates no CUDA memory or VRAM", dialog.help_text.toPlainText())
         self.assertIn("trusted LAN", dialog.help_text.toPlainText())
 
     def test_every_f1_target_has_distinct_expanded_help(self) -> None:

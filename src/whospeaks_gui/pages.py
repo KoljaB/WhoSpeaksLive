@@ -98,7 +98,7 @@ _SETTINGS_HELP: dict[str, tuple[str, str]] = {
     "discard_changes": ("Restore every field to the last saved profile.", "This removes all unsaved edits on every settings category."),
     "mode": (
         "Choose where transcription and speaker recognition run.",
-        "Full local uses faster-whisper and GPU-capable embeddings. CPU only uses streaming ASR word timestamps and SpeechBrain ECAPA without VRAM. Remote connects to model servers.",
+        "Local NVIDIA GPU runs the large model stack here. Local CPU only uses Kroko or Nemotron, Whisper alignment, and SpeechBrain ECAPA without CUDA or VRAM. Remote client sends model work to another server.",
     ),
     "language": ("Choose the primary spoken language.", "This language is used for transcription, speaker labels, reports, and as the source language for translation."),
     "realtime_preview_engine": ("Choose the fast engine that produces live text while speech is still in progress.", "Nemotron is usually easier to install on Windows through its CPU-only sherpa-onnx backend. Kroko/Banafo uses a separate native streaming runtime. Off disables provisional live text without disabling final transcription."),
@@ -113,7 +113,7 @@ _SETTINGS_HELP: dict[str, tuple[str, str]] = {
     "realtime_preview_model_dir": ("Choose a local Nemotron model folder.", "Leave this empty to use automatic model discovery and download. Select a folder only for a manually managed model."),
     "realtime_preview_python": ("Choose the Python runtime for Kroko/Banafo live text.", "Leave this empty to use the managed or current runtime. Set it only when the live-text engine is installed in another environment."),
     "embedding_python": ("Choose the Python runtime for local speaker embeddings.", "Leave this empty to use the current runtime. Set it only when speaker models are installed in a separate environment."),
-    "embedding_device": ("Choose the processor used for speaker embeddings.", "CPU-only forces this to CPU. Full local keeps the existing CUDA default."),
+    "embedding_device": ("Choose the processor used for speaker embeddings.", "Local CPU only forces this to CPU. Local NVIDIA GPU keeps the CUDA default."),
     "cpu_alignment_model": ("Choose the model that places the fixed CPU transcript on the audio timeline.", "Base is the quality default; Tiny uses less CPU but has less precise word boundaries."),
     "cpu_alignment_threads": ("Limit CPU threads used by final word alignment.", "Two threads is the production default and keeps short alignment bursts bounded on typical desktop CPUs."),
     "provider_preset": ("Choose a tested speaker-model combination.", "The preset updates both final and live speaker providers together. Choose Custom only when you need to edit provider expressions manually."),
@@ -794,7 +794,7 @@ class SettingsPage(QWidget):
         help_title_font = self.context_help_title.font()
         help_title_font.setWeight(QFont.Weight.DemiBold)
         self.context_help_title.setFont(help_title_font)
-        self.context_help_value = QLabel("Remote ASR + embeddings")
+        self.context_help_value = QLabel("Remote client · models elsewhere")
         self.context_help_value.setProperty("role", "secondary")
         self.context_help_detail = QLabel("Help for the focused setting appears here.")
         self.launch_effect_detail = self.context_help_detail
@@ -1075,10 +1075,10 @@ class SettingsPage(QWidget):
 
     def _build_sections(self) -> None:
         deployment_choices = [
-            ("Full local", "local"),
-            ("CPU only", "cpu"),
-            ("Remote ASR + embeddings", "remote"),
-            ("ASR + embeddings server", "server"),
+            ("Local on NVIDIA GPU", "local"),
+            ("Local on CPU only (no VRAM)", "cpu"),
+            ("Remote client (models run elsewhere)", "remote"),
+            ("Model server for another computer", "server"),
         ]
         apple_silicon = (
             platform.system() == "Darwin"
@@ -1102,7 +1102,7 @@ class SettingsPage(QWidget):
                 "mode",
                 deployment_choices,
             ),
-            "Select where final ASR and speaker embeddings run.",
+            "CPU only needs no GPU or VRAM. The other local/server profiles use or normally expect a GPU.",
         )
         general.add_field(
             0,

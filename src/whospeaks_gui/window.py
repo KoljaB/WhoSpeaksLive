@@ -763,10 +763,10 @@ class OverviewPage(QWidget):
         self.setup_target = QComboBox()
         self.setup_target.setAccessibleName("Deployment")
         for title, value in (
-            ("Full local", "local"),
-            ("CPU only", "cpu"),
-            ("Remote ASR + embeddings", "core"),
-            ("ASR + embeddings server", "server"),
+            ("Local on NVIDIA GPU", "local"),
+            ("Local on CPU only (no VRAM)", "cpu"),
+            ("Remote client (models run elsewhere)", "core"),
+            ("Model server for another computer", "server"),
         ):
             self.setup_target.addItem(title, value)
         deployment = field_block("Deployment", self.setup_target)
@@ -960,10 +960,10 @@ class OverviewPage(QWidget):
         engine = "off" if target == "server" else self.setup_live_text_value()
         self.setup_target_help.setText(
             {
-                "local": "The app, final ASR, and speaker embeddings run on this machine.",
-                "cpu": "Final ASR with word timestamps and SpeechBrain speaker embeddings run without GPU or VRAM.",
-                "core": "The app runs here and connects to remote ASR and speaker-embedding services.",
-                "server": "Only the final-ASR and speaker-embedding HTTP services are installed.",
+                "local": "Uses this computer's NVIDIA GPU for final ASR and speaker embeddings.",
+                "cpu": "Uses no CUDA, GPU, or VRAM. Live ASR, final word timing, and speaker embeddings all run on the CPU.",
+                "core": "This computer stays light; final ASR and speaker embeddings run on another server, normally a GPU machine.",
+                "server": "Installs the final-ASR and speaker-embedding services for another WhoSpeaks computer; a GPU is recommended.",
             }[target]
         )
         self.setup_live_text_help.setText(
@@ -1077,10 +1077,10 @@ class OverviewPage(QWidget):
         )
         if selection_differs:
             saved_name = {
-                "local": "Full local",
-                "cpu": "CPU only",
-                "remote": "Remote ASR + embeddings",
-                "server": "ASR + embeddings server",
+                "local": "local NVIDIA GPU",
+                "cpu": "local CPU-only",
+                "remote": "remote-client",
+                "server": "model-server",
             }.get(self.profile.mode, self.profile.mode)
             self.setup_findings_note.setText(
                 f"These results belong to the saved {saved_name} profile. "
@@ -1201,10 +1201,10 @@ class OverviewPage(QWidget):
         self.profile = profile
         self.profile_labels["mode"].setText(
             {
-                "local": "Full local",
-                "cpu": "CPU only",
-                "remote": "Remote ASR + embeddings",
-                "server": "ASR + embeddings server",
+                "local": "Local NVIDIA GPU",
+                "cpu": "Local CPU only · no VRAM",
+                "remote": "Remote client · models elsewhere",
+                "server": "Model server for another computer",
             }.get(profile.mode, profile.mode)
         )
         self.profile_labels["language"].setText(profile.language.upper())
@@ -1832,6 +1832,7 @@ class LauncherWindow(QMainWindow):
         self._closing = False
         self._last_error = ""
         self._pending_snapshot: LauncherSnapshot | None = None
+        self._last_applied_snapshot: LauncherSnapshot | None = None
         self.setWindowTitle("WhoSpeaks")
         self.setMinimumSize(*MINIMUM_SIZE)
         self.resize(1440, 900)
@@ -2064,6 +2065,11 @@ class LauncherWindow(QMainWindow):
             self.apply_snapshot(snapshot)
 
     def apply_snapshot(self, snapshot: LauncherSnapshot) -> None:
+        previous_snapshot = self._last_applied_snapshot
+        if snapshot == previous_snapshot and not snapshot.operation.name:
+            return
+        self._last_applied_snapshot = snapshot
+        profile_changed = previous_snapshot is None or snapshot.profile != previous_snapshot.profile
         relevant = [item for item in snapshot.services if item.kind == "live"]
         backends: list[ServiceSnapshot] = []
         if snapshot.profile.mode in {"local", "cpu", "remote"}:
@@ -2118,7 +2124,8 @@ class LauncherWindow(QMainWindow):
             state = "first_run"
         else:
             state = "ready"
-        self.overview.apply_profile(snapshot.profile)
+        if profile_changed:
+            self.overview.apply_profile(snapshot.profile)
         self.overview.set_report(snapshot.report)
         if not isinstance(self.controller, DemoLauncherController):
             started_at = getattr(operation, "started_at", None)

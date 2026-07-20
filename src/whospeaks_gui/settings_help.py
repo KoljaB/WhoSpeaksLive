@@ -26,7 +26,8 @@ SETTINGS_MORE_HELP: dict[str, str] = {
         "Use this when you want a known persisted baseline. There is no per-field undo after the draft is discarded.",
     ),
     "mode": _paragraphs(
-        "Full local starts the browser app and runs final ASR and speaker embeddings on this computer. Remote ASR + embeddings starts the browser app locally but sends the relevant audio windows to the two configured backend URLs. ASR + embeddings server prepares the two backend services for another controller and does not start the browser app.",
+        "Local on NVIDIA GPU starts the browser app and runs the large final-ASR and speaker-embedding stack on this computer. Local on CPU only also runs everything here, but uses Kroko or Nemotron for live and fixed text, Whisper Base only for final word alignment, and SpeechBrain ECAPA for speaker embeddings. It allocates no CUDA memory or VRAM.",
+        "Remote client starts the browser app here but sends final-ASR and speaker-embedding work to configured backend URLs, normally on a GPU server. Model server installs those backends for another WhoSpeaks computer and does not start the browser app.",
         "Deployment controls which settings and dependencies are required; it is not merely a label. Remote services reduce local model load but move audio over the network, so plain HTTP endpoints should be limited to a trusted LAN or protected by a VPN or authenticated TLS proxy.",
     ),
     "language": _paragraphs(
@@ -83,7 +84,7 @@ SETTINGS_MORE_HELP: dict[str, str] = {
     ),
     "embedding_device": _paragraphs(
         "This selects the processor used by the local speaker-embedding helper. CPU-only mode fixes it to CPU so no CUDA allocation or VRAM is required.",
-        "Full local keeps CUDA as its existing default. SpeechBrain ECAPA remains fast enough for final and provisional live speaker embeddings on CPU.",
+        "Local on NVIDIA GPU keeps CUDA as its default. SpeechBrain ECAPA remains fast enough for final and provisional live speaker embeddings in the CPU-only profile.",
     ),
     "cpu_alignment_model": _paragraphs(
         "CPU mode keeps the Kroko or Nemotron transcript fixed and uses Whisper only as a forced aligner: it locates those known words in the buffered audio instead of decoding new text.",
