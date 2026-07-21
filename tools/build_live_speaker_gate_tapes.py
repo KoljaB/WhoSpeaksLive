@@ -77,6 +77,9 @@ def build_video(
     frame_seconds: float,
     threshold: float,
     min_speech_seconds: float,
+    release_every_tick: bool = False,
+    release_threshold: float | None = None,
+    release_min_speech_seconds: float | None = None,
 ) -> dict[str, Any]:
     video_root = corpus_root / "videos" / video_id
     source = json.loads((video_root / "source.json").read_text(encoding="utf-8"))
@@ -121,14 +124,23 @@ def build_video(
             min_speech_seconds=min_speech_seconds,
         )
         speech[index] = int(has_probe_speech)
+    release_indices = (
+        np.flatnonzero(right_edges >= clear_samples)
+        if release_every_tick else np.flatnonzero(schedule)
+    )
+    for index in release_indices:
+        right = int(right_edges[index])
         clear_left = max(0, right - clear_samples)
         clear_audio = audio[clear_left:right]
         has_clear_speech = rms_speech_present(
             clear_audio,
             sample_rate,
             frame_seconds=frame_seconds,
-            threshold=threshold,
-            min_speech_seconds=min_speech_seconds,
+            threshold=threshold if release_threshold is None else release_threshold,
+            min_speech_seconds=(
+                min_speech_seconds
+                if release_min_speech_seconds is None else release_min_speech_seconds
+            ),
         )
         release[index] = int(not has_clear_speech)
 
@@ -154,12 +166,18 @@ def build_video(
         "vad_frame_seconds": frame_seconds,
         "vad_speech_rms_threshold": threshold,
         "live_speaker_probe_min_speech_seconds": min_speech_seconds,
+        "release_rms_threshold": threshold if release_threshold is None else release_threshold,
+        "release_min_speech_seconds": (
+            min_speech_seconds
+            if release_min_speech_seconds is None else release_min_speech_seconds
+        ),
         "shared_gate_source": str(shared_gate_source),
         "shared_gate_source_sha256": _sha256_file(shared_gate_source),
         "builder_source_sha256": _sha256_file(Path(__file__).resolve()),
         "scheduled_probe_count": int(np.count_nonzero(schedule)),
         "speech_probe_count": int(np.count_nonzero(speech)),
         "release_signal_count": int(np.count_nonzero(release)),
+        "release_cadence_policy": "every_timeline_tick" if release_every_tick else "scheduled_probe_only",
     }
     _atomic_json(target / "gate_tape.json", metadata)
     return metadata
@@ -177,6 +195,9 @@ def main() -> int:
     parser.add_argument("--frame-seconds", type=float, default=0.03)
     parser.add_argument("--rms-threshold", type=float, default=0.003)
     parser.add_argument("--min-speech-seconds", type=float, default=0.15)
+    parser.add_argument("--release-every-tick", action="store_true")
+    parser.add_argument("--release-rms-threshold", type=float)
+    parser.add_argument("--release-min-speech-seconds", type=float)
     args = parser.parse_args()
     results = [
         build_video(
@@ -187,6 +208,9 @@ def main() -> int:
             frame_seconds=args.frame_seconds,
             threshold=args.rms_threshold,
             min_speech_seconds=args.min_speech_seconds,
+            release_every_tick=args.release_every_tick,
+            release_threshold=args.release_rms_threshold,
+            release_min_speech_seconds=args.release_min_speech_seconds,
         )
         for video_id in args.video_id
     ]

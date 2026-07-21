@@ -110,3 +110,4 @@ class LiveSpeakerMemoryUpdateJob:
     run_id: str = ""
     sentence_start: float | None = None
     sentence_end: float | None = None
+    precomputed_embedding: np.ndarray | None = None

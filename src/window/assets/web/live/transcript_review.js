@@ -2,7 +2,7 @@ export function installTranscriptReview(ctx) {
   const showTranscriptNewTags = document.getElementById("showTranscriptNewTags");
   const showTranscriptSentenceCount = document.getElementById("showTranscriptSentenceCount");
   const {bulkCorrectionSpeaker, bulkMarkCorrectButton, bulkReassignButton, clearSelectionButton, createSpeakerOptionValue, followLive, groupTranscriptTurns, liveSpeakerConfig, reviewFilterButtons, selectionCount, selectionToolbar, sentences, showTranscriptProbabilities, showTranscriptReviewHints, showTranscriptSpeechRate, showTranscriptTags, showTranscriptTime, source, speakerList, speakerTabButtons, speakerTabPanels, start, state, transcriptPanel, transcriptSettingsButton, transcriptSettingsPanel, undoCorrectionButton} = ctx;
-  const applyProvisionalRealtimeVisualSplit = (...args) => ctx.api.applyProvisionalRealtimeVisualSplit(...args), clearProvisionalRealtimeSplitsFor = (...args) => ctx.api.clearProvisionalRealtimeSplitsFor(...args), createSpeakerLiveIndicator = (...args) => ctx.api.createSpeakerLiveIndicator(...args), fetchSavedSessions = (...args) => ctx.api.fetchSavedSessions(...args), log = (...args) => ctx.api.log(...args), playbackSeconds = (...args) => ctx.api.playbackSeconds(...args), pruneSpeakerFilterState = (...args) => ctx.api.pruneSpeakerFilterState(...args), refreshSpeakerRows = (...args) => ctx.api.refreshSpeakerRows(...args), refreshTranslationMenuStatus = (...args) => ctx.api.refreshTranslationMenuStatus(...args), refreshTranslationRow = (...args) => ctx.api.refreshTranslationRow(...args), renderMeetingIntelligencePanel = (...args) => ctx.api.renderMeetingIntelligencePanel(...args), renderSpeakerPanel = (...args) => ctx.api.renderSpeakerPanel(...args), restoreRealtimeRowFullPreview = (...args) => ctx.api.restoreRealtimeRowFullPreview(...args), rowShouldSortBefore = (...args) => ctx.api.rowShouldSortBefore(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), secondsLabel = (...args) => ctx.api.secondsLabel(...args), sessionControlsLocked = (...args) => ctx.api.sessionControlsLocked(...args), speakerColor = (...args) => ctx.api.speakerColor(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), speakerPanelName = (...args) => ctx.api.speakerPanelName(...args), speakerProbabilityKey = (...args) => ctx.api.speakerProbabilityKey(...args), speakerSentenceText = (...args) => ctx.api.speakerSentenceText(...args), speakerTranscriptVisible = (...args) => ctx.api.speakerTranscriptVisible(...args), syncSavedSessionsAutoRefresh = (...args) => ctx.api.syncSavedSessionsAutoRefresh(...args), syncSpeakerSessionBaselines = (...args) => ctx.api.syncSpeakerSessionBaselines(...args), updateSpeakerCount = (...args) => ctx.api.updateSpeakerCount(...args);
+  const applyProvisionalRealtimeVisualSplit = (...args) => ctx.api.applyProvisionalRealtimeVisualSplit(...args), clearProvisionalRealtimeSplitsFor = (...args) => ctx.api.clearProvisionalRealtimeSplitsFor(...args), createSpeakerLiveIndicator = (...args) => ctx.api.createSpeakerLiveIndicator(...args), fetchSavedSessions = (...args) => ctx.api.fetchSavedSessions(...args), isLiveProvisionalSpeaker = (...args) => ctx.api.isLiveProvisionalSpeaker(...args), log = (...args) => ctx.api.log(...args), playbackSeconds = (...args) => ctx.api.playbackSeconds(...args), pruneSpeakerFilterState = (...args) => ctx.api.pruneSpeakerFilterState(...args), refreshSpeakerRows = (...args) => ctx.api.refreshSpeakerRows(...args), refreshTranslationMenuStatus = (...args) => ctx.api.refreshTranslationMenuStatus(...args), refreshTranslationRow = (...args) => ctx.api.refreshTranslationRow(...args), renderMeetingIntelligencePanel = (...args) => ctx.api.renderMeetingIntelligencePanel(...args), renderSpeakerPanel = (...args) => ctx.api.renderSpeakerPanel(...args), restoreRealtimeRowFullPreview = (...args) => ctx.api.restoreRealtimeRowFullPreview(...args), rowShouldSortBefore = (...args) => ctx.api.rowShouldSortBefore(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), secondsLabel = (...args) => ctx.api.secondsLabel(...args), sessionControlsLocked = (...args) => ctx.api.sessionControlsLocked(...args), speakerColor = (...args) => ctx.api.speakerColor(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), speakerPanelName = (...args) => ctx.api.speakerPanelName(...args), speakerProbabilityKey = (...args) => ctx.api.speakerProbabilityKey(...args), speakerSentenceText = (...args) => ctx.api.speakerSentenceText(...args), speakerTranscriptVisible = (...args) => ctx.api.speakerTranscriptVisible(...args), syncSavedSessionsAutoRefresh = (...args) => ctx.api.syncSavedSessionsAutoRefresh(...args), syncSpeakerSessionBaselines = (...args) => ctx.api.syncSpeakerSessionBaselines(...args), updateSpeakerCount = (...args) => ctx.api.updateSpeakerCount(...args);
   function transcriptSearchVisible(row) {
     const query = ctx.owners.speakers.transcriptSearchText.trim().toLowerCase();
     if (!query) return true;
@@ -286,7 +286,7 @@ export function installTranscriptReview(ctx) {
     placeholder.value = "";
     placeholder.textContent = "Assign speaker...";
     bulkCorrectionSpeaker.appendChild(placeholder);
-    speakers.forEach(speaker => {
+    speakers.filter(speaker => !isLiveProvisionalSpeaker(speaker)).forEach(speaker => {
       if (!speaker.id) return;
       const option = document.createElement("option");
       option.value = speaker.id;
@@ -503,14 +503,18 @@ export function installTranscriptReview(ctx) {
       || Number((stats && stats.speakingSeconds) || 0) > 0
     ));
   }
-  function ensureSpeakerPanelSpeaker(speakerId) {
+  function ensureSpeakerPanelSpeaker(speakerId, item = null) {
     if (!speakerId || speakerId === "UNKNOWN") return;
     if (ctx.owners.speakers.speakerLibraryState.speakers.some(speaker => speaker.id === speakerId)) return;
+    const provisional = Boolean(
+      (item && item.provisional_speaker)
+      || String(speakerId).startsWith("provisional_")
+    );
     const speaker = {
       id: speakerId,
       name: "",
       display_name: speakerDisplayLabel(speakerId),
-      source: "detected",
+      source: provisional ? "live_provisional" : "detected",
       locked: false,
       sentence_count: 0,
       speech_seconds: 0,
@@ -572,11 +576,13 @@ export function installTranscriptReview(ctx) {
       const speaker = ctx.owners.speakers.speakerLibraryState.speakers.find(item => item.id === row.dataset.speakerId);
       const count = row.querySelector(".speaker-sentence-count");
       if (speaker && count) {
-        count.textContent = speakerSentenceText(
-          speakerPanelSentenceCount(speaker),
-          speakerPanelSpeakingSeconds(speaker),
-          speakerPanelCountUnit(),
-        );
+        count.textContent = isLiveProvisionalSpeaker(speaker)
+          ? "Comparing with detected speakers..."
+          : speakerSentenceText(
+              speakerPanelSentenceCount(speaker),
+              speakerPanelSpeakingSeconds(speaker),
+              speakerPanelCountUnit(),
+            );
       }
     });
   }
@@ -586,8 +592,7 @@ export function installTranscriptReview(ctx) {
       row.classList.toggle("live-speaker", active);
       const indicator = row.querySelector(".speaker-live-indicator");
       if (active && !indicator) {
-        const titleRow = row.querySelector(".speaker-title-row");
-        if (titleRow) titleRow.appendChild(createSpeakerLiveIndicator());
+        row.appendChild(createSpeakerLiveIndicator());
       } else if (!active && indicator) {
         indicator.remove();
       }
@@ -949,7 +954,23 @@ export function installTranscriptReview(ctx) {
   function applyFastSpeakerPanelSignal(item) {
     const speakerId = item && (item.assigned_speaker || item.speaker_id);
     if (!speakerId || speakerId === "UNKNOWN") return;
-    ensureSpeakerPanelSpeaker(speakerId);
+    const replacedSpeakerId = String((item && item.replaces_speaker_id) || "");
+    if (replacedSpeakerId && replacedSpeakerId !== speakerId) {
+      const previousStats = ctx.owners.speakers.fastSpeakerPanelStats[replacedSpeakerId];
+      if (previousStats) {
+        const currentStats = ctx.owners.speakers.fastSpeakerPanelStats[speakerId] || {count: 0, speakingSeconds: 0};
+        ctx.owners.speakers.fastSpeakerPanelStats[speakerId] = {
+          ...currentStats,
+          count: Number(currentStats.count || 0) + Number(previousStats.count || 0),
+          speakingSeconds: Number(currentStats.speakingSeconds || 0) + Number(previousStats.speakingSeconds || 0),
+        };
+        delete ctx.owners.speakers.fastSpeakerPanelStats[replacedSpeakerId];
+      }
+      ctx.owners.speakers.speakerLibraryState.speakers = ctx.owners.speakers.speakerLibraryState.speakers
+        .filter(speaker => speaker.id !== replacedSpeakerId);
+      delete ctx.owners.speakers.speakerNames[replacedSpeakerId];
+    }
+    ensureSpeakerPanelSpeaker(speakerId, item);
     const start = Number(item.start || 0);
     const end = Number(item.end || start);
     if (!(end > start)) return;

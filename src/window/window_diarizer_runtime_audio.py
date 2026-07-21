@@ -99,7 +99,7 @@ from window.window_speaker_refinement import (
     user_deleted_speaker_label,
     user_confirmed_speaker_label,
 )
-from window.live_speech_gate import rms_speech_present
+from window.live_speech_gate import live_silero_gate_parameters, rms_speech_present
 from window.cpu_forced_alignment import CpuHybridTranscriber
 
 
@@ -569,6 +569,7 @@ class WindowRuntimeAudioMixin:
         flags: list[bool],
         starts: list[int],
         backend: str,
+        min_speech_seconds: float | None = None,
     ) -> VadWindowState:
         if not flags:
             return VadWindowState(False, False, backend=backend)
@@ -589,7 +590,13 @@ class WindowRuntimeAudioMixin:
             if span_end <= span_start:
                 continue
             spans.append((round(float(span_start), 4), round(float(span_end), 4)))
-        return self._vad_state_from_spans(left, right, spans, backend=backend)
+        return self._vad_state_from_spans(
+            left,
+            right,
+            spans,
+            backend=backend,
+            min_speech_seconds=min_speech_seconds,
+        )
 
     def _vad_state_from_spans(
         self,
@@ -688,6 +695,9 @@ class WindowRuntimeAudioMixin:
         right: float,
         audio: np.ndarray,
         sample_rate: int,
+        *,
+        release: bool = False,
+        fast_release: bool = False,
     ) -> bool:
         backend = str(getattr(self.args, "live_speaker_probe_speech_backend", "rms") or "rms").lower()
         if backend != "vad":
@@ -696,7 +706,19 @@ class WindowRuntimeAudioMixin:
             return False
         if getattr(self.args, "vad_backend", "silero") == "rms":
             return self._rms_vad_window_state(left, right, audio, sample_rate).has_speech
-        return self._silero_vad_window_state(left, right, audio, sample_rate).has_speech
+        threshold, minimum = live_silero_gate_parameters(
+            self.args,
+            release=release,
+            fast_release=fast_release,
+        )
+        return self._silero_vad_window_state(
+            left,
+            right,
+            audio,
+            sample_rate,
+            speech_threshold=threshold,
+            min_speech_seconds=minimum,
+        ).has_speech
 
     def _silero_vad_window_state(
         self,
@@ -704,6 +726,9 @@ class WindowRuntimeAudioMixin:
         right: float,
         audio: np.ndarray,
         sample_rate: int,
+        *,
+        speech_threshold: float | None = None,
+        min_speech_seconds: float | None = None,
     ) -> VadWindowState:
         model = self._load_silero_vad_model()
         if model is None:
@@ -715,7 +740,16 @@ class WindowRuntimeAudioMixin:
 
         frame_samples = SILERO_VAD_CHUNK_SAMPLES
         frame_seconds = frame_samples / float(SILERO_VAD_SAMPLE_RATE)
-        threshold = max(0.0, min(1.0, float(self.args.vad_silero_speech_threshold)))
+        threshold = max(
+            0.0,
+            min(
+                1.0,
+                float(
+                    self.args.vad_silero_speech_threshold
+                    if speech_threshold is None else speech_threshold
+                ),
+            ),
+        )
         flags: list[bool] = []
         starts: list[int] = []
         reset_states = getattr(model, "reset_states", None)
@@ -753,6 +787,7 @@ class WindowRuntimeAudioMixin:
             flags=flags,
             starts=starts,
             backend=self._vad_model_backend or "silero",
+            min_speech_seconds=min_speech_seconds,
         )
 
     def _webrtc_vad_window_state(

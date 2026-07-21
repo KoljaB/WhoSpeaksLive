@@ -13,12 +13,13 @@ import sys
 import tempfile
 import threading
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
+import httpx
 import numpy as np
 
 from common.audio_utils import (
@@ -44,6 +45,34 @@ DEFAULT_HELPER_MODULE = "realtime.realtime_speakerdiarize"
 DEFAULT_EMBEDDING_PROVIDER = "speechbrain_ecapa"
 DEFAULT_SPEECHBRAIN_MODEL = "speechbrain/spkrec-ecapa-voxceleb"
 DEFAULT_SPEECHBRAIN_RESNET_MODEL = "speechbrain/spkrec-resnet-voxceleb"
+
+
+@dataclass(frozen=True)
+class EmbeddingComponentResult:
+    """One normalized component recovered from a weighted-concatenation stack."""
+
+    provider: str
+    weight: float
+    embedding: np.ndarray
+
+
+@dataclass(frozen=True)
+class EmbeddingResult:
+    """A final embedding plus any safely recoverable component embeddings."""
+
+    embedding: np.ndarray
+    components: tuple[EmbeddingComponentResult, ...] = ()
+
+    def unique_positive_component(self, provider: str) -> np.ndarray | None:
+        canonical = canonical_embedding_provider_name(provider)
+        matches = [
+            component.embedding
+            for component in self.components
+            if component.provider == canonical and component.weight > 0.0
+        ]
+        if len(matches) != 1:
+            return None
+        return matches[0]
 
 SUPPORTED_SINGLE_EMBEDDING_PROVIDER_IDS = (
     "resemblyzer",
@@ -673,9 +702,11 @@ class RemoteEmbeddingClient:
         self.timeout_seconds = max(1.0, float(timeout_seconds))
         self._loaded = False
         self._lock = threading.Lock()
+        self._http_client: httpx.Client | None = None
 
     def health(self) -> dict[str, Any]:
-        raw = self._read_url(f"{self.base_url}/health", timeout=min(self.timeout_seconds, 10.0))
+        with self._lock:
+            raw = self._read_url(f"{self.base_url}/health", timeout=min(self.timeout_seconds, 10.0))
         return self._json_response(raw, "health")
 
     def load(self) -> dict[str, Any]:
@@ -683,11 +714,25 @@ class RemoteEmbeddingClient:
             return self._load_locked()
 
     def embed_audio(self, audio: np.ndarray, sample_rate: int = SAMPLE_RATE) -> np.ndarray:
+        return self.embed_audio_result(audio, sample_rate).embedding
+
+    def embed_audio_result(self, audio: np.ndarray, sample_rate: int = SAMPLE_RATE) -> EmbeddingResult:
+        """Embed audio and retain recoverable weighted-stack components."""
+
         prepared = pad_audio(trim_silence(np.asarray(audio, dtype=np.float32).reshape(-1), sample_rate), 0.5, sample_rate)
-        return self.embed_prepared_audio(prepared, sample_rate)
+        return self.embed_prepared_audio_result(prepared, sample_rate)
 
     def embed_prepared_audio(self, audio: np.ndarray, sample_rate: int = SAMPLE_RATE) -> np.ndarray:
         """Embed caller-prepared audio without applying another trim/pad pass."""
+        return self.embed_prepared_audio_result(audio, sample_rate).embedding
+
+    def embed_prepared_audio_result(
+        self,
+        audio: np.ndarray,
+        sample_rate: int = SAMPLE_RATE,
+    ) -> EmbeddingResult:
+        """Embed prepared audio and expose components of weighted-concat stacks."""
+
         with self._lock:
             if not self._loaded:
                 self._load_locked()
@@ -711,15 +756,24 @@ class RemoteEmbeddingClient:
             )
         if result.get("error"):
             raise RuntimeError(f"Remote embeddings error: {result['error']}")
-        embedding = self._embedding_from_result(result)
-        return normalize_vector(embedding)
+        return self._embedding_result_from_response(result)
 
     def embed_wav(self, path: Path) -> np.ndarray:
         audio, sample_rate = load_audio_file(path)
         return self.embed_audio(audio, sample_rate)
 
     def shutdown(self, lock_timeout_seconds: float = 5.0) -> None:
-        return None
+        acquired = self._lock.acquire(timeout=max(0.0, float(lock_timeout_seconds)))
+        if not acquired:
+            return
+        try:
+            client = self._http_client
+            self._http_client = None
+            self._loaded = False
+            if client is not None:
+                client.close()
+        finally:
+            self._lock.release()
 
     def unload(self) -> dict[str, Any]:
         with self._lock:
@@ -757,6 +811,46 @@ class RemoteEmbeddingClient:
             return embeddings[0]
         raise RuntimeError("Remote embeddings response did not include an embedding vector.")
 
+    def _embedding_result_from_response(self, result: dict[str, Any]) -> EmbeddingResult:
+        embedding = normalize_vector(self._embedding_from_result(result))
+        raw_components = result.get("components")
+        if not isinstance(raw_components, list) or not raw_components:
+            return EmbeddingResult(embedding=embedding)
+
+        offset = 0
+        components: list[EmbeddingComponentResult] = []
+        try:
+            for raw_component in raw_components:
+                if not isinstance(raw_component, dict):
+                    raise ValueError("component metadata must be an object")
+                provider = canonical_embedding_provider_name(str(raw_component["provider"]))
+                weight = float(raw_component["weight"])
+                dimension = int(raw_component["dim"])
+                if not np.isfinite(weight) or dimension <= 0:
+                    raise ValueError("component metadata is invalid")
+                next_offset = offset + dimension
+                if next_offset > embedding.size:
+                    raise ValueError("component dimensions exceed the final embedding")
+                component_slice = np.asarray(embedding[offset:next_offset], dtype=np.float32)
+                offset = next_offset
+                if weight <= 0.0:
+                    continue
+                component_norm = float(np.linalg.norm(component_slice))
+                if component_norm <= 0.0:
+                    raise ValueError("positive-weight component has an empty slice")
+                components.append(EmbeddingComponentResult(
+                    provider=provider,
+                    weight=weight,
+                    embedding=normalize_vector(component_slice),
+                ))
+            if offset != embedding.size:
+                raise ValueError("component dimensions do not cover the final embedding")
+        except (KeyError, TypeError, ValueError, OverflowError):
+            # Component reuse is an optional optimization.  An older or custom
+            # server must still return the final embedding through the legacy API.
+            return EmbeddingResult(embedding=embedding)
+        return EmbeddingResult(embedding=embedding, components=tuple(components))
+
     def _json_response(self, raw: bytes, action: str) -> dict[str, Any]:
         text = raw.decode("utf-8", errors="replace").strip()
         if not text:
@@ -770,24 +864,47 @@ class RemoteEmbeddingClient:
         return data
 
     def _read_url(self, url: str, timeout: float) -> bytes:
-        try:
-            with urlopen(url, timeout=timeout) as response:
-                return response.read()
-        except HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace").strip()
-            raise RuntimeError(f"Remote embeddings HTTP {exc.code}: {detail[:300]}") from exc
-        except URLError as exc:
-            raise RuntimeError(f"Remote embeddings connection failed: {exc.reason}") from exc
+        return self._http_request("GET", url, timeout=timeout)
 
     def _open_request(self, request: Request, timeout: float) -> bytes:
+        return self._http_request(
+            request.get_method(),
+            request.full_url,
+            timeout=timeout,
+            content=request.data,
+            headers=dict(request.header_items()),
+        )
+
+    def _http_request(
+        self,
+        method: str,
+        url: str,
+        *,
+        timeout: float,
+        content: bytes | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> bytes:
+        client = self._http_client
+        if client is None:
+            client = httpx.Client()
+            self._http_client = client
         try:
-            with urlopen(request, timeout=timeout) as response:
-                return response.read()
-        except HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace").strip()
-            raise RuntimeError(f"Remote embeddings HTTP {exc.code}: {detail[:300]}") from exc
-        except URLError as exc:
-            raise RuntimeError(f"Remote embeddings connection failed: {exc.reason}") from exc
+            response = client.request(
+                method,
+                url,
+                content=content,
+                headers=headers,
+                timeout=max(0.001, float(timeout)),
+            )
+            response.raise_for_status()
+            return response.content
+        except httpx.HTTPStatusError as exc:
+            detail = exc.response.text.strip()
+            raise RuntimeError(
+                f"Remote embeddings HTTP {exc.response.status_code}: {detail[:300]}"
+            ) from exc
+        except httpx.RequestError as exc:
+            raise RuntimeError(f"Remote embeddings connection failed: {exc}") from exc
 
 
 class RemotePreparedEmbeddingProvider:
@@ -801,7 +918,10 @@ class RemotePreparedEmbeddingProvider:
         return self.client.embed_prepared_audio(audio, sample_rate)
 
     def shutdown(self) -> dict[str, Any]:
-        return self.client.unload()
+        try:
+            return self.client.unload()
+        finally:
+            self.client.shutdown()
 
 
 def run_embedding_helper(args: argparse.Namespace) -> int:

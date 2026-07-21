@@ -16,7 +16,14 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from window.window_domain import LiveSpeakerMemoryUpdateJob
+from embeddings.embedding_providers import (
+    EmbeddingComponentResult,
+    EmbeddingResult,
+    RemoteEmbeddingClient,
+)
+from embeddings.provider_identity import PROMOTED_PUBLIC_PROVIDER, PUBLIC_PROVIDER
+from speakers.speaker_embedding_cluster import SpeakerDecision
+from window.window_domain import EmbeddingSentenceJob, LiveSpeakerMemoryUpdateJob
 from window.browser_live_speaker_scoring import score_browser_live_speaker_samples
 from window.live_speaker_probe_scoring import score_live_speaker_probe
 
@@ -434,10 +441,11 @@ class LiveSpeakerRuntimeTests(unittest.TestCase):
         diarizer._live_memory_update_jobs = queue.Queue(maxsize=2)
         diarizer.bus = Bus()
         diarizer._embed_live_audio_chunk = mock.Mock(return_value=np.array([1.0, 0.0], dtype=np.float32))
+        audio = np.array([0.2, 0.3], dtype=np.float32)
 
         diarizer._update_live_speaker_memory(
             "S1",
-            np.array([0.2, 0.3], dtype=np.float32),
+            audio,
             16000,
             1.25,
             ".live-sentence.wav",
@@ -455,6 +463,8 @@ class LiveSpeakerRuntimeTests(unittest.TestCase):
         self.assertEqual(job.suffix, ".live-sentence.wav")
         self.assertEqual(job.speaker_generation, 4)
         self.assertEqual(job.speaker_label_generation, 0)
+        np.testing.assert_array_equal(job.audio, audio)
+        self.assertIsNot(job.audio, audio)
 
     def test_live_speaker_memory_update_reembeds_with_live_provider(self) -> None:
         class Bus:
@@ -505,6 +515,230 @@ class LiveSpeakerRuntimeTests(unittest.TestCase):
         np.testing.assert_array_equal(embedding, live_embedding)
         self.assertEqual(duration_seconds, 2.5)
         self.assertEqual(sentence_count, 1)
+
+    def test_final_public_stacks_reuse_their_unique_live_component(self) -> None:
+        component = np.array([0.0, 1.0], dtype=np.float32)
+        for final_provider in (PROMOTED_PUBLIC_PROVIDER, PUBLIC_PROVIDER):
+            with self.subTest(final_provider=final_provider):
+                diarizer = make_window_diarizer()
+                diarizer.embedding = RemoteEmbeddingClient(
+                    "http://127.0.0.1:8660", final_provider, device="cuda"
+                )
+                diarizer.live_embedding = RemoteEmbeddingClient(
+                    "http://127.0.0.1:8660", "speechbrain_resnet", device="cuda"
+                )
+                diarizer._live_embedding_separate = True
+                diarizer._update_config(enhance_embeddings=False, keep_segment_audio=False)
+                result = EmbeddingResult(
+                    embedding=np.array([1.0, 0.0], dtype=np.float32),
+                    components=(EmbeddingComponentResult(
+                        provider="speechbrain_resnet",
+                        weight=0.38 if final_provider == PUBLIC_PROVIDER else 0.28,
+                        embedding=component,
+                    ),),
+                )
+
+                reused = diarizer._reusable_live_embedding_from_final_result(result)
+
+                np.testing.assert_array_equal(reused, component)
+
+    def test_final_component_reuse_falls_back_for_enhancement_or_ambiguous_provider(self) -> None:
+        component = np.array([0.0, 1.0], dtype=np.float32)
+        diarizer = make_window_diarizer()
+        diarizer.embedding = RemoteEmbeddingClient(
+            "http://127.0.0.1:8660", PROMOTED_PUBLIC_PROVIDER, device="cuda"
+        )
+        diarizer.live_embedding = RemoteEmbeddingClient(
+            "http://127.0.0.1:8660", "speechbrain_resnet", device="cuda"
+        )
+        diarizer._live_embedding_separate = True
+        diarizer._update_config(keep_segment_audio=False)
+        result = EmbeddingResult(
+            embedding=np.array([1.0, 0.0], dtype=np.float32),
+            components=(
+                EmbeddingComponentResult("speechbrain_resnet", 0.28, component),
+                EmbeddingComponentResult("speechbrain_resnet", 0.10, component),
+            ),
+        )
+
+        diarizer._update_config(enhance_embeddings=False)
+        self.assertIsNone(diarizer._reusable_live_embedding_from_final_result(result))
+        unique_result = EmbeddingResult(
+            embedding=result.embedding,
+            components=(result.components[0],),
+        )
+        mismatched_weight = EmbeddingResult(
+            embedding=result.embedding,
+            components=(EmbeddingComponentResult(
+                "speechbrain_resnet", 0.29, component
+            ),),
+        )
+        self.assertIsNone(diarizer._reusable_live_embedding_from_final_result(mismatched_weight))
+        diarizer._update_config(enhance_embeddings=True)
+        self.assertIsNone(diarizer._reusable_live_embedding_from_final_result(unique_result))
+
+        diarizer._update_config(enhance_embeddings=False, keep_segment_audio=True)
+        self.assertIsNone(diarizer._reusable_live_embedding_from_final_result(unique_result))
+
+        diarizer._update_config(keep_segment_audio=False)
+        diarizer.live_embedding = RemoteEmbeddingClient(
+            "http://127.0.0.1:8661", "speechbrain_resnet", device="cuda"
+        )
+        self.assertIsNone(diarizer._reusable_live_embedding_from_final_result(unique_result))
+
+        diarizer.live_embedding = RemoteEmbeddingClient(
+            "http://127.0.0.1:8660", "speechbrain_resnet", device="cpu"
+        )
+        self.assertIsNone(diarizer._reusable_live_embedding_from_final_result(unique_result))
+
+        diarizer.live_embedding = RemoteEmbeddingClient(
+            "http://127.0.0.1:8660",
+            "speechbrain_resnet=1.0+wespeaker_campplus=0.5",
+            device="cuda",
+        )
+        self.assertIsNone(diarizer._reusable_live_embedding_from_final_result(unique_result))
+
+    def test_live_speaker_memory_update_uses_precomputed_embedding_without_remote_call(self) -> None:
+        class Bus:
+            def emit(self, _event: str, _payload: object) -> None:
+                return None
+
+        class Memory:
+            def __init__(self) -> None:
+                self.upserts: list[tuple[str, np.ndarray]] = []
+
+            def upsert_profile(self, label: str, embedding: np.ndarray, **_kwargs: object) -> str:
+                self.upserts.append((label, np.asarray(embedding, dtype=np.float32)))
+                return label
+
+        live_embedding = np.array([0.25, 0.75], dtype=np.float32)
+        diarizer = make_window_diarizer()
+        diarizer._speaker_generation = 6
+        diarizer.bus = Bus()
+        diarizer.memory = object()
+        diarizer.live_memory = Memory()
+        diarizer._embed_live_audio_chunk = mock.Mock(side_effect=AssertionError("unexpected remote call"))
+
+        diarizer._process_live_speaker_memory_update(LiveSpeakerMemoryUpdateJob(
+            speaker_id="S2",
+            audio=np.array([0.2, 0.3], dtype=np.float32),
+            sample_rate=16000,
+            duration_seconds=2.5,
+            speaker_generation=6,
+            precomputed_embedding=live_embedding,
+        ))
+
+        diarizer._embed_live_audio_chunk.assert_not_called()
+        self.assertEqual(len(diarizer.live_memory.upserts), 1)
+        np.testing.assert_array_equal(diarizer.live_memory.upserts[0][1], live_embedding)
+
+    def test_precomputed_live_memory_job_does_not_copy_sentence_audio(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer._live_embedding_separate = True
+        diarizer._live_memory_update_jobs = queue.Queue(maxsize=2)
+        audio = np.ones(16000, dtype=np.float32)
+        live_embedding = np.array([0.25, 0.75], dtype=np.float32)
+
+        diarizer._update_live_speaker_memory(
+            "S1",
+            audio,
+            16000,
+            1.0,
+            precomputed_embedding=live_embedding,
+        )
+
+        job = diarizer._live_memory_update_jobs.get_nowait()
+        diarizer._live_memory_update_jobs.task_done()
+        self.assertEqual(job.audio.size, 0)
+        np.testing.assert_array_equal(job.precomputed_embedding, live_embedding)
+        self.assertIsNot(job.precomputed_embedding, live_embedding)
+
+    def test_live_memory_update_uses_post_refinement_sentence_assignment(self) -> None:
+        diarizer = make_window_diarizer()
+        decision = SpeakerDecision(
+            assigned_speaker="S1",
+            created_speaker=False,
+            probabilities={"speaker1": 1.0},
+            similarities={"S1": 1.0},
+            unknown_probability=0.0,
+            top_similarity=1.0,
+            margin=1.0,
+            quality=1.0,
+        )
+        order: list[str] = []
+        diarizer._section_gap_new_speaker_decision = mock.Mock(return_value=decision)
+        diarizer._emit_transcript_sentence = mock.Mock(side_effect=lambda payload: payload)
+        diarizer._maybe_emit_sentence_live_speaker_hint = mock.Mock()
+        diarizer._refresh_person_identity_suggestions = mock.Mock(return_value=False)
+        diarizer._maybe_checkpoint_confirmed_people = mock.Mock()
+
+        def refine_assignment() -> None:
+            order.append("refine")
+            with diarizer._sentence_refinement_lock:
+                diarizer._sentence_refinement_records[7]["assigned_speaker"] = "S2"
+
+        def enqueue_live_update(*args: object, **kwargs: object) -> None:
+            order.append("enqueue")
+            self.assertEqual(args[0], "S2")
+
+        diarizer._refine_speaker_assignments = refine_assignment
+        diarizer._update_live_speaker_memory = mock.Mock(side_effect=enqueue_live_update)
+
+        with mock.patch("window.window_diarizer_transcription.emit_live_profile_snapshot") as snapshot:
+            diarizer._apply_sentence_embedding_decision(
+                index=7,
+                base_payload={"start": 0.0, "end": 1.0},
+                text="A complete sentence.",
+                embedding=np.array([1.0, 0.0], dtype=np.float32),
+                duration_seconds=1.0,
+                live_memory_audio=np.ones(16000, dtype=np.float32),
+                live_memory_sample_rate=16000,
+                live_memory_embedding=np.array([0.0, 1.0], dtype=np.float32),
+                run_speaker_refinement=True,
+            )
+
+        self.assertEqual(order, ["refine", "enqueue"])
+        self.assertEqual(snapshot.call_args.args[2], "S2")
+
+    def test_sentence_processing_carries_reused_component_without_second_remote_call(self) -> None:
+        final_embedding = np.array([1.0, 0.0], dtype=np.float32)
+        live_embedding = np.array([0.0, 1.0], dtype=np.float32)
+        result = EmbeddingResult(
+            embedding=final_embedding,
+            components=(EmbeddingComponentResult(
+                "speechbrain_resnet", 0.28, live_embedding
+            ),),
+        )
+        diarizer = make_window_diarizer()
+        diarizer.embedding = RemoteEmbeddingClient(
+            "http://127.0.0.1:8660", PROMOTED_PUBLIC_PROVIDER, device="cuda"
+        )
+        diarizer.live_embedding = RemoteEmbeddingClient(
+            "http://127.0.0.1:8660", "speechbrain_resnet", device="cuda"
+        )
+        diarizer._live_embedding_separate = True
+        diarizer._update_config(enhance_embeddings=False, keep_segment_audio=False)
+        diarizer.embedding.embed_audio_result = mock.Mock(return_value=result)
+        diarizer.live_embedding.embed_audio = mock.Mock(
+            side_effect=AssertionError("unexpected second remote call")
+        )
+        diarizer._apply_sentence_embedding_decision = mock.Mock()
+
+        diarizer._process_sentence_embedding(EmbeddingSentenceJob(
+            index=1,
+            base_payload={"start": 0.0, "end": 1.0},
+            text="A complete sentence.",
+            audio=np.ones(16000, dtype=np.float32) * 0.1,
+            sample_rate=16000,
+            duration_seconds=1.0,
+            speaker_generation=diarizer._speaker_generation,
+        ))
+
+        diarizer.embedding.embed_audio_result.assert_called_once()
+        diarizer.live_embedding.embed_audio.assert_not_called()
+        kwargs = diarizer._apply_sentence_embedding_decision.call_args.kwargs
+        np.testing.assert_array_equal(kwargs["embedding"], final_embedding)
+        np.testing.assert_array_equal(kwargs["live_memory_embedding"], live_embedding)
 
     def test_stale_live_speaker_memory_update_does_not_upsert(self) -> None:
         class Bus:

@@ -1,6 +1,6 @@
 export function installSpeakerPanel(ctx) {
   const {addReferenceSpeakerButton, audio, bulkCorrectionSpeaker, clearSpeakersButton, createSpeakerOptionValue, manualSpeakerComposer, manualSpeakerName, manualSpeakerReferenceDock, peopleList, recordReferenceButton, recordReferenceButtonLabel, referenceRecordSeconds, referenceSpeakerFile, referenceSpeakerForm, sentences, source, speakerEditorDock, speakerList, speakerPanelTitle, stop, svgNamespace, targetCaptureSampleRate, video} = ctx;
-  const clearTranscriptSelection = (...args) => ctx.api.clearTranscriptSelection(...args), commonSelectedSpeakerId = (...args) => ctx.api.commonSelectedSpeakerId(...args), connect = (...args) => ctx.api.connect(...args), copyTranscript = (...args) => ctx.api.copyTranscript(...args), correctionStatus = (...args) => ctx.api.correctionStatus(...args), downloadTranscript = (...args) => ctx.api.downloadTranscript(...args), ensureSessionOwner = (...args) => ctx.api.ensureSessionOwner(...args), fetchSavedSessions = (...args) => ctx.api.fetchSavedSessions(...args), loadSavedSessionReview = (...args) => ctx.api.loadSavedSessionReview(...args), log = (...args) => ctx.api.log(...args), post = (...args) => ctx.api.post(...args), renderSentence = (...args) => ctx.api.renderSentence(...args), resampleFloat32 = (...args) => ctx.api.resampleFloat32(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), scheduleSavedSessionsRefresh = (...args) => ctx.api.scheduleSavedSessionsRefresh(...args), selectedSpeaker = (...args) => ctx.api.selectedSpeaker(...args), selectedTranscriptIndexes = (...args) => ctx.api.selectedTranscriptIndexes(...args), selectedTranscriptRows = (...args) => ctx.api.selectedTranscriptRows(...args), sessionControlsLocked = (...args) => ctx.api.sessionControlsLocked(...args), setSpeakerFilter = (...args) => ctx.api.setSpeakerFilter(...args), speakerColor = (...args) => ctx.api.speakerColor(...args), speakerCurrentSessionSentenceCount = (...args) => ctx.api.speakerCurrentSessionSentenceCount(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), speakerPanelCountUnit = (...args) => ctx.api.speakerPanelCountUnit(...args), speakerPanelName = (...args) => ctx.api.speakerPanelName(...args), speakerPanelSentenceCount = (...args) => ctx.api.speakerPanelSentenceCount(...args), speakerPanelSpeakingSeconds = (...args) => ctx.api.speakerPanelSpeakingSeconds(...args), syncCorrectionUndoState = (...args) => ctx.api.syncCorrectionUndoState(...args), updateSpeakerState = (...args) => ctx.api.updateSpeakerState(...args);
+  const clearTranscriptSelection = (...args) => ctx.api.clearTranscriptSelection(...args), commonSelectedSpeakerId = (...args) => ctx.api.commonSelectedSpeakerId(...args), connect = (...args) => ctx.api.connect(...args), copyTranscript = (...args) => ctx.api.copyTranscript(...args), correctionStatus = (...args) => ctx.api.correctionStatus(...args), downloadTranscript = (...args) => ctx.api.downloadTranscript(...args), ensureSessionOwner = (...args) => ctx.api.ensureSessionOwner(...args), fetchSavedSessions = (...args) => ctx.api.fetchSavedSessions(...args), isLiveProvisionalSpeaker = (...args) => ctx.api.isLiveProvisionalSpeaker(...args), loadSavedSessionReview = (...args) => ctx.api.loadSavedSessionReview(...args), log = (...args) => ctx.api.log(...args), post = (...args) => ctx.api.post(...args), renderSentence = (...args) => ctx.api.renderSentence(...args), resampleFloat32 = (...args) => ctx.api.resampleFloat32(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), scheduleSavedSessionsRefresh = (...args) => ctx.api.scheduleSavedSessionsRefresh(...args), selectedSpeaker = (...args) => ctx.api.selectedSpeaker(...args), selectedTranscriptIndexes = (...args) => ctx.api.selectedTranscriptIndexes(...args), selectedTranscriptRows = (...args) => ctx.api.selectedTranscriptRows(...args), sessionControlsLocked = (...args) => ctx.api.sessionControlsLocked(...args), setSpeakerFilter = (...args) => ctx.api.setSpeakerFilter(...args), speakerColor = (...args) => ctx.api.speakerColor(...args), speakerCurrentSessionSentenceCount = (...args) => ctx.api.speakerCurrentSessionSentenceCount(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), speakerPanelCountUnit = (...args) => ctx.api.speakerPanelCountUnit(...args), speakerPanelName = (...args) => ctx.api.speakerPanelName(...args), speakerPanelSentenceCount = (...args) => ctx.api.speakerPanelSentenceCount(...args), speakerPanelSpeakingSeconds = (...args) => ctx.api.speakerPanelSpeakingSeconds(...args), syncCorrectionUndoState = (...args) => ctx.api.syncCorrectionUndoState(...args), updateSpeakerState = (...args) => ctx.api.updateSpeakerState(...args);
   function speakerSpeakingTimeText(seconds) {
     const totalSeconds = Math.max(0, Number(seconds || 0));
     if (totalSeconds < 60) return `${totalSeconds.toFixed(1)}s`;
@@ -17,7 +17,7 @@ export function installSpeakerPanel(ctx) {
     if (speaker.name) return speaker.name;
     if (speaker.identity_status === "suggested" && speaker.suggested_person_id) {
       const match = String(speaker.id || "").match(/(\d+)$/);
-      if (match) return `Speaker ${Number(match[1]) + 1}`;
+      if (match) return `Speaker ${Number(match[1])}`;
     }
     return speakerPanelName(speaker);
   }
@@ -256,7 +256,7 @@ export function installSpeakerPanel(ctx) {
     placeholder.textContent = "Merge into...";
     select.appendChild(placeholder);
     ctx.owners.speakers.speakerLibraryState.speakers
-      .filter(candidate => candidate.id && candidate.id !== speaker.id)
+      .filter(candidate => candidate.id && candidate.id !== speaker.id && !isLiveProvisionalSpeaker(candidate))
       .forEach(candidate => {
         const option = document.createElement("option");
         option.value = candidate.id;
@@ -871,14 +871,16 @@ export function installSpeakerPanel(ctx) {
   function renderSpeakerPanel() {
     const controlsLocked = sessionControlsLocked();
     const reviewMode = savedSessionReviewOpen();
-    speakerPanelTitle.textContent = `Detected speakers (${ctx.owners.speakers.speakerLibraryState.speakers.length})`;
-    clearSpeakersButton.disabled = controlsLocked || reviewMode || !ctx.owners.speakers.speakerLibraryState.speakers.length;
+    const allSpeakers = ctx.owners.speakers.speakerLibraryState.speakers;
+    const detectedSpeakers = allSpeakers.filter(speaker => !isLiveProvisionalSpeaker(speaker));
+    speakerPanelTitle.textContent = `Detected speakers (${detectedSpeakers.length})`;
+    clearSpeakersButton.disabled = controlsLocked || reviewMode || !allSpeakers.length;
     addReferenceSpeakerButton.disabled = controlsLocked || reviewMode;
     manualSpeakerName.disabled = controlsLocked || reviewMode;
     syncManualSpeakerComposer();
     renderPeopleList();
     speakerList.textContent = "";
-    if (!ctx.owners.speakers.speakerLibraryState.speakers.length) {
+    if (!allSpeakers.length) {
       const empty = document.createElement("div");
       empty.className = "speaker-empty";
       empty.textContent = "No speakers yet";
@@ -888,65 +890,70 @@ export function installSpeakerPanel(ctx) {
       }
       return true;
     }
-    const speakerIds = ctx.owners.speakers.speakerLibraryState.speakers.map(speaker => speaker.id).filter(Boolean);
+    const speakerIds = allSpeakers.map(speaker => speaker.id).filter(Boolean);
     if (ctx.owners.reference.editingSpeakerId && !speakerIds.includes(ctx.owners.reference.editingSpeakerId)) {
       ctx.owners.reference.editingSpeakerId = "";
     }
-    ctx.owners.speakers.speakerLibraryState.speakers.forEach(speaker => {
-      const isEditing = speaker.id === ctx.owners.reference.editingSpeakerId;
+    allSpeakers.forEach(speaker => {
+      const isLiveProvisional = isLiveProvisionalSpeaker(speaker);
+      const isEditing = !isLiveProvisional && speaker.id === ctx.owners.reference.editingSpeakerId;
       const hasReference = Boolean(speaker.reference_audio || speaker.locked || speaker.source === "reference");
       const row = document.createElement("div");
       row.className = `speaker-item${isEditing ? " editing" : ""}`;
+      row.classList.toggle("provisional-speaker", isLiveProvisional);
       row.classList.toggle("live-speaker", Boolean(ctx.owners.transcript.currentLiveSpeakerId) && speaker.id === ctx.owners.transcript.currentLiveSpeakerId);
       row.dataset.speakerId = speaker.id || "";
       const color = speakerColor(speaker.id);
       row.style.setProperty("--speaker-color", color || "#8AA0B5");
       const summary = document.createElement("div");
       summary.className = "speaker-item-summary";
-      summary.setAttribute("role", "button");
-      summary.tabIndex = controlsLocked ? -1 : 0;
-      summary.setAttribute("aria-expanded", isEditing ? "true" : "false");
-      summary.addEventListener("click", event => {
-        if (isSpeakerRowControl(event.target)) return;
-        if (controlsLocked) return;
-        setEditingSpeaker(speaker.id || "");
-      });
-      summary.addEventListener("keydown", event => {
-        if (isSpeakerRowControl(event.target)) return;
-        if (controlsLocked) return;
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
+      summary.setAttribute("role", isLiveProvisional ? "status" : "button");
+      summary.tabIndex = isLiveProvisional || controlsLocked ? -1 : 0;
+      if (!isLiveProvisional) {
+        summary.setAttribute("aria-expanded", isEditing ? "true" : "false");
+        summary.addEventListener("click", event => {
+          if (isSpeakerRowControl(event.target)) return;
+          if (controlsLocked) return;
           setEditingSpeaker(speaker.id || "");
-        }
-      });
+        });
+        summary.addEventListener("keydown", event => {
+          if (isSpeakerRowControl(event.target)) return;
+          if (controlsLocked) return;
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setEditingSpeaker(speaker.id || "");
+          }
+        });
+      }
 
       const body = document.createElement("span");
       body.className = "speaker-summary-body";
       const panelSentenceCount = speakerPanelSentenceCount(speaker);
       const panelSpeakingSeconds = speakerPanelSpeakingSeconds(speaker);
-      const isEmpty = panelSentenceCount === 0 && panelSpeakingSeconds === 0;
+      const isEmpty = !isLiveProvisional && panelSentenceCount === 0 && panelSpeakingSeconds === 0;
       row.classList.toggle("empty-speaker", isEmpty);
       const title = document.createElement("span");
       title.className = "speaker-row-title";
-      title.textContent = speakerMeetingName(speaker);
+      title.textContent = isLiveProvisional ? "Matching new voice..." : speakerMeetingName(speaker);
       const titleRow = document.createElement("span");
       titleRow.className = "speaker-title-row";
       titleRow.appendChild(title);
+      const statusRow = document.createElement("span");
+      statusRow.className = "speaker-status-row";
       if (isEmpty) {
         const emptyBadge = document.createElement("span");
         emptyBadge.className = "speaker-empty-badge";
         emptyBadge.textContent = "Empty Speaker";
-        titleRow.appendChild(emptyBadge);
-      }
-      if (ctx.owners.transcript.currentLiveSpeakerId && speaker.id === ctx.owners.transcript.currentLiveSpeakerId) {
-        titleRow.appendChild(createSpeakerLiveIndicator());
+        statusRow.appendChild(emptyBadge);
       }
       const sentenceCount = document.createElement("span");
       sentenceCount.className = "speaker-sentence-count";
-      sentenceCount.textContent = isEmpty
+      sentenceCount.textContent = isLiveProvisional
+        ? "Comparing with detected speakers..."
+        : isEmpty
         ? "No transcript assigned"
         : speakerSentenceText(panelSentenceCount, panelSpeakingSeconds, speakerPanelCountUnit());
-      body.appendChild(titleRow);
+      body.appendChild(statusRow);
       body.appendChild(sentenceCount);
       if (hasReference) {
         const referenceStatus = document.createElement("span");
@@ -960,7 +967,7 @@ export function installSpeakerPanel(ctx) {
         referenceStatus.appendChild(referenceText);
         body.appendChild(referenceStatus);
       }
-      const showIdentityControls = !isEmpty || speaker.identity_status === "suggested" || speaker.identity_status === "confirmed" || hasReference;
+      const showIdentityControls = !isLiveProvisional && (!isEmpty || speaker.identity_status === "suggested" || speaker.identity_status === "confirmed" || hasReference);
       if (showIdentityControls) {
         const identityControls = createSpeakerIdentityControls(speaker);
         if (identityControls.children.length) body.appendChild(identityControls);
@@ -973,19 +980,28 @@ export function installSpeakerPanel(ctx) {
 
       const tail = document.createElement("span");
       tail.className = "speaker-item-tail";
-      const filterControls = document.createElement("span");
-      filterControls.className = "speaker-filter-controls";
-      filterControls.appendChild(createSpeakerFilterToggle(speaker, "solo"));
-      filterControls.appendChild(createSpeakerFilterToggle(speaker, "mute"));
-      tail.appendChild(filterControls);
-      const chevron = document.createElement("span");
-      chevron.className = "speaker-chevron";
-      chevron.setAttribute("aria-hidden", "true");
-      tail.appendChild(chevron);
+      if (!isLiveProvisional) {
+        const filterControls = document.createElement("span");
+        filterControls.className = "speaker-filter-controls";
+        filterControls.appendChild(createSpeakerFilterToggle(speaker, "solo"));
+        filterControls.appendChild(createSpeakerFilterToggle(speaker, "mute"));
+        tail.appendChild(filterControls);
+        const chevron = document.createElement("span");
+        chevron.className = "speaker-chevron";
+        chevron.setAttribute("aria-hidden", "true");
+        tail.appendChild(chevron);
+      }
 
+      const header = document.createElement("span");
+      header.className = "speaker-summary-header";
+      header.appendChild(titleRow);
+      if (!isLiveProvisional) header.appendChild(tail);
+      summary.appendChild(header);
       summary.appendChild(body);
-      summary.appendChild(tail);
       row.appendChild(summary);
+      if (ctx.owners.transcript.currentLiveSpeakerId && speaker.id === ctx.owners.transcript.currentLiveSpeakerId) {
+        row.appendChild(createSpeakerLiveIndicator());
+      }
       if (isEditing) {
         const expanded = document.createElement("div");
         expanded.className = "speaker-expanded-panel";
@@ -1053,7 +1069,7 @@ export function installSpeakerPanel(ctx) {
         transcriptSection.appendChild(transcriptActions);
         expanded.appendChild(transcriptSection);
 
-        if (!reviewMode && ctx.owners.speakers.speakerLibraryState.speakers.length > 1) {
+        if (!reviewMode && detectedSpeakers.length > 1) {
           const correctionSection = document.createElement("section");
           correctionSection.className = "speaker-expanded-section speaker-correction-section";
           const correctionHeading = document.createElement("h3");

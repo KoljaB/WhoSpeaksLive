@@ -28,7 +28,12 @@ import numpy as np
 from stream2sentence import generate_sentences, init_tokenizer
 
 from common.audio_utils import load_audio_file, pad_audio, trim_silence, write_wav
-from embeddings.embedding_providers import EmbeddingSubprocessClient, RemoteEmbeddingClient
+from embeddings.embedding_providers import (
+    EmbeddingResult,
+    EmbeddingSubprocessClient,
+    RemoteEmbeddingClient,
+    parse_embedding_provider_stack_specs,
+)
 from speakers.speaker_embedding_cluster import (
     SpeakerDecision,
     SpeakerMemory,
@@ -525,6 +530,65 @@ class WindowModelRuntimeMixin:
         if np.any(np.asarray(audio, dtype=np.float32)):
             audio, sample_rate = self._enhance_audio(audio, sample_rate, path="embeddings")
         return self._embed_audio_chunk_with_client(self.embedding, audio, sample_rate, suffix)
+
+    def _embed_audio_chunk_result(
+        self,
+        audio: np.ndarray,
+        sample_rate: int,
+        suffix: str,
+    ) -> EmbeddingResult:
+        """Return the final vector and remote weighted-stack components when available."""
+
+        if isinstance(self.embedding, RemoteEmbeddingClient) and not self.args.keep_segment_audio:
+            if np.any(np.asarray(audio, dtype=np.float32)):
+                audio, sample_rate = self._enhance_audio(audio, sample_rate, path="embeddings")
+            return self.embedding.embed_audio_result(audio, sample_rate)
+        return EmbeddingResult(embedding=self._embed_audio_chunk(audio, sample_rate, suffix))
+
+    def _reusable_live_embedding_from_final_result(
+        self,
+        result: EmbeddingResult,
+    ) -> np.ndarray | None:
+        """Return a final-stack component only when it exactly matches live PCM semantics."""
+
+        if not getattr(self, "_live_embedding_separate", False):
+            return None
+        if bool(getattr(self.args, "enhance_embeddings", False)):
+            return None
+        if bool(getattr(self.args, "keep_segment_audio", False)):
+            return None
+        if type(self.embedding) is not RemoteEmbeddingClient:
+            return None
+        if type(self.live_embedding) is not RemoteEmbeddingClient:
+            return None
+        if self.embedding.base_url != self.live_embedding.base_url:
+            return None
+        if self.embedding.device != self.live_embedding.device:
+            return None
+        live_specs = parse_embedding_provider_stack_specs(self.live_embedding.provider)
+        if len(live_specs) != 1 or live_specs[0][1] <= 0.0:
+            return None
+        live_provider = live_specs[0][0]
+        final_matches = [
+            weight
+            for provider, weight in parse_embedding_provider_stack_specs(self.embedding.provider)
+            if provider == live_provider and weight > 0.0
+        ]
+        component_matches = [
+            component
+            for component in result.components
+            if component.provider == live_provider and component.weight > 0.0
+        ]
+        if len(final_matches) != 1 or len(component_matches) != 1:
+            return None
+        if not math.isclose(
+            float(component_matches[0].weight),
+            float(final_matches[0]),
+            rel_tol=1e-7,
+            abs_tol=1e-9,
+        ):
+            return None
+        return component_matches[0].embedding
 
     def _embed_live_audio_chunk(self, audio: np.ndarray, sample_rate: int, suffix: str) -> np.ndarray:
         return self._embed_audio_chunk_with_client(self.live_embedding, audio, sample_rate, suffix)

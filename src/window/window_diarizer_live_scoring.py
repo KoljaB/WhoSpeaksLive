@@ -102,6 +102,11 @@ from window.live_speaker_algorithm import (
     LiveSpeakerAlgorithmConfig,
     LiveSpeakerStep,
 )
+from window.live_speaker_bayes import (
+    BayesSpeakerTrackerConfig,
+    CausalBayesSpeakerTracker,
+)
+from window.live_speaker_multiscale import MultiScaleEvidence, MultiScaleStep
 from window.live_speaker_replay import blend_live_speaker_embeddings
 
 
@@ -134,10 +139,187 @@ class WindowLiveScoringMixin:
             ),
         )
 
-    def _shared_live_speaker_algorithm(self) -> CausalLiveSpeakerAlgorithm:
+    def _shared_live_speaker_algorithm(self) -> Any:
+        tracker_name = str(getattr(self.args, "live_speaker_tracker", "classic") or "classic")
+        if tracker_name == "bayes":
+            context_weight = max(
+                0.0,
+                min(1.0, float(getattr(self.args, "live_speaker_probe_context_weight", 0.0))),
+            )
+            short_window = max(
+                0.01, float(getattr(self.args, "live_speaker_probe_window_seconds", 1.0))
+            )
+            context_window = max(
+                short_window,
+                float(getattr(self.args, "live_speaker_probe_context_window_seconds", 0.0)),
+            )
+            windows = (short_window, context_window) if context_weight > 0.0 and context_window > short_window else (short_window,)
+            weights = (1.0 - context_weight, context_weight) if len(windows) == 2 else (1.0,)
+            bayes_config = BayesSpeakerTrackerConfig(
+                scale_windows=windows,
+                scale_weights=weights,
+                min_similarity=float(getattr(self.args, "realtime_preview_diarize_min_similarity", 0.45)),
+                min_margin=float(getattr(self.args, "realtime_preview_diarize_min_margin", 0.08)),
+                similarity_temperature=float(getattr(self.args, "live_speaker_bayes_temperature", 0.10)),
+                unknown_bias=float(getattr(self.args, "live_speaker_bayes_unknown_bias", 0.0)),
+                profile_count_bias_threshold=max(
+                    0, int(getattr(self.args, "live_speaker_bayes_profile_count_threshold", 0))
+                ),
+                low_profile_unknown_bias=float(
+                    getattr(self.args, "live_speaker_bayes_low_profile_unknown_bias", 0.0)
+                ),
+                high_profile_unknown_bias=float(
+                    getattr(self.args, "live_speaker_bayes_high_profile_unknown_bias", 0.0)
+                ),
+                profile_count_unknown_bias_slope=float(
+                    getattr(self.args, "live_speaker_bayes_profile_count_bias_slope", 0.0)
+                ),
+                enable_provisional_profiles=bool(
+                    getattr(self.args, "live_speaker_bayes_provisional_profiles", False)
+                ),
+                provisional_creation_count=max(1, int(
+                    getattr(self.args, "live_speaker_bayes_provisional_creation_count", 2)
+                )),
+                provisional_later_creation_count=max(0, int(
+                    getattr(self.args, "live_speaker_bayes_provisional_later_creation_count", 0)
+                )),
+                provisional_later_creation_profile_threshold=max(0, int(
+                    getattr(self.args, "live_speaker_bayes_provisional_later_creation_profile_threshold", 0)
+                )),
+                provisional_creation_similarity_ceiling=float(
+                    getattr(self.args, "live_speaker_bayes_provisional_creation_similarity_ceiling", 0.20)
+                ),
+                provisional_boundary_creation_similarity_ceiling=float(getattr(
+                    self.args,
+                    "live_speaker_bayes_provisional_boundary_creation_similarity_ceiling",
+                    -1.0,
+                )),
+                provisional_boundary_continuity_max_similarity=float(getattr(
+                    self.args,
+                    "live_speaker_bayes_provisional_boundary_continuity",
+                    -1.0,
+                )),
+                provisional_creation_max_finalized_profiles=int(
+                    getattr(self.args, "live_speaker_bayes_provisional_max_finalized_profiles", -1)
+                ),
+                provisional_merge_min_similarity=float(
+                    getattr(self.args, "live_speaker_bayes_provisional_merge_min_similarity", 0.25)
+                ),
+                provisional_update_alpha=float(
+                    getattr(self.args, "live_speaker_bayes_provisional_update_alpha", 0.0)
+                ),
+                provisional_update_continuity_min_similarity=float(
+                    getattr(
+                        self.args,
+                        "live_speaker_bayes_provisional_update_continuity",
+                        -1.0,
+                    )
+                ),
+                provisional_update_history_size=max(1, int(
+                    getattr(
+                        self.args,
+                        "live_speaker_bayes_provisional_update_history_size",
+                        1,
+                    )
+                )),
+                provisional_max_active_count=max(0, int(
+                    getattr(self.args, "live_speaker_bayes_provisional_max_active_count", 0)
+                )),
+                provisional_pool_overflow_update_alpha=float(
+                    getattr(
+                        self.args,
+                        "live_speaker_bayes_provisional_pool_overflow_update_alpha",
+                        0.0,
+                    )
+                ),
+                provisional_scale_agreement_min_similarity=float(
+                    getattr(self.args, "live_speaker_bayes_provisional_scale_agreement", -1.0)
+                ),
+                provisional_assignment_scale_agreement_min_similarity=float(
+                    getattr(self.args, "live_speaker_bayes_provisional_assignment_scale_agreement", -1.0)
+                ),
+                incumbent_hold_scale_agreement_min_similarity=float(
+                    getattr(self.args, "live_speaker_bayes_incumbent_hold_scale_agreement", -1.0)
+                ),
+                incumbent_continuity_min_similarity=float(
+                    getattr(self.args, "live_speaker_bayes_incumbent_continuity", -1.0)
+                ),
+                incumbent_continuity_history_size=max(1, int(
+                    getattr(
+                        self.args,
+                        "live_speaker_bayes_incumbent_continuity_history_size",
+                        3,
+                    )
+                )),
+                incumbent_continuity_update_on_hold=bool(
+                    getattr(
+                        self.args,
+                        "live_speaker_bayes_incumbent_continuity_update_on_hold",
+                        False,
+                    )
+                ),
+                boundary_short_only_max_continuity=float(getattr(
+                    self.args,
+                    "live_speaker_bayes_boundary_short_only_continuity",
+                    -1.0,
+                )),
+                boundary_residual_incumbent_alpha=float(getattr(
+                    self.args,
+                    "live_speaker_bayes_boundary_residual_incumbent_alpha",
+                    0.0,
+                )),
+                short_long_crossover_min_margin=float(getattr(
+                    self.args,
+                    "live_speaker_bayes_short_long_crossover_min_margin",
+                    -1.0,
+                )),
+                short_long_crossover_min_similarity=float(getattr(
+                    self.args,
+                    "live_speaker_bayes_short_long_crossover_min_similarity",
+                    -1.0,
+                )),
+                short_long_crossover_count=max(1, int(getattr(
+                    self.args,
+                    "live_speaker_bayes_short_long_crossover_count",
+                    1,
+                ))),
+                short_long_differential_candidate_gain=float(getattr(
+                    self.args,
+                    "live_speaker_bayes_short_long_differential_candidate_gain",
+                    -2.0,
+                )),
+                short_long_differential_incumbent_loss=float(getattr(
+                    self.args,
+                    "live_speaker_bayes_short_long_differential_incumbent_loss",
+                    -2.0,
+                )),
+                provisional_temporal_consistency_min_similarity=float(
+                    getattr(self.args, "live_speaker_bayes_provisional_temporal_consistency", -1.0)
+                ),
+                stay_probability=float(getattr(self.args, "live_speaker_bayes_stay_probability", 0.50)),
+                prior_strength=float(getattr(self.args, "live_speaker_bayes_prior_strength", 0.0)),
+                evidence_strength=float(getattr(self.args, "live_speaker_bayes_evidence_strength", 1.0)),
+                min_known_probability=float(
+                    getattr(self.args, "realtime_preview_diarize_min_known_probability", 0.5)
+                ),
+                switch_probability_margin=float(
+                    getattr(self.args, "live_speaker_bayes_switch_probability_margin", 0.0)
+                ),
+                unknown_release_count=max(
+                    1, int(getattr(self.args, "live_speaker_probe_clear_unknown_count", 2) or 1)
+                ),
+                silence_release_count=max(
+                    1, int(getattr(self.args, "live_speaker_probe_clear_silence_count", 1))
+                ),
+            )
+            algorithm = getattr(self, "_shared_live_speaker_core", None)
+            if not isinstance(algorithm, CausalBayesSpeakerTracker) or algorithm.config != bayes_config:
+                algorithm = CausalBayesSpeakerTracker(config=bayes_config)
+                self._shared_live_speaker_core = algorithm
+            return algorithm
         config = self._shared_live_speaker_config()
         algorithm = getattr(self, "_shared_live_speaker_core", None)
-        if algorithm is None or algorithm.config != config:
+        if not isinstance(algorithm, CausalLiveSpeakerAlgorithm) or algorithm.config != config:
             algorithm = CausalLiveSpeakerAlgorithm(config=config)
             self._shared_live_speaker_core = algorithm
         return algorithm
@@ -150,6 +332,8 @@ class WindowLiveScoringMixin:
         embedding: np.ndarray | None,
         duration_seconds: float,
         probe_scheduled: bool,
+        context_embedding: np.ndarray | None = None,
+        context_duration_seconds: float | None = None,
         release_signal: bool = False,
         embedding_latency_seconds: float | None = None,
         skipped_reason: str = "",
@@ -157,16 +341,44 @@ class WindowLiveScoringMixin:
         with self._shared_live_speaker_lock():
             algorithm = self._shared_live_speaker_algorithm()
             algorithm.sync_profiles(self.live_memory.export_profiles())
-            decision = algorithm.step(LiveSpeakerStep(
-                media_time=max(0.0, float(media_time)),
-                speech=bool(speech),
-                embedding=None if embedding is None else np.asarray(embedding, dtype=np.float32),
-                duration_seconds=max(0.0, float(duration_seconds)),
-                probe_scheduled=bool(probe_scheduled),
-                release_signal=bool(release_signal),
-                embedding_latency_seconds=embedding_latency_seconds,
-                skipped_reason=str(skipped_reason),
-            ))
+            if isinstance(algorithm, CausalBayesSpeakerTracker):
+                evidences: list[MultiScaleEvidence] = []
+                if embedding is not None:
+                    evidences.append(MultiScaleEvidence(
+                        float(algorithm.config.scale_windows[0]),
+                        np.asarray(embedding, dtype=np.float32),
+                    ))
+                configured_context = float(
+                    getattr(self.args, "live_speaker_probe_context_window_seconds", 0.0)
+                )
+                if (
+                    context_embedding is not None
+                    and context_duration_seconds is not None
+                    and float(context_duration_seconds) + 1e-6 >= configured_context
+                ):
+                    evidences.append(MultiScaleEvidence(
+                        float(algorithm.config.scale_windows[-1]),
+                        np.asarray(context_embedding, dtype=np.float32),
+                    ))
+                decision = algorithm.step(MultiScaleStep(
+                    media_time=max(0.0, float(media_time)),
+                    speech=bool(speech),
+                    evidences=tuple(evidences),
+                    probe_scheduled=bool(probe_scheduled),
+                    release_signal=bool(release_signal),
+                    skipped_reason=str(skipped_reason),
+                ))
+            else:
+                decision = algorithm.step(LiveSpeakerStep(
+                    media_time=max(0.0, float(media_time)),
+                    speech=bool(speech),
+                    embedding=None if embedding is None else np.asarray(embedding, dtype=np.float32),
+                    duration_seconds=max(0.0, float(duration_seconds)),
+                    probe_scheduled=bool(probe_scheduled),
+                    release_signal=bool(release_signal),
+                    embedding_latency_seconds=embedding_latency_seconds,
+                    skipped_reason=str(skipped_reason),
+                ))
         self.bus.emit("live_speaker_shared_core_decision", decision.trace_record())
         return decision
 
@@ -183,6 +395,39 @@ class WindowLiveScoringMixin:
             "quality": None,
             "assignment_source": "realtime_preview",
         }
+
+    @staticmethod
+    def _public_live_speaker_label(
+        label: str | None,
+        profile_aliases: dict[str, str] | None,
+    ) -> str | None:
+        """Translate an internal provisional tracker id back to its finalized UI id."""
+
+        if not label:
+            return None
+        value = str(label)
+        for external_label, internal_label in (profile_aliases or {}).items():
+            if str(internal_label) == value:
+                return str(external_label)
+        return value
+
+    @classmethod
+    def _public_live_speaker_values(
+        cls,
+        values: dict[str, float],
+        profile_aliases: dict[str, str] | None,
+        *,
+        probability_keys: bool = False,
+    ) -> dict[str, float]:
+        public: dict[str, float] = {}
+        for raw_label, raw_value in (values or {}).items():
+            label = str(raw_label)
+            if label != "unknown":
+                label = str(cls._public_live_speaker_label(label, profile_aliases) or label)
+                if probability_keys and label.startswith("S") and label[1:].isdigit():
+                    label = f"speaker{int(label[1:])}"
+            public[label] = max(float(raw_value), float(public.get(label, 0.0)))
+        return public
 
     @staticmethod
     def _speaker_id_from_probability_key(key: str) -> str | None:
@@ -629,13 +874,18 @@ class WindowLiveScoringMixin:
         if duration_seconds < max(0.0, float(min_audio_seconds)):
             return self._realtime_unknown_speaker_payload()
         memory = self.live_memory
-        if memory.profile_count() <= 0:
+        bayes_provisional = (
+            str(getattr(self.args, "live_speaker_tracker", "classic")) == "bayes"
+            and bool(getattr(self.args, "live_speaker_bayes_provisional_profiles", False))
+        )
+        if memory.profile_count() <= 0 and not bayes_provisional:
             return self._realtime_unknown_speaker_payload()
 
         chunk = pad_audio(trim_silence(audio, self.sample_rate), self.args.min_embed_seconds, self.sample_rate)
         try:
             embed_started = time.monotonic()
             embedding = self._embed_live_audio_chunk(chunk, self.sample_rate, ".live.short.wav")
+            context_embedding: np.ndarray | None = None
             applied_context_weight = 0.0
             effective_duration = float(duration_seconds)
             requested_context_weight = max(0.0, min(1.0, float(context_weight)))
@@ -648,9 +898,10 @@ class WindowLiveScoringMixin:
                 context_embedding = self._embed_live_audio_chunk(
                     context_chunk, self.sample_rate, ".live.context.wav"
                 )
-                embedding = blend_live_speaker_embeddings(
-                    embedding, context_embedding, requested_context_weight
-                )
+                if str(getattr(self.args, "live_speaker_tracker", "classic")) != "bayes":
+                    embedding = blend_live_speaker_embeddings(
+                        embedding, context_embedding, requested_context_weight
+                    )
                 applied_context_weight = requested_context_weight
                 effective_duration = max(
                     effective_duration,
@@ -662,18 +913,52 @@ class WindowLiveScoringMixin:
                 media_time=self.playback_time(),
                 speech=True,
                 embedding=embedding,
-                duration_seconds=effective_duration,
+                duration_seconds=(
+                    float(duration_seconds)
+                    if str(getattr(self.args, "live_speaker_tracker", "classic")) == "bayes"
+                    else effective_duration
+                ),
                 probe_scheduled=True,
+                context_embedding=context_embedding,
+                context_duration_seconds=context_duration_seconds,
                 embedding_latency_seconds=embedding_latency_seconds,
             )
         except Exception as exc:
             self.bus.emit("status", {"message": f"Realtime preview speaker scoring error: {type(exc).__name__}: {exc}"})
             return self._realtime_unknown_speaker_payload()
 
-        raw_probabilities = dict(core_decision.raw_probabilities)
-        smoothed_probabilities = dict(core_decision.probabilities)
-        assigned_speaker = core_decision.visible_speaker
-        self._ensure_speaker_metadata(assigned_speaker)
+        diagnostics = getattr(core_decision, "diagnostics", {})
+        profile_aliases = (
+            dict(diagnostics.get("profile_aliases") or {})
+            if isinstance(diagnostics, dict)
+            else {}
+        )
+        internal_assigned_speaker = core_decision.visible_speaker
+        assigned_speaker = self._public_live_speaker_label(
+            internal_assigned_speaker,
+            profile_aliases,
+        )
+        raw_probabilities = self._public_live_speaker_values(
+            dict(core_decision.raw_probabilities),
+            profile_aliases,
+            probability_keys=True,
+        )
+        smoothed_probabilities = self._public_live_speaker_values(
+            dict(core_decision.probabilities),
+            profile_aliases,
+            probability_keys=True,
+        )
+        public_similarities = self._public_live_speaker_values(
+            dict(core_decision.similarities),
+            profile_aliases,
+        )
+        provisional = bool(
+            assigned_speaker and str(assigned_speaker).startswith("provisional_")
+        )
+        self._ensure_speaker_metadata(
+            assigned_speaker,
+            source="live_provisional" if provisional else "detected",
+        )
 
         known_similarities = list(core_decision.similarities.values())
         ordered_similarities = sorted((float(value) for value in known_similarities), reverse=True)
@@ -688,9 +973,16 @@ class WindowLiveScoringMixin:
             "assigned_speaker": assigned_speaker,
             **self._speaker_info_for_payload(assigned_speaker),
             "created_speaker": False,
+            "provisional_speaker": provisional,
+            "internal_speaker_id": internal_assigned_speaker,
+            "replaces_speaker_id": (
+                internal_assigned_speaker
+                if internal_assigned_speaker and assigned_speaker != internal_assigned_speaker
+                else None
+            ),
             "probabilities": smoothed_probabilities,
             "raw_probabilities": raw_probabilities,
-            "similarities": core_decision.similarities,
+            "similarities": public_similarities,
             "unknown_probability": float(smoothed_probabilities.get("unknown", 1.0)),
             "top_similarity": top_similarity,
             "margin": margin,
@@ -718,12 +1010,22 @@ class WindowLiveScoringMixin:
         speaker_generation: int | None = None,
         sentence_start: float | None = None,
         sentence_end: float | None = None,
+        precomputed_embedding: np.ndarray | None = None,
     ) -> None:
         if not getattr(self, "_live_embedding_separate", False) or not speaker_id:
             return
+        copied_precomputed_embedding = (
+            None
+            if precomputed_embedding is None
+            else np.asarray(precomputed_embedding, dtype=np.float32).copy()
+        )
         job = LiveSpeakerMemoryUpdateJob(
             speaker_id=str(speaker_id),
-            audio=np.asarray(audio, dtype=np.float32).copy(),
+            audio=(
+                np.asarray(audio, dtype=np.float32).copy()
+                if copied_precomputed_embedding is None
+                else np.empty(0, dtype=np.float32)
+            ),
             sample_rate=int(sample_rate),
             duration_seconds=float(duration_seconds),
             suffix=suffix,
@@ -738,6 +1040,7 @@ class WindowLiveScoringMixin:
             run_id=str(getattr(getattr(self, "_active_run", None), "run_id", "")),
             sentence_start=sentence_start,
             sentence_end=sentence_end,
+            precomputed_embedding=copied_precomputed_embedding,
         )
         jobs = getattr(self, "_live_memory_update_jobs", None)
         if jobs is None:
@@ -781,7 +1084,11 @@ class WindowLiveScoringMixin:
                 return
             if not self._live_update_speaker_exists(job.speaker_id):
                 return
-            embedding = self._embed_live_audio_chunk(job.audio, job.sample_rate, job.suffix)
+            embedding = job.precomputed_embedding
+            if embedding is None:
+                embedding = self._embed_live_audio_chunk(job.audio, job.sample_rate, job.suffix)
+            else:
+                embedding = np.asarray(embedding, dtype=np.float32)
             with self._live_memory_update_lock_obj():
                 if not self._live_memory_update_job_is_current(job):
                     return

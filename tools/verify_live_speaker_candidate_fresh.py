@@ -122,7 +122,13 @@ def _fresh_block(
 
     speech = np.asarray(np.load(input_root / video_id / "speech_gate.u1.npy", allow_pickle=False), dtype=bool)
     probes = np.asarray(np.load(input_root / video_id / "probe_schedule.u1.npy", allow_pickle=False), dtype=bool)
-    attempted = probes & speech & np.asarray(cached.valid, dtype=bool)
+    embedding_schedule_path = input_root / video_id / "embedding_schedule.u1.npy"
+    embedding_schedule = (
+        np.asarray(np.load(embedding_schedule_path, allow_pickle=False), dtype=bool)
+        if embedding_schedule_path.exists()
+        else probes
+    )
+    attempted = embedding_schedule & speech & np.asarray(cached.valid, dtype=bool)
     dimensions = [
         int(load_cached_live_window_block(corpus_root, provider, video_id, window_seconds).embeddings.shape[1])
         for provider, _weight in provider_specs

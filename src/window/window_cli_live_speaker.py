@@ -377,6 +377,15 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
         help="Seconds between fallback live-speaker probes.",
     )
     parser.add_argument(
+        "--live-speaker-probe-release-interval-seconds",
+        type=float,
+        default=0.0,
+        help=(
+            "Seconds between cheap silence-release checks while a speaker is visible; "
+            "0 reuses the embedding-probe interval."
+        ),
+    )
+    parser.add_argument(
         "--live-speaker-probe-attack-interval-seconds",
         type=float,
         default=0.0,
@@ -400,6 +409,124 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
         default=0.0,
         help="Weight in [0,1] assigned to the optional longer live-speaker context embedding.",
     )
+    parser.add_argument(
+        "--live-speaker-tracker",
+        choices=("classic", "bayes"),
+        default="classic",
+        help=(
+            "Causal identity tracker. 'classic' blends the two embeddings before scoring; "
+            "'bayes' keeps them independent and filters speaker state probabilistically."
+        ),
+    )
+    parser.add_argument("--live-speaker-bayes-temperature", type=float, default=0.10)
+    parser.add_argument("--live-speaker-bayes-unknown-bias", type=float, default=0.0)
+    parser.add_argument("--live-speaker-bayes-profile-count-threshold", type=int, default=0)
+    parser.add_argument("--live-speaker-bayes-low-profile-unknown-bias", type=float, default=0.0)
+    parser.add_argument("--live-speaker-bayes-high-profile-unknown-bias", type=float, default=0.0)
+    parser.add_argument("--live-speaker-bayes-profile-count-bias-slope", type=float, default=0.0)
+    parser.add_argument("--live-speaker-bayes-stay-probability", type=float, default=0.50)
+    parser.add_argument("--live-speaker-bayes-prior-strength", type=float, default=0.0)
+    parser.add_argument("--live-speaker-bayes-evidence-strength", type=float, default=1.0)
+    parser.add_argument("--live-speaker-bayes-switch-probability-margin", type=float, default=0.0)
+    parser.add_argument(
+        "--live-speaker-bayes-provisional-profiles",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Discover a causal unnamed speaker from unmatched live embeddings before a final sentence profile exists.",
+    )
+    parser.add_argument("--live-speaker-bayes-provisional-creation-count", type=int, default=2)
+    parser.add_argument("--live-speaker-bayes-provisional-later-creation-count", type=int, default=0)
+    parser.add_argument("--live-speaker-bayes-provisional-later-creation-profile-threshold", type=int, default=0)
+    parser.add_argument("--live-speaker-bayes-provisional-creation-similarity-ceiling", type=float, default=0.20)
+    parser.add_argument(
+        "--live-speaker-bayes-provisional-boundary-creation-similarity-ceiling",
+        type=float,
+        default=-1.0,
+        help="Optional relaxed new-speaker ceiling used only after a causal voice discontinuity.",
+    )
+    parser.add_argument(
+        "--live-speaker-bayes-provisional-boundary-continuity",
+        type=float,
+        default=-1.0,
+        help="Maximum incumbent-history similarity that marks a new-speaker boundary.",
+    )
+    parser.add_argument("--live-speaker-bayes-provisional-max-finalized-profiles", type=int, default=-1)
+    parser.add_argument("--live-speaker-bayes-provisional-merge-min-similarity", type=float, default=0.25)
+    parser.add_argument("--live-speaker-bayes-provisional-update-alpha", type=float, default=0.0)
+    parser.add_argument(
+        "--live-speaker-bayes-provisional-update-continuity",
+        type=float,
+        default=-1.0,
+        help="Minimum short-term incumbent continuity required before adapting a provisional centroid.",
+    )
+    parser.add_argument(
+        "--live-speaker-bayes-provisional-update-history-size",
+        type=int,
+        default=1,
+        help="Recent confirmed short-window embeddings averaged into each provisional update target.",
+    )
+    parser.add_argument("--live-speaker-bayes-provisional-max-active-count", type=int, default=0)
+    parser.add_argument("--live-speaker-bayes-provisional-pool-overflow-update-alpha", type=float, default=0.0)
+    parser.add_argument("--live-speaker-bayes-provisional-scale-agreement", type=float, default=-1.0)
+    parser.add_argument("--live-speaker-bayes-provisional-assignment-scale-agreement", type=float, default=-1.0)
+    parser.add_argument("--live-speaker-bayes-incumbent-hold-scale-agreement", type=float, default=-1.0)
+    parser.add_argument(
+        "--live-speaker-bayes-incumbent-continuity",
+        type=float,
+        default=-1.0,
+        help="Hold the incumbent through uncertain speech when its short-window history remains this similar.",
+    )
+    parser.add_argument(
+        "--live-speaker-bayes-incumbent-continuity-history-size",
+        type=int,
+        default=3,
+    )
+    parser.add_argument(
+        "--live-speaker-bayes-incumbent-continuity-update-on-hold",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+    )
+    parser.add_argument(
+        "--live-speaker-bayes-boundary-short-only-continuity",
+        type=float,
+        default=-1.0,
+        help="At a detected boundary, ignore the slower context window for this identity decision.",
+    )
+    parser.add_argument(
+        "--live-speaker-bayes-boundary-residual-incumbent-alpha",
+        type=float,
+        default=0.0,
+        help="At a detected boundary, subtract this fraction of the recent incumbent voice anchor from the short embedding.",
+    )
+    parser.add_argument(
+        "--live-speaker-bayes-short-long-crossover-min-margin",
+        type=float,
+        default=-1.0,
+        help="Enable causal short/long crossover switching at this short-window identity margin.",
+    )
+    parser.add_argument(
+        "--live-speaker-bayes-short-long-crossover-min-similarity",
+        type=float,
+        default=-1.0,
+    )
+    parser.add_argument(
+        "--live-speaker-bayes-short-long-crossover-count",
+        type=int,
+        default=1,
+    )
+    parser.add_argument(
+        "--live-speaker-bayes-short-long-differential-candidate-gain",
+        type=float,
+        default=-2.0,
+        help="Optional minimum short-minus-long evidence for a crossover candidate.",
+    )
+    parser.add_argument(
+        "--live-speaker-bayes-short-long-differential-incumbent-loss",
+        type=float,
+        default=-2.0,
+        help="Optional minimum long-minus-short evidence decay for the incumbent.",
+    )
+    parser.add_argument("--live-speaker-bayes-provisional-temporal-consistency", type=float, default=-1.0)
     parser.add_argument(
         "--live-speaker-probe-hold-seconds",
         type=float,
@@ -429,6 +556,48 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
         choices=("rms", "vad"),
         default="rms",
         help="Speech gate used by live-speaker probe windows. 'vad' reuses the configured VAD backend.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-silero-speech-threshold",
+        type=float,
+        default=-1.0,
+        help="Silero threshold for live-speaker acquisition; negative reuses --vad-silero-speech-threshold.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-vad-min-speech-seconds",
+        type=float,
+        default=-1.0,
+        help="Minimum VAD speech for live-speaker acquisition; negative reuses --vad-min-speech-seconds.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-release-silero-speech-threshold",
+        type=float,
+        default=-1.0,
+        help="Independent Silero threshold for live-speaker release; negative reuses the acquisition threshold.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-release-vad-min-speech-seconds",
+        type=float,
+        default=-1.0,
+        help="Independent VAD speech duration for release; negative reuses the acquisition duration.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-fast-release-window-seconds",
+        type=float,
+        default=0.0,
+        help="Optional shorter VAD-only window for an additional conservative fast-silence release path.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-fast-release-silero-speech-threshold",
+        type=float,
+        default=-1.0,
+        help="Silero threshold for the optional fast release path.",
+    )
+    parser.add_argument(
+        "--live-speaker-probe-fast-release-vad-min-speech-seconds",
+        type=float,
+        default=-1.0,
+        help="Minimum detected speech duration for the optional fast release path.",
     )
     parser.add_argument(
         "--live-speaker-probe-clear-on-silence",

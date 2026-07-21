@@ -746,6 +746,7 @@ class WindowTranscriptionMixin:
         duration_seconds: float,
         live_memory_audio: np.ndarray | None = None,
         live_memory_sample_rate: int | None = None,
+        live_memory_embedding: np.ndarray | None = None,
         live_memory_suffix: str = ".live-sentence.wav",
         speaker_generation: int | None = None,
         emit_status: bool = True,
@@ -815,17 +816,6 @@ class WindowTranscriptionMixin:
             paired_candidate, pair_similarity = paired_unknown_revision
             self._emit_unknown_pair_revision(paired_candidate, decision, pair_similarity)
         self._maybe_emit_sentence_live_speaker_hint(sentence_payload, duration_seconds)
-        if live_memory_audio is not None and live_memory_sample_rate is not None:
-            self._update_live_speaker_memory(
-                decision.assigned_speaker,
-                live_memory_audio,
-                live_memory_sample_rate,
-                duration_seconds,
-                live_memory_suffix,
-                speaker_generation=self._speaker_generation if speaker_generation is None else speaker_generation,
-                sentence_start=base_payload.get("start"),
-                sentence_end=base_payload.get("end"),
-            )
         if decision.assigned_speaker is None:
             self._remember_unknown_sentence(index, base_payload, embedding, duration_seconds)
         elif decision.created_speaker:
@@ -839,10 +829,27 @@ class WindowTranscriptionMixin:
             self.emit_speaker_state()
         if run_speaker_refinement:
             self._refine_speaker_assignments()
+        current_sentence_speaker = decision.assigned_speaker
+        with self._sentence_refinement_lock:
+            current_record = self._sentence_refinement_records.get(int(index))
+            if current_record is not None:
+                current_sentence_speaker = current_record.get("assigned_speaker")
+        if live_memory_audio is not None and live_memory_sample_rate is not None:
+            self._update_live_speaker_memory(
+                current_sentence_speaker,
+                live_memory_audio,
+                live_memory_sample_rate,
+                duration_seconds,
+                live_memory_suffix,
+                speaker_generation=self._speaker_generation if speaker_generation is None else speaker_generation,
+                sentence_start=base_payload.get("start"),
+                sentence_end=base_payload.get("end"),
+                precomputed_embedding=live_memory_embedding,
+            )
         emit_live_profile_snapshot(
             self,
             self.memory,
-            decision.assigned_speaker,
+            current_sentence_speaker,
             str(getattr(self.args, "embedding_provider", "cached_embedding")),
             source="synchronous_final_sentence_memory_update",
             sentence_start=base_payload.get("start"),
@@ -870,7 +877,9 @@ class WindowTranscriptionMixin:
         try:
             self.bus.emit("status", {"message": f"Embedding sentence {index}: {job.text[:72]}"})
             embed_started = time.monotonic()
-            embedding = self._embed_audio_chunk(chunk, job.sample_rate, ".sentence.wav")
+            embedding_result = self._embed_audio_chunk_result(chunk, job.sample_rate, ".sentence.wav")
+            embedding = embedding_result.embedding
+            live_memory_embedding = self._reusable_live_embedding_from_final_result(embedding_result)
             active_run = getattr(self, "_active_run", None)
             if job.run_id and (active_run is None or job.run_id != active_run.run_id):
                 self.bus.emit("status", {"message": f"Discarded stale diarization run job for sentence {index}."})
@@ -888,6 +897,7 @@ class WindowTranscriptionMixin:
                 duration_seconds=duration_seconds,
                 live_memory_audio=None if fast_processing else chunk,
                 live_memory_sample_rate=None if fast_processing else job.sample_rate,
+                live_memory_embedding=None if fast_processing else live_memory_embedding,
                 live_memory_suffix=".live-sentence.wav",
                 speaker_generation=job.speaker_generation,
                 emit_status=True,

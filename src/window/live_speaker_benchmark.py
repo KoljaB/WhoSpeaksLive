@@ -12,6 +12,7 @@ from window.live_speaker_probe_scoring import canonical_speaker_turns, intervals
 
 
 SCORER_ID = "causal_live_speaker_score_v1"
+PRIMARY_SCORER_V2_ID = "causal_live_speaker_primary_macro_v2"
 
 
 @dataclass(frozen=True)
@@ -160,4 +161,52 @@ def aggregate_video_scores(scores: Iterable[dict[str, Any]]) -> dict[str, Any]:
         "worst_video_score": round(min(values), 6),
         "bottom3_mean_video_score": round(mean(bottom), 6),
         "global_score": round(aggregate, 6),
+    }
+
+
+def aggregate_video_scores_primary_v2(scores: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    """Return the one scalar optimized by the top-seven overnight campaign.
+
+    Selection uses the unweighted macro mean of the existing strict per-video
+    score.  Per-video and component values remain visible as diagnostics, but
+    they are deliberately not promotion vetoes.
+    """
+
+    rows = list(scores)
+    if not rows:
+        raise ValueError("At least one video score is required")
+
+    def metric(name: str) -> float:
+        return mean(float(item.get(name) or 0.0) for item in rows)
+
+    canonical_seconds = sum(float(item.get("canonical_speech_seconds") or 0.0) for item in rows)
+    flicker_seconds = sum(
+        float((item.get("flicker") or {}).get("correct_interruption_seconds") or 0.0)
+        for item in rows
+    )
+    mean_score = metric("strict_browser_live_score")
+    return {
+        "scorer_id": PRIMARY_SCORER_V2_ID,
+        "component_scorer_id": SCORER_ID,
+        "video_count": len(rows),
+        "primary_score": round(mean_score, 6),
+        # Keep global_score as a compatibility alias for generic result viewers.
+        "global_score": round(mean_score, 6),
+        "mean_video_score": round(mean_score, 6),
+        "diagnostics": {
+            "mean_correct_live_speaker_coverage": round(
+                metric("correct_live_speaker_coverage"), 6
+            ),
+            "mean_wrong_live_speech_ratio": round(metric("wrong_live_speech_ratio"), 6),
+            "mean_outside_speech_live_ratio": round(
+                metric("outside_speech_live_ratio"), 6
+            ),
+            "mean_missing_live_speech_ratio": round(
+                metric("missing_live_speech_ratio"), 6
+            ),
+            "corpus_flicker_ratio": round(
+                flicker_seconds / canonical_seconds if canonical_seconds > 0.0 else 0.0,
+                6,
+            ),
+        },
     }

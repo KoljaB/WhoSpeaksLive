@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import asyncio
+import hashlib
 import io
 import json
 import math
@@ -10,7 +12,9 @@ import sys
 import threading
 import time
 import types
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from collections import OrderedDict, deque
+from concurrent.futures import Future, ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +34,9 @@ SAMPLE_RATE = 16000
 DEFAULT_PROVIDER = "speechbrain_ecapa"
 DEFAULT_DEVICE = os.environ.get("EMBEDDINGS_DEVICE", "auto")
 WARMUP_SECONDS = float(os.environ.get("EMBEDDINGS_WARMUP_SECONDS", "2.0"))
+COMPONENT_CONCURRENCY = max(1, int(os.environ.get("EMBEDDINGS_COMPONENT_CONCURRENCY", "1")))
+RESULT_CACHE_TTL_SECONDS = max(0.0, float(os.environ.get("EMBEDDINGS_RESULT_CACHE_TTL_SECONDS", "3.0")))
+RESULT_CACHE_MAX_ENTRIES = max(0, int(os.environ.get("EMBEDDINGS_RESULT_CACHE_MAX_ENTRIES", "128")))
 
 BENCHMARK_PROVIDER_ALIASES = {
     "espnet_voxcelebs12_ecapa_wavlm_joint": "espnet_ecapa_wavlm_joint",
@@ -72,7 +79,11 @@ SUPPORTED_PROVIDERS = sorted(DISPLAY_NAMES)
 app = FastAPI(title="Voice Embeddings Server", version="1.0.0")
 _provider_cache: dict[tuple[str, str], Any] = {}
 _provider_locks: dict[tuple[str, str], threading.Lock] = {}
+_provider_inference_locks: dict[tuple[str, str], threading.Lock] = {}
+_provider_cache_generations: dict[tuple[str, str], int] = {}
+_provider_generation_context = threading.local()
 _cache_lock = threading.Lock()
+_model_load_lock = threading.Lock()
 
 
 def start_parent_watchdog() -> None:
@@ -377,9 +388,24 @@ def provider_key(provider: str, device: str) -> tuple[str, str]:
     return canonical_provider_name(provider), resolve_runtime_device(device)
 
 
-def get_provider(provider: str, device: str) -> Any:
+def provider_cache_generation(provider: str, device: str) -> int:
     key = provider_key(provider, device)
     with _cache_lock:
+        return _provider_cache_generations.setdefault(key, 0)
+
+
+def provider_cache_generation_is_current(provider: str, device: str, expected_generation: int) -> bool:
+    key = provider_key(provider, device)
+    with _cache_lock:
+        return _provider_cache_generations.get(key, 0) == expected_generation
+
+
+def get_provider(provider: str, device: str, expected_generation: int | None = None) -> Any:
+    key = provider_key(provider, device)
+    with _cache_lock:
+        generation = _provider_cache_generations.setdefault(key, 0)
+        if expected_generation is None:
+            expected_generation = generation
         if key in _provider_cache:
             return _provider_cache[key]
         lock = _provider_locks.setdefault(key, threading.Lock())
@@ -387,10 +413,25 @@ def get_provider(provider: str, device: str) -> Any:
         with _cache_lock:
             if key in _provider_cache:
                 return _provider_cache[key]
-        loaded = create_single_provider(key[0], key[1])
+        # Some model loaders temporarily change process-global framework state
+        # (notably the pyannote torch.load compatibility shim).  Model
+        # construction therefore remains serialized even though inference for
+        # distinct, already-loaded providers may run concurrently.
+        with _model_load_lock:
+            loaded = create_single_provider(key[0], key[1])
         with _cache_lock:
-            _provider_cache[key] = loaded
+            # A loader may have started before /unload and finish after the
+            # cache was cleared.  Let its existing caller use the model, but do
+            # not let that stale loader silently make the model resident again.
+            if _provider_cache_generations.get(key, 0) == expected_generation:
+                _provider_cache[key] = loaded
         return loaded
+
+
+def provider_inference_lock(provider: str, device: str) -> threading.Lock:
+    key = provider_key(provider, device)
+    with _cache_lock:
+        return _provider_inference_locks.setdefault(key, threading.Lock())
 
 
 def decode_audio_bytes(audio_bytes: bytes) -> np.ndarray:
@@ -433,10 +474,22 @@ def raw_bytes_to_float32(audio_bytes: bytes, sample_rate: int, encoding: str) ->
     raise HTTPException(status_code=400, detail="unsupported_audio_encoding")
 
 
-def embed_one(name: str, weight: float, device: str, audio: np.ndarray, sample_rate: int) -> dict[str, Any]:
-    started = time.perf_counter()
+def canonical_audio_fingerprint(audio: np.ndarray) -> tuple[np.ndarray, bytes]:
+    """Return exact contiguous float32 samples and their stable content hash."""
+    canonical = np.ascontiguousarray(np.asarray(audio, dtype="<f4").reshape(-1))
+    digest = hashlib.sha256(memoryview(canonical).cast("B")).digest()
+    return canonical, digest
+
+
+def _embed_provider_vector_unlocked(
+    name: str,
+    device: str,
+    audio: np.ndarray,
+    sample_rate: int,
+) -> tuple[np.ndarray, str]:
     try:
-        provider = get_provider(name, device)
+        provider_generation = getattr(_provider_generation_context, "value", None)
+        provider = get_provider(name, device, expected_generation=provider_generation)
         vector = normalize_vector(provider.embed(audio, sample_rate))
     except HTTPException:
         raise
@@ -445,15 +498,317 @@ def embed_one(name: str, weight: float, device: str, audio: np.ndarray, sample_r
             status_code=500,
             detail=f"{name}_provider_failed: {type(exc).__name__}: {exc}",
         ) from exc
-    elapsed = time.perf_counter() - started
-    actual_device = getattr(provider, "device", device)
+    return vector, str(getattr(provider, "device", device))
+
+
+def _embed_provider_vector_for_generation(
+    name: str,
+    device: str,
+    audio: np.ndarray,
+    sample_rate: int,
+    provider_generation: int,
+) -> tuple[np.ndarray, str]:
+    sentinel = object()
+    previous = getattr(_provider_generation_context, "value", sentinel)
+    _provider_generation_context.value = provider_generation
+    try:
+        # Keep the established four-argument function contract intact.  Tests
+        # and local diagnostics routinely patch this exact inference seam.
+        return _embed_provider_vector_unlocked(name, device, audio, sample_rate)
+    finally:
+        if previous is sentinel:
+            delattr(_provider_generation_context, "value")
+        else:
+            _provider_generation_context.value = previous
+
+
+def embed_one(name: str, weight: float, device: str, audio: np.ndarray, sample_rate: int) -> dict[str, Any]:
+    started = time.perf_counter()
+    with provider_inference_lock(name, device):
+        vector, actual_device = _embed_provider_vector_unlocked(name, device, audio, sample_rate)
     return {
-        "provider": name,
+        "provider": canonical_provider_name(name),
         "weight": weight,
-        "device": str(actual_device),
-        "elapsed_seconds": elapsed,
+        "device": actual_device,
+        "elapsed_seconds": time.perf_counter() - started,
         "embedding": vector,
     }
+
+
+@dataclass(frozen=True)
+class ComponentKey:
+    provider: str
+    device: str
+    sample_rate: int
+    sample_count: int
+    audio_sha256: bytes
+
+
+@dataclass(frozen=True)
+class ComponentResult:
+    embedding: np.ndarray
+    actual_device: str
+    queue_seconds: float
+    compute_seconds: float
+    completed_at: float
+
+
+@dataclass(frozen=True)
+class ComponentHandle:
+    future: Future[ComponentResult]
+    reuse: str
+    requested_at: float
+
+
+@dataclass
+class _InFlightJob:
+    key: ComponentKey
+    generation: int
+    provider_generation: int
+    future: Future[ComponentResult]
+    audio: np.ndarray
+    submitted_at: float
+
+
+class EmbeddingCoordinator:
+    """Coordinate bounded component inference across stacks and HTTP requests."""
+
+    def __init__(self, max_workers: int, cache_ttl_seconds: float, cache_max_entries: int) -> None:
+        self.max_workers = max(1, int(max_workers))
+        self.cache_ttl_seconds = max(0.0, float(cache_ttl_seconds))
+        self.cache_max_entries = max(0, int(cache_max_entries))
+        self._executor = ThreadPoolExecutor(
+            max_workers=self.max_workers,
+            thread_name_prefix="embedding-component",
+        )
+        self._lock = threading.Lock()
+        self._inflight: dict[ComponentKey, _InFlightJob] = {}
+        self._provider_running: set[tuple[str, str]] = set()
+        self._provider_pending: dict[tuple[str, str], deque[_InFlightJob]] = {}
+        # Cache values contain embeddings only. Audio and exceptions are never retained.
+        self._recent: OrderedDict[ComponentKey, tuple[float, np.ndarray]] = OrderedDict()
+        self._generations: dict[tuple[str, str], int] = {}
+        self._active = 0
+        self._peak_active = 0
+        self._counters = {
+            "submitted": 0,
+            "joined": 0,
+            "cache_hits": 0,
+            "completed": 0,
+            "failures": 0,
+            "evictions": 0,
+            "invalidated_jobs": 0,
+        }
+
+    @staticmethod
+    def _pair(key: ComponentKey) -> tuple[str, str]:
+        return key.provider, key.device
+
+    def _prune_expired_locked(self, now: float) -> None:
+        expired = [key for key, (deadline, _vector) in self._recent.items() if deadline <= now]
+        for key in expired:
+            self._recent.pop(key, None)
+
+    def _cache_result_locked(self, key: ComponentKey, embedding: np.ndarray, now: float) -> None:
+        if self.cache_ttl_seconds <= 0.0 or self.cache_max_entries <= 0:
+            return
+        cached = np.asarray(embedding, dtype=np.float32).copy()
+        cached.setflags(write=False)
+        self._recent[key] = (now + self.cache_ttl_seconds, cached)
+        self._recent.move_to_end(key)
+        while len(self._recent) > self.cache_max_entries:
+            self._recent.popitem(last=False)
+            self._counters["evictions"] += 1
+
+    def submit_prepared(
+        self,
+        name: str,
+        device: str,
+        audio: np.ndarray,
+        sample_rate: int,
+        audio_sha256: bytes,
+    ) -> ComponentHandle:
+        requested_at = time.perf_counter()
+        canonical_name = canonical_provider_name(name)
+        runtime_device = resolve_runtime_device(device)
+        key = ComponentKey(
+            provider=canonical_name,
+            device=runtime_device,
+            sample_rate=int(sample_rate),
+            sample_count=int(audio.shape[0]),
+            audio_sha256=bytes(audio_sha256),
+        )
+        cache_generation = provider_cache_generation(canonical_name, runtime_device)
+        with self._lock:
+            self._prune_expired_locked(requested_at)
+            cached = self._recent.get(key)
+            if cached is not None:
+                _deadline, vector = cached
+                self._recent.move_to_end(key)
+                self._counters["cache_hits"] += 1
+                ready: Future[ComponentResult] = Future()
+                ready.set_result(ComponentResult(
+                    embedding=vector,
+                    actual_device=runtime_device,
+                    queue_seconds=0.0,
+                    compute_seconds=0.0,
+                    completed_at=requested_at,
+                ))
+                return ComponentHandle(ready, "cache", requested_at)
+
+            pair = self._pair(key)
+            coordinator_generation = self._generations.get(pair, 0)
+            existing = self._inflight.get(key)
+            if (
+                existing is not None
+                and existing.generation == coordinator_generation
+                and existing.provider_generation == cache_generation
+            ):
+                self._counters["joined"] += 1
+                return ComponentHandle(existing.future, "joined", requested_at)
+
+            promise: Future[ComponentResult] = Future()
+            job = _InFlightJob(
+                key=key,
+                generation=coordinator_generation,
+                provider_generation=cache_generation,
+                future=promise,
+                audio=audio,
+                submitted_at=requested_at,
+            )
+            self._inflight[key] = job
+            self._counters["submitted"] += 1
+            try:
+                if pair in self._provider_running:
+                    self._provider_pending.setdefault(pair, deque()).append(job)
+                else:
+                    self._provider_running.add(pair)
+                    self._executor.submit(self._run_job, job)
+            except Exception:
+                self._inflight.pop(key, None)
+                self._provider_running.discard(pair)
+                raise
+            return ComponentHandle(promise, "calculated", requested_at)
+
+    def submit(
+        self,
+        name: str,
+        device: str,
+        audio: np.ndarray,
+        sample_rate: int,
+    ) -> ComponentHandle:
+        prepared, digest = canonical_audio_fingerprint(audio)
+        return self.submit_prepared(name, device, prepared, sample_rate, digest)
+
+    def _remove_job_locked(self, job: _InFlightJob) -> None:
+        if self._inflight.get(job.key) is job:
+            self._inflight.pop(job.key, None)
+
+    def _run_job(self, job: _InFlightJob) -> None:
+        with self._lock:
+            self._active += 1
+            self._peak_active = max(self._peak_active, self._active)
+        try:
+            lock = provider_inference_lock(job.key.provider, job.key.device)
+            with lock:
+                compute_started = time.perf_counter()
+                vector, actual_device = _embed_provider_vector_for_generation(
+                    job.key.provider,
+                    job.key.device,
+                    job.audio,
+                    job.key.sample_rate,
+                    job.provider_generation,
+                )
+                compute_ended = time.perf_counter()
+            result = ComponentResult(
+                embedding=vector,
+                actual_device=actual_device,
+                queue_seconds=max(0.0, compute_started - job.submitted_at),
+                compute_seconds=max(0.0, compute_ended - compute_started),
+                completed_at=compute_ended,
+            )
+            provider_generation_current = provider_cache_generation_is_current(
+                job.key.provider,
+                job.key.device,
+                job.provider_generation,
+            )
+            with self._lock:
+                if (
+                    provider_generation_current
+                    and self._generations.get(self._pair(job.key), 0) == job.generation
+                ):
+                    self._cache_result_locked(job.key, vector, compute_ended)
+                self._counters["completed"] += 1
+            if not job.future.cancelled():
+                job.future.set_result(result)
+        except BaseException as exc:
+            with self._lock:
+                self._counters["failures"] += 1
+            if not job.future.cancelled():
+                job.future.set_exception(exc)
+        finally:
+            with self._lock:
+                self._remove_job_locked(job)
+                self._active = max(0, self._active - 1)
+                pair = self._pair(job.key)
+                pending = self._provider_pending.get(pair)
+                if pending:
+                    next_job = pending.popleft()
+                    if not pending:
+                        self._provider_pending.pop(pair, None)
+                    self._executor.submit(self._run_job, next_job)
+                else:
+                    self._provider_running.discard(pair)
+
+    def invalidate(self, pairs: set[tuple[str, str]] | None = None) -> dict[str, int]:
+        """Invalidate cache/in-flight lookup without cancelling existing waiters."""
+        with self._lock:
+            if pairs is None:
+                pairs = set(self._generations)
+                pairs.update(self._pair(key) for key in self._inflight)
+                pairs.update(self._pair(key) for key in self._recent)
+            for pair in pairs:
+                self._generations[pair] = self._generations.get(pair, 0) + 1
+            stale_jobs = [key for key in self._inflight if self._pair(key) in pairs]
+            stale_cache = [key for key in self._recent if self._pair(key) in pairs]
+            for key in stale_jobs:
+                self._inflight.pop(key, None)
+            for key in stale_cache:
+                self._recent.pop(key, None)
+            self._counters["invalidated_jobs"] += len(stale_jobs)
+            return {"inflight": len(stale_jobs), "cache": len(stale_cache)}
+
+    def snapshot(self) -> dict[str, Any]:
+        with self._lock:
+            self._prune_expired_locked(time.perf_counter())
+            return {
+                "max_workers": self.max_workers,
+                "active": self._active,
+                "peak_active": self._peak_active,
+                "inflight": len(self._inflight),
+                "cache_entries": len(self._recent),
+                "cache_ttl_seconds": self.cache_ttl_seconds,
+                "cache_max_entries": self.cache_max_entries,
+                "counters": dict(self._counters),
+            }
+
+    def shutdown(self, wait: bool = True) -> None:
+        # Provider-aware scheduling keeps same-provider followers outside the
+        # executor until their predecessor finishes.  Publish those followers
+        # before closing the executor so their public Futures cannot be lost.
+        with self._lock:
+            for pending in self._provider_pending.values():
+                while pending:
+                    self._executor.submit(self._run_job, pending.popleft())
+            self._provider_pending.clear()
+        self._executor.shutdown(wait=wait, cancel_futures=False)
+
+
+_component_coordinator = EmbeddingCoordinator(
+    max_workers=COMPONENT_CONCURRENCY,
+    cache_ttl_seconds=RESULT_CACHE_TTL_SECONDS,
+    cache_max_entries=RESULT_CACHE_MAX_ENTRIES,
+)
 
 
 def warmup_one(name: str, weight: float, device: str) -> dict[str, Any]:
@@ -464,42 +819,85 @@ def warmup_one(name: str, weight: float, device: str) -> dict[str, Any]:
     return result
 
 
-def embed_stack(provider_spec: str, device: str, audio: np.ndarray, sample_rate: int) -> tuple[np.ndarray, list[dict[str, Any]], str]:
+def _submit_stack_components(
+    provider_spec: str,
+    device: str,
+    audio: np.ndarray,
+    sample_rate: int,
+) -> tuple[list[tuple[str, float]], list[ComponentHandle], str]:
     specs = [(name, weight) for name, weight in parse_provider_stack_specs(provider_spec) if weight > 0.0]
     if not specs:
         raise HTTPException(status_code=400, detail="provider stack has no positive weights")
-
     runtime_device = resolve_runtime_device(device)
-    if is_cuda_device(runtime_device):
-        cpu_specs: list[tuple[str, float]] = []
-        gpu_specs = specs
-    else:
-        cpu_specs = specs
-        gpu_specs: list[tuple[str, float]] = []
-    results: list[dict[str, Any]] = []
+    prepared_audio, digest = canonical_audio_fingerprint(audio)
+    # Register every component before waiting. This is what makes a stack
+    # genuinely concurrent and also exposes each component to cross-request
+    # in-flight coalescing immediately.
+    handles = [
+        _component_coordinator.submit_prepared(
+            name,
+            runtime_device,
+            prepared_audio,
+            sample_rate,
+            digest,
+        )
+        for name, _weight in specs
+    ]
+    return specs, handles, runtime_device
 
-    if cpu_specs and len(cpu_specs) > 1:
-        with ThreadPoolExecutor(max_workers=len(cpu_specs)) as pool:
-            futures = [pool.submit(embed_one, name, weight, runtime_device, audio, sample_rate) for name, weight in cpu_specs]
-            for future in as_completed(futures):
-                results.append(future.result())
-    else:
-        for name, weight in cpu_specs:
-            results.append(embed_one(name, weight, runtime_device, audio, sample_rate))
 
-    for name, weight in gpu_specs:
-        results.append(embed_one(name, weight, runtime_device, audio, sample_rate))
-
-    by_name: dict[str, list[dict[str, Any]]] = {}
-    for item in results:
-        by_name.setdefault(str(item["provider"]), []).append(item)
-    ordered = [by_name[name].pop(0) for name, _weight in specs]
-    vectors = [normalize_vector(item["embedding"]) * float(item["weight"]) for item in ordered]
+def _assemble_stack(
+    specs: list[tuple[str, float]],
+    handles: list[ComponentHandle],
+    results: list[ComponentResult],
+    runtime_device: str,
+) -> tuple[np.ndarray, list[dict[str, Any]], str]:
+    vectors = [
+        normalize_vector(result.embedding) * float(weight)
+        for (_name, weight), result in zip(specs, results)
+    ]
     stacked = normalize_vector(np.concatenate(vectors))
-    for item in ordered:
-        item["dim"] = int(item["embedding"].shape[0])
-        item.pop("embedding", None)
-    return stacked, ordered, runtime_device
+    components: list[dict[str, Any]] = []
+    for (name, weight), handle, result in zip(specs, handles, results):
+        components.append({
+            "provider": name,
+            "weight": weight,
+            "device": result.actual_device,
+            "elapsed_seconds": result.compute_seconds,
+            "queue_seconds": result.queue_seconds,
+            "compute_seconds": result.compute_seconds,
+            "wait_seconds": max(0.0, result.completed_at - handle.requested_at),
+            "reuse": handle.reuse,
+            "dim": int(result.embedding.shape[0]),
+        })
+    return stacked, components, runtime_device
+
+
+def embed_stack(provider_spec: str, device: str, audio: np.ndarray, sample_rate: int) -> tuple[np.ndarray, list[dict[str, Any]], str]:
+    specs, handles, runtime_device = _submit_stack_components(provider_spec, device, audio, sample_rate)
+    # The jobs are all already scheduled, so waiting in request order preserves
+    # API/output order without serializing their execution.
+    results = [handle.future.result() for handle in handles]
+    return _assemble_stack(specs, handles, results, runtime_device)
+
+
+async def embed_stack_async(
+    provider_spec: str,
+    device: str,
+    audio: np.ndarray,
+    sample_rate: int,
+) -> tuple[np.ndarray, list[dict[str, Any]], str]:
+    specs, handles, runtime_device = _submit_stack_components(provider_spec, device, audio, sample_rate)
+    results = await asyncio.gather(*[
+        asyncio.shield(asyncio.wrap_future(handle.future))
+        for handle in handles
+    ])
+    return _assemble_stack(specs, handles, list(results), runtime_device)
+
+
+@app.on_event("shutdown")
+def on_shutdown() -> None:
+    _component_coordinator.shutdown(wait=True)
 
 
 @app.get("/health")
@@ -513,6 +911,7 @@ def health() -> dict[str, Any]:
         "default_provider": DEFAULT_PROVIDER,
         "default_device": DEFAULT_DEVICE,
         "loaded": loaded,
+        "coordinator": _component_coordinator.snapshot(),
     }
 
 
@@ -581,24 +980,67 @@ def load(provider: str = Query(DEFAULT_PROVIDER), device: str = Query(DEFAULT_DE
 
 @app.post("/unload")
 def unload(provider: str | None = Query(None), device: str = Query(DEFAULT_DEVICE)) -> dict[str, Any]:
-    with _cache_lock:
-        if provider is None or provider == "all":
+    invalidated: dict[str, int]
+    if provider is None or provider == "all":
+        with _cache_lock:
             count = len(_provider_cache)
+            pairs = set(_provider_cache_generations)
+            pairs.update(_provider_cache)
+            for key in pairs:
+                _provider_cache_generations[key] = _provider_cache_generations.get(key, 0) + 1
             _provider_cache.clear()
-            return {"ok": True, "unloaded": count}
-        specs = parse_provider_stack_specs(provider)
+        invalidated = _component_coordinator.invalidate(None)
+        return {"ok": True, "unloaded": count, "invalidated": invalidated}
+
+    specs = parse_provider_stack_specs(provider)
+    pairs = {provider_key(name, device) for name, _weight in specs}
+    # Retire the model generation first, then the coordinator generation.  A
+    # submit overlapping these two steps is stale in at least one generation,
+    # so it cannot repopulate either cache after unload completes.
+    with _cache_lock:
         count = 0
-        for name, _weight in specs:
-            key = provider_key(name, device)
+        for key in pairs:
+            _provider_cache_generations[key] = _provider_cache_generations.get(key, 0) + 1
             if key in _provider_cache:
                 del _provider_cache[key]
                 count += 1
-        return {"ok": True, "unloaded": count}
+    invalidated = _component_coordinator.invalidate(pairs)
+    return {"ok": True, "unloaded": count, "invalidated": invalidated}
 
 
 def embedding_response(provider: str, device: str, audio: np.ndarray, sample_rate: int, input_mode: str, decode_seconds: float) -> JSONResponse:
     started = time.perf_counter()
     embedding, components, runtime_device = embed_stack(provider, device, audio, sample_rate)
+    elapsed = time.perf_counter() - started
+    return JSONResponse({
+        "provider": provider,
+        "canonical_stack": [
+            {"provider": name, "weight": weight}
+            for name, weight in parse_provider_stack_specs(provider)
+        ],
+        "requested_device": device,
+        "device": runtime_device,
+        "input_mode": input_mode,
+        "sample_rate": sample_rate,
+        "duration": float(len(audio)) / float(sample_rate or SAMPLE_RATE),
+        "decode_seconds": decode_seconds,
+        "elapsed_seconds": elapsed,
+        "dim": int(embedding.shape[0]),
+        "embedding": embedding.astype(float).tolist(),
+        "components": components,
+    })
+
+
+async def embedding_response_async(
+    provider: str,
+    device: str,
+    audio: np.ndarray,
+    sample_rate: int,
+    input_mode: str,
+    decode_seconds: float,
+) -> JSONResponse:
+    started = time.perf_counter()
+    embedding, components, runtime_device = await embed_stack_async(provider, device, audio, sample_rate)
     elapsed = time.perf_counter() - started
     return JSONResponse({
         "provider": provider,
@@ -632,9 +1074,9 @@ async def embed_raw(
     if not payload:
         raise HTTPException(status_code=400, detail="empty_audio_payload")
     started = time.perf_counter()
-    audio, sr = raw_bytes_to_float32(payload, sample_rate, encoding)
+    audio, sr = await asyncio.to_thread(raw_bytes_to_float32, payload, sample_rate, encoding)
     decode_seconds = time.perf_counter() - started
-    return embedding_response(provider, device, audio, sr, encoding.lower(), decode_seconds)
+    return await embedding_response_async(provider, device, audio, sr, encoding.lower(), decode_seconds)
 
 
 @app.post("/embed")
@@ -647,9 +1089,9 @@ async def embed_encoded(
     if not payload:
         raise HTTPException(status_code=400, detail="empty_audio_payload")
     started = time.perf_counter()
-    audio = decode_audio_bytes(payload)
+    audio = await asyncio.to_thread(decode_audio_bytes, payload)
     decode_seconds = time.perf_counter() - started
-    return embedding_response(provider, device, audio, SAMPLE_RATE, "encoded_memory", decode_seconds)
+    return await embedding_response_async(provider, device, audio, SAMPLE_RATE, "encoded_memory", decode_seconds)
 
 
 if __name__ == "__main__":

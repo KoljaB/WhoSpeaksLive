@@ -166,10 +166,18 @@ export function installTranscriptTranslation(ctx) {
     const match = /^S(\d+)$/.exec(String(label || ""));
     return match ? Number(match[1]) : null;
   }
+  function isLiveProvisionalSpeaker(speaker) {
+    const value = speaker && typeof speaker === "object" ? speaker : {id: speaker};
+    const speakerId = String(value.id || "");
+    return value.source === "live_provisional"
+      || /^provisional_\d+$/.test(speakerId)
+      || /^LIVE_NEW_\d+$/.test(speakerId);
+  }
   function speakerDisplayLabel(label) {
     if (label && ctx.owners.speakers.speakerNames[label]) return ctx.owners.speakers.speakerNames[label];
     const index = speakerIndex(label);
-    return index === null ? "Unknown" : `Speaker ${index}`;
+    if (index !== null) return `Speaker ${index}`;
+    return isLiveProvisionalSpeaker(label) ? "Matching new voice..." : "Unknown";
   }
   function revisionSpeakerId(label) {
     const value = String(label || "").trim();
@@ -219,6 +227,7 @@ export function installTranscriptTranslation(ctx) {
     return speaker.name || speaker.display_name || speakerDisplayLabel(speaker.id);
   }
   function speakerColor(label) {
+    if (isLiveProvisionalSpeaker(label)) return "#8F9BA8";
     const index = speakerIndex(label);
     if (index === null) return null;
     return speakerColors[(index - 1) % speakerColors.length];
@@ -897,5 +906,5 @@ export function installTranscriptTranslation(ctx) {
     queueBrowserPreferredTranslationsForAllSources();
   }
 
-  Object.assign(ctx.api, {applyTranslationCollection, applyTranslationEvent, browserPreferredTranslationEnabled, chromeTranslationUnavailable, chromeTranslatorForPair, clearDisplayedTranscript, clearUnsavedDetectedSpeakerDisplay, createChromeTranslator, createTranslationLanguageLabel, createTranslationLine, currentPlaybackElements, currentTranscriptClearBoundarySeconds, effectiveTranslationDisplayMode, forgetSentenceTranslations, initializeTranslationControls, itemIsBeforeClearedTranscriptBoundary, logRejectedPlayback, normalizedTranslationLanguageCode, normalizedTranslationLanguageLabelMode, normalizedTranslationStatus, parseRevisionChain, playbackElementLabel, probabilityColor, probabilityDisplayLabel, pruneSpeakerFilterState, pushRevisionSpeaker, queueBrowserPreferredTranslation, queueBrowserPreferredTranslationsForAllSources, queueBrowserPreferredTranslationsForSource, refreshMediaElements, refreshTranslationMenuStatus, refreshTranslationPresentation, refreshTranslationRow, renderTranslationMenu, requestBackendTranslationFallback, resetTranscriptDisplay, revisionSpeakerBadge, revisionSpeakerId, runBrowserPreferredTranslation, scheduleTranslationConfiguration, scrollSentencesToBottom, selectedTranslationCodesForDisplay, sentenceRevisionLabel, setTranslationMenuOpen, setTranslationTargetSelected, speakerColor, speakerDisplayLabel, speakerIndex, speakerPanelName, speakerProbabilityKey, speakerTranscriptVisible, startSynchronizedPlaybackFromGesture, syncSpeakerSessionBaselines, transcriptRowSentenceKeys, translationActivityState, translationConfiguredTargets, translationFeatureAvailable, translationLanguageCodeLabel, translationLanguageFlagUrl, translationLanguageName, translationLanguageOptions, translationMaximumTargets, translationMenuSummaryText, translationProviderId, translationProviderLabel, translationProviderLicense, translationProviderNotice, translationSentenceKey, translationStateForRow, translationStateMap, translationStateMatchesRow, translationTargetCode, translationTargetPayloadCodes, unlockPlayback});
+  Object.assign(ctx.api, {applyTranslationCollection, applyTranslationEvent, browserPreferredTranslationEnabled, chromeTranslationUnavailable, chromeTranslatorForPair, clearDisplayedTranscript, clearUnsavedDetectedSpeakerDisplay, createChromeTranslator, createTranslationLanguageLabel, createTranslationLine, currentPlaybackElements, currentTranscriptClearBoundarySeconds, effectiveTranslationDisplayMode, forgetSentenceTranslations, initializeTranslationControls, isLiveProvisionalSpeaker, itemIsBeforeClearedTranscriptBoundary, logRejectedPlayback, normalizedTranslationLanguageCode, normalizedTranslationLanguageLabelMode, normalizedTranslationStatus, parseRevisionChain, playbackElementLabel, probabilityColor, probabilityDisplayLabel, pruneSpeakerFilterState, pushRevisionSpeaker, queueBrowserPreferredTranslation, queueBrowserPreferredTranslationsForAllSources, queueBrowserPreferredTranslationsForSource, refreshMediaElements, refreshTranslationMenuStatus, refreshTranslationPresentation, refreshTranslationRow, renderTranslationMenu, requestBackendTranslationFallback, resetTranscriptDisplay, revisionSpeakerBadge, revisionSpeakerId, runBrowserPreferredTranslation, scheduleTranslationConfiguration, scrollSentencesToBottom, selectedTranslationCodesForDisplay, sentenceRevisionLabel, setTranslationMenuOpen, setTranslationTargetSelected, speakerColor, speakerDisplayLabel, speakerIndex, speakerPanelName, speakerProbabilityKey, speakerTranscriptVisible, startSynchronizedPlaybackFromGesture, syncSpeakerSessionBaselines, transcriptRowSentenceKeys, translationActivityState, translationConfiguredTargets, translationFeatureAvailable, translationLanguageCodeLabel, translationLanguageFlagUrl, translationLanguageName, translationLanguageOptions, translationMaximumTargets, translationMenuSummaryText, translationProviderId, translationProviderLabel, translationProviderLicense, translationProviderNotice, translationSentenceKey, translationStateForRow, translationStateMap, translationStateMatchesRow, translationTargetCode, translationTargetPayloadCodes, unlockPlayback});
 }

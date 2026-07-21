@@ -36,6 +36,22 @@ export EMBEDDINGS_DEVICE=auto
 python -m uvicorn embeddings_server:app --host 0.0.0.0 --port 8660 --log-level info
 ```
 
+The server coordinates individual providers across all incoming requests. It
+coalesces identical provider/audio work that is already in flight and keeps a
+small result cache for immediately repeated live/final requests. The relevant
+settings are:
+
+```bash
+export EMBEDDINGS_COMPONENT_CONCURRENCY=2
+export EMBEDDINGS_RESULT_CACHE_TTL_SECONDS=3
+export EMBEDDINGS_RESULT_CACHE_MAX_ENTRIES=128
+```
+
+Two component workers are the measured RTX 4090 setting used by the Linux
+WhoSpeaks server. Higher values caused latency spikes with the current provider
+mix. A matching systemd drop-in is included as
+`voice-embeddings-server-concurrency.conf`.
+
 ## Health Checks
 
 From the Windows controller:

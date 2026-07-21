@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 import tempfile
 import threading
@@ -10,6 +9,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+import httpx
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -332,31 +332,17 @@ class EmbeddingSubprocessClientTests(unittest.TestCase):
 
 class RemoteEmbeddingClientTests(unittest.TestCase):
     def test_remote_embedding_client_posts_pcm16_with_encoded_provider(self) -> None:
-        class FakeResponse:
-            def __init__(self, payload: dict[str, object]) -> None:
-                self.payload = json.dumps(payload).encode("utf-8")
+        calls: list[tuple[str, bytes]] = []
 
-            def __enter__(self) -> "FakeResponse":
-                return self
-
-            def __exit__(self, *_args: object) -> None:
-                return None
-
-            def read(self) -> bytes:
-                return self.payload
-
-        calls: list[tuple[str, bytes | None, float | None]] = []
-
-        def fake_urlopen(request_or_url: object, timeout: float | None = None) -> FakeResponse:
-            url = getattr(request_or_url, "full_url", request_or_url)
-            data = getattr(request_or_url, "data", None)
-            calls.append((str(url), data, timeout))
-            if str(url).endswith("/health"):
-                return FakeResponse({"ok": True, "service": "embeddings"})
-            if "/load?" in str(url):
-                return FakeResponse({"ok": True})
-            if "/embed-pcm16?" in str(url):
-                return FakeResponse({"ok": True, "embedding": [1.0, 2.0, 2.0]})
+        def handle(request: httpx.Request) -> httpx.Response:
+            url = str(request.url)
+            calls.append((url, request.content))
+            if url.endswith("/health"):
+                return httpx.Response(200, json={"ok": True, "service": "embeddings"})
+            if "/load?" in url:
+                return httpx.Response(200, json={"ok": True})
+            if "/embed-pcm16?" in url:
+                return httpx.Response(200, json={"ok": True, "embedding": [1.0, 2.0, 2.0]})
             raise AssertionError(f"Unexpected URL: {url}")
 
         with tempfile.TemporaryDirectory() as directory:
@@ -367,12 +353,15 @@ class RemoteEmbeddingClientTests(unittest.TestCase):
                 "espnet_ecapa_wavlm_joint=0.725+jungjee_rawnet3=1",
                 timeout_seconds=12.0,
             )
-            with mock.patch("embeddings.embedding_providers.urlopen", side_effect=fake_urlopen):
+            client._http_client = httpx.Client(transport=httpx.MockTransport(handle))
+            try:
                 self.assertEqual(client.health()["service"], "embeddings")
                 embedding = client.embed_wav(wav_path)
+            finally:
+                client.shutdown()
 
-        self.assertTrue(any("/load?" in url for url, _data, _timeout in calls))
-        embed_calls = [(url, data) for url, data, _timeout in calls if "/embed-pcm16?" in url]
+        self.assertTrue(any("/load?" in url for url, _data in calls))
+        embed_calls = [(url, data) for url, data in calls if "/embed-pcm16?" in url]
         self.assertEqual(len(embed_calls), 1)
         embed_url, embed_body = embed_calls[0]
         self.assertIn("%2B", embed_url)
@@ -380,6 +369,87 @@ class RemoteEmbeddingClientTests(unittest.TestCase):
         self.assertIsNotNone(embed_body)
         self.assertEqual(len(embed_body or b"") % 2, 0)
         self.assertTrue(np.allclose(embedding, np.array([1.0 / 3.0, 2.0 / 3.0, 2.0 / 3.0], dtype=np.float32)))
+
+    def test_remote_embedding_result_recovers_weighted_concat_components(self) -> None:
+        client = RemoteEmbeddingClient("http://127.0.0.1:8660", "stack")
+        espnet = np.array([0.6, 0.8], dtype=np.float32)
+        speechbrain = np.array([0.0, -1.0, 0.0], dtype=np.float32)
+        combined = np.concatenate([espnet * 1.0, speechbrain * 0.28])
+        combined /= np.linalg.norm(combined)
+
+        result = client._embedding_result_from_response({
+            "embedding": combined.tolist(),
+            "components": [
+                {"provider": "espnet_ecapa_wavlm_joint", "weight": 1.0, "dim": 2},
+                {"provider": "speechbrain_resnet", "weight": 0.28, "dim": 3},
+            ],
+        })
+
+        np.testing.assert_allclose(result.embedding, combined, atol=1e-7)
+        np.testing.assert_allclose(
+            result.unique_positive_component("speechbrain_resnet"),
+            speechbrain,
+            atol=1e-7,
+        )
+
+    def test_remote_embedding_result_disables_component_reuse_for_unsafe_metadata(self) -> None:
+        client = RemoteEmbeddingClient("http://127.0.0.1:8660", "stack")
+        vector = [1.0, 0.0, 0.0, 0.0]
+        cases = {
+            "missing": None,
+            "missing_dim": [{"provider": "speechbrain_resnet", "weight": 1.0}],
+            "zero_weight": [{"provider": "speechbrain_resnet", "weight": 0.0, "dim": 4}],
+            "dimension_mismatch": [{"provider": "speechbrain_resnet", "weight": 1.0, "dim": 3}],
+            "duplicate": [
+                {"provider": "speechbrain_resnet", "weight": 1.0, "dim": 2},
+                {"provider": "speechbrain_resnet", "weight": 1.0, "dim": 2},
+            ],
+        }
+        for name, components in cases.items():
+            with self.subTest(name=name):
+                payload: dict[str, object] = {"embedding": vector}
+                if components is not None:
+                    payload["components"] = components
+                result = client._embedding_result_from_response(payload)
+                self.assertIsNone(result.unique_positive_component("speechbrain_resnet"))
+
+    def test_remote_embedding_client_reuses_connection_and_closes_cleanly(self) -> None:
+        requests: list[str] = []
+
+        def handle(request: httpx.Request) -> httpx.Response:
+            requests.append(str(request.url))
+            return httpx.Response(200, json={"ok": True, "service": "embeddings"})
+
+        client = RemoteEmbeddingClient("http://127.0.0.1:8660", "speechbrain_resnet")
+        persistent = httpx.Client(transport=httpx.MockTransport(handle))
+        client._http_client = persistent
+        client.health()
+        client.health()
+
+        self.assertIs(client._http_client, persistent)
+        self.assertEqual(len(requests), 2)
+        client.shutdown()
+        self.assertIsNone(client._http_client)
+        self.assertTrue(persistent.is_closed)
+
+    def test_remote_embedding_client_preserves_http_and_connection_error_messages(self) -> None:
+        def http_error(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(503, text="temporarily unavailable")
+
+        client = RemoteEmbeddingClient("http://127.0.0.1:8660", "speechbrain_resnet")
+        client._http_client = httpx.Client(transport=httpx.MockTransport(http_error))
+        with self.assertRaisesRegex(RuntimeError, "Remote embeddings HTTP 503: temporarily unavailable"):
+            client.health()
+        client.shutdown()
+
+        def connection_error(request: httpx.Request) -> httpx.Response:
+            raise httpx.ConnectError("connection refused", request=request)
+
+        client = RemoteEmbeddingClient("http://127.0.0.1:8660", "speechbrain_resnet")
+        client._http_client = httpx.Client(transport=httpx.MockTransport(connection_error))
+        with self.assertRaisesRegex(RuntimeError, "Remote embeddings connection failed: connection refused"):
+            client.health()
+        client.shutdown()
 
 
 if __name__ == "__main__":

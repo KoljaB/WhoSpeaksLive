@@ -17,6 +17,20 @@ from tests.web_asset_support import HTML
 
 
 class WindowWebBehaviorContractTests(unittest.TestCase):
+    def test_live_provisional_speakers_are_transient_and_reconciled(self) -> None:
+        self.assertIn("function isLiveProvisionalSpeaker(speaker)", HTML)
+        self.assertIn('isLiveProvisionalSpeaker(label) ? "Matching new voice..." : "Unknown"', HTML)
+        self.assertIn('? "Comparing with detected speakers..."', HTML)
+        self.assertIn('if (isLiveProvisionalSpeaker(label)) return "#8F9BA8";', HTML)
+        self.assertIn("speakers.filter(speaker => !isLiveProvisionalSpeaker(speaker)).length", HTML)
+        self.assertIn(".speaker-item.provisional-speaker:not(.live-speaker) { display:none; }", HTML)
+        self.assertIn('summary.setAttribute("role", isLiveProvisional ? "status" : "button");', HTML)
+        self.assertIn("item.replaces_speaker_id", HTML)
+
+    def test_suggested_identity_keeps_the_canonical_speaker_number(self) -> None:
+        self.assertIn('return `Speaker ${Number(match[1])}`;', HTML)
+        self.assertNotIn('return `Speaker ${Number(match[1]) + 1}`;', HTML)
+
     def test_speaker_label_is_inserted_as_text_not_markup(self) -> None:
         self.assertNotIn("${speakerLabel}</span>", HTML)
         self.assertIn("speakerBadge.textContent = speakerLabel;", HTML)

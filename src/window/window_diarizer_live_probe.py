@@ -107,6 +107,13 @@ class WindowLiveProbeMixin:
         if not bool(getattr(self.args, "live_speaker_probe", True)):
             return
         interval_seconds = max(0.05, float(getattr(self.args, "live_speaker_probe_interval_seconds", 0.4)))
+        configured_release_interval = float(
+            getattr(self.args, "live_speaker_probe_release_interval_seconds", 0.0)
+        )
+        release_interval_seconds = (
+            max(0.05, configured_release_interval)
+            if configured_release_interval > 0.0 else interval_seconds
+        )
         attack_interval_seconds = max(
             0.0,
             float(getattr(self.args, "live_speaker_probe_attack_interval_seconds", 0.0)),
@@ -150,40 +157,79 @@ class WindowLiveProbeMixin:
                 not active_speaker or consecutive_unknown > 0
             )
             wait_seconds = attack_interval_seconds if attack_mode else interval_seconds
+            if clear_on_silence:
+                wait_seconds = min(wait_seconds, release_interval_seconds)
             if stop_event.wait(max(0.05, wait_seconds)):
                 break
-            if self.memory.profile_count() <= 0:
+            bayes_provisional = (
+                str(getattr(self.args, "live_speaker_tracker", "classic")) == "bayes"
+                and bool(getattr(self.args, "live_speaker_bayes_provisional_profiles", False))
+            )
+            if self.memory.profile_count() <= 0 and not bayes_provisional:
                 continue
             right = self.playback_time()
             if right <= 0.0:
                 continue
-            if active_speaker and clear_on_silence:
-                clear_left = max(0.0, right - min(clear_window_seconds, window_seconds))
+            if clear_on_silence:
+                clear_left = max(0.0, right - clear_window_seconds)
                 clear_audio, clear_sample_rate = self._audio_window_copy(clear_left, right)
-                if clear_audio.size > 0 and not self._audio_has_live_probe_speech(
-                    clear_left,
-                    right,
-                    clear_audio,
-                    clear_sample_rate,
+                release_left = clear_left
+                release_silence = (
+                    clear_audio.size > 0
+                    and not self._audio_has_live_probe_speech(
+                        clear_left,
+                        right,
+                        clear_audio,
+                        clear_sample_rate,
+                        release=True,
+                    )
+                )
+                fast_release_window = max(
+                    0.0,
+                    float(getattr(
+                        self.args,
+                        "live_speaker_probe_fast_release_window_seconds",
+                        0.0,
+                    )),
+                )
+                if (
+                    not release_silence
+                    and 0.0 < fast_release_window < clear_window_seconds
                 ):
+                    fast_left = max(0.0, right - fast_release_window)
+                    fast_audio, fast_sample_rate = self._audio_window_copy(fast_left, right)
+                    if (
+                        fast_audio.size > 0
+                        and not self._audio_has_live_probe_speech(
+                            fast_left,
+                            right,
+                            fast_audio,
+                            fast_sample_rate,
+                            release=True,
+                            fast_release=True,
+                        )
+                    ):
+                        release_silence = True
+                        release_left = fast_left
+                if release_silence:
                     consecutive_silence += 1
                     core_decision = self._shared_live_speaker_step(
                         media_time=right,
                         speech=False,
                         embedding=None,
-                        duration_seconds=max(0.0, right - clear_left),
+                        duration_seconds=max(0.0, right - release_left),
                         probe_scheduled=False,
                         release_signal=True,
                         skipped_reason="production_silence_release_gate",
                     )
-                    if core_decision.action == "clear":
+                    if core_decision.action == "clear" and active_speaker:
                         self.bus.emit(
                             "live_speaker_clear",
                             {
                                 "speaker_id": active_speaker,
                                 "live": False,
                                 "fallback": True,
-                                "start": round(float(clear_left), 4),
+                                "start": round(float(release_left), 4),
                                 "end": round(float(right), 4),
                                 "reason": "silence",
                                 "silence_count": consecutive_silence,
@@ -194,6 +240,11 @@ class WindowLiveProbeMixin:
                         consecutive_unknown = 0
                         consecutive_silence = 0
                         self._live_probability_history.clear()
+                    # Do not immediately re-acquire from stale speech that is
+                    # still present in the longer embedding window.  The next
+                    # embedding probe is allowed as soon as the recent cheap
+                    # release window contains speech again.
+                    continue
                 else:
                     consecutive_silence = 0
             current_min_advance = attack_min_advance if attack_mode else min_advance
