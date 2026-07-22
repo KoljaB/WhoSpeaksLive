@@ -24,6 +24,7 @@ if PYSIDE_AVAILABLE:
         QFrame,
         QLabel,
         QLineEdit,
+        QSizePolicy,
     )
 
     from whospeaks_gui.demo import DEMO_STATES, DemoLauncherController
@@ -514,6 +515,36 @@ class WhoSpeaksGuiTests(unittest.TestCase):
         self.assertTrue(host.property("invalid"))
         self.assertIn("Browser host cannot be empty", host.accessibleDescription())
         self.assertEqual(window.settings.section_list.currentRow(), 0)
+
+    def test_long_path_validation_stays_inside_settings_content_width(self) -> None:
+        window = self.make_window("settings")
+        window.navigate(2)
+        long_path = (
+            r"C:\Users\Start\AppData\Roaming\uv\tools\whospeaks\Scripts\python.exe"
+        )
+        message = f"ProfileValidationError: The configured Python executable does not exist: {long_path}"
+
+        window.settings.show_validation_error(
+            "realtime_preview_python",
+            message,
+            value=long_path,
+        )
+        self.app.processEvents()
+
+        section = window.settings.sections.currentWidget()
+        error = window.settings._validation_rows[-1][1]
+        self.assertTrue(error.wordWrap())
+        self.assertEqual(
+            error.sizePolicy().horizontalPolicy(),
+            QSizePolicy.Policy.Ignored,
+        )
+        self.assertLessEqual(section.widget().width(), section.viewport().width())
+        error_right = error.mapTo(window, QPoint(error.width(), 0)).x()
+        section_right = section.viewport().mapTo(
+            window,
+            QPoint(section.viewport().width(), 0),
+        ).x()
+        self.assertLessEqual(error_right, section_right)
 
     def test_irrelevant_preview_settings_are_hidden_without_losing_values(self) -> None:
         window = self.make_window("settings")

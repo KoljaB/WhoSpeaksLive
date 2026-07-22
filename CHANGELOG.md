@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.1.3 - 2026-07-22
+
+- Kept live speaker cards, controls, and the active-speaker indicator inside the speaker-panel width when transcription starts.
+- Prevented long executable paths, help text, and validation messages from widening or clipping the desktop launcher settings view.
+
 ## 0.1.0 - 2026-07-20
 
 - Added a production CPU-only profile using Kroko/Nemotron fixed transcripts, guarded faster-whisper Base forced alignment, SpeechBrain CPU embeddings, bounded worker pools, native-timestamp fallback, launcher controls, diagnostics, and dedicated installation/docs.

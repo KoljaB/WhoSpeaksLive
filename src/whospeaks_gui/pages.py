@@ -80,6 +80,26 @@ _PREVIEW_MODEL_CHOICES = {
     "off": (("No live model", ""),),
 }
 
+
+def _breakable_ui_text(value: str) -> str:
+    """Keep long paths and URLs wrappable without changing their visible text."""
+
+    return re.sub(r"([\\/])", lambda match: f"{match.group(1)}\u200b", str(value))
+
+
+def _validation_error_label(field: str, message: str) -> QLabel:
+    """Build a validation label that cannot widen its containing form."""
+
+    error = QLabel(_breakable_ui_text(message))
+    error.setProperty("role", "error")
+    error.setAccessibleName(f"{field.replace('_', ' ')} error")
+    error.setAccessibleDescription(message)
+    error.setToolTip(message)
+    error.setWordWrap(True)
+    error.setMinimumWidth(0)
+    error.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+    return error
+
 _ASR_MODEL_CHOICES = (
     ("Whisper large-v3", "large-v3"),
     ("Whisper large-v2", "large-v2"),
@@ -214,10 +234,13 @@ class PathPicker(QWidget):
     def __init__(self, *, folder: bool, accessible_name: str, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.folder = folder
+        self.setMinimumWidth(0)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
         self.edit = QLineEdit()
+        self.edit.setMinimumWidth(0)
         self.edit.setAccessibleName(accessible_name)
         self.browse_button = QPushButton("Browse…")
         self.browse_button.setProperty("inputAction", True)
@@ -604,11 +627,13 @@ class DiagnosticsPage(QWidget):
 class FormSection(QScrollArea):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self.setMinimumWidth(0)
         self.setWidgetResizable(True)
         self.setFrameShape(QFrame.Shape.NoFrame)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         content = QWidget()
         content.setObjectName("formContent")
+        content.setMinimumWidth(0)
         self.form = QFormLayout(content)
         self.form.setContentsMargins(20, 24, 20, 32)
         self.form.setHorizontalSpacing(20)
@@ -695,9 +720,7 @@ class GeneralSettingsSection(QScrollArea):
         layout = self.field_blocks.get(widget)
         if layout is None:
             return None
-        error = QLabel(message)
-        error.setProperty("role", "error")
-        error.setAccessibleName(f"{field.replace('_', ' ')} error")
+        error = _validation_error_label(field, message)
         layout.insertWidget(2, error)
         self.errors.append(error)
         return error
@@ -766,6 +789,7 @@ class SettingsPage(QWidget):
         body_layout.setContentsMargins(0, 0, 0, 0)
         body_layout.setSpacing(0)
         form_region = QWidget()
+        form_region.setMinimumWidth(0)
         form_region_layout = QHBoxLayout(form_region)
         form_region_layout.setContentsMargins(0, 0, 0, 0)
         form_region_layout.setSpacing(0)
@@ -776,6 +800,7 @@ class SettingsPage(QWidget):
         self.section_list.addItems(self.SECTIONS)
         self.section_list.setAccessibleName("Settings sections")
         self.sections = QStackedWidget()
+        self.sections.setMinimumWidth(0)
         form_region_layout.addWidget(self.section_list)
         form_region_layout.addWidget(self.sections, 1)
         body_layout.addWidget(form_region, 1)
@@ -796,9 +821,14 @@ class SettingsPage(QWidget):
         self.context_help_title.setFont(help_title_font)
         self.context_help_value = QLabel("Remote client · models elsewhere")
         self.context_help_value.setProperty("role", "secondary")
+        self.context_help_value.setMinimumWidth(0)
+        self.context_help_value.setWordWrap(True)
+        self.context_help_value.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
         self.context_help_detail = QLabel("Help for the focused setting appears here.")
         self.launch_effect_detail = self.context_help_detail
         self.context_help_detail.setWordWrap(True)
+        self.context_help_detail.setMinimumWidth(0)
+        self.context_help_detail.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
         self.context_help_detail.setProperty("role", "secondary")
         self.context_help_hint = QLabel("F1  More help")
         self.context_help_hint.setProperty("role", "muted")
@@ -826,6 +856,8 @@ class SettingsPage(QWidget):
         self.action_bar.configure_button(self.save_button, primary=True)
         self.action_bar.configure_button(self.discard_button)
         self.status = QLabel("No unsaved changes")
+        self.status.setMinimumWidth(0)
+        self.status.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
         self.status.setProperty("role", "success")
         actions.addWidget(self.save_button)
         actions.addWidget(self.discard_button)
@@ -947,9 +979,9 @@ class SettingsPage(QWidget):
         title = str(widget.property("settingsHelpTitle") or widget.accessibleName() or key.replace("_", " ").title())
         self.context_help_title.setText(title)
         value = self._control_value_text(key, widget)
-        self.context_help_value.setText(value)
+        self.context_help_value.setText(_breakable_ui_text(value))
         self.context_help_value.setVisible(bool(value))
-        self.context_help_detail.setText(self._control_help_detail(key, widget))
+        self.context_help_detail.setText(_breakable_ui_text(self._control_help_detail(key, widget)))
 
     def _refresh_context_help(self, *_args: object) -> None:
         if self._active_help_widget is not None:
@@ -1936,9 +1968,7 @@ class SettingsPage(QWidget):
                 continue
             row, _role = section.form.getWidgetPosition(widget)
             if row >= 0:
-                error = QLabel(message)
-                error.setProperty("role", "error")
-                error.setAccessibleName(f"{field.replace('_', ' ')} error")
+                error = _validation_error_label(field, message)
                 section.form.insertRow(row + 1, "", error)
                 self._validation_rows.append((section.form, error))
                 break
