@@ -4,6 +4,8 @@
 
 WhoSpeaksLive identifies speakers while a conversation is still happening, produces a stable speaker-labeled transcript, and can turn a saved session into a structured meeting report with a summary, decisions, action items, open questions, risks, and links to supporting transcript evidence.
 
+**Built for real-time speaker awareness.** WhoSpeaksLive identifies established speakers in well under a second in typical conditions. Outside of cloud and API providers, it is now among the most advanced real-time speaker-diarization solutions available.
+
 Unlike meeting bots that depend on participant channels or active-speaker metadata, WhoSpeaksLive identifies speakers from the audio itself - live or recorded, from any source.
 
 Speaker diarization means identifying who spoke when. WhoSpeaksLive combines a fast live path for immediate speaker labels and optional draft text with a separate final path that uses more context for stable sentence-level results.
