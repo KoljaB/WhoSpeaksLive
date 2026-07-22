@@ -1575,6 +1575,61 @@ class WhoSpeaksCliTests(unittest.TestCase):
         self.assertIn("--live-speaker-embedding-provider", command)
         self.assertIn(cli.FAST_LIVE_PROVIDER, command)
 
+    def test_promoted_public_uses_promoted_final_and_live_providers(self) -> None:
+        profile = cli.apply_provider_preset(cli.Profile(), "promoted_public")
+        command = cli.build_launch_command(profile)
+
+        self.assertEqual(profile.provider_preset, "promoted_public")
+        self.assertIn(cli.PROMOTED_PUBLIC_PROVIDER, command)
+        self.assertIn(cli.PROMOTED_LIVE_PROVIDER, command)
+        self.assertEqual(profile.live_speaker_embedding_provider, "speechbrain_resnet")
+
+    def test_provider_presets_do_not_change_live_speaker_algorithm(self) -> None:
+        from window.window_cli import parse_args
+
+        expected = {
+            "live_speaker_probe_window_seconds": 0.7,
+            "live_speaker_probe_context_window_seconds": 1.5,
+            "live_speaker_probe_context_weight": 0.2,
+            "live_speaker_probe_interval_seconds": 0.4,
+            "live_speaker_probe_hold_seconds": 2.5,
+            "live_speaker_tracker": "bayes",
+            "live_speaker_open_set_tracklets": True,
+            "live_speaker_open_set_tracklet_preset": "short_history_hybrid_v2_profile_contradiction",
+        }
+        base = cli.profile_for_mode(cli.Profile(), "remote")
+        for preset_id in cli.PROVIDER_PRESETS:
+            with self.subTest(preset_id=preset_id):
+                profile = cli.profile_with_provider_preset(base, preset_id)
+                command = cli.build_launch_command(profile)
+                args = parse_args(command[3:])
+                for field, value in expected.items():
+                    self.assertEqual(getattr(args, field), value, field)
+
+    def test_all_launcher_modes_default_to_silero_vad(self) -> None:
+        for mode in ("local", "cpu", "remote"):
+            with self.subTest(mode=mode):
+                profile = cli.profile_for_mode(cli.Profile(), mode)
+                self.assertEqual(profile.vad_backend, "silero")
+                command = cli.build_launch_command(profile)
+                self.assertEqual(command[command.index("--vad-backend") + 1], "silero")
+
+    def test_saved_promoted_public_profile_migrates_old_live_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            config_path = Path(directory) / "config.json"
+            payload = cli.Profile().as_dict()
+            payload.update({
+                "provider_preset": "promoted_public",
+                "embedding_provider": cli.PROMOTED_PUBLIC_PROVIDER,
+                "live_speaker_embedding_provider": cli.FAST_LIVE_PROVIDER,
+            })
+            config_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            profile = cli.load_profile(config_path)
+
+        self.assertEqual(profile.provider_preset, "promoted_public")
+        self.assertEqual(profile.live_speaker_embedding_provider, cli.PROMOTED_LIVE_PROVIDER)
+
     def test_existing_corrupt_profile_is_reported_instead_of_silently_reset(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             config_path = Path(directory) / "config.json"

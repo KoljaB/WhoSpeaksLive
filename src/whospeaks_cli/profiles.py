@@ -18,6 +18,7 @@ from typing import Any
 
 from embeddings.provider_identity import (
     FAST_LIVE_PROVIDER,
+    PROMOTED_LIVE_PROVIDER,
     PROMOTED_PUBLIC_PROVIDER,
     PUBLIC_PROVIDER,
     SINGLE_ESPNET_PROVIDER,
@@ -171,13 +172,13 @@ PROVIDER_PRESETS: dict[str, ProviderPreset] = {
     "promoted_public": ProviderPreset(
         id="promoted_public",
         name="Promoted public stack",
-        summary="Current promoted public final stack plus fast live speaker feedback.",
+        summary="Current promoted public final stack plus the promoted live provider.",
         details=(
-            "Matches the current whospeaks-window default final provider stack. Keep it separate from "
-            "public_quality until validation confirms which public stack scores higher for the target data."
+            "Matches the current whospeaks-window default final provider stack and uses SpeechBrain ResNet "
+            "for the live profiles and shifting-window probes."
         ),
         embedding_provider=PROMOTED_PUBLIC_PROVIDER,
-        live_speaker_embedding_provider=FAST_LIVE_PROVIDER,
+        live_speaker_embedding_provider=PROMOTED_LIVE_PROVIDER,
         score_note="Current promoted public default. Keep this and public_quality visible until validation decides the winner.",
     ),
 }
@@ -253,7 +254,7 @@ class Profile:
     live_speaker_assignment: bool = True
     embedding_python: str = ""
     embedding_device: str = "cuda"
-    vad_backend: str = "rms"
+    vad_backend: str = "silero"
     realtime_preview_engine: str = "sherpa_onnx"
     realtime_preview_model_preset: str = "nemotron-3.5-560ms-int8"
     realtime_preview_model_dir: str = ""
@@ -322,6 +323,12 @@ class Profile:
             object.__setattr__(profile, "provider_preset", "smoke")
             object.__setattr__(profile, "embedding_provider", SMOKE_PROVIDER)
             object.__setattr__(profile, "live_speaker_embedding_provider", SMOKE_PROVIDER)
+        if (
+            normalize_provider_preset_id(profile.provider_preset) == "promoted_public"
+            and profile.embedding_provider == PROMOTED_PUBLIC_PROVIDER
+            and profile.live_speaker_embedding_provider == FAST_LIVE_PROVIDER
+        ):
+            object.__setattr__(profile, "live_speaker_embedding_provider", PROMOTED_LIVE_PROVIDER)
         object.__setattr__(
             profile,
             "provider_preset",
@@ -458,18 +465,25 @@ def _profile_from_saved_mapping(value: dict[str, Any], path: Path) -> Profile:
                 raise ProfileLoadError(path, f"{field} must be stored as true or false")
         elif not isinstance(raw_value, str):
             raise ProfileLoadError(path, f"{field} must be stored as text")
+    migrated_value = dict(value)
+    if (
+        normalize_provider_preset_id(str(migrated_value.get("provider_preset", ""))) == "promoted_public"
+        and migrated_value.get("embedding_provider") == PROMOTED_PUBLIC_PROVIDER
+        and migrated_value.get("live_speaker_embedding_provider") == FAST_LIVE_PROVIDER
+    ):
+        migrated_value["live_speaker_embedding_provider"] = PROMOTED_LIVE_PROVIDER
     try:
-        profile = Profile.from_mapping(value)
+        profile = Profile.from_mapping(migrated_value)
     except (TypeError, ValueError, argparse.ArgumentTypeError) as exc:
         raise ProfileLoadError(path, str(exc)) from exc
     changed = [
         field
-        for field, raw_value in value.items()
+        for field, raw_value in migrated_value.items()
         if getattr(profile, field) != raw_value
     ]
     if changed:
         detail = ", ".join(
-            f"{field}={value[field]!r} is not valid (would become {getattr(profile, field)!r})"
+            f"{field}={migrated_value[field]!r} is not valid (would become {getattr(profile, field)!r})"
             for field in changed
         )
         raise ProfileLoadError(path, detail)

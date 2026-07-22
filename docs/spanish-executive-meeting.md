@@ -35,7 +35,7 @@ Spanish report with evidence links
 
 ## Start The Weekly Meeting
 
-Configure the live window once. `promoted_public` uses the currently promoted public final speaker stack and a faster live-speaker stack. In the `whospeaks` desktop launcher, open **Settings → Meeting Intelligence** to enable automatic report-server startup, choose Spanish or **Follow live language**, and set the LLM provider/model. Save the settings; the main **Launch WhoSpeaks** button then starts both the live window and the report server.
+Configure the live window once. `promoted_public` uses the currently promoted public final speaker stack and SpeechBrain ResNet for live assignment. In the `whospeaks` desktop launcher, open **Settings → Meeting Intelligence** to enable automatic report-server startup, choose Spanish or **Follow live language**, and set the LLM provider/model. Save the settings; the main **Launch WhoSpeaks** button then starts both the live window and the report server.
 
 ```powershell
 whospeaks config `

@@ -23,7 +23,7 @@ The launcher labels, stable preset IDs, and provider expressions below match the
 | **Single model - ESPnet ECAPA** | `single_espnet` | `espnet_ecapa_wavlm_joint` | `espnet_ecapa_wavlm_joint` | Isolate one ESPnet model on both paths. Useful for controlled provider evaluation without an ensemble. |
 | **Low VRAM final + fast live** | `smoke_fast_live` | `speechbrain_ecapa` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Keep the simple final provider while using the responsive two-model live stack. This loads more models than `smoke`. |
 | **High quality - public ensemble** | `public_quality` | `espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Reproducible public four-model final candidate plus the fast live stack. Expect more model downloads, startup time, RAM, and VRAM than single-model presets. |
-| **Recommended - public ensemble** | `promoted_public` | `espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Current promoted `whospeaks-window` final stack plus the fast live stack. “Recommended” does not mean the starter always selects it or that it wins on every recording or dataset. |
+| **Recommended - public ensemble** | `promoted_public` | `espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37` | `speechbrain_resnet` | Current promoted `whospeaks-window` final stack plus the real-GUI-validated live provider. “Recommended” does not mean the starter always selects it or that it wins on every recording or dataset. |
 
 ### `smoke`: Low VRAM - SpeechBrain ECAPA
 
@@ -49,7 +49,9 @@ This preset remains a public quality candidate for reproducible comparison. “H
 
 ### `promoted_public`: Recommended - public ensemble
 
-The final path uses the current three-provider stack promoted by `whospeaks-window`; the live path is the same fast two-provider stack used by `public_quality` and `smoke_fast_live`.
+The final path uses the current three-provider stack promoted by `whospeaks-window`; the live path uses SpeechBrain ResNet. Finalized sentences are encoded in both vector spaces so the same speaker profiles can be compared with the shifting live windows.
+
+Provider presets select embedding models only. The 0.7/1.5-second windows, Bayesian tracker, 0.4-second cadence, 2.5-second hold, and open-set tracklet policy are global application defaults and do not change when a provider preset changes.
 
 Keep this preset distinct from `public_quality`: current validation has not established one public ensemble as the universal winner for all target data. The launcher label marks the currently promoted option, while `public_quality` preserves the alternative reproducible public candidate. A fresh starter profile can still begin with the `smoke` preset for safer bring-up.
 

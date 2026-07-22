@@ -174,10 +174,10 @@ Public high-quality final stack:
 espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12
 ```
 
-Recommended fast live stack:
+Current promoted live provider:
 
 ```text
-pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50
+speechbrain_resnet
 ```
 
 ## Timing Defaults
@@ -185,9 +185,11 @@ pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50
 Recent defaults are tuned to keep final ASR responsive while live speaker feedback runs on the same GPU:
 
 - `--interval-seconds 0.7`: final ASR loop delay and post-split cooldown.
-- `--live-speaker-probe-interval-seconds 0.75`: fallback live-speaker probe cadence.
-- `--live-speaker-probe-min-advance-seconds 0.75`: minimum media advance before another probe.
-- `--live-speaker-embedding-min-interval-seconds 0.75`: minimum wall-clock spacing between live embedding requests.
+- `--live-speaker-probe-interval-seconds 0.4`: fallback live-speaker probe cadence.
+- `--live-speaker-probe-min-advance-seconds 0.4`: minimum media advance before another probe.
+- `--live-speaker-embedding-min-interval-seconds 0.4`: minimum wall-clock spacing between live embedding requests.
+- `--live-speaker-probe-window-seconds 0.7` plus a `1.5`-second context window: independent short/long evidence for the Bayesian tracker.
+- `--live-speaker-probe-hold-seconds 2.5`: keep a verified highlight stable through brief pauses.
 - `--live-speaker-embedding-target-utilization 0.25`: backs off live embeddings when they start taking too much wall time.
 - `--live-speaker-ema-count 1`: uses the latest live probability snapshot.
 - `--live-speaker-raw-change-snap`: enabled by default.

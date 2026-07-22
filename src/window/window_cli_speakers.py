@@ -29,6 +29,8 @@ from pathlib import Path
 from typing import Any, BinaryIO
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
+from embeddings.provider_identity import PROMOTED_LIVE_PROVIDER
+
 
 def _configure_console_output() -> None:
     for stream in (sys.stdout, sys.stderr):
@@ -196,7 +198,7 @@ def add_embedding_speaker_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--embedding-device", default="cuda")
     parser.add_argument(
         "--live-speaker-embedding-provider",
-        default="pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50",
+        default=PROMOTED_LIVE_PROVIDER,
         help="Provider or weighted provider stack used only for fast live speaker assignment. Empty uses --embedding-provider.",
     )
     parser.add_argument(

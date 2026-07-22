@@ -295,13 +295,13 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--realtime-preview-diarize-min-similarity",
         type=float,
-        default=0.45,
+        default=0.2,
         help="Minimum cosine similarity for assigning a live preview row to an existing speaker.",
     )
     parser.add_argument(
         "--realtime-preview-diarize-min-margin",
         type=float,
-        default=0.08,
+        default=0.0,
         help="Minimum top-vs-runner-up margin for assigning a live preview row when multiple speakers exist.",
     )
     parser.add_argument(
@@ -313,13 +313,13 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--live-speaker-embedding-min-interval-seconds",
         type=float,
-        default=0.75,
+        default=0.4,
         help="Minimum wall-clock spacing between live speaker embedding requests from preview/probe paths.",
     )
     parser.add_argument(
         "--live-speaker-embedding-target-utilization",
         type=float,
-        default=0.25,
+        default=1.0,
         help="Target fraction of wall time live speaker embeddings may occupy; use 1.0 to disable latency backoff.",
     )
     parser.add_argument(
@@ -373,7 +373,7 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--live-speaker-probe-interval-seconds",
         type=float,
-        default=0.75,
+        default=0.4,
         help="Seconds between fallback live-speaker probes.",
     )
     parser.add_argument(
@@ -394,25 +394,25 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--live-speaker-probe-window-seconds",
         type=float,
-        default=1.0,
+        default=0.7,
         help="Recent audio window scored by the fallback live-speaker probe.",
     )
     parser.add_argument(
         "--live-speaker-probe-context-window-seconds",
         type=float,
-        default=0.0,
+        default=1.5,
         help="Optional longer live-audio context window blended with the fast probe; 0 disables.",
     )
     parser.add_argument(
         "--live-speaker-probe-context-weight",
         type=float,
-        default=0.0,
+        default=0.2,
         help="Weight in [0,1] assigned to the optional longer live-speaker context embedding.",
     )
     parser.add_argument(
         "--live-speaker-tracker",
         choices=("classic", "bayes"),
-        default="classic",
+        default="bayes",
         help=(
             "Causal identity tracker. 'classic' blends the two embeddings before scoring; "
             "'bayes' keeps them independent and filters speaker state probabilistically."
@@ -421,7 +421,7 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--live-speaker-open-set-tracklets",
         action=argparse.BooleanOptionalAction,
-        default=False,
+        default=True,
         help=(
             "Enable the output-only two-probe temporary identity overlay. "
             "It reuses the existing 0.7/1.5-second live embeddings and never "
@@ -443,14 +443,14 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
             "short_history_hybrid_v1",
             "short_history_hybrid_v2_profile_contradiction",
         ),
-        default="short_history_hybrid_v1",
+        default="short_history_hybrid_v2_profile_contradiction",
         help="Versioned threshold preset for the open-set tracklet overlay.",
     )
-    parser.add_argument("--live-speaker-bayes-temperature", type=float, default=0.10)
-    parser.add_argument("--live-speaker-bayes-unknown-bias", type=float, default=0.0)
-    parser.add_argument("--live-speaker-bayes-profile-count-threshold", type=int, default=0)
-    parser.add_argument("--live-speaker-bayes-low-profile-unknown-bias", type=float, default=0.0)
-    parser.add_argument("--live-speaker-bayes-high-profile-unknown-bias", type=float, default=0.0)
+    parser.add_argument("--live-speaker-bayes-temperature", type=float, default=0.0875)
+    parser.add_argument("--live-speaker-bayes-unknown-bias", type=float, default=-0.5)
+    parser.add_argument("--live-speaker-bayes-profile-count-threshold", type=int, default=2)
+    parser.add_argument("--live-speaker-bayes-low-profile-unknown-bias", type=float, default=-0.5)
+    parser.add_argument("--live-speaker-bayes-high-profile-unknown-bias", type=float, default=0.5)
     parser.add_argument("--live-speaker-bayes-profile-count-bias-slope", type=float, default=0.0)
     parser.add_argument("--live-speaker-bayes-stay-probability", type=float, default=0.50)
     parser.add_argument("--live-speaker-bayes-prior-strength", type=float, default=0.0)
@@ -558,13 +558,13 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--live-speaker-probe-hold-seconds",
         type=float,
-        default=1.0,
+        default=2.5,
         help="Seconds the browser keeps a fallback live-speaker highlight after a matching probe.",
     )
     parser.add_argument(
         "--live-speaker-probe-min-advance-seconds",
         type=float,
-        default=0.75,
+        default=0.4,
         help="Minimum playback advance before rescoring the fallback live-speaker probe window.",
     )
     parser.add_argument(
@@ -582,49 +582,49 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--live-speaker-probe-speech-backend",
         choices=("rms", "vad"),
-        default="rms",
+        default="vad",
         help="Speech gate used by live-speaker probe windows. 'vad' reuses the configured VAD backend.",
     )
     parser.add_argument(
         "--live-speaker-probe-silero-speech-threshold",
         type=float,
-        default=-1.0,
+        default=0.3,
         help="Silero threshold for live-speaker acquisition; negative reuses --vad-silero-speech-threshold.",
     )
     parser.add_argument(
         "--live-speaker-probe-vad-min-speech-seconds",
         type=float,
-        default=-1.0,
+        default=0.032,
         help="Minimum VAD speech for live-speaker acquisition; negative reuses --vad-min-speech-seconds.",
     )
     parser.add_argument(
         "--live-speaker-probe-release-silero-speech-threshold",
         type=float,
-        default=-1.0,
+        default=0.25,
         help="Independent Silero threshold for live-speaker release; negative reuses the acquisition threshold.",
     )
     parser.add_argument(
         "--live-speaker-probe-release-vad-min-speech-seconds",
         type=float,
-        default=-1.0,
+        default=0.032,
         help="Independent VAD speech duration for release; negative reuses the acquisition duration.",
     )
     parser.add_argument(
         "--live-speaker-probe-fast-release-window-seconds",
         type=float,
-        default=0.0,
+        default=0.7,
         help="Optional shorter VAD-only window for an additional conservative fast-silence release path.",
     )
     parser.add_argument(
         "--live-speaker-probe-fast-release-silero-speech-threshold",
         type=float,
-        default=-1.0,
+        default=0.014,
         help="Silero threshold for the optional fast release path.",
     )
     parser.add_argument(
         "--live-speaker-probe-fast-release-vad-min-speech-seconds",
         type=float,
-        default=-1.0,
+        default=0.144,
         help="Minimum detected speech duration for the optional fast release path.",
     )
     parser.add_argument(
@@ -642,19 +642,19 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--live-speaker-probe-clear-window-seconds",
         type=float,
-        default=1.0,
+        default=1.1,
         help="Recent audio duration checked for silence before clearing the fallback live speaker.",
     )
     parser.add_argument(
         "--live-speaker-probe-clear-silence-count",
         type=int,
-        default=1,
+        default=2,
         help="Clear the fallback live speaker after this many consecutive silent clear windows.",
     )
     parser.add_argument(
         "--live-speaker-probe-clear-unknown-count",
         type=int,
-        default=2,
+        default=1,
         help="Clear the fallback live speaker after this many consecutive speech probes score as UNKNOWN; use 0 to disable.",
     )
     parser.add_argument(

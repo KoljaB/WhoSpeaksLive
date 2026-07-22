@@ -15,6 +15,7 @@ PROMOTED_PUBLIC_PROVIDER = (
     "espnet_ecapa_wavlm_joint=1.0+speechbrain_resnet=0.28+wespeaker_campplus=0.37"
 )
 FAST_LIVE_PROVIDER = "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50"
+PROMOTED_LIVE_PROVIDER = "speechbrain_resnet"
 
 
 _KNOWN_STACK_LABELS = {

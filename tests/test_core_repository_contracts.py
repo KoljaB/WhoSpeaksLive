@@ -153,6 +153,17 @@ class RepositoryStructureTests(unittest.TestCase):
             os.environ.update(original_env)
             importlib.reload(window_config)
 
+    def test_modal_wrapper_inherits_global_live_speaker_algorithm_defaults(self) -> None:
+        source = (ROOT / "src" / "window" / "modal_youtube_window_diarize_gui.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("BEST_MODAL_EMBEDDING_PROVIDER = PROMOTED_PUBLIC_PROVIDER", source)
+        self.assertIn("PROMOTED_LIVE_PROVIDER", source)
+        self.assertNotIn('"--live-speaker-probe-interval-seconds"', source)
+        self.assertNotIn('"--live-speaker-probe-min-advance-seconds"', source)
+        self.assertNotIn('"--live-speaker-embedding-target-utilization"', source)
+
     def test_window_gui_tuned_default_parameters_match_promoted_set(self) -> None:
         from window.youtube_window_diarize_gui import parse_args
 
@@ -220,7 +231,7 @@ class RepositoryStructureTests(unittest.TestCase):
             "speaker_refinement_long_low_confidence_retro_max_splits": 1,
             "min_embed_seconds": 0.5,
             "min_speech_audio_ratio": 0.0,
-            "live_speaker_embedding_provider": "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50",
+            "live_speaker_embedding_provider": "speechbrain_resnet",
             "unstable_tail_seconds": 1.35,
             "vad_silence_seconds": 1.1,
             "vad_final_window_post_silence_seconds": 0.75,
@@ -232,28 +243,52 @@ class RepositoryStructureTests(unittest.TestCase):
             "realtime_preview_startup_timeout_seconds": 30.0,
             "realtime_preview_diarize_min_audio_seconds": 1.5,
             "realtime_preview_diarize_min_advance_seconds": 0.75,
-            "realtime_preview_diarize_min_similarity": 0.45,
-            "realtime_preview_diarize_min_margin": 0.08,
+            "realtime_preview_diarize_min_similarity": 0.2,
+            "realtime_preview_diarize_min_margin": 0.0,
             "realtime_preview_diarize_min_known_probability": 0.5,
             "live_speaker_assignment": True,
-            "live_speaker_embedding_min_interval_seconds": 0.75,
-            "live_speaker_embedding_target_utilization": 0.25,
+            "live_speaker_embedding_min_interval_seconds": 0.4,
+            "live_speaker_embedding_target_utilization": 1.0,
             "live_speaker_verify_on_change": False,
             "live_speaker_verify_min_interval_seconds": 2.0,
             "live_speaker_ema_window_seconds": 1.0,
             "live_speaker_ema_count": 1,
             "live_speaker_ema_alpha": 0.55,
-            "live_speaker_probe_interval_seconds": 0.75,
+            "live_speaker_probe_interval_seconds": 0.4,
             "live_speaker_probe_attack_interval_seconds": 0.0,
-            "live_speaker_probe_window_seconds": 1.0,
-            "live_speaker_probe_hold_seconds": 1.0,
-            "live_speaker_probe_min_advance_seconds": 0.75,
+            "live_speaker_probe_window_seconds": 0.7,
+            "live_speaker_probe_context_window_seconds": 1.5,
+            "live_speaker_probe_context_weight": 0.2,
+            "live_speaker_tracker": "bayes",
+            "live_speaker_open_set_tracklets": True,
+            "live_speaker_open_set_preprofile": False,
+            "live_speaker_open_set_tracklet_preset": "short_history_hybrid_v2_profile_contradiction",
+            "live_speaker_bayes_temperature": 0.0875,
+            "live_speaker_bayes_unknown_bias": -0.5,
+            "live_speaker_bayes_profile_count_threshold": 2,
+            "live_speaker_bayes_low_profile_unknown_bias": -0.5,
+            "live_speaker_bayes_high_profile_unknown_bias": 0.5,
+            "live_speaker_bayes_stay_probability": 0.5,
+            "live_speaker_bayes_prior_strength": 0.0,
+            "live_speaker_bayes_evidence_strength": 1.0,
+            "live_speaker_bayes_switch_probability_margin": 0.0,
+            "live_speaker_bayes_provisional_profiles": False,
+            "live_speaker_probe_hold_seconds": 2.5,
+            "live_speaker_probe_min_advance_seconds": 0.4,
             "live_speaker_probe_attack_min_advance_seconds": 0.0,
             "live_speaker_probe_min_speech_seconds": 0.15,
+            "live_speaker_probe_speech_backend": "vad",
+            "live_speaker_probe_silero_speech_threshold": 0.3,
+            "live_speaker_probe_vad_min_speech_seconds": 0.032,
+            "live_speaker_probe_release_silero_speech_threshold": 0.25,
+            "live_speaker_probe_release_vad_min_speech_seconds": 0.032,
+            "live_speaker_probe_fast_release_window_seconds": 0.7,
+            "live_speaker_probe_fast_release_silero_speech_threshold": 0.014,
+            "live_speaker_probe_fast_release_vad_min_speech_seconds": 0.144,
             "live_speaker_probe_clear_on_silence": True,
-            "live_speaker_probe_clear_window_seconds": 1.0,
-            "live_speaker_probe_clear_silence_count": 1,
-            "live_speaker_probe_clear_unknown_count": 2,
+            "live_speaker_probe_clear_window_seconds": 1.1,
+            "live_speaker_probe_clear_silence_count": 2,
+            "live_speaker_probe_clear_unknown_count": 1,
             "live_speaker_probe_unknown_clear_debounce_seconds": 0.0,
             "live_speaker_probe_unknown_keepalive": False,
             "live_speaker_probe_unknown_release_smoothing": "none",

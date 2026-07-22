@@ -176,7 +176,7 @@ Main browser app for media download/playback, final ASR, speaker assignment, liv
 | Embedding backend and speaker library | `--embedding-provider` | `DEFAULT_WINDOW_EMBEDDING_PROVIDER` | Provider or weighted provider stack used for final speaker assignment. |
 | Embedding backend and speaker library | `--embedding-python` | `default_embedding_python()` | Python executable used by the local embedding helper process. |
 | Embedding backend and speaker library | `--embedding-device` | `cuda` | Device used by local speaker embedding models. |
-| Embedding backend and speaker library | `--live-speaker-embedding-provider` | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Provider or weighted provider stack used only for fast live speaker assignment. Empty uses --embedding-provider. |
+| Embedding backend and speaker library | `--live-speaker-embedding-provider` | `speechbrain_resnet` | Provider or weighted provider stack used only for fast live speaker assignment. Empty uses --embedding-provider. |
 | Embedding backend and speaker library | `--live-speaker-assignment`<br>`--no-live-speaker-assignment` | true | Enable live speaker highlighting/scoring during realtime preview. Use --no-live-speaker-assignment to keep live text preview without live speaker scoring. |
 | Embedding backend and speaker library | `--embeddings-backend`<br>`--embedding-backend`<br>`-embeddings-backend` | `local` | Speaker embedding backend. Use remote to send embedding requests to the Linux GPU server. Choices: `local`, `remote`. |
 | Embedding backend and speaker library | `--remote-embeddings-url`<br>`--remote-embedding-url` | `DEFAULT_REMOTE_EMBEDDINGS_URL` | Base URL of the remote voice embeddings server. |
@@ -283,32 +283,42 @@ Main browser app for media download/playback, final ASR, speaker assignment, liv
 | Realtime preview setup and VAD gate | `--realtime-preview-reset-overlap-seconds` | 0.15 | Audio pre-roll kept before the committed sentence boundary when resetting preview after final sentence commits. |
 | Realtime preview setup and VAD gate | `--realtime-preview-diarize-min-audio-seconds` | 1.5 | Minimum live unresolved audio duration before scoring it against known speakers. |
 | Live speaker feedback | `--realtime-preview-diarize-min-advance-seconds` | 0.75 | Minimum live playback advance before recomputing the live speaker embedding. |
-| Live speaker feedback | `--realtime-preview-diarize-min-similarity` | 0.45 | Minimum cosine similarity for assigning a live preview row to an existing speaker. |
-| Live speaker feedback | `--realtime-preview-diarize-min-margin` | 0.08 | Minimum top-vs-runner-up margin for assigning a live preview row when multiple speakers exist. |
+| Live speaker feedback | `--realtime-preview-diarize-min-similarity` | 0.2 | Minimum cosine similarity for assigning a live preview row to an existing speaker. |
+| Live speaker feedback | `--realtime-preview-diarize-min-margin` | 0.0 | Minimum top-vs-runner-up margin for assigning a live preview row when multiple speakers exist. |
 | Live speaker feedback | `--realtime-preview-diarize-min-known-probability` | 0.5 | Minimum known-speaker probability before the live row label switches from Unknown to a speaker. |
-| Live speaker feedback | `--live-speaker-embedding-min-interval-seconds` | 0.75 | Minimum wall-clock spacing between live speaker embedding requests from preview/probe paths. |
-| Live speaker feedback | `--live-speaker-embedding-target-utilization` | 0.25 | Target fraction of wall time live speaker embeddings may occupy; use 1.0 to disable latency backoff. |
+| Live speaker feedback | `--live-speaker-embedding-min-interval-seconds` | 0.4 | Minimum wall-clock spacing between live speaker embedding requests from preview/probe paths. |
+| Live speaker feedback | `--live-speaker-embedding-target-utilization` | 1.0 | Target fraction of wall time live speaker embeddings may occupy; use 1.0 to disable latency backoff. |
 | Live speaker feedback | `--live-speaker-verify-on-change`<br>`--no-live-speaker-verify-on-change` | false | Use the full embedding stack to confirm visible live speaker changes proposed by the fast provider. |
 | Live speaker feedback | `--live-speaker-verify-min-interval-seconds` | 2.0 | Minimum wall-clock spacing between full-stack live speaker change verification requests. |
 | Live speaker feedback | `--live-speaker-ema-window-seconds` | 1.0 | Wall-clock window used for smoothing live speaker probabilities. |
 | Live speaker feedback | `--live-speaker-ema-count` | 1 | Maximum number of recent live speaker probability snapshots blended by EMA. |
 | Live speaker feedback | `--live-speaker-ema-alpha` | 0.55 | EMA weight for the newest live speaker probability snapshot. |
 | Live speaker feedback | `--live-speaker-probe`<br>`--no-live-speaker-probe` | true | When enabled, score the last live audio window against known speakers for fallback speaker highlighting. |
-| Live speaker feedback | `--live-speaker-probe-interval-seconds` | 0.75 | Seconds between fallback live-speaker probes. |
+| Live speaker feedback | `--live-speaker-probe-interval-seconds` | 0.4 | Seconds between fallback live-speaker probes. |
 | Live speaker feedback | `--live-speaker-probe-attack-interval-seconds` | 0.0 | Optional faster probe interval while acquiring a speaker or resolving UNKNOWN; 0 disables. |
-| Live speaker feedback | `--live-speaker-probe-window-seconds` | 1.0 | Recent audio window scored by the fallback live-speaker probe. |
-| Live speaker feedback | `--live-speaker-probe-context-window-seconds` | 0.0 | Optional longer live-audio context window blended with the fast probe; 0 disables. |
-| Live speaker feedback | `--live-speaker-probe-context-weight` | 0.0 | Weight in [0,1] assigned to the optional longer live-speaker context embedding. |
-| Live speaker feedback | `--live-speaker-probe-hold-seconds` | 1.0 | Seconds the browser keeps a fallback live-speaker highlight after a matching probe. |
-| Live speaker feedback | `--live-speaker-probe-min-advance-seconds` | 0.75 | Minimum playback advance before rescoring the fallback live-speaker probe window. |
+| Live speaker feedback | `--live-speaker-probe-window-seconds` | 0.7 | Recent audio window scored by the fallback live-speaker probe. |
+| Live speaker feedback | `--live-speaker-probe-context-window-seconds` | 1.5 | Optional longer live-audio context window kept as independent Bayesian evidence. |
+| Live speaker feedback | `--live-speaker-probe-context-weight` | 0.2 | Relative weight of the longer live-speaker context evidence. |
+| Live speaker feedback | `--live-speaker-tracker` | `bayes` | Causal identity tracker that keeps short and context evidence independent. Choices: `classic`, `bayes`. |
+| Live speaker feedback | `--live-speaker-open-set-tracklets`<br>`--no-live-speaker-open-set-tracklets` | true | Track short-lived unknown voices without changing final speaker memory. |
+| Live speaker feedback | `--live-speaker-open-set-tracklet-preset` | `short_history_hybrid_v2_profile_contradiction` | Versioned open-set tracklet policy. |
+| Live speaker feedback | `--live-speaker-probe-hold-seconds` | 2.5 | Seconds the browser keeps a fallback live-speaker highlight after a matching probe. |
+| Live speaker feedback | `--live-speaker-probe-min-advance-seconds` | 0.4 | Minimum playback advance before rescoring the fallback live-speaker probe window. |
 | Live speaker feedback | `--live-speaker-probe-attack-min-advance-seconds` | 0.0 | Optional faster minimum playback advance during attack cadence; 0 uses the attack interval. |
 | Live speaker feedback | `--live-speaker-probe-min-speech-seconds` | 0.15 | Minimum RMS-gated speech inside the probe window before embedding it. |
-| Live speaker feedback | `--live-speaker-probe-speech-backend` | `rms` | Speech gate used by live-speaker probe windows. 'vad' reuses the configured VAD backend. Choices: `rms`, `vad`. |
+| Live speaker feedback | `--live-speaker-probe-speech-backend` | `vad` | Speech gate used by live-speaker probe windows. `vad` reuses the configured VAD backend. Choices: `rms`, `vad`. |
+| Live speaker feedback | `--live-speaker-probe-silero-speech-threshold` | 0.3 | Silero speech threshold used when acquiring a live speaker. |
+| Live speaker feedback | `--live-speaker-probe-vad-min-speech-seconds` | 0.032 | Minimum VAD speech duration used when acquiring a live speaker. |
+| Live speaker feedback | `--live-speaker-probe-release-silero-speech-threshold` | 0.25 | Independent Silero threshold used when releasing a live speaker. |
+| Live speaker feedback | `--live-speaker-probe-release-vad-min-speech-seconds` | 0.032 | Minimum VAD speech duration used by the release path. |
+| Live speaker feedback | `--live-speaker-probe-fast-release-window-seconds` | 0.7 | Short VAD-only window used by the conservative fast-silence release path. |
+| Live speaker feedback | `--live-speaker-probe-fast-release-silero-speech-threshold` | 0.014 | Silero threshold for the fast-silence release path. |
+| Live speaker feedback | `--live-speaker-probe-fast-release-vad-min-speech-seconds` | 0.144 | Minimum speech duration for the fast-silence release path. |
 | Live speaker feedback | `--live-speaker-probe-clear-on-silence`<br>`--no-live-speaker-probe-clear-on-silence` | true | Clear the fallback live speaker when the recent audio window has no RMS-gated speech. |
 | Live speaker feedback | `--live-speaker-clear-on-vad-split`<br>`--no-live-speaker-clear-on-vad-split` | false | Clear the fallback live speaker when the main VAD finalizes a sentence window after trailing silence. |
-| Live speaker feedback | `--live-speaker-probe-clear-window-seconds` | 1.0 | Recent audio duration checked for silence before clearing the fallback live speaker. |
-| Live speaker feedback | `--live-speaker-probe-clear-silence-count` | 1 | Clear the fallback live speaker after this many consecutive silent clear windows. |
-| Live speaker feedback | `--live-speaker-probe-clear-unknown-count` | 2 | Clear the fallback live speaker after this many consecutive speech probes score as UNKNOWN; use 0 to disable. |
+| Live speaker feedback | `--live-speaker-probe-clear-window-seconds` | 1.1 | Recent audio duration checked for silence before clearing the fallback live speaker. |
+| Live speaker feedback | `--live-speaker-probe-clear-silence-count` | 2 | Clear the fallback live speaker after this many consecutive silent clear windows. |
+| Live speaker feedback | `--live-speaker-probe-clear-unknown-count` | 1 | Clear the fallback live speaker after this many consecutive speech probes score as UNKNOWN; use 0 to disable. |
 | Live speaker feedback | `--live-speaker-probe-unknown-clear-debounce-seconds` | 0.0 | Delay UNKNOWN fallback-live-speaker clear events in the browser by this many seconds; 0 clears immediately. |
 | Live speaker feedback | `--live-speaker-probe-unknown-keepalive`<br>`--no-live-speaker-probe-unknown-keepalive` | false | Keep the current fallback live speaker highlighted during pre-clear UNKNOWN probes. |
 | Live speaker feedback | `--live-speaker-probe-unknown-release-smoothing` | `none` | Smooth current-speaker versus UNKNOWN evidence before releasing the fallback live speaker. Choices: `none`, `sma`, `ema`. |

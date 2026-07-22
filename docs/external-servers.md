@@ -154,7 +154,8 @@ Use these stacks in order while bringing up a new server:
 | --- | --- | --- |
 | Smoke | `speechbrain_ecapa` | Good first test. Smaller and easier to load. |
 | Public high quality | `espnet_ecapa_wavlm_joint=0.74+wespeaker_campplus=0.34+speechbrain_resnet=0.38+resemblyzer=0.12` | Recommended public quality stack. |
-| Fast live | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Recommended for live speaker assignment. |
+| Promoted live | `speechbrain_resnet` | Current real-GUI-validated live-assignment provider. |
+| Alternative fast live stack | `pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50` | Retained for controlled comparisons and the legacy fast-live presets. |
 
 ## Windows Launch With Remote Services
 

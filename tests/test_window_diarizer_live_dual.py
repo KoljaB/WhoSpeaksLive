@@ -332,6 +332,7 @@ class ProductionDualWindowTests(unittest.TestCase):
             "--live-speaker-probe-window-seconds", "0.7",
             "--live-speaker-probe-context-window-seconds", "1.5",
             "--live-speaker-probe-context-weight", "0.2",
+            "--no-live-speaker-open-set-tracklets",
             "--live-speaker-bayes-provisional-profiles",
             "--live-speaker-bayes-provisional-creation-count", "1",
             "--live-speaker-bayes-provisional-creation-similarity-ceiling", "0.1",

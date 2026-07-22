@@ -12,6 +12,7 @@ from pathlib import Path, PurePosixPath
 
 import modal
 
+from embeddings.provider_identity import PROMOTED_LIVE_PROVIDER, PROMOTED_PUBLIC_PROVIDER
 from window.language_config import default_language_code, kroko_preview_model_name
 
 
@@ -19,29 +20,10 @@ APP_NAME = "whospeaks-youtube-window-diarize"
 PORT = 8000
 MODAL_GPU = os.environ.get("WHOSPEAKS_MODAL_GPU", "T4")
 MODAL_SCALEDOWN_WINDOW_SECONDS = int(os.environ.get("WHOSPEAKS_MODAL_SCALEDOWN_WINDOW_SECONDS", "60"))
-BEST_MODAL_EMBEDDING_PROVIDER = "pyannote_wespeaker_resnet34_lm=1.0+wespeaker_resnet34_lm_onnx=0.50"
+BEST_MODAL_EMBEDDING_PROVIDER = PROMOTED_PUBLIC_PROVIDER
 BEST_MODAL_LIVE_EXTRA_ARGS = [
     "--live-speaker-embedding-provider",
-    BEST_MODAL_EMBEDDING_PROVIDER,
-    "--live-speaker-probe-interval-seconds",
-    "0.75",
-    "--live-speaker-probe-min-advance-seconds",
-    "0.75",
-    "--live-speaker-embedding-min-interval-seconds",
-    "0.75",
-    "--live-speaker-embedding-target-utilization",
-    "0.25",
-    "--live-speaker-ema-count",
-    "1",
-    "--live-speaker-raw-change-snap",
-    "--live-speaker-raw-change-min-probability",
-    "0.70",
-    "--live-speaker-raw-change-min-margin",
-    "0.25",
-    "--live-speaker-sentence-hint",
-    "--live-speaker-sentence-hint-override",
-    "--live-speaker-sentence-hint-hold-seconds",
-    "0.30",
+    PROMOTED_LIVE_PROVIDER,
 ]
 MODAL_EMBEDDING_PROVIDER = os.environ.get(
     "WHOSPEAKS_MODAL_EMBEDDING_PROVIDER",
