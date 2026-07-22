@@ -1240,10 +1240,53 @@ class WhoSpeaksCliTests(unittest.TestCase):
             output.index("Live window command:"),
         )
 
-    def test_local_profile_uses_auto_device_by_default(self) -> None:
+    def test_local_profile_preserves_explicit_device(self) -> None:
         profile = cli.configure_profile_for_mode(cli.Profile(device="cuda"), "local")
 
-        self.assertEqual(profile.device, "auto")
+        self.assertEqual(profile.device, "cuda")
+
+    def test_remote_install_preserves_explicit_speaker_device_and_vad_preferences(self) -> None:
+        profile = cli.profile_with_provider_preset(
+            cli.Profile(mode="local", device="cuda", vad_backend="rms"),
+            "promoted_public",
+        )
+        plan = cli.install_plan_for_target(
+            "core",
+            realtime_preview_engine="kroko_onnx",
+            realtime_preview_model_preset="community-64l",
+            translation_model_profile="off",
+        )
+
+        configured = cli.profile_for_install(profile, plan)
+
+        self.assertEqual(configured.mode, "remote")
+        self.assertEqual(configured.asr_backend, "remote")
+        self.assertEqual(configured.embeddings_backend, "remote")
+        self.assertEqual(configured.provider_preset, "promoted_public")
+        self.assertEqual(configured.embedding_provider, cli.PROMOTED_PUBLIC_PROVIDER)
+        self.assertEqual(configured.live_speaker_embedding_provider, cli.PROMOTED_LIVE_PROVIDER)
+        self.assertEqual(configured.device, "cuda")
+        self.assertEqual(configured.vad_backend, "rms")
+
+    def test_local_reinstall_preserves_explicit_speaker_device_and_vad_preferences(self) -> None:
+        profile = cli.profile_with_provider_preset(
+            cli.Profile(
+                mode="local",
+                device="cuda",
+                compute_type="int8_float16",
+                embedding_device="auto",
+                vad_backend="rms",
+            ),
+            "promoted_public",
+        )
+
+        configured = cli.profile_for_mode(profile, "local")
+
+        self.assertEqual(configured.provider_preset, "promoted_public")
+        self.assertEqual(configured.device, "cuda")
+        self.assertEqual(configured.compute_type, "int8_float16")
+        self.assertEqual(configured.embedding_device, "auto")
+        self.assertEqual(configured.vad_backend, "rms")
 
     def test_local_profile_enables_nemotron_preview_by_default(self) -> None:
         profile = cli.configure_profile_for_mode(cli.Profile(realtime_preview_engine="off"), "local")

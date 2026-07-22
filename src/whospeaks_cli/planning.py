@@ -263,15 +263,18 @@ def profile_for_mode(profile: Profile, mode: str) -> Profile:
             remote_embeddings_url=DEFAULT_REMOTE_EMBEDDINGS_URL,
         )
     if selected == "local":
-        base = profile_with_provider_preset(profile, "smoke")
-        return base.with_updates(
+        # A fresh Profile already carries the safe local defaults.  Reapplying
+        # the same installation target must not discard explicit user choices.
+        # Only undo values that CPU mode itself forces when switching away from
+        # that constrained deployment.
+        switching_from_cpu = normalize_mode(profile.mode) == "cpu"
+        return profile.with_updates(
             mode="local",
             asr_backend="local",
             embeddings_backend="local",
-            device="auto",
-            compute_type="float16",
-            embedding_device="cuda",
-            vad_backend="silero",
+            device="auto" if switching_from_cpu else profile.device,
+            compute_type="float16" if switching_from_cpu else profile.compute_type,
+            embedding_device="cuda" if switching_from_cpu else profile.embedding_device,
             realtime_preview_engine="sherpa_onnx",
             realtime_preview_model_preset="nemotron-3.5-560ms-int8",
             realtime_preview_model_dir="",
@@ -296,13 +299,10 @@ def profile_for_mode(profile: Profile, mode: str) -> Profile:
             **deployment_updates,
         )
     if selected == "remote":
-        base = profile_with_provider_preset(profile, "smoke")
-        return base.with_updates(
+        return profile.with_updates(
             mode="remote",
             asr_backend="remote",
             embeddings_backend="remote",
-            device="auto",
-            vad_backend="silero",
             realtime_preview_engine="off",
             realtime_preview_model_preset="",
             realtime_preview_model_dir="",
