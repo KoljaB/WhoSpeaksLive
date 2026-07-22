@@ -169,9 +169,11 @@ export function installTranscriptTranslation(ctx) {
   function isLiveProvisionalSpeaker(speaker) {
     const value = speaker && typeof speaker === "object" ? speaker : {id: speaker};
     const speakerId = String(value.id || "");
+    if (value.presentation_aliased === true && String(value.internal_speaker_id || "")) return false;
     return value.source === "live_provisional"
       || /^provisional_\d+$/.test(speakerId)
-      || /^LIVE_NEW_\d+$/.test(speakerId);
+      || /^LIVE_NEW_\d+$/.test(speakerId)
+      || /^LIVE_TRACKLET_\d+$/.test(speakerId);
   }
   function speakerDisplayLabel(label) {
     if (label && ctx.owners.speakers.speakerNames[label]) return ctx.owners.speakers.speakerNames[label];
@@ -227,13 +229,15 @@ export function installTranscriptTranslation(ctx) {
     return speaker.name || speaker.display_name || speakerDisplayLabel(speaker.id);
   }
   function speakerColor(label) {
-    if (isLiveProvisionalSpeaker(label)) return "#8F9BA8";
-    const index = speakerIndex(label);
+    const internalLabel = ctx.api.toInternalSpeakerId ? ctx.api.toInternalSpeakerId(label) : label;
+    if (internalLabel === label && isLiveProvisionalSpeaker(label)) return "#8F9BA8";
+    const index = speakerIndex(internalLabel);
     if (index === null) return null;
     return speakerColors[(index - 1) % speakerColors.length];
   }
   function speakerProbabilityKey(label) {
-    const index = speakerIndex(label);
+    const internalLabel = ctx.api.toInternalSpeakerId ? ctx.api.toInternalSpeakerId(label) : label;
+    const index = speakerIndex(internalLabel);
     return index === null ? null : `speaker${index}`;
   }
   function probabilityDisplayLabel(key) {

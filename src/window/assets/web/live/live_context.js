@@ -1,5 +1,112 @@
 import {createResourceRegistry, createStore} from "./app_store.js";
 
+export class LiveSpeakerPresentationRegistry {
+  constructor() {
+    this.reset();
+  }
+
+  reset(runKey = "") {
+    this.runKey = String(runKey || "");
+    this.aliasGeneration = 0;
+    this.finalToPublic = new Map();
+    this.publicToFinal = new Map();
+    this.migratedPairs = new Set();
+  }
+
+  toPublic(speakerId) {
+    const value = String(speakerId || "").trim();
+    return this.finalToPublic.get(value) || value;
+  }
+
+  toInternal(speakerId) {
+    const value = String(speakerId || "").trim();
+    return this.publicToFinal.get(value) || value;
+  }
+
+  apply(payload = {}) {
+    const generation = Number(payload.alias_generation || 0);
+    const finalId = String(payload.final_internal_speaker_id || "").trim();
+    const publicId = String(payload.surviving_public_speaker_id || "").trim();
+    if (!finalId || !publicId || finalId === publicId) return false;
+    if (payload.retired) {
+      if (!Number.isInteger(generation) || generation <= this.aliasGeneration) return false;
+      if (this.finalToPublic.get(finalId) !== publicId || this.publicToFinal.get(publicId) !== finalId) return false;
+      this.finalToPublic.delete(finalId);
+      this.publicToFinal.delete(publicId);
+      this.aliasGeneration = generation;
+      return true;
+    }
+    const existingPair = this.finalToPublic.get(finalId) === publicId
+      && this.publicToFinal.get(publicId) === finalId;
+    if (existingPair) {
+      this.aliasGeneration = Math.max(this.aliasGeneration, generation);
+      return true;
+    }
+    if (!Number.isInteger(generation) || generation <= this.aliasGeneration) return false;
+    if (this.finalToPublic.has(finalId) || this.publicToFinal.has(publicId)) return false;
+    if (this.publicToFinal.has(finalId) || this.finalToPublic.has(publicId)) return false;
+    this.finalToPublic.set(finalId, publicId);
+    this.publicToFinal.set(publicId, finalId);
+    this.aliasGeneration = generation;
+    return true;
+  }
+
+  claimMigration(finalId, publicId, retired = false, generation = this.aliasGeneration) {
+    const key = `${String(finalId || "")}\u0000${String(publicId || "")}\u0000${retired ? "retired" : "active"}\u0000${Number(generation || 0)}`;
+    if (this.migratedPairs.has(key)) return false;
+    this.migratedPairs.add(key);
+    return true;
+  }
+
+  hydrate(finalToPublic = {}, publicToFinal = {}, generation = 0) {
+    const nextFinal = new Map();
+    const nextPublic = new Map();
+    for (const [rawFinal, rawPublic] of Object.entries(finalToPublic || {})) {
+      const finalId = String(rawFinal || "").trim();
+      const publicId = String(rawPublic || "").trim();
+      if (!finalId || !publicId || finalId === publicId) return false;
+      if (nextFinal.has(finalId) || nextPublic.has(publicId)) return false;
+      if (nextPublic.has(finalId) || nextFinal.has(publicId)) return false;
+      nextFinal.set(finalId, publicId);
+      nextPublic.set(publicId, finalId);
+    }
+    for (const [rawPublic, rawFinal] of Object.entries(publicToFinal || {})) {
+      const publicId = String(rawPublic || "").trim();
+      const finalId = String(rawFinal || "").trim();
+      if (nextFinal.get(finalId) !== publicId || nextPublic.get(publicId) !== finalId) return false;
+    }
+    this.finalToPublic = nextFinal;
+    this.publicToFinal = nextPublic;
+    this.aliasGeneration = Math.max(this.aliasGeneration, Number(generation || nextFinal.size));
+    return true;
+  }
+
+  mergeSnapshot(currentSpeakers, projectedSpeakers) {
+    return mergePublicSpeakerSnapshot(currentSpeakers, projectedSpeakers, this);
+  }
+
+  stripTemporarySpeakers(speakers) {
+    return stripTemporaryPublicSpeakers(speakers);
+  }
+}
+
+export function mergePublicSpeakerSnapshot(currentSpeakers, projectedSpeakers, registry) {
+  const projected = Array.isArray(projectedSpeakers) ? projectedSpeakers : [];
+  const projectedIds = new Set(projected.map(speaker => speaker && speaker.id).filter(Boolean));
+  const retained = (Array.isArray(currentSpeakers) ? currentSpeakers : []).filter(speaker => (
+    String((speaker && speaker.id) || "").startsWith("LIVE_TRACKLET_")
+    && !registry.publicToFinal.has(speaker.id)
+    && !projectedIds.has(speaker.id)
+  ));
+  return [...projected, ...retained];
+}
+
+export function stripTemporaryPublicSpeakers(speakers) {
+  return (Array.isArray(speakers) ? speakers : []).filter(
+    speaker => !String((speaker && speaker.id) || "").startsWith("LIVE_TRACKLET_")
+  );
+}
+
 export function createLiveAppContext() {
   const start = document.getElementById("start");
   const stop = document.getElementById("stop");
@@ -89,6 +196,7 @@ export function createLiveAppContext() {
   const inputMode = document.getElementById("inputMode");
   const newSpeakerSensitivity = document.getElementById("newSpeakerSensitivity");
   const newSpeakerSensitivityLabel = document.getElementById("newSpeakerSensitivityLabel");
+  const autoRemoveEmptySpeakers = document.getElementById("autoRemoveEmptySpeakers");
   const speakerRefinementUnknownTentative = document.getElementById("speakerRefinementUnknownTentative");
   const speakerRefinementUnknownCommit = document.getElementById("speakerRefinementUnknownCommit");
   const allowSpeakerReassignment = document.getElementById("allowSpeakerReassignment");
@@ -184,8 +292,10 @@ export function createLiveAppContext() {
   const sessionClientIdStorageKey = "whospeaks.demo.client_id";
   const sessionTokenStorageKey = "whospeaks.demo.session_token";
   const fastProcessingStorageKey = "whospeaks.demo.fast_processing.v1";
+  const autoRemoveEmptySpeakersStorageKey = "whospeaks.demo.auto_remove_empty_speakers.v1";
 
   const owners = {
+    presentation: new LiveSpeakerPresentationRegistry(),
     capture: {
       es: null,
       playbackTimer: null,
@@ -226,6 +336,9 @@ export function createLiveAppContext() {
       hasRenderedFinalSentenceRows: false,
       fastSpeakerPanelStats: {},
       fastSpeakerPanelLastRight: null,
+      autoRemoveEmptySpeakerTimer: null,
+      autoRemoveEmptySpeakerRequestPending: false,
+      emptySpeakerFirstSeenAt: new Map(),
       soloSpeakerIds: new Set(),
       mutedSpeakerIds: new Set(),
       followLiveEnabled: true,
@@ -262,6 +375,9 @@ export function createLiveAppContext() {
       browserLiveObservationBuffer: [],
       browserLiveObservationStarted: false,
       browserLiveObservationPosting: false,
+      browserLiveObservationPostChain: Promise.resolve(),
+      browserLiveObservationBatchSequence: 0,
+      browserLiveObservationSampleSequence: 0,
     },
     reference: {
       referenceRecordStream: null,
@@ -327,6 +443,6 @@ export function createLiveAppContext() {
     api: Object.create(null),
     activators: [],
     askSelectedMeetingsButton, meetingChatTitle, meetingChatStatus, meetingChatClear, meetingChatScope, meetingChatMessages, meetingChatProgress, meetingChatProgressText, meetingChatProgressBar, meetingChatProgressPercent, meetingChatProgressElapsed, meetingChatForm, meetingChatQuestion, meetingChatSend,
-    start, stop, load, sessionBanner, sessionBannerMessage, releaseSessionButton, preset, state, languageSummary, languageFlag, languageName, source, mediaCard, sourceKind, sourceTitle, sourceModeMenu, sourceModeButton, sourceModeOptions, sourceModeOptionButtons, fileSourceControls, audioFileInput, fileDropZone, fileDropTitle, fileUploadStatus, fastProcessingControl, fastProcessing, chooseAudioFileButton, filePreviewName, mediaTime, mediaCurrentTime, mediaDuration, timelineFill, timelineThumb, expandMedia, captureTitle, captureDescription, captureLevelFill, captureLevelText, micGain, micGainValue, video, audio, youtubeFrame, streamHint, statusBox, statusCard, sentences, transcriptPanel, transcriptTitle, followLive, transcriptSearch, clearTranscriptButton, copyTranscriptButton, downloadTranscriptButton, downloadTranscriptJsonButton, transcriptSettingsButton, transcriptSettingsPanel, translationControls, translationMenuButton, translationMenuSummary, translationActivity, translationMenuPanel, translationProvider, translationProviderAttribution, translationDisplayModeControl, translationPrimaryField, translationPrimaryTargetControl, translationLanguageLabelModeControl, translationIncludeOriginalControl, translationTargetList, translationMenuHint, showTranscriptTags, showTranscriptTime, groupTranscriptTurns, showTranscriptReviewHints, showTranscriptSpeechRate, showTranscriptProbabilities, undoCorrectionButton, selectionToolbar, selectionCount, bulkCorrectionSpeaker, bulkReassignButton, bulkMarkCorrectButton, clearSelectionButton, reviewFilterButtons, inputMode, newSpeakerSensitivity, newSpeakerSensitivityLabel, speakerRefinementUnknownTentative, speakerRefinementUnknownCommit, allowSpeakerReassignment, loadSpeakerGroupButton, saveSpeakerGroupButton, saveCorrectedSpeakerGroupButton, speakerGroupFile, peopleList, speakerCount, speakerCountNumber, speakerCountLabel, speakerPanelTitle, speakerList, speakerEditorDock, clearSpeakersButton, addReferenceSpeakerButton, manualSpeakerComposer, manualSpeakerName, manualSpeakerReferenceDock, speakerTabButtons, speakerTabPanels, sessionList, newRunSessionButton, sessionFilterButtons, selectAllSessionsButton, unselectAllSessionsButton, archiveSelectedSessionsButton, restoreSelectedSessionsButton, deleteSelectedSessionsButton, sessionSelectionStatus, meetingIntelligenceGenerate, meetingIntelligenceStatus, meetingIntelligenceSummary, meetingIntelligenceStats, meetingIntelligenceObjects, meetingIntelligenceEvidence, referenceSpeakerForm, referenceSpeakerFile, recordReferenceButton, recordReferenceButtonLabel, referenceRecordSeconds, bootstrapElement, bootstrap, speakerColors, initialSource, presetVideos, speakerSensitivityConfig, speakerRefinementConfig, liveSpeakerConfig, languageConfig, translationConfig, sessionLeaseEnabled, initialSpeakerLibrary, appStore, appResources, svgNamespace, createSpeakerOptionValue, targetCaptureSampleRate, captureStartRmsThreshold, capturePreRollSeconds, audioUploadExtensions, playbackClockSlackSeconds, transcriptGroupTurnsStorageKey, transcriptReviewHintsStorageKey, translationDisplayModeStorageKey, translationPrimaryTargetStorageKey, translationIncludeOriginalStorageKey, translationLanguageLabelModeStorageKey, realtimeSettleRemovalDelayMs, sessionClientIdStorageKey, sessionTokenStorageKey, fastProcessingStorageKey,
+    start, stop, load, sessionBanner, sessionBannerMessage, releaseSessionButton, preset, state, languageSummary, languageFlag, languageName, source, mediaCard, sourceKind, sourceTitle, sourceModeMenu, sourceModeButton, sourceModeOptions, sourceModeOptionButtons, fileSourceControls, audioFileInput, fileDropZone, fileDropTitle, fileUploadStatus, fastProcessingControl, fastProcessing, chooseAudioFileButton, filePreviewName, mediaTime, mediaCurrentTime, mediaDuration, timelineFill, timelineThumb, expandMedia, captureTitle, captureDescription, captureLevelFill, captureLevelText, micGain, micGainValue, video, audio, youtubeFrame, streamHint, statusBox, statusCard, sentences, transcriptPanel, transcriptTitle, followLive, transcriptSearch, clearTranscriptButton, copyTranscriptButton, downloadTranscriptButton, downloadTranscriptJsonButton, transcriptSettingsButton, transcriptSettingsPanel, translationControls, translationMenuButton, translationMenuSummary, translationActivity, translationMenuPanel, translationProvider, translationProviderAttribution, translationDisplayModeControl, translationPrimaryField, translationPrimaryTargetControl, translationLanguageLabelModeControl, translationIncludeOriginalControl, translationTargetList, translationMenuHint, showTranscriptTags, showTranscriptTime, groupTranscriptTurns, showTranscriptReviewHints, showTranscriptSpeechRate, showTranscriptProbabilities, undoCorrectionButton, selectionToolbar, selectionCount, bulkCorrectionSpeaker, bulkReassignButton, bulkMarkCorrectButton, clearSelectionButton, reviewFilterButtons, inputMode, newSpeakerSensitivity, newSpeakerSensitivityLabel, autoRemoveEmptySpeakers, speakerRefinementUnknownTentative, speakerRefinementUnknownCommit, allowSpeakerReassignment, loadSpeakerGroupButton, saveSpeakerGroupButton, saveCorrectedSpeakerGroupButton, speakerGroupFile, peopleList, speakerCount, speakerCountNumber, speakerCountLabel, speakerPanelTitle, speakerList, speakerEditorDock, clearSpeakersButton, addReferenceSpeakerButton, manualSpeakerComposer, manualSpeakerName, manualSpeakerReferenceDock, speakerTabButtons, speakerTabPanels, sessionList, newRunSessionButton, sessionFilterButtons, selectAllSessionsButton, unselectAllSessionsButton, archiveSelectedSessionsButton, restoreSelectedSessionsButton, deleteSelectedSessionsButton, sessionSelectionStatus, meetingIntelligenceGenerate, meetingIntelligenceStatus, meetingIntelligenceSummary, meetingIntelligenceStats, meetingIntelligenceObjects, meetingIntelligenceEvidence, referenceSpeakerForm, referenceSpeakerFile, recordReferenceButton, recordReferenceButtonLabel, referenceRecordSeconds, bootstrapElement, bootstrap, speakerColors, initialSource, presetVideos, speakerSensitivityConfig, speakerRefinementConfig, liveSpeakerConfig, languageConfig, translationConfig, sessionLeaseEnabled, initialSpeakerLibrary, appStore, appResources, svgNamespace, createSpeakerOptionValue, targetCaptureSampleRate, captureStartRmsThreshold, capturePreRollSeconds, audioUploadExtensions, playbackClockSlackSeconds, transcriptGroupTurnsStorageKey, transcriptReviewHintsStorageKey, translationDisplayModeStorageKey, translationPrimaryTargetStorageKey, translationIncludeOriginalStorageKey, translationLanguageLabelModeStorageKey, realtimeSettleRemovalDelayMs, sessionClientIdStorageKey, sessionTokenStorageKey, fastProcessingStorageKey, autoRemoveEmptySpeakersStorageKey,
   };
 }

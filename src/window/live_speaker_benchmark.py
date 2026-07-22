@@ -13,6 +13,7 @@ from window.live_speaker_probe_scoring import canonical_speaker_turns, intervals
 
 SCORER_ID = "causal_live_speaker_score_v1"
 PRIMARY_SCORER_V2_ID = "causal_live_speaker_primary_macro_v2"
+EVIDENCE_CLASS = "TRACKER_ONLY_DIAGNOSTIC"
 
 
 @dataclass(frozen=True)
@@ -25,6 +26,8 @@ class LiveSpeakerScoreConfig:
 
 
 def _samples(decisions: Iterable[LiveSpeakerDecision]) -> list[dict[str, Any]]:
+    """Create synthetic samples for diagnostics; these are not browser evidence."""
+
     return [
         {
             "playback_time": item.media_time,
@@ -139,6 +142,8 @@ def score_live_speaker_decisions(
     )
     return {
         "scorer_id": SCORER_ID,
+        "evidence_class": EVIDENCE_CLASS,
+        "promotion_eligible": False,
         **base,
         "release": _release_report(trace, canonical_segments, cfg),
         "profile_availability": _availability_report(
@@ -156,6 +161,8 @@ def aggregate_video_scores(scores: Iterable[dict[str, Any]]) -> dict[str, Any]:
     aggregate = 0.55 * mean(values) + 0.30 * min(values) + 0.15 * mean(bottom)
     return {
         "scorer_id": SCORER_ID,
+        "evidence_class": EVIDENCE_CLASS,
+        "promotion_eligible": False,
         "video_count": len(values),
         "mean_video_score": round(mean(values), 6),
         "worst_video_score": round(min(values), 6),
@@ -188,6 +195,8 @@ def aggregate_video_scores_primary_v2(scores: Iterable[dict[str, Any]]) -> dict[
     return {
         "scorer_id": PRIMARY_SCORER_V2_ID,
         "component_scorer_id": SCORER_ID,
+        "evidence_class": EVIDENCE_CLASS,
+        "promotion_eligible": False,
         "video_count": len(rows),
         "primary_score": round(mean_score, 6),
         # Keep global_score as a compatibility alias for generic result viewers.

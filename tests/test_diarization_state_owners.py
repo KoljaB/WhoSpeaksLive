@@ -51,6 +51,7 @@ class _RunLifecycleHarness:
         self._active_run = run
         self._lifecycle_lock = threading.Lock()
         self._preview_transcriber = None
+        self._preview_transcriber_owned = False
         self.dependencies = SimpleNamespace(monotonic=time.monotonic)
         self.bus = _Bus()
         self.failure = failure

@@ -196,6 +196,15 @@ def add_validation_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--validation-canonical", type=Path, default=DEFAULT_CUNK_CANONICAL)
     parser.add_argument("--validation-output", type=Path, default=DEFAULT_VALIDATION_OUTPUT)
     parser.add_argument("--validation-trace-output", type=Path, default=None)
+    parser.add_argument(
+        "--live-speaker-world-tape-output",
+        type=Path,
+        default=None,
+        help=(
+            "Campaign directory for a production World Tape. Each GUI launch creates "
+            "a unique crash-resilient child directory containing ordered events and arrays."
+        ),
+    )
     parser.add_argument("--validation-replay-speed", type=float, default=1.0)
     parser.add_argument("--validation-update-interval-seconds", type=float, default=0.1)
     parser.add_argument("--validation-final-wait-seconds", type=float, default=90.0)
@@ -205,6 +214,15 @@ def add_validation_arguments(parser: argparse.ArgumentParser) -> None:
         type=Path,
         default=None,
         help="When set, the browser samples the rendered live-speaker DOM state and writes a strict browser-observed score JSON here.",
+    )
+    parser.add_argument(
+        "--browser-live-e2e-candidate-artifact",
+        type=Path,
+        default=None,
+        help=(
+            "Candidate JSON to hash-bind into a real GUI E2E observation. "
+            "A recording without this binding remains diagnostic and cannot be promoted."
+        ),
     )
     parser.add_argument(
         "--browser-live-observation-interval-seconds",
@@ -223,6 +241,14 @@ def add_validation_arguments(parser: argparse.ArgumentParser) -> None:
         type=float,
         default=DEFAULT_BROWSER_OBSERVATION_FLICKER_GAP_SECONDS,
         help="Minimum in-turn live-speaker gap counted as visible flicker.",
+    )
+    parser.add_argument(
+        "--exit-after-browser-live-observation",
+        action="store_true",
+        help=(
+            "Shut down the GUI server after the browser submits its final live-observation "
+            "batch. Intended for one-run World-Tape campaigns so the tape is sealed cleanly."
+        ),
     )
     parser.add_argument(
         "--validation-keep-preview",

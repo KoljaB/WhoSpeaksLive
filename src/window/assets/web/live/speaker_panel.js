@@ -1,6 +1,10 @@
 export function installSpeakerPanel(ctx) {
-  const {addReferenceSpeakerButton, audio, bulkCorrectionSpeaker, clearSpeakersButton, createSpeakerOptionValue, manualSpeakerComposer, manualSpeakerName, manualSpeakerReferenceDock, peopleList, recordReferenceButton, recordReferenceButtonLabel, referenceRecordSeconds, referenceSpeakerFile, referenceSpeakerForm, sentences, source, speakerEditorDock, speakerList, speakerPanelTitle, stop, svgNamespace, targetCaptureSampleRate, video} = ctx;
+  const {addReferenceSpeakerButton, appResources, audio, autoRemoveEmptySpeakers, autoRemoveEmptySpeakersStorageKey, bulkCorrectionSpeaker, clearSpeakersButton, createSpeakerOptionValue, manualSpeakerComposer, manualSpeakerName, manualSpeakerReferenceDock, peopleList, recordReferenceButton, recordReferenceButtonLabel, referenceRecordSeconds, referenceSpeakerFile, referenceSpeakerForm, sentences, source, speakerEditorDock, speakerList, speakerPanelTitle, stop, svgNamespace, targetCaptureSampleRate, video} = ctx;
   const clearTranscriptSelection = (...args) => ctx.api.clearTranscriptSelection(...args), commonSelectedSpeakerId = (...args) => ctx.api.commonSelectedSpeakerId(...args), connect = (...args) => ctx.api.connect(...args), copyTranscript = (...args) => ctx.api.copyTranscript(...args), correctionStatus = (...args) => ctx.api.correctionStatus(...args), downloadTranscript = (...args) => ctx.api.downloadTranscript(...args), ensureSessionOwner = (...args) => ctx.api.ensureSessionOwner(...args), fetchSavedSessions = (...args) => ctx.api.fetchSavedSessions(...args), isLiveProvisionalSpeaker = (...args) => ctx.api.isLiveProvisionalSpeaker(...args), loadSavedSessionReview = (...args) => ctx.api.loadSavedSessionReview(...args), log = (...args) => ctx.api.log(...args), post = (...args) => ctx.api.post(...args), renderSentence = (...args) => ctx.api.renderSentence(...args), resampleFloat32 = (...args) => ctx.api.resampleFloat32(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), scheduleSavedSessionsRefresh = (...args) => ctx.api.scheduleSavedSessionsRefresh(...args), selectedSpeaker = (...args) => ctx.api.selectedSpeaker(...args), selectedTranscriptIndexes = (...args) => ctx.api.selectedTranscriptIndexes(...args), selectedTranscriptRows = (...args) => ctx.api.selectedTranscriptRows(...args), sessionControlsLocked = (...args) => ctx.api.sessionControlsLocked(...args), setSpeakerFilter = (...args) => ctx.api.setSpeakerFilter(...args), speakerColor = (...args) => ctx.api.speakerColor(...args), speakerCurrentSessionSentenceCount = (...args) => ctx.api.speakerCurrentSessionSentenceCount(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), speakerPanelCountUnit = (...args) => ctx.api.speakerPanelCountUnit(...args), speakerPanelName = (...args) => ctx.api.speakerPanelName(...args), speakerPanelSentenceCount = (...args) => ctx.api.speakerPanelSentenceCount(...args), speakerPanelSpeakingSeconds = (...args) => ctx.api.speakerPanelSpeakingSeconds(...args), syncCorrectionUndoState = (...args) => ctx.api.syncCorrectionUndoState(...args), updateSpeakerState = (...args) => ctx.api.updateSpeakerState(...args);
+  const storeBooleanValue = (...args) => ctx.api.storeBooleanValue(...args);
+  const storedBooleanValue = (...args) => ctx.api.storedBooleanValue(...args);
+  const toInternalSpeakerId = (...args) => ctx.api.toInternalSpeakerId(...args);
+  const emptySpeakerRemovalGraceMs = 8000;
   function speakerSpeakingTimeText(seconds) {
     const totalSeconds = Math.max(0, Number(seconds || 0));
     if (totalSeconds < 60) return `${totalSeconds.toFixed(1)}s`;
@@ -156,7 +160,7 @@ export function installSpeakerPanel(ctx) {
         return;
       }
       await ensureSessionOwner("correct speaker labels");
-      const result = await post("/api/corrections/reassign", {indexes, speaker_id: speakerId, update_memory: true});
+      const result = await post("/api/corrections/reassign", {indexes, speaker_id: toInternalSpeakerId(speakerId), update_memory: true});
       applyCorrectionResult(result);
       clearTranscriptSelection();
       log(`Reassigned ${indexes.length} sentence${indexes.length === 1 ? "" : "s"} to ${speakerDisplayLabel(speakerId)}.`);
@@ -200,7 +204,7 @@ export function installSpeakerPanel(ctx) {
     }
     try {
       await ensureSessionOwner("create speaker profiles");
-      const result = await post("/api/speakers/split", {speaker_id: speakerId, sentence_indices: indexes, update_memory: true});
+      const result = await post("/api/speakers/split", {speaker_id: toInternalSpeakerId(speakerId), sentence_indices: indexes, update_memory: true});
       applyCorrectionResult(result);
       clearTranscriptSelection();
       log(`Created ${speakerDisplayLabel(result.new_speaker_id)} from ${indexes.length} selected sentence${indexes.length === 1 ? "" : "s"}.`);
@@ -213,8 +217,8 @@ export function installSpeakerPanel(ctx) {
     try {
       await ensureSessionOwner("merge speaker profiles");
       const result = await post("/api/speakers/merge", {
-        source_speaker_id: sourceSpeakerId,
-        target_speaker_id: targetSpeakerId,
+        source_speaker_id: toInternalSpeakerId(sourceSpeakerId),
+        target_speaker_id: toInternalSpeakerId(targetSpeakerId),
         update_memory: true,
       });
       applyCorrectionResult(result);
@@ -235,7 +239,7 @@ export function installSpeakerPanel(ctx) {
     if (!confirm(message)) return;
     try {
       await ensureSessionOwner("delete speaker profiles");
-      const result = await post("/api/speakers/delete", {speaker_id: speakerId, update_memory: true});
+      const result = await post("/api/speakers/delete", {speaker_id: toInternalSpeakerId(speakerId), update_memory: true});
       applyCorrectionResult(result);
       ctx.owners.reference.editingSpeakerId = "";
       const movedCount = Array.isArray(result.rows) ? result.rows.length : sentenceTotal;
@@ -446,7 +450,7 @@ export function installSpeakerPanel(ctx) {
       return false;
     }
     try {
-      const result = await post("/api/speakers/rename", {speaker_id: speaker.id, name});
+      const result = await post("/api/speakers/rename", {speaker_id: toInternalSpeakerId(speaker.id), name});
       updateSpeakerState(result.speaker_state);
       return true;
     } catch (error) {
@@ -543,7 +547,7 @@ export function installSpeakerPanel(ctx) {
       controls.appendChild(status);
       controls.appendChild(identityActionButton("Confirm", "confirm", async () => {
         const result = await post("/api/people/confirm", {
-          speaker_id: speaker.id,
+          speaker_id: toInternalSpeakerId(speaker.id),
           person_id: speaker.suggested_person_id,
         });
         updateSpeakerState(result.speaker_state);
@@ -551,7 +555,7 @@ export function installSpeakerPanel(ctx) {
       }));
       controls.appendChild(identityActionButton(`Not ${speaker.suggested_person_name}`, "reject", async () => {
         const result = await post("/api/people/reject", {
-          speaker_id: speaker.id,
+          speaker_id: toInternalSpeakerId(speaker.id),
           person_id: speaker.suggested_person_id,
         });
         updateSpeakerState(result.speaker_state);
@@ -575,7 +579,7 @@ export function installSpeakerPanel(ctx) {
       controls.appendChild(identityActionButton("Unlink", "reject", async () => {
         const result = saved
           ? await post("/api/sessions/people/unlink", {session_id: ctx.owners.sessions.openedSavedSessionId, speaker_id: speaker.id})
-          : await post("/api/people/unlink", {speaker_id: speaker.id});
+          : await post("/api/people/unlink", {speaker_id: toInternalSpeakerId(speaker.id)});
         if (saved && result.session) loadSavedSessionReview(result.session, {quiet:true});
         else updateSpeakerState(result.speaker_state);
       }));
@@ -596,7 +600,7 @@ export function installSpeakerPanel(ctx) {
         if (result.session) loadSavedSessionReview(result.session, {quiet:true});
       } else {
         const result = await post("/api/people/remember", {
-          speaker_id: speaker.id,
+          speaker_id: toInternalSpeakerId(speaker.id),
           name: target.person_name,
           person_id: target.person_id,
         });
@@ -868,6 +872,82 @@ export function installSpeakerPanel(ctx) {
       peopleList.appendChild(row);
     });
   }
+  function clearAutoRemoveEmptySpeakerTimer() {
+    if (ctx.owners.speakers.autoRemoveEmptySpeakerTimer !== null) {
+      clearTimeout(ctx.owners.speakers.autoRemoveEmptySpeakerTimer);
+      ctx.owners.speakers.autoRemoveEmptySpeakerTimer = null;
+    }
+  }
+  function isAutoRemovableEmptySpeaker(speaker) {
+    if (!speaker || !speaker.id || isLiveProvisionalSpeaker(speaker)) return false;
+    if (speaker.id === ctx.owners.transcript.currentLiveSpeakerId) return false;
+    if (speaker.id === ctx.owners.reference.editingSpeakerId) return false;
+    if (speaker.reference_audio || speaker.locked || speaker.source === "reference") return false;
+    if (speaker.identity_status === "confirmed" || speaker.person_id) return false;
+    return speakerPanelSentenceCount(speaker) === 0 && speakerPanelSpeakingSeconds(speaker) === 0;
+  }
+  function autoRemoveEmptySpeakerPlan() {
+    const firstSeen = ctx.owners.speakers.emptySpeakerFirstSeenAt;
+    if (!autoRemoveEmptySpeakers.checked || savedSessionReviewOpen() || sessionControlsLocked()) {
+      firstSeen.clear();
+      return {speakerIds: [], delayMs: null};
+    }
+    const now = performance.now();
+    const eligible = ctx.owners.speakers.speakerLibraryState.speakers.filter(isAutoRemovableEmptySpeaker);
+    const eligibleIds = new Set(eligible.map(speaker => speaker.id));
+    Array.from(firstSeen.keys()).forEach(speakerId => {
+      if (!eligibleIds.has(speakerId)) firstSeen.delete(speakerId);
+    });
+    let nextDelayMs = null;
+    const speakerIds = [];
+    eligible.forEach(speaker => {
+      if (!firstSeen.has(speaker.id)) firstSeen.set(speaker.id, now);
+      const remaining = emptySpeakerRemovalGraceMs - (now - firstSeen.get(speaker.id));
+      if (remaining <= 0) speakerIds.push(speaker.id);
+      else nextDelayMs = nextDelayMs === null ? remaining : Math.min(nextDelayMs, remaining);
+    });
+    return {speakerIds, delayMs: speakerIds.length ? 50 : nextDelayMs};
+  }
+  function scheduleAutoRemoveEmptySpeakers() {
+    clearAutoRemoveEmptySpeakerTimer();
+    if (ctx.owners.speakers.autoRemoveEmptySpeakerRequestPending) return;
+    const plan = autoRemoveEmptySpeakerPlan();
+    if (plan.delayMs === null) return;
+    ctx.owners.speakers.autoRemoveEmptySpeakerTimer = setTimeout(
+      runAutoRemoveEmptySpeakers,
+      Math.max(50, Math.ceil(plan.delayMs)),
+    );
+  }
+  async function runAutoRemoveEmptySpeakers() {
+    ctx.owners.speakers.autoRemoveEmptySpeakerTimer = null;
+    if (ctx.owners.speakers.autoRemoveEmptySpeakerRequestPending) return;
+    const {speakerIds} = autoRemoveEmptySpeakerPlan();
+    if (!speakerIds.length) {
+      scheduleAutoRemoveEmptySpeakers();
+      return;
+    }
+    ctx.owners.speakers.autoRemoveEmptySpeakerRequestPending = true;
+    try {
+      await ensureSessionOwner("remove empty Speakers");
+      const result = await post("/api/speakers/remove-empty", {speaker_ids: speakerIds.map(toInternalSpeakerId)});
+      const removed = Array.isArray(result.removed_speaker_ids) ? result.removed_speaker_ids : [];
+      removed.forEach(speakerId => ctx.owners.speakers.emptySpeakerFirstSeenAt.delete(speakerId));
+      if (removed.length) {
+        updateSpeakerState(result.speaker_state);
+        log(`Automatically removed empty Speaker${removed.length === 1 ? "" : "s"} ${removed.join(", ")}.`);
+      } else {
+        const now = performance.now();
+        speakerIds.forEach(speakerId => ctx.owners.speakers.emptySpeakerFirstSeenAt.set(speakerId, now));
+      }
+    } catch (error) {
+      const now = performance.now();
+      speakerIds.forEach(speakerId => ctx.owners.speakers.emptySpeakerFirstSeenAt.set(speakerId, now));
+      log(`Automatic empty-Speaker cleanup failed: ${error.message}`);
+    } finally {
+      ctx.owners.speakers.autoRemoveEmptySpeakerRequestPending = false;
+      scheduleAutoRemoveEmptySpeakers();
+    }
+  }
   function renderSpeakerPanel() {
     const controlsLocked = sessionControlsLocked();
     const reviewMode = savedSessionReviewOpen();
@@ -881,6 +961,8 @@ export function installSpeakerPanel(ctx) {
     renderPeopleList();
     speakerList.textContent = "";
     if (!allSpeakers.length) {
+      clearAutoRemoveEmptySpeakerTimer();
+      ctx.owners.speakers.emptySpeakerFirstSeenAt.clear();
       const empty = document.createElement("div");
       empty.className = "speaker-empty";
       empty.textContent = "No speakers yet";
@@ -999,9 +1081,7 @@ export function installSpeakerPanel(ctx) {
       summary.appendChild(header);
       summary.appendChild(body);
       row.appendChild(summary);
-      if (ctx.owners.transcript.currentLiveSpeakerId && speaker.id === ctx.owners.transcript.currentLiveSpeakerId) {
-        row.appendChild(createSpeakerLiveIndicator());
-      }
+      row.appendChild(createSpeakerLiveIndicator());
       if (isEditing) {
         const expanded = document.createElement("div");
         expanded.className = "speaker-expanded-panel";
@@ -1109,6 +1189,7 @@ export function installSpeakerPanel(ctx) {
     if (!ctx.owners.reference.editingSpeakerId && !ctx.owners.reference.manualSpeakerComposerOpen) {
       syncSpeakerEditor(null);
     }
+    scheduleAutoRemoveEmptySpeakers();
   }
   function refreshSpeakerRows() {
     Array.from(sentences.querySelectorAll(".row")).forEach(row => {
@@ -1317,8 +1398,18 @@ export function installSpeakerPanel(ctx) {
     }
   }
 
-  Object.assign(ctx.api, {appendSvgElement, applyCorrectionResult, arrayBufferToBase64, closeManualSpeakerComposerAfterReference, commitSpeakerNameInput, createReviewReasonGroup, createSpeakerDeleteButton, createSpeakerFilterIcon, createSpeakerFilterToggle, createSpeakerFromSelectedSentences, createSpeakerLiveIndicator, createSpeakerMergeControls, createTranscriptActionButton, createTranscriptActionIcon, deleteSpeakerProfile, downloadJsonFile, encodeWavDataUrl, fileToBase64, flattenFloat32Chunks, isSpeakerRowControl, markSelectedSentencesCorrect, mergeSpeakerInto, reassignSelectedSentences, referenceNameMissingMessage, refreshSpeakerRows, renderSpeakerPanel, selectedSpeakerReferenceName, setEditingSpeaker, speakerGroupFileName, speakerReferenceText, speakerSentenceText, speakerSpeakingTimeText, startReferenceRecording, stopAndAddReferenceRecording, stopReferenceRecording, syncManualSpeakerComposer, syncSpeakerEditor, updateReferenceRecordingControls, writeAscii});
+  Object.assign(ctx.api, {appendSvgElement, applyCorrectionResult, arrayBufferToBase64, autoRemoveEmptySpeakerPlan, clearAutoRemoveEmptySpeakerTimer, closeManualSpeakerComposerAfterReference, commitSpeakerNameInput, createReviewReasonGroup, createSpeakerDeleteButton, createSpeakerFilterIcon, createSpeakerFilterToggle, createSpeakerFromSelectedSentences, createSpeakerLiveIndicator, createSpeakerMergeControls, createTranscriptActionButton, createTranscriptActionIcon, deleteSpeakerProfile, downloadJsonFile, encodeWavDataUrl, fileToBase64, flattenFloat32Chunks, isAutoRemovableEmptySpeaker, isSpeakerRowControl, markSelectedSentencesCorrect, mergeSpeakerInto, reassignSelectedSentences, referenceNameMissingMessage, refreshSpeakerRows, renderSpeakerPanel, runAutoRemoveEmptySpeakers, scheduleAutoRemoveEmptySpeakers, selectedSpeakerReferenceName, setEditingSpeaker, speakerGroupFileName, speakerReferenceText, speakerSentenceText, speakerSpeakingTimeText, startReferenceRecording, stopAndAddReferenceRecording, stopReferenceRecording, syncManualSpeakerComposer, syncSpeakerEditor, updateReferenceRecordingControls, writeAscii});
   ctx.activators.push(() => {
+    autoRemoveEmptySpeakers.checked = storedBooleanValue(autoRemoveEmptySpeakersStorageKey, true);
+    autoRemoveEmptySpeakers.addEventListener("change", () => {
+      storeBooleanValue(autoRemoveEmptySpeakersStorageKey, autoRemoveEmptySpeakers.checked);
+      if (autoRemoveEmptySpeakers.checked) scheduleAutoRemoveEmptySpeakers();
+      else {
+        clearAutoRemoveEmptySpeakerTimer();
+        ctx.owners.speakers.emptySpeakerFirstSeenAt.clear();
+      }
+    });
+    appResources.own(clearAutoRemoveEmptySpeakerTimer);
     updateSpeakerState(ctx.owners.speakers.speakerLibraryState);
   });
 }

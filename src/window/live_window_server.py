@@ -176,6 +176,11 @@ from window.browser_live_speaker_scoring import (  # noqa: E402
     DEFAULT_BROWSER_OBSERVATION_MAX_SAMPLE_GAP_SECONDS,
     BrowserLiveObservationRecorder,
 )
+from window.live_speaker_e2e_contract import (  # noqa: E402
+    build_real_gui_e2e_attestation,
+    seal_real_gui_e2e_attestation,
+)
+from window.live_speaker_world_tape import LiveSpeakerWorldTapeRecorder  # noqa: E402
 
 AUDIO_UPLOAD_EXTENSIONS = {
     ".aac",
@@ -232,6 +237,25 @@ class LiveWindowApplication:
         self.media_manager = MediaManager(media)
         self.bus = bus
         self.controller = controller
+        self._browser_live_e2e_start_attestation = (
+            build_real_gui_e2e_attestation(root=ROOT, args=args, media=media)
+            if getattr(args, "browser_live_observation_output", None) is not None
+            else None
+        )
+        world_tape_root = getattr(args, "live_speaker_world_tape_output", None)
+        self.world_tape_recorder = (
+            LiveSpeakerWorldTapeRecorder(Path(world_tape_root), args=args, media=media)
+            if world_tape_root is not None
+            else None
+        )
+        if self.world_tape_recorder is not None:
+            self.bus.add_listener(self.world_tape_recorder.record_public)
+            self.bus.add_internal_listener(self.world_tape_recorder.record_internal)
+            self._bind_world_tape_media(media)
+            _console_print(
+                "Live-speaker World Tape recording to "
+                f"{self.world_tape_recorder.output_dir}"
+            )
         self.session_store = SessionStore(Path(getattr(args, "session_dir", DEFAULT_SESSION_DIR)))
         person_library = getattr(self.controller, "person_library", None)
         self.saved_person_identity = (
@@ -388,7 +412,15 @@ class LiveWindowApplication:
                 try:
                     self.persistence.close(flush=True)
                 finally:
-                    pass
+                    if self.world_tape_recorder is not None:
+                        self.bus.remove_listener(self.world_tape_recorder.record_public)
+                        self.bus.remove_internal_listener(self.world_tape_recorder.record_internal)
+                        summary = self.world_tape_recorder.close(reason="application_close")
+                        _console_print(
+                            "Live-speaker World Tape finalized at "
+                            f"{summary.get('output_dir')} "
+                            f"({summary.get('event_count', 0)} events)."
+                        )
 
     def list_saved_sessions(self, filter_mode: str = "active", query: str = "") -> dict[str, Any]:
         return {
@@ -609,30 +641,94 @@ class LiveWindowApplication:
 
     @property
     def browser_live_observation_enabled(self) -> bool:
-        return self.browser_live_recorder is not None
+        return self.browser_live_recorder is not None or self.world_tape_recorder is not None
 
-    def record_browser_live_observation(self, samples: Any) -> int:
-        if self.browser_live_recorder is None:
-            return 0
+    def record_browser_live_observation(
+        self,
+        samples: Any,
+        batch_sequence: int | None = None,
+    ) -> int:
         if not isinstance(samples, list):
             samples = []
-        return self.browser_live_recorder.record(samples)
+        counts = [0]
+        if self.browser_live_recorder is not None:
+            counts.append(self.browser_live_recorder.record(samples))
+        if self.world_tape_recorder is not None:
+            counts.append(
+                self.world_tape_recorder.record_browser_samples(
+                    samples,
+                    batch_sequence=batch_sequence,
+                )
+            )
+        return max(counts)
 
     def finish_browser_live_observation(self, reason: str = "done") -> dict[str, Any]:
-        if self.browser_live_recorder is None:
+        if self.browser_live_recorder is None and self.world_tape_recorder is None:
             return {}
-        summary = self.browser_live_recorder.finish(reason=reason)
-        self.bus.emit("status", {
-            "message": (
-                "Browser live-speaker observation score "
-                f"{summary.get('strict_browser_live_score', 0.0):.3f} written to "
-                f"{self.browser_live_recorder.output_path}"
-            ),
-        })
+        seal_world_tape = bool(
+            getattr(self.args, "exit_after_browser_live_observation", False)
+        )
+        world_tape = None
+        if self.world_tape_recorder is not None:
+            if seal_world_tape:
+                # The browser POSTs are serialized, so this closes over the
+                # final DOM batch and produces the immutable hashes that are
+                # bound into the E2E attestation below.
+                world_tape = self.world_tape_recorder.close(reason=f"browser:{reason}")
+            else:
+                world_tape = self.world_tape_recorder.checkpoint(
+                    reason=f"browser:{reason}"
+                )
+        finished_attestation = build_real_gui_e2e_attestation(
+            root=ROOT,
+            args=self.args,
+            media=self.current_media(),
+        )
+        started_attestation = self._browser_live_e2e_start_attestation
+        if started_attestation is None:
+            # This path is diagnostic-only; v2 promotion validation rejects a
+            # missing independent startup snapshot.
+            started_attestation = finished_attestation
+        attestation = seal_real_gui_e2e_attestation(
+            started_attestation,
+            finished_attestation,
+        )
+        if world_tape is not None:
+            attestation["world_tape"] = world_tape
+        if self.browser_live_recorder is not None:
+            summary = self.browser_live_recorder.finish(
+                reason=reason,
+                attestation=attestation,
+            )
+            self.bus.emit("status", {
+                "message": (
+                    "Browser live-speaker observation score "
+                    f"{summary.get('strict_browser_live_score', 0.0):.3f} written to "
+                    f"{self.browser_live_recorder.output_path}"
+                ),
+            })
+        else:
+            summary = {"world_tape": world_tape or {}, "reason": reason}
+            self.bus.emit("status", {
+                "message": (
+                    "Live-speaker World Tape checkpoint written to "
+                    f"{(world_tape or {}).get('output_dir', '')}"
+                )
+            })
         return summary
 
     def current_media(self) -> MediaFiles:
         return self.media_manager.snapshot().media
+
+    def _bind_world_tape_media(self, media: MediaFiles) -> None:
+        recorder = self.world_tape_recorder
+        if recorder is None:
+            return
+        recorder.update_media(media)
+        audio = np.asarray(getattr(self.controller, "audio", []), dtype=np.float32).reshape(-1)
+        sample_rate = int(getattr(self.controller, "sample_rate", 0) or 0)
+        if audio.size > 0 and sample_rate > 0:
+            recorder.record_decoded_audio(audio, sample_rate)
 
     @property
     def media_version(self) -> int:
@@ -655,6 +751,7 @@ class LiveWindowApplication:
                 self.bus.emit("status", {"message": f"Media cache hit for {video_id}."})
         media = resolve_media_url(self.args, url, skip_download=skip_download)
         self.media_manager.replace(media, self.controller.set_media)
+        self._bind_world_tape_media(media)
         self.bus.emit("status", {"message": f"Loaded {media.video_id}."})
         return media
 
@@ -709,6 +806,7 @@ class LiveWindowApplication:
         media = MediaFiles(url, video_id, audio_file, audio_file)
         self.bus.emit("status", {"message": f"Loading uploaded audio file {display_name}."})
         self.media_manager.replace(media, self.controller.set_media)
+        self._bind_world_tape_media(media)
         self.bus.emit("status", {"message": f"Loaded uploaded audio file {display_name}."})
         return media, display_name, written
 
@@ -716,6 +814,7 @@ class LiveWindowApplication:
         self.bus.emit("status", {"message": f"Preparing browser audio stream for {url}"})
         snapshot = self.media_manager.transition(lambda: self.controller.set_browser_stream(url))
         media = snapshot.media
+        self._bind_world_tape_media(media)
         parsed = urlparse(url)
         if parsed.scheme == "microphone":
             instruction = "press Start and allow microphone access."

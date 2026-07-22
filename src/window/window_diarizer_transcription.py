@@ -260,9 +260,27 @@ class WindowTranscriptionMixin:
             if self._live_speaker_assignment_enabled() and duration_seconds >= self.args.realtime_preview_diarize_min_audio_seconds and (
                 last_diarized_right < 0.0 or preview_right >= last_diarized_right + diarize_min_advance
             ):
-                if self.memory.profile_count() > 0 and self._try_reserve_live_speaker_embedding():
+                request_id = f"growing-preview-{uuid.uuid4().hex}"
+                run_id = self._live_speaker_correlation_run_id()
+                if self.memory.profile_count() > 0 and self._try_reserve_live_speaker_embedding(
+                    "growing_realtime_preview",
+                    run_id=run_id,
+                    request_id=request_id,
+                ):
                     audio, _sample_rate = self._audio_window_copy(gate_left, preview_right)
-                    last_speaker_payload = self._score_realtime_preview_speaker(audio, duration_seconds)
+                    short_source_start_sample = max(0, int(gate_left * _sample_rate))
+                    short_source_end_sample = short_source_start_sample + int(audio.size)
+                    last_speaker_payload = self._score_realtime_preview_speaker(
+                        audio,
+                        duration_seconds,
+                        request_source="growing_realtime_preview",
+                        request_id=request_id,
+                        run_id=run_id,
+                        short_window_start=gate_left,
+                        short_window_end=preview_right,
+                        short_source_start_sample=short_source_start_sample,
+                        short_source_end_sample=short_source_end_sample,
+                    )
                     last_diarized_right = preview_right
                     if not self._preview_generation_is_current(generation, left):
                         continue
@@ -619,15 +637,63 @@ class WindowTranscriptionMixin:
             audio=audio,
             sample_rate=sample_rate,
             duration_seconds=duration_seconds,
+            job_id=f"final-sentence-{uuid.uuid4().hex}",
             speaker_generation=self._speaker_generation,
             run_id=str(getattr(getattr(self, "_active_run", None), "run_id", "")),
+            queued_monotonic=time.monotonic(),
+            queued_media_time=float(self.playback_time()),
         )
         jobs = self._embedding_jobs
+        self._record_final_sentence_queue_stage(
+            job,
+            "submitted",
+            execution_mode="inline" if jobs is None else "worker_queue",
+        )
         if jobs is None:
             self._process_sentence_embedding(job)
             return
+        self._record_final_sentence_queue_stage(
+            job,
+            "queued",
+            queue_size=int(jobs.qsize()) + 1,
+            queue_capacity=int(getattr(jobs, "maxsize", 0)),
+        )
         jobs.put(job)
         self.bus.emit("status", {"message": f"Queued speaker embedding for sentence {index}: {sentence.text[:72]}"})
+
+    def _record_final_sentence_queue_stage(
+        self,
+        job: EmbeddingSentenceJob,
+        stage: str,
+        **details: Any,
+    ) -> None:
+        emit_internal = getattr(self.bus, "emit_internal", None)
+        if not callable(emit_internal):
+            return
+        sentence_start = job.base_payload.get("start")
+        try:
+            source_start_sample = max(0, int(float(sentence_start or 0.0) * job.sample_rate))
+        except (TypeError, ValueError):
+            source_start_sample = 0
+        emit_internal(
+            "final_sentence_queue_lifecycle",
+            {
+                "job_id": str(getattr(job, "job_id", "") or ""),
+                "run_id": str(getattr(job, "run_id", "") or ""),
+                "stage": str(stage),
+                "sentence_index": int(job.index),
+                "speaker_generation": int(job.speaker_generation),
+                "queued_media_time": float(getattr(job, "queued_media_time", 0.0)),
+                "media_time": round(float(self.playback_time()), 6),
+                "sentence_start": sentence_start,
+                "sentence_end": job.base_payload.get("end"),
+                "source_start_sample": source_start_sample,
+                "source_end_sample": source_start_sample + int(job.audio.size),
+                "raw_sample_count": int(job.audio.size),
+                "sample_rate": int(job.sample_rate),
+                **details,
+            },
+        )
 
     def _maybe_emit_sentence_live_speaker_hint(
         self,
@@ -752,6 +818,8 @@ class WindowTranscriptionMixin:
         emit_status: bool = True,
         elapsed_seconds: float | None = None,
         run_speaker_refinement: bool = True,
+        embedding_job_id: str = "",
+        embedding_run_id: str = "",
     ) -> dict[str, Any]:
         paired_unknown_revision: tuple[PendingUnknownSentence, float] | None = None
         allow_new_speaker = len(text_content_words(text)) >= self.args.min_new_speaker_words
@@ -790,8 +858,14 @@ class WindowTranscriptionMixin:
                 )
             })
         self._ensure_speaker_metadata(decision.assigned_speaker)
+        embedding_correlation: dict[str, Any] = {}
+        if embedding_job_id:
+            embedding_correlation["embedding_job_id"] = str(embedding_job_id)
+        if embedding_run_id:
+            embedding_correlation["run_id"] = str(embedding_run_id)
         sentence_payload = {
             **base_payload,
+            **embedding_correlation,
             "pending": False,
             "assigned_speaker": decision.assigned_speaker,
             **self._speaker_info_for_payload(decision.assigned_speaker),
@@ -845,6 +919,8 @@ class WindowTranscriptionMixin:
                 sentence_start=base_payload.get("start"),
                 sentence_end=base_payload.get("end"),
                 precomputed_embedding=live_memory_embedding,
+                parent_job_id=embedding_job_id,
+                source_run_id=embedding_run_id,
             )
         emit_live_profile_snapshot(
             self,
@@ -855,6 +931,22 @@ class WindowTranscriptionMixin:
             sentence_start=base_payload.get("start"),
             sentence_end=base_payload.get("end"),
         )
+        if not bool(getattr(self, "_live_embedding_separate", False)):
+            emit_internal = getattr(self.bus, "emit_internal", None)
+            if callable(emit_internal):
+                emit_internal(
+                    "live_profile_memory_replace",
+                    {
+                        "job_id": str(embedding_job_id or ""),
+                        "run_id": str(embedding_run_id or ""),
+                        "speaker_id": current_sentence_speaker,
+                        "media_time": round(float(self.playback_time()), 6),
+                        "sentence_start": base_payload.get("start"),
+                        "sentence_end": base_payload.get("end"),
+                        "provider": str(getattr(self.args, "embedding_provider", "")),
+                        "profiles": self.live_memory.export_profiles(),
+                    },
+                )
         self._maybe_checkpoint_confirmed_people()
         return sentence_payload
 
@@ -863,9 +955,19 @@ class WindowTranscriptionMixin:
         index = job.index
         active_run = getattr(self, "_active_run", None)
         if job.run_id and (active_run is None or job.run_id != active_run.run_id):
+            self._record_final_sentence_queue_stage(
+                job,
+                "cancelled",
+                reason="stale_run_before_embedding",
+            )
             self.bus.emit("status", {"message": f"Skipped stale diarization run job for sentence {index}."})
             return
         if job.speaker_generation != self._speaker_generation:
+            self._record_final_sentence_queue_stage(
+                job,
+                "cancelled",
+                reason="stale_speaker_generation_before_embedding",
+            )
             self.bus.emit("status", {"message": f"Skipped stale speaker embedding for sentence {index}."})
             return
         chunk = pad_audio(
@@ -877,14 +979,89 @@ class WindowTranscriptionMixin:
         try:
             self.bus.emit("status", {"message": f"Embedding sentence {index}: {job.text[:72]}"})
             embed_started = time.monotonic()
+            self._record_final_sentence_queue_stage(
+                job,
+                "started",
+                queue_wait_seconds=max(
+                    0.0,
+                    embed_started - float(getattr(job, "queued_monotonic", embed_started)),
+                ),
+            )
+            emit_internal = getattr(self.bus, "emit_internal", None)
+            if callable(emit_internal):
+                emit_internal(
+                    "final_sentence_embedding_started",
+                    {
+                        "job_id": job.job_id,
+                        "run_id": job.run_id,
+                        "sentence_index": int(index),
+                        "media_time": round(float(self.playback_time()), 6),
+                        "queued_media_time": float(getattr(job, "queued_media_time", 0.0)),
+                        "queue_wait_seconds": max(
+                            0.0,
+                            embed_started - float(getattr(job, "queued_monotonic", embed_started)),
+                        ),
+                        "sentence_start": base_payload.get("start"),
+                        "sentence_end": base_payload.get("end"),
+                        "duration_seconds": float(duration_seconds),
+                        "text": job.text,
+                        "provider": str(getattr(self.args, "embedding_provider", "")),
+                    },
+                )
             embedding_result = self._embed_audio_chunk_result(chunk, job.sample_rate, ".sentence.wav")
             embedding = embedding_result.embedding
             live_memory_embedding = self._reusable_live_embedding_from_final_result(embedding_result)
+            embed_finished = time.monotonic()
+            if callable(emit_internal):
+                emit_internal(
+                    "final_sentence_embedding_completed",
+                    {
+                        "job_id": job.job_id,
+                        "run_id": job.run_id,
+                        "sentence_index": int(index),
+                        "media_time": round(float(self.playback_time()), 6),
+                        "sentence_start": base_payload.get("start"),
+                        "sentence_end": base_payload.get("end"),
+                        "duration_seconds": float(duration_seconds),
+                        "latency_seconds": max(0.0, embed_finished - embed_started),
+                        "provider": str(getattr(self.args, "embedding_provider", "")),
+                        "embedding": np.asarray(embedding, dtype=np.float32).tolist(),
+                        "components": [
+                            {
+                                "provider": str(component.provider),
+                                "weight": float(component.weight),
+                                "embedding": np.asarray(
+                                    component.embedding,
+                                    dtype=np.float32,
+                                ).tolist(),
+                            }
+                            for component in embedding_result.components
+                        ],
+                        "reusable_live_embedding": (
+                            None
+                            if live_memory_embedding is None
+                            else np.asarray(
+                                live_memory_embedding,
+                                dtype=np.float32,
+                            ).tolist()
+                        ),
+                    },
+                )
             active_run = getattr(self, "_active_run", None)
             if job.run_id and (active_run is None or job.run_id != active_run.run_id):
+                self._record_final_sentence_queue_stage(
+                    job,
+                    "cancelled",
+                    reason="stale_run_after_embedding",
+                )
                 self.bus.emit("status", {"message": f"Discarded stale diarization run job for sentence {index}."})
                 return
             if job.speaker_generation != self._speaker_generation:
+                self._record_final_sentence_queue_stage(
+                    job,
+                    "cancelled",
+                    reason="stale_speaker_generation_after_embedding",
+                )
                 self.bus.emit("status", {"message": f"Discarded stale speaker embedding for sentence {index}."})
                 return
             active_run = getattr(self, "_active_run", None)
@@ -903,8 +1080,36 @@ class WindowTranscriptionMixin:
                 emit_status=True,
                 elapsed_seconds=time.monotonic() - embed_started,
                 run_speaker_refinement=not fast_processing,
+                embedding_job_id=job.job_id,
+                embedding_run_id=job.run_id,
+            )
+            self._record_final_sentence_queue_stage(
+                job,
+                "completed",
+                latency_seconds=max(0.0, time.monotonic() - embed_started),
             )
         except Exception as exc:
+            self._record_final_sentence_queue_stage(
+                job,
+                "failed",
+                reason=type(exc).__name__,
+                error=str(exc),
+            )
+            emit_internal = getattr(self.bus, "emit_internal", None)
+            if callable(emit_internal):
+                emit_internal(
+                    "final_sentence_embedding_failed",
+                    {
+                        "job_id": job.job_id,
+                        "run_id": job.run_id,
+                        "sentence_index": int(index),
+                        "media_time": round(float(self.playback_time()), 6),
+                        "sentence_start": base_payload.get("start"),
+                        "sentence_end": base_payload.get("end"),
+                        "error_type": type(exc).__name__,
+                        "error": str(exc),
+                    },
+                )
             self.bus.emit("status", {"message": f"Embedding failed for sentence {index}: {type(exc).__name__}: {exc}"})
             self._emit_transcript_sentence({
                 **base_payload,

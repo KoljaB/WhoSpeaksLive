@@ -8,6 +8,40 @@ import numpy as np
 RMS_GATE_ID = "live_rms_speech_gate_v1"
 
 
+def rms_speech_features(
+    audio: np.ndarray,
+    sample_rate: int,
+    *,
+    frame_seconds: float,
+    threshold: float,
+    min_speech_seconds: float,
+) -> tuple[bool, list[float], list[bool], float]:
+    """Return the exact RMS gate decision together with its reusable primitives."""
+
+    values = np.asarray(audio, dtype=np.float32).reshape(-1)
+    if values.size <= 0 or sample_rate <= 0:
+        return False, [], [], 0.0
+    frame_seconds = max(0.01, float(frame_seconds))
+    frame_samples = max(1, int(sample_rate * frame_seconds))
+    threshold = max(0.0, float(threshold))
+    minimum = max(0.0, float(min_speech_seconds))
+    rms_values: list[float] = []
+    speech_flags: list[bool] = []
+    speech_seconds = 0.0
+    for start in range(0, values.size, frame_samples):
+        end = min(values.size, start + frame_samples)
+        if end - start < max(1, frame_samples // 2):
+            break
+        frame = values[start:end]
+        rms_value = float(np.sqrt(np.mean(frame * frame)))
+        speech = rms_value >= threshold
+        rms_values.append(rms_value)
+        speech_flags.append(speech)
+        if speech:
+            speech_seconds += (end - start) / float(sample_rate)
+    return speech_seconds >= minimum, rms_values, speech_flags, speech_seconds
+
+
 def live_silero_gate_parameters(
     args: object,
     *,

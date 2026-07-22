@@ -21,7 +21,10 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn("function isLiveProvisionalSpeaker(speaker)", HTML)
         self.assertIn('isLiveProvisionalSpeaker(label) ? "Matching new voice..." : "Unknown"', HTML)
         self.assertIn('? "Comparing with detected speakers..."', HTML)
-        self.assertIn('if (isLiveProvisionalSpeaker(label)) return "#8F9BA8";', HTML)
+        self.assertIn(
+            'if (internalLabel === label && isLiveProvisionalSpeaker(label)) return "#8F9BA8";',
+            HTML,
+        )
         self.assertIn("speakers.filter(speaker => !isLiveProvisionalSpeaker(speaker)).length", HTML)
         self.assertIn(".speaker-item.provisional-speaker:not(.live-speaker) { display:none; }", HTML)
         self.assertIn('summary.setAttribute("role", isLiveProvisional ? "status" : "button");', HTML)
@@ -224,13 +227,13 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn("followLive.checked = false;", HTML)
         self.assertIn("function reassignSelectedSentences()", HTML)
         self.assertIn("function createSpeakerFromSelectedSentences()", HTML)
-        self.assertIn('post("/api/corrections/reassign", {indexes, speaker_id: speakerId, update_memory: true})', HTML)
+        self.assertIn('post("/api/corrections/reassign", {indexes, speaker_id: toInternalSpeakerId(speakerId), update_memory: true})', HTML)
         self.assertIn('post("/api/corrections/mark-correct", {indexes})', HTML)
         self.assertIn('post("/api/sessions/corrections/reassign", {', HTML)
         self.assertIn('post("/api/sessions/corrections/mark-correct", {', HTML)
         self.assertIn('row.dataset.selectable = (!item.realtime && !item.pending) ? "true" : "false";', HTML)
         self.assertIn("refreshTranscriptGrouping();", HTML)
-        self.assertIn('post("/api/speakers/split", {speaker_id: speakerId, sentence_indices: indexes, update_memory: true})', HTML)
+        self.assertIn('post("/api/speakers/split", {speaker_id: toInternalSpeakerId(speakerId), sentence_indices: indexes, update_memory: true})', HTML)
         self.assertIn('bulkReassignButton.addEventListener("click", () => reassignSelectedSentences());', HTML)
         self.assertNotIn('id="bulkSplit"', HTML)
         self.assertNotIn("sentence-select-checkbox", HTML)

@@ -51,8 +51,10 @@ def main() -> int:
 
     spec = json.loads(args.spec.read_text(encoding="utf-8-sig"))
     champion = json.loads(args.champion.read_text(encoding="utf-8-sig"))
-    if champion.get("status") != "LIVE_VERIFIED_CHAMPION":
-        raise RuntimeError("Holdout requires a previously locked LIVE_VERIFIED_CHAMPION")
+    if champion.get("status") != "REAL_GUI_LIVE_E2E_VERIFIED_CHAMPION":
+        raise RuntimeError(
+            "Holdout requires a champion promoted by tools/promote_live_speaker_real_gui_e2e.py"
+        )
     video_id = str(args.video_id)
     if video_id not in spec["split"]["sealed_holdout"]:
         raise RuntimeError(f"{video_id} is not the sealed holdout in the frozen spec")

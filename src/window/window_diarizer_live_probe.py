@@ -100,6 +100,27 @@ from window.window_speaker_refinement import (
 
 
 class WindowLiveProbeMixin:
+    def _record_live_probe_stage(
+        self,
+        probe_id: str,
+        stage: str,
+        *,
+        media_time: float,
+        **payload: Any,
+    ) -> None:
+        emit_internal = getattr(self.bus, "emit_internal", None)
+        if callable(emit_internal):
+            emit_internal(
+                "live_speaker_probe_observation",
+                {
+                    "run_id": self._live_speaker_correlation_run_id(),
+                    "probe_id": str(probe_id),
+                    "stage": str(stage),
+                    "media_time": round(max(0.0, float(media_time)), 6),
+                    **payload,
+                },
+            )
+
     def _run_live_speaker_probe(self, stop_event: threading.Event | None = None) -> None:
         stop_event = stop_event or self._stop
         if not self._live_speaker_assignment_enabled():
@@ -152,6 +173,8 @@ class WindowLiveProbeMixin:
         provisional_counter = 0
         consecutive_unknown = 0
         consecutive_silence = 0
+        probe_cycle = 0
+        probe_series_id = uuid.uuid4().hex[:12]
         while True:
             attack_mode = attack_interval_seconds > 0.0 and (
                 not active_speaker or consecutive_unknown > 0
@@ -161,19 +184,37 @@ class WindowLiveProbeMixin:
                 wait_seconds = min(wait_seconds, release_interval_seconds)
             if stop_event.wait(max(0.05, wait_seconds)):
                 break
-            bayes_provisional = (
-                str(getattr(self.args, "live_speaker_tracker", "classic")) == "bayes"
-                and bool(getattr(self.args, "live_speaker_bayes_provisional_profiles", False))
-            )
-            if self.memory.profile_count() <= 0 and not bayes_provisional:
-                continue
+            probe_cycle += 1
+            probe_id = f"probe-{probe_series_id}-{probe_cycle:08d}"
+            request_id = f"{probe_id}-embedding"
+            run_id = self._live_speaker_correlation_run_id()
             right = self.playback_time()
+            if (
+                self.memory.profile_count() <= 0
+                and not self._live_speaker_can_score_without_final_profiles()
+            ):
+                self._record_live_probe_stage(
+                    probe_id,
+                    "skipped",
+                    media_time=right,
+                    reason="no_final_profiles",
+                    attack_mode=bool(attack_mode),
+                )
+                continue
             if right <= 0.0:
+                self._record_live_probe_stage(
+                    probe_id,
+                    "skipped",
+                    media_time=right,
+                    reason="playback_not_started",
+                    attack_mode=bool(attack_mode),
+                )
                 continue
             if clear_on_silence:
                 clear_left = max(0.0, right - clear_window_seconds)
                 clear_audio, clear_sample_rate = self._audio_window_copy(clear_left, right)
                 release_left = clear_left
+                release_gate_id = f"{probe_id}-release"
                 release_silence = (
                     clear_audio.size > 0
                     and not self._audio_has_live_probe_speech(
@@ -182,6 +223,10 @@ class WindowLiveProbeMixin:
                         clear_audio,
                         clear_sample_rate,
                         release=True,
+                        run_id=run_id,
+                        probe_id=probe_id,
+                        gate_id=f"{probe_id}-release",
+                        gate_role="release",
                     )
                 )
                 fast_release_window = max(
@@ -207,12 +252,27 @@ class WindowLiveProbeMixin:
                             fast_sample_rate,
                             release=True,
                             fast_release=True,
+                            run_id=run_id,
+                            probe_id=probe_id,
+                            gate_id=f"{probe_id}-fast-release",
+                            gate_role="fast_release",
                         )
                     ):
                         release_silence = True
                         release_left = fast_left
+                        release_gate_id = f"{probe_id}-fast-release"
                 if release_silence:
+                    self._record_live_probe_stage(
+                        probe_id,
+                        "release_gate",
+                        media_time=right,
+                        reason="silence",
+                        gate_id=release_gate_id,
+                        left=round(float(release_left), 6),
+                        right=round(float(right), 6),
+                    )
                     consecutive_silence += 1
+                    core_correlation: dict[str, Any] = {}
                     core_decision = self._shared_live_speaker_step(
                         media_time=right,
                         speech=False,
@@ -221,11 +281,27 @@ class WindowLiveProbeMixin:
                         probe_scheduled=False,
                         release_signal=True,
                         skipped_reason="production_silence_release_gate",
+                        run_id=run_id,
+                        probe_id=probe_id,
+                        correlation_out=core_correlation,
+                    )
+                    self._record_live_probe_stage(
+                        probe_id,
+                        "completed",
+                        media_time=self.playback_time(),
+                        request_id="",
+                        step_id=core_correlation.get("step_id"),
+                        window_media_time=round(float(right), 6),
+                        action=core_decision.action,
+                        reason=core_decision.reason,
+                        assigned_speaker=core_decision.visible_speaker,
+                        release_signal=True,
                     )
                     if core_decision.action == "clear" and active_speaker:
                         self.bus.emit(
                             "live_speaker_clear",
                             {
+                                **core_correlation,
                                 "speaker_id": active_speaker,
                                 "live": False,
                                 "fallback": True,
@@ -249,19 +325,74 @@ class WindowLiveProbeMixin:
                     consecutive_silence = 0
             current_min_advance = attack_min_advance if attack_mode else min_advance
             if last_probe_right >= 0.0 and right < last_probe_right + current_min_advance:
+                self._record_live_probe_stage(
+                    probe_id,
+                    "skipped",
+                    media_time=right,
+                    reason="min_media_advance",
+                    last_probe_right=round(float(last_probe_right), 6),
+                    required_advance_seconds=float(current_min_advance),
+                )
                 continue
             left = max(0.0, right - window_seconds)
             audio, sample_rate = self._audio_window_copy(left, right)
             duration_seconds = audio.size / float(sample_rate) if sample_rate > 0 else 0.0
             if duration_seconds < probe_min_audio_seconds:
+                self._record_live_probe_stage(
+                    probe_id,
+                    "skipped",
+                    media_time=right,
+                    reason="insufficient_audio",
+                    left=round(float(left), 6),
+                    right=round(float(right), 6),
+                    duration_seconds=float(duration_seconds),
+                    minimum_seconds=float(probe_min_audio_seconds),
+                )
                 continue
             last_probe_right = right
-            if not self._audio_has_live_probe_speech(left, right, audio, sample_rate):
+            short_source_start_sample = max(0, int(left * sample_rate))
+            short_source_end_sample = short_source_start_sample + int(audio.size)
+            if not self._audio_has_live_probe_speech(
+                left,
+                right,
+                audio,
+                sample_rate,
+                run_id=run_id,
+                probe_id=probe_id,
+                gate_id=f"{probe_id}-admission",
+                gate_role="admission",
+            ):
+                self._record_live_probe_stage(
+                    probe_id,
+                    "skipped",
+                    media_time=right,
+                    reason="speech_gate_closed",
+                    gate_id=f"{probe_id}-admission",
+                    left=round(float(left), 6),
+                    right=round(float(right), 6),
+                    duration_seconds=float(duration_seconds),
+                )
                 continue
-            if not self._try_reserve_live_speaker_embedding():
+            if not self._try_reserve_live_speaker_embedding(
+                "dedicated_live_probe",
+                run_id=run_id,
+                probe_id=probe_id,
+                request_id=request_id,
+            ):
+                self._record_live_probe_stage(
+                    probe_id,
+                    "skipped",
+                    media_time=right,
+                    reason="shared_embedding_throttle",
+                    left=round(float(left), 6),
+                    right=round(float(right), 6),
+                )
                 continue
             context_audio: np.ndarray | None = None
             context_duration_seconds: float | None = None
+            context_left: float | None = None
+            context_source_start_sample: int | None = None
+            context_source_end_sample: int | None = None
             if context_weight > 0.0 and context_window_seconds > window_seconds:
                 context_left = max(0.0, right - context_window_seconds)
                 candidate_context, context_sample_rate = self._audio_window_copy(
@@ -277,6 +408,30 @@ class WindowLiveProbeMixin:
                 ):
                     context_audio = candidate_context
                     context_duration_seconds = candidate_duration
+                    context_source_start_sample = max(
+                        0,
+                        int(context_left * context_sample_rate),
+                    )
+                    context_source_end_sample = (
+                        context_source_start_sample + int(candidate_context.size)
+                    )
+            self._record_live_probe_stage(
+                probe_id,
+                "admitted",
+                media_time=right,
+                left=round(float(left), 6),
+                right=round(float(right), 6),
+                short_source_start_sample=short_source_start_sample,
+                short_source_end_sample=short_source_end_sample,
+                duration_seconds=float(duration_seconds),
+                request_id=request_id,
+                context_left=(None if context_audio is None else round(float(context_left), 6)),
+                context_right=(None if context_audio is None else round(float(right), 6)),
+                context_source_start_sample=context_source_start_sample,
+                context_source_end_sample=context_source_end_sample,
+                context_duration_seconds=context_duration_seconds,
+                context_weight=float(context_weight),
+            )
             speaker_payload = self._score_realtime_preview_speaker(
                 audio,
                 duration_seconds,
@@ -284,8 +439,34 @@ class WindowLiveProbeMixin:
                 context_audio=context_audio,
                 context_duration_seconds=context_duration_seconds,
                 context_weight=context_weight,
+                request_source="dedicated_live_probe",
+                request_id=request_id,
+                run_id=run_id,
+                probe_id=probe_id,
+                short_window_start=left,
+                short_window_end=right,
+                short_source_start_sample=short_source_start_sample,
+                short_source_end_sample=short_source_end_sample,
+                context_window_start=context_left if context_audio is not None else None,
+                context_window_end=right if context_audio is not None else None,
+                context_source_start_sample=context_source_start_sample,
+                context_source_end_sample=context_source_end_sample,
             )
             speaker_payload = self._maybe_promote_raw_live_speaker_change(active_speaker, speaker_payload)
+            self._record_live_probe_stage(
+                probe_id,
+                "completed",
+                media_time=self.playback_time(),
+                window_media_time=round(float(right), 6),
+                request_id=speaker_payload.get("request_id") or request_id,
+                step_id=speaker_payload.get("step_id"),
+                assigned_speaker=speaker_payload.get("assigned_speaker"),
+                internal_speaker_id=speaker_payload.get("internal_speaker_id"),
+                action=speaker_payload.get("live_speaker_core_action"),
+                reason=speaker_payload.get("live_speaker_core_reason"),
+                similarities=speaker_payload.get("similarities") or {},
+                probabilities=speaker_payload.get("probabilities") or {},
+            )
             if stop_event.is_set():
                 break
             assigned_speaker = speaker_payload.get("assigned_speaker")
@@ -316,6 +497,10 @@ class WindowLiveProbeMixin:
                         self.bus.emit(
                             "live_speaker_clear",
                             {
+                                "run_id": speaker_payload.get("run_id"),
+                                "probe_id": speaker_payload.get("probe_id"),
+                                "request_id": speaker_payload.get("request_id"),
+                                "step_id": speaker_payload.get("step_id"),
                                 "speaker_id": active_speaker,
                                 "live": False,
                                 "fallback": True,
@@ -445,6 +630,10 @@ class WindowLiveProbeMixin:
                     self.bus.emit(
                         "live_speaker_clear",
                         {
+                            "run_id": speaker_payload.get("run_id"),
+                            "probe_id": speaker_payload.get("probe_id"),
+                            "request_id": speaker_payload.get("request_id"),
+                            "step_id": speaker_payload.get("step_id"),
                             "speaker_id": active_speaker,
                             "live": False,
                             "fallback": True,

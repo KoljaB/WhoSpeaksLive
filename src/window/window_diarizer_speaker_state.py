@@ -146,6 +146,15 @@ class WindowSpeakerStateMixin:
             "speaker_locked": bool(metadata.get("locked")),
         }
 
+    def _live_public_identity_snapshot(
+        self,
+    ) -> tuple[int, dict[str, str], dict[str, str]]:
+        with self._shared_live_speaker_lock():
+            overlay = getattr(self, "_shared_live_speaker_open_set_overlay_state", None)
+            if overlay is None:
+                return 0, {}, {}
+            return overlay.identity_snapshot()
+
     def _speaker_state(self) -> dict[str, Any]:
         profiles = self.memory.export_profiles()
         self._refresh_person_identity_suggestions(profiles)
@@ -187,10 +196,31 @@ class WindowSpeakerStateMixin:
             })
         first_centroid = profiles[0].get("centroid") if profiles else None
         embedding_length = len(first_centroid) if first_centroid is not None else 0
+        alias_generation, final_to_public, public_to_final = (
+            self._live_public_identity_snapshot()
+        )
+        public_speakers: list[dict[str, Any]] = []
+        public_seen: set[str] = set()
+        for speaker in speakers:
+            final_id = str(speaker.get("id") or "")
+            public_id = str(final_to_public.get(final_id, final_id))
+            if not public_id or public_id in public_seen:
+                continue
+            public_seen.add(public_id)
+            public_speakers.append({
+                **speaker,
+                "id": public_id,
+                "internal_speaker_id": final_id,
+                "presentation_aliased": public_id != final_id,
+            })
         return {
             "group_name": group_name,
             "groups": list_speaker_groups(self.speaker_library_dir),
             "speakers": speakers,
+            "public_speakers": public_speakers,
+            "public_identity_aliases": final_to_public,
+            "public_identity_reverse_aliases": public_to_final,
+            "public_identity_alias_generation": alias_generation,
             "embedding_provider": self.args.embedding_provider,
             "people": self.person_library.public_state(
                 embedding_provider=str(self.args.embedding_provider),
@@ -205,6 +235,20 @@ class WindowSpeakerStateMixin:
         self._maybe_checkpoint_confirmed_people(review_assignments=True)
         state = self._speaker_state()
         self.bus.emit("speakers", state)
+        emit_internal = getattr(self.bus, "emit_internal", None)
+        if callable(emit_internal):
+            emit_internal(
+                "speaker_memory_state",
+                {
+                    "media_time": round(float(self.playback_time()), 6),
+                    "speaker_generation": int(getattr(self, "_speaker_generation", 0)),
+                    "final_provider": str(getattr(self.args, "embedding_provider", "")),
+                    "live_provider": self._current_live_embedding_provider(),
+                    "final_profiles": self.memory.export_profiles(),
+                    "live_profiles": self.live_memory.export_profiles(),
+                    "public_state": state,
+                },
+            )
         return state
 
     def speaker_state(self) -> dict[str, Any]:

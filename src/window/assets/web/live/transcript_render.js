@@ -1,6 +1,7 @@
 export function installTranscriptRender(ctx) {
   const {audio, languageConfig, realtimeSettleRemovalDelayMs, sentences, source, start, state, translationIncludeOriginalControl} = ctx;
   const applyTranslationCollection = (...args) => ctx.api.applyTranslationCollection(...args), configureSentenceRowSelection = (...args) => ctx.api.configureSentenceRowSelection(...args), correctionStatus = (...args) => ctx.api.correctionStatus(...args), createReviewReasonGroup = (...args) => ctx.api.createReviewReasonGroup(...args), downloadJsonFile = (...args) => ctx.api.downloadJsonFile(...args), effectiveTranslationDisplayMode = (...args) => ctx.api.effectiveTranslationDisplayMode(...args), finiteAudioSecond = (...args) => ctx.api.finiteAudioSecond(...args), forgetSentenceTranslations = (...args) => ctx.api.forgetSentenceTranslations(...args), itemIsBeforeClearedTranscriptBoundary = (...args) => ctx.api.itemIsBeforeClearedTranscriptBoundary(...args), log = (...args) => ctx.api.log(...args), normalizedLiveSpeakerId = (...args) => ctx.api.normalizedLiveSpeakerId(...args), probabilityColor = (...args) => ctx.api.probabilityColor(...args), probabilityDisplayLabel = (...args) => ctx.api.probabilityDisplayLabel(...args), probabilityForSpeakerId = (...args) => ctx.api.probabilityForSpeakerId(...args), probabilityLeadOverUnknown = (...args) => ctx.api.probabilityLeadOverUnknown(...args), provisionalRealtimeVisualSplit = (...args) => ctx.api.provisionalRealtimeVisualSplit(...args), queueBrowserPreferredTranslationsForSource = (...args) => ctx.api.queueBrowserPreferredTranslationsForSource(...args), realtimeRowDisplaySpeakerId = (...args) => ctx.api.realtimeRowDisplaySpeakerId(...args), refreshSpeakerPanelSentenceCounts = (...args) => ctx.api.refreshSpeakerPanelSentenceCounts(...args), refreshTranscriptGrouping = (...args) => ctx.api.refreshTranscriptGrouping(...args), refreshTranscriptVisibility = (...args) => ctx.api.refreshTranscriptVisibility(...args), reviewReasonsForItem = (...args) => ctx.api.reviewReasonsForItem(...args), revisionSpeakerId = (...args) => ctx.api.revisionSpeakerId(...args), rowIsCorrected = (...args) => ctx.api.rowIsCorrected(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), scheduleSavedSessionsRefresh = (...args) => ctx.api.scheduleSavedSessionsRefresh(...args), scrollSentencesToBottom = (...args) => ctx.api.scrollSentencesToBottom(...args), selectedTranslationCodesForDisplay = (...args) => ctx.api.selectedTranslationCodesForDisplay(...args), sentenceRevisionLabel = (...args) => ctx.api.sentenceRevisionLabel(...args), speakerColor = (...args) => ctx.api.speakerColor(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), speakerProbabilityKey = (...args) => ctx.api.speakerProbabilityKey(...args), syncBulkCorrectionToolbar = (...args) => ctx.api.syncBulkCorrectionToolbar(...args), transcriptGroupTurnsEnabled = (...args) => ctx.api.transcriptGroupTurnsEnabled(...args), translationLanguageName = (...args) => ctx.api.translationLanguageName(...args), translationStateMap = (...args) => ctx.api.translationStateMap(...args), translationStateMatchesRow = (...args) => ctx.api.translationStateMatchesRow(...args), updateCurrentLiveSpeakerFromRealtimeRows = (...args) => ctx.api.updateCurrentLiveSpeakerFromRealtimeRows(...args);
+  const toInternalSpeakerId = (...args) => ctx.api.toInternalSpeakerId(...args);
   function probabilitySegments(probabilities) {
     const entries = Object.entries(probabilities || {})
       .map(([key, value]) => ({key, value: Math.max(0, Number(value) || 0)}))
@@ -74,7 +75,7 @@ export function installTranscriptRender(ctx) {
       .filter(row => row.dataset.realtime !== "true")
       .map(row => ({
         index: row.dataset.index || "",
-        speaker_id: row.dataset.speaker === "UNKNOWN" ? null : row.dataset.speaker,
+        speaker_id: row.dataset.speaker === "UNKNOWN" ? null : toInternalSpeakerId(row.dataset.speaker),
         speaker: speakerDisplayLabel(row.dataset.speaker === "UNKNOWN" ? null : row.dataset.speaker),
         start: transcriptTimeLabel(row.dataset.start),
         end: transcriptTimeLabel(row.dataset.end),
@@ -97,7 +98,8 @@ export function installTranscriptRender(ctx) {
       .filter(row => row.text.trim());
   }
   function transcriptExportRows(speakerId = null) {
-    return transcriptAtomicExportRows().filter(row => !speakerId || row.speaker_id === speakerId);
+    const internalFilter = speakerId ? toInternalSpeakerId(speakerId) : null;
+    return transcriptAtomicExportRows().filter(row => !internalFilter || row.speaker_id === internalFilter);
   }
   function transcriptExportRowCanGroup(row) {
     return Boolean(

@@ -65,7 +65,9 @@ class _Harness(WindowLiveScoringMixin):
         return np.asarray([0.0, 1.0], dtype=np.float32)
 
     @staticmethod
-    def _record_live_speaker_embedding_latency(_latency: float) -> None:
+    def _record_live_speaker_embedding_latency(
+        _latency: float, **_correlation: object
+    ) -> None:
         pass
 
     @staticmethod
@@ -151,6 +153,22 @@ class ProductionDualWindowTests(unittest.TestCase):
         self.assertEqual(args.realtime_preview_diarize_min_similarity, 0.35)
         self.assertEqual(args.realtime_preview_diarize_min_margin, 0.08)
         self.assertEqual(args.live_speaker_probe_clear_silence_count, 2)
+
+    def test_versioned_profile_contradiction_tracklet_preset_parses(self) -> None:
+        parser = argparse.ArgumentParser()
+        add_preview_live_speaker_arguments(parser)
+
+        args = parser.parse_args([
+            "--live-speaker-open-set-tracklets",
+            "--live-speaker-open-set-tracklet-preset",
+            "short_history_hybrid_v2_profile_contradiction",
+        ])
+
+        self.assertTrue(args.live_speaker_open_set_tracklets)
+        self.assertEqual(
+            "short_history_hybrid_v2_profile_contradiction",
+            args.live_speaker_open_set_tracklet_preset,
+        )
 
     def test_bayes_provisional_cli_and_config_parse(self) -> None:
         parser = argparse.ArgumentParser()
@@ -265,6 +283,46 @@ class ProductionDualWindowTests(unittest.TestCase):
         )
         self.assertEqual(harness.embed_suffixes, [".live.short.wav"])
         self.assertEqual(payload["assigned_speaker"], "S1")
+
+    def test_open_set_tracklets_score_before_first_final_profile(self) -> None:
+        harness = _Harness()
+        harness.live_memory = _EmptyMemory()
+        harness.args.live_speaker_tracker = "bayes"
+        harness.args.live_speaker_open_set_tracklets = True
+        harness.args.live_speaker_open_set_preprofile = True
+
+        payload = harness._score_realtime_preview_speaker(
+            np.ones(8, dtype=np.float32), 0.8,
+        )
+
+        self.assertEqual(harness.embed_suffixes, [".live.short.wav"])
+        self.assertEqual(payload["assigned_speaker"], "S1")
+
+    def test_open_set_tracklets_keep_incumbent_gate_without_preprofile_flag(self) -> None:
+        harness = _Harness()
+        harness.live_memory = _EmptyMemory()
+        harness.args.live_speaker_tracker = "bayes"
+        harness.args.live_speaker_open_set_tracklets = True
+
+        payload = harness._score_realtime_preview_speaker(
+            np.ones(8, dtype=np.float32), 0.8,
+        )
+
+        self.assertEqual(harness.embed_suffixes, [])
+        self.assertIsNone(payload["assigned_speaker"])
+
+    def test_classic_tracker_still_waits_for_first_final_profile(self) -> None:
+        harness = _Harness()
+        harness.live_memory = _EmptyMemory()
+        harness.args.live_speaker_tracker = "classic"
+        harness.args.live_speaker_open_set_tracklets = True
+
+        payload = harness._score_realtime_preview_speaker(
+            np.ones(8, dtype=np.float32), 0.8,
+        )
+
+        self.assertEqual(harness.embed_suffixes, [])
+        self.assertIsNone(payload["assigned_speaker"])
 
     def test_shared_production_core_creates_provisional_before_first_profile(self) -> None:
         parser = argparse.ArgumentParser()

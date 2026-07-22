@@ -258,7 +258,16 @@ def parse_args(argv: list[str] | None = None) -> WindowConfig:
         if args.realtime_preview_engine == "kroko_onnx":
             requested_preset = args.realtime_preview_model_preset or DEFAULT_KROKO_PREVIEW_MODEL_PRESET
             args.realtime_preview_model_preset = normalize_preview_model_preset("kroko_onnx", requested_preset)
-            use_legacy_native_model = preview_model_was_explicit or preview_model_path_was_explicit
+            known_native_preset = (
+                args.realtime_preview_model_preset == "pro-16l"
+                and not preview_model_was_explicit
+                and not preview_model_path_was_explicit
+            )
+            use_legacy_native_model = (
+                preview_model_was_explicit
+                or preview_model_path_was_explicit
+                or known_native_preset
+            )
             if use_legacy_native_model:
                 if preview_model_dir_was_explicit:
                     parser.error("A Kroko model file and model directory cannot be selected together.")
@@ -266,7 +275,8 @@ def parse_args(argv: list[str] | None = None) -> WindowConfig:
                     args.realtime_preview_model = default_preview_model(
                         "kroko_onnx", args.language, args.realtime_preview_model_preset
                     )
-                args.realtime_preview_model_preset = "custom"
+                if not known_native_preset:
+                    args.realtime_preview_model_preset = "custom"
                 args.realtime_preview_model_dir = None
             else:
                 args.realtime_preview_model = args.realtime_preview_model_preset
@@ -276,7 +286,7 @@ def parse_args(argv: list[str] | None = None) -> WindowConfig:
                 )
             if args.realtime_preview_startup_timeout_seconds is None:
                 args.realtime_preview_startup_timeout_seconds = (
-                    default_kroko_preview_startup_timeout_seconds(args.realtime_preview_model_preset)
+                    default_kroko_preview_startup_timeout_seconds(requested_preset)
                     if use_legacy_native_model
                     else kroko_sherpa_model_preset(args.language).startup_timeout_seconds
                 )
@@ -308,8 +318,12 @@ def parse_args(argv: list[str] | None = None) -> WindowConfig:
     args.validation_output = args.validation_output.resolve()
     if args.validation_trace_output is not None:
         args.validation_trace_output = args.validation_trace_output.resolve()
+    if args.live_speaker_world_tape_output is not None:
+        args.live_speaker_world_tape_output = args.live_speaker_world_tape_output.resolve()
     if args.browser_live_observation_output is not None:
         args.browser_live_observation_output = args.browser_live_observation_output.resolve()
+    if args.browser_live_e2e_candidate_artifact is not None:
+        args.browser_live_e2e_candidate_artifact = args.browser_live_e2e_candidate_artifact.resolve()
     if args.download_root is not None:
         args.download_root = args.download_root.resolve()
     if (

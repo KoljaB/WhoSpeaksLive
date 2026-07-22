@@ -244,7 +244,11 @@ def main() -> int:
     if winner is not None:
         _atomic_json(args.promotion_output.resolve(), {
             "schema_version": 1,
-            "status": "LIVE_VERIFIED_CHAMPION",
+            "status": "FRESH_EMBEDDING_REPLAY_VERIFIED_AWAITING_REAL_GUI_E2E",
+            "fresh_live_verified": False,
+            "fresh_embedding_replay_verified": True,
+            "production_promotion_eligible": False,
+            "requires_real_gui_live_e2e": True,
             "verifier_id": VERIFIER_ID,
             "provider": provider_spec,
             "previous_fresh_live_score": baseline_aggregate["global_score"],

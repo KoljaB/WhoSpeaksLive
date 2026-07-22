@@ -511,13 +511,25 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json({"ok": True})
             elif path == "/api/live-observation":
                 self._require_session(payload)
-                count = self.server.record_browser_live_observation(payload.get("samples", []))
+                count = self.server.record_browser_live_observation(
+                    payload.get("samples", []),
+                    payload.get("batch_sequence"),
+                )
                 self._send_json({"ok": True, "sample_count": count})
             elif path == "/api/live-observation-finish":
                 self._require_session(payload)
-                count = self.server.record_browser_live_observation(payload.get("samples", []))
+                count = self.server.record_browser_live_observation(
+                    payload.get("samples", []),
+                    payload.get("batch_sequence"),
+                )
                 summary = self.server.finish_browser_live_observation(str(payload.get("reason") or "done"))
                 self._send_json({"ok": True, "sample_count": count, "summary": summary})
+                if bool(getattr(self.server.args, "exit_after_browser_live_observation", False)):
+                    threading.Thread(
+                        target=self.server.shutdown,
+                        name="world-tape-browser-finish-shutdown",
+                        daemon=True,
+                    ).start()
             elif path == "/api/settings":
                 self._require_session(payload)
                 response: dict[str, Any] = {"ok": True}
@@ -595,6 +607,18 @@ class Handler(BaseHTTPRequestHandler):
                 result = self.server.controller.delete_speaker(
                     str(payload.get("speaker_id") or ""),
                     update_memory=bool(payload.get("update_memory", True)),
+                )
+                result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
+                self._send_json(result)
+            elif path == "/api/speakers/remove-empty":
+                self._require_session(payload)
+                raw_speaker_ids = payload.get("speaker_ids") or []
+                if isinstance(raw_speaker_ids, str):
+                    raw_speaker_ids = [raw_speaker_ids]
+                if not isinstance(raw_speaker_ids, list):
+                    raise ValueError("speaker_ids must be a list.")
+                result = self.server.controller.remove_empty_speakers(
+                    [str(speaker_id) for speaker_id in raw_speaker_ids[:100]]
                 )
                 result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
                 self._send_json(result)

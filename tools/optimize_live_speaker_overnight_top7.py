@@ -342,7 +342,7 @@ def main() -> int:
             "budget_seconds": int(args.budget_seconds),
         })
         _atomic_json(run_dir / "champion.json", {
-            "status": "CACHE_CHAMPION_PENDING_FRESH_LIVE",
+            "status": "CACHE_CANDIDATE_PENDING_FRESH_REPLAY_AND_REAL_GUI_E2E",
             "selection_policy": "primary_score_only_no_per_video_vetoes",
             "baseline_score": first["aggregate"]["primary_score"],
             "candidate_id": incumbent["candidate_id"],
@@ -357,10 +357,16 @@ def main() -> int:
             "aggregate": incumbent["aggregate"],
             "per_video": incumbent["per_video"],
             "fresh_live_verified": False,
+            "fresh_embedding_replay_verified": False,
+            "production_promotion_eligible": False,
+            "requires_real_gui_live_e2e": True,
         })
         _atomic_json(queue_path, {
             "schema_version": 1,
-            "policy": "verify meaningful milestones and the final cache champion with fresh embeddings",
+            "policy": (
+                "verify milestones with fresh embeddings, then promote only through "
+                "tools/promote_live_speaker_real_gui_e2e.py"
+            ),
             "verifier": "tools/verify_live_speaker_top7_fresh.py",
             "milestones": milestones,
             "final_candidate_id": incumbent["candidate_id"],

@@ -196,8 +196,9 @@ def main() -> int:
     }
     _atomic_json(args.output.resolve(), payload)
     if args.update_champion:
-        champion["fresh_live_verified"] = passed
-        champion["fresh_live_verification"] = {
+        champion["fresh_live_verified"] = False
+        champion["fresh_embedding_replay_verified"] = passed
+        champion["fresh_embedding_replay_verification"] = {
             "verifier_id": VERIFIER_ID,
             "path": str(args.output.resolve()),
             "baseline_score": baseline_fresh_score,
@@ -207,7 +208,12 @@ def main() -> int:
             "candidate_minimum_decision_match_ratio": minimum_match,
             "all_cached_decisions_exact": payload["all_cached_decisions_exact"],
         }
-        champion["status"] = "LIVE_VERIFIED_BAYES_CHAMPION" if passed else "REJECTED_BY_FRESH_LIVE"
+        champion["production_promotion_eligible"] = False
+        champion["requires_real_gui_live_e2e"] = True
+        champion["status"] = (
+            "FRESH_EMBEDDING_REPLAY_VERIFIED_AWAITING_REAL_GUI_E2E"
+            if passed else "REJECTED_BY_FRESH_EMBEDDING_REPLAY"
+        )
         _atomic_json(champion_path, champion)
     print(json.dumps({
         "passed": passed,

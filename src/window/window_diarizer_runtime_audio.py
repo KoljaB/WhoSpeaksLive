@@ -99,7 +99,11 @@ from window.window_speaker_refinement import (
     user_deleted_speaker_label,
     user_confirmed_speaker_label,
 )
-from window.live_speech_gate import live_silero_gate_parameters, rms_speech_present
+from window.live_speech_gate import (
+    live_silero_gate_parameters,
+    rms_speech_features,
+    rms_speech_present,
+)
 from window.cpu_forced_alignment import CpuHybridTranscriber
 
 
@@ -478,14 +482,26 @@ class WindowRuntimeAudioMixin:
             time.sleep(0.05)
         return True
 
-    @staticmethod
-    def _cancel_pending_embedding_jobs(jobs: "queue.Queue[Any]") -> None:
+    def _cancel_pending_embedding_jobs(
+        self,
+        jobs: "queue.Queue[Any]",
+        *,
+        reason: str = "pending_queue_cancelled",
+    ) -> None:
         while True:
             try:
-                jobs.get_nowait()
+                job = jobs.get_nowait()
             except queue.Empty:
                 return
             else:
+                if isinstance(job, EmbeddingSentenceJob):
+                    recorder = getattr(self, "_record_final_sentence_queue_stage", None)
+                    if callable(recorder):
+                        recorder(job, "cancelled", reason=str(reason))
+                elif isinstance(job, LiveSpeakerMemoryUpdateJob):
+                    recorder = getattr(self, "_record_live_profile_queue_stage", None)
+                    if callable(recorder):
+                        recorder(job, "cancelled", reason=str(reason))
                 jobs.task_done()
 
     def _load_silero_vad_model(self) -> Any | None:
@@ -642,20 +658,37 @@ class WindowRuntimeAudioMixin:
         right: float,
         audio: np.ndarray,
         sample_rate: int,
+        *,
+        diagnostics: dict[str, Any] | None = None,
     ) -> VadWindowState:
         frame_seconds = max(0.01, float(self.args.vad_frame_seconds))
         frame_samples = max(1, int(sample_rate * frame_seconds))
         threshold = max(0.0, float(self.args.vad_speech_rms_threshold))
         flags: list[bool] = []
         starts: list[int] = []
+        rms_values: list[float] = []
+        valid_samples: list[int] = []
         for start in range(0, audio.size, frame_samples):
             end = min(audio.size, start + frame_samples)
             if end - start < max(1, frame_samples // 2):
                 break
             frame = audio[start:end]
             rms_value = float(np.sqrt(np.mean(frame * frame)))
+            rms_values.append(rms_value)
             flags.append(rms_value >= threshold)
             starts.append(start)
+            valid_samples.append(int(end - start))
+        if diagnostics is not None:
+            diagnostics.update({
+                "effective_backend": "rms",
+                "rms_frame_seconds": frame_seconds,
+                "rms_threshold": threshold,
+                "rms_values": rms_values,
+                "rms_threshold_flags": list(flags),
+                "rms_flags": flags,
+                "rms_frame_starts": starts,
+                "rms_frame_valid_samples": valid_samples,
+            })
         return self._vad_state_from_flags(
             left=left,
             right=right,
@@ -668,7 +701,13 @@ class WindowRuntimeAudioMixin:
             backend="rms",
         )
 
-    def _audio_has_rms_speech(self, audio: np.ndarray, sample_rate: int) -> bool:
+    def _audio_has_rms_speech(
+        self,
+        audio: np.ndarray,
+        sample_rate: int,
+        *,
+        diagnostics: dict[str, Any] | None = None,
+    ) -> bool:
         frame_seconds = max(0.01, float(getattr(self.args, "vad_frame_seconds", 0.03)))
         threshold = max(0.0, float(getattr(self.args, "vad_speech_rms_threshold", 0.003)))
         min_speech_seconds = max(
@@ -681,13 +720,47 @@ class WindowRuntimeAudioMixin:
                 )
             ),
         )
-        return rms_speech_present(
+        if diagnostics is None:
+            return rms_speech_present(
+                audio,
+                sample_rate,
+                frame_seconds=frame_seconds,
+                threshold=threshold,
+                min_speech_seconds=min_speech_seconds,
+            )
+        present, values, flags, speech_seconds = rms_speech_features(
             audio,
             sample_rate,
             frame_seconds=frame_seconds,
             threshold=threshold,
             min_speech_seconds=min_speech_seconds,
         )
+        diagnostics.update({
+            "effective_backend": "rms",
+            "rms_frame_seconds": frame_seconds,
+            "rms_threshold": threshold,
+            "rms_min_speech_seconds": min_speech_seconds,
+            "rms_values": values,
+            "rms_flags": flags,
+            "rms_speech_seconds": speech_seconds,
+            "rms_frame_starts": list(
+                range(0, audio.size, max(1, int(sample_rate * frame_seconds)))
+            )[:len(values)],
+            "rms_frame_valid_samples": [
+                int(min(max(0, audio.size - start), max(1, int(sample_rate * frame_seconds))))
+                for start in range(
+                    0,
+                    audio.size,
+                    max(1, int(sample_rate * frame_seconds)),
+                )
+                if min(
+                    max(0, audio.size - start),
+                    max(1, int(sample_rate * frame_seconds)),
+                )
+                >= max(1, max(1, int(sample_rate * frame_seconds)) // 2)
+            ],
+        })
+        return present
 
     def _audio_has_live_probe_speech(
         self,
@@ -698,27 +771,128 @@ class WindowRuntimeAudioMixin:
         *,
         release: bool = False,
         fast_release: bool = False,
+        run_id: str = "",
+        probe_id: str = "",
+        gate_id: str = "",
+        gate_role: str = "",
     ) -> bool:
         backend = str(getattr(self.args, "live_speaker_probe_speech_backend", "rms") or "rms").lower()
+        has_internal_listeners = getattr(self.bus, "has_internal_listeners", None)
+        recording = bool(has_internal_listeners()) if callable(has_internal_listeners) else False
+        diagnostics: dict[str, Any] | None = {} if recording else None
         if backend != "vad":
-            return self._audio_has_rms_speech(audio, sample_rate)
-        if audio.size <= 0 or sample_rate <= 0 or right <= left:
-            return False
-        if getattr(self.args, "vad_backend", "silero") == "rms":
-            return self._rms_vad_window_state(left, right, audio, sample_rate).has_speech
-        threshold, minimum = live_silero_gate_parameters(
-            self.args,
-            release=release,
-            fast_release=fast_release,
-        )
-        return self._silero_vad_window_state(
-            left,
-            right,
-            audio,
-            sample_rate,
-            speech_threshold=threshold,
-            min_speech_seconds=minimum,
-        ).has_speech
+            has_speech = self._audio_has_rms_speech(
+                audio,
+                sample_rate,
+                diagnostics=diagnostics,
+            )
+        elif audio.size <= 0 or sample_rate <= 0 or right <= left:
+            has_speech = False
+            if diagnostics is not None:
+                diagnostics["effective_backend"] = "empty"
+        elif getattr(self.args, "vad_backend", "silero") == "rms":
+            state = self._rms_vad_window_state(
+                left,
+                right,
+                audio,
+                sample_rate,
+                diagnostics=diagnostics,
+            )
+            has_speech = state.has_speech
+        else:
+            threshold, minimum = live_silero_gate_parameters(
+                self.args,
+                release=release,
+                fast_release=fast_release,
+            )
+            if diagnostics is not None:
+                diagnostics.update({
+                    "silero_threshold": threshold,
+                    "silero_min_speech_seconds": minimum,
+                })
+            state = self._silero_vad_window_state(
+                left,
+                right,
+                audio,
+                sample_rate,
+                speech_threshold=threshold,
+                min_speech_seconds=minimum,
+                diagnostics=diagnostics,
+            )
+            has_speech = state.has_speech
+
+        if diagnostics is not None:
+            if audio.size > 0 and sample_rate > 0 and "rms_values" not in diagnostics:
+                rms_frame_seconds = max(
+                    0.01,
+                    float(getattr(self.args, "vad_frame_seconds", 0.03)),
+                )
+                rms_threshold = max(
+                    0.0,
+                    float(getattr(self.args, "vad_speech_rms_threshold", 0.003)),
+                )
+                _rms_present, rms_values, rms_flags, rms_seconds = rms_speech_features(
+                    audio,
+                    sample_rate,
+                    frame_seconds=rms_frame_seconds,
+                    threshold=rms_threshold,
+                    min_speech_seconds=0.0,
+                )
+                diagnostics.update({
+                    "aux_rms_frame_seconds": rms_frame_seconds,
+                    "aux_rms_threshold": rms_threshold,
+                    "aux_rms_values": rms_values,
+                    "aux_rms_flags": rms_flags,
+                    "aux_rms_speech_seconds": rms_seconds,
+                    "aux_rms_frame_starts": list(
+                        range(
+                            0,
+                            audio.size,
+                            max(1, int(sample_rate * rms_frame_seconds)),
+                        )
+                    )[:len(rms_values)],
+                    "aux_rms_frame_valid_samples": [
+                        int(
+                            min(
+                                max(0, audio.size - start),
+                                max(1, int(sample_rate * rms_frame_seconds)),
+                            )
+                        )
+                        for start in list(
+                            range(
+                                0,
+                                audio.size,
+                                max(1, int(sample_rate * rms_frame_seconds)),
+                            )
+                        )[:len(rms_values)]
+                    ],
+                })
+            emit_internal = getattr(self.bus, "emit_internal", None)
+            if callable(emit_internal):
+                emit_internal(
+                    "live_speaker_gate_observation",
+                    {
+                        "run_id": str(run_id or ""),
+                        "probe_id": str(probe_id or ""),
+                        "gate_id": str(gate_id or ""),
+                        "gate_role": str(gate_role or ""),
+                        "left": round(float(left), 6),
+                        "right": round(float(right), 6),
+                        "media_time": round(float(right), 6),
+                        "sample_rate": int(sample_rate),
+                        "audio_sample_count": int(audio.size),
+                        "source_start_sample": max(0, int(float(left) * int(sample_rate))),
+                        "source_end_sample": (
+                            max(0, int(float(left) * int(sample_rate))) + int(audio.size)
+                        ),
+                        "requested_backend": backend,
+                        "release": bool(release),
+                        "fast_release": bool(fast_release),
+                        "has_speech": bool(has_speech),
+                        **diagnostics,
+                    },
+                )
+        return bool(has_speech)
 
     def _silero_vad_window_state(
         self,
@@ -729,12 +903,26 @@ class WindowRuntimeAudioMixin:
         *,
         speech_threshold: float | None = None,
         min_speech_seconds: float | None = None,
+        diagnostics: dict[str, Any] | None = None,
     ) -> VadWindowState:
         model = self._load_silero_vad_model()
         if model is None:
-            return self._rms_vad_window_state(left, right, audio, sample_rate)
+            return self._rms_vad_window_state(
+                left,
+                right,
+                audio,
+                sample_rate,
+                diagnostics=diagnostics,
+            )
 
         vad_audio = self._resample_for_silero_vad(audio, sample_rate)
+        if diagnostics is not None:
+            diagnostics.update({
+                "silero_source_sample_rate": int(sample_rate),
+                "silero_source_sample_count": int(audio.size),
+                "silero_resampled_sample_rate": int(SILERO_VAD_SAMPLE_RATE),
+                "silero_resampled_sample_count": int(vad_audio.size),
+            })
         if vad_audio.size <= 0:
             return VadWindowState(False, False, backend="silero")
 
@@ -752,6 +940,8 @@ class WindowRuntimeAudioMixin:
         )
         flags: list[bool] = []
         starts: list[int] = []
+        probabilities: list[float] = []
+        frame_valid_samples: list[int] = []
         reset_states = getattr(model, "reset_states", None)
         if callable(reset_states):
             reset_states()
@@ -761,13 +951,16 @@ class WindowRuntimeAudioMixin:
                 if end - start < max(1, frame_samples // 2):
                     break
                 chunk = vad_audio[start:end]
+                valid_sample_count = int(chunk.size)
                 if chunk.size < frame_samples:
                     padded = np.zeros(frame_samples, dtype=np.float32)
                     padded[:chunk.size] = chunk
                     chunk = padded
                 probability = float(model(chunk.astype(np.float32, copy=False), SILERO_VAD_SAMPLE_RATE))
+                probabilities.append(probability)
                 flags.append(probability >= threshold)
                 starts.append(start)
+                frame_valid_samples.append(valid_sample_count)
         except Exception as exc:
             self._vad_model_error = str(exc)
             self._vad_model = None
@@ -775,7 +968,33 @@ class WindowRuntimeAudioMixin:
                 "status",
                 {"message": f"Silero ONNX VAD call failed; falling back to RMS VAD: {exc}"},
             )
-            return self._rms_vad_window_state(left, right, audio, sample_rate)
+            return self._rms_vad_window_state(
+                left,
+                right,
+                audio,
+                sample_rate,
+                diagnostics=diagnostics,
+            )
+
+        if diagnostics is not None:
+            diagnostics.update({
+                "effective_backend": self._vad_model_backend or "silero",
+                "silero_frame_samples": frame_samples,
+                "silero_frame_seconds": frame_seconds,
+                "silero_threshold": threshold,
+                "silero_probabilities": probabilities,
+                "silero_threshold_flags": list(flags),
+                "silero_flags": flags,
+                "silero_frame_starts": starts,
+                "silero_frame_valid_samples": frame_valid_samples,
+                "silero_frame_padded_samples": [
+                    int(frame_samples - valid) for valid in frame_valid_samples
+                ],
+                "silero_processed_valid_sample_count": int(sum(frame_valid_samples)),
+                "silero_discarded_tail_sample_count": int(
+                    max(0, vad_audio.size - sum(frame_valid_samples))
+                ),
+            })
 
         return self._vad_state_from_flags(
             left=left,

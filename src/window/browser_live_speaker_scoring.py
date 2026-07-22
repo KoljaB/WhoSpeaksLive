@@ -401,7 +401,12 @@ class BrowserLiveObservationRecorder:
             self._samples.extend(clean_samples)
             return len(self._samples)
 
-    def finish(self, reason: str = "done") -> dict[str, Any]:
+    def finish(
+        self,
+        reason: str = "done",
+        *,
+        attestation: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         with self._lock:
             samples = list(self._samples)
             self._finished = True
@@ -413,6 +418,7 @@ class BrowserLiveObservationRecorder:
             flicker_gap_seconds=self.flicker_gap_seconds,
         )
         payload = {
+            "attestation": dict(attestation or {}),
             "summary": {
                 **summary,
                 "reason": reason,

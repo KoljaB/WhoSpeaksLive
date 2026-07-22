@@ -669,6 +669,8 @@ class WindowAssignmentDecisionMixin:
                     or bool(metadata.get("locked"))
                     or str(metadata.get("source") or "detected").strip().lower() == "reference"
                     or bool(metadata.get("reference_audio"))
+                    or str(metadata.get("identity_status") or "").strip().lower() == "confirmed"
+                    or bool(metadata.get("person_id"))
                 ):
                     continue
                 removable.add(label)

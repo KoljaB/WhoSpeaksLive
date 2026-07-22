@@ -606,6 +606,19 @@ class WindowSpeakerReviewMixin:
         self.bus.emit("status", {"message": message})
         return {"speaker_state": state, "rows": [self._record_to_sentence_payload(record) for record in changed]}
 
+    def remove_empty_speakers(self, speaker_ids: list[str]) -> dict[str, Any]:
+        candidates = {
+            normalized
+            for speaker_id in speaker_ids
+            if (normalized := self._normalized_speaker_label(speaker_id))
+        }
+        removed = self._remove_empty_detected_speaker_profiles(candidates)
+        state = self.speaker_state()
+        if removed:
+            noun = "speaker" if len(removed) == 1 else "speakers"
+            self.bus.emit("status", {"message": f"Automatically deleted empty {noun} {', '.join(removed)}."})
+        return {"speaker_state": state, "removed_speaker_ids": removed}
+
     def undo_last_correction(self) -> dict[str, Any]:
         if not self._correction_history:
             raise ValueError("No correction to undo.")

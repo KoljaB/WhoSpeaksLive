@@ -27,6 +27,7 @@ from speakers.speaker_embedding_cluster import SpeakerMemory
 from window.review_flags import annotate_review
 from window.session_store import SessionStore
 from window.window_diarizer import WindowDiarizer
+from window.window_domain import LiveSpeakerMemoryUpdateJob
 from window.window_events import RecordingEventBus
 from window.window_speaker_refinement import (
     SpeakerRefinementConfig,
@@ -306,6 +307,27 @@ class CorrectionControllerTests(unittest.TestCase):
         restored = {speaker["id"] for speaker in undo["speaker_state"]["speakers"]}
         self.assertIn(empty_label, restored)
 
+    def test_remove_empty_speakers_only_removes_unoccupied_unlinked_profiles(self) -> None:
+        diarizer = _fake_diarizer()
+        removable_label = diarizer.memory.add_profile(_unit([1.0, 1.0]), duration_seconds=0.1, sentence_count=1)
+        protected_label = diarizer.memory.add_profile(_unit([1.0, -1.0]), duration_seconds=0.1, sentence_count=1)
+        self.assertEqual((removable_label, protected_label), ("S3", "S4"))
+        diarizer._speaker_metadata[removable_label] = {"source": "detected", "locked": False}
+        diarizer._speaker_metadata[protected_label] = {
+            "source": "detected",
+            "locked": False,
+            "identity_status": "confirmed",
+            "person_id": "person-1",
+        }
+
+        result = diarizer.remove_empty_speakers(["S1", removable_label, protected_label])
+
+        self.assertEqual(result["removed_speaker_ids"], [removable_label])
+        labels = {speaker["id"] for speaker in result["speaker_state"]["speakers"]}
+        self.assertIn("S1", labels)
+        self.assertNotIn(removable_label, labels)
+        self.assertIn(protected_label, labels)
+
     def test_delete_speaker_clears_marked_correct_confirmation_on_rows(self) -> None:
         diarizer = _fake_diarizer()
         diarizer.mark_sentence_correct(1)
@@ -548,7 +570,7 @@ class CorrectionControllerTests(unittest.TestCase):
 
         diarizer.memory.upsert_profile("S1", _unit([1.0, 0.0]), duration_seconds=0.1)
         diarizer._embed_live_audio_chunk = mock.Mock(return_value=_unit([1.0, 0.0]))
-        diarizer._process_live_speaker_memory_update(SimpleNamespace(
+        diarizer._process_live_speaker_memory_update(LiveSpeakerMemoryUpdateJob(
             speaker_id="S1",
             audio=np.zeros(1600, dtype=np.float32),
             sample_rate=16000,

@@ -96,6 +96,7 @@ class WindowRuntimeStateMixin:
         history.clear()
         self._live_speaker_verify_next_at = 0.0
         self._shared_live_speaker_core = None
+        self._shared_live_speaker_open_set_overlay_state = None
 
     def _live_memory_update_lock_obj(self) -> threading.Lock:
         lock = getattr(self, "_live_memory_update_lock", None)

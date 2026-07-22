@@ -8,7 +8,7 @@ import copy
 import hashlib
 from collections import Counter, deque
 from contextlib import nullcontext
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, is_dataclass, replace
 from datetime import datetime
 import json
 import math
@@ -107,12 +107,35 @@ from window.live_speaker_bayes import (
     CausalBayesSpeakerTracker,
 )
 from window.live_speaker_multiscale import MultiScaleEvidence, MultiScaleStep
+from window.live_speaker_open_set_tracklets import (
+    OPEN_SET_TRACKLET_PRESET,
+    OpenSetTrackletOverlay,
+    OpenSetTrackletStep,
+    open_set_tracklet_config_for_preset,
+)
 from window.live_speaker_replay import blend_live_speaker_embeddings
 
 
 
 
 class WindowLiveScoringMixin:
+    def _live_speaker_can_score_without_final_profiles(self) -> bool:
+        """Return whether the configured live tracker can establish its own identity."""
+
+        if str(getattr(self.args, "live_speaker_tracker", "classic")) != "bayes":
+            return False
+        return bool(
+            getattr(self.args, "live_speaker_bayes_provisional_profiles", False)
+            or (
+                getattr(self.args, "live_speaker_open_set_tracklets", False)
+                and getattr(self.args, "live_speaker_open_set_preprofile", False)
+            )
+        )
+
+    def _live_speaker_correlation_run_id(self) -> str:
+        active_run = getattr(self, "_active_run", None)
+        return str(getattr(active_run, "run_id", "") or "")
+
     def _shared_live_speaker_lock(self) -> threading.Lock:
         lock = getattr(self, "_shared_live_speaker_state_lock", None)
         if lock is None:
@@ -324,6 +347,42 @@ class WindowLiveScoringMixin:
             self._shared_live_speaker_core = algorithm
         return algorithm
 
+    def _open_set_tracklet_overlay(self) -> OpenSetTrackletOverlay | None:
+        if not bool(getattr(self.args, "live_speaker_open_set_tracklets", False)):
+            return None
+        tracker = str(getattr(self.args, "live_speaker_tracker", "classic"))
+        provider = str(self._current_live_embedding_provider())
+        short_window = float(getattr(self.args, "live_speaker_probe_window_seconds", 0.0))
+        long_window = float(
+            getattr(self.args, "live_speaker_probe_context_window_seconds", 0.0)
+        )
+        context_weight = float(getattr(self.args, "live_speaker_probe_context_weight", 0.0))
+        if tracker != "bayes":
+            raise ValueError("Open-set tracklets require --live-speaker-tracker bayes")
+        if provider != "speechbrain_resnet":
+            raise ValueError("Open-set tracklets require speechbrain_resnet")
+        if abs(short_window - 0.7) > 1e-6 or abs(long_window - 1.5) > 1e-6:
+            raise ValueError("Open-set tracklets require exactly 0.7/1.5-second windows")
+        if context_weight <= 0.0:
+            raise ValueError("Open-set tracklets require the existing context embedding")
+        if bool(getattr(self.args, "live_speaker_bayes_provisional_profiles", False)):
+            raise ValueError(
+                "Open-set tracklets cannot run with legacy Bayes provisional profiles"
+            )
+        preset = str(
+            getattr(
+                self.args,
+                "live_speaker_open_set_tracklet_preset",
+                OPEN_SET_TRACKLET_PRESET,
+            )
+        )
+        config = open_set_tracklet_config_for_preset(preset)
+        overlay = getattr(self, "_shared_live_speaker_open_set_overlay_state", None)
+        if not isinstance(overlay, OpenSetTrackletOverlay) or overlay.config != config:
+            overlay = OpenSetTrackletOverlay(config)
+            self._shared_live_speaker_open_set_overlay_state = overlay
+        return overlay
+
     def _shared_live_speaker_step(
         self,
         *,
@@ -337,10 +396,63 @@ class WindowLiveScoringMixin:
         release_signal: bool = False,
         embedding_latency_seconds: float | None = None,
         skipped_reason: str = "",
+        run_id: str = "",
+        probe_id: str = "",
+        request_id: str = "",
+        correlation_out: dict[str, Any] | None = None,
     ) -> Any:
+        correlation = {
+            "run_id": str(run_id or self._live_speaker_correlation_run_id()),
+            "probe_id": str(probe_id or ""),
+            "request_id": str(request_id or ""),
+        }
         with self._shared_live_speaker_lock():
             algorithm = self._shared_live_speaker_algorithm()
-            algorithm.sync_profiles(self.live_memory.export_profiles())
+            profiles = self.live_memory.export_profiles()
+            algorithm.sync_profiles(profiles)
+            step_id = int(getattr(self, "_live_speaker_world_tape_step_id", 0)) + 1
+            self._live_speaker_world_tape_step_id = step_id
+            correlation["step_id"] = step_id
+            if correlation_out is not None:
+                correlation_out.update(correlation)
+            algorithm_config = (
+                asdict(algorithm.config)
+                if is_dataclass(getattr(algorithm, "config", None))
+                else {}
+            )
+            emit_internal = getattr(self.bus, "emit_internal", None)
+            if callable(emit_internal):
+                emit_internal(
+                    "live_speaker_core_input",
+                    {
+                        **correlation,
+                        "media_time": max(0.0, float(media_time)),
+                        "speech": bool(speech),
+                        "duration_seconds": max(0.0, float(duration_seconds)),
+                        "probe_scheduled": bool(probe_scheduled),
+                        "release_signal": bool(release_signal),
+                        "embedding_latency_seconds": embedding_latency_seconds,
+                        "skipped_reason": str(skipped_reason),
+                        "algorithm_type": (
+                            "bayes"
+                            if isinstance(algorithm, CausalBayesSpeakerTracker)
+                            else "classic"
+                        ),
+                        "algorithm_config": algorithm_config,
+                        "profiles": profiles,
+                        "embedding": (
+                            None
+                            if embedding is None
+                            else np.asarray(embedding, dtype=np.float32).tolist()
+                        ),
+                        "context_embedding": (
+                            None
+                            if context_embedding is None
+                            else np.asarray(context_embedding, dtype=np.float32).tolist()
+                        ),
+                        "context_duration_seconds": context_duration_seconds,
+                    },
+                )
             if isinstance(algorithm, CausalBayesSpeakerTracker):
                 evidences: list[MultiScaleEvidence] = []
                 if embedding is not None:
@@ -379,7 +491,93 @@ class WindowLiveScoringMixin:
                     embedding_latency_seconds=embedding_latency_seconds,
                     skipped_reason=str(skipped_reason),
                 ))
-        self.bus.emit("live_speaker_shared_core_decision", decision.trace_record())
+            overlay = self._open_set_tracklet_overlay()
+            overlay_decision = None
+            base_trace_record = decision.trace_record()
+            if overlay is not None:
+                overlay_decision = overlay.step(OpenSetTrackletStep(
+                    media_time=max(0.0, float(media_time)),
+                    speech=bool(speech),
+                    probe_scheduled=bool(str(probe_id or "")),
+                    release_signal=bool(release_signal),
+                    short_embedding=(
+                        None
+                        if embedding is None
+                        else np.asarray(embedding, dtype=np.float32)
+                    ),
+                    long_embedding=(
+                        None
+                        if context_embedding is None
+                        else np.asarray(context_embedding, dtype=np.float32)
+                    ),
+                    profiles=tuple(dict(profile) for profile in profiles),
+                    base_visible_speaker=decision.visible_speaker,
+                    base_action=decision.action,
+                    base_reason=decision.reason,
+                ))
+                diagnostics = {
+                    **dict(decision.diagnostics),
+                    "open_set_tracklet": dict(overlay_decision.diagnostics),
+                    "open_set_tracklet_provisional_speaker": bool(
+                        overlay_decision.provisional_speaker
+                    ),
+                    "open_set_tracklet_created_speaker": bool(
+                        overlay_decision.created_speaker
+                    ),
+                    "open_set_tracklet_aliases": [
+                        alias.payload() for alias in overlay_decision.aliases
+                    ],
+                    "base_live_speaker_decision": base_trace_record,
+                }
+                decision = replace(
+                    decision,
+                    visible_speaker=overlay_decision.visible_speaker,
+                    candidate_speaker=overlay_decision.visible_speaker,
+                    action=overlay_decision.action,
+                    reason=overlay_decision.reason,
+                    diagnostics=diagnostics,
+                )
+        if overlay_decision is not None:
+            emit_internal = getattr(self.bus, "emit_internal", None)
+            if callable(emit_internal):
+                emit_internal(
+                    "live_speaker_open_set_tracklet_decision",
+                    {
+                        **correlation,
+                        "media_time": max(0.0, float(media_time)),
+                        "base_decision": base_trace_record,
+                        "projected_decision": decision.trace_record(),
+                        "aliases": [
+                            alias.payload() for alias in overlay_decision.aliases
+                        ],
+                        "effective_config": overlay.config.snapshot(),
+                    },
+                )
+            for alias in overlay_decision.aliases:
+                alias_payload = {
+                    **correlation,
+                    **alias.payload(),
+                    "media_time": max(0.0, float(media_time)),
+                    "final_speaker": {
+                        **dict(alias.final_speaker),
+                        **self._speaker_info_for_payload(
+                            alias.final_internal_speaker_id
+                        ),
+                    },
+                    "final_to_public": overlay.final_to_public,
+                    "public_to_final": overlay.public_to_final,
+                    "assignment_source": "open_set_tracklet_profile_merge",
+                }
+                self.bus.emit("live_speaker_identity_alias", alias_payload)
+        trace_record = decision.trace_record()
+        correlated_trace_record = {**trace_record, **correlation}
+        self.bus.emit("live_speaker_shared_core_decision", correlated_trace_record)
+        emit_internal = getattr(self.bus, "emit_internal", None)
+        if callable(emit_internal):
+            emit_internal(
+                "live_speaker_core_decision",
+                correlated_trace_record,
+            )
         return decision
 
     def _realtime_unknown_speaker_payload(self) -> dict[str, Any]:
@@ -691,16 +889,57 @@ class WindowLiveScoringMixin:
             value = 0.25
         return max(0.05, min(1.0, value))
 
-    def _try_reserve_live_speaker_embedding(self) -> bool:
+    def _try_reserve_live_speaker_embedding(
+        self,
+        source: str = "unknown",
+        *,
+        run_id: str = "",
+        probe_id: str = "",
+        request_id: str = "",
+    ) -> bool:
         now = time.monotonic()
         with self._live_speaker_embedding_lock():
             next_at = float(getattr(self, "_live_speaker_embedding_next_at", 0.0))
-            if now < next_at:
-                return False
-            self._live_speaker_embedding_next_at = now + self._live_speaker_embedding_min_interval_seconds()
-            return True
+            admitted = now >= next_at
+            if admitted:
+                self._live_speaker_embedding_next_at = (
+                    now + self._live_speaker_embedding_min_interval_seconds()
+                )
+            next_after = float(getattr(self, "_live_speaker_embedding_next_at", next_at))
+            latency_ewma = getattr(self, "_live_speaker_embedding_latency_ewma", None)
+        emit_internal = getattr(self.bus, "emit_internal", None)
+        if callable(emit_internal):
+            emit_internal(
+                "live_speaker_embedding_admission",
+                {
+                    "run_id": str(run_id or self._live_speaker_correlation_run_id()),
+                    "probe_id": str(probe_id or ""),
+                    "request_id": str(request_id or ""),
+                    "media_time": round(float(self.playback_time()), 6),
+                    "source": str(source),
+                    "admitted": bool(admitted),
+                    "monotonic_request": float(now),
+                    "monotonic_next_before": float(next_at),
+                    "monotonic_next_after": float(next_after),
+                    "min_interval_seconds": self._live_speaker_embedding_min_interval_seconds(),
+                    "target_utilization": self._live_speaker_embedding_target_utilization(),
+                    "latency_ewma_seconds": (
+                        None if latency_ewma is None else float(latency_ewma)
+                    ),
+                    "skip_reason": "" if admitted else "shared_embedding_throttle",
+                },
+            )
+        return admitted
 
-    def _record_live_speaker_embedding_latency(self, elapsed_seconds: float) -> None:
+    def _record_live_speaker_embedding_latency(
+        self,
+        elapsed_seconds: float,
+        *,
+        run_id: str = "",
+        probe_id: str = "",
+        request_id: str = "",
+        source: str = "unknown",
+    ) -> None:
         elapsed = max(0.0, float(elapsed_seconds))
         target_utilization = self._live_speaker_embedding_target_utilization()
         min_interval = self._live_speaker_embedding_min_interval_seconds()
@@ -717,6 +956,25 @@ class WindowLiveScoringMixin:
             self._live_speaker_embedding_next_at = max(
                 float(getattr(self, "_live_speaker_embedding_next_at", 0.0)),
                 time.monotonic() + wait_seconds,
+            )
+            next_at = float(self._live_speaker_embedding_next_at)
+        emit_internal = getattr(self.bus, "emit_internal", None)
+        if callable(emit_internal):
+            emit_internal(
+                "live_speaker_embedding_throttle_update",
+                {
+                    "run_id": str(run_id or self._live_speaker_correlation_run_id()),
+                    "probe_id": str(probe_id or ""),
+                    "request_id": str(request_id or ""),
+                    "source": str(source),
+                    "media_time": round(float(self.playback_time()), 6),
+                    "elapsed_seconds": elapsed,
+                    "latency_ewma_seconds": float(latency),
+                    "wait_seconds": float(wait_seconds),
+                    "target_utilization": float(target_utilization),
+                    "min_interval_seconds": float(min_interval),
+                    "monotonic_next_at": next_at,
+                },
             )
         self._maybe_emit_live_speaker_embedding_throttle_status(latency, wait_seconds, target_utilization)
 
@@ -850,6 +1108,10 @@ class WindowLiveScoringMixin:
 
         return {
             **verified_payload,
+            "run_id": fast_payload.get("run_id"),
+            "probe_id": fast_payload.get("probe_id"),
+            "request_id": fast_payload.get("request_id"),
+            "step_id": fast_payload.get("step_id"),
             "fast_assigned_speaker": fast_payload.get("assigned_speaker"),
             "fast_probabilities": fast_payload.get("probabilities"),
             "fast_raw_probabilities": fast_payload.get("raw_probabilities"),
@@ -866,6 +1128,18 @@ class WindowLiveScoringMixin:
         context_audio: np.ndarray | None = None,
         context_duration_seconds: float | None = None,
         context_weight: float = 0.0,
+        request_source: str = "unknown",
+        request_id: str = "",
+        run_id: str = "",
+        probe_id: str = "",
+        short_window_start: float | None = None,
+        short_window_end: float | None = None,
+        short_source_start_sample: int | None = None,
+        short_source_end_sample: int | None = None,
+        context_window_start: float | None = None,
+        context_window_end: float | None = None,
+        context_source_start_sample: int | None = None,
+        context_source_end_sample: int | None = None,
     ) -> dict[str, Any]:
         if not self._live_speaker_assignment_enabled():
             return self._realtime_unknown_speaker_payload()
@@ -874,18 +1148,147 @@ class WindowLiveScoringMixin:
         if duration_seconds < max(0.0, float(min_audio_seconds)):
             return self._realtime_unknown_speaker_payload()
         memory = self.live_memory
-        bayes_provisional = (
-            str(getattr(self.args, "live_speaker_tracker", "classic")) == "bayes"
-            and bool(getattr(self.args, "live_speaker_bayes_provisional_profiles", False))
-        )
-        if memory.profile_count() <= 0 and not bayes_provisional:
+        if (
+            memory.profile_count() <= 0
+            and not self._live_speaker_can_score_without_final_profiles()
+        ):
             return self._realtime_unknown_speaker_payload()
 
         chunk = pad_audio(trim_silence(audio, self.sample_rate), self.args.min_embed_seconds, self.sample_rate)
+        request_id = str(request_id or uuid.uuid4().hex)
+        run_id = str(run_id or self._live_speaker_correlation_run_id())
+        probe_id = str(probe_id or "")
+        request_media_time = float(self.playback_time())
+        actual_short_window_end = (
+            request_media_time if short_window_end is None else float(short_window_end)
+        )
+        actual_short_window_start = (
+            max(0.0, actual_short_window_end - float(duration_seconds))
+            if short_window_start is None
+            else max(0.0, float(short_window_start))
+        )
+        actual_short_start_sample = (
+            max(0, int(actual_short_window_start * self.sample_rate))
+            if short_source_start_sample is None
+            else max(0, int(short_source_start_sample))
+        )
+        actual_short_end_sample = (
+            actual_short_start_sample + int(audio.size)
+            if short_source_end_sample is None
+            else max(actual_short_start_sample, int(short_source_end_sample))
+        )
+        actual_context_window_end = (
+            None
+            if context_audio is None
+            else (
+                actual_short_window_end
+                if context_window_end is None
+                else float(context_window_end)
+            )
+        )
+        actual_context_window_start = (
+            None
+            if context_audio is None
+            else (
+                max(
+                    0.0,
+                    float(actual_context_window_end)
+                    - float(context_duration_seconds or 0.0),
+                )
+                if context_window_start is None
+                else max(0.0, float(context_window_start))
+            )
+        )
+        actual_context_start_sample = (
+            None
+            if actual_context_window_start is None
+            else (
+                max(0, int(actual_context_window_start * self.sample_rate))
+                if context_source_start_sample is None
+                else max(0, int(context_source_start_sample))
+            )
+        )
+        actual_context_end_sample = (
+            None
+            if actual_context_start_sample is None or context_audio is None
+            else (
+                actual_context_start_sample + int(context_audio.size)
+                if context_source_end_sample is None
+                else max(actual_context_start_sample, int(context_source_end_sample))
+            )
+        )
+        emit_internal = getattr(self.bus, "emit_internal", None)
+        recording = callable(emit_internal) and bool(
+            getattr(self.bus, "has_internal_listeners", lambda: False)()
+        )
+        if recording:
+            emit_internal(
+                "live_speaker_embedding_request_started",
+                {
+                    "run_id": run_id,
+                    "probe_id": probe_id,
+                    "request_id": request_id,
+                    "source": str(request_source),
+                    "source_sample_rate": int(self.sample_rate),
+                    "media_time": round(request_media_time, 6),
+                    "short_window_start": round(actual_short_window_start, 6),
+                    "short_window_end": round(actual_short_window_end, 6),
+                    "short_source_start_sample": actual_short_start_sample,
+                    "short_source_end_sample": actual_short_end_sample,
+                    "short_raw_sample_count": int(audio.size),
+                    "short_raw_pcm_sha256": hashlib.sha256(
+                        np.ascontiguousarray(audio, dtype=np.float32).tobytes()
+                    ).hexdigest(),
+                    "short_duration_seconds": float(duration_seconds),
+                    "short_prepared_sample_count": int(chunk.size),
+                    "short_prepared_pcm_sha256": hashlib.sha256(
+                        np.ascontiguousarray(chunk, dtype=np.float32).tobytes()
+                    ).hexdigest(),
+                    "context_duration_seconds": (
+                        None
+                        if context_duration_seconds is None
+                        else float(context_duration_seconds)
+                    ),
+                    "context_window_start": (
+                        None
+                        if actual_context_window_start is None
+                        else round(float(actual_context_window_start), 6)
+                    ),
+                    "context_window_end": (
+                        None
+                        if actual_context_window_end is None
+                        else round(float(actual_context_window_end), 6)
+                    ),
+                    "context_source_start_sample": actual_context_start_sample,
+                    "context_source_end_sample": actual_context_end_sample,
+                    "context_raw_sample_count": (
+                        None if context_audio is None else int(context_audio.size)
+                    ),
+                    "context_raw_pcm_sha256": (
+                        None
+                        if context_audio is None
+                        else hashlib.sha256(
+                            np.ascontiguousarray(context_audio, dtype=np.float32).tobytes()
+                        ).hexdigest()
+                    ),
+                    "requested_context_weight": max(0.0, min(1.0, float(context_weight))),
+                    "provider": self._current_live_embedding_provider(),
+                },
+            )
         try:
             embed_started = time.monotonic()
-            embedding = self._embed_live_audio_chunk(chunk, self.sample_rate, ".live.short.wav")
+            short_started = embed_started
+            short_embedding = self._embed_live_audio_chunk(
+                chunk,
+                self.sample_rate,
+                ".live.short.wav",
+            )
+            embedding = short_embedding
+            short_finished = time.monotonic()
             context_embedding: np.ndarray | None = None
+            context_chunk: np.ndarray | None = None
+            context_started: float | None = None
+            context_finished: float | None = None
             applied_context_weight = 0.0
             effective_duration = float(duration_seconds)
             requested_context_weight = max(0.0, min(1.0, float(context_weight)))
@@ -895,9 +1298,11 @@ class WindowLiveScoringMixin:
                     self.args.min_embed_seconds,
                     self.sample_rate,
                 )
+                context_started = time.monotonic()
                 context_embedding = self._embed_live_audio_chunk(
                     context_chunk, self.sample_rate, ".live.context.wav"
                 )
+                context_finished = time.monotonic()
                 if str(getattr(self.args, "live_speaker_tracker", "classic")) != "bayes":
                     embedding = blend_live_speaker_embeddings(
                         embedding, context_embedding, requested_context_weight
@@ -908,9 +1313,94 @@ class WindowLiveScoringMixin:
                     float(context_duration_seconds or 0.0),
                 )
             embedding_latency_seconds = time.monotonic() - embed_started
-            self._record_live_speaker_embedding_latency(embedding_latency_seconds)
+            decision_media_time = float(self.playback_time())
+            if recording:
+                emit_internal(
+                    "live_speaker_embedding_request_completed",
+                    {
+                        "run_id": run_id,
+                        "probe_id": probe_id,
+                        "request_id": request_id,
+                        "source": str(request_source),
+                        "source_sample_rate": int(self.sample_rate),
+                        "media_time": round(decision_media_time, 6),
+                        "window_media_time": round(actual_short_window_end, 6),
+                        "short_window_start": round(actual_short_window_start, 6),
+                        "short_window_end": round(actual_short_window_end, 6),
+                        "short_source_start_sample": actual_short_start_sample,
+                        "short_source_end_sample": actual_short_end_sample,
+                        "short_duration_seconds": float(duration_seconds),
+                        "context_duration_seconds": (
+                            None
+                            if context_duration_seconds is None
+                            else float(context_duration_seconds)
+                        ),
+                        "short_latency_seconds": max(0.0, short_finished - short_started),
+                        "context_latency_seconds": (
+                            None
+                            if context_started is None or context_finished is None
+                            else max(0.0, context_finished - context_started)
+                        ),
+                        "total_latency_seconds": embedding_latency_seconds,
+                        "requested_context_weight": requested_context_weight,
+                        "applied_context_weight": applied_context_weight,
+                        "effective_duration_seconds": (
+                            float(duration_seconds)
+                            if str(getattr(self.args, "live_speaker_tracker", "classic"))
+                            == "bayes"
+                            else float(effective_duration)
+                        ),
+                        "tracker_mode": str(
+                            getattr(self.args, "live_speaker_tracker", "classic")
+                        ),
+                        "short_embedding": np.asarray(
+                            short_embedding,
+                            dtype=np.float32,
+                        ).tolist(),
+                        "context_embedding": (
+                            None
+                            if context_embedding is None
+                            else np.asarray(context_embedding, dtype=np.float32).tolist()
+                        ),
+                        "effective_embedding": np.asarray(
+                            embedding,
+                            dtype=np.float32,
+                        ).tolist(),
+                        "context_window_start": (
+                            None
+                            if actual_context_window_start is None
+                            else round(float(actual_context_window_start), 6)
+                        ),
+                        "context_window_end": (
+                            None
+                            if actual_context_window_end is None
+                            else round(float(actual_context_window_end), 6)
+                        ),
+                        "context_source_start_sample": actual_context_start_sample,
+                        "context_source_end_sample": actual_context_end_sample,
+                        "context_prepared_sample_count": (
+                            None if context_chunk is None else int(context_chunk.size)
+                        ),
+                        "context_prepared_pcm_sha256": (
+                            None
+                            if context_chunk is None
+                            else hashlib.sha256(
+                                np.ascontiguousarray(context_chunk, dtype=np.float32).tobytes()
+                            ).hexdigest()
+                        ),
+                        "provider": self._current_live_embedding_provider(),
+                    },
+                )
+            self._record_live_speaker_embedding_latency(
+                embedding_latency_seconds,
+                run_id=run_id,
+                probe_id=probe_id,
+                request_id=request_id,
+                source=request_source,
+            )
+            core_correlation: dict[str, Any] = {}
             core_decision = self._shared_live_speaker_step(
-                media_time=self.playback_time(),
+                media_time=decision_media_time,
                 speech=True,
                 embedding=embedding,
                 duration_seconds=(
@@ -922,10 +1412,42 @@ class WindowLiveScoringMixin:
                 context_embedding=context_embedding,
                 context_duration_seconds=context_duration_seconds,
                 embedding_latency_seconds=embedding_latency_seconds,
+                run_id=run_id,
+                probe_id=probe_id,
+                request_id=request_id,
+                correlation_out=core_correlation,
             )
+            if recording:
+                emit_internal(
+                    "live_speaker_embedding_request_step_bound",
+                    {
+                        **core_correlation,
+                        "source": str(request_source),
+                        "window_media_time": round(actual_short_window_end, 6),
+                    },
+                )
         except Exception as exc:
+            if recording:
+                emit_internal(
+                    "live_speaker_embedding_request_failed",
+                    {
+                        "run_id": run_id,
+                        "probe_id": probe_id,
+                        "request_id": request_id,
+                        "source": str(request_source),
+                        "media_time": round(float(self.playback_time()), 6),
+                        "error_type": type(exc).__name__,
+                        "error": str(exc),
+                    },
+                )
             self.bus.emit("status", {"message": f"Realtime preview speaker scoring error: {type(exc).__name__}: {exc}"})
-            return self._realtime_unknown_speaker_payload()
+            return {
+                **self._realtime_unknown_speaker_payload(),
+                "run_id": run_id,
+                "probe_id": probe_id,
+                "request_id": request_id,
+                "step_id": None,
+            }
 
         diagnostics = getattr(core_decision, "diagnostics", {})
         profile_aliases = (
@@ -953,7 +1475,12 @@ class WindowLiveScoringMixin:
             profile_aliases,
         )
         provisional = bool(
-            assigned_speaker and str(assigned_speaker).startswith("provisional_")
+            assigned_speaker
+            and (
+                str(assigned_speaker).startswith("provisional_")
+                or str(assigned_speaker).startswith("LIVE_TRACKLET_")
+                or bool(diagnostics.get("open_set_tracklet_provisional_speaker"))
+            )
         )
         self._ensure_speaker_metadata(
             assigned_speaker,
@@ -970,15 +1497,26 @@ class WindowLiveScoringMixin:
         )
 
         return {
+            "run_id": run_id,
+            "probe_id": probe_id,
+            "request_id": request_id,
+            "step_id": core_correlation.get("step_id"),
             "assigned_speaker": assigned_speaker,
             **self._speaker_info_for_payload(assigned_speaker),
-            "created_speaker": False,
+            "created_speaker": bool(
+                diagnostics.get("open_set_tracklet_created_speaker", False)
+            ),
             "provisional_speaker": provisional,
             "internal_speaker_id": internal_assigned_speaker,
             "replaces_speaker_id": (
                 internal_assigned_speaker
                 if internal_assigned_speaker and assigned_speaker != internal_assigned_speaker
                 else None
+            ),
+            "public_identity_aliases": dict(
+                (diagnostics.get("open_set_tracklet") or {}).get(
+                    "final_to_public", {}
+                )
             ),
             "probabilities": smoothed_probabilities,
             "raw_probabilities": raw_probabilities,
@@ -1011,6 +1549,8 @@ class WindowLiveScoringMixin:
         sentence_start: float | None = None,
         sentence_end: float | None = None,
         precomputed_embedding: np.ndarray | None = None,
+        parent_job_id: str = "",
+        source_run_id: str = "",
     ) -> None:
         if not getattr(self, "_live_embedding_separate", False) or not speaker_id:
             return
@@ -1028,6 +1568,8 @@ class WindowLiveScoringMixin:
             ),
             sample_rate=int(sample_rate),
             duration_seconds=float(duration_seconds),
+            job_id=f"live-profile-{uuid.uuid4().hex}",
+            parent_job_id=str(parent_job_id or ""),
             suffix=suffix,
             speaker_generation=(
                 int(getattr(self, "_speaker_generation", 0))
@@ -1037,35 +1579,98 @@ class WindowLiveScoringMixin:
             speaker_label_generation=int(
                 getattr(self, "_speaker_label_generations", {}).get(str(speaker_id), 0)
             ),
-            run_id=str(getattr(getattr(self, "_active_run", None), "run_id", "")),
+            run_id=str(source_run_id or self._live_speaker_correlation_run_id()),
             sentence_start=sentence_start,
             sentence_end=sentence_end,
             precomputed_embedding=copied_precomputed_embedding,
+            queued_monotonic=time.monotonic(),
+            queued_media_time=float(self.playback_time()),
         )
         jobs = getattr(self, "_live_memory_update_jobs", None)
+        self._record_live_profile_queue_stage(
+            job,
+            "submitted",
+            execution_mode="inline" if jobs is None else "worker_queue",
+        )
         if jobs is None:
             self._process_live_speaker_memory_update(job)
             return
         try:
             jobs.put_nowait(job)
+            self._record_live_profile_queue_stage(
+                job,
+                "queued",
+                queue_size=int(jobs.qsize()),
+                queue_capacity=int(getattr(jobs, "maxsize", 0)),
+            )
         except queue.Full:
+            dropped_job: LiveSpeakerMemoryUpdateJob | None = None
             try:
-                jobs.get_nowait()
+                candidate = jobs.get_nowait()
+                if isinstance(candidate, LiveSpeakerMemoryUpdateJob):
+                    dropped_job = candidate
             except queue.Empty:
                 pass
             else:
                 jobs.task_done()
+                if dropped_job is not None:
+                    self._record_live_profile_queue_stage(
+                        dropped_job,
+                        "dropped",
+                        reason="queue_full_evicted_oldest",
+                    )
                 self.bus.emit(
                     "status",
                     {"message": "Dropped stale queued live speaker profile update because the queue is full."},
                 )
             try:
                 jobs.put_nowait(job)
+                self._record_live_profile_queue_stage(
+                    job,
+                    "queued",
+                    reason="queued_after_oldest_eviction",
+                    queue_size=int(jobs.qsize()),
+                    queue_capacity=int(getattr(jobs, "maxsize", 0)),
+                )
             except queue.Full:
+                self._record_live_profile_queue_stage(
+                    job,
+                    "dropped",
+                    reason="queue_still_full",
+                )
                 self.bus.emit(
                     "status",
                     {"message": "Skipped live speaker profile update because the queue is still full."},
                 )
+
+    def _record_live_profile_queue_stage(
+        self,
+        job: LiveSpeakerMemoryUpdateJob,
+        stage: str,
+        **details: Any,
+    ) -> None:
+        emit_internal = getattr(self.bus, "emit_internal", None)
+        if not callable(emit_internal):
+            return
+        emit_internal(
+            "live_profile_queue_lifecycle",
+            {
+                "job_id": str(getattr(job, "job_id", "") or ""),
+                "run_id": str(getattr(job, "run_id", "") or ""),
+                "parent_job_id": str(getattr(job, "parent_job_id", "") or ""),
+                "stage": str(stage),
+                "speaker_id": str(getattr(job, "speaker_id", "") or ""),
+                "speaker_generation": int(getattr(job, "speaker_generation", 0)),
+                "speaker_label_generation": int(
+                    getattr(job, "speaker_label_generation", 0)
+                ),
+                "queued_media_time": float(getattr(job, "queued_media_time", 0.0)),
+                "media_time": round(float(self.playback_time()), 6),
+                "sentence_start": getattr(job, "sentence_start", None),
+                "sentence_end": getattr(job, "sentence_end", None),
+                **details,
+            },
+        )
 
     def _live_memory_update_job_is_current(self, job: LiveSpeakerMemoryUpdateJob) -> bool:
         active_run = getattr(self, "_active_run", None)
@@ -1079,20 +1684,142 @@ class WindowLiveScoringMixin:
         )
 
     def _process_live_speaker_memory_update(self, job: LiveSpeakerMemoryUpdateJob) -> None:
+        process_started = time.monotonic()
+        emit_internal = getattr(self.bus, "emit_internal", None)
         try:
             if not self._live_memory_update_job_is_current(job):
+                self._record_live_profile_queue_stage(
+                    job,
+                    "cancelled",
+                    reason="stale_job_before_embedding",
+                )
+                if callable(emit_internal):
+                    emit_internal(
+                        "live_profile_embedding_skipped",
+                        {
+                            "job_id": job.job_id,
+                            "run_id": job.run_id,
+                            "parent_job_id": job.parent_job_id,
+                            "speaker_id": job.speaker_id,
+                            "media_time": round(float(self.playback_time()), 6),
+                            "reason": "stale_job_before_embedding",
+                        },
+                    )
                 return
             if not self._live_update_speaker_exists(job.speaker_id):
+                self._record_live_profile_queue_stage(
+                    job,
+                    "cancelled",
+                    reason="speaker_missing_before_embedding",
+                )
+                if callable(emit_internal):
+                    emit_internal(
+                        "live_profile_embedding_skipped",
+                        {
+                            "job_id": job.job_id,
+                            "run_id": job.run_id,
+                            "parent_job_id": job.parent_job_id,
+                            "speaker_id": job.speaker_id,
+                            "media_time": round(float(self.playback_time()), 6),
+                            "reason": "speaker_missing_before_embedding",
+                        },
+                    )
                 return
             embedding = job.precomputed_embedding
+            used_precomputed = embedding is not None
+            self._record_live_profile_queue_stage(
+                job,
+                "started",
+                queue_wait_seconds=max(
+                    0.0,
+                    process_started - float(getattr(job, "queued_monotonic", process_started)),
+                ),
+                precomputed=bool(used_precomputed),
+            )
+            if callable(emit_internal):
+                emit_internal(
+                    "live_profile_embedding_started",
+                    {
+                        "job_id": job.job_id,
+                        "run_id": job.run_id,
+                        "parent_job_id": job.parent_job_id,
+                        "speaker_id": job.speaker_id,
+                        "media_time": round(float(self.playback_time()), 6),
+                        "queued_media_time": float(getattr(job, "queued_media_time", 0.0)),
+                        "queue_wait_seconds": max(
+                            0.0,
+                            process_started - float(
+                                getattr(job, "queued_monotonic", process_started)
+                            ),
+                        ),
+                        "sentence_start": job.sentence_start,
+                        "sentence_end": job.sentence_end,
+                        "duration_seconds": float(job.duration_seconds),
+                        "provider": self._current_live_embedding_provider(),
+                        "precomputed": bool(used_precomputed),
+                    },
+                )
             if embedding is None:
                 embedding = self._embed_live_audio_chunk(job.audio, job.sample_rate, job.suffix)
             else:
                 embedding = np.asarray(embedding, dtype=np.float32)
+            embedding_finished = time.monotonic()
+            if callable(emit_internal):
+                emit_internal(
+                    "live_profile_embedding_completed",
+                    {
+                        "job_id": job.job_id,
+                        "run_id": job.run_id,
+                        "parent_job_id": job.parent_job_id,
+                        "speaker_id": job.speaker_id,
+                        "media_time": round(float(self.playback_time()), 6),
+                        "sentence_start": job.sentence_start,
+                        "sentence_end": job.sentence_end,
+                        "duration_seconds": float(job.duration_seconds),
+                        "latency_seconds": max(0.0, embedding_finished - process_started),
+                        "provider": self._current_live_embedding_provider(),
+                        "precomputed": bool(used_precomputed),
+                        "embedding": np.asarray(embedding, dtype=np.float32).tolist(),
+                    },
+                )
             with self._live_memory_update_lock_obj():
                 if not self._live_memory_update_job_is_current(job):
+                    self._record_live_profile_queue_stage(
+                        job,
+                        "cancelled",
+                        reason="stale_job_after_embedding",
+                    )
+                    if callable(emit_internal):
+                        emit_internal(
+                            "live_profile_embedding_skipped",
+                            {
+                                "job_id": job.job_id,
+                                "run_id": job.run_id,
+                                "parent_job_id": job.parent_job_id,
+                                "speaker_id": job.speaker_id,
+                                "media_time": round(float(self.playback_time()), 6),
+                                "reason": "stale_job_after_embedding",
+                            },
+                        )
                     return
                 if not self._live_update_speaker_exists(job.speaker_id):
+                    self._record_live_profile_queue_stage(
+                        job,
+                        "cancelled",
+                        reason="speaker_missing_after_embedding",
+                    )
+                    if callable(emit_internal):
+                        emit_internal(
+                            "live_profile_embedding_skipped",
+                            {
+                                "job_id": job.job_id,
+                                "run_id": job.run_id,
+                                "parent_job_id": job.parent_job_id,
+                                "speaker_id": job.speaker_id,
+                                "media_time": round(float(self.playback_time()), 6),
+                                "reason": "speaker_missing_after_embedding",
+                            },
+                        )
                     return
                 self.live_memory.upsert_profile(
                     job.speaker_id,
@@ -1109,7 +1836,48 @@ class WindowLiveScoringMixin:
                     sentence_start=job.sentence_start,
                     sentence_end=job.sentence_end,
                 )
+                if callable(emit_internal):
+                    emit_internal(
+                        "live_profile_memory_replace",
+                        {
+                            "job_id": job.job_id,
+                            "run_id": job.run_id,
+                            "parent_job_id": job.parent_job_id,
+                            "speaker_id": job.speaker_id,
+                            "media_time": round(float(self.playback_time()), 6),
+                            "sentence_start": job.sentence_start,
+                            "sentence_end": job.sentence_end,
+                            "provider": self._current_live_embedding_provider(),
+                            "profiles": self.live_memory.export_profiles(),
+                        },
+                    )
+                self._record_live_profile_queue_stage(
+                    job,
+                    "completed",
+                    latency_seconds=max(0.0, time.monotonic() - process_started),
+                )
         except Exception as exc:
+            self._record_live_profile_queue_stage(
+                job,
+                "failed",
+                reason=type(exc).__name__,
+                error=str(exc),
+            )
+            if callable(emit_internal):
+                emit_internal(
+                    "live_profile_embedding_failed",
+                    {
+                        "job_id": job.job_id,
+                        "run_id": job.run_id,
+                        "parent_job_id": job.parent_job_id,
+                        "speaker_id": job.speaker_id,
+                        "media_time": round(float(self.playback_time()), 6),
+                        "sentence_start": job.sentence_start,
+                        "sentence_end": job.sentence_end,
+                        "error_type": type(exc).__name__,
+                        "error": str(exc),
+                    },
+                )
             self.bus.emit(
                 "status",
                 {

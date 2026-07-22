@@ -228,8 +228,8 @@ class RepositoryStructureTests(unittest.TestCase):
             "sentence_boundary_post_padding_seconds": 0.09,
             "sentence_boundary_gap_ratio": 0.6,
             "realtime_preview_model_preset": "community-64l",
-            "realtime_preview_model": "Kroko-EN-Community-64-L-Streaming-001.data",
-            "realtime_preview_startup_timeout_seconds": 12.0,
+            "realtime_preview_model": "community-64l",
+            "realtime_preview_startup_timeout_seconds": 30.0,
             "realtime_preview_diarize_min_audio_seconds": 1.5,
             "realtime_preview_diarize_min_advance_seconds": 0.75,
             "realtime_preview_diarize_min_similarity": 0.45,
@@ -321,7 +321,11 @@ class RepositoryStructureTests(unittest.TestCase):
         self.assertEqual(args.language, "de")
         self.assertEqual(args.realtime_preview_language, "de")
         self.assertEqual(args.realtime_preview_model_preset, "community-64l")
-        self.assertEqual(args.realtime_preview_model, "Kroko-DE-Community-64-L-Streaming-001.data")
+        self.assertEqual(args.realtime_preview_model, "community-64l")
+        self.assertEqual(
+            args.realtime_preview_model_dir.name,
+            "sherpa-onnx-streaming-zipformer-de-kroko-2025-08-06",
+        )
         self.assertEqual(args.sentence_tokenizer, "nltk+rule-based")
         self.assertEqual(args.sentence_language, "de")
 

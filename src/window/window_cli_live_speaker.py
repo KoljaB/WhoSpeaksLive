@@ -418,6 +418,34 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
             "'bayes' keeps them independent and filters speaker state probabilistically."
         ),
     )
+    parser.add_argument(
+        "--live-speaker-open-set-tracklets",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help=(
+            "Enable the output-only two-probe temporary identity overlay. "
+            "It reuses the existing 0.7/1.5-second live embeddings and never "
+            "changes final speaker memory."
+        ),
+    )
+    parser.add_argument(
+        "--live-speaker-open-set-preprofile",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help=(
+            "Allow open-set tracklets to run before the first final sentence "
+            "speaker profile becomes available."
+        ),
+    )
+    parser.add_argument(
+        "--live-speaker-open-set-tracklet-preset",
+        choices=(
+            "short_history_hybrid_v1",
+            "short_history_hybrid_v2_profile_contradiction",
+        ),
+        default="short_history_hybrid_v1",
+        help="Versioned threshold preset for the open-set tracklet overlay.",
+    )
     parser.add_argument("--live-speaker-bayes-temperature", type=float, default=0.10)
     parser.add_argument("--live-speaker-bayes-unknown-bias", type=float, default=0.0)
     parser.add_argument("--live-speaker-bayes-profile-count-threshold", type=int, default=0)

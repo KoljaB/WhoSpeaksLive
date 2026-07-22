@@ -123,7 +123,7 @@ const TOPIC_SELECTORS = Object.freeze({
   sessions: ["[data-speaker-tab='sessions']", "[data-speaker-panel='sessions']", "#newRunSession", "#selectAllSessions", "#unselectAllSessions", "#archiveSelectedSessions", "#restoreSelectedSessions", "#deleteSelectedSessions"],
   ask: ["[data-speaker-tab='ask']", "[data-speaker-panel='ask']", "#askSelectedMeetings", "#meetingChatQuestion", "#meetingChatSend", "#meetingChatClear"],
   insights: ["[data-speaker-tab='intelligence']", "[data-speaker-panel='intelligence']", "#meetingIntelligenceGenerate"],
-  speaker_detection: [".detection-settings", "#newSpeakerSensitivity", "#speakerRefinementUnknownTentative", "#speakerRefinementUnknownCommit", "#allowSpeakerReassignment"],
+  speaker_detection: [".detection-settings", "#newSpeakerSensitivity", "#autoRemoveEmptySpeakers", "#speakerRefinementUnknownTentative", "#speakerRefinementUnknownCommit", "#allowSpeakerReassignment"],
   people: [".people-tools", "#peopleList"],
   evidence: [".meeting-evidence-panel"],
   status_log: [".status-card"],

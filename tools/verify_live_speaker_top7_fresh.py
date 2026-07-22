@@ -265,7 +265,8 @@ def main() -> int:
         "schema_version": 1,
         "verifier_id": VERIFIER_ID,
         "primary_scorer_id": PRIMARY_SCORER_V2_ID,
-        "promotion_policy": "fresh_primary_score_improves_and_per_video_cache_match_ratio_passes",
+        "verification_policy": "fresh_embedding_replay_score_improves_and_cache_parity_passes",
+        "production_promotion_policy": "real_gui_live_e2e_required",
         "minimum_decision_match_ratio_required": minimum_match_required,
         "videos": videos,
         "baseline": baseline,
@@ -279,8 +280,9 @@ def main() -> int:
     }
     _atomic_json(output_path, payload)
     if args.update_champion:
-        champion["fresh_live_verified"] = passed
-        champion["fresh_live_verification"] = {
+        champion["fresh_live_verified"] = False
+        champion["fresh_embedding_replay_verified"] = passed
+        champion["fresh_embedding_replay_verification"] = {
             "verifier_id": VERIFIER_ID,
             "path": str(args.output.resolve()),
             "baseline_score": baseline_score,
@@ -292,7 +294,12 @@ def main() -> int:
             "candidate_minimum_decision_match_ratio": candidate_minimum_match,
             "per_video_regressions_are_diagnostics_only": True,
         }
-        champion["status"] = "LIVE_VERIFIED_CHAMPION" if passed else "REJECTED_BY_FRESH_LIVE"
+        champion["production_promotion_eligible"] = False
+        champion["requires_real_gui_live_e2e"] = True
+        champion["status"] = (
+            "FRESH_EMBEDDING_REPLAY_VERIFIED_AWAITING_REAL_GUI_E2E"
+            if passed else "REJECTED_BY_FRESH_EMBEDDING_REPLAY"
+        )
         _atomic_json(champion_path, champion)
     print(json.dumps({
         "passed": passed,

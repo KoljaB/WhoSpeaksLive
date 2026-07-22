@@ -900,7 +900,6 @@ class CausalBayesSpeakerTracker:
         ):
             self._crossover_label = None
             self._crossover_count = 0
-
         if not item.probe_scheduled:
             self._pending_provisional_embeddings.clear()
             if item.evidences:

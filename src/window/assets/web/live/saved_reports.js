@@ -1,6 +1,7 @@
 export function installSavedReports(ctx) {
   const {archiveSelectedSessionsButton, audio, deleteSelectedSessionsButton, liveSpeakerConfig, mediaCurrentTime, mediaDuration, mediaTime, meetingIntelligenceEvidence, meetingIntelligenceGenerate, meetingIntelligenceObjects, meetingIntelligenceStats, meetingIntelligenceStatus, meetingIntelligenceSummary, playbackClockSlackSeconds, restoreSelectedSessionsButton, selectAllSessionsButton, sentences, sessionFilterButtons, sessionList, sessionSelectionStatus, source, sourceKind, sourceTitle, speakerCount, speakerList, start, state, stop, svgNamespace, timelineFill, timelineThumb, unselectAllSessionsButton, video} = ctx;
   const applyTranslationCollection = (...args) => ctx.api.applyTranslationCollection(...args), clockLabel = (...args) => ctx.api.clockLabel(...args), findFinalSentenceRow = (...args) => ctx.api.findFinalSentenceRow(...args), log = (...args) => ctx.api.log(...args), post = (...args) => ctx.api.post(...args), recomputeRenderedSpeakerSentenceCounts = (...args) => ctx.api.recomputeRenderedSpeakerSentenceCounts(...args), refreshSpeakerPanelSentenceCounts = (...args) => ctx.api.refreshSpeakerPanelSentenceCounts(...args), refreshTranscriptVisibility = (...args) => ctx.api.refreshTranscriptVisibility(...args), renderSentence = (...args) => ctx.api.renderSentence(...args), renderSpeakerPanel = (...args) => ctx.api.renderSpeakerPanel(...args), resetTranscriptDisplay = (...args) => ctx.api.resetTranscriptDisplay(...args), secondsLabel = (...args) => ctx.api.secondsLabel(...args), setSourceControlsDisabled = (...args) => ctx.api.setSourceControlsDisabled(...args), setState = (...args) => ctx.api.setState(...args), setTranscriptTitleLive = (...args) => ctx.api.setTranscriptTitleLive(...args), setTranscriptTitleSaved = (...args) => ctx.api.setTranscriptTitleSaved(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), stopBrowserAudioCapture = (...args) => ctx.api.stopBrowserAudioCapture(...args), updateNewRunButtonState = (...args) => ctx.api.updateNewRunButtonState(...args), updateSpeakerState = (...args) => ctx.api.updateSpeakerState(...args);
+  const resetLiveSpeakerPresentation = (...args) => ctx.api.resetLiveSpeakerPresentation(...args);
   function savedSessionTitle(sessionData) {
     const summary = (sessionData && sessionData.summary) || {};
     const manifest = (sessionData && sessionData.manifest) || {};
@@ -653,6 +654,7 @@ export function installSavedReports(ctx) {
     timelineThumb.style.left = "0%";
   }
   function loadSavedSessionReview(sessionData, options = {}) {
+    resetLiveSpeakerPresentation("saved-session-review");
     const summary = sessionData.summary || {};
     ctx.owners.sessions.openedSavedSessionId = summary.id || (sessionData.manifest && sessionData.manifest.id) || "";
     ctx.owners.sessions.draftSavedSessionId = "";
@@ -859,7 +861,10 @@ export function installSavedReports(ctx) {
     const domLiveSpeakerIds = liveRows
       .map(row => row.dataset.speakerId || "")
       .filter(Boolean);
+    const activeMedia = (!audio.paused && !audio.ended) ? audio : video;
+    ctx.owners.transcript.browserLiveObservationSampleSequence += 1;
     ctx.owners.transcript.browserLiveObservationBuffer.push({
+      sample_sequence: ctx.owners.transcript.browserLiveObservationSampleSequence,
       wall_time: Date.now() / 1000,
       performance_ms: performance.now(),
       playback_time: playbackSeconds(),
@@ -870,6 +875,15 @@ export function installSavedReports(ctx) {
       transcript_live_override_speaker_id: ctx.owners.transcript.transcriptLiveSpeakerOverrideId || "",
       fallback_live_speaker_id: ctx.owners.transcript.fallbackLiveSpeakerId || "",
       runtime_state: state.textContent || "",
+      browser_user_agent: navigator.userAgent || "",
+      browser_webdriver: Boolean(navigator.webdriver),
+      browser_visibility_state: document.visibilityState || "",
+      browser_has_focus: document.hasFocus(),
+      fast_processing: Boolean(ctx.api.fastProcessingEnabled && ctx.api.fastProcessingEnabled()),
+      playback_rate: Number(activeMedia.playbackRate || 1),
+      media_paused: Boolean(activeMedia.paused),
+      media_ended: Boolean(activeMedia.ended),
+      source_kind: String(sourceKind.value || ""),
     });
     if (ctx.owners.transcript.browserLiveObservationBuffer.length >= 10) {
       void flushBrowserLiveObservation(false, "batch");
@@ -877,20 +891,30 @@ export function installSavedReports(ctx) {
   }
   async function flushBrowserLiveObservation(finalFlush=false, reason="batch") {
     if (!browserLiveObservationEnabled()) return null;
-    if (ctx.owners.transcript.browserLiveObservationPosting && !finalFlush) return null;
     const samples = ctx.owners.transcript.browserLiveObservationBuffer.splice(0);
     if (!samples.length && !finalFlush) return null;
-    ctx.owners.transcript.browserLiveObservationPosting = true;
-    try {
+    ctx.owners.transcript.browserLiveObservationBatchSequence += 1;
+    const batchSequence = ctx.owners.transcript.browserLiveObservationBatchSequence;
+    const sendBatch = async () => {
+      ctx.owners.transcript.browserLiveObservationPosting = true;
       const endpoint = finalFlush ? "/api/live-observation-finish" : "/api/live-observation";
-      return await post(endpoint, {samples, reason});
-    } catch (error) {
-      if (samples.length) ctx.owners.transcript.browserLiveObservationBuffer = samples.concat(ctx.owners.transcript.browserLiveObservationBuffer);
-      log(`Browser live observation failed: ${error.message}`);
-      return null;
-    } finally {
-      ctx.owners.transcript.browserLiveObservationPosting = false;
-    }
+      try {
+        return await post(endpoint, {samples, reason, batch_sequence: batchSequence});
+      } catch (error) {
+        if (samples.length) ctx.owners.transcript.browserLiveObservationBuffer = samples.concat(ctx.owners.transcript.browserLiveObservationBuffer);
+        log(`Browser live observation batch ${batchSequence} failed: ${error.message}`);
+        return null;
+      }
+    };
+    const prior = ctx.owners.transcript.browserLiveObservationPostChain || Promise.resolve();
+    const request = prior.then(sendBatch, sendBatch);
+    const chainTail = request.finally(() => {
+      if (ctx.owners.transcript.browserLiveObservationPostChain === chainTail) {
+        ctx.owners.transcript.browserLiveObservationPosting = false;
+      }
+    });
+    ctx.owners.transcript.browserLiveObservationPostChain = chainTail;
+    return await request;
   }
   function stopBrowserLiveObservationTimerOnly() {
     if (ctx.owners.transcript.browserLiveObservationTimer) {
@@ -902,6 +926,9 @@ export function installSavedReports(ctx) {
     if (!browserLiveObservationEnabled()) return;
     stopBrowserLiveObservationTimerOnly();
     ctx.owners.transcript.browserLiveObservationBuffer = [];
+    ctx.owners.transcript.browserLiveObservationPostChain = Promise.resolve();
+    ctx.owners.transcript.browserLiveObservationBatchSequence = 0;
+    ctx.owners.transcript.browserLiveObservationSampleSequence = 0;
     ctx.owners.transcript.browserLiveObservationStarted = true;
     browserLiveObservationSample();
     ctx.owners.transcript.browserLiveObservationTimer = setInterval(browserLiveObservationSample, browserLiveObservationIntervalMs());

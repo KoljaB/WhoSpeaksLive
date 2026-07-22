@@ -94,8 +94,11 @@ class EmbeddingSentenceJob:
     audio: np.ndarray
     sample_rate: int
     duration_seconds: float
+    job_id: str = ""
     speaker_generation: int = 0
     run_id: str = ""
+    queued_monotonic: float = 0.0
+    queued_media_time: float = 0.0
 
 
 @dataclass
@@ -104,6 +107,8 @@ class LiveSpeakerMemoryUpdateJob:
     audio: np.ndarray
     sample_rate: int
     duration_seconds: float
+    job_id: str = ""
+    parent_job_id: str = ""
     suffix: str = ".live-profile.wav"
     speaker_generation: int = 0
     speaker_label_generation: int = 0
@@ -111,3 +116,5 @@ class LiveSpeakerMemoryUpdateJob:
     sentence_start: float | None = None
     sentence_end: float | None = None
     precomputed_embedding: np.ndarray | None = None
+    queued_monotonic: float = 0.0
+    queued_media_time: float = 0.0
