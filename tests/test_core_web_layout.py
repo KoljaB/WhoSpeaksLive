@@ -438,6 +438,28 @@ class WindowWebLayoutContractTests(unittest.TestCase):
         self.assertIn('if (ctx.owners.reference.referenceRecordStream || ctx.owners.reference.referenceRecordPending)', HTML)
         self.assertIn('recordReferenceButton.classList.toggle("recording", recording);', HTML)
 
+    def test_sidebar_grid_cannot_expand_from_long_status_lines(self) -> None:
+        self.assertIn(
+            ".control-panel { width:100%; min-width:0; max-width:100%; min-height:0; "
+            "overflow:hidden; padding:8px; background:#0B1015; display:grid; "
+            "grid-template-columns:minmax(0,1fr);",
+            HTML,
+        )
+        self.assertIn(
+            ".speaker-panel { width:100%; min-width:0; max-width:100%; min-height:0;",
+            HTML,
+        )
+        self.assertIn(
+            ".speaker-tab-panel[data-speaker-panel=\"speakers\"]:not([hidden]) { "
+            "display:grid; grid-template-columns:minmax(0,1fr);",
+            HTML,
+        )
+        self.assertIn(
+            ".status { width:100%; min-width:0; max-width:100%; max-height:180px; "
+            "overflow-x:hidden; overflow-y:auto; overflow-wrap:anywhere; word-break:break-word;",
+            HTML,
+        )
+
     def test_settings_layout_keeps_person_controls_in_a_readable_flow(self) -> None:
         self.assertIn("Speaker detection", HTML)
         self.assertIn("Manage saved people and their voice recognition.", HTML)

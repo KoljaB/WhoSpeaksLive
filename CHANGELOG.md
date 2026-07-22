@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.1.4 - 2026-07-22
+
+- Prevented long startup and model-path status messages from expanding the speaker sidebar beyond the browser viewport.
+- Added a focused layout regression contract for the sidebar's shrinkable grid columns and wrapped status output.
+
 ## 0.1.3 - 2026-07-22
 
 - Kept live speaker cards, controls, and the active-speaker indicator inside the speaker-panel width when transcription starts.
