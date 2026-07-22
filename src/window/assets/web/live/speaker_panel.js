@@ -212,17 +212,25 @@ export function installSpeakerPanel(ctx) {
       log(`Create speaker failed: ${error.message}`);
     }
   }
-  async function mergeSpeakerInto(sourceSpeakerId, targetSpeakerId) {
+  async function mergeSpeakerInto(sourceSpeaker, targetSpeaker) {
+    const sourceSpeakerId = String((sourceSpeaker && sourceSpeaker.id) || "");
+    const targetSpeakerId = String((targetSpeaker && targetSpeaker.id) || "");
     if (!sourceSpeakerId || !targetSpeakerId || sourceSpeakerId === targetSpeakerId) return;
+    const sourceInternalId = String(sourceSpeaker.internal_speaker_id || toInternalSpeakerId(sourceSpeakerId));
+    const targetInternalId = String(targetSpeaker.internal_speaker_id || toInternalSpeakerId(targetSpeakerId));
     try {
       await ensureSessionOwner("merge speaker profiles");
       const result = await post("/api/speakers/merge", {
-        source_speaker_id: toInternalSpeakerId(sourceSpeakerId),
-        target_speaker_id: toInternalSpeakerId(targetSpeakerId),
+        source_speaker_id: sourceInternalId,
+        target_speaker_id: targetInternalId,
+        expected_source_sentence_count: speakerCurrentSessionSentenceCount(sourceSpeakerId),
+        expected_target_sentence_count: speakerCurrentSessionSentenceCount(targetSpeakerId),
         update_memory: true,
       });
       applyCorrectionResult(result);
-      ctx.owners.reference.editingSpeakerId = targetSpeakerId;
+      const projectedTarget = (result.speaker_state && result.speaker_state.public_speakers || [])
+        .find(candidate => candidate.internal_speaker_id === targetInternalId);
+      ctx.owners.reference.editingSpeakerId = projectedTarget ? projectedTarget.id : targetInternalId;
       log(`Merged ${speakerDisplayLabel(sourceSpeakerId)} into ${speakerDisplayLabel(targetSpeakerId)}.`);
     } catch (error) {
       log(`Merge failed: ${error.message}`);
@@ -239,7 +247,11 @@ export function installSpeakerPanel(ctx) {
     if (!confirm(message)) return;
     try {
       await ensureSessionOwner("delete speaker profiles");
-      const result = await post("/api/speakers/delete", {speaker_id: toInternalSpeakerId(speakerId), update_memory: true});
+      const result = await post("/api/speakers/delete", {
+        speaker_id: String(speaker.internal_speaker_id || toInternalSpeakerId(speakerId)),
+        expected_sentence_count: sentenceTotal,
+        update_memory: true,
+      });
       applyCorrectionResult(result);
       ctx.owners.reference.editingSpeakerId = "";
       const movedCount = Array.isArray(result.rows) ? result.rows.length : sentenceTotal;
@@ -273,7 +285,9 @@ export function installSpeakerPanel(ctx) {
     button.disabled = sessionControlsLocked() || savedSessionReviewOpen() || select.options.length <= 1;
     button.addEventListener("click", event => {
       event.stopPropagation();
-      mergeSpeakerInto(speaker.id || "", select.value || "");
+      const targetSpeaker = ctx.owners.speakers.speakerLibraryState.speakers
+        .find(candidate => candidate.id === select.value);
+      mergeSpeakerInto(speaker, targetSpeaker);
     });
     select.addEventListener("click", event => event.stopPropagation());
     select.addEventListener("keydown", event => event.stopPropagation());
@@ -281,7 +295,7 @@ export function installSpeakerPanel(ctx) {
     controls.appendChild(button);
     return controls;
   }
-  function createSpeakerDeleteButton(speaker, label = "Delete Speaker") {
+  function createSpeakerDeleteButton(speaker, label = "Delete Speaker", options = {}) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "speaker-delete-button speaker-profile-action";
@@ -289,7 +303,8 @@ export function installSpeakerPanel(ctx) {
     button.disabled = sessionControlsLocked() || savedSessionReviewOpen();
     button.addEventListener("click", event => {
       event.stopPropagation();
-      deleteSpeakerProfile(speaker);
+      if (options.emptyOnly) removeEmptySpeakerProfile(speaker);
+      else deleteSpeakerProfile(speaker);
     });
     button.addEventListener("keydown", event => event.stopPropagation());
     return button;
@@ -872,6 +887,25 @@ export function installSpeakerPanel(ctx) {
       peopleList.appendChild(row);
     });
   }
+  async function removeEmptySpeakerProfile(speaker) {
+    if (!speaker || !speaker.id) return;
+    const speakerId = speaker.id;
+    const internalSpeakerId = String(speaker.internal_speaker_id || toInternalSpeakerId(speakerId));
+    try {
+      await ensureSessionOwner("remove empty Speakers");
+      const result = await post("/api/speakers/remove-empty", {speaker_ids: [internalSpeakerId]});
+      updateSpeakerState(result.speaker_state);
+      const removed = Array.isArray(result.removed_speaker_ids) ? result.removed_speaker_ids : [];
+      if (removed.includes(internalSpeakerId)) {
+        ctx.owners.speakers.emptySpeakerFirstSeenAt.delete(speakerId);
+        log(`Removed empty Speaker ${speakerPanelName(speaker)}.`);
+      } else {
+        log(`${speakerPanelName(speaker)} was not removed because the server no longer considers it empty.`);
+      }
+    } catch (error) {
+      log(`Remove empty Speaker failed: ${error.message}`);
+    }
+  }
   function clearAutoRemoveEmptySpeakerTimer() {
     if (ctx.owners.speakers.autoRemoveEmptySpeakerTimer !== null) {
       clearTimeout(ctx.owners.speakers.autoRemoveEmptySpeakerTimer);
@@ -1055,7 +1089,7 @@ export function installSpeakerPanel(ctx) {
         if (identityControls.children.length) body.appendChild(identityControls);
       }
       if (isEmpty && !reviewMode && speaker.identity_status !== "confirmed" && !hasReference) {
-        const emptyAction = createSpeakerDeleteButton(speaker, "Remove empty Speaker");
+        const emptyAction = createSpeakerDeleteButton(speaker, "Remove empty Speaker", {emptyOnly: true});
         emptyAction.classList.add("speaker-empty-remove");
         body.appendChild(emptyAction);
       }

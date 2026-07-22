@@ -60,11 +60,15 @@ class LiveSpeakerBrowserIdentityTest(unittest.TestCase):
           if (!hydrated || registry.aliasGeneration !== 7) process.exit(6);
           if (registry.toInternal("LIVE_TRACKLET_2") !== "S5") process.exit(7);
           const current = [
-            {{id: "LIVE_TRACKLET_2"}},
+            {{id: "LIVE_TRACKLET_2", source: "detected", internal_speaker_id: "S5", presentation_aliased: true}},
             {{id: "LIVE_TRACKLET_3", source: "live_provisional"}},
           ];
           const merged = mergePublicSpeakerSnapshot(current, [{{id: "LIVE_TRACKLET_2"}}], registry);
           if (merged.length !== 2 || !merged.some(item => item.id === "LIVE_TRACKLET_3")) process.exit(8);
+          registry.hydrate({{}}, {{}}, 0);
+          const finalized = mergePublicSpeakerSnapshot(current, [{{id: "S5"}}], registry);
+          if (finalized.length !== 2 || finalized.some(item => item.id === "LIVE_TRACKLET_2")) process.exit(10);
+          if (!finalized.some(item => item.id === "S5") || !finalized.some(item => item.id === "LIVE_TRACKLET_3")) process.exit(11);
           registry.reset("fresh-run");
           const resetSpeakers = registry.stripTemporarySpeakers(current);
           const afterResetSnapshot = registry.mergeSnapshot(resetSpeakers, [{{id: "S1"}}]);

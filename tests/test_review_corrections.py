@@ -257,6 +257,20 @@ class CorrectionControllerTests(unittest.TestCase):
         self.assertIn("S2", labels)
         self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S2")
 
+    def test_merge_speakers_rejects_stale_visible_counts_without_mutation(self) -> None:
+        diarizer = _fake_diarizer()
+
+        with self.assertRaisesRegex(ValueError, "changed before merge"):
+            diarizer.merge_speakers(
+                "S1",
+                "S2",
+                expected_source_sentence_count=0,
+                expected_target_sentence_count=1,
+            )
+
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S1")
+        self.assertEqual(diarizer._correction_history, [])
+
     def test_delete_speaker_moves_rows_to_unknown_and_removes_profile(self) -> None:
         diarizer = _fake_diarizer()
         diarizer._speaker_last_media_end["S1"] = 2.0
@@ -285,6 +299,16 @@ class CorrectionControllerTests(unittest.TestCase):
         self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S1")
         self.assertEqual(diarizer._speaker_last_media_end["S1"], 2.0)
 
+    def test_delete_speaker_rejects_a_stale_visible_sentence_count(self) -> None:
+        diarizer = _fake_diarizer()
+
+        with self.assertRaisesRegex(ValueError, "changed before deletion"):
+            diarizer.delete_speaker("S1", expected_sentence_count=0)
+
+        self.assertEqual(diarizer._sentence_refinement_records[1]["assigned_speaker"], "S1")
+        self.assertIn("S1", {profile["label"] for profile in diarizer.memory.export_profiles()})
+        self.assertEqual(diarizer._correction_history, [])
+
     def test_delete_empty_speaker_removes_profile_and_is_undoable(self) -> None:
         diarizer = _fake_diarizer()
         empty_label = diarizer.memory.add_profile(_unit([1.0, 1.0]), duration_seconds=0.1, sentence_count=1)
@@ -306,6 +330,17 @@ class CorrectionControllerTests(unittest.TestCase):
 
         restored = {speaker["id"] for speaker in undo["speaker_state"]["speakers"]}
         self.assertIn(empty_label, restored)
+
+    def test_undo_reports_when_an_older_speaker_correction_remains(self) -> None:
+        diarizer = _fake_diarizer()
+        diarizer.mark_sentence_correct(1)
+        diarizer.reassign_sentence(1, "S2")
+
+        first = diarizer.undo_last_correction()
+        second = diarizer.undo_last_correction()
+
+        self.assertTrue(first["can_undo"])
+        self.assertFalse(second["can_undo"])
 
     def test_remove_empty_speakers_only_removes_unoccupied_unlinked_profiles(self) -> None:
         diarizer = _fake_diarizer()

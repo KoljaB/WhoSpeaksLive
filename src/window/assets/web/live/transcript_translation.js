@@ -80,6 +80,7 @@ export function installTranscriptTranslation(ctx) {
   }
   function refreshMediaElements(version) {
     ctx.owners.capture.resumePlaybackPending = false;
+    ctx.api.stopAudioMasterVideoSync();
     setBrowserStreamMode(false);
     ctx.owners.capture.mediaVersion = Number(version || Date.now());
     video.pause();

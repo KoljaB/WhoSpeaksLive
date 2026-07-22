@@ -1,6 +1,9 @@
+import {createAudioMasterVideoSyncPolicy} from "./media_sync.js";
+
 export function installMediaCapture(ctx) {
-  const {allowSpeakerReassignment, audio, audioFileInput, captureDescription, captureLevelFill, captureLevelText, capturePreRollSeconds, captureStartRmsThreshold, captureTitle, chooseAudioFileButton, fastProcessing, fastProcessingControl, fastProcessingStorageKey, fileDropTitle, fileDropZone, filePreviewName, groupTranscriptTurns, initialSource, inputMode, languageConfig, languageFlag, languageName, languageSummary, load, mediaCard, mediaCurrentTime, mediaDuration, mediaTime, micGain, micGainValue, newSpeakerSensitivity, newSpeakerSensitivityLabel, preset, presetVideos, sessionClientIdStorageKey, sessionTokenStorageKey, showTranscriptReviewHints, source, sourceKind, sourceModeButton, sourceModeMenu, sourceModeOptionButtons, sourceModeOptions, sourceTitle, speakerCountLabel, speakerCountNumber, speakerRefinementConfig, speakerRefinementUnknownCommit, speakerRefinementUnknownTentative, speakerSensitivityConfig, start, state, stop, streamHint, targetCaptureSampleRate, timelineFill, timelineThumb, transcriptGroupTurnsStorageKey, transcriptReviewHintsStorageKey, video, youtubeFrame} = ctx;
+  const {allowSpeakerReassignment, appResources, audio, audioFileInput, captureDescription, captureLevelFill, captureLevelText, capturePreRollSeconds, captureStartRmsThreshold, captureTitle, chooseAudioFileButton, fastProcessing, fastProcessingControl, fastProcessingStorageKey, fileDropTitle, fileDropZone, filePreviewName, groupTranscriptTurns, initialSource, inputMode, languageConfig, languageFlag, languageName, languageSummary, load, mediaCard, mediaCurrentTime, mediaDuration, mediaTime, micGain, micGainValue, newSpeakerSensitivity, newSpeakerSensitivityLabel, popoutMedia, preset, presetVideos, sessionClientIdStorageKey, sessionTokenStorageKey, showTranscriptReviewHints, source, sourceKind, sourceModeButton, sourceModeMenu, sourceModeOptionButtons, sourceModeOptions, sourceTitle, speakerCountLabel, speakerCountNumber, speakerRefinementConfig, speakerRefinementUnknownCommit, speakerRefinementUnknownTentative, speakerSensitivityConfig, start, state, stop, streamHint, targetCaptureSampleRate, timelineFill, timelineThumb, transcriptGroupTurnsStorageKey, transcriptReviewHintsStorageKey, video, youtubeFrame} = ctx;
   const connect = (...args) => ctx.api.connect(...args), ensureSessionOwner = (...args) => ctx.api.ensureSessionOwner(...args), initializeTranslationControls = (...args) => ctx.api.initializeTranslationControls(...args), isLiveProvisionalSpeaker = (...args) => ctx.api.isLiveProvisionalSpeaker(...args), log = (...args) => ctx.api.log(...args), mediaSeconds = (...args) => ctx.api.mediaSeconds(...args), post = (...args) => ctx.api.post(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), sessionControlsLocked = (...args) => ctx.api.sessionControlsLocked(...args), syncSessionControlLock = (...args) => ctx.api.syncSessionControlLock(...args), updateNewRunButtonState = (...args) => ctx.api.updateNewRunButtonState(...args), updateSpeakerState = (...args) => ctx.api.updateSpeakerState(...args);
+  const videoSyncPolicy = createAudioMasterVideoSyncPolicy();
   function randomSessionId() {
     if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
     return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
@@ -271,6 +274,7 @@ export function installMediaCapture(ctx) {
     }
     syncFastProcessingControls();
     syncSourceReadyState();
+    syncPopoutMediaButton();
   }
   function fastProcessingEnabled() {
     const mode = inputMode.value || "youtube";
@@ -317,7 +321,99 @@ export function installMediaCapture(ctx) {
     return 0;
   }
   function currentMediaSeconds() {
-    return Math.max(mediaSeconds(audio), mediaSeconds(video));
+    const audioSeconds = mediaSeconds(audio);
+    if (Number.isFinite(Number(audio.duration || 0)) && Number(audio.duration || 0) > 0) return audioSeconds;
+    return mediaSeconds(video);
+  }
+  function audioMasterPlaybackRate() {
+    const rate = Number(audio.playbackRate || 1);
+    return Number.isFinite(rate) && rate > 0 ? rate : 1;
+  }
+  function applyVideoPlaybackRate(rate) {
+    const nextRate = Number(rate || 1);
+    if (!Number.isFinite(nextRate) || nextRate <= 0) return;
+    if (Math.abs(Number(video.playbackRate || 1) - nextRate) >= 0.001) video.playbackRate = nextRate;
+  }
+  function stopAudioMasterVideoSync() {
+    if (ctx.owners.capture.videoSyncTimer) {
+      clearInterval(ctx.owners.capture.videoSyncTimer);
+      ctx.owners.capture.videoSyncTimer = null;
+    }
+    videoSyncPolicy.reset();
+    applyVideoPlaybackRate(audioMasterPlaybackRate());
+  }
+  function synchronizeVideoToAudio() {
+    const mode = inputMode.value || "youtube";
+    const usable = mode === "youtube"
+      && !ctx.owners.capture.browserStreamMode
+      && !audio.paused
+      && !audio.ended
+      && Number(audio.readyState || 0) >= 2
+      && Number(video.readyState || 0) >= 2;
+    if (!usable) {
+      videoSyncPolicy.reset();
+      applyVideoPlaybackRate(audioMasterPlaybackRate());
+      return;
+    }
+    const baseRate = audioMasterPlaybackRate();
+    if (video.paused && !video.ended) {
+      videoSyncPolicy.reset();
+      applyVideoPlaybackRate(baseRate);
+      video.currentTime = mediaSeconds(audio);
+      video.play().catch(() => {});
+      return;
+    }
+    if (video.seeking) return;
+    const action = videoSyncPolicy.sample({
+      audioTime: mediaSeconds(audio),
+      videoTime: mediaSeconds(video),
+      baseRate,
+      nowMs: performance.now(),
+    });
+    applyVideoPlaybackRate(action.playbackRate);
+    if (action.kind === "seek") video.currentTime = action.targetTime;
+  }
+  function startAudioMasterVideoSync() {
+    stopAudioMasterVideoSync();
+    if ((inputMode.value || "youtube") !== "youtube" || ctx.owners.capture.browserStreamMode) return;
+    synchronizeVideoToAudio();
+    ctx.owners.capture.videoSyncTimer = setInterval(synchronizeVideoToAudio, 400);
+  }
+  function pictureInPictureActive() {
+    return document.pictureInPictureElement === video;
+  }
+  function pictureInPictureAvailable() {
+    return (inputMode.value || "youtube") === "youtube"
+      && !ctx.owners.capture.browserStreamMode
+      && document.pictureInPictureEnabled !== false
+      && typeof video.requestPictureInPicture === "function";
+  }
+  function syncPopoutMediaButton() {
+    if (!popoutMedia) return;
+    const active = pictureInPictureActive();
+    const available = pictureInPictureAvailable();
+    popoutMedia.disabled = !available;
+    popoutMedia.classList.toggle("active", active);
+    popoutMedia.setAttribute("aria-pressed", active ? "true" : "false");
+    popoutMedia.setAttribute("aria-label", active ? "Close floating video window" : "Open video in floating window");
+    if (active) popoutMedia.title = "Close floating video window";
+    else if (ctx.owners.capture.browserStreamMode) popoutMedia.title = "Use the embedded YouTube player's own Picture-in-Picture control in browser audio mode";
+    else if ((inputMode.value || "youtube") !== "youtube") popoutMedia.title = "Floating video is available for downloaded YouTube playback";
+    else if (!available) popoutMedia.title = "Picture-in-Picture is not available in this browser";
+    else popoutMedia.title = "Open video in a movable floating window";
+  }
+  async function togglePictureInPicture() {
+    try {
+      if (pictureInPictureActive()) await document.exitPictureInPicture();
+      else {
+        if (!pictureInPictureAvailable()) throw new Error(popoutMedia.title || "Picture-in-Picture is unavailable");
+        await video.requestPictureInPicture();
+      }
+    } catch (error) {
+      log(`Floating video failed: ${error.message || error}`);
+    } finally {
+      syncPopoutMediaButton();
+    }
   }
   function updateMediaTimeline() {
     const mode = inputMode.value || "youtube";
@@ -452,6 +548,7 @@ export function installMediaCapture(ctx) {
     return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}?enablejsapi=1&rel=0` : "";
   }
   function setBrowserStreamMode(enabled, url="", sourceKind="display") {
+    if (enabled) stopAudioMasterVideoSync();
     ctx.owners.capture.browserStreamMode = Boolean(enabled);
     ctx.owners.capture.captureSourceKind = sourceKind || "display";
     ctx.owners.capture.browserStreamPrepared = false;
@@ -755,7 +852,7 @@ export function installMediaCapture(ctx) {
     log(`Browser audio capture armed at ${Math.round(ctx.owners.capture.captureAudioContext.sampleRate)} Hz; waiting for audible input.`);
   }
 
-  Object.assign(ctx.api, {applySpeakerRefinementSettings, applySpeakerSensitivity, applySpeakerSensitivityIfDirty, browserStreamSourceUrl, captureGainValue, clockLabel, copyCaptureSamples, currentMediaSeconds, currentSessionDraftTitle, currentSessionSourceMetadata, currentStartSessionMetadata, extractYouTubeId, fastProcessingEnabled, float32ToBase64, flushBrowserAudio, flushCapturePreRoll, initializeInputModeFromSource, initializeSessionIdentity, mediaDurationSeconds, microphoneGainValue, normalizeUrl, populatePresetVideos, prepareBrowserStreamSession, presetForUrl, queueBrowserAudioChunk, randomSessionId, reflectRuntimeStatus, rememberCapturePreRoll, requestDisplayAudioCapture, requestMicrophoneCapture, resampleFloat32, rms, selectedSpeakerSensitivityPreset, setBrowserStreamMode, setCaptureLevel, setSourceControlsDisabled, setSourceModeMenuOpen, setState, setStreamHint, sourceTitleForUrl, speakerRefinementPayload, startBrowserAudioCapture, stopBrowserAudioCapture, stopCaptureStream, storeBooleanValue, storeSessionValue, storedBooleanValue, storedSessionValue, syncFastProcessingControls, syncPresetSelection, syncSourceReadyState, syncSpeakerRefinementSettings, updateLanguageIndicator, updateMediaMode, updateMediaTimeline, updateMicGainLabel, updateSpeakerCount, updateSpeakerSensitivityLabel, youtubeEmbedUrl});
+  Object.assign(ctx.api, {applySpeakerRefinementSettings, applySpeakerSensitivity, applySpeakerSensitivityIfDirty, browserStreamSourceUrl, captureGainValue, clockLabel, copyCaptureSamples, currentMediaSeconds, currentSessionDraftTitle, currentSessionSourceMetadata, currentStartSessionMetadata, extractYouTubeId, fastProcessingEnabled, float32ToBase64, flushBrowserAudio, flushCapturePreRoll, initializeInputModeFromSource, initializeSessionIdentity, mediaDurationSeconds, microphoneGainValue, normalizeUrl, pictureInPictureAvailable, populatePresetVideos, prepareBrowserStreamSession, presetForUrl, queueBrowserAudioChunk, randomSessionId, reflectRuntimeStatus, rememberCapturePreRoll, requestDisplayAudioCapture, requestMicrophoneCapture, resampleFloat32, rms, selectedSpeakerSensitivityPreset, setBrowserStreamMode, setCaptureLevel, setSourceControlsDisabled, setSourceModeMenuOpen, setState, setStreamHint, sourceTitleForUrl, speakerRefinementPayload, startAudioMasterVideoSync, startBrowserAudioCapture, stopAudioMasterVideoSync, stopBrowserAudioCapture, stopCaptureStream, storeBooleanValue, storeSessionValue, storedBooleanValue, storedSessionValue, syncFastProcessingControls, syncPopoutMediaButton, syncPresetSelection, syncSourceReadyState, syncSpeakerRefinementSettings, synchronizeVideoToAudio, togglePictureInPicture, updateLanguageIndicator, updateMediaMode, updateMediaTimeline, updateMicGainLabel, updateSpeakerCount, updateSpeakerSensitivityLabel, youtubeEmbedUrl});
   ctx.activators.push(() => {
     groupTranscriptTurns.checked = storedBooleanValue(transcriptGroupTurnsStorageKey, true);
     fastProcessing.checked = storedBooleanValue(fastProcessingStorageKey, true);
@@ -777,5 +874,14 @@ export function installMediaCapture(ctx) {
     updateSpeakerSensitivityLabel();
     syncSpeakerRefinementSettings(speakerRefinementConfig);
     initializeInputModeFromSource();
+    if (popoutMedia) popoutMedia.addEventListener("click", togglePictureInPicture);
+    video.addEventListener("enterpictureinpicture", syncPopoutMediaButton);
+    video.addEventListener("leavepictureinpicture", syncPopoutMediaButton);
+    appResources.own(() => {
+      stopAudioMasterVideoSync();
+      if (popoutMedia) popoutMedia.removeEventListener("click", togglePictureInPicture);
+      video.removeEventListener("enterpictureinpicture", syncPopoutMediaButton);
+      video.removeEventListener("leavepictureinpicture", syncPopoutMediaButton);
+    });
   });
 }

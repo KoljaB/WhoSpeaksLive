@@ -77,6 +77,31 @@ class PackagedWebAssetTests(unittest.TestCase):
         self.assertIn("Speakers are meeting-local voice clusters", script)
         self.assertIn(r'/assets/web/live/[a-z][a-z0-9_]*\.(?:css|js)', handler)
 
+    def test_live_video_can_float_and_uses_audio_master_sync(self) -> None:
+        page = read_web_text("live/index.html")
+        media = read_web_text("live/media_capture.js")
+        policy = read_web_text("live/media_sync.js")
+
+        self.assertIn('id="popoutMedia"', page)
+        self.assertIn("requestPictureInPicture", media)
+        self.assertIn("startAudioMasterVideoSync", media)
+        self.assertIn("video.currentTime = action.targetTime", media)
+        self.assertNotIn("audio.currentTime = action.targetTime", media)
+        self.assertIn("enterDriftSeconds: 0.1", policy)
+        self.assertIn("exitDriftSeconds: 0.04", policy)
+        self.assertIn("hardSeekSeconds: 0.5", policy)
+
+    def test_empty_speaker_removal_is_server_guarded(self) -> None:
+        page = read_web_text("live/index.html")
+        panel = read_web_text("live/speaker_panel.js")
+
+        self.assertIn('id="speakerUndoCorrection"', page)
+        self.assertIn('post("/api/speakers/remove-empty", {speaker_ids: [internalSpeakerId]})', panel)
+        self.assertIn("expected_sentence_count: sentenceTotal", panel)
+        self.assertIn("expected_source_sentence_count: speakerCurrentSessionSentenceCount(sourceSpeakerId)", panel)
+        self.assertIn("expected_target_sentence_count: speakerCurrentSessionSentenceCount(targetSpeakerId)", panel)
+        self.assertIn('{emptyOnly: true}', panel)
+
 
 if __name__ == "__main__":
     unittest.main()

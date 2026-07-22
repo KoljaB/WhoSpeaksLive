@@ -595,18 +595,36 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json(result)
             elif path == "/api/speakers/merge":
                 self._require_session(payload)
+                expected_source_count = payload.get("expected_source_sentence_count")
+                expected_target_count = payload.get("expected_target_sentence_count")
                 result = self.server.controller.merge_speakers(
                     str(payload.get("source_speaker_id") or ""),
                     str(payload.get("target_speaker_id") or ""),
                     update_memory=bool(payload.get("update_memory", True)),
+                    expected_source_sentence_count=(
+                        int(expected_source_count)
+                        if expected_source_count is not None
+                        else None
+                    ),
+                    expected_target_sentence_count=(
+                        int(expected_target_count)
+                        if expected_target_count is not None
+                        else None
+                    ),
                 )
                 result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
                 self._send_json(result)
             elif path == "/api/speakers/delete":
                 self._require_session(payload)
+                expected_sentence_count = payload.get("expected_sentence_count")
                 result = self.server.controller.delete_speaker(
                     str(payload.get("speaker_id") or ""),
                     update_memory=bool(payload.get("update_memory", True)),
+                    expected_sentence_count=(
+                        int(expected_sentence_count)
+                        if expected_sentence_count is not None
+                        else None
+                    ),
                 )
                 result.update({"ok": True, "session": self.server.session_status(str(payload.get("client_id") or ""))})
                 self._send_json(result)

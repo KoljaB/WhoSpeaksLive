@@ -1,6 +1,7 @@
 export function installTranscriptReview(ctx) {
   const showTranscriptNewTags = document.getElementById("showTranscriptNewTags");
   const showTranscriptSentenceCount = document.getElementById("showTranscriptSentenceCount");
+  const speakerUndoCorrection = document.getElementById("speakerUndoCorrection");
   const {bulkCorrectionSpeaker, bulkMarkCorrectButton, bulkReassignButton, clearSelectionButton, createSpeakerOptionValue, followLive, groupTranscriptTurns, liveSpeakerConfig, reviewFilterButtons, selectionCount, selectionToolbar, sentences, showTranscriptProbabilities, showTranscriptReviewHints, showTranscriptSpeechRate, showTranscriptTags, showTranscriptTime, source, speakerList, speakerTabButtons, speakerTabPanels, start, state, transcriptPanel, transcriptSettingsButton, transcriptSettingsPanel, undoCorrectionButton} = ctx;
   const applyProvisionalRealtimeVisualSplit = (...args) => ctx.api.applyProvisionalRealtimeVisualSplit(...args), clearProvisionalRealtimeSplitsFor = (...args) => ctx.api.clearProvisionalRealtimeSplitsFor(...args), createSpeakerLiveIndicator = (...args) => ctx.api.createSpeakerLiveIndicator(...args), fetchSavedSessions = (...args) => ctx.api.fetchSavedSessions(...args), isLiveProvisionalSpeaker = (...args) => ctx.api.isLiveProvisionalSpeaker(...args), log = (...args) => ctx.api.log(...args), playbackSeconds = (...args) => ctx.api.playbackSeconds(...args), pruneSpeakerFilterState = (...args) => ctx.api.pruneSpeakerFilterState(...args), refreshSpeakerRows = (...args) => ctx.api.refreshSpeakerRows(...args), refreshTranslationMenuStatus = (...args) => ctx.api.refreshTranslationMenuStatus(...args), refreshTranslationRow = (...args) => ctx.api.refreshTranslationRow(...args), renderMeetingIntelligencePanel = (...args) => ctx.api.renderMeetingIntelligencePanel(...args), renderSpeakerPanel = (...args) => ctx.api.renderSpeakerPanel(...args), restoreRealtimeRowFullPreview = (...args) => ctx.api.restoreRealtimeRowFullPreview(...args), rowShouldSortBefore = (...args) => ctx.api.rowShouldSortBefore(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), secondsLabel = (...args) => ctx.api.secondsLabel(...args), sessionControlsLocked = (...args) => ctx.api.sessionControlsLocked(...args), speakerColor = (...args) => ctx.api.speakerColor(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), speakerPanelName = (...args) => ctx.api.speakerPanelName(...args), speakerProbabilityKey = (...args) => ctx.api.speakerProbabilityKey(...args), speakerSentenceText = (...args) => ctx.api.speakerSentenceText(...args), speakerTranscriptVisible = (...args) => ctx.api.speakerTranscriptVisible(...args), syncSavedSessionsAutoRefresh = (...args) => ctx.api.syncSavedSessionsAutoRefresh(...args), syncSpeakerSessionBaselines = (...args) => ctx.api.syncSpeakerSessionBaselines(...args), updateSpeakerCount = (...args) => ctx.api.updateSpeakerCount(...args);
   function transcriptSearchVisible(row) {
@@ -184,6 +185,7 @@ export function installTranscriptReview(ctx) {
   function syncCorrectionUndoState(enabled = ctx.owners.transcript.hasUndoableCorrection) {
     ctx.owners.transcript.hasUndoableCorrection = Boolean(enabled);
     undoCorrectionButton.disabled = !ctx.owners.transcript.hasUndoableCorrection || sessionControlsLocked() || savedSessionReviewOpen();
+    if (speakerUndoCorrection) speakerUndoCorrection.disabled = undoCorrectionButton.disabled;
     undoCorrectionButton.dataset.disabledHelp = sessionControlsLocked()
       ? "Another browser currently controls transcript corrections."
       : (savedSessionReviewOpen() ? "Undo is available only for corrections made in the current live session." : (!ctx.owners.transcript.hasUndoableCorrection ? "There is no supported transcript correction to undo yet." : ""));
@@ -489,6 +491,49 @@ export function installTranscriptReview(ctx) {
     values.delete(fromId);
     values.add(toId);
   }
+  function migrateSpeakerPresentationState(fromId, toId) {
+    if (!fromId || !toId || fromId === toId) return;
+    const fromName = ctx.owners.speakers.speakerNames[fromId];
+    if (fromName) ctx.owners.speakers.speakerNames[toId] = fromName;
+    delete ctx.owners.speakers.speakerNames[fromId];
+    mergeNumericSpeakerRecord(ctx.owners.speakers.speakerSessionBaselineSentenceCounts, fromId, toId);
+    mergeNumericSpeakerRecord(ctx.owners.speakers.speakerSessionBaselineSpeakingSeconds, fromId, toId);
+    mergeNumericSpeakerRecord(ctx.owners.speakers.renderedSpeakerSentenceCounts, fromId, toId);
+    mergeNumericSpeakerRecord(ctx.owners.speakers.renderedSpeakerSpeakingSeconds, fromId, toId);
+    const fromFast = ctx.owners.speakers.fastSpeakerPanelStats[fromId];
+    if (fromFast) {
+      const toFast = ctx.owners.speakers.fastSpeakerPanelStats[toId] || {};
+      ctx.owners.speakers.fastSpeakerPanelStats[toId] = {
+        ...toFast,
+        count: Number(toFast.count || 0) + Number(fromFast.count || 0),
+        speakingSeconds: Number(toFast.speakingSeconds || 0) + Number(fromFast.speakingSeconds || 0),
+      };
+      delete ctx.owners.speakers.fastSpeakerPanelStats[fromId];
+    }
+    replaceSpeakerSetId(ctx.owners.speakers.soloSpeakerIds, fromId, toId);
+    replaceSpeakerSetId(ctx.owners.speakers.mutedSpeakerIds, fromId, toId);
+    for (const field of ["currentLiveSpeakerId", "transcriptLiveSpeakerId", "fallbackLiveSpeakerId", "transcriptLiveSpeakerOverrideId"]) {
+      if (ctx.owners.transcript[field] === fromId) ctx.owners.transcript[field] = toId;
+    }
+    ctx.owners.transcript.liveSpeakerTimeline.forEach(item => {
+      if (item.speakerId === fromId) item.speakerId = toId;
+    });
+    for (const field of ["editingSpeakerId", "pendingSpeakerNameFocusId"]) {
+      if (ctx.owners.reference[field] === fromId) ctx.owners.reference[field] = toId;
+    }
+    if (ctx.owners.speakers.emptySpeakerFirstSeenAt.has(fromId)) {
+      const firstSeen = ctx.owners.speakers.emptySpeakerFirstSeenAt.get(fromId);
+      ctx.owners.speakers.emptySpeakerFirstSeenAt.delete(fromId);
+      if (!ctx.owners.speakers.emptySpeakerFirstSeenAt.has(toId)) {
+        ctx.owners.speakers.emptySpeakerFirstSeenAt.set(toId, firstSeen);
+      }
+    }
+    Array.from(sentences.querySelectorAll(".row")).forEach(row => {
+      for (const key of ["speaker", "rawSpeaker", "fullRawSpeaker", "revisionSpeaker"]) {
+        if (row.dataset[key] === fromId) row.dataset[key] = toId;
+      }
+    });
+  }
   function applyLiveSpeakerIdentityAlias(payload) {
     if (!ctx.owners.presentation.apply(payload || {})) return false;
     const finalId = String(payload.final_internal_speaker_id || "");
@@ -550,46 +595,7 @@ export function installTranscriptReview(ctx) {
       ...ctx.owners.speakers.speakerLibraryState,
       speakers: [...speakers.filter(speaker => speaker.id !== finalId && speaker.id !== publicId), mergedSpeaker],
     };
-    const finalName = ctx.owners.speakers.speakerNames[finalId];
-    if (finalName) ctx.owners.speakers.speakerNames[publicId] = finalName;
-    delete ctx.owners.speakers.speakerNames[finalId];
-    mergeNumericSpeakerRecord(ctx.owners.speakers.speakerSessionBaselineSentenceCounts, finalId, publicId);
-    mergeNumericSpeakerRecord(ctx.owners.speakers.speakerSessionBaselineSpeakingSeconds, finalId, publicId);
-    mergeNumericSpeakerRecord(ctx.owners.speakers.renderedSpeakerSentenceCounts, finalId, publicId);
-    mergeNumericSpeakerRecord(ctx.owners.speakers.renderedSpeakerSpeakingSeconds, finalId, publicId);
-    const finalFast = ctx.owners.speakers.fastSpeakerPanelStats[finalId];
-    if (finalFast) {
-      const publicFast = ctx.owners.speakers.fastSpeakerPanelStats[publicId] || {};
-      ctx.owners.speakers.fastSpeakerPanelStats[publicId] = {
-        ...publicFast,
-        count: Number(publicFast.count || 0) + Number(finalFast.count || 0),
-        speakingSeconds: Number(publicFast.speakingSeconds || 0) + Number(finalFast.speakingSeconds || 0),
-      };
-      delete ctx.owners.speakers.fastSpeakerPanelStats[finalId];
-    }
-    replaceSpeakerSetId(ctx.owners.speakers.soloSpeakerIds, finalId, publicId);
-    replaceSpeakerSetId(ctx.owners.speakers.mutedSpeakerIds, finalId, publicId);
-    for (const field of ["currentLiveSpeakerId", "transcriptLiveSpeakerId", "fallbackLiveSpeakerId", "transcriptLiveSpeakerOverrideId"]) {
-      if (ctx.owners.transcript[field] === finalId) ctx.owners.transcript[field] = publicId;
-    }
-    ctx.owners.transcript.liveSpeakerTimeline.forEach(item => {
-      if (item.speakerId === finalId) item.speakerId = publicId;
-    });
-    for (const field of ["editingSpeakerId", "pendingSpeakerNameFocusId"]) {
-      if (ctx.owners.reference[field] === finalId) ctx.owners.reference[field] = publicId;
-    }
-    if (ctx.owners.speakers.emptySpeakerFirstSeenAt.has(finalId)) {
-      const firstSeen = ctx.owners.speakers.emptySpeakerFirstSeenAt.get(finalId);
-      ctx.owners.speakers.emptySpeakerFirstSeenAt.delete(finalId);
-      if (!ctx.owners.speakers.emptySpeakerFirstSeenAt.has(publicId)) {
-        ctx.owners.speakers.emptySpeakerFirstSeenAt.set(publicId, firstSeen);
-      }
-    }
-    Array.from(sentences.querySelectorAll(".row")).forEach(row => {
-      for (const key of ["speaker", "rawSpeaker", "fullRawSpeaker"]) {
-        if (row.dataset[key] === finalId) row.dataset[key] = publicId;
-      }
-    });
+    migrateSpeakerPresentationState(finalId, publicId);
     if (ctx.owners.transcript.fallbackLiveSpeakerClearTimer) {
       clearTimeout(ctx.owners.transcript.fallbackLiveSpeakerClearTimer);
       ctx.owners.transcript.fallbackLiveSpeakerClearTimer = null;
@@ -604,11 +610,23 @@ export function installTranscriptReview(ctx) {
   function updateSpeakerState(state) {
     if (!state || typeof state !== "object") return;
     if (state.public_identity_aliases || state.public_identity_reverse_aliases) {
-      ctx.owners.presentation.hydrate(
+      const previousFinalToPublic = new Map(ctx.owners.presentation.finalToPublic);
+      const hydrated = ctx.owners.presentation.hydrate(
         state.public_identity_aliases || {},
         state.public_identity_reverse_aliases || {},
         state.public_identity_alias_generation || 0,
       );
+      if (hydrated) {
+        const finalIds = new Set([
+          ...previousFinalToPublic.keys(),
+          ...ctx.owners.presentation.finalToPublic.keys(),
+        ]);
+        finalIds.forEach(finalId => {
+          const previousPublicId = previousFinalToPublic.get(finalId) || finalId;
+          const nextPublicId = ctx.owners.presentation.toPublic(finalId);
+          migrateSpeakerPresentationState(previousPublicId, nextPublicId);
+        });
+      }
     }
     const projectedStateSpeakers = Array.isArray(state.public_speakers)
       ? state.public_speakers

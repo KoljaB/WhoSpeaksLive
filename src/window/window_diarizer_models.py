@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import base64
 import copy
+from difflib import SequenceMatcher
 import hashlib
 from collections import Counter, deque
 from contextlib import nullcontext
@@ -39,6 +40,10 @@ from speakers.speaker_embedding_cluster import (
     SpeakerMemory,
     cosine_similarity,
     normalize_vector,
+)
+from window.asr_hallucination_policy import (
+    match_asr_hallucination_policy,
+    normalize_asr_hallucination_text,
 )
 from window.window_config import (
     DEFAULT_KROKO_PREVIEW_AUTO_DOWNLOAD,
@@ -329,7 +334,7 @@ class WindowModelRuntimeMixin:
 
     def _filter_asr_no_speech_words(self, words: list[TimedWord]) -> list[TimedWord]:
         if not bool(getattr(self.args, "asr_no_speech_filter", True)):
-            return words
+            return self._filter_hard_asr_hallucination_words(words)
         threshold = max(0.0, min(1.0, float(getattr(self.args, "asr_no_speech_prob_threshold", 0.65))))
         hard_threshold = max(0.0, min(1.0, float(getattr(self.args, "asr_no_speech_hard_threshold", 0.85))))
         keep_short_max_words = max(0, int(getattr(self.args, "asr_no_speech_keep_short_max_words", 2)))
@@ -395,6 +400,222 @@ class WindowModelRuntimeMixin:
                     )
                 },
             )
+        return self._filter_hard_asr_hallucination_words(kept)
+
+    def _filter_hard_asr_hallucination_words(self, words: list[TimedWord]) -> list[TimedWord]:
+        """Drop only exact, highly specific non-spoken credit signatures."""
+
+        kept: list[TimedWord] = []
+        dropped_rules: list[str] = []
+        base_threshold = max(
+            0.0,
+            min(1.0, float(getattr(self.args, "asr_hallucination_suspicion_score", 0.45))),
+        )
+        for group in self._asr_segment_groups(words):
+            policy = match_asr_hallucination_policy(
+                self._asr_group_text(group),
+                base_suspicion_threshold=base_threshold,
+            )
+            if policy is not None and policy.action == "hard_drop":
+                dropped_rules.append(policy.rule_id)
+                continue
+            kept.extend(group)
+        bus = getattr(self, "bus", None)
+        if dropped_rules and bus is not None:
+            bus.emit(
+                "status",
+                {
+                    "message": (
+                        f"ASR known-credit filter dropped {len(dropped_rules)} segment(s) "
+                        f"(rules={','.join(sorted(set(dropped_rules)))})."
+                    )
+                },
+            )
+        return kept
+
+    @staticmethod
+    def _asr_segment_groups(words: list[TimedWord]) -> list[list[TimedWord]]:
+        groups: list[list[TimedWord]] = []
+        current: list[TimedWord] = []
+        current_key: tuple[object, ...] | None = None
+        for index, word in enumerate(words):
+            key: tuple[object, ...]
+            if word.segment_index is not None:
+                key = ("segment", int(word.segment_index))
+            else:
+                key = ("word", index)
+            if current and key != current_key:
+                groups.append(current)
+                current = []
+            current.append(word)
+            current_key = key
+        if current:
+            groups.append(current)
+        return groups
+
+    @staticmethod
+    def _asr_group_text(words: list[TimedWord]) -> str:
+        return "".join(word.text for word in words).strip()
+
+    @staticmethod
+    def _asr_segment_evidence_score(group: list[TimedWord]) -> float | None:
+        """Fuse independent ASR confidence signals into a conservative 0..1 score."""
+
+        no_speech_values = [
+            float(word.no_speech_prob)
+            for word in group
+            if word.no_speech_prob is not None
+        ]
+        avg_logprob_values = [
+            float(word.avg_logprob)
+            for word in group
+            if word.avg_logprob is not None
+        ]
+        word_probabilities = [
+            max(1e-4, min(1.0, float(word.probability)))
+            for word in group
+            if word.probability is not None
+        ]
+        if not no_speech_values or not avg_logprob_values or not word_probabilities:
+            return None
+
+        speech_evidence = max(1e-4, min(1.0, 1.0 - max(no_speech_values)))
+        sequence_evidence = max(1e-4, min(1.0, math.exp(min(avg_logprob_values))))
+        word_evidence = math.exp(
+            sum(math.log(value) for value in word_probabilities) / len(word_probabilities)
+        )
+        return float(
+            math.exp(
+                0.35 * math.log(speech_evidence)
+                + 0.35 * math.log(sequence_evidence)
+                + 0.30 * math.log(max(1e-4, word_evidence))
+            )
+        )
+
+    @staticmethod
+    def _asr_text_stability(first: list[TimedWord], second: list[TimedWord]) -> float:
+        def tokens(items: list[TimedWord]) -> list[str]:
+            return normalize_asr_hallucination_text(" ".join(word.text for word in items)).split()
+
+        first_tokens = tokens(first)
+        second_tokens = tokens(second)
+        if not first_tokens or not second_tokens:
+            return 0.0
+        return float(SequenceMatcher(None, first_tokens, second_tokens).ratio())
+
+    def _verify_low_evidence_asr_words(
+        self,
+        model: Any,
+        audio: np.ndarray,
+        sample_rate: int,
+        words: list[TimedWord],
+        *,
+        media_start_seconds: float = 0.0,
+        media_duration_seconds: float | None = None,
+    ) -> list[TimedWord]:
+        """Verify only doubtful ASR segments after a small causal boundary perturbation."""
+
+        if not bool(getattr(self.args, "asr_hallucination_verification", True)):
+            return words
+        suspicion_threshold = max(
+            0.0,
+            min(1.0, float(getattr(self.args, "asr_hallucination_suspicion_score", 0.45))),
+        )
+        shift_seconds = max(
+            0.0,
+            float(getattr(self.args, "asr_hallucination_verification_shift_seconds", 0.20)),
+        )
+        context_seconds = max(
+            0.0,
+            float(getattr(self.args, "asr_hallucination_verification_context_seconds", 0.25)),
+        )
+        min_stability = max(
+            0.0,
+            min(
+                1.0,
+                float(
+                    getattr(
+                        self.args,
+                        "asr_hallucination_verification_min_text_similarity",
+                        0.50,
+                    )
+                ),
+            ),
+        )
+        audio_duration = float(audio.size) / float(sample_rate) if sample_rate > 0 else 0.0
+        kept: list[TimedWord] = []
+        rejected: list[tuple[float, float, str]] = []
+
+        for group in self._asr_segment_groups(words):
+            group_start = max(0.0, min(float(word.start) for word in group))
+            policy = match_asr_hallucination_policy(
+                self._asr_group_text(group),
+                base_suspicion_threshold=suspicion_threshold,
+                segment_start_seconds=max(0.0, media_start_seconds + group_start),
+                media_duration_seconds=media_duration_seconds,
+            )
+            if policy is not None and policy.action == "hard_drop":
+                rejected.append((0.0, 0.0, policy.rule_id))
+                continue
+            required_score = policy.suspicion_threshold if policy is not None else suspicion_threshold
+            score = self._asr_segment_evidence_score(group)
+            if score is None and (policy is None or policy.risk_score < 70):
+                kept.extend(group)
+                continue
+            if score is not None and score >= required_score:
+                kept.extend(group)
+                continue
+            group_end = min(audio_duration, max(float(word.end) for word in group) + context_seconds)
+            verify_start = min(group_end, group_start + shift_seconds)
+            if group_end - verify_start < 0.20:
+                kept.extend(group)
+                continue
+            start_sample = max(0, min(audio.size, int(round(verify_start * sample_rate))))
+            end_sample = max(start_sample, min(audio.size, int(round(group_end * sample_rate))))
+            verification_audio = np.ascontiguousarray(audio[start_sample:end_sample])
+            if verification_audio.size <= 0:
+                kept.extend(group)
+                continue
+
+            verification_words, _segment_count = self._transcribe_audio_words(
+                model,
+                verification_audio,
+                sample_rate,
+            )
+            stability = self._asr_text_stability(group, verification_words)
+            verification_scores = [
+                value
+                for value in (
+                    self._asr_segment_evidence_score(candidate)
+                    for candidate in self._asr_segment_groups(verification_words)
+                )
+                if value is not None
+            ]
+            verification_score = max(verification_scores) if verification_scores else None
+            verification_evidence_ok = (
+                policy is None
+                or verification_score is None
+                or verification_score >= policy.verification_evidence_threshold
+            )
+            if stability >= min_stability and verification_evidence_ok:
+                kept.extend(group)
+                continue
+            rejected.append((score if score is not None else 0.0, stability, policy.rule_id if policy else "generic"))
+
+        if rejected:
+            bus = getattr(self, "bus", None)
+            if bus is not None:
+                bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            f"ASR hallucination verification rejected {len(rejected)} unstable "
+                            f"low-evidence segment(s) (lowest score={min(item[0] for item in rejected):.2f}, "
+                            f"best shifted-text stability={max(item[1] for item in rejected):.2f}, "
+                            f"rules={','.join(sorted(set(item[2] for item in rejected)))})."
+                        )
+                    },
+                )
         return kept
 
     def _transcribe_window_audio_words(
@@ -440,6 +661,14 @@ class WindowModelRuntimeMixin:
                     model,
                     window,
                     sample_rate,
+                )
+                relative_words = self._verify_low_evidence_asr_words(
+                    model,
+                    window,
+                    sample_rate,
+                    relative_words,
+                    media_start_seconds=span_left,
+                    media_duration_seconds=float(self.duration),
                 )
             segment_count += relative_segment_count
             for word in relative_words:

@@ -17,6 +17,10 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from window.asr_hallucination_policy import (
+    match_asr_hallucination_policy,
+    normalize_asr_hallucination_text,
+)
 from window.window_domain import TimedWord, VadWindowState
 from window.window_events import RecordingEventBus
 from window.window_preview import KrokoSubprocessPreviewTranscriber
@@ -27,6 +31,40 @@ from tests.window_diarizer_support import make_window_diarizer
 
 
 class WindowAudioAsrTests(unittest.TestCase):
+    def test_asr_hallucination_policy_normalizes_unicode_and_uses_word_boundaries(self) -> None:
+        self.assertEqual(normalize_asr_hallucination_text("  THANKS—for watching!!! "), "thanks for watching")
+        amara_org = match_asr_hallucination_policy(
+            "Visit Amara.org",
+            base_suspicion_threshold=0.45,
+        )
+        amara_name = match_asr_hallucination_policy(
+            "Amara, what do you think?",
+            base_suspicion_threshold=0.45,
+        )
+        samara = match_asr_hallucination_policy(
+            "Samara, what do you think?",
+            base_suspicion_threshold=0.45,
+        )
+        watching_at_start = match_asr_hallucination_policy(
+            "Thanks for watching!",
+            base_suspicion_threshold=0.45,
+            segment_start_seconds=0.0,
+            media_duration_seconds=300.0,
+        )
+        watching_at_end = match_asr_hallucination_policy(
+            "Thanks for watching!",
+            base_suspicion_threshold=0.45,
+            segment_start_seconds=290.0,
+            media_duration_seconds=300.0,
+        )
+
+        self.assertIsNotNone(amara_org)
+        self.assertEqual(amara_org.rule_id, "amara_org")
+        self.assertIsNotNone(amara_name)
+        self.assertEqual(amara_name.rule_id, "amara_name")
+        self.assertIsNone(samara)
+        self.assertGreater(watching_at_start.suspicion_threshold, watching_at_end.suspicion_threshold)
+
     def test_browser_stream_audio_uses_chunks_and_slices_across_boundaries(self) -> None:
         diarizer = make_window_diarizer()
         diarizer.set_browser_stream("https://example.test/watch?v=stream-test")
@@ -216,6 +254,153 @@ class WindowAudioAsrTests(unittest.TestCase):
         kept = diarizer._filter_asr_no_speech_words(words)
 
         self.assertEqual([word.text for word in kept], [" Hallo"])
+
+    def test_asr_hard_credit_filter_is_exact_and_independent_of_no_speech_filter(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(asr_no_speech_filter=False)
+        diarizer.bus = RecordingEventBus()
+        credit = [
+            TimedWord(" Subtitles", 0.0, 0.3, segment_index=0),
+            TimedWord(" by", 0.3, 0.4, segment_index=0),
+            TimedWord(" the", 0.4, 0.5, segment_index=0),
+            TimedWord(" Amara.org", 0.5, 0.8, segment_index=0),
+            TimedWord(" community.", 0.8, 1.1, segment_index=0),
+        ]
+
+        kept = diarizer._filter_asr_no_speech_words(credit)
+
+        self.assertEqual(kept, [])
+        self.assertTrue(any("known-credit filter dropped" in item["payload"]["message"] for item in diarizer.bus.records))
+
+    def test_asr_hallucination_verification_rejects_unstable_low_evidence_segment(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_no_speech_filter=True,
+            asr_no_speech_prob_threshold=0.65,
+            asr_no_speech_hard_threshold=0.85,
+            asr_no_speech_keep_short_max_words=2,
+            asr_no_speech_keep_short_max_seconds=0.45,
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_hallucination_verification_shift_seconds=0.20,
+            asr_hallucination_verification_context_seconds=0.25,
+            asr_hallucination_verification_min_text_similarity=0.50,
+        )
+        diarizer.bus = RecordingEventBus()
+        words = [
+            TimedWord(" Thanks", 0.0, 0.5, probability=0.0019, no_speech_prob=0.3403, avg_logprob=-0.9448, segment_index=0),
+            TimedWord(" for", 0.5, 0.6, probability=0.8003, no_speech_prob=0.3403, avg_logprob=-0.9448, segment_index=0),
+            TimedWord(" watching!", 0.6, 1.22, probability=0.7334, no_speech_prob=0.3403, avg_logprob=-0.9448, segment_index=0),
+        ]
+        diarizer._transcribe_audio_words = mock.Mock(return_value=([], 0))  # type: ignore[method-assign]
+
+        kept = diarizer._verify_low_evidence_asr_words(object(), np.zeros(22_240, dtype=np.float32), 16_000, words)
+
+        self.assertEqual(kept, [])
+        self.assertTrue(any("hallucination verification rejected" in item["payload"]["message"] for item in diarizer.bus.records))
+
+    def test_asr_hallucination_verification_keeps_stable_low_evidence_speech(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_hallucination_verification_shift_seconds=0.20,
+            asr_hallucination_verification_context_seconds=0.25,
+            asr_hallucination_verification_min_text_similarity=0.50,
+        )
+        diarizer.bus = RecordingEventBus()
+        words = [
+            TimedWord(" Hello", 0.0, 0.4, probability=0.02, no_speech_prob=0.34, avg_logprob=-0.95, segment_index=0),
+            TimedWord(" there", 0.4, 0.9, probability=0.75, no_speech_prob=0.34, avg_logprob=-0.95, segment_index=0),
+        ]
+        verification = [
+            TimedWord(" there", 0.0, 0.5, probability=0.80, no_speech_prob=0.05, avg_logprob=-0.30, segment_index=0),
+        ]
+        diarizer._transcribe_audio_words = mock.Mock(return_value=(verification, 1))  # type: ignore[method-assign]
+
+        kept = diarizer._verify_low_evidence_asr_words(object(), np.zeros(18_400, dtype=np.float32), 16_000, words)
+
+        self.assertEqual(kept, words)
+
+    def test_asr_hallucination_policy_rechecks_medium_evidence_watching_phrase(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_hallucination_verification_shift_seconds=0.20,
+            asr_hallucination_verification_context_seconds=0.25,
+            asr_hallucination_verification_min_text_similarity=0.50,
+        )
+        diarizer.bus = RecordingEventBus()
+        words = [
+            TimedWord(" Thanks", 0.0, 0.4, probability=0.60, no_speech_prob=0.20, avg_logprob=-0.50, segment_index=0),
+            TimedWord(" for", 0.4, 0.6, probability=0.60, no_speech_prob=0.20, avg_logprob=-0.50, segment_index=0),
+            TimedWord(" watching", 0.6, 1.1, probability=0.60, no_speech_prob=0.20, avg_logprob=-0.50, segment_index=0),
+        ]
+        diarizer._transcribe_audio_words = mock.Mock(return_value=([], 0))  # type: ignore[method-assign]
+
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(22_000, dtype=np.float32),
+            16_000,
+            words,
+            media_start_seconds=0.0,
+            media_duration_seconds=300.0,
+        )
+
+        self.assertEqual(kept, [])
+        diarizer._transcribe_audio_words.assert_called_once()
+        self.assertTrue(any("thanks_for_watching" in item["payload"]["message"] for item in diarizer.bus.records))
+
+    def test_asr_hallucination_policy_keeps_strongly_supported_watching_phrase(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+        )
+        diarizer.bus = RecordingEventBus()
+        words = [
+            TimedWord(" Thanks", 0.0, 0.4, probability=0.98, no_speech_prob=0.02, avg_logprob=-0.02, segment_index=0),
+            TimedWord(" for", 0.4, 0.6, probability=0.98, no_speech_prob=0.02, avg_logprob=-0.02, segment_index=0),
+            TimedWord(" watching", 0.6, 1.1, probability=0.98, no_speech_prob=0.02, avg_logprob=-0.02, segment_index=0),
+        ]
+        diarizer._transcribe_audio_words = mock.Mock()  # type: ignore[method-assign]
+
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(22_000, dtype=np.float32),
+            16_000,
+            words,
+            media_start_seconds=0.0,
+            media_duration_seconds=300.0,
+        )
+
+        self.assertEqual(kept, words)
+        diarizer._transcribe_audio_words.assert_not_called()
+
+    def test_asr_hallucination_verification_does_not_accept_unrelated_confident_text(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_hallucination_verification_shift_seconds=0.20,
+            asr_hallucination_verification_context_seconds=0.25,
+            asr_hallucination_verification_min_text_similarity=0.50,
+        )
+        diarizer.bus = RecordingEventBus()
+        words = [
+            TimedWord(" Hello", 0.0, 0.4, probability=0.02, no_speech_prob=0.34, avg_logprob=-0.95, segment_index=0),
+            TimedWord(" there", 0.4, 0.9, probability=0.75, no_speech_prob=0.34, avg_logprob=-0.95, segment_index=0),
+        ]
+        verification = [
+            TimedWord(" Completely", 0.0, 0.4, probability=0.98, no_speech_prob=0.02, avg_logprob=-0.02, segment_index=0),
+            TimedWord(" different", 0.4, 0.8, probability=0.98, no_speech_prob=0.02, avg_logprob=-0.02, segment_index=0),
+        ]
+        diarizer._transcribe_audio_words = mock.Mock(return_value=(verification, 1))  # type: ignore[method-assign]
+
+        kept = diarizer._verify_low_evidence_asr_words(object(), np.zeros(18_400, dtype=np.float32), 16_000, words)
+
+        self.assertEqual(kept, [])
 
     def test_transcribe_window_audio_words_maps_speech_clip_times_to_media_time(self) -> None:
         diarizer = make_window_diarizer(

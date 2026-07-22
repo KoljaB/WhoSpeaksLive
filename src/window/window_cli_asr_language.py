@@ -500,6 +500,36 @@ def add_asr_language_arguments(parser: argparse.ArgumentParser, *, default_vad_m
         help="Keep ASR segments at or above the no_speech_prob threshold when they are at most this long and stay below the hard threshold.",
     )
     parser.add_argument(
+        "--asr-hallucination-verification",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Recheck doubtful ASR segments with a slightly shifted audio boundary before accepting them.",
+    )
+    parser.add_argument(
+        "--asr-hallucination-suspicion-score",
+        type=float,
+        default=0.45,
+        help="Combined ASR evidence score below which boundary-stability verification is required.",
+    )
+    parser.add_argument(
+        "--asr-hallucination-verification-shift-seconds",
+        type=float,
+        default=0.20,
+        help="Leading audio removed for the second view of a doubtful ASR segment.",
+    )
+    parser.add_argument(
+        "--asr-hallucination-verification-context-seconds",
+        type=float,
+        default=0.25,
+        help="Trailing context kept for the second view of a doubtful ASR segment.",
+    )
+    parser.add_argument(
+        "--asr-hallucination-verification-min-text-similarity",
+        type=float,
+        default=0.50,
+        help="Minimum token-sequence stability required between the original and shifted ASR views.",
+    )
+    parser.add_argument(
         "--sentence-boundary-pre-padding-seconds",
         type=float,
         default=DEFAULT_SENTENCE_BOUNDARY_PRE_PADDING_SECONDS,

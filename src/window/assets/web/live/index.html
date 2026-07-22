@@ -156,14 +156,22 @@
               </div>
               <span id="mediaDuration">00:00</span>
             </div>
-            <button id="expandMedia" class="media-expand" type="button" aria-label="Enlarge video">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 3h6v6"></path>
-                <path d="M21 3l-7 7"></path>
-                <path d="M9 21H3v-6"></path>
-                <path d="M3 21l7-7"></path>
-              </svg>
-            </button>
+            <div class="media-actions">
+              <button id="popoutMedia" class="media-action" type="button" aria-label="Open video in floating window" title="Open video in a movable floating window">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                  <rect x="12" y="11" width="7" height="5" rx="1"></rect>
+                </svg>
+              </button>
+              <button id="expandMedia" class="media-action media-expand" type="button" aria-label="Enlarge video" title="Show video fullscreen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M15 3h6v6"></path>
+                  <path d="M21 3l-7 7"></path>
+                  <path d="M9 21H3v-6"></path>
+                  <path d="M3 21l7-7"></path>
+                </svg>
+              </button>
+            </div>
           </div>
           <audio id="audio" src="/media/audio"></audio>
         </section>
@@ -352,6 +360,7 @@
               <details class="speaker-panel-menu">
                 <summary aria-label="More speaker actions" title="More speaker actions">•••</summary>
                 <div class="speaker-panel-menu-popover">
+                  <button id="speakerUndoCorrection" type="button" disabled>Undo last correction</button>
                   <button id="clearSpeakers" class="clear-speakers-button" type="button">Reset live speaker detection…</button>
                 </div>
               </details>

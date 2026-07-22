@@ -40,7 +40,7 @@ The final loop uses a cooldown after a successful split. That means it can emit 
 
 The final ASR path uses VAD plus ASR no-speech metadata to avoid adding text for music-only or silence-heavy windows. VAD, or voice activity detection, is the fast audio check that decides whether a window contains speech-like audio. Whisper-like ASR models also return `no_speech_prob` for each segment, which estimates whether the segment was actually non-speech.
 
-When a segment has high `no_speech_prob`, the app drops that ASR segment instead of adding it to the transcript. This is not a transcript text filter and it does not search for known hallucinated phrases. Very short low-confidence segments can still be kept so short real responses such as "yes", "ok", or "ja" are not lost.
+When a segment has high `no_speech_prob`, the app drops that ASR segment instead of adding it to the transcript. A small curated policy also removes exact subtitle-credit hallucinations and asks for stronger evidence before accepting a few high-risk stock phrases. Very short common responses such as "yes", "ok", or "ja" are not text-filtered.
 
 See [Configuration](configuration.md#asr-no-speech-filtering) for the tuning flags and defaults.
 

@@ -203,7 +203,7 @@ Recent defaults are tuned to keep final ASR responsive while live speaker feedba
 
 The final ASR path can reject segments that the ASR model itself marks as likely non-speech. This is useful for music beds, long pauses, or other non-speech audio that can otherwise make Whisper-like models produce plausible but invented text.
 
-This filter does not compare transcript text against known phrases. It uses faster-whisper segment metadata, especially `no_speech_prob`.
+The primary filter uses faster-whisper segment metadata, especially `no_speech_prob`. A deliberately small additional policy removes exact, well-established subtitle-credit hallucinations and requires stronger acoustic evidence for a few high-risk phrases such as standalone `thanks for watching`. Common or otherwise plausible speech is not blacklisted.
 
 The filter is enabled by default:
 

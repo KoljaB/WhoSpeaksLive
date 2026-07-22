@@ -945,6 +945,7 @@ export function installSavedReports(ctx) {
     return result;
   }
   function startPlaybackClock() {
+    ctx.api.startAudioMasterVideoSync();
     if (ctx.owners.capture.playbackTimer) clearInterval(ctx.owners.capture.playbackTimer);
     ctx.owners.capture.playbackClockStartedAt = performance.now();
     const send = () => post("/api/playback", {seconds: playbackSeconds()}).catch(() => {});
@@ -964,6 +965,7 @@ export function installSavedReports(ctx) {
     post("/api/playback", {seconds: duration > 0 ? duration : playbackSeconds()}).catch(() => {});
   }
   function stopPlaybackClock() {
+    ctx.api.stopAudioMasterVideoSync();
     if (ctx.owners.capture.playbackTimer) {
       clearInterval(ctx.owners.capture.playbackTimer);
       ctx.owners.capture.playbackTimer = null;

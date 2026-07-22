@@ -118,6 +118,7 @@ test("live ES modules bootstrap and dispose with explicit owners", async () => {
     querySelectorAll() { return []; },
     createElement() { return fakeElement(); },
     createElementNS() { return fakeElement(); },
+    createTextNode(text) { return {textContent: String(text), parentElement: null}; },
     addEventListener() {},
     removeEventListener() {},
     documentElement: {scrollHeight: 0},

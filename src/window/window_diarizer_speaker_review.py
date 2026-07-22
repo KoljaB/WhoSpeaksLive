@@ -514,6 +514,8 @@ class WindowSpeakerReviewMixin:
         target_speaker_id: str,
         *,
         update_memory: bool = True,
+        expected_source_sentence_count: int | None = None,
+        expected_target_sentence_count: int | None = None,
     ) -> dict[str, Any]:
         source = self._normalized_speaker_label(source_speaker_id)
         target = self._normalized_speaker_label(target_speaker_id)
@@ -523,6 +525,27 @@ class WindowSpeakerReviewMixin:
             raise ValueError(f"Unknown speaker {source}.")
         if not self._speaker_exists(target):
             raise ValueError(f"Unknown speaker {target}.")
+        if expected_source_sentence_count is not None or expected_target_sentence_count is not None:
+            with self._sentence_refinement_lock:
+                assigned_counts = Counter(
+                    str(record.get("assigned_speaker") or "").strip().upper()
+                    for record in self._sentence_refinement_records.values()
+                    if record.get("assigned_speaker")
+                )
+            for label, expected in (
+                (source, expected_source_sentence_count),
+                (target, expected_target_sentence_count),
+            ):
+                if expected is None:
+                    continue
+                expected_count = max(0, int(expected))
+                actual_count = int(assigned_counts.get(label, 0))
+                if actual_count != expected_count:
+                    raise ValueError(
+                        f"Speaker {label} changed before merge "
+                        f"(expected {expected_count} assigned sentences, found {actual_count}). "
+                        "Refresh the speaker list and try again."
+                    )
         self._push_correction_history("merge_speakers")
         changed: list[dict[str, Any]] = []
         with self._live_memory_update_lock_obj():
@@ -552,10 +575,30 @@ class WindowSpeakerReviewMixin:
         self.bus.emit("status", {"message": f"Merged {source} into {target}."})
         return {"speaker_state": state, "rows": [self._record_to_sentence_payload(record) for record in changed]}
 
-    def delete_speaker(self, speaker_id: str, *, update_memory: bool = True) -> dict[str, Any]:
+    def delete_speaker(
+        self,
+        speaker_id: str,
+        *,
+        update_memory: bool = True,
+        expected_sentence_count: int | None = None,
+    ) -> dict[str, Any]:
         target = self._normalized_speaker_label(speaker_id)
         if not target or not self._speaker_exists(target):
             raise ValueError(f"Unknown speaker {speaker_id}.")
+        if expected_sentence_count is not None:
+            expected_count = max(0, int(expected_sentence_count))
+            with self._sentence_refinement_lock:
+                actual_count = sum(
+                    1
+                    for record in self._sentence_refinement_records.values()
+                    if str(record.get("assigned_speaker") or "").strip().upper() == target
+                )
+            if actual_count != expected_count:
+                raise ValueError(
+                    f"Speaker {target} changed before deletion "
+                    f"(expected {expected_count} assigned sentences, found {actual_count}). "
+                    "Refresh the speaker list and try again."
+                )
         self._push_correction_history("delete_speaker")
         changed: list[dict[str, Any]] = []
         with self._live_memory_update_lock_obj():
@@ -629,4 +672,8 @@ class WindowSpeakerReviewMixin:
         self._emit_records(records)
         state = self.emit_speaker_state()
         self.bus.emit("status", {"message": f"Undid {snapshot.get('action') or 'correction'}."})
-        return {"speaker_state": state, "rows": [self._record_to_sentence_payload(record) for record in records]}
+        return {
+            "speaker_state": state,
+            "rows": [self._record_to_sentence_payload(record) for record in records],
+            "can_undo": bool(self._correction_history),
+        }
