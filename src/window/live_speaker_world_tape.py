@@ -65,17 +65,25 @@ def _stable_sha256(value: Any) -> str:
 
 
 def _media_record(media: Any) -> dict[str, Any]:
-    audio_path = Path(getattr(media, "audio_file", ""))
-    video_path = Path(getattr(media, "video_file", ""))
+    audio_path = Path(getattr(media, "audio_file", "")).resolve()
+    video_path = Path(getattr(media, "video_file", "")).resolve()
     result: dict[str, Any] = {
         "video_id": str(getattr(media, "video_id", "") or ""),
         "url": str(getattr(media, "url", "") or ""),
         "audio_path": str(audio_path),
+        # ``source_audio_*`` names are intentionally explicit.  They identify
+        # the exact user-selected/local file whose bytes the normal GUI
+        # decoded, not the float-PCM proxy recorded below.
+        "source_audio_path": str(audio_path),
         "video_path": str(video_path),
     }
     if audio_path.is_file():
-        result["audio_size_bytes"] = int(audio_path.stat().st_size)
-        result["audio_sha256"] = _sha256_file(audio_path)
+        source_size = int(audio_path.stat().st_size)
+        source_hash = _sha256_file(audio_path)
+        result["audio_size_bytes"] = source_size
+        result["audio_sha256"] = source_hash
+        result["source_audio_size_bytes"] = source_size
+        result["source_audio_sha256"] = source_hash
     if video_path.is_file() and video_path != audio_path:
         result["video_size_bytes"] = int(video_path.stat().st_size)
         result["video_sha256"] = _sha256_file(video_path)
@@ -113,6 +121,7 @@ class LiveSpeakerWorldTapeRecorder:
         self._array_sequence = 0
         self._array_offset_bytes = 0
         self._counts: Counter[str] = Counter()
+        self._enqueued_counts: Counter[str] = Counter()
         self._closed = False
         self._accepting = True
         self._writer_error: str | None = None
@@ -135,6 +144,20 @@ class LiveSpeakerWorldTapeRecorder:
     def event_count(self) -> int:
         with self._lock:
             return self._written_event_count
+
+    def final_transcript_dom_binding(self) -> dict[str, Any]:
+        """Expose the immutable run id and latest media hashes for GUI sealing."""
+
+        with self._lock:
+            media = copy.deepcopy(self._media_history[-1]) if self._media_history else {}
+            return {
+                "world_tape_run_id": self.run_id,
+                "runtime_config_sha256": _stable_sha256(self._config),
+                "media": media,
+                "public_done_enqueued": bool(
+                    self._enqueued_counts.get("public:done", 0)
+                ),
+            }
 
     def record_public(self, event: str, payload: dict[str, Any]) -> None:
         self._record("public", str(event), payload)
@@ -310,6 +333,7 @@ class LiveSpeakerWorldTapeRecorder:
                 "event": str(event),
                 "payload": frozen_payload,
             }
+            self._enqueued_counts[f"{stream}:{event}"] += 1
             self._write_queue.put(record)
 
     def _writer_loop(self) -> None:
@@ -426,6 +450,7 @@ class LiveSpeakerWorldTapeRecorder:
             array_count = self._array_sequence
             event_counts = dict(sorted(self._counts.items()))
             writer_error = self._writer_error
+            media = copy.deepcopy(self._media_history[-1]) if self._media_history else {}
         summary: dict[str, Any] = {
             "contract_id": WORLD_TAPE_CONTRACT_ID,
             "run_id": self.run_id,
@@ -441,6 +466,8 @@ class LiveSpeakerWorldTapeRecorder:
             "array_count": array_count,
             "event_counts": event_counts,
             "writer_error": writer_error,
+            "runtime_config_sha256": _stable_sha256(self._config),
+            "media": media,
         }
         if include_hashes:
             for key, path in (

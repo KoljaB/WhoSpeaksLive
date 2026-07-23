@@ -80,6 +80,7 @@ class WindowAudioAsrTests(unittest.TestCase):
 
         self.assertEqual(first_duration, 2 / 16_000)
         self.assertEqual(second_duration, 5 / 16_000)
+        self.assertEqual(diarizer.playback_time(), second_duration)
         self.assertEqual(diarizer._stream_audio_samples, 5)
         np.testing.assert_allclose(diarizer.audio, [0.1, 0.2, 0.3, 0.4, 0.5])
 

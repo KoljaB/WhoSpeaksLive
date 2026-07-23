@@ -396,6 +396,13 @@ class WindowRefinementMixin:
     def _revisit_unknown_sentences(self) -> None:
         if not bool(getattr(self.args, "speaker_refinement_unknown_commit", True)):
             return
+        try:
+            strong_match_similarity = float(
+                getattr(self.args, "same_speaker_similarity", 0.45)
+            )
+        except (TypeError, ValueError):
+            strong_match_similarity = 0.45
+        single_profile = self.memory.profile_count() == 1
         with self._unknown_lock:
             candidates = list(self._unknown_sentences)
 
@@ -406,7 +413,19 @@ class WindowRefinementMixin:
                 min_similarity=self.args.retro_reassign_min_similarity,
                 min_margin=self.args.retro_reassign_min_margin,
             )
-            if not decision.assigned_speaker:
+            # With one profile there is no genuine runner-up, so the relaxed
+            # retro margin is always satisfied. Do not turn an earlier
+            # Unknown into that sole speaker unless the voice match itself is
+            # strong. Once multiple profiles exist, keep the existing relaxed
+            # recovery behavior.
+            if (
+                not decision.assigned_speaker
+                or single_profile
+                and (
+                    decision.top_similarity is None
+                    or decision.top_similarity < strong_match_similarity
+                )
+            ):
                 continue
             with self._sentence_refinement_lock:
                 record = self._sentence_refinement_records.get(int(candidate.index)) or {}

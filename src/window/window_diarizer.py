@@ -508,6 +508,12 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
             if preview_transcriber is not None and preview_transcriber_owned:
                 preview_transcriber.close()
             if not run.done_emitted:
+                # Both processing modes finish their embedding drains and final
+                # speaker refinement before returning here.  Capture the one
+                # authoritative final profile state after every final public
+                # sentence/revision and immediately before ``done``.
+                if run.state is not DiarizationRunState.FAILED:
+                    self.emit_authoritative_final_speaker_memory_state()
                 run.done_emitted = True
                 self.bus.emit("done", {"message": "Window diarization stopped."})
             if run.state is not DiarizationRunState.FAILED:
@@ -595,6 +601,10 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
         if timeline is not None:
             duration = timeline.append(audio, sample_rate)
             self._sync_audio_aliases(timeline.snapshot(copy_audio=False))
+            # Browser capture has no separate HTML-media playback callbacks.
+            # Its received-audio duration is therefore the authoritative
+            # playback clock consumed by VAD, preview ASR, and diarization.
+            self.set_playback_time(duration)
             return duration
 
         # Temporary compatibility for legacy partial-object tests.  Production

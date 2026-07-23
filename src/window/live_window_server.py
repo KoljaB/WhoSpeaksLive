@@ -12,6 +12,7 @@ import base64
 from collections import Counter
 from datetime import datetime
 import json
+import math
 import mimetypes
 import os
 import queue
@@ -177,8 +178,14 @@ from window.browser_live_speaker_scoring import (  # noqa: E402
     BrowserLiveObservationRecorder,
 )
 from window.live_speaker_e2e_contract import (  # noqa: E402
+    FINAL_TRANSCRIPT_DOM_SNAPSHOT_BINDINGS_SCHEMA_VERSION,
+    FINAL_TRANSCRIPT_DOM_SNAPSHOT_CAPTURE_SURFACE,
+    FINAL_TRANSCRIPT_DOM_SNAPSHOT_SCHEMA_VERSION,
     build_real_gui_e2e_attestation,
+    final_transcript_dom_snapshot_output_path,
     seal_real_gui_e2e_attestation,
+    validate_final_transcript_dom_snapshot,
+    write_final_transcript_dom_snapshot,
 )
 from window.live_speaker_world_tape import LiveSpeakerWorldTapeRecorder  # noqa: E402
 
@@ -643,6 +650,164 @@ class LiveWindowApplication:
     def browser_live_observation_enabled(self) -> bool:
         return self.browser_live_recorder is not None or self.world_tape_recorder is not None
 
+    @property
+    def final_transcript_dom_snapshot_required(self) -> bool:
+        """Whether this run is trying to create promotion-grade GUI evidence."""
+
+        return bool(
+            self.browser_live_recorder is not None
+            and self.world_tape_recorder is not None
+            and getattr(self.args, "exit_after_browser_live_observation", False)
+        )
+
+    def final_transcript_dom_snapshot_bindings(self) -> dict[str, Any]:
+        """Return current server-owned identities for the browser's final DOM read."""
+
+        enabled = bool(
+            self.browser_live_recorder is not None
+            and self.world_tape_recorder is not None
+        )
+        result: dict[str, Any] = {
+            "schema_version": FINAL_TRANSCRIPT_DOM_SNAPSHOT_BINDINGS_SCHEMA_VERSION,
+            "snapshot_schema_version": FINAL_TRANSCRIPT_DOM_SNAPSHOT_SCHEMA_VERSION,
+            "capture_surface": FINAL_TRANSCRIPT_DOM_SNAPSHOT_CAPTURE_SURFACE,
+            "enabled": enabled,
+            "promotion_grade_requested": self.final_transcript_dom_snapshot_required,
+            "world_tape_run_id": None,
+            "source_tree_sha256": None,
+            "runtime_config_sha256": None,
+            "media": {
+                "video_id": None,
+                "source_audio_path": None,
+                "source_audio_sha256": None,
+                "source_audio_size_bytes": None,
+                "audio_sha256": None,
+                "decoded_pcm_sha256": None,
+                "decoded_samples": None,
+                "sample_rate": None,
+                "duration_seconds": None,
+            },
+            "errors": [],
+        }
+        if not enabled:
+            return result
+
+        assert self.world_tape_recorder is not None
+        tape_binding = self.world_tape_recorder.final_transcript_dom_binding()
+        current_attestation = build_real_gui_e2e_attestation(
+            root=ROOT,
+            args=self.args,
+            media=self.current_media(),
+        )
+        attested_media = (
+            current_attestation.get("media")
+            if isinstance(current_attestation.get("media"), dict)
+            else {}
+        )
+        tape_media = (
+            tape_binding.get("media")
+            if isinstance(tape_binding.get("media"), dict)
+            else {}
+        )
+        code = (
+            current_attestation.get("code")
+            if isinstance(current_attestation.get("code"), dict)
+            else {}
+        )
+        result.update(
+            {
+                "world_tape_run_id": str(
+                    tape_binding.get("world_tape_run_id") or ""
+                ),
+                "source_tree_sha256": str(code.get("source_tree_sha256") or ""),
+                "runtime_config_sha256": str(
+                    current_attestation.get("runtime_config_sha256") or ""
+                ),
+                "media": {
+                    "video_id": str(attested_media.get("video_id") or ""),
+                    "source_audio_path": str(
+                        attested_media.get("source_audio_path") or ""
+                    ),
+                    "source_audio_sha256": str(
+                        attested_media.get("source_audio_sha256") or ""
+                    ),
+                    "source_audio_size_bytes": attested_media.get(
+                        "source_audio_size_bytes"
+                    ),
+                    "audio_sha256": str(attested_media.get("audio_sha256") or ""),
+                    "decoded_pcm_sha256": str(
+                        tape_media.get("decoded_pcm_sha256") or ""
+                    ),
+                    "decoded_samples": tape_media.get("decoded_samples"),
+                    "sample_rate": tape_media.get("sample_rate"),
+                    "duration_seconds": tape_media.get("duration_seconds"),
+                },
+            }
+        )
+        errors: list[str] = []
+        if not bool(tape_binding.get("public_done_enqueued")):
+            errors.append(
+                "World Tape has not observed the authoritative public done event"
+            )
+        if str(tape_media.get("video_id") or "") != str(
+            attested_media.get("video_id") or ""
+        ):
+            errors.append("World Tape and browser attestation video ids differ")
+        if str(tape_media.get("audio_sha256") or "") != str(
+            attested_media.get("audio_sha256") or ""
+        ):
+            errors.append("World Tape and browser attestation source audio hashes differ")
+        if str(tape_media.get("source_audio_path") or "") != str(
+            attested_media.get("source_audio_path") or ""
+        ):
+            errors.append("World Tape and browser attestation source audio paths differ")
+        if str(tape_media.get("source_audio_sha256") or "") != str(
+            attested_media.get("source_audio_sha256") or ""
+        ):
+            errors.append("World Tape and browser attestation explicit source audio hashes differ")
+        if tape_media.get("source_audio_size_bytes") != attested_media.get(
+            "source_audio_size_bytes"
+        ):
+            errors.append("World Tape and browser attestation source audio sizes differ")
+        if str(tape_binding.get("runtime_config_sha256") or "") != str(
+            current_attestation.get("runtime_config_sha256") or ""
+        ):
+            errors.append("World Tape and browser runtime configurations differ")
+        for key in (
+            "world_tape_run_id",
+            "source_tree_sha256",
+            "runtime_config_sha256",
+        ):
+            if not str(result.get(key) or ""):
+                errors.append(f"final transcript DOM binding {key} is missing")
+        for key, value in result["media"].items():
+            if value is None or value == "":
+                errors.append(f"final transcript DOM binding media.{key} is missing")
+        decoded_samples = result["media"].get("decoded_samples")
+        sample_rate = result["media"].get("sample_rate")
+        duration_seconds = result["media"].get("duration_seconds")
+        if not isinstance(decoded_samples, int) or isinstance(decoded_samples, bool) or decoded_samples <= 0:
+            errors.append("final transcript DOM binding decoded sample count is invalid")
+        if not isinstance(sample_rate, int) or isinstance(sample_rate, bool) or sample_rate <= 0:
+            errors.append("final transcript DOM binding decoded sample rate is invalid")
+        try:
+            duration = float(duration_seconds)
+        except (TypeError, ValueError):
+            duration = float("nan")
+        if (
+            not math.isfinite(duration)
+            or duration <= 0.0
+            or not isinstance(decoded_samples, int)
+            or isinstance(decoded_samples, bool)
+            or not isinstance(sample_rate, int)
+            or isinstance(sample_rate, bool)
+            or sample_rate <= 0
+            or abs(duration - decoded_samples / sample_rate) > 1e-9
+        ):
+            errors.append("final transcript DOM binding decoded duration is inconsistent")
+        result["errors"] = sorted(set(errors))
+        return result
+
     def record_browser_live_observation(
         self,
         samples: Any,
@@ -662,9 +827,55 @@ class LiveWindowApplication:
             )
         return max(counts)
 
-    def finish_browser_live_observation(self, reason: str = "done") -> dict[str, Any]:
+    def finish_browser_live_observation(
+        self,
+        reason: str = "done",
+        final_transcript_dom_snapshot: Any = None,
+    ) -> dict[str, Any]:
         if self.browser_live_recorder is None and self.world_tape_recorder is None:
             return {}
+        dom_snapshot_attestation: dict[str, Any] | None = None
+        bindings = self.final_transcript_dom_snapshot_bindings()
+        if self.final_transcript_dom_snapshot_required and final_transcript_dom_snapshot is None:
+            raise RuntimeError(
+                "Promotion-grade browser evidence requires a post-done final transcript DOM snapshot."
+            )
+        if final_transcript_dom_snapshot is not None:
+            if str(reason) != "done":
+                raise RuntimeError(
+                    "A final transcript DOM snapshot is accepted only for the authoritative done flush."
+                )
+            if self.browser_live_recorder is None:
+                raise RuntimeError(
+                    "A final transcript DOM snapshot requires browser observation output."
+                )
+            if not bindings.get("enabled"):
+                raise RuntimeError(
+                    "Final transcript DOM snapshot bindings are unavailable for this run."
+                )
+            binding_errors = [str(error) for error in bindings.get("errors") or []]
+            snapshot_errors = validate_final_transcript_dom_snapshot(
+                final_transcript_dom_snapshot,
+                bindings,
+            )
+            errors = sorted(set(binding_errors + snapshot_errors))
+            if errors:
+                raise RuntimeError(
+                    "Final transcript DOM snapshot is invalid: " + "; ".join(errors)
+                )
+            snapshot_path = final_transcript_dom_snapshot_output_path(
+                self.browser_live_recorder.output_path
+            )
+            if self.world_tape_recorder is not None:
+                tape_dir = self.world_tape_recorder.output_dir.resolve()
+                if snapshot_path == tape_dir or tape_dir in snapshot_path.parents:
+                    raise RuntimeError(
+                        "Final transcript DOM snapshot must be stored outside the World Tape."
+                    )
+            dom_snapshot_attestation = write_final_transcript_dom_snapshot(
+                browser_observation_path=self.browser_live_recorder.output_path,
+                payload=final_transcript_dom_snapshot,
+            )
         seal_world_tape = bool(
             getattr(self.args, "exit_after_browser_live_observation", False)
         )
@@ -684,6 +895,67 @@ class LiveWindowApplication:
             args=self.args,
             media=self.current_media(),
         )
+        if dom_snapshot_attestation is not None:
+            identity_errors: list[str] = []
+            expected_runtime_hash = str(bindings.get("runtime_config_sha256") or "")
+            if str(finished_attestation.get("runtime_config_sha256") or "") != expected_runtime_hash:
+                identity_errors.append(
+                    "runtime configuration changed between DOM binding and finalization"
+                )
+            if not isinstance(world_tape, dict):
+                identity_errors.append("World Tape summary is missing")
+                world_tape_media: dict[str, Any] = {}
+            else:
+                if str(world_tape.get("runtime_config_sha256") or "") != expected_runtime_hash:
+                    identity_errors.append(
+                        "World Tape summary runtime configuration differs from DOM binding"
+                    )
+                world_tape_media = (
+                    world_tape.get("media")
+                    if isinstance(world_tape.get("media"), dict)
+                    else {}
+                )
+            expected_media = (
+                bindings.get("media")
+                if isinstance(bindings.get("media"), dict)
+                else {}
+            )
+            finished_media = (
+                finished_attestation.get("media")
+                if isinstance(finished_attestation.get("media"), dict)
+                else {}
+            )
+            for key in (
+                "video_id",
+                "source_audio_path",
+                "source_audio_sha256",
+                "source_audio_size_bytes",
+                "audio_sha256",
+            ):
+                if finished_media.get(key) != expected_media.get(key):
+                    identity_errors.append(
+                        f"browser attestation media.{key} changed after DOM binding"
+                    )
+            for key in (
+                "video_id",
+                "source_audio_path",
+                "source_audio_sha256",
+                "source_audio_size_bytes",
+                "audio_sha256",
+                "decoded_pcm_sha256",
+                "decoded_samples",
+                "sample_rate",
+                "duration_seconds",
+            ):
+                if world_tape_media.get(key) != expected_media.get(key):
+                    identity_errors.append(
+                        f"World Tape summary media.{key} differs from DOM binding"
+                    )
+            if identity_errors:
+                raise RuntimeError(
+                    "Final transcript evidence identity is invalid: "
+                    + "; ".join(sorted(set(identity_errors)))
+                )
         started_attestation = self._browser_live_e2e_start_attestation
         if started_attestation is None:
             # This path is diagnostic-only; v2 promotion validation rejects a
@@ -695,6 +967,8 @@ class LiveWindowApplication:
         )
         if world_tape is not None:
             attestation["world_tape"] = world_tape
+        if dom_snapshot_attestation is not None:
+            attestation["final_transcript_dom_snapshot"] = dom_snapshot_attestation
         if self.browser_live_recorder is not None:
             summary = self.browser_live_recorder.finish(
                 reason=reason,
@@ -715,6 +989,8 @@ class LiveWindowApplication:
                     f"{(world_tape or {}).get('output_dir', '')}"
                 )
             })
+        if dom_snapshot_attestation is not None:
+            summary["final_transcript_dom_snapshot"] = dom_snapshot_attestation
         return summary
 
     def current_media(self) -> MediaFiles:
@@ -752,7 +1028,6 @@ class LiveWindowApplication:
         media = resolve_media_url(self.args, url, skip_download=skip_download)
         self.media_manager.replace(media, self.controller.set_media)
         self._bind_world_tape_media(media)
-        self.bus.emit("status", {"message": f"Loaded {media.video_id}."})
         return media
 
     def load_audio_upload(

@@ -43,6 +43,7 @@ def validate_cunk_realtime_replay(args: RealtimeConfig) -> int:
             feed.report_status(
                 f"Replay feeding {args.validation_audio} at {replay_speed:.1f}x."
             )
+            pacing_started_at = time.monotonic()
             for start in range(0, len(audio_int16), chunk_samples):
                 end = min(len(audio_int16), start + chunk_samples)
                 chunk = audio_int16[start:end]
@@ -52,7 +53,8 @@ def validate_cunk_realtime_replay(args: RealtimeConfig) -> int:
                     media_end_seconds=end / float(sample_rate),
                 )
                 if args.replay_sleep:
-                    time.sleep((len(chunk) / float(sample_rate)) / replay_speed)
+                    target = pacing_started_at + (end / float(sample_rate)) / replay_speed
+                    time.sleep(max(0.0, target - time.monotonic()))
 
             silence_seconds = max(0.5, float(args.replay_trailing_silence_seconds))
             silence = np.zeros(int(sample_rate * silence_seconds), dtype=np.int16)
@@ -65,7 +67,10 @@ def validate_cunk_realtime_replay(args: RealtimeConfig) -> int:
                     media_end_seconds=(len(audio_int16) + end) / float(sample_rate),
                 )
                 if args.replay_sleep:
-                    time.sleep((len(chunk) / float(sample_rate)) / replay_speed)
+                    target = pacing_started_at + (
+                        (len(audio_int16) + end) / float(sample_rate)
+                    ) / replay_speed
+                    time.sleep(max(0.0, target - time.monotonic()))
 
             feed.report_status(
                 "Replay audio feed complete; draining final transcripts."

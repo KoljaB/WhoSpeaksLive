@@ -162,6 +162,7 @@ class RealtimeSpeakerEngine:
             python=Path(args.embedding_python),
             provider=args.embedding_provider,
             device=args.embedding_device,
+            response_timeout_seconds=float(args.embedding_helper_response_timeout_seconds),
         )
         self._records_by_session: dict[str, dict[int, ProcessedSentenceRecord]] = {}
         self._records_lock = threading.Lock()

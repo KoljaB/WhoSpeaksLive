@@ -253,6 +253,13 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(self.server.meeting_chat_job(str((query.get("job_id") or [""])[0])))
         elif path == "/api/bootstrap":
             self._send_json({"ok": True, **self._bootstrap_payload()})
+        elif path == "/api/live-observation-bindings":
+            self._send_json(
+                {
+                    "ok": True,
+                    **self.server.final_transcript_dom_snapshot_bindings(),
+                }
+            )
         elif re.fullmatch(r"/assets/web/live/[a-z][a-z0-9_]*\.(?:css|js)", path):
             name = path.removeprefix("/assets/web/")
             try:
@@ -304,6 +311,9 @@ class Handler(BaseHTTPRequestHandler):
                     float(getattr(self.server.args, "live_speaker_probe_unknown_clear_debounce_seconds", 0.0)),
                 ),
                 "browser_observation_enabled": self.server.browser_live_observation_enabled,
+                "final_transcript_dom_snapshot_required": (
+                    self.server.final_transcript_dom_snapshot_required
+                ),
                 "browser_observation_interval_seconds": max(
                     0.02,
                     float(getattr(
@@ -522,7 +532,10 @@ class Handler(BaseHTTPRequestHandler):
                     payload.get("samples", []),
                     payload.get("batch_sequence"),
                 )
-                summary = self.server.finish_browser_live_observation(str(payload.get("reason") or "done"))
+                summary = self.server.finish_browser_live_observation(
+                    str(payload.get("reason") or "done"),
+                    payload.get("final_transcript_dom_snapshot"),
+                )
                 self._send_json({"ok": True, "sample_count": count, "summary": summary})
                 if bool(getattr(self.server.args, "exit_after_browser_live_observation", False)):
                     threading.Thread(

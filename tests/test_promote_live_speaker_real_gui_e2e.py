@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -9,6 +10,7 @@ from window.live_speaker_e2e_contract import (
     REAL_GUI_E2E_CONTRACT_ID,
     seal_real_gui_e2e_attestation,
     stable_sha256,
+    write_final_transcript_dom_snapshot,
 )
 
 
@@ -37,6 +39,7 @@ def _artifact(runtime_config: dict, source_hash: str) -> dict:
 
 def _observation(
     *,
+    observation_path: Path,
     runtime_config: dict,
     source_hash: str,
     artifact_hash: str,
@@ -55,31 +58,93 @@ def _observation(
         }
         for index in range(101)
     ]
+    evidence_dir = observation_path.parent
+    canonical_path = evidence_dir / "canonical.json"
+    audio_path = evidence_dir / "source.wav"
+    video_path = evidence_dir / "source.mp4"
+    canonical_path.write_text(
+        json.dumps({"segments": [{"start": 0.0, "end": 10.0, "speaker": "A"}]}),
+        encoding="utf-8",
+    )
+    audio_path.write_bytes(b"exact source audio")
+    video_path.write_bytes(b"exact source video")
+    sha256 = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+    source_audio_hash = sha256(audio_path)
     attestation = {
         "contract_id": REAL_GUI_E2E_CONTRACT_ID,
         "capture_surface": "normal_gui_server_rendered_browser_dom",
         "runtime_config": runtime_config,
         "runtime_config_sha256": stable_sha256(runtime_config),
-        "canonical": {"sha256": "canonical", "max_end_seconds": 10.0},
+        "canonical": {
+            "path": str(canonical_path),
+            "sha256": sha256(canonical_path),
+            "max_end_seconds": 10.0,
+        },
         "media": {
-            "audio_sha256": "audio",
-            "video_sha256": "video",
+            "audio_path": str(audio_path),
+            "audio_sha256": source_audio_hash,
+            "source_audio_path": str(audio_path),
+            "source_audio_sha256": source_audio_hash,
+            "source_audio_size_bytes": audio_path.stat().st_size,
+            "video_path": str(video_path),
+            "video_sha256": sha256(video_path),
             "video_id": "JWS-qfR6K3w",
         },
         "code": {"source_tree_sha256": source_hash},
         "candidate_artifact": {"sha256": artifact_hash},
     }
     attestation = seal_real_gui_e2e_attestation(attestation, attestation)
+    tape_media = {
+        "video_id": "JWS-qfR6K3w",
+        "source_audio_path": str(audio_path),
+        "source_audio_sha256": source_audio_hash,
+        "source_audio_size_bytes": audio_path.stat().st_size,
+        "audio_sha256": source_audio_hash,
+        "decoded_pcm_sha256": "d" * 64,
+        "decoded_samples": 160_000,
+        "sample_rate": 16_000,
+        "duration_seconds": 10.0,
+    }
+    tape_paths = {}
+    for name in ("events", "arrays", "arrays_index"):
+        tape_path = evidence_dir / f"{run_id}.{name}.bin"
+        tape_path.write_bytes(f"{run_id}:{name}".encode("utf-8"))
+        tape_paths[name] = tape_path
     attestation["world_tape"] = {
         "contract_id": "whospeaks.live_world_tape.v1",
         "status": "complete",
         "run_id": run_id,
         "writer_error": None,
         "event_count": 1,
-        "events_sha256": "e" * 64,
-        "arrays_sha256": "a" * 64,
-        "arrays_index_sha256": "f" * 64,
+        "enqueued_event_count": 1,
+        "events_path": str(tape_paths["events"]),
+        "arrays_path": str(tape_paths["arrays"]),
+        "arrays_index_path": str(tape_paths["arrays_index"]),
+        "events_sha256": sha256(tape_paths["events"]),
+        "arrays_sha256": sha256(tape_paths["arrays"]),
+        "arrays_index_sha256": sha256(tape_paths["arrays_index"]),
+        "runtime_config_sha256": stable_sha256(runtime_config),
+        "media": tape_media,
     }
+    snapshot = {
+        "schema_version": "final_clustering_dom_snapshot_v1",
+        "world_tape_run_id": run_id,
+        "capture_surface": "visible_chrome_final_transcript_dom_after_done",
+        "captured_after_done": True,
+        "source_tree_sha256": source_hash,
+        "runtime_config_sha256": stable_sha256(runtime_config),
+        "media": dict(tape_media),
+        "browser": {
+            "visibility_state": "visible",
+            "has_focus": True,
+            "webdriver": False,
+        },
+        "rows": [{"index": 0, "text": "Final row.", "assigned_speaker": "A"}],
+    }
+    attestation["final_transcript_dom_snapshot"] = write_final_transcript_dom_snapshot(
+        browser_observation_path=observation_path,
+        payload=snapshot,
+    )
     return {
         "attestation": attestation,
         "summary": {
@@ -119,6 +184,7 @@ def _run_promoter(
         _write_json(
             path,
             _observation(
+                observation_path=path,
                 runtime_config=baseline_config,
                 source_hash=baseline_source,
                 artifact_hash=baseline_hash,
@@ -130,6 +196,7 @@ def _run_promoter(
         _write_json(
             path,
             _observation(
+                observation_path=path,
                 runtime_config=candidate_observed_config or candidate_config,
                 source_hash=candidate_observed_source_hash or candidate_source,
                 artifact_hash=candidate_hash,

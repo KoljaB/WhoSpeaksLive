@@ -26,7 +26,6 @@ class _Bus:
     def emit(self, event: str, payload: dict[str, object]) -> None:
         self.records.append((event, payload))
 
-
 class _TranscriptionHarness(WindowTranscriptionMixin):
     def __init__(self, run: DiarizationRun) -> None:
         self._active_run = run
@@ -57,6 +56,7 @@ class _RunLifecycleHarness:
         self.failure = failure
         self.embedding_stops = 0
         self.live_stops = 0
+        self.final_memory_snapshots = 0
 
     def _run(self, _stop_event: threading.Event) -> None:
         if self.failure is not None:
@@ -67,6 +67,15 @@ class _RunLifecycleHarness:
 
     def _stop_live_memory_update_worker(self) -> None:
         self.live_stops += 1
+
+    def emit_authoritative_final_speaker_memory_state(self) -> None:
+        self.final_memory_snapshots += 1
+        self.bus.records.append(
+            (
+                "internal:speaker_memory_state",
+                {"authoritative_final": True},
+            )
+        )
 
 
 class AudioTimelineTests(unittest.TestCase):
@@ -202,7 +211,11 @@ class DiarizationRunTests(unittest.TestCase):
         self.assertFalse(run.preview_thread.is_alive())
         self.assertEqual(run.state, DiarizationRunState.IDLE)
         self.assertIsNone(harness._active_run)
-        self.assertEqual([event for event, _payload in harness.bus.records], ["done"])
+        self.assertEqual(
+            [event for event, _payload in harness.bus.records],
+            ["internal:speaker_memory_state", "done"],
+        )
+        self.assertEqual(harness.final_memory_snapshots, 1)
         self.assertEqual((harness.embedding_stops, harness.live_stops), (1, 1))
 
     def test_failed_main_worker_keeps_failed_run_until_explicit_cleanup(self) -> None:
@@ -215,6 +228,7 @@ class DiarizationRunTests(unittest.TestCase):
         self.assertIn("boom", run.failure)
         self.assertIs(harness._active_run, run)
         self.assertEqual([event for event, _payload in harness.bus.records], ["done"])
+        self.assertEqual(harness.final_memory_snapshots, 0)
 
 
 class DiarizationSessionTests(unittest.TestCase):

@@ -235,11 +235,26 @@ class WindowSpeakerStateMixin:
         self._maybe_checkpoint_confirmed_people(review_assignments=True)
         state = self._speaker_state()
         self.bus.emit("speakers", state)
+        self._emit_speaker_memory_state(state, authoritative_final=False)
+        return state
+
+    def _emit_speaker_memory_state(
+        self,
+        state: dict[str, Any],
+        *,
+        authoritative_final: bool,
+    ) -> None:
         emit_internal = getattr(self.bus, "emit_internal", None)
         if callable(emit_internal):
             emit_internal(
                 "speaker_memory_state",
                 {
+                    "authoritative_final": bool(authoritative_final),
+                    "phase": (
+                        "post_final_refinement_pre_done"
+                        if authoritative_final
+                        else "incremental"
+                    ),
                     "media_time": round(float(self.playback_time()), 6),
                     "speaker_generation": int(getattr(self, "_speaker_generation", 0)),
                     "final_provider": str(getattr(self.args, "embedding_provider", "")),
@@ -249,6 +264,13 @@ class WindowSpeakerStateMixin:
                     "public_state": state,
                 },
             )
+
+    def emit_authoritative_final_speaker_memory_state(self) -> dict[str, Any]:
+        """Record the post-refinement profile state without public side effects."""
+
+        self._sync_metadata_with_memory()
+        state = self._speaker_state()
+        self._emit_speaker_memory_state(state, authoritative_final=True)
         return state
 
     def speaker_state(self) -> dict[str, Any]:

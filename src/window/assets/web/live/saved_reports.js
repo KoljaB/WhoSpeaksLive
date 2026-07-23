@@ -1,3 +1,51 @@
+export const FINAL_TRANSCRIPT_DOM_SNAPSHOT_SCHEMA_VERSION = "final_clustering_dom_snapshot_v1";
+export const FINAL_TRANSCRIPT_DOM_SNAPSHOT_CAPTURE_SURFACE = "visible_chrome_final_transcript_dom_after_done";
+
+export function buildFinalTranscriptDomSnapshot(sentences, bindings, browser) {
+  const rows = Array.from(sentences.querySelectorAll(".row"))
+    .filter(row => row.dataset.realtime !== "true")
+    .filter(row => row.dataset.pending !== "true")
+    .filter(row => row.dataset.provisionalAssignment !== "true")
+    .filter(row => row.dataset.provisionalSplit !== "true")
+    .map(row => {
+      const speakerBadge = row.querySelector(".speaker-name");
+      const unknown = Boolean(speakerBadge && speakerBadge.classList.contains("unknown"));
+      const visibleSpeaker = String((speakerBadge && speakerBadge.textContent) || "").trim();
+      const textNode = row.querySelector(".text");
+      return {
+        index: Number(row.dataset.index),
+        text: String((textNode && textNode.textContent) || ""),
+        assigned_speaker: unknown ? null : (visibleSpeaker || null),
+      };
+    })
+    .sort((left, right) => left.index - right.index);
+  return {
+    schema_version: FINAL_TRANSCRIPT_DOM_SNAPSHOT_SCHEMA_VERSION,
+    world_tape_run_id: String(bindings.world_tape_run_id || ""),
+    capture_surface: FINAL_TRANSCRIPT_DOM_SNAPSHOT_CAPTURE_SURFACE,
+    captured_after_done: true,
+    source_tree_sha256: String(bindings.source_tree_sha256 || ""),
+    runtime_config_sha256: String(bindings.runtime_config_sha256 || ""),
+    media: {
+      video_id: String((bindings.media && bindings.media.video_id) || ""),
+      source_audio_path: String((bindings.media && bindings.media.source_audio_path) || ""),
+      source_audio_sha256: String((bindings.media && bindings.media.source_audio_sha256) || ""),
+      source_audio_size_bytes: Number((bindings.media && bindings.media.source_audio_size_bytes) || 0),
+      audio_sha256: String((bindings.media && bindings.media.audio_sha256) || ""),
+      decoded_pcm_sha256: String((bindings.media && bindings.media.decoded_pcm_sha256) || ""),
+      decoded_samples: Number((bindings.media && bindings.media.decoded_samples) || 0),
+      sample_rate: Number((bindings.media && bindings.media.sample_rate) || 0),
+      duration_seconds: Number((bindings.media && bindings.media.duration_seconds) || 0),
+    },
+    browser: {
+      visibility_state: String((browser && browser.visibility_state) || ""),
+      has_focus: Boolean(browser && browser.has_focus),
+      webdriver: Boolean(browser && browser.webdriver),
+    },
+    rows,
+  };
+}
+
 export function installSavedReports(ctx) {
   const {archiveSelectedSessionsButton, audio, deleteSelectedSessionsButton, liveSpeakerConfig, mediaCurrentTime, mediaDuration, mediaTime, meetingIntelligenceEvidence, meetingIntelligenceGenerate, meetingIntelligenceObjects, meetingIntelligenceStats, meetingIntelligenceStatus, meetingIntelligenceSummary, playbackClockSlackSeconds, restoreSelectedSessionsButton, selectAllSessionsButton, sentences, sessionFilterButtons, sessionList, sessionSelectionStatus, source, sourceKind, sourceTitle, speakerCount, speakerList, start, state, stop, svgNamespace, timelineFill, timelineThumb, unselectAllSessionsButton, video} = ctx;
   const applyTranslationCollection = (...args) => ctx.api.applyTranslationCollection(...args), clockLabel = (...args) => ctx.api.clockLabel(...args), findFinalSentenceRow = (...args) => ctx.api.findFinalSentenceRow(...args), log = (...args) => ctx.api.log(...args), post = (...args) => ctx.api.post(...args), recomputeRenderedSpeakerSentenceCounts = (...args) => ctx.api.recomputeRenderedSpeakerSentenceCounts(...args), refreshSpeakerPanelSentenceCounts = (...args) => ctx.api.refreshSpeakerPanelSentenceCounts(...args), refreshTranscriptVisibility = (...args) => ctx.api.refreshTranscriptVisibility(...args), renderSentence = (...args) => ctx.api.renderSentence(...args), renderSpeakerPanel = (...args) => ctx.api.renderSpeakerPanel(...args), resetTranscriptDisplay = (...args) => ctx.api.resetTranscriptDisplay(...args), secondsLabel = (...args) => ctx.api.secondsLabel(...args), setSourceControlsDisabled = (...args) => ctx.api.setSourceControlsDisabled(...args), setState = (...args) => ctx.api.setState(...args), setTranscriptTitleLive = (...args) => ctx.api.setTranscriptTitleLive(...args), setTranscriptTitleSaved = (...args) => ctx.api.setTranscriptTitleSaved(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), stopBrowserAudioCapture = (...args) => ctx.api.stopBrowserAudioCapture(...args), updateNewRunButtonState = (...args) => ctx.api.updateNewRunButtonState(...args), updateSpeakerState = (...args) => ctx.api.updateSpeakerState(...args);
@@ -834,6 +882,26 @@ export function installSavedReports(ctx) {
   function browserLiveObservationIntervalMs() {
     return Math.max(20, Number(liveSpeakerConfig.browser_observation_interval_seconds || 0.1) * 1000);
   }
+  async function finalTranscriptDomSnapshot(reason) {
+    const response = await fetch("/api/live-observation-bindings", {
+      cache: "no-store",
+      credentials: "same-origin",
+    });
+    const bindings = await response.json();
+    if (!response.ok || !bindings || bindings.ok !== true) {
+      throw new Error((bindings && bindings.error) || "Could not load final transcript DOM bindings.");
+    }
+    const bindingErrors = Array.isArray(bindings.errors) ? bindings.errors.filter(Boolean) : [];
+    if (bindingErrors.length) {
+      throw new Error(`Final transcript DOM bindings are invalid: ${bindingErrors.join("; ")}`);
+    }
+    if (!bindings.enabled || reason !== "done") return null;
+    return buildFinalTranscriptDomSnapshot(sentences, bindings, {
+      visibility_state: document.visibilityState || "",
+      has_focus: document.hasFocus(),
+      webdriver: Boolean(navigator.webdriver),
+    });
+  }
   function mediaSeconds(element) {
     const seconds = Number(element.currentTime || 0);
     return Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
@@ -899,7 +967,15 @@ export function installSavedReports(ctx) {
       ctx.owners.transcript.browserLiveObservationPosting = true;
       const endpoint = finalFlush ? "/api/live-observation-finish" : "/api/live-observation";
       try {
-        return await post(endpoint, {samples, reason, batch_sequence: batchSequence});
+        const finalTranscriptSnapshot = finalFlush
+          ? await finalTranscriptDomSnapshot(reason)
+          : null;
+        return await post(endpoint, {
+          samples,
+          reason,
+          batch_sequence: batchSequence,
+          final_transcript_dom_snapshot: finalTranscriptSnapshot,
+        });
       } catch (error) {
         if (samples.length) ctx.owners.transcript.browserLiveObservationBuffer = samples.concat(ctx.owners.transcript.browserLiveObservationBuffer);
         log(`Browser live observation batch ${batchSequence} failed: ${error.message}`);

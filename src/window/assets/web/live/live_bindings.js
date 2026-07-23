@@ -637,7 +637,7 @@ export function installLiveBindings(ctx) {
         syncPresetSelection(media.url);
         refreshMediaElements(media.version);
         updateMediaMode();
-        log(`Loaded ${media.video_id}.`);
+        log(`${media.video_id} is ready in the player.`);
         setState("Ready");
         start.disabled = false;
       } catch (error) {

@@ -24,6 +24,7 @@ class CachedWindowReplayResult:
     analysis_records: list[dict[str, Any]]
     final_payloads: list[dict[str, Any]]
     profile_events: list[dict[str, Any]]
+    final_profiles: list[dict[str, Any]]
 
 
 class CachedReplayEventBus:
@@ -313,6 +314,7 @@ def replay_cached_window_diarizer(
         analysis_records=analysis_records,
         final_payloads=final_payloads,
         profile_events=profile_events,
+        final_profiles=controller.memory.export_profiles(),
     )
 
 

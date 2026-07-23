@@ -913,6 +913,30 @@ class RealtimeCapture:
                         "source_end_seconds": part.end_seconds,
                         "word_start_seconds": part.word_start_seconds,
                         "word_end_seconds": part.word_end_seconds,
+                        "words": [
+                            {
+                                **word,
+                                "video_start_seconds": (
+                                    None
+                                    if video_chunk_end is None
+                                    else round(
+                                        float(video_chunk_end - final_audio_duration)
+                                        + float(word["start_seconds"]),
+                                        4,
+                                    )
+                                ),
+                                "video_end_seconds": (
+                                    None
+                                    if video_chunk_end is None
+                                    else round(
+                                        float(video_chunk_end - final_audio_duration)
+                                        + float(word["end_seconds"]),
+                                        4,
+                                    )
+                                ),
+                            }
+                            for word in part.words
+                        ],
                         "split_reason": part.split_reason,
                         "part_index": part.part_index,
                         "part_count": part.part_count,

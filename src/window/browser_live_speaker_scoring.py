@@ -11,6 +11,7 @@ import threading
 import time
 from typing import Any
 
+from window.live_speaker_e2e_contract import atomic_write_json
 from window.live_speaker_probe_scoring import (
     Interval,
     canonical_speaker_turns,
@@ -427,8 +428,7 @@ class BrowserLiveObservationRecorder:
             },
             "samples": samples,
         }
-        self.output_path.parent.mkdir(parents=True, exist_ok=True)
-        self.output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+        atomic_write_json(self.output_path, payload)
         return payload["summary"]
 
 

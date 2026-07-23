@@ -132,6 +132,12 @@ def add_speaker_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--embedding-provider", default=DEFAULT_EMBEDDING_PROVIDER)
     parser.add_argument("--embedding-python", type=Path, default=default_embedding_python())
     parser.add_argument("--embedding-device", default="cuda")
+    parser.add_argument(
+        "--embedding-helper-response-timeout-seconds",
+        type=float,
+        default=600.0,
+        help="Maximum wait for the local embedding helper, including cold model startup.",
+    )
     parser.add_argument("--same-speaker-similarity", type=float, default=0.45)
     parser.add_argument("--similarity-temperature", type=float, default=0.07)
     parser.add_argument("--speaker-softmax-temperature", type=float, default=0.075)

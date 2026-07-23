@@ -14,6 +14,8 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from speakers.speaker_embedding_cluster import SpeakerDecision
+from window.window_domain import PendingUnknownSentence
 from window.window_events import RecordingEventBus
 
 
@@ -66,6 +68,113 @@ class AssignmentRefinementTests(unittest.TestCase):
                 "text": "same speaker evidence",
             }
         ]
+
+    def test_retro_reassignment_keeps_weak_match_unknown_with_one_profile(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            speaker_refinement_unknown_commit=True,
+            retro_reassign_min_similarity=0.02,
+            retro_reassign_min_margin=0.0,
+            update_unknown_max=0.4289,
+            same_speaker_similarity=0.45,
+        )
+        diarizer._unknown_sentences = [
+            PendingUnknownSentence(
+                index=0,
+                base_payload=self.base_sentence_payload(),
+                embedding=np.array([0.0, 1.0], dtype=np.float32),
+                duration_seconds=1.95,
+            )
+        ]
+        diarizer.memory = mock.Mock()
+        diarizer.memory.profile_count.return_value = 1
+        diarizer.memory.score_existing.return_value = SpeakerDecision(
+            assigned_speaker="S1",
+            created_speaker=False,
+            probabilities={"unknown": 0.9967, "speaker1": 0.0033},
+            similarities={"S1": 0.0903},
+            unknown_probability=0.9967,
+            top_similarity=0.0903,
+            margin=1.0,
+            quality=0.6977,
+            assignment_source="retro",
+        )
+        diarizer._remove_unknown_sentence = mock.Mock(return_value=True)
+
+        diarizer._revisit_unknown_sentences()
+
+        diarizer._remove_unknown_sentence.assert_not_called()
+
+    def test_retro_reassignment_still_commits_confident_known_voice(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            speaker_refinement_unknown_commit=True,
+            retro_reassign_min_similarity=0.02,
+            retro_reassign_min_margin=0.0,
+            update_unknown_max=0.4289,
+            same_speaker_similarity=0.45,
+        )
+        diarizer._unknown_sentences = [
+            PendingUnknownSentence(
+                index=0,
+                base_payload=self.base_sentence_payload(),
+                embedding=np.array([1.0, 0.0], dtype=np.float32),
+                duration_seconds=1.95,
+            )
+        ]
+        diarizer.memory = mock.Mock()
+        diarizer.memory.profile_count.return_value = 1
+        diarizer.memory.score_existing.return_value = SpeakerDecision(
+            assigned_speaker="S1",
+            created_speaker=False,
+            probabilities={"unknown": 0.92, "speaker1": 0.08},
+            similarities={"S1": 0.72},
+            unknown_probability=0.92,
+            top_similarity=0.72,
+            margin=1.0,
+            quality=0.6977,
+            assignment_source="retro",
+        )
+        diarizer._remove_unknown_sentence = mock.Mock(return_value=False)
+
+        diarizer._revisit_unknown_sentences()
+
+        diarizer._remove_unknown_sentence.assert_called_once_with(0)
+
+    def test_retro_reassignment_keeps_relaxed_recovery_with_multiple_profiles(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            speaker_refinement_unknown_commit=True,
+            retro_reassign_min_similarity=0.02,
+            retro_reassign_min_margin=0.0,
+            same_speaker_similarity=0.45,
+        )
+        diarizer._unknown_sentences = [
+            PendingUnknownSentence(
+                index=0,
+                base_payload=self.base_sentence_payload(),
+                embedding=np.array([0.0, 1.0], dtype=np.float32),
+                duration_seconds=1.95,
+            )
+        ]
+        diarizer.memory = mock.Mock()
+        diarizer.memory.profile_count.return_value = 2
+        diarizer.memory.score_existing.return_value = SpeakerDecision(
+            assigned_speaker="S2",
+            created_speaker=False,
+            probabilities={"unknown": 0.9967, "speaker2": 0.0033},
+            similarities={"S1": 0.05, "S2": 0.09},
+            unknown_probability=0.9967,
+            top_similarity=0.09,
+            margin=0.04,
+            quality=0.6977,
+            assignment_source="retro",
+        )
+        diarizer._remove_unknown_sentence = mock.Mock(return_value=False)
+
+        diarizer._revisit_unknown_sentences()
+
+        diarizer._remove_unknown_sentence.assert_called_once_with(0)
 
     def test_small_island_refinement_merges_oneoff_flanked_speaker(self) -> None:
         from window.window_validation_replay import replay_cached_window_diarizer

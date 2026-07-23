@@ -162,6 +162,12 @@ def test_world_tape_preserves_arrays_and_replays_shared_core(tmp_path: Path) -> 
     assert '"harmless_value": 3' in manifest
     assert summary["array_count"] >= 2
     assert summary["event_count"] == summary["enqueued_event_count"]
+    assert summary["runtime_config_sha256"]
+    assert summary["media"]["source_audio_path"] == summary["media"]["audio_path"]
+    assert summary["media"]["source_audio_sha256"] == summary["media"]["audio_sha256"]
+    assert summary["media"]["source_audio_size_bytes"] == summary["media"]["audio_size_bytes"]
+    assert summary["media"]["decoded_samples"] == 3200
+    assert summary["media"]["duration_seconds"] == 0.2
     report = validate_and_replay_world_tape(tape_dir)
     assert report["validation"]["valid"] is True
     assert report["server_core_replay"]["exact_match"] is True

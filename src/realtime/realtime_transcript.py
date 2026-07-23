@@ -30,6 +30,7 @@ class TranscriptPart:
     word_start_seconds: float
     word_end_seconds: float
     word_count: int
+    words: list[dict[str, Any]]
     split_reason: str
     part_index: int
     part_count: int
@@ -160,6 +161,7 @@ def split_transcript_by_timestamps(
             word_start_seconds=0.0,
             word_end_seconds=duration_seconds,
             word_count=0,
+            words=[],
             split_reason="fallback",
             part_index=0,
             part_count=1,
@@ -307,6 +309,14 @@ def split_transcript_by_timestamps(
                 word_start_seconds=round(float(raw_start), 4),
                 word_end_seconds=round(float(raw_end), 4),
                 word_count=len(group),
+                words=[
+                    {
+                        "text": str(word.get("word", "")),
+                        "start_seconds": round(float(word["start"]), 4),
+                        "end_seconds": round(float(word["end"]), 4),
+                    }
+                    for word in group
+                ],
                 split_reason=reason,
                 part_index=index,
                 part_count=0,

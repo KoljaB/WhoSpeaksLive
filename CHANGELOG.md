@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 0.1.5 - 2026-07-23
+
+- Preserved word-level source and media timestamps through realtime transcript splitting.
+- Added a configurable local embedding-helper timeout for cold model startup.
+- Hardened authentic GUI evidence with final transcript DOM snapshots, media identity checks, and authoritative final speaker-profile state.
+- Improved replay pacing so validation follows the requested wall-clock schedule without accumulating processing drift.
+- Prevented weak Unknown sentences from being retroactively assigned to the sole existing speaker profile.
+- Clarified media loading status so the browser reports cache progress once and a distinct player-ready result.
+
 ## 0.1.4 - 2026-07-22
 
 - Prevented long startup and model-path status messages from expanding the speaker sidebar beyond the browser viewport.
