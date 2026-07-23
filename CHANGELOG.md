@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.1.6 - 2026-07-23
+
+- Prevented high ASR no-speech probabilities from silently deleting ordinary spoken text; conflicting evidence now keeps the transcript and adds a visible review warning.
+- Restricted suppression to independently unconfirmed standalone high-risk hallucination phrases and persisted unresolved suppression notices for review.
+- Isolated and prewarmed stateful Silero VAD instances for main transcription, realtime preview, and live speaker probing to prevent cross-thread state corruption and first-call latency spikes.
+- Preserved ASR review warnings through transcript persistence, saved-session reloads, sentence merging, and speaker corrections.
+
 ## 0.1.5 - 2026-07-23
 
 - Preserved word-level source and media timestamps through realtime transcript splitting.

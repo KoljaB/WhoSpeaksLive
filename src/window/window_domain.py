@@ -31,6 +31,7 @@ class TimedWord:
     avg_logprob: float | None = None
     compression_ratio: float | None = None
     segment_index: int | None = None
+    asr_review: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -57,6 +58,7 @@ class SentencePart:
     sentence_boundary_pre_padding_seconds: float = DEFAULT_SENTENCE_BOUNDARY_PRE_PADDING_SECONDS
     sentence_boundary_post_padding_seconds: float = DEFAULT_SENTENCE_BOUNDARY_POST_PADDING_SECONDS
     sentence_boundary_gap_ratio: float = DEFAULT_SENTENCE_BOUNDARY_GAP_RATIO
+    asr_review: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

@@ -205,6 +205,8 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
         self._sentence_refinement_lock = self._session_state.lock
         self._sentence_refinement_records: dict[int, dict[str, Any]] = {}
         self._correction_history: list[dict[str, Any]] = []
+        self._asr_review_candidate_lock = threading.Lock()
+        self._asr_review_candidates: list[dict[str, Any]] = []
         self._sentence_refinement_run_lock = self._session_state.lock
         self._speaker_last_media_end: dict[str, float] = {}
         self._embedding_jobs: "queue.Queue[EmbeddingSentenceJob | None] | None" = None
@@ -231,6 +233,21 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
         self._vad_model_backend = ""
         self._vad_model_error: str | None = None
         self._vad_model_lock = threading.Lock()
+        self._vad_inference_lock = threading.Lock()
+        # Main transcription, realtime preview, and live-speaker probing run
+        # concurrently.  Each role owns a stateful Silero instance so one
+        # role's reset/inference sequence cannot corrupt or delay another.
+        self._vad_role_models: dict[str, Any] = {}
+        self._vad_role_model_errors: dict[str, str] = {}
+        self._vad_role_model_backends: dict[str, str] = {}
+        self._vad_role_model_locks = {
+            "preview": threading.Lock(),
+            "live": threading.Lock(),
+        }
+        self._vad_role_inference_locks = {
+            "preview": threading.Lock(),
+            "live": threading.Lock(),
+        }
         self._webrtc_vad_error: str | None = None
         self._sentence_splitter_warmed = False
         self._embedding_warmed = False

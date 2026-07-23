@@ -504,12 +504,97 @@ class WindowRuntimeAudioMixin:
                         recorder(job, "cancelled", reason=str(reason))
                 jobs.task_done()
 
-    def _load_silero_vad_model(self) -> Any | None:
-        if self._vad_model is not None or self._vad_model_error is not None:
+    @staticmethod
+    def _silero_vad_role(role: str) -> str:
+        normalized = str(role or "main").strip().lower()
+        return normalized if normalized in {"main", "preview", "live"} else "main"
+
+    def _silero_vad_model_for_role(self, role: str) -> Any | None:
+        role = self._silero_vad_role(role)
+        if role == "main":
             return self._vad_model
-        with self._vad_model_lock:
-            if self._vad_model is not None or self._vad_model_error is not None:
-                return self._vad_model
+        models = getattr(self, "_vad_role_models", None)
+        if not isinstance(models, dict):
+            return self._vad_model
+        return models.get(role)
+
+    def _silero_vad_error_for_role(self, role: str) -> str | None:
+        role = self._silero_vad_role(role)
+        if role == "main":
+            return self._vad_model_error
+        errors = getattr(self, "_vad_role_model_errors", None)
+        if not isinstance(errors, dict):
+            return self._vad_model_error
+        return errors.get(role)
+
+    def _silero_vad_backend_for_role(self, role: str) -> str:
+        role = self._silero_vad_role(role)
+        if role == "main":
+            return str(self._vad_model_backend or "")
+        backends = getattr(self, "_vad_role_model_backends", None)
+        if not isinstance(backends, dict):
+            return str(self._vad_model_backend or "")
+        return str(backends.get(role) or "")
+
+    def _set_silero_vad_role_state(
+        self,
+        role: str,
+        *,
+        model: Any | None,
+        error: str | None,
+    ) -> None:
+        role = self._silero_vad_role(role)
+        if role == "main":
+            self._vad_model = model
+            self._vad_model_error = error
+            if model is None:
+                self._vad_model_backend = ""
+            return
+        models = getattr(self, "_vad_role_models", None)
+        errors = getattr(self, "_vad_role_model_errors", None)
+        if not isinstance(models, dict) or not isinstance(errors, dict):
+            # Lightweight test harnesses created before role separation keep
+            # using the main slot.
+            self._vad_model = model
+            self._vad_model_error = error
+            return
+        if model is None:
+            models.pop(role, None)
+            backends = getattr(self, "_vad_role_model_backends", None)
+            if isinstance(backends, dict):
+                backends.pop(role, None)
+        else:
+            models[role] = model
+        if error is None:
+            errors.pop(role, None)
+        else:
+            errors[role] = error
+
+    def _silero_vad_model_lock_for_role(self, role: str) -> threading.Lock:
+        role = self._silero_vad_role(role)
+        if role == "main":
+            return self._vad_model_lock
+        return getattr(self, "_vad_role_model_locks", {}).get(role, self._vad_model_lock)
+
+    def _silero_vad_inference_lock_for_role(self, role: str) -> threading.Lock:
+        role = self._silero_vad_role(role)
+        if role == "main":
+            return self._vad_inference_lock
+        return getattr(self, "_vad_role_inference_locks", {}).get(role, self._vad_inference_lock)
+
+    def _load_silero_vad_model(self, *, role: str = "main") -> Any | None:
+        role = self._silero_vad_role(role)
+        model = self._silero_vad_model_for_role(role)
+        error = self._silero_vad_error_for_role(role)
+        if model is not None or error is not None:
+            return model
+        status_message: str | None = None
+        model_lock = self._silero_vad_model_lock_for_role(role)
+        with model_lock:
+            model = self._silero_vad_model_for_role(role)
+            error = self._silero_vad_error_for_role(role)
+            if model is not None or error is not None:
+                return model
             try:
                 realtime_root = Path(getattr(self.args, "realtime_preview_realtimestt_root", DEFAULT_REALTIMESTT_ROOT))
                 if realtime_root.exists() and str(realtime_root) not in sys.path:
@@ -524,27 +609,90 @@ class WindowRuntimeAudioMixin:
                 backend = str(getattr(self.args, "vad_silero_backend", "auto") or "auto")
                 if backend == "auto" and model_path is not None:
                     backend = default_silero_vad_backend(model_path)
-                self._vad_model = create_silero_vad_model(
+                model = create_silero_vad_model(
                     backend=backend,
                     onnx_model_path=str(model_path) if model_path is not None else None,
                     onnx_threads=max(1, int(getattr(self.args, "vad_silero_onnx_threads", 2))),
                     sample_rate=SILERO_VAD_SAMPLE_RATE,
                     chunk_samples=SILERO_VAD_CHUNK_SAMPLES,
                 )
-                self._vad_model_backend = str(getattr(self._vad_model, "backend", backend))
-                loaded_path = getattr(self._vad_model, "model_path", model_path)
+                self._set_silero_vad_role_state(role, model=model, error=None)
+                loaded_backend = str(getattr(model, "backend", backend))
+                if role == "main":
+                    self._vad_model_backend = loaded_backend
+                else:
+                    role_backends = getattr(self, "_vad_role_model_backends", None)
+                    if isinstance(role_backends, dict):
+                        role_backends[role] = loaded_backend
+                loaded_path = getattr(model, "model_path", model_path)
                 loaded_name = Path(loaded_path).name if loaded_path is not None else "auto"
-                self.bus.emit(
-                    "status",
-                    {"message": f"Silero ONNX VAD ready ({self._vad_model_backend}, {loaded_name})."},
+                role_label = "" if role == "main" else f" for {role}"
+                status_message = (
+                    f"Silero ONNX VAD ready{role_label} "
+                    f"({loaded_backend}, {loaded_name})."
                 )
             except Exception as exc:
-                self._vad_model_error = str(exc)
-                self.bus.emit(
-                    "status",
-                    {"message": f"Silero ONNX VAD unavailable; falling back to RMS VAD: {exc}"},
+                self._set_silero_vad_role_state(role, model=None, error=str(exc))
+                role_label = "" if role == "main" else f" for {role}"
+                status_message = (
+                    f"Silero ONNX VAD unavailable{role_label}; "
+                    f"falling back to RMS VAD: {exc}"
                 )
-        return self._vad_model
+        # Event listeners are synchronous and may themselves inspect VAD state.
+        # Never invoke them while holding the lifecycle lock.
+        if status_message is not None:
+            self.bus.emit("status", {"message": status_message})
+        return self._silero_vad_model_for_role(role)
+
+    def _warm_silero_vad_model(self, *, role: str = "main") -> bool:
+        """Run real inference once so the first realtime call has no lazy-init hit."""
+
+        role = self._silero_vad_role(role)
+        model = self._load_silero_vad_model(role=role)
+        if model is None:
+            return False
+        inference_lock = self._silero_vad_inference_lock_for_role(role)
+        model_lock = self._silero_vad_model_lock_for_role(role)
+        warmup_error: Exception | None = None
+        with inference_lock:
+            with model_lock:
+                current_model = self._silero_vad_model_for_role(role)
+            if current_model is None:
+                return False
+            try:
+                reset_states = getattr(current_model, "reset_states", None)
+                if callable(reset_states):
+                    reset_states()
+                current_model(
+                    np.zeros(SILERO_VAD_CHUNK_SAMPLES, dtype=np.float32),
+                    SILERO_VAD_SAMPLE_RATE,
+                )
+                # The warmup frame is synthetic and must not become context
+                # for the first real window.
+                if callable(reset_states):
+                    reset_states()
+            except Exception as exc:
+                warmup_error = exc
+                with model_lock:
+                    if self._silero_vad_model_for_role(role) is current_model:
+                        self._set_silero_vad_role_state(
+                            role,
+                            model=None,
+                            error=str(exc),
+                        )
+        if warmup_error is not None:
+            role_label = "" if role == "main" else f" for {role}"
+            self.bus.emit(
+                "status",
+                {
+                    "message": (
+                        f"Silero ONNX VAD warmup failed{role_label}; "
+                        f"falling back to RMS VAD: {warmup_error}"
+                    )
+                },
+            )
+            return False
+        return True
 
     def _resample_for_silero_vad(self, audio: np.ndarray, sample_rate: int) -> np.ndarray:
         if int(sample_rate) == SILERO_VAD_SAMPLE_RATE:
@@ -818,6 +966,7 @@ class WindowRuntimeAudioMixin:
                 speech_threshold=threshold,
                 min_speech_seconds=minimum,
                 diagnostics=diagnostics,
+                role="live",
             )
             has_speech = state.has_speech
 
@@ -904,8 +1053,10 @@ class WindowRuntimeAudioMixin:
         speech_threshold: float | None = None,
         min_speech_seconds: float | None = None,
         diagnostics: dict[str, Any] | None = None,
+        role: str = "main",
     ) -> VadWindowState:
-        model = self._load_silero_vad_model()
+        role = self._silero_vad_role(role)
+        model = self._load_silero_vad_model(role=role)
         if model is None:
             return self._rms_vad_window_state(
                 left,
@@ -942,31 +1093,67 @@ class WindowRuntimeAudioMixin:
         starts: list[int] = []
         probabilities: list[float] = []
         frame_valid_samples: list[int] = []
-        reset_states = getattr(model, "reset_states", None)
-        if callable(reset_states):
-            reset_states()
-        try:
-            for start in range(0, vad_audio.size, frame_samples):
-                end = min(vad_audio.size, start + frame_samples)
-                if end - start < max(1, frame_samples // 2):
-                    break
-                chunk = vad_audio[start:end]
-                valid_sample_count = int(chunk.size)
-                if chunk.size < frame_samples:
-                    padded = np.zeros(frame_samples, dtype=np.float32)
-                    padded[:chunk.size] = chunk
-                    chunk = padded
-                probability = float(model(chunk.astype(np.float32, copy=False), SILERO_VAD_SAMPLE_RATE))
-                probabilities.append(probability)
-                flags.append(probability >= threshold)
-                starts.append(start)
-                frame_valid_samples.append(valid_sample_count)
-        except Exception as exc:
-            self._vad_model_error = str(exc)
-            self._vad_model = None
+        inference_error: Exception | None = None
+        model_unavailable = False
+        # Silero keeps recurrent state between frames. Resetting and consuming
+        # one complete window must therefore be atomic within this role.
+        # Concurrent roles own distinct model instances and locks, so main,
+        # preview, and live probing neither corrupt nor delay one another.
+        inference_lock = self._silero_vad_inference_lock_for_role(role)
+        model_lock = self._silero_vad_model_lock_for_role(role)
+        with inference_lock:
+            with model_lock:
+                current_model = self._silero_vad_model_for_role(role)
+            if model is not current_model:
+                model = current_model
+            if model is None:
+                model_unavailable = True
+            else:
+                try:
+                    reset_states = getattr(model, "reset_states", None)
+                    if callable(reset_states):
+                        reset_states()
+                    for start in range(0, vad_audio.size, frame_samples):
+                        end = min(vad_audio.size, start + frame_samples)
+                        if end - start < max(1, frame_samples // 2):
+                            break
+                        chunk = vad_audio[start:end]
+                        valid_sample_count = int(chunk.size)
+                        if chunk.size < frame_samples:
+                            padded = np.zeros(frame_samples, dtype=np.float32)
+                            padded[:chunk.size] = chunk
+                            chunk = padded
+                        probability = float(model(chunk.astype(np.float32, copy=False), SILERO_VAD_SAMPLE_RATE))
+                        probabilities.append(probability)
+                        flags.append(probability >= threshold)
+                        starts.append(start)
+                        frame_valid_samples.append(valid_sample_count)
+                except Exception as exc:
+                    inference_error = exc
+                    with model_lock:
+                        if self._silero_vad_model_for_role(role) is model:
+                            self._set_silero_vad_role_state(
+                                role,
+                                model=None,
+                                error=str(exc),
+                            )
+        if model_unavailable:
+            return self._rms_vad_window_state(
+                left,
+                right,
+                audio,
+                sample_rate,
+                diagnostics=diagnostics,
+            )
+        if inference_error is not None:
             self.bus.emit(
                 "status",
-                {"message": f"Silero ONNX VAD call failed; falling back to RMS VAD: {exc}"},
+                {
+                    "message": (
+                        "Silero ONNX VAD call failed; falling back to RMS VAD: "
+                        f"{inference_error}"
+                    )
+                },
             )
             return self._rms_vad_window_state(
                 left,
@@ -977,8 +1164,9 @@ class WindowRuntimeAudioMixin:
             )
 
         if diagnostics is not None:
+            role_backend = self._silero_vad_backend_for_role(role)
             diagnostics.update({
-                "effective_backend": self._vad_model_backend or "silero",
+                "effective_backend": role_backend or "silero",
                 "silero_frame_samples": frame_samples,
                 "silero_frame_seconds": frame_seconds,
                 "silero_threshold": threshold,
@@ -996,6 +1184,7 @@ class WindowRuntimeAudioMixin:
                 ),
             })
 
+        role_backend = self._silero_vad_backend_for_role(role)
         return self._vad_state_from_flags(
             left=left,
             right=right,
@@ -1005,7 +1194,7 @@ class WindowRuntimeAudioMixin:
             frame_seconds=frame_seconds,
             flags=flags,
             starts=starts,
-            backend=self._vad_model_backend or "silero",
+            backend=role_backend or "silero",
             min_speech_seconds=min_speech_seconds,
         )
 
@@ -1135,9 +1324,10 @@ class WindowRuntimeAudioMixin:
         *,
         force: bool = False,
         primary_state: VadWindowState | None = None,
+        role: str = "main",
     ) -> VadWindowState:
         if primary_state is None:
-            primary_state = self._vad_window_state(left, right, force=force)
+            primary_state = self._vad_window_state(left, right, force=force, role=role)
         if self._vad_gate_secondary_backend() == "off" or not primary_state.has_speech:
             return primary_state
         audio, sample_rate = self._audio_window_copy(left, right)
@@ -1156,7 +1346,14 @@ class WindowRuntimeAudioMixin:
             min_speech_seconds=min_speech,
         )
 
-    def _vad_window_state(self, left: float, right: float, *, force: bool = False) -> VadWindowState:
+    def _vad_window_state(
+        self,
+        left: float,
+        right: float,
+        *,
+        force: bool = False,
+        role: str = "main",
+    ) -> VadWindowState:
         if not force and not getattr(self.args, "vad_sentence_splitting", True):
             return VadWindowState(False, False)
         if right <= left:
@@ -1168,7 +1365,13 @@ class WindowRuntimeAudioMixin:
 
         if getattr(self.args, "vad_backend", "silero") == "rms":
             return self._rms_vad_window_state(left, right, audio, sample_rate)
-        return self._silero_vad_window_state(left, right, audio, sample_rate)
+        return self._silero_vad_window_state(
+            left,
+            right,
+            audio,
+            sample_rate,
+            role=role,
+        )
 
     def _asr_vad_gate_enabled(self) -> bool:
         return bool(getattr(self.args, "asr_vad_gate", True))

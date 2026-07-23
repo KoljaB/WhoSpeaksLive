@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from queue import Queue
+import threading
+from pathlib import Path
 from types import SimpleNamespace
+from unittest import mock
 
 import numpy as np
 
@@ -209,6 +212,19 @@ class _SileroModel:
         return 0.9
 
 
+class _CountingSileroModel(_SileroModel):
+    def __init__(self) -> None:
+        self.reset_count = 0
+        self.call_count = 0
+
+    def reset_states(self) -> None:
+        self.reset_count += 1
+
+    def __call__(self, _audio: np.ndarray, _sample_rate: int) -> float:
+        self.call_count += 1
+        return 0.9
+
+
 class _VadHarness(WindowRuntimeAudioMixin):
     def __init__(self) -> None:
         self.args = SimpleNamespace(
@@ -218,9 +234,13 @@ class _VadHarness(WindowRuntimeAudioMixin):
             vad_silero_speech_threshold=0.5,
         )
         self._vad_model_backend = "silero-test"
+        self._vad_model = _SileroModel()
+        self._vad_model_error = None
+        self._vad_model_lock = threading.Lock()
+        self._vad_inference_lock = threading.Lock()
 
-    def _load_silero_vad_model(self):
-        return _SileroModel()
+    def _load_silero_vad_model(self, *, role: str = "main"):
+        return self._vad_model
 
 
 def test_silero_observation_preserves_resampled_and_per_frame_valid_lengths() -> None:
@@ -240,6 +260,141 @@ def test_silero_observation_preserves_resampled_and_per_frame_valid_lengths() ->
     assert diagnostics["silero_frame_valid_samples"] == [512, 388]
     assert diagnostics["silero_frame_padded_samples"] == [0, 124]
     assert diagnostics["silero_discarded_tail_sample_count"] == 0
+
+
+class _ReentrantVadBus:
+    def __init__(self, harness) -> None:
+        self.harness = harness
+        self.messages: list[str] = []
+        self.reentered = False
+
+    def emit(self, _event: str, payload: dict) -> None:
+        self.messages.append(str(payload.get("message") or ""))
+        if self.reentered or "Silero ONNX VAD ready" not in self.messages[-1]:
+            return
+        self.reentered = True
+        state = self.harness._silero_vad_window_state(
+            0.0,
+            0.032,
+            np.ones(512, dtype=np.float32),
+            16_000,
+        )
+        assert state.has_speech
+
+
+class _LoadingVadHarness(WindowRuntimeAudioMixin):
+    def __init__(self) -> None:
+        self.args = SimpleNamespace(
+            realtime_preview_realtimestt_root=Path("missing-realtimestt-root"),
+            vad_silero_onnx_model_path=None,
+            vad_silero_backend="auto",
+            vad_silero_onnx_threads=1,
+            vad_merge_gap_seconds=0.0,
+            vad_min_speech_seconds=0.0,
+            vad_silence_seconds=0.2,
+            vad_silero_speech_threshold=0.5,
+        )
+        self._vad_model_backend = ""
+        self._vad_model = None
+        self._vad_model_error = None
+        self._vad_model_lock = threading.Lock()
+        self._vad_inference_lock = threading.Lock()
+        self._vad_role_models = {}
+        self._vad_role_model_errors = {}
+        self._vad_role_model_backends = {}
+        self._vad_role_model_locks = {
+            "preview": threading.Lock(),
+            "live": threading.Lock(),
+        }
+        self._vad_role_inference_locks = {
+            "preview": threading.Lock(),
+            "live": threading.Lock(),
+        }
+        self.bus = _ReentrantVadBus(self)
+
+
+def test_silero_ready_listener_can_reenter_vad_without_deadlock() -> None:
+    harness = _LoadingVadHarness()
+    thread_error: list[BaseException] = []
+
+    def load() -> None:
+        try:
+            harness._load_silero_vad_model()
+        except BaseException as exc:  # pragma: no cover - asserted below
+            thread_error.append(exc)
+
+    with mock.patch(
+        "RealtimeSTT.core.silero_vad.create_silero_vad_model",
+        return_value=_SileroModel(),
+    ):
+        thread = threading.Thread(target=load, daemon=True)
+        thread.start()
+        thread.join(timeout=1.0)
+
+    assert not thread.is_alive(), "synchronous VAD status listener deadlocked on the model lock"
+    assert thread_error == []
+    assert harness.bus.reentered
+
+
+def test_silero_roles_use_distinct_models_and_inference_locks() -> None:
+    harness = _LoadingVadHarness()
+    models = [_SileroModel(), _SileroModel(), _SileroModel()]
+    with mock.patch(
+        "RealtimeSTT.core.silero_vad.create_silero_vad_model",
+        side_effect=models,
+    ):
+        main = harness._load_silero_vad_model(role="main")
+        preview = harness._load_silero_vad_model(role="preview")
+        live = harness._load_silero_vad_model(role="live")
+
+    assert main is models[0]
+    assert preview is models[1]
+    assert live is models[2]
+    assert len({id(main), id(preview), id(live)}) == 3
+    assert len({
+        id(harness._silero_vad_inference_lock_for_role("main")),
+        id(harness._silero_vad_inference_lock_for_role("preview")),
+        id(harness._silero_vad_inference_lock_for_role("live")),
+    }) == 3
+
+    main_lock = harness._silero_vad_inference_lock_for_role("main")
+    completed = threading.Event()
+    main_lock.acquire()
+    try:
+        thread = threading.Thread(
+            target=lambda: (
+                harness._silero_vad_window_state(
+                    0.0,
+                    0.032,
+                    np.ones(512, dtype=np.float32),
+                    16_000,
+                    role="live",
+                ),
+                completed.set(),
+            ),
+            daemon=True,
+        )
+        thread.start()
+        assert completed.wait(timeout=0.2), "live VAD waited on the main inference lock"
+    finally:
+        main_lock.release()
+    thread.join(timeout=1.0)
+    assert not thread.is_alive()
+
+
+def test_silero_warmup_runs_real_inference_and_resets_synthetic_state() -> None:
+    harness = _LoadingVadHarness()
+    harness.bus = _RecordingBus()
+    model = _CountingSileroModel()
+    with mock.patch(
+        "RealtimeSTT.core.silero_vad.create_silero_vad_model",
+        return_value=model,
+    ):
+        assert harness._warm_silero_vad_model(role="live")
+
+    assert model.call_count == 1
+    assert model.reset_count == 2
+    assert harness._silero_vad_model_for_role("live") is model
 
 
 class _QueueHarness(WindowRuntimeAudioMixin):

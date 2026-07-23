@@ -67,8 +67,14 @@ class RealtimePreviewSplitRegressionTests(unittest.TestCase):
 
         vad_windows: list[tuple[float, float]] = []
 
-        def fake_vad(left: float, right: float, *, force: bool = False) -> VadWindowState:
-            del force
+        def fake_vad(
+            left: float,
+            right: float,
+            *,
+            force: bool = False,
+            role: str = "main",
+        ) -> VadWindowState:
+            del force, role
             vad_windows.append((left, right))
             if len(vad_windows) == 1:
                 # End the worker after this iteration while still allowing it to

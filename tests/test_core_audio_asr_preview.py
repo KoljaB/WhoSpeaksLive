@@ -8,6 +8,7 @@ import threading
 import time
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 import numpy as np
@@ -64,6 +65,16 @@ class WindowAudioAsrTests(unittest.TestCase):
         self.assertEqual(amara_name.rule_id, "amara_name")
         self.assertIsNone(samara)
         self.assertGreater(watching_at_start.suspicion_threshold, watching_at_end.suspicion_threshold)
+
+        watching_in_context = match_asr_hallucination_policy(
+            "Before we go, thank you for watching and please subscribe.",
+            base_suspicion_threshold=0.45,
+            segment_start_seconds=0.0,
+            media_duration_seconds=300.0,
+        )
+        self.assertIsNotNone(watching_in_context)
+        self.assertEqual(watching_in_context.rule_id, "thanks_for_watching_in_context")
+        self.assertLess(watching_in_context.risk_score, 70)
 
     def test_browser_stream_audio_uses_chunks_and_slices_across_boundaries(self) -> None:
         diarizer = make_window_diarizer()
@@ -213,7 +224,68 @@ class WindowAudioAsrTests(unittest.TestCase):
         self.assertEqual(len(spans), 1)
         np.testing.assert_allclose(spans[0], (0.85, 4.7))
 
-    def test_asr_no_speech_filter_drops_high_no_speech_prob_words(self) -> None:
+    def test_silero_vad_reset_and_window_inference_are_atomic_across_threads(self) -> None:
+        diarizer = make_window_diarizer()
+
+        class StatefulVadModel:
+            backend = "test"
+
+            def __init__(self) -> None:
+                self.owner = ""
+                self.reset_count = 0
+                self.silence_reset = threading.Event()
+                self.speech_reset = threading.Event()
+
+            def reset_states(self) -> None:
+                self.owner = threading.current_thread().name
+                self.reset_count += 1
+                if self.owner == "silence":
+                    self.silence_reset.set()
+                elif self.owner == "speech":
+                    self.speech_reset.set()
+
+            def __call__(self, _chunk: np.ndarray, _sample_rate: int) -> float:
+                caller = threading.current_thread().name
+                if caller == "silence":
+                    self.speech_reset.wait(timeout=0.15)
+                    return 0.1 if self.owner == "silence" else 0.9
+                return 0.9
+
+        model = StatefulVadModel()
+        diarizer._vad_model = model
+        diarizer._vad_model_backend = "test"
+        audio = np.zeros(512, dtype=np.float32)
+        errors: list[Exception] = []
+        results: dict[str, bool] = {}
+
+        def evaluate(name: str) -> None:
+            try:
+                state = diarizer._silero_vad_window_state(
+                    0.0,
+                    audio.size / 16_000.0,
+                    audio,
+                    16_000,
+                    min_speech_seconds=0.0,
+                )
+                results[name] = state.has_speech
+            except Exception as exc:
+                errors.append(exc)
+
+        silence_thread = threading.Thread(target=evaluate, args=("silence",), name="silence")
+        speech_thread = threading.Thread(target=evaluate, args=("speech",), name="speech")
+        silence_thread.start()
+        self.assertTrue(model.silence_reset.wait(timeout=1.0))
+        speech_thread.start()
+        threads = [silence_thread, speech_thread]
+        for thread in threads:
+            thread.join(timeout=2.0)
+
+        self.assertEqual(errors, [])
+        self.assertTrue(all(not thread.is_alive() for thread in threads))
+        self.assertEqual(model.reset_count, 2)
+        self.assertEqual(results, {"silence": False, "speech": True})
+
+    def test_asr_no_speech_filter_retains_and_flags_high_no_speech_prob_words(self) -> None:
         diarizer = make_window_diarizer()
         diarizer.args = argparse.Namespace(
             asr_no_speech_filter=True,
@@ -234,10 +306,19 @@ class WindowAudioAsrTests(unittest.TestCase):
 
         kept = diarizer._filter_asr_no_speech_words(words)
 
-        self.assertEqual([word.text for word in kept], [" Hallo", " Ja.", " unknown"])
-        self.assertTrue(any("ASR no-speech filter dropped 3 word" in item["payload"]["message"] for item in diarizer.bus.records))
+        self.assertEqual(kept, words)
+        self.assertFalse(words[0].asr_review)
+        self.assertTrue(all(word.asr_review.get("needs_review") for word in words[1:4]))
+        self.assertFalse(words[4].asr_review)
+        self.assertFalse(words[5].asr_review)
+        self.assertTrue(
+            any(
+                "ASR no-speech check retained 3 word" in item["payload"]["message"]
+                for item in diarizer.bus.records
+            )
+        )
 
-    def test_asr_no_speech_filter_drops_short_segments_above_hard_threshold(self) -> None:
+    def test_asr_no_speech_filter_flags_but_keeps_short_segments_above_hard_threshold(self) -> None:
         diarizer = make_window_diarizer()
         diarizer.args = argparse.Namespace(
             asr_no_speech_filter=True,
@@ -254,9 +335,10 @@ class WindowAudioAsrTests(unittest.TestCase):
 
         kept = diarizer._filter_asr_no_speech_words(words)
 
-        self.assertEqual([word.text for word in kept], [" Hallo"])
+        self.assertEqual(kept, words)
+        self.assertTrue(words[0].asr_review.get("needs_review"))
 
-    def test_asr_hard_credit_filter_is_exact_and_independent_of_no_speech_filter(self) -> None:
+    def test_asr_credit_text_is_not_blacklisted_without_acoustic_verification(self) -> None:
         diarizer = make_window_diarizer()
         diarizer.args = argparse.Namespace(asr_no_speech_filter=False)
         diarizer.bus = RecordingEventBus()
@@ -270,8 +352,7 @@ class WindowAudioAsrTests(unittest.TestCase):
 
         kept = diarizer._filter_asr_no_speech_words(credit)
 
-        self.assertEqual(kept, [])
-        self.assertTrue(any("known-credit filter dropped" in item["payload"]["message"] for item in diarizer.bus.records))
+        self.assertEqual(kept, credit)
 
     def test_asr_hallucination_verification_rejects_unstable_low_evidence_segment(self) -> None:
         diarizer = make_window_diarizer()
@@ -298,7 +379,112 @@ class WindowAudioAsrTests(unittest.TestCase):
         kept = diarizer._verify_low_evidence_asr_words(object(), np.zeros(22_240, dtype=np.float32), 16_000, words)
 
         self.assertEqual(kept, [])
-        self.assertTrue(any("hallucination verification rejected" in item["payload"]["message"] for item in diarizer.bus.records))
+        self.assertEqual(len(diarizer._asr_review_candidates), 1)
+        self.assertEqual(diarizer._asr_review_candidates[0]["text"], "Thanks for watching!")
+        self.assertEqual(diarizer._asr_review_candidates[0]["policy_rule"], "thanks_for_watching")
+        self.assertTrue(
+            any(
+                "ASR review: suppressed" in item["payload"]["message"]
+                for item in diarizer.bus.records
+            )
+        )
+
+    def test_later_retained_view_clears_transient_suppression_warning(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_hallucination_verification_shift_seconds=0.20,
+            asr_hallucination_verification_context_seconds=0.25,
+            asr_hallucination_verification_min_text_similarity=0.50,
+        )
+        diarizer.bus = RecordingEventBus()
+        weak = [
+            TimedWord(" Thanks", 0.0, 0.4, probability=0.20, no_speech_prob=0.40, avg_logprob=-0.90, segment_index=0),
+            TimedWord(" for", 0.4, 0.6, probability=0.20, no_speech_prob=0.40, avg_logprob=-0.90, segment_index=0),
+            TimedWord(" watching", 0.6, 1.1, probability=0.20, no_speech_prob=0.40, avg_logprob=-0.90, segment_index=0),
+        ]
+        diarizer._transcribe_audio_words = mock.Mock(return_value=([], 0))  # type: ignore[method-assign]
+        self.assertEqual(
+            diarizer._verify_low_evidence_asr_words(
+                object(),
+                np.zeros(22_000, dtype=np.float32),
+                16_000,
+                weak,
+                media_start_seconds=0.0,
+                media_duration_seconds=300.0,
+            ),
+            [],
+        )
+        self.assertEqual(len(diarizer._asr_review_candidates), 1)
+
+        strong = [
+            TimedWord(" Thanks", 0.05, 0.45, probability=0.98, no_speech_prob=0.02, avg_logprob=-0.02, segment_index=0),
+            TimedWord(" for", 0.45, 0.65, probability=0.98, no_speech_prob=0.02, avg_logprob=-0.02, segment_index=0),
+            TimedWord(" watching", 0.65, 1.15, probability=0.98, no_speech_prob=0.02, avg_logprob=-0.02, segment_index=0),
+        ]
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(22_000, dtype=np.float32),
+            16_000,
+            strong,
+            media_start_seconds=0.0,
+            media_duration_seconds=300.0,
+        )
+
+        self.assertEqual(kept, strong)
+        self.assertEqual(diarizer._asr_review_candidates, [])
+        self.assertTrue(
+            any(
+                "were cleared" in item["payload"]["message"]
+                for item in diarizer.bus.records
+            )
+        )
+
+    def test_short_retained_fragment_does_not_clear_suppressed_phrase_warning(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer._record_suppressed_asr_candidate({
+            "text": "Thanks for watching!",
+            "start": 0.0,
+            "end": 1.1,
+            "policy_rule": "thanks_for_watching",
+        })
+
+        cleared = diarizer._reconcile_suppressed_asr_candidates(
+            [TimedWord(" Thanks", 0.05, 0.45, segment_index=0)],
+            media_start_seconds=0.0,
+        )
+
+        self.assertEqual(cleared, 0)
+        self.assertEqual(len(diarizer._asr_review_candidates), 1)
+
+    def test_exact_high_risk_phrase_without_acoustic_metadata_fails_open(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+        )
+        diarizer.bus = RecordingEventBus()
+        words = [
+            TimedWord(" Thanks", 0.0, 0.4, segment_index=0),
+            TimedWord(" for", 0.4, 0.6, segment_index=0),
+            TimedWord(" watching", 0.6, 1.1, segment_index=0),
+        ]
+        diarizer._transcribe_audio_words = mock.Mock()  # type: ignore[method-assign]
+
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(22_000, dtype=np.float32),
+            16_000,
+            words,
+            media_start_seconds=0.0,
+            media_duration_seconds=300.0,
+        )
+
+        self.assertEqual(kept, words)
+        self.assertTrue(all(word.asr_review.get("needs_review") for word in words))
+        self.assertEqual(diarizer._asr_review_candidates, [])
+        diarizer._transcribe_audio_words.assert_not_called()
 
     def test_asr_hallucination_verification_keeps_stable_low_evidence_speech(self) -> None:
         diarizer = make_window_diarizer()
@@ -379,7 +565,45 @@ class WindowAudioAsrTests(unittest.TestCase):
         self.assertEqual(kept, words)
         diarizer._transcribe_audio_words.assert_not_called()
 
-    def test_asr_hallucination_verification_does_not_accept_unrelated_confident_text(self) -> None:
+    def test_asr_hallucination_policy_never_deletes_surrounding_real_speech(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_hallucination_verification_shift_seconds=0.20,
+            asr_hallucination_verification_context_seconds=0.25,
+            asr_hallucination_verification_min_text_similarity=0.50,
+        )
+        diarizer.bus = RecordingEventBus()
+        tokens = " Before we go thank you for watching and please subscribe".split(" ")
+        words = [
+            TimedWord(
+                f" {token}",
+                index * 0.25,
+                (index + 1) * 0.25,
+                probability=0.20,
+                no_speech_prob=0.40,
+                avg_logprob=-0.90,
+                segment_index=0,
+            )
+            for index, token in enumerate(token for token in tokens if token)
+        ]
+        diarizer._transcribe_audio_words = mock.Mock(return_value=([], 0))  # type: ignore[method-assign]
+
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(48_000, dtype=np.float32),
+            16_000,
+            words,
+            media_start_seconds=0.0,
+            media_duration_seconds=300.0,
+        )
+
+        self.assertEqual(kept, words)
+        self.assertTrue(all(word.asr_review.get("needs_review") for word in words))
+        self.assertEqual(diarizer._asr_review_candidates, [])
+
+    def test_asr_hallucination_verification_retains_uncertain_ordinary_speech(self) -> None:
         diarizer = make_window_diarizer()
         diarizer.args = argparse.Namespace(
             asr_hallucination_verification=True,
@@ -401,7 +625,72 @@ class WindowAudioAsrTests(unittest.TestCase):
 
         kept = diarizer._verify_low_evidence_asr_words(object(), np.zeros(18_400, dtype=np.float32), 16_000, words)
 
-        self.assertEqual(kept, [])
+        self.assertEqual(kept, words)
+        self.assertTrue(all(word.asr_review.get("needs_review") for word in words))
+        self.assertTrue(
+            any(
+                "uncertain ordinary-speech" in item["payload"]["message"]
+                for item in diarizer.bus.records
+            )
+        )
+
+    def test_ybj_real_multiword_speech_survives_moderate_no_speech_probability(self) -> None:
+        sample_rate = 16_000
+        diarizer = make_window_diarizer(
+            audio=np.zeros(int(4.3 * sample_rate), dtype=np.float32),
+            sample_rate=sample_rate,
+        )
+        diarizer.bus = RecordingEventBus()
+        primary = SimpleNamespace(
+            no_speech_prob=0.6982,
+            avg_logprob=-0.6263,
+            compression_ratio=1.0,
+            words=[
+                SimpleNamespace(word=" with", start=0.20, end=0.55, probability=0.3032),
+                SimpleNamespace(word=" you", start=0.55, end=0.82, probability=0.8892),
+                SimpleNamespace(word=" as", start=0.82, end=1.02, probability=0.8242),
+                SimpleNamespace(word=" a", start=1.02, end=1.12, probability=0.9888),
+                SimpleNamespace(word=" gesture.", start=1.12, end=1.75, probability=0.8760),
+            ],
+        )
+        verification = SimpleNamespace(
+            no_speech_prob=0.6147,
+            avg_logprob=-0.8008,
+            compression_ratio=1.0,
+            words=[
+                SimpleNamespace(word=" And", start=0.00, end=0.15, probability=0.4294),
+                SimpleNamespace(word=" with", start=0.15, end=0.45, probability=0.8901),
+                SimpleNamespace(word=" you", start=0.45, end=0.70, probability=0.7280),
+                SimpleNamespace(word=" as", start=0.70, end=0.90, probability=0.9888),
+                SimpleNamespace(word=" a", start=0.90, end=1.00, probability=0.8804),
+                SimpleNamespace(word=" gesture.", start=1.00, end=1.55, probability=0.8804),
+            ],
+        )
+
+        class ScriptedAsrModel:
+            def __init__(self) -> None:
+                self.calls = 0
+
+            def transcribe(self, *_args: object, **_kwargs: object) -> tuple[list[object], object]:
+                self.calls += 1
+                return ([primary] if self.calls == 1 else [verification]), object()
+
+        model = ScriptedAsrModel()
+        words, _segment_count = diarizer._transcribe_window_audio_words(
+            model,
+            0.0,
+            float(diarizer.duration),
+        )
+
+        self.assertEqual([word.text for word in words], [" with", " you", " as", " a", " gesture."])
+        self.assertEqual(model.calls, 2)
+        self.assertTrue(all(word.asr_review.get("needs_review") for word in words))
+        self.assertTrue(
+            any(
+                "no text was discarded on this signal alone" in item["payload"]["message"]
+                for item in diarizer.bus.records
+            )
+        )
 
     def test_transcribe_window_audio_words_maps_speech_clip_times_to_media_time(self) -> None:
         diarizer = make_window_diarizer(

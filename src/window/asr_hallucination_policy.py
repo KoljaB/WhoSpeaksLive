@@ -77,9 +77,9 @@ def match_asr_hallucination_policy(
         return AsrHallucinationPolicyMatch(
             rule_id=hard_rule,
             risk_score=100,
-            action="hard_drop",
-            suspicion_threshold=1.0,
-            verification_evidence_threshold=1.0,
+            action="require_evidence",
+            suspicion_threshold=max(base_suspicion_threshold, 0.90),
+            verification_evidence_threshold=max(base_suspicion_threshold, 0.70),
             normalized_text=normalized,
         )
 
@@ -87,14 +87,21 @@ def match_asr_hallucination_policy(
     if "amara" in tokens and "org" in tokens:
         return AsrHallucinationPolicyMatch(
             rule_id="amara_org",
-            risk_score=95,
+            # This is deliberately review-only unless the complete segment
+            # matched one of the exact credit strings above.  A containing
+            # segment may include genuine surrounding speech.
+            risk_score=60,
             action="require_evidence",
             suspicion_threshold=max(base_suspicion_threshold, 0.80),
             verification_evidence_threshold=max(base_suspicion_threshold, 0.65),
             normalized_text=normalized,
         )
 
-    if any(_contains_token_sequence(tokens, phrase) for phrase in _WATCHING_PHRASES):
+    watching_phrase = next(
+        (phrase for phrase in _WATCHING_PHRASES if _contains_token_sequence(tokens, phrase)),
+        None,
+    )
+    if watching_phrase is not None:
         suspicion_threshold = 0.72
         verification_threshold = 0.56
         if segment_start_seconds <= 3.0:
@@ -108,8 +115,15 @@ def match_asr_hallucination_policy(
             suspicion_threshold = 0.60
             verification_threshold = 0.48
         return AsrHallucinationPolicyMatch(
-            rule_id="thanks_for_watching",
-            risk_score=85,
+            rule_id=(
+                "thanks_for_watching"
+                if tokens == watching_phrase
+                else "thanks_for_watching_in_context"
+            ),
+            # Only a standalone stock phrase may be suppressed.  When the
+            # phrase is part of a longer segment, keep the entire segment and
+            # use the policy solely to request review/verification.
+            risk_score=85 if tokens == watching_phrase else 60,
             action="require_evidence",
             suspicion_threshold=max(base_suspicion_threshold, suspicion_threshold),
             verification_evidence_threshold=max(base_suspicion_threshold, verification_threshold),

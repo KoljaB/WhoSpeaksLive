@@ -20,9 +20,49 @@ class WindowRuntimeStateMixin:
         self._warm_sentence_splitter()
         self.bus.emit("status", {"message": "Loading speaker embedding model."})
         self._warm_embedding(force=force_runtime_warmup)
-        if self.args.vad_sentence_splitting and self.args.vad_backend == "silero":
+        if self.args.vad_backend == "silero":
+            vad_roles: list[str] = []
+            if bool(getattr(self.args, "vad_sentence_splitting", True)) or bool(
+                getattr(self.args, "asr_vad_gate", True)
+            ):
+                vad_roles.append("main")
+            preview_engine = str(
+                getattr(self.args, "realtime_preview_engine", "off") or "off"
+            ).strip().lower()
+            if (
+                preview_engine not in {"off", "mock"}
+                and bool(getattr(self.args, "realtime_preview_vad_gate", True))
+            ):
+                vad_roles.append("preview")
+            if (
+                bool(getattr(self.args, "live_speaker_assignment", False))
+                and bool(getattr(self.args, "live_speaker_probe", True))
+                and str(
+                    getattr(self.args, "live_speaker_probe_speech_backend", "vad")
+                    or "vad"
+                ).strip().lower() == "vad"
+            ):
+                vad_roles.append("live")
+        else:
+            vad_roles = []
+        if vad_roles:
             self.bus.emit("status", {"message": "Loading Silero ONNX VAD."})
-            self._load_silero_vad_model()
+            vad_warmup_started = time.monotonic()
+            warmed_roles: list[str] = []
+            for role in dict.fromkeys(vad_roles):
+                if self._warm_silero_vad_model(role=role):
+                    warmed_roles.append(role)
+            if warmed_roles:
+                self.bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            "Silero ONNX VAD inference warmup complete for "
+                            f"{', '.join(warmed_roles)} in "
+                            f"{time.monotonic() - vad_warmup_started:.2f}s."
+                        )
+                    },
+                )
         if include_asr_probe:
             self._warm_asr_transcription(force=force_runtime_warmup)
 
@@ -152,6 +192,8 @@ class WindowRuntimeStateMixin:
         with self._unknown_lock:
             self._clear_unknown_sentence_state_locked()
         self._clear_sentence_refinement_records()
+        with self._asr_review_candidate_lock:
+            self._asr_review_candidates = []
         self._speaker_last_media_end = {}
         self._final_sentence_count = 0
         self._last_final_sentence_ended_strong = True

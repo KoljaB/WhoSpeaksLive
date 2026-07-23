@@ -339,41 +339,14 @@ class WindowModelRuntimeMixin:
         hard_threshold = max(0.0, min(1.0, float(getattr(self.args, "asr_no_speech_hard_threshold", 0.85))))
         keep_short_max_words = max(0, int(getattr(self.args, "asr_no_speech_keep_short_max_words", 2)))
         keep_short_max_seconds = max(0.0, float(getattr(self.args, "asr_no_speech_keep_short_max_seconds", 0.45)))
-        kept: list[TimedWord] = []
-        dropped_words = 0
-        dropped_segments = 0
-        max_dropped_prob = 0.0
+        flagged_words = 0
+        flagged_segments = 0
+        max_flagged_prob = 0.0
 
-        def segment_key(word: TimedWord, fallback_index: int) -> tuple[object, ...]:
-            if word.segment_index is not None:
-                return ("segment", int(word.segment_index))
-            if word.no_speech_prob is not None:
-                return (
-                    "metadata",
-                    float(word.no_speech_prob),
-                    word.avg_logprob,
-                    word.compression_ratio,
-                )
-            return ("word", fallback_index)
-
-        groups: list[list[TimedWord]] = []
-        current_group: list[TimedWord] = []
-        current_key: tuple[object, ...] | None = None
-        for index, word in enumerate(words):
-            key = segment_key(word, index)
-            if current_group and key != current_key:
-                groups.append(current_group)
-                current_group = []
-            current_group.append(word)
-            current_key = key
-        if current_group:
-            groups.append(current_group)
-
-        for group in groups:
+        for group in self._asr_segment_groups(words):
             probability_values = [float(word.no_speech_prob) for word in group if word.no_speech_prob is not None]
             probability = max(probability_values) if probability_values else None
-            if probability is None:
-                kept.extend(group)
+            if probability is None or probability < threshold:
                 continue
             start = min(float(word.start) for word in group)
             end = max(float(word.end) for word in group)
@@ -383,55 +356,178 @@ class WindowModelRuntimeMixin:
                 and len(group) <= keep_short_max_words
                 and duration <= keep_short_max_seconds
             )
-            if probability >= threshold and not is_short_interjection:
-                dropped_words += len(group)
-                dropped_segments += 1
-                max_dropped_prob = max(max_dropped_prob, probability)
+            if is_short_interjection:
                 continue
-            kept.extend(group)
+            evidence_score = self._asr_segment_evidence_score(group)
+            self._mark_asr_words_for_review(
+                group,
+                reason="conflicting ASR speech evidence",
+                details={
+                    "no_speech_probability": round(float(probability), 4),
+                    "no_speech_threshold": round(float(threshold), 4),
+                    "hard_no_speech_threshold": round(float(hard_threshold), 4),
+                    "evidence_score": (
+                        round(float(evidence_score), 4)
+                        if evidence_score is not None
+                        else None
+                    ),
+                },
+            )
+            flagged_words += len(group)
+            flagged_segments += 1
+            max_flagged_prob = max(max_flagged_prob, probability)
         bus = getattr(self, "bus", None)
-        if dropped_words and bus is not None:
+        if flagged_words and bus is not None:
             bus.emit(
                 "status",
                 {
                     "message": (
-                        f"ASR no-speech filter dropped {dropped_words} word(s) from {dropped_segments} segment(s) "
-                        f"(max no_speech_prob={max_dropped_prob:.2f}, threshold={threshold:.2f})."
+                        f"ASR no-speech check retained {flagged_words} word(s) from "
+                        f"{flagged_segments} conflicting segment(s) for verification/review "
+                        f"(max no_speech_prob={max_flagged_prob:.2f}, threshold={threshold:.2f}); "
+                        "no text was discarded on this signal alone."
                     )
                 },
             )
-        return self._filter_hard_asr_hallucination_words(kept)
+        return self._filter_hard_asr_hallucination_words(words)
 
     def _filter_hard_asr_hallucination_words(self, words: list[TimedWord]) -> list[TimedWord]:
-        """Drop only exact, highly specific non-spoken credit signatures."""
+        """Keep raw text until acoustic verification can make an informed decision."""
 
-        kept: list[TimedWord] = []
-        dropped_rules: list[str] = []
-        base_threshold = max(
-            0.0,
-            min(1.0, float(getattr(self.args, "asr_hallucination_suspicion_score", 0.45))),
+        return words
+
+    @staticmethod
+    def _mark_asr_words_for_review(
+        words: list[TimedWord],
+        *,
+        reason: str,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        normalized_reason = " ".join(str(reason or "").split())
+        if not normalized_reason:
+            return
+        normalized_details = dict(details or {})
+        for word in words:
+            current = getattr(word, "asr_review", None)
+            review = dict(current) if isinstance(current, dict) else {}
+            reasons = [
+                str(item)
+                for item in review.get("reasons", [])
+                if str(item or "").strip()
+            ]
+            if normalized_reason not in reasons:
+                reasons.append(normalized_reason)
+            merged_details = (
+                dict(review.get("details") or {})
+                if isinstance(review.get("details"), dict)
+                else {}
+            )
+            merged_details.update(normalized_details)
+            word.asr_review = {
+                "needs_review": True,
+                "reasons": reasons,
+                "details": merged_details,
+            }
+
+    def _record_suppressed_asr_candidate(self, candidate: dict[str, Any]) -> None:
+        """Persist an auditable review notice for text omitted from the transcript."""
+
+        record = {
+            "schema_version": "asr_review_candidate_v1",
+            "status": "suppressed",
+            "needs_review": True,
+            "reason": "independently unconfirmed high-risk ASR phrase",
+            "text": " ".join(str(candidate.get("text") or "").split()),
+            "start": round(float(candidate.get("start") or 0.0), 4),
+            "end": round(float(candidate.get("end") or 0.0), 4),
+            "policy_rule": str(candidate.get("policy_rule") or ""),
+            "evidence_score": candidate.get("evidence_score"),
+            "shifted_text_stability": candidate.get("shifted_text_stability"),
+            "shifted_evidence_score": candidate.get("shifted_evidence_score"),
+        }
+        key = (
+            record["status"],
+            record["text"].casefold(),
+            record["start"],
+            record["end"],
+            record["policy_rule"],
         )
-        for group in self._asr_segment_groups(words):
-            policy = match_asr_hallucination_policy(
-                self._asr_group_text(group),
-                base_suspicion_threshold=base_threshold,
-            )
-            if policy is not None and policy.action == "hard_drop":
-                dropped_rules.append(policy.rule_id)
+        lock = getattr(self, "_asr_review_candidate_lock", None)
+        records = getattr(self, "_asr_review_candidates", None)
+        if lock is None or not isinstance(records, list):
+            return
+        with lock:
+            existing_keys = {
+                (
+                    item.get("status"),
+                    str(item.get("text") or "").casefold(),
+                    item.get("start"),
+                    item.get("end"),
+                    item.get("policy_rule"),
+                )
+                for item in records
+                if isinstance(item, dict)
+            }
+            if key not in existing_keys:
+                records.append(record)
+
+    def _reconcile_suppressed_asr_candidates(
+        self,
+        retained_words: list[TimedWord],
+        *,
+        media_start_seconds: float,
+    ) -> int:
+        """Remove transient warnings when a later ASR view retains the same text."""
+
+        retained: list[tuple[str, float, float]] = []
+        for group in self._asr_segment_groups(retained_words):
+            normalized = normalize_asr_hallucination_text(self._asr_group_text(group))
+            if not normalized:
                 continue
-            kept.extend(group)
-        bus = getattr(self, "bus", None)
-        if dropped_rules and bus is not None:
-            bus.emit(
-                "status",
-                {
-                    "message": (
-                        f"ASR known-credit filter dropped {len(dropped_rules)} segment(s) "
-                        f"(rules={','.join(sorted(set(dropped_rules)))})."
-                    )
-                },
+            retained.append(
+                (
+                    normalized,
+                    float(media_start_seconds) + min(float(word.start) for word in group),
+                    float(media_start_seconds) + max(float(word.end) for word in group),
+                )
             )
-        return kept
+        if not retained:
+            return 0
+
+        lock = getattr(self, "_asr_review_candidate_lock", None)
+        records = getattr(self, "_asr_review_candidates", None)
+        if lock is None or not isinstance(records, list):
+            return 0
+
+        def reconciled(record: dict[str, Any]) -> bool:
+            if record.get("status") != "suppressed":
+                return False
+            candidate_text = normalize_asr_hallucination_text(str(record.get("text") or ""))
+            if not candidate_text:
+                return False
+            candidate_start = float(record.get("start") or 0.0)
+            candidate_end = float(record.get("end") or candidate_start)
+            for text, start, end in retained:
+                # The later transcript must contain the complete suppressed
+                # phrase.  A short fragment such as "Thanks" is not evidence
+                # that "Thanks for watching" was ultimately retained.
+                same_text = candidate_text == text or candidate_text in text
+                if not same_text:
+                    continue
+                overlaps = min(candidate_end, end) > max(candidate_start, start)
+                near_same_time = abs(candidate_start - start) <= 1.0
+                if overlaps or near_same_time:
+                    return True
+            return False
+
+        with lock:
+            before = len(records)
+            records[:] = [
+                record
+                for record in records
+                if not (isinstance(record, dict) and reconciled(record))
+            ]
+            return before - len(records)
 
     @staticmethod
     def _asr_segment_groups(words: list[TimedWord]) -> list[list[TimedWord]]:
@@ -513,7 +609,7 @@ class WindowModelRuntimeMixin:
         media_start_seconds: float = 0.0,
         media_duration_seconds: float | None = None,
     ) -> list[TimedWord]:
-        """Verify only doubtful ASR segments after a small causal boundary perturbation."""
+        """Use a second acoustic view without silently deleting ordinary speech."""
 
         if not bool(getattr(self.args, "asr_hallucination_verification", True)):
             return words
@@ -544,44 +640,97 @@ class WindowModelRuntimeMixin:
         )
         audio_duration = float(audio.size) / float(sample_rate) if sample_rate > 0 else 0.0
         kept: list[TimedWord] = []
-        rejected: list[tuple[float, float, str]] = []
+        suppressed: list[dict[str, Any]] = []
+        retained_uncertain = 0
+        verifier_failures = 0
 
         for group in self._asr_segment_groups(words):
             group_start = max(0.0, min(float(word.start) for word in group))
+            group_end_without_context = min(audio_duration, max(float(word.end) for word in group))
+            group_text = self._asr_group_text(group)
             policy = match_asr_hallucination_policy(
-                self._asr_group_text(group),
+                group_text,
                 base_suspicion_threshold=suspicion_threshold,
                 segment_start_seconds=max(0.0, media_start_seconds + group_start),
                 media_duration_seconds=media_duration_seconds,
             )
-            if policy is not None and policy.action == "hard_drop":
-                rejected.append((0.0, 0.0, policy.rule_id))
-                continue
             required_score = policy.suspicion_threshold if policy is not None else suspicion_threshold
             score = self._asr_segment_evidence_score(group)
-            if score is None and (policy is None or policy.risk_score < 70):
+            high_risk_policy = policy is not None and policy.risk_score >= 70
+            if high_risk_policy and score is None:
+                self._mark_asr_words_for_review(
+                    group,
+                    reason="ASR acoustic evidence unavailable; text retained",
+                    details={"policy_rule": policy.rule_id},
+                )
+                verifier_failures += 1
                 kept.extend(group)
                 continue
-            if score is not None and score >= required_score:
+            has_conflicting_evidence = any(
+                bool(getattr(word, "asr_review", {}).get("needs_review"))
+                for word in group
+                if isinstance(getattr(word, "asr_review", None), dict)
+            )
+            needs_second_view = (
+                high_risk_policy
+                or has_conflicting_evidence
+                or (score is not None and score < required_score)
+            )
+            if not needs_second_view:
                 kept.extend(group)
                 continue
-            group_end = min(audio_duration, max(float(word.end) for word in group) + context_seconds)
+            if high_risk_policy and score is not None and score >= required_score:
+                kept.extend(group)
+                continue
+            group_end = min(audio_duration, group_end_without_context + context_seconds)
             verify_start = min(group_end, group_start + shift_seconds)
             if group_end - verify_start < 0.20:
+                self._mark_asr_words_for_review(
+                    group,
+                    reason="ASR verification unavailable; text retained",
+                    details={
+                        "policy_rule": policy.rule_id if policy is not None else "generic",
+                        "evidence_score": round(float(score), 4) if score is not None else None,
+                    },
+                )
+                verifier_failures += 1
                 kept.extend(group)
                 continue
             start_sample = max(0, min(audio.size, int(round(verify_start * sample_rate))))
             end_sample = max(start_sample, min(audio.size, int(round(group_end * sample_rate))))
             verification_audio = np.ascontiguousarray(audio[start_sample:end_sample])
             if verification_audio.size <= 0:
+                self._mark_asr_words_for_review(
+                    group,
+                    reason="ASR verification unavailable; text retained",
+                    details={
+                        "policy_rule": policy.rule_id if policy is not None else "generic",
+                        "evidence_score": round(float(score), 4) if score is not None else None,
+                    },
+                )
+                verifier_failures += 1
                 kept.extend(group)
                 continue
 
-            verification_words, _segment_count = self._transcribe_audio_words(
-                model,
-                verification_audio,
-                sample_rate,
-            )
+            try:
+                verification_words, _segment_count = self._transcribe_audio_words(
+                    model,
+                    verification_audio,
+                    sample_rate,
+                )
+            except Exception as exc:
+                self._mark_asr_words_for_review(
+                    group,
+                    reason="ASR verification failed; text retained",
+                    details={
+                        "policy_rule": policy.rule_id if policy is not None else "generic",
+                        "evidence_score": round(float(score), 4) if score is not None else None,
+                        "verification_error": type(exc).__name__,
+                    },
+                )
+                verifier_failures += 1
+                kept.extend(group)
+                continue
             stability = self._asr_text_stability(group, verification_words)
             verification_scores = [
                 value
@@ -600,19 +749,83 @@ class WindowModelRuntimeMixin:
             if stability >= min_stability and verification_evidence_ok:
                 kept.extend(group)
                 continue
-            rejected.append((score if score is not None else 0.0, stability, policy.rule_id if policy else "generic"))
+            decision_details = {
+                "policy_rule": policy.rule_id if policy is not None else "generic",
+                "evidence_score": round(float(score), 4) if score is not None else None,
+                "shifted_text_stability": round(float(stability), 4),
+                "shifted_evidence_score": (
+                    round(float(verification_score), 4)
+                    if verification_score is not None
+                    else None
+                ),
+            }
+            if not high_risk_policy:
+                self._mark_asr_words_for_review(
+                    group,
+                    reason="uncertain ASR text retained",
+                    details=decision_details,
+                )
+                retained_uncertain += 1
+                kept.extend(group)
+                continue
+            suppressed.append(
+                {
+                    **decision_details,
+                    "text": group_text,
+                    "start": round(float(media_start_seconds + group_start), 4),
+                    "end": round(float(media_start_seconds + group_end_without_context), 4),
+                }
+            )
 
-        if rejected:
-            bus = getattr(self, "bus", None)
-            if bus is not None:
+        reconciled_count = self._reconcile_suppressed_asr_candidates(
+            kept,
+            media_start_seconds=media_start_seconds,
+        )
+        for candidate in suppressed:
+            self._record_suppressed_asr_candidate(candidate)
+        bus = getattr(self, "bus", None)
+        if bus is not None:
+            if reconciled_count:
                 bus.emit(
                     "status",
                     {
                         "message": (
-                            f"ASR hallucination verification rejected {len(rejected)} unstable "
-                            f"low-evidence segment(s) (lowest score={min(item[0] for item in rejected):.2f}, "
-                            f"best shifted-text stability={max(item[1] for item in rejected):.2f}, "
-                            f"rules={','.join(sorted(set(item[2] for item in rejected)))})."
+                            f"ASR review: {reconciled_count} earlier suppression warning(s) "
+                            "were cleared because a later acoustic view retained the text."
+                        )
+                    },
+                )
+            if suppressed:
+                preview = suppressed[0]
+                bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            f"ASR review: suppressed {len(suppressed)} independently unconfirmed "
+                            f"high-risk phrase candidate(s); first at {preview['start']:.2f}-"
+                            f"{preview['end']:.2f}s was {preview['text']!r} "
+                            f"(rule={preview['policy_rule']}, shifted-text stability="
+                            f"{preview['shifted_text_stability']:.2f})."
+                        )
+                    },
+                )
+            if retained_uncertain:
+                bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            f"ASR review retained {retained_uncertain} uncertain ordinary-speech "
+                            "segment(s); an unstable second view is not sufficient evidence to delete text."
+                        )
+                    },
+                )
+            if verifier_failures:
+                bus.emit(
+                    "status",
+                    {
+                        "message": (
+                            f"ASR review retained {verifier_failures} segment(s) because the independent "
+                            "verification view was unavailable or failed."
                         )
                     },
                 )
@@ -631,13 +844,22 @@ class WindowModelRuntimeMixin:
         spans = speech_spans if speech_spans is not None else [(left, right)]
         if batched and speech_spans is None and left <= 0.0 and right >= float(self.duration):
             snapshot = self._audio_timeline.snapshot(copy_audio=False)
-            return self._transcribe_audio_words(
+            relative_words, segment_count = self._transcribe_audio_words(
                 model,
                 snapshot.audio,
                 snapshot.sample_rate,
                 batched=True,
                 batch_size=batch_size,
             )
+            relative_words = self._verify_low_evidence_asr_words(
+                model,
+                snapshot.audio,
+                snapshot.sample_rate,
+                relative_words,
+                media_start_seconds=0.0,
+                media_duration_seconds=float(self.duration),
+            )
+            return relative_words, segment_count
         words: list[TimedWord] = []
         segment_count = 0
         for span_left, span_right in spans:
@@ -662,14 +884,14 @@ class WindowModelRuntimeMixin:
                     window,
                     sample_rate,
                 )
-                relative_words = self._verify_low_evidence_asr_words(
-                    model,
-                    window,
-                    sample_rate,
-                    relative_words,
-                    media_start_seconds=span_left,
-                    media_duration_seconds=float(self.duration),
-                )
+            relative_words = self._verify_low_evidence_asr_words(
+                model,
+                window,
+                sample_rate,
+                relative_words,
+                media_start_seconds=span_left,
+                media_duration_seconds=float(self.duration),
+            )
             segment_count += relative_segment_count
             for word in relative_words:
                 start = span_left + float(word.start)
@@ -686,6 +908,7 @@ class WindowModelRuntimeMixin:
                         avg_logprob=word.avg_logprob,
                         compression_ratio=word.compression_ratio,
                         segment_index=word.segment_index,
+                        asr_review=dict(word.asr_review or {}),
                     )
                 )
         words.sort(key=lambda item: (item.start, item.end))

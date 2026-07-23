@@ -176,10 +176,9 @@ export function installTranscriptReview(ctx) {
   function reviewReasonsForItem(item, displaySpeakerId, adoptedLiveSpeakerId) {
     const review = item && item.review && typeof item.review === "object" ? item.review : {};
     const reasons = Array.isArray(review.reasons) ? review.reasons.map(reason => String(reason || "").trim()).filter(Boolean) : [];
-    if (displaySpeakerId && adoptedLiveSpeakerId && displaySpeakerId !== adoptedLiveSpeakerId) {
+    if (!rowIsCorrected(item) && displaySpeakerId && adoptedLiveSpeakerId && displaySpeakerId !== adoptedLiveSpeakerId) {
       reasons.push("conflicting live/final evidence");
     }
-    if (rowIsCorrected(item)) return [];
     return Array.from(new Set(reasons));
   }
   function syncCorrectionUndoState(enabled = ctx.owners.transcript.hasUndoableCorrection) {

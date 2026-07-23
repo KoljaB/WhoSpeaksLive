@@ -473,31 +473,34 @@ def add_asr_language_arguments(parser: argparse.ArgumentParser, *, default_vad_m
         "--asr-no-speech-filter",
         action=argparse.BooleanOptionalAction,
         default=True,
-        help="Drop ASR segments whose Whisper no_speech_prob is above the configured threshold.",
+        help=(
+            "Treat a high Whisper no_speech_prob as a verification/review signal. "
+            "Text is never discarded on this decoder signal alone."
+        ),
     )
     parser.add_argument(
         "--asr-no-speech-prob-threshold",
         type=float,
         default=0.65,
-        help="Whisper no_speech_prob threshold above which ASR segment words are discarded.",
+        help="Whisper no_speech_prob threshold above which ASR segment words are marked as conflicting evidence.",
     )
     parser.add_argument(
         "--asr-no-speech-hard-threshold",
         type=float,
         default=0.85,
-        help="Whisper no_speech_prob threshold above which even very short ASR segments are discarded.",
+        help="Whisper no_speech_prob threshold above which even very short ASR segments are marked for review.",
     )
     parser.add_argument(
         "--asr-no-speech-keep-short-max-words",
         type=int,
         default=2,
-        help="Keep ASR segments at or above the no_speech_prob threshold when they have at most this many words and stay below the hard threshold.",
+        help="Do not flag short interjections below the hard threshold when they have at most this many words.",
     )
     parser.add_argument(
         "--asr-no-speech-keep-short-max-seconds",
         type=float,
         default=0.45,
-        help="Keep ASR segments at or above the no_speech_prob threshold when they are at most this long and stay below the hard threshold.",
+        help="Do not flag short interjections below the hard threshold when they are at most this long.",
     )
     parser.add_argument(
         "--asr-hallucination-verification",

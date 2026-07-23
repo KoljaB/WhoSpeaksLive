@@ -287,6 +287,32 @@ class WindowSentenceTextTests(unittest.TestCase):
 
         self.assertEqual([part.text for part in live_parts], ["Many people do this..."])
 
+    def test_asr_word_review_is_preserved_on_sentence_part_and_payload(self) -> None:
+        import window.window_text as window_text
+
+        review = {
+            "needs_review": True,
+            "reasons": ["conflicting ASR speech evidence"],
+            "details": {"no_speech_probability": 0.6982},
+        }
+        words = [
+            TimedWord("Would", 0.0, 0.3, asr_review=review),
+            TimedWord("you?", 0.3, 0.7, asr_review=review),
+        ]
+        with mock.patch.object(window_text, "generate_sentences", return_value=["Would you?"]):
+            parts = window_text.split_words_with_stream2sentence(
+                words,
+                left=0.0,
+                right=1.0,
+                unstable_tail_seconds=0.0,
+                final_flush=True,
+            )
+
+        self.assertTrue(parts[0].asr_review["needs_review"])
+        self.assertEqual(parts[0].asr_review["reasons"], ["conflicting ASR speech evidence"])
+        payload = make_window_diarizer()._base_payload_from_sentence_part(0, parts[0], 0.0, 1.0)
+        self.assertEqual(payload["asr_review"], parts[0].asr_review)
+
     def test_realtime_preview_capitalizes_session_start_and_after_strong_sentence(self) -> None:
         diarizer = make_window_diarizer()
         diarizer._final_sentence_count = 0

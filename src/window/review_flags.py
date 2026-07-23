@@ -85,13 +85,29 @@ def annotate_review(
     details: dict[str, Any] = {}
     score = 0.0
 
+    asr_review = row.get("asr_review")
+    if isinstance(asr_review, dict) and asr_review.get("needs_review"):
+        for reason in asr_review.get("reasons") or []:
+            normalized = " ".join(str(reason or "").split())
+            if normalized:
+                reasons.append(normalized)
+        asr_details = asr_review.get("details")
+        if isinstance(asr_details, dict) and asr_details:
+            details["asr"] = dict(asr_details)
+        asr_score = _optional_float(asr_review.get("score"))
+        score = max(score, asr_score if asr_score is not None else 0.55)
+
     correction = row.get("correction")
     if isinstance(correction, dict) and correction.get("status") in {"user_corrected", "user_confirmed"}:
+        # A transcript correction confirms only the speaker label.  It must
+        # not silently resolve an independent ASR/text warning.
+        details["speaker_review_resolved_by_user"] = True
+        unique_reasons = list(dict.fromkeys(reasons))
         return {
-            "needs_review": False,
-            "score": 0.0,
-            "reasons": [],
-            "details": {"resolved_by_user": True},
+            "needs_review": bool(unique_reasons),
+            "score": round(min(1.0, float(score)), 4),
+            "reasons": unique_reasons,
+            "details": details,
         }
 
     speaker = _speaker(row.get("assigned_speaker") or row.get("speaker_id") or row.get("speaker"))

@@ -712,6 +712,7 @@
     .transcript-panel.hide-review-hints .row.selected.needs-review,
     .transcript-panel.hide-review-hints .row.selected.group-needs-review { box-shadow:inset 3px 0 0 #17B7FE, inset 0 0 0 1px rgba(23,183,254,.42); }
     .transcript-panel.hide-review-hints .review-reasons.needs-review-hints { display:none; }
+    .transcript-panel.hide-review-hints .review-chip.unresolved-review { display:none; }
     .speaker-name, .speaker-row-title { font-weight:600; }
     .row.provisional-assignment .speaker-name { opacity:.5; }
     .text { color:#E8EEF5; font-size:15px; line-height:1.34; }
@@ -732,7 +733,8 @@
     .row.row-removing { opacity:0; transform:translateY(-2px); pointer-events:none; }
     .row.realtime .text { color:#d7dee8; }
     .row.needs-review { box-shadow:inset 3px 0 0 #F59E0B; }
-    .row.user-corrected { box-shadow:inset 3px 0 0 #22C55E; }
+    .row.user-corrected:not(.needs-review) { box-shadow:inset 3px 0 0 #22C55E; }
+    .row.user-corrected.needs-review { box-shadow:inset 3px 0 0 #F59E0B; }
     .review-reasons { display:inline-flex; align-items:center; flex-wrap:wrap; gap:4px; min-width:0; }
     .review-chip { border:1px solid #6B4A12; border-radius:999px; padding:1px 6px; color:#F8D38A; background:#1C1609; font-size:11px; line-height:1.45; }
     .review-chip.corrected { border-color:#1F6F3C; color:#9EE6B2; background:#091A10; }

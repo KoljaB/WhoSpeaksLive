@@ -291,6 +291,8 @@ class WindowSessionViewMixin:
             rows, embeddings = self._session_transcript_rows_and_embeddings()
             speaker_state = self.speaker_state()
             source = self._session_source_metadata()
+            with self._asr_review_candidate_lock:
+                asr_review_candidates = copy.deepcopy(self._asr_review_candidates)
             return {
                 "id": str(self._session_id or ""),
                 "created_at": datetime.now().isoformat(timespec="seconds"),
@@ -299,6 +301,7 @@ class WindowSessionViewMixin:
                 "duration_seconds": float(self.playback_time()),
                 "source": source,
                 "transcript_rows": rows,
+                "asr_review_candidates": asr_review_candidates,
                 "speaker_state": speaker_state,
                 "speaker_profiles": self._session_speaker_profiles(),
                 "live_speaker_profiles": self._serialized_live_speaker_profiles(

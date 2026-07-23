@@ -724,9 +724,26 @@ export function installSavedReports(ctx) {
     ctx.owners.speakers.speakerSessionBaselineSentenceCounts = {};
     ctx.owners.speakers.speakerSessionBaselineSpeakingSeconds = {};
     const rows = savedSessionRows(sessionData);
+    const asrReviewCandidates = Array.isArray(sessionData.asr_review_candidates)
+      ? sessionData.asr_review_candidates.filter(candidate =>
+          candidate
+          && candidate.status === "suppressed"
+          && candidate.needs_review !== false
+        )
+      : [];
     const previousFollowLiveEnabled = ctx.owners.speakers.followLiveEnabled;
     ctx.owners.speakers.followLiveEnabled = false;
     rows.forEach(row => renderSentence({...row, realtime:false, pending:false}));
+    if (asrReviewCandidates.length) {
+      log(`ASR review notice: ${asrReviewCandidates.length} phrase candidate${asrReviewCandidates.length === 1 ? " was" : "s were"} suppressed from this transcript.`);
+      asrReviewCandidates.slice(0, 5).forEach(candidate => {
+        const startSeconds = Number(candidate.start || 0);
+        const endSeconds = Number(candidate.end || startSeconds);
+        const text = String(candidate.text || "").trim();
+        const rule = String(candidate.policy_rule || "high-risk phrase");
+        log(`Review suppressed ASR candidate ${clockLabel(startSeconds)}-${clockLabel(endSeconds)}: “${text}” (${rule}).`);
+      });
+    }
     applyTranslationCollection(sessionData.translations, {refresh:true});
     ctx.owners.speakers.followLiveEnabled = previousFollowLiveEnabled;
     ctx.owners.speakers.speakerSessionBaselineSentenceCounts = {};

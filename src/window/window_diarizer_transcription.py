@@ -167,7 +167,12 @@ class WindowTranscriptionMixin:
                 # a slow final-ASR pass: speech may have started while that pass was
                 # running, and skipping to the bounded tail cuts its first words.
                 search_left = gate_search_left
-                vad_state = self._vad_gate_window_state(search_left, right, force=True)
+                vad_state = self._vad_gate_window_state(
+                    search_left,
+                    right,
+                    force=True,
+                    role="preview",
+                )
                 if not vad_state.has_speech or vad_state.speech_start is None:
                     # Once the complete unseen range is known to contain no speech,
                     # retaining only a bounded tail keeps idle VAD work constant.
@@ -193,7 +198,12 @@ class WindowTranscriptionMixin:
             close_after_feed = False
             close_search_left = gate_search_left
             if vad_gate and gate_open:
-                vad_state = self._vad_gate_window_state(gate_left, right, force=True)
+                vad_state = self._vad_gate_window_state(
+                    gate_left,
+                    right,
+                    force=True,
+                    role="preview",
+                )
                 close_silence = max(
                     0.0,
                     float(getattr(self.args, "realtime_preview_vad_gate_close_silence_seconds", 1.1)),
@@ -561,6 +571,7 @@ class WindowTranscriptionMixin:
             "sentence_boundary_pre_padding_seconds": round(float(sentence.sentence_boundary_pre_padding_seconds), 4),
             "sentence_boundary_post_padding_seconds": round(float(sentence.sentence_boundary_post_padding_seconds), 4),
             "sentence_boundary_gap_ratio": round(float(sentence.sentence_boundary_gap_ratio), 4),
+            "asr_review": copy.deepcopy(getattr(sentence, "asr_review", {}) or {}),
             "unknown_permanent": False,
         }
 

@@ -461,6 +461,8 @@ class SessionStore:
             "speaker_count": int(manifest.get("speaker_count") or 0),
             "speaker_names": list(manifest.get("speaker_names") or []),
             "transcript_rows": int(manifest.get("transcript_rows") or 0),
+            "asr_review_candidate_count": int(manifest.get("asr_review_candidate_count") or 0),
+            "has_asr_review_candidates": bool(manifest.get("has_asr_review_candidates")),
             "status_label": str(manifest.get("status_label") or "Saved"),
             "has_audio": bool(manifest.get("has_audio")),
             "has_audio_reference": bool(manifest.get("has_audio_reference")),
@@ -540,6 +542,13 @@ class SessionStore:
         now = _now_iso()
 
         rows = _json_ready([_with_review(dict(row)) for row in (snapshot.get("transcript_rows") or [])])
+        asr_review_candidates = _json_ready([
+            item
+            for item in (snapshot.get("asr_review_candidates") or [])
+            if isinstance(item, dict)
+            and item.get("status") == "suppressed"
+            and item.get("needs_review", True)
+        ])
         speaker_state = _json_ready(snapshot.get("speaker_state") or {})
         source = _json_ready(snapshot.get("source") or {})
         speaker_profiles = _json_ready(snapshot.get("speaker_profiles") or [])
@@ -565,6 +574,7 @@ class SessionStore:
             "version": SESSION_FORMAT_VERSION,
             "updated_at": now,
             "rows": rows,
+            "asr_review_candidates": asr_review_candidates,
         })
         self._write_json(session_dir / "speakers.json", {
             "version": SESSION_FORMAT_VERSION,
@@ -647,6 +657,8 @@ class SessionStore:
             "speaker_count": len(speaker_names),
             "speaker_names": speaker_names,
             "transcript_rows": len(rows),
+            "asr_review_candidate_count": len(asr_review_candidates),
+            "has_asr_review_candidates": bool(asr_review_candidates),
             "has_audio": bool(audio.get("saved")),
             "has_audio_reference": bool(audio.get("path")),
             "has_transcript": bool(rows),
@@ -677,6 +689,13 @@ class SessionStore:
         embeddings = self._read_json(session_dir / "embeddings.json", {"records": []})
         translations = self._read_translations(session_id)
         rows = [_with_review(dict(row)) for row in (transcript.get("rows") or [])]
+        asr_review_candidates = [
+            copy.deepcopy(item)
+            for item in (transcript.get("asr_review_candidates") or [])
+            if isinstance(item, dict)
+            and item.get("status") == "suppressed"
+            and item.get("needs_review", True)
+        ]
         speaker_state = speakers.get("speaker_state") if isinstance(speakers.get("speaker_state"), dict) else {}
         meeting_intelligence_report, meeting_intelligence_changed = self._mark_meeting_intelligence_stale_for_rows(
             session_id,
@@ -725,6 +744,7 @@ class SessionStore:
             "summary": self._summary_from_manifest(manifest),
             "manifest": public_manifest,
             "transcript_rows": public_rows,
+            "asr_review_candidates": asr_review_candidates,
             "speaker_state": public_speaker_state,
             "speaker_profiles": public_profiles,
             "live_speaker_profiles": [],

@@ -184,6 +184,31 @@ def sentence_clip_start_for_first_word(
     return max(sentence_left, min(right, first_word.start - pre_padding_seconds))
 
 
+def merged_asr_review(words: list[TimedWord]) -> dict[str, Any]:
+    """Merge word-level ASR warnings into one durable sentence warning."""
+
+    reasons: list[str] = []
+    details: dict[str, Any] = {}
+    for word in words:
+        review = word.asr_review if isinstance(word.asr_review, dict) else {}
+        if not review.get("needs_review"):
+            continue
+        for reason in review.get("reasons") or []:
+            normalized = " ".join(str(reason or "").split())
+            if normalized and normalized not in reasons:
+                reasons.append(normalized)
+        word_details = review.get("details")
+        if isinstance(word_details, dict):
+            details.update(word_details)
+    if not reasons:
+        return {}
+    return {
+        "needs_review": True,
+        "reasons": reasons,
+        "details": details,
+    }
+
+
 def split_words_with_stream2sentence(
     words: list[TimedWord],
     left: float,
@@ -264,18 +289,22 @@ def split_words_with_stream2sentence(
         )
         if boundary <= clip_start:
             continue
-        sentence_words = [
-            {
-                "text": mapped_words[index].word.text,
-                "start": round(float(mapped_words[index].word.start), 4),
-                "end": round(float(mapped_words[index].word.end), 4),
-                "duration": round(max(0.0, mapped_words[index].word.end - mapped_words[index].word.start), 4),
-            }
+        selected_words = [
+            mapped_words[index].word
             for index in range(_first_word_index, last_word_index + 1)
         ]
+        sentence_words = [
+            {
+                "text": word.text,
+                "start": round(float(word.start), 4),
+                "end": round(float(word.end), 4),
+                "duration": round(max(0.0, word.end - word.start), 4),
+            }
+            for word in selected_words
+        ]
         spoken_word_seconds = sum(
-            max(0.0, mapped_words[index].word.end - mapped_words[index].word.start)
-            for index in range(_first_word_index, last_word_index + 1)
+            max(0.0, word.end - word.start)
+            for word in selected_words
         )
         audio_length = max(0.0, boundary - clip_start)
         speech_audio_ratio = spoken_word_seconds / audio_length if audio_length > 0.0 else 0.0
@@ -298,6 +327,7 @@ def split_words_with_stream2sentence(
             boundary_pre_padding_seconds,
             boundary_post_padding_seconds,
             boundary_gap_ratio,
+            asr_review=merged_asr_review(selected_words),
         ))
         previous_emitted_ended_sentence = text_ends_sentence(emitted_text)
         sentence_left = boundary

@@ -318,6 +318,20 @@ export function installSpeakerPanel(ctx) {
       chip.className = "review-chip corrected";
       chip.textContent = status === "user_confirmed" ? "marked correct" : "corrected";
       group.appendChild(chip);
+      // Speaker confirmation resolves speaker uncertainty only. Any ASR
+      // warning remains visible beside the green correction chip.
+      reasons.slice(0, 3).forEach(reason => {
+        const reviewChip = document.createElement("span");
+        reviewChip.className = "review-chip unresolved-review";
+        reviewChip.textContent = reason;
+        group.appendChild(reviewChip);
+      });
+      if (reasons.length > 3) {
+        const overflow = document.createElement("span");
+        overflow.className = "review-chip unresolved-review";
+        overflow.textContent = `+${reasons.length - 3}`;
+        group.appendChild(overflow);
+      }
       return group;
     }
     group.className = "review-reasons needs-review-hints";

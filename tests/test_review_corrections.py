@@ -153,6 +153,26 @@ class ReviewFlagTests(unittest.TestCase):
         self.assertIn("short audio", review["reasons"])
         self.assertIn("conflicting live/final evidence", review["reasons"])
 
+    def test_asr_review_warning_is_merged_into_visible_row_review(self) -> None:
+        review = annotate_review({
+            "assigned_speaker": "S1",
+            "margin": 0.9,
+            "top_similarity": 0.9,
+            "audio_length_seconds": 2.0,
+            "asr_review": {
+                "needs_review": True,
+                "reasons": ["conflicting ASR speech evidence"],
+                "details": {
+                    "no_speech_probability": 0.6982,
+                    "evidence_score": 0.4783,
+                },
+            },
+        })
+
+        self.assertTrue(review["needs_review"])
+        self.assertIn("conflicting ASR speech evidence", review["reasons"])
+        self.assertEqual(review["details"]["asr"]["no_speech_probability"], 0.6982)
+
     def test_user_confirmation_resolves_review(self) -> None:
         review = annotate_review({
             "assigned_speaker": "S1",
@@ -162,6 +182,23 @@ class ReviewFlagTests(unittest.TestCase):
 
         self.assertFalse(review["needs_review"])
         self.assertEqual(review["reasons"], [])
+
+    def test_speaker_confirmation_does_not_resolve_asr_review(self) -> None:
+        review = annotate_review({
+            "assigned_speaker": "S1",
+            "margin": 0.0,
+            "correction": {"status": "user_confirmed"},
+            "asr_review": {
+                "needs_review": True,
+                "reasons": ["conflicting ASR speech evidence"],
+                "details": {"no_speech_probability": 0.7417},
+            },
+        })
+
+        self.assertTrue(review["needs_review"])
+        self.assertEqual(review["reasons"], ["conflicting ASR speech evidence"])
+        self.assertTrue(review["details"]["speaker_review_resolved_by_user"])
+        self.assertEqual(review["details"]["asr"]["no_speech_probability"], 0.7417)
 
 
 class CorrectionControllerTests(unittest.TestCase):
@@ -821,6 +858,18 @@ class SessionReviewMetadataTests(unittest.TestCase):
                         "correction": {"status": "user_corrected", "corrected_speaker": "S2"},
                     },
                 ],
+                "asr_review_candidates": [
+                    {
+                        "schema_version": "asr_review_candidate_v1",
+                        "status": "suppressed",
+                        "needs_review": True,
+                        "reason": "independently unconfirmed high-risk ASR phrase",
+                        "text": "Thanks for watching!",
+                        "start": 0.0,
+                        "end": 1.22,
+                        "policy_rule": "thanks_for_watching",
+                    },
+                ],
                 "speaker_state": {"speakers": []},
             })
 
@@ -831,6 +880,11 @@ class SessionReviewMetadataTests(unittest.TestCase):
             self.assertIn("short audio", rows[0]["review"]["reasons"])
             self.assertFalse(rows[1]["review"]["needs_review"])
             self.assertEqual(rows[1]["correction"]["corrected_speaker"], "S2")
+            self.assertEqual(
+                opened["asr_review_candidates"][0]["policy_rule"],
+                "thanks_for_watching",
+            )
+            self.assertEqual(opened["summary"]["asr_review_candidate_count"], 1)
 
 
 if __name__ == "__main__":
