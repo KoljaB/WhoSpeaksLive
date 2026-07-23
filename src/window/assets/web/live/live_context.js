@@ -369,6 +369,7 @@ export function createLiveAppContext() {
       transcriptClearBeforeSeconds: 0,
       currentLiveSpeakerId: "",
       transcriptLiveSpeakerId: "",
+      lastTranscriptSpeakerId: "",
       fallbackLiveSpeakerId: "",
       fallbackLiveSpeakerUntilMs: 0,
       fallbackLiveSpeakerExpiryTimer: null,

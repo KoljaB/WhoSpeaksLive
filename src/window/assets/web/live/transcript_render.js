@@ -579,7 +579,13 @@ export function installTranscriptRender(ctx) {
     const previousRevisionSpeakerId = revisionSpeakerId(row.dataset.speaker);
     const previousDisplaySpeakerId = item.realtime ? normalizedLiveSpeakerId(row.dataset.speaker) : "";
     const displaySpeakerId = item.realtime
-      ? realtimeRowDisplaySpeakerId(rawSpeakerId, startSeconds, endSeconds, previousDisplaySpeakerId)
+      ? realtimeRowDisplaySpeakerId(
+          rawSpeakerId,
+          startSeconds,
+          endSeconds,
+          previousDisplaySpeakerId,
+          ctx.owners.transcript.lastTranscriptSpeakerId,
+        )
       : rawSpeakerId;
     const reviewReasons = reviewReasonsForItem(item, displaySpeakerId, adoptedLiveSpeakerId);
     const corrected = rowIsCorrected(item);
@@ -633,6 +639,9 @@ export function installTranscriptRender(ctx) {
     row.dataset.end = String(displayEndSeconds);
     row.dataset.text = displayText;
     row.dataset.searchText = displayText;
+    if (!item.realtime && !item.pending && rawSpeakerId) {
+      ctx.owners.transcript.lastTranscriptSpeakerId = rawSpeakerId;
+    }
     if (item.realtime) {
       row.style.setProperty("--live-row-color", color || "#8F9BA8");
     } else {

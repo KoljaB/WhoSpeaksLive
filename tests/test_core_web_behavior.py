@@ -85,20 +85,25 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn("renderedSpeakerSpeakingSeconds: {},", HTML)
         self.assertIn('currentLiveSpeakerId: "",', HTML)
         self.assertIn('transcriptLiveSpeakerId: "",', HTML)
+        self.assertIn('lastTranscriptSpeakerId: "",', HTML)
         self.assertIn('fallbackLiveSpeakerId: "",', HTML)
         self.assertIn("liveSpeakerTimeline: [],", HTML)
         self.assertIn("fastSpeakerPanelStats: {},", HTML)
         self.assertIn("hasRenderedFinalSentenceRows: false,", HTML)
-        self.assertIn("function dominantRealtimeSpeakerId(start, end)", HTML)
+        self.assertIn("function dominantRealtimeSpeakerId(", HTML)
         self.assertIn("function realtimeDominanceScoredEnd(start, end)", HTML)
         self.assertIn("const tailSeconds = Math.min(3, Math.max(2, duration * 0.25));", HTML)
-        self.assertIn("const requiredSeconds = Math.max(0.3, scoredSeconds * 0.5);", HTML)
+        self.assertIn("const boundaries = Array.from(new Set([", HTML)
         self.assertIn("function rememberLiveSpeakerEvidence(speakerId, item)", HTML)
         self.assertIn("function realtimeRowHasSpeakerEvidence(start, end)", HTML)
         self.assertIn("ctx.owners.transcript.liveSpeakerTimeline.push({speakerId: normalizedSpeakerId, start, end});", HTML)
         self.assertIn("ctx.owners.transcript.liveSpeakerTimeline = [];", HTML)
         self.assertIn("const previousDisplaySpeakerId = item.realtime ? normalizedLiveSpeakerId(row.dataset.speaker) : \"\";", HTML)
-        self.assertIn("realtimeRowDisplaySpeakerId(rawSpeakerId, startSeconds, endSeconds, previousDisplaySpeakerId)", HTML)
+        self.assertIn("previousSpeakerHeadStartSeconds = 0.25;", HTML)
+        self.assertIn("minimumChallengerSeconds = 0.5;", HTML)
+        self.assertIn("requiredLeadSeconds = 0.1;", HTML)
+        self.assertIn("ctx.owners.transcript.lastTranscriptSpeakerId,", HTML)
+        self.assertIn("ctx.owners.transcript.lastTranscriptSpeakerId = rawSpeakerId;", HTML)
         self.assertIn('row.dataset.rawSpeaker = item.realtime ? (visualSplit ? displaySpeakerId : rawSpeakerId) : "";', HTML)
         self.assertIn('row.dataset.speaker = displaySpeakerId || "UNKNOWN";', HTML)
         self.assertIn('row.classList.toggle("live-speaker-row", item.realtime && Boolean(displaySpeakerId));', HTML)
@@ -118,16 +123,19 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
             HTML.index("refreshSpeakerPanelSentenceCounts();", HTML.index("function renderSentence(item)")),
         )
 
-    def test_realtime_unknown_sentence_ignores_tail_only_known_speaker(self) -> None:
+    def test_realtime_sentence_uses_time_weighted_live_assignment_evidence(self) -> None:
         display_start = HTML.index("function realtimeRowDisplaySpeakerId")
         display_end = HTML.index("function applyRealtimeRowSpeaker")
         display_block = HTML[display_start:display_end]
 
-        self.assertIn("const dominantSpeakerId = dominantRealtimeSpeakerId(start, end);", display_block)
+        self.assertIn("const dominantSpeakerId = dominantRealtimeSpeakerId(", display_block)
         self.assertIn('if (realtimeRowHasSpeakerEvidence(start, end)) return "";', display_block)
-        self.assertIn("if (rowEnd - rowStart > 3) return \"\";", display_block)
+        self.assertIn("if (rowDuration > 3) return \"\";", display_block)
         self.assertNotIn("activeFallbackLiveSpeakerId()", display_block)
-        self.assertIn("const requiredSeconds = Math.max(0.3, scoredSeconds * 0.5);", HTML)
+        self.assertIn("function realtimeSpeakerTimeScores(start, end, priorSpeakerId = \"\")", HTML)
+        self.assertIn("...windows.flatMap(item => [item.start, item.end])", HTML)
+        self.assertIn("right[1].count - left[1].count || right[1].latestEnd - left[1].latestEnd", HTML)
+        self.assertIn("scores[prior] = (scores[prior] || 0) + previousSpeakerHeadStartSeconds;", HTML)
 
     def test_realtime_visual_split_uses_tail_speaker_and_punctuation_only(self) -> None:
         self.assertIn(".row.provisional-visual-split", HTML)

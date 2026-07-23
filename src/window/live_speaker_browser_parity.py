@@ -22,6 +22,9 @@ from window.live_speaker_parity_replay import read_world_tape_events
 BROWSER_PARITY_REPLAY_ID = "whospeaks.live_world_tape.browser_reducer_parity.v1"
 REALTIME_SETTLE_REMOVAL_SECONDS = 1.4
 ROW_FADE_REMOVAL_SECONDS = 0.22
+PREVIOUS_SPEAKER_HEAD_START_SECONDS = 0.25
+MINIMUM_CHALLENGER_SECONDS = 0.5
+REQUIRED_CHALLENGER_LEAD_SECONDS = 0.1
 
 
 def _finite(value: Any, default: float = 0.0) -> float:
@@ -98,6 +101,7 @@ class BrowserLiveSpeakerReducer:
         self.fallback_until = 0.0
         self.fallback_clear_at: float | None = None
         self.transcript_speaker = ""
+        self.last_transcript_speaker = ""
         self.current_speaker = ""
         self.playback_time = 0.0
         self.now = 0.0
@@ -145,6 +149,8 @@ class BrowserLiveSpeakerReducer:
                 self.fallback_until = 0.0
             if self.transcript_speaker == public_id:
                 self.transcript_speaker = ""
+            if self.last_transcript_speaker == public_id:
+                self.last_transcript_speaker = ""
             if self.current_speaker == public_id:
                 self.current_speaker = ""
             self._refresh_rows()
@@ -172,6 +178,8 @@ class BrowserLiveSpeakerReducer:
             self.fallback_speaker = public_id
         if self.transcript_speaker == final_id:
             self.transcript_speaker = public_id
+        if self.last_transcript_speaker == final_id:
+            self.last_transcript_speaker = public_id
         if self.current_speaker == final_id:
             self.current_speaker = public_id
         self._refresh_rows()
@@ -211,29 +219,84 @@ class BrowserLiveSpeakerReducer:
                 return True
         return False
 
-    def _dominant_speaker(self, start: float, end: float) -> str:
+    def _speaker_time_scores(
+        self, start: float, end: float, prior_speaker: str = ""
+    ) -> tuple[dict[str, float], dict[str, float]]:
         if end <= start:
-            return ""
-        scored_end = self._scored_end(start, end)
-        scored_seconds = max(0.0, scored_end - start)
-        if scored_seconds <= 0.0:
-            return ""
-        weights: dict[str, float] = {}
-        for item in self.timeline:
-            speaker_id = _speaker(item["speaker"])
-            if not speaker_id:
-                continue
-            seconds = max(
-                0.0,
-                min(scored_end, item["end"]) - max(start, item["start"]),
+            return {}, {}
+        windows = [
+            (
+                _speaker(item["speaker"]),
+                max(start, _finite(item["start"])),
+                min(end, _finite(item["end"])),
             )
-            if seconds > 0.0:
-                weights[speaker_id] = weights.get(speaker_id, 0.0) + seconds
-        if not weights:
-            return ""
-        speaker_id, seconds = max(weights.items(), key=lambda pair: pair[1])
-        required = max(0.3, scored_seconds * 0.5)
-        return speaker_id if seconds >= required else ""
+            for item in self.timeline
+            if _speaker(item["speaker"])
+            and _finite(item["end"]) > start
+            and _finite(item["start"]) < end
+        ]
+        boundaries = sorted(
+            {
+                start,
+                end,
+                *(value for _, window_start, window_end in windows for value in (window_start, window_end)),
+            }
+        )
+        observed: dict[str, float] = {}
+        for slice_start, slice_end in zip(boundaries, boundaries[1:]):
+            if slice_end <= slice_start:
+                continue
+            votes: dict[str, tuple[int, float]] = {}
+            for speaker_id, window_start, window_end in windows:
+                if window_start >= slice_end or window_end <= slice_start:
+                    continue
+                count, latest_end = votes.get(speaker_id, (0, float("-inf")))
+                votes[speaker_id] = (count + 1, max(latest_end, window_end))
+            ranked = sorted(
+                votes.items(),
+                key=lambda pair: (pair[1][0], pair[1][1]),
+                reverse=True,
+            )
+            if not ranked or (
+                len(ranked) > 1
+                and ranked[0][1][0] == ranked[1][1][0]
+                and ranked[0][1][1] == ranked[1][1][1]
+            ):
+                continue
+            speaker_id = ranked[0][0]
+            observed[speaker_id] = observed.get(speaker_id, 0.0) + slice_end - slice_start
+        scores = dict(observed)
+        prior = _speaker(prior_speaker)
+        if prior:
+            scores[prior] = scores.get(prior, 0.0) + PREVIOUS_SPEAKER_HEAD_START_SECONDS
+        return observed, scores
+
+    def _dominant_speaker(
+        self,
+        start: float,
+        end: float,
+        incumbent_speaker: str = "",
+        prior_speaker: str = "",
+    ) -> str:
+        incumbent = _speaker(incumbent_speaker) or _speaker(prior_speaker)
+        observed, scores = self._speaker_time_scores(start, end, prior_speaker)
+        if not scores:
+            return incumbent
+        ordered = sorted(scores.items(), key=lambda pair: pair[1], reverse=True)
+        speaker_id, score = ordered[0]
+        if speaker_id == incumbent:
+            return incumbent
+        incumbent_score = (
+            scores.get(incumbent, 0.0)
+            if incumbent
+            else (ordered[1][1] if len(ordered) > 1 else 0.0)
+        )
+        if (
+            observed.get(speaker_id, 0.0) >= MINIMUM_CHALLENGER_SECONDS
+            and score >= incumbent_score + REQUIRED_CHALLENGER_LEAD_SECONDS
+        ):
+            return speaker_id
+        return incumbent
 
     def _display_speaker(
         self,
@@ -242,12 +305,15 @@ class BrowserLiveSpeakerReducer:
         end: float,
         previous_speaker: str,
     ) -> str:
-        dominant = self._dominant_speaker(start, end)
+        previous = _speaker(previous_speaker)
+        dominant = self._dominant_speaker(
+            start,
+            end,
+            previous,
+            self.last_transcript_speaker,
+        )
         if dominant:
             return dominant
-        previous = _speaker(previous_speaker)
-        if previous:
-            return previous
         if self._row_has_evidence(start, end):
             return ""
         raw = _speaker(raw_speaker)
@@ -378,6 +444,9 @@ class BrowserLiveSpeakerReducer:
                 text_score = _text_adoption_score(candidate.text, item.get("text"))
                 if time_score >= 0.34 and text_score >= 0.5:
                     candidate.remove_at = self.now + ROW_FADE_REMOVAL_SECONDS
+        committed_speaker = _speaker(item.get("assigned_speaker"))
+        if committed_speaker and not item.get("pending"):
+            self.last_transcript_speaker = committed_speaker
         self._refresh_rows()
 
     def apply(self, event: str, item: dict[str, Any], now: float) -> None:
