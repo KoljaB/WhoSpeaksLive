@@ -35,6 +35,10 @@ from speakers.speaker_embedding_cluster import (
     cosine_similarity,
     normalize_vector,
 )
+from window.asr_hallucination_policy import (
+    contains_asr_non_speech_annotation,
+    is_exact_repeated_phrase,
+)
 from window.window_config import (
     DEFAULT_KROKO_PREVIEW_AUTO_DOWNLOAD,
     DEFAULT_REALTIMESTT_ROOT,
@@ -96,8 +100,6 @@ from window.window_speaker_refinement import (
     user_confirmed_speaker_label,
 )
 from window.live_profile_tape import emit_live_profile_snapshot
-
-
 
 
 class WindowTranscriptionMixin:
@@ -538,6 +540,9 @@ class WindowTranscriptionMixin:
             sentence_tokenizer=getattr(self.args, "sentence_tokenizer", "nltk+rule-based"),
             sentence_language=getattr(self.args, "sentence_language", getattr(self.args, "language", "en")),
         )
+        split_handoffs = getattr(self, "_split_completed_sentence_handoffs", None)
+        if callable(split_handoffs):
+            parts = split_handoffs(parts)
         return WindowTranscript(parts, len(words), segment_count)
 
     @staticmethod
@@ -572,6 +577,15 @@ class WindowTranscriptionMixin:
             "sentence_boundary_post_padding_seconds": round(float(sentence.sentence_boundary_post_padding_seconds), 4),
             "sentence_boundary_gap_ratio": round(float(sentence.sentence_boundary_gap_ratio), 4),
             "asr_review": copy.deepcopy(getattr(sentence, "asr_review", {}) or {}),
+            "semantic_sentence_id": str(getattr(sentence, "semantic_sentence_id", "") or ""),
+            "semantic_sentence_part": int(getattr(sentence, "semantic_sentence_part", 0) or 0),
+            "semantic_sentence_part_count": max(
+                1,
+                int(getattr(sentence, "semantic_sentence_part_count", 1) or 1),
+            ),
+            "speaker_handoff": copy.deepcopy(
+                getattr(sentence, "speaker_handoff", {}) or {}
+            ),
             "unknown_permanent": False,
         }
 
@@ -833,18 +847,108 @@ class WindowTranscriptionMixin:
         embedding_run_id: str = "",
     ) -> dict[str, Any]:
         paired_unknown_revision: tuple[PendingUnknownSentence, float] | None = None
-        allow_new_speaker = len(text_content_words(text)) >= self.args.min_new_speaker_words
+        content_word_count = len(text_content_words(text))
+        asr_review = (
+            base_payload.get("asr_review")
+            if isinstance(base_payload.get("asr_review"), dict)
+            else {}
+        )
+        asr_review_details = (
+            asr_review.get("details")
+            if isinstance(asr_review.get("details"), dict)
+            else {}
+        )
+        annotation_contaminated = bool(
+            asr_review_details.get("removed_non_speech_annotation")
+        ) or contains_asr_non_speech_annotation(text)
+        asr_disputed = bool(asr_review.get("needs_review"))
+        repetition_shaped = (
+            content_word_count >= 8
+            and duration_seconds <= 3.0
+            and is_exact_repeated_phrase(text, minimum_phrase_words=4)
+        )
+        profile_evidence_clean = (
+            not annotation_contaminated
+            and not asr_disputed
+            and not repetition_shaped
+        )
+        allow_new_speaker = (
+            content_word_count >= self.args.min_new_speaker_words
+            and profile_evidence_clean
+        )
+        try:
+            spoken_seconds_per_word = (
+                max(0.0, float(base_payload.get("spoken_word_seconds") or 0.0))
+                / max(1, content_word_count)
+            )
+        except (TypeError, ValueError):
+            spoken_seconds_per_word = 0.0
+        try:
+            single_sentence_new_speaker_min_seconds = max(
+                0.0,
+                float(
+                    getattr(
+                        self.args,
+                        "single_sentence_new_speaker_min_seconds",
+                        0.0,
+                    )
+                ),
+            )
+        except (TypeError, ValueError):
+            single_sentence_new_speaker_min_seconds = 0.0
+        try:
+            current_sentence_start = float(base_payload.get("start"))
+        except (TypeError, ValueError):
+            current_sentence_start = 0.0
+        with self._sentence_refinement_lock:
+            latest_profile_creation_start = max(
+                (
+                    float((record.get("base_payload") or {}).get("start"))
+                    for record in self._sentence_refinement_records.values()
+                    if bool(record.get("created_speaker"))
+                ),
+                default=current_sentence_start,
+            )
+        stable_roster_seconds = max(
+            0.0,
+            current_sentence_start - latest_profile_creation_start,
+        )
+        min_new_speaker_confirmations = (
+            2
+            if (
+                allow_new_speaker
+                and self.memory.profile_count() >= 3
+                and content_word_count <= 3
+                and spoken_seconds_per_word >= 0.8
+                and single_sentence_new_speaker_min_seconds > 0.0
+                and duration_seconds < single_sentence_new_speaker_min_seconds
+                and stable_roster_seconds >= 120.0
+            )
+            else 1
+        )
+        allow_immediate_new_speaker = (
+            allow_new_speaker and min_new_speaker_confirmations <= 1
+        )
         decision = self._section_gap_new_speaker_decision(
             embedding,
             duration_seconds,
             base_payload,
-            allow_new_speaker=allow_new_speaker,
+            allow_new_speaker=allow_immediate_new_speaker,
         )
+        if decision is None:
+            decision = self._short_distinct_new_speaker_decision(
+                embedding,
+                duration_seconds,
+                base_payload,
+                allow_new_speaker=allow_immediate_new_speaker,
+            )
         if decision is None:
             decision = self.memory.classify(
                 embedding,
                 duration_seconds,
                 allow_new_speaker=allow_new_speaker,
+                min_new_speaker_confirmations=min_new_speaker_confirmations,
+                allow_profile_update=profile_evidence_clean,
             )
             pair_decision = self._unknown_pair_new_speaker_decision(
                 embedding,
@@ -901,9 +1005,11 @@ class WindowTranscriptionMixin:
             paired_candidate, pair_similarity = paired_unknown_revision
             self._emit_unknown_pair_revision(paired_candidate, decision, pair_similarity)
         self._maybe_emit_sentence_live_speaker_hint(sentence_payload, duration_seconds)
-        if decision.assigned_speaker is None:
+        if decision.assigned_speaker is None and profile_evidence_clean:
             self._remember_unknown_sentence(index, base_payload, embedding, duration_seconds)
         elif decision.created_speaker:
+            if self._has_short_distinct_speaker_record():
+                self._clear_weak_short_unknown_provisionals()
             self.emit_speaker_state()
             if run_speaker_refinement:
                 self._revisit_unknown_sentences()
@@ -919,7 +1025,11 @@ class WindowTranscriptionMixin:
             current_record = self._sentence_refinement_records.get(int(index))
             if current_record is not None:
                 current_sentence_speaker = current_record.get("assigned_speaker")
-        if live_memory_audio is not None and live_memory_sample_rate is not None:
+        if (
+            profile_evidence_clean
+            and live_memory_audio is not None
+            and live_memory_sample_rate is not None
+        ):
             self._update_live_speaker_memory(
                 current_sentence_speaker,
                 live_memory_audio,

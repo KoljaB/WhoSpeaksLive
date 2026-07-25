@@ -278,6 +278,15 @@ def add_embedding_speaker_arguments(parser: argparse.ArgumentParser) -> None:
         ),
     )
     parser.add_argument("--min-new-speaker-seconds", type=float, default=2.0358)
+    parser.add_argument(
+        "--single-sentence-new-speaker-min-seconds",
+        type=float,
+        default=0.0,
+        help=(
+            "When positive, a short new-speaker candidate after a stable three-speaker "
+            "roster needs a matching clean sentence unless it is at least this long."
+        ),
+    )
     parser.add_argument("--late-new-speaker-min-seconds", type=float, default=3.1604)
     parser.add_argument("--max-speakers", type=int, default=12)
     parser.add_argument("--min-margin", type=float, default=0.0372)
@@ -410,6 +419,15 @@ def add_embedding_speaker_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--delayed-clustering-candidate-min-gain", type=float, default=0.02)
     parser.add_argument("--delayed-clustering-min-candidate-rows", type=int, default=4)
     parser.add_argument("--delayed-clustering-min-candidate-duration", type=float, default=8.0)
+    parser.add_argument(
+        "--delayed-clustering-min-candidate-anchor-duration",
+        type=float,
+        default=0.0,
+        help=(
+            "When positive, delayed creation of a speaker also requires at least "
+            "one candidate sentence with this much spoken evidence."
+        ),
+    )
     parser.add_argument("--delayed-clustering-min-candidate-span", type=float, default=12.0)
     parser.add_argument("--delayed-clustering-min-candidate-time-groups", type=int, default=2)
     parser.add_argument("--delayed-clustering-time-group-gap", type=float, default=8.0)

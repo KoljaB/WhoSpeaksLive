@@ -410,6 +410,96 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
         help="Weight in [0,1] assigned to the optional longer live-speaker context embedding.",
     )
     parser.add_argument(
+        "--sentence-speaker-handoff",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help=(
+            "Opt in to cached live-speaker detection and final-provider "
+            "verification of one stable handoff inside a completed sentence."
+        ),
+    )
+    parser.add_argument(
+        "--sentence-speaker-handoff-immediate",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help=(
+            "Publish a split immediately from the live provider. Disabled by "
+            "default so the final provider can confirm both complete child spans."
+        ),
+    )
+    parser.add_argument(
+        "--sentence-speaker-handoff-cache-seconds",
+        type=float,
+        default=3600.0,
+        help=(
+            "Seconds of raw short live-speaker embeddings retained for sentence "
+            "handoff detection (speaker profile centroids are retained separately)."
+        ),
+    )
+    parser.add_argument(
+        "--sentence-speaker-handoff-context-seconds",
+        type=float,
+        default=1.0,
+        help="Speech context embedded on each side of a nominated word gap.",
+    )
+    parser.add_argument(
+        "--sentence-speaker-handoff-max-word-snap-seconds",
+        type=float,
+        default=0.25,
+        help=(
+            "Maximum distance between the acoustic handoff estimate and the "
+            "ASR word gap used for the split."
+        ),
+    )
+    parser.add_argument(
+        "--sentence-speaker-handoff-max-verification-seconds",
+        type=float,
+        default=0.8,
+        help=(
+            "Expected compute-time budget for focused handoff verification; "
+            "slow embedding backends skip the split."
+        ),
+    )
+    parser.add_argument(
+        "--sentence-speaker-handoff-max-hindsight-seconds",
+        type=float,
+        default=5.0,
+        help=(
+            "Soft total compute budget for the final mature-profile retry "
+            "after live-probe workers have stopped."
+        ),
+    )
+    parser.add_argument(
+        "--sentence-speaker-handoff-min-context-voiced-seconds",
+        type=float,
+        default=0.25,
+        help="Minimum voiced audio required in each focused context window.",
+    )
+    parser.add_argument(
+        "--sentence-speaker-handoff-min-context-similarity",
+        type=float,
+        default=0.40,
+        help="Minimum expected-speaker cosine for each side-context embedding.",
+    )
+    parser.add_argument(
+        "--sentence-speaker-handoff-min-context-margin",
+        type=float,
+        default=0.15,
+        help="Minimum expected-vs-other speaker cosine margin on each side.",
+    )
+    parser.add_argument(
+        "--sentence-speaker-handoff-min-context-runner-up-margin",
+        type=float,
+        default=0.08,
+        help="Minimum expected-speaker margin over every established profile.",
+    )
+    parser.add_argument(
+        "--sentence-speaker-handoff-min-context-separation",
+        type=float,
+        default=0.50,
+        help="Minimum combined left-A and right-B pairwise cosine separation.",
+    )
+    parser.add_argument(
         "--live-speaker-tracker",
         choices=("classic", "bayes"),
         default="bayes",
@@ -782,6 +872,39 @@ def add_preview_live_speaker_arguments(parser: argparse.ArgumentParser) -> None:
         type=float,
         default=0.08,
         help="Minimum top-vs-runner-up margin for section-gap new-speaker splitting.",
+    )
+    parser.add_argument(
+        "--short-distinct-new-speaker-min-spoken-seconds",
+        type=float,
+        default=-1.0,
+        help=(
+            "Opt-in minimum spoken-word time for creating a nearly-long-enough "
+            "speaker from exceptionally strong UNKNOWN evidence; negative disables it."
+        ),
+    )
+    parser.add_argument(
+        "--short-distinct-new-speaker-min-words",
+        type=int,
+        default=6,
+        help="Minimum content-word count for opt-in short distinct-speaker creation.",
+    )
+    parser.add_argument(
+        "--short-distinct-new-speaker-min-unknown-probability",
+        type=float,
+        default=0.90,
+        help="Minimum UNKNOWN probability for opt-in short distinct-speaker creation.",
+    )
+    parser.add_argument(
+        "--short-distinct-new-speaker-max-similarity",
+        type=float,
+        default=0.20,
+        help="Maximum similarity to any existing speaker for short distinct-speaker creation.",
+    )
+    parser.add_argument(
+        "--short-distinct-new-speaker-max-margin",
+        type=float,
+        default=0.05,
+        help="Maximum top-vs-runner-up margin when multiple speakers already exist.",
     )
     parser.add_argument(
         "--unknown-pair-new-speaker",

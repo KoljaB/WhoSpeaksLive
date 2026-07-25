@@ -313,7 +313,7 @@ class WindowRuntimeAudioMixin:
             self._cancel_pending_embedding_jobs(jobs)
         return drained
 
-    def _stop_embedding_worker(self) -> None:
+    def _stop_embedding_worker(self) -> bool:
         jobs = self._embedding_jobs
         thread = self._embedding_thread
         if jobs is not None and thread is not None and thread.is_alive():
@@ -322,8 +322,10 @@ class WindowRuntimeAudioMixin:
             thread.join(timeout=5.0)
             if thread.is_alive():
                 self.bus.emit("status", {"message": "Speaker embedding worker did not stop before timeout."})
+                return False
         self._embedding_jobs = None
         self._embedding_thread = None
+        return True
 
     def _run_embedding_jobs(self) -> None:
         jobs = self._embedding_jobs
@@ -371,7 +373,7 @@ class WindowRuntimeAudioMixin:
             self._cancel_pending_embedding_jobs(jobs)
         return drained
 
-    def _stop_live_memory_update_worker(self) -> None:
+    def _stop_live_memory_update_worker(self) -> bool:
         jobs = self._live_memory_update_jobs
         thread = self._live_memory_update_thread
         if jobs is not None and thread is not None and thread.is_alive():
@@ -384,8 +386,10 @@ class WindowRuntimeAudioMixin:
             thread.join(timeout=5.0)
             if thread.is_alive():
                 self.bus.emit("status", {"message": "Live speaker profile update worker did not stop before timeout."})
+                return False
         self._live_memory_update_jobs = None
         self._live_memory_update_thread = None
+        return True
 
     def _run_live_memory_update_jobs(self) -> None:
         jobs = self._live_memory_update_jobs

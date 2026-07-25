@@ -19,12 +19,14 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from window.asr_hallucination_policy import (
+    is_exact_repeated_phrase,
     match_asr_hallucination_policy,
     normalize_asr_hallucination_text,
 )
 from window.window_domain import TimedWord, VadWindowState
 from window.window_events import RecordingEventBus
 from window.window_preview import KrokoSubprocessPreviewTranscriber
+from window import window_text
 
 
 
@@ -32,6 +34,27 @@ from tests.window_diarizer_support import make_window_diarizer
 
 
 class WindowAudioAsrTests(unittest.TestCase):
+    def test_exact_repeated_phrase_detects_full_multiword_repetition_only(self) -> None:
+        self.assertTrue(
+            is_exact_repeated_phrase(
+                "I didn't want to cry, I didn't want to cry."
+            )
+        )
+        self.assertTrue(
+            is_exact_repeated_phrase(
+                "I had to come back. I had to come back. I had to come back."
+            )
+        )
+        self.assertTrue(is_exact_repeated_phrase("Thank you. Thank you."))
+        self.assertFalse(
+            is_exact_repeated_phrase(
+                "J'adoo, J'adoo, J'adoo, J'adoo.",
+                minimum_phrase_words=4,
+            )
+        )
+        self.assertFalse(is_exact_repeated_phrase("No, no."))
+        self.assertFalse(is_exact_repeated_phrase("I had to come back later."))
+
     def test_asr_hallucination_policy_normalizes_unicode_and_uses_word_boundaries(self) -> None:
         self.assertEqual(normalize_asr_hallucination_text("  THANKS—for watching!!! "), "thanks for watching")
         amara_org = match_asr_hallucination_policy(
@@ -354,6 +377,298 @@ class WindowAudioAsrTests(unittest.TestCase):
 
         self.assertEqual(kept, credit)
 
+    def test_asr_non_speech_annotations_are_removed_without_removing_surrounding_speech(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(asr_no_speech_filter=False)
+        diarizer.bus = RecordingEventBus()
+        words = [
+            TimedWord(" AND", 0.0, 0.2, segment_index=0),
+            TimedWord(" APPLAUSE", 0.2, 0.8, segment_index=0),
+            TimedWord(" No.", 0.8, 1.0, segment_index=0),
+            TimedWord(" LAUGHTER", 1.2, 1.8, segment_index=1),
+            TimedWord(" Obviously.", 1.8, 2.2, segment_index=1),
+            TimedWord(" CHEERING", 2.4, 3.0, segment_index=2),
+            TimedWord(" NASA", 3.2, 3.5, segment_index=3),
+        ]
+
+        kept = diarizer._filter_asr_no_speech_words(words)
+
+        self.assertEqual([word.text for word in kept], [" No.", " Obviously.", " NASA"])
+        self.assertTrue(kept[0].asr_review["details"]["removed_non_speech_annotation"])
+        self.assertTrue(kept[1].asr_review["details"]["removed_non_speech_annotation"])
+        self.assertFalse(kept[2].asr_review)
+
+    def test_removed_annotation_audio_is_trimmed_to_retained_spoken_words(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(asr_no_speech_filter=False)
+        diarizer.bus = RecordingEventBus()
+        words = [
+            TimedWord(" AND", 226.716, 227.976, segment_index=0),
+            TimedWord(" APPLAUSE", 227.976, 229.496, segment_index=0),
+            TimedWord(" No.", 233.376, 234.776, segment_index=0),
+        ]
+
+        kept = diarizer._filter_asr_no_speech_words(words)
+        with mock.patch.object(window_text, "generate_sentences", return_value=["No."]):
+            parts = window_text.split_words_with_stream2sentence(
+                kept,
+                left=226.716,
+                right=235.696,
+                unstable_tail_seconds=0.0,
+                final_flush=True,
+            )
+
+        self.assertEqual(len(parts), 1)
+        self.assertEqual(parts[0].text, "No.")
+        self.assertAlmostEqual(parts[0].start, 233.316)
+        self.assertAlmostEqual(parts[0].end, 234.866)
+        self.assertAlmostEqual(parts[0].end - parts[0].start, 1.55)
+        self.assertTrue(
+            parts[0].asr_review["details"]["removed_non_speech_annotation"]
+        )
+
+    def test_inline_non_speech_annotation_is_removed_but_spoken_text_remains(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(asr_no_speech_filter=False)
+        diarizer.bus = RecordingEventBus()
+        word = TimedWord(
+            " That is horrible. LAUGHTER AND APPLAUSE You have a point.",
+            0.0,
+            3.0,
+            segment_index=0,
+        )
+
+        kept = diarizer._filter_asr_no_speech_words([word])
+
+        self.assertEqual(kept, [word])
+        self.assertEqual(
+            " ".join(word.text.split()),
+            "That is horrible. You have a point.",
+        )
+
+    def test_repeated_short_phrase_is_verified_even_with_strong_whisper_evidence(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_independent_verification=True,
+            realtime_preview_engine="kroko_onnx",
+        )
+        diarizer.bus = RecordingEventBus()
+        verifier = mock.Mock(return_value="I love you.")
+        diarizer._preview_transcriber = SimpleNamespace(transcribe_verification=verifier)
+        words = [
+            TimedWord(
+                " I love you.",
+                index * 0.8,
+                index * 0.8 + 0.45,
+                probability=0.98,
+                no_speech_prob=0.01,
+                avg_logprob=-0.01,
+                segment_index=index,
+            )
+            for index in range(7)
+        ]
+
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(96_000, dtype=np.float32),
+            16_000,
+            words,
+        )
+
+        self.assertEqual(kept, words[:1])
+        verifier.assert_called_once()
+        self.assertEqual(len(diarizer._asr_review_candidates), 6)
+        self.assertTrue(
+            all(
+                candidate["policy_rule"] == "repeated_short_phrase"
+                for candidate in diarizer._asr_review_candidates
+            )
+        )
+
+    def test_repetition_verification_preserves_supported_count_and_ignores_doubles(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_independent_verification=True,
+            realtime_preview_engine="kroko_onnx",
+        )
+        diarizer.bus = RecordingEventBus()
+        verifier = mock.Mock(return_value="Thank you. Thank you.")
+        diarizer._preview_transcriber = SimpleNamespace(transcribe_verification=verifier)
+        repeated = [
+            TimedWord(
+                " Thank you.",
+                index * 0.8,
+                index * 0.8 + 0.5,
+                probability=0.98,
+                no_speech_prob=0.01,
+                avg_logprob=-0.01,
+                segment_index=index,
+            )
+            for index in range(4)
+        ]
+
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(64_000, dtype=np.float32),
+            16_000,
+            repeated,
+        )
+
+        self.assertEqual(kept, repeated[:2])
+        verifier.assert_called_once()
+
+        verifier.reset_mock()
+        genuine_double = repeated[:2]
+        kept_double = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(32_000, dtype=np.float32),
+            16_000,
+            genuine_double,
+        )
+        self.assertEqual(kept_double, genuine_double)
+        verifier.assert_not_called()
+
+    def test_repetition_verification_removes_run_when_kroko_hears_no_text(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_independent_verification=True,
+            realtime_preview_engine="kroko_onnx",
+        )
+        diarizer.bus = RecordingEventBus()
+        verifier = mock.Mock(return_value="")
+        diarizer._preview_transcriber = SimpleNamespace(transcribe_verification=verifier)
+        repeated = [
+            TimedWord(
+                " Thank you.",
+                index * 0.8,
+                index * 0.8 + 0.5,
+                probability=0.98,
+                no_speech_prob=0.01,
+                avg_logprob=-0.01,
+                segment_index=index,
+            )
+            for index in range(4)
+        ]
+
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(64_000, dtype=np.float32),
+            16_000,
+            repeated,
+        )
+
+        self.assertEqual(kept, [])
+        verifier.assert_called_once()
+        self.assertEqual(len(diarizer._asr_review_candidates), 4)
+
+    def test_repetition_verification_removes_run_when_kroko_hears_different_text(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_independent_verification=True,
+            realtime_preview_engine="kroko_onnx",
+        )
+        diarizer.bus = RecordingEventBus()
+        verifier = mock.Mock(return_value="Now Beckham, do you reckon")
+        diarizer._preview_transcriber = SimpleNamespace(transcribe_verification=verifier)
+        repeated = [
+            TimedWord(
+                " I'm not.",
+                index * 0.4,
+                index * 0.4 + 0.3,
+                probability=0.80,
+                no_speech_prob=0.40,
+                avg_logprob=-0.70,
+                segment_index=index,
+            )
+            for index in range(4)
+        ]
+
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(64_000, dtype=np.float32),
+            16_000,
+            repeated,
+        )
+
+        self.assertEqual(kept, [])
+        verifier.assert_called_once()
+        self.assertEqual(len(diarizer._asr_review_candidates), 4)
+
+    def test_physically_impossible_word_timestamps_are_suppressed(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(asr_hallucination_verification=False)
+        diarizer.bus = RecordingEventBus()
+        words = [
+            TimedWord(" No,", 0.0, 0.0, segment_index=0),
+            TimedWord(" I'm", 0.02, 0.04, segment_index=0),
+            TimedWord(" not.", 0.04, 0.04, segment_index=0),
+        ]
+
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(16_000, dtype=np.float32),
+            16_000,
+            words,
+            media_start_seconds=256.634,
+        )
+
+        self.assertEqual(kept, [])
+        candidate = diarizer._asr_review_candidates[0]
+        self.assertEqual(candidate["policy_rule"], "implausible_word_timing")
+        self.assertEqual(candidate["text"], "No, I'm not.")
+
+    def test_zero_similarity_weak_single_word_fragment_is_suppressed(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_independent_verification=True,
+            asr_independent_verification_max_primary_evidence=0.70,
+            asr_independent_verification_min_no_speech_probability=0.20,
+            asr_independent_verification_min_text_similarity=0.35,
+            realtime_preview_engine="kroko_onnx",
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer._preview_transcriber = SimpleNamespace(
+            transcribe_verification=mock.Mock(
+                return_value="Parkinson. Now Beckham, do you reckon"
+            )
+        )
+        words = [
+            TimedWord(
+                " -Centred?",
+                0.0,
+                0.62,
+                probability=0.20,
+                no_speech_prob=0.3958,
+                avg_logprob=-0.90,
+                segment_index=0,
+            )
+        ]
+
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(32_000, dtype=np.float32),
+            16_000,
+            words,
+            media_start_seconds=256.014,
+        )
+
+        self.assertEqual(kept, [])
+        candidate = diarizer._asr_review_candidates[0]
+        self.assertEqual(
+            candidate["reason"],
+            "weak short ASR fragment was contradicted by independent ASR",
+        )
+
     def test_asr_hallucination_verification_rejects_unstable_low_evidence_segment(self) -> None:
         diarizer = make_window_diarizer()
         diarizer.args = argparse.Namespace(
@@ -369,6 +684,10 @@ class WindowAudioAsrTests(unittest.TestCase):
             asr_hallucination_verification_min_text_similarity=0.50,
         )
         diarizer.bus = RecordingEventBus()
+        diarizer.args.realtime_preview_engine = "kroko_onnx"
+        diarizer._preview_transcriber = SimpleNamespace(
+            transcribe_verification=mock.Mock(return_value="")
+        )
         words = [
             TimedWord(" Thanks", 0.0, 0.5, probability=0.0019, no_speech_prob=0.3403, avg_logprob=-0.9448, segment_index=0),
             TimedWord(" for", 0.5, 0.6, probability=0.8003, no_speech_prob=0.3403, avg_logprob=-0.9448, segment_index=0),
@@ -389,6 +708,58 @@ class WindowAudioAsrTests(unittest.TestCase):
             )
         )
 
+    def test_cross_model_suppression_is_not_tied_to_phrase_or_repetition(self) -> None:
+        diarizer = make_window_diarizer()
+        diarizer.args = argparse.Namespace(
+            asr_hallucination_verification=True,
+            asr_hallucination_suspicion_score=0.45,
+            asr_independent_verification=True,
+            asr_independent_verification_max_primary_evidence=0.70,
+            asr_independent_verification_min_no_speech_probability=0.20,
+            realtime_preview_engine="kroko_onnx",
+        )
+        diarizer.bus = RecordingEventBus()
+        diarizer._preview_transcriber = SimpleNamespace(
+            transcribe_verification=mock.Mock(return_value="")
+        )
+        words = [
+            TimedWord(
+                " Spectral",
+                0.0,
+                0.45,
+                probability=0.08,
+                no_speech_prob=0.31,
+                avg_logprob=-0.82,
+                segment_index=0,
+            ),
+            TimedWord(
+                " apricot.",
+                0.45,
+                0.95,
+                probability=0.72,
+                no_speech_prob=0.31,
+                avg_logprob=-0.82,
+                segment_index=0,
+            ),
+        ]
+
+        kept = diarizer._verify_low_evidence_asr_words(
+            object(),
+            np.zeros(48_000, dtype=np.float32),
+            16_000,
+            words,
+        )
+
+        self.assertEqual(kept, [])
+        self.assertEqual(len(diarizer._asr_review_candidates), 1)
+        candidate = diarizer._asr_review_candidates[0]
+        self.assertEqual(candidate["text"], "Spectral apricot.")
+        self.assertEqual(candidate["policy_rule"], "generic")
+        self.assertEqual(
+            candidate["reason"],
+            "weak primary ASR evidence with no independent speech transcript",
+        )
+
     def test_later_retained_view_clears_transient_suppression_warning(self) -> None:
         diarizer = make_window_diarizer()
         diarizer.args = argparse.Namespace(
@@ -399,6 +770,10 @@ class WindowAudioAsrTests(unittest.TestCase):
             asr_hallucination_verification_min_text_similarity=0.50,
         )
         diarizer.bus = RecordingEventBus()
+        diarizer.args.realtime_preview_engine = "kroko_onnx"
+        diarizer._preview_transcriber = SimpleNamespace(
+            transcribe_verification=mock.Mock(return_value="")
+        )
         weak = [
             TimedWord(" Thanks", 0.0, 0.4, probability=0.20, no_speech_prob=0.40, avg_logprob=-0.90, segment_index=0),
             TimedWord(" for", 0.4, 0.6, probability=0.20, no_speech_prob=0.40, avg_logprob=-0.90, segment_index=0),
@@ -496,6 +871,10 @@ class WindowAudioAsrTests(unittest.TestCase):
             asr_hallucination_verification_min_text_similarity=0.50,
         )
         diarizer.bus = RecordingEventBus()
+        diarizer.args.realtime_preview_engine = "kroko_onnx"
+        diarizer._preview_transcriber = SimpleNamespace(
+            transcribe_verification=mock.Mock(return_value="Hello there")
+        )
         words = [
             TimedWord(" Hello", 0.0, 0.4, probability=0.02, no_speech_prob=0.34, avg_logprob=-0.95, segment_index=0),
             TimedWord(" there", 0.4, 0.9, probability=0.75, no_speech_prob=0.34, avg_logprob=-0.95, segment_index=0),
@@ -519,6 +898,10 @@ class WindowAudioAsrTests(unittest.TestCase):
             asr_hallucination_verification_min_text_similarity=0.50,
         )
         diarizer.bus = RecordingEventBus()
+        diarizer.args.realtime_preview_engine = "kroko_onnx"
+        diarizer._preview_transcriber = SimpleNamespace(
+            transcribe_verification=mock.Mock(return_value="")
+        )
         words = [
             TimedWord(" Thanks", 0.0, 0.4, probability=0.60, no_speech_prob=0.20, avg_logprob=-0.50, segment_index=0),
             TimedWord(" for", 0.4, 0.6, probability=0.60, no_speech_prob=0.20, avg_logprob=-0.50, segment_index=0),
@@ -536,8 +919,11 @@ class WindowAudioAsrTests(unittest.TestCase):
         )
 
         self.assertEqual(kept, [])
-        diarizer._transcribe_audio_words.assert_called_once()
-        self.assertTrue(any("thanks_for_watching" in item["payload"]["message"] for item in diarizer.bus.records))
+        diarizer._preview_transcriber.transcribe_verification.assert_called_once()
+        self.assertEqual(
+            diarizer._asr_review_candidates[0]["policy_rule"],
+            "thanks_for_watching",
+        )
 
     def test_asr_hallucination_policy_keeps_strongly_supported_watching_phrase(self) -> None:
         diarizer = make_window_diarizer()
@@ -575,6 +961,12 @@ class WindowAudioAsrTests(unittest.TestCase):
             asr_hallucination_verification_min_text_similarity=0.50,
         )
         diarizer.bus = RecordingEventBus()
+        diarizer.args.realtime_preview_engine = "kroko_onnx"
+        diarizer._preview_transcriber = SimpleNamespace(
+            transcribe_verification=mock.Mock(
+                return_value="Before we go thank you for watching and please subscribe"
+            )
+        )
         tokens = " Before we go thank you for watching and please subscribe".split(" ")
         words = [
             TimedWord(
@@ -600,7 +992,7 @@ class WindowAudioAsrTests(unittest.TestCase):
         )
 
         self.assertEqual(kept, words)
-        self.assertTrue(all(word.asr_review.get("needs_review") for word in words))
+        self.assertTrue(all(not word.asr_review.get("needs_review") for word in words))
         self.assertEqual(diarizer._asr_review_candidates, [])
 
     def test_asr_hallucination_verification_retains_uncertain_ordinary_speech(self) -> None:
@@ -613,6 +1005,10 @@ class WindowAudioAsrTests(unittest.TestCase):
             asr_hallucination_verification_min_text_similarity=0.50,
         )
         diarizer.bus = RecordingEventBus()
+        diarizer.args.realtime_preview_engine = "kroko_onnx"
+        diarizer._preview_transcriber = SimpleNamespace(
+            transcribe_verification=mock.Mock(return_value="Completely different")
+        )
         words = [
             TimedWord(" Hello", 0.0, 0.4, probability=0.02, no_speech_prob=0.34, avg_logprob=-0.95, segment_index=0),
             TimedWord(" there", 0.4, 0.9, probability=0.75, no_speech_prob=0.34, avg_logprob=-0.95, segment_index=0),
@@ -629,7 +1025,7 @@ class WindowAudioAsrTests(unittest.TestCase):
         self.assertTrue(all(word.asr_review.get("needs_review") for word in words))
         self.assertTrue(
             any(
-                "uncertain ordinary-speech" in item["payload"]["message"]
+                "cross-model disagreement" in item["payload"]["message"]
                 for item in diarizer.bus.records
             )
         )
@@ -639,8 +1035,14 @@ class WindowAudioAsrTests(unittest.TestCase):
         diarizer = make_window_diarizer(
             audio=np.zeros(int(4.3 * sample_rate), dtype=np.float32),
             sample_rate=sample_rate,
+            realtime_preview_engine="kroko_onnx",
         )
         diarizer.bus = RecordingEventBus()
+        diarizer._preview_transcriber = SimpleNamespace(
+            transcribe_verification=mock.Mock(
+                return_value="Would you as a gesture of bringing us together marry her"
+            )
+        )
         primary = SimpleNamespace(
             no_speech_prob=0.6982,
             avg_logprob=-0.6263,
@@ -683,7 +1085,7 @@ class WindowAudioAsrTests(unittest.TestCase):
         )
 
         self.assertEqual([word.text for word in words], [" with", " you", " as", " a", " gesture."])
-        self.assertEqual(model.calls, 2)
+        self.assertEqual(model.calls, 1)
         self.assertTrue(all(word.asr_review.get("needs_review") for word in words))
         self.assertTrue(
             any(

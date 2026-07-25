@@ -80,6 +80,23 @@ class DelayedMultirowClusteringTests(unittest.TestCase):
 
         self.assertEqual(find_delayed_speaker_splits(rows, DelayedClusteringConfig()), [])
 
+    def test_fragment_only_pool_needs_a_substantial_anchor_when_enabled(self) -> None:
+        rows = [
+            _row(i, [1.0, 0.01 * i, 0.0], start=i * 3.0, duration=2.1, source="embedding", unknown=0.05)
+            for i in range(5)
+        ]
+        rows.extend(
+            _row(10 + i, [0.0, 1.0, 0.02 * i], start=30.0 + i * 12.0, duration=1.0, source="retro", unknown=0.95)
+            for i in range(9)
+        )
+
+        proposals = find_delayed_speaker_splits(
+            rows,
+            DelayedClusteringConfig(min_candidate_anchor_duration=1.5),
+        )
+
+        self.assertEqual(proposals, [])
+
     def test_german_content_words_are_unicode_aware(self) -> None:
         self.assertEqual(
             text_content_words("Schön, Sie kennenzulernen."),

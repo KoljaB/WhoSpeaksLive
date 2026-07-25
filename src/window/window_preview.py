@@ -227,6 +227,11 @@ class RealtimePreviewTranscriber:
     def transcribe_preview(self, audio: np.ndarray, sample_rate: int) -> str:
         raise NotImplementedError
 
+    def transcribe_verification(self, audio: np.ndarray, sample_rate: int) -> str:
+        """Decode an isolated clip without changing the live preview stream."""
+
+        raise NotImplementedError
+
     def transcribe_final(self, audio: np.ndarray, sample_rate: int) -> FinalRealtimeTranscript:
         raise NotImplementedError
 
@@ -256,6 +261,9 @@ class MockRealtimePreviewTranscriber(RealtimePreviewTranscriber):
         seconds = max(0.0, len(audio) / float(sample_rate or 16000))
         count = max(1, min(len(self.WORDS), int(seconds * 2.2)))
         return " ".join(self.WORDS[:count])
+
+    def transcribe_verification(self, audio: np.ndarray, sample_rate: int) -> str:
+        return self.transcribe_preview(audio, sample_rate)
 
 
 class KrokoRealtimePreviewTranscriber(RealtimePreviewTranscriber):
@@ -294,30 +302,52 @@ class KrokoRealtimePreviewTranscriber(RealtimePreviewTranscriber):
             language=getattr(args, "realtime_preview_language", getattr(args, "language", "en")),
             use_prompt=False,
         )
+        self.verification_session = self.engine.create_streaming_session(
+            language=getattr(args, "realtime_preview_language", getattr(args, "language", "en")),
+            use_prompt=False,
+        )
+        self._session_lock = threading.Lock()
 
     def reset_preview(self) -> None:
-        self.session.reset()
+        with self._session_lock:
+            self.session.reset()
 
     def accept_preview_audio(self, audio: np.ndarray, sample_rate: int) -> str:
-        if audio.size <= 0:
+        with self._session_lock:
+            if audio.size <= 0:
+                return self.session.get_result().text.strip()
+            self.session.accept_audio(audio.astype(np.float32, copy=False), sample_rate=sample_rate)
+            self.session.decode()
             return self.session.get_result().text.strip()
-        self.session.accept_audio(audio.astype(np.float32, copy=False), sample_rate=sample_rate)
-        self.session.decode()
-        return self.session.get_result().text.strip()
 
     def transcribe_preview(self, audio: np.ndarray, sample_rate: int) -> str:
-        if audio.size <= 0:
-            return ""
-        self.session.reset()
-        self.session.accept_audio(audio.astype(np.float32, copy=False), sample_rate=sample_rate)
-        self.session.decode()
-        return self.session.get_result().text.strip()
+        with self._session_lock:
+            if audio.size <= 0:
+                return ""
+            self.session.reset()
+            self.session.accept_audio(audio.astype(np.float32, copy=False), sample_rate=sample_rate)
+            self.session.decode()
+            return self.session.get_result().text.strip()
+
+    def transcribe_verification(self, audio: np.ndarray, sample_rate: int) -> str:
+        with self._session_lock:
+            if audio.size <= 0:
+                return ""
+            self.verification_session.reset()
+            self.verification_session.accept_audio(
+                audio.astype(np.float32, copy=False),
+                sample_rate=sample_rate,
+            )
+            self.verification_session.decode()
+            return self.verification_session.get_result().text.strip()
 
     def close(self) -> None:
-        try:
-            self.session.close()
-        except Exception:
-            pass
+        with self._session_lock:
+            for session in (self.session, self.verification_session):
+                try:
+                    session.close()
+                except Exception:
+                    pass
 
 
 class JsonLineSubprocessPreviewTranscriber(RealtimePreviewTranscriber):
@@ -447,6 +477,9 @@ class JsonLineSubprocessPreviewTranscriber(RealtimePreviewTranscriber):
 
     def transcribe_preview(self, audio: np.ndarray, sample_rate: int) -> str:
         return self._send_audio("transcribe", audio, sample_rate)
+
+    def transcribe_verification(self, audio: np.ndarray, sample_rate: int) -> str:
+        return self._send_audio("verify", audio, sample_rate)
 
     def transcribe_final(self, audio: np.ndarray, sample_rate: int) -> FinalRealtimeTranscript:
         raw = np.ascontiguousarray(audio.astype(np.float32, copy=False)).tobytes()

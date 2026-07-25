@@ -36,6 +36,26 @@ export function installLiveBindings(ctx) {
       refreshSavedSessionsAfterCompletion();
     });
   }
+  async function cancelPendingMediaLoad() {
+    if (!ctx.owners.capture.mediaLoadInProgress) return false;
+    const requestId = ctx.owners.capture.mediaLoadRequestId;
+    const controller = ctx.owners.capture.mediaLoadAbortController;
+    ctx.owners.capture.mediaLoadInProgress = false;
+    ctx.owners.capture.mediaLoadRequestId = "";
+    ctx.owners.capture.mediaLoadAbortController = null;
+    if (controller) controller.abort();
+    try {
+      await post("/api/cancel-media-load", {request_id: requestId});
+    } catch (error) {
+      log(`Could not cancel the media load cleanly: ${error.message}`);
+    }
+    setSourceControlsDisabled(false);
+    start.disabled = false;
+    stop.disabled = true;
+    setState("Ready");
+    log("Media load cancelled. Choose or enter another source.");
+    return true;
+  }
   function disposeLiveApp() { appResources.dispose(); }
 
   Object.assign(ctx.api, {connect, disposeLiveApp});
@@ -252,8 +272,9 @@ export function installLiveBindings(ctx) {
       }
       updateMediaMode();
     });
-    sourceModeButton.addEventListener("click", event => {
+    sourceModeButton.addEventListener("click", async event => {
       event.stopPropagation();
+      await cancelPendingMediaLoad();
       setSourceModeMenuOpen(sourceModeOptions.hidden);
     });
     sourceModeOptionButtons.forEach(button => {
@@ -626,12 +647,20 @@ export function installLiveBindings(ctx) {
       audio.pause();
       start.disabled = true;
       stop.disabled = true;
+      const requestId = window.crypto && typeof window.crypto.randomUUID === "function"
+        ? window.crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+      const abortController = new AbortController();
+      ctx.owners.capture.mediaLoadInProgress = true;
+      ctx.owners.capture.mediaLoadRequestId = requestId;
+      ctx.owners.capture.mediaLoadAbortController = abortController;
       setSourceControlsDisabled(true);
       setState("Loading");
       resetTranscriptDisplay();
       connect();
       try {
-        const media = await post("/api/load-url", {url});
+        const media = await post("/api/load-url", {url, request_id:requestId}, {signal:abortController.signal});
+        if (ctx.owners.capture.mediaLoadRequestId !== requestId) return;
         if (media.speaker_state) updateSpeakerState(media.speaker_state);
         source.value = media.url;
         syncPresetSelection(media.url);
@@ -641,6 +670,7 @@ export function installLiveBindings(ctx) {
         setState("Ready");
         start.disabled = false;
       } catch (error) {
+        if (error && error.name === "AbortError") return;
         log(`Load failed: ${error.message}`);
         try {
           const fallback = await post("/api/browser-stream", {url});
@@ -658,7 +688,12 @@ export function installLiveBindings(ctx) {
           start.disabled = false;
         }
       } finally {
-        setSourceControlsDisabled(false);
+        if (ctx.owners.capture.mediaLoadRequestId === requestId) {
+          ctx.owners.capture.mediaLoadInProgress = false;
+          ctx.owners.capture.mediaLoadRequestId = "";
+          ctx.owners.capture.mediaLoadAbortController = null;
+          setSourceControlsDisabled(false);
+        }
       }
     });
     ["loadedmetadata", "durationchange", "timeupdate", "play", "pause", "ended"].forEach(eventName => {

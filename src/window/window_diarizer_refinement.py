@@ -403,14 +403,70 @@ class WindowRefinementMixin:
         except (TypeError, ValueError):
             strong_match_similarity = 0.45
         single_profile = self.memory.profile_count() == 1
+        try:
+            short_sentence_max_duration = (
+                min(
+                    1.0,
+                    float(getattr(self.args, "min_new_speaker_seconds", 2.0358)),
+                )
+                if self._has_short_distinct_speaker_record()
+                else 0.0
+            )
+            short_sentence_min_similarity = max(
+                strong_match_similarity,
+                float(getattr(self.args, "known_speaker_min_similarity", -1.0)),
+            )
+        except (TypeError, ValueError):
+            short_sentence_max_duration = 2.0358
+            short_sentence_min_similarity = strong_match_similarity
         with self._unknown_lock:
             candidates = list(self._unknown_sentences)
 
         for candidate in candidates:
+            asr_review = candidate.base_payload.get("asr_review")
+            if isinstance(asr_review, dict) and bool(asr_review.get("needs_review")):
+                continue
+            min_similarity = float(self.args.retro_reassign_min_similarity)
+            with self._sentence_refinement_lock:
+                candidate_record = (
+                    self._sentence_refinement_records.get(int(candidate.index)) or {}
+                )
+            requires_strong_retro_match = (
+                str(candidate_record.get("assignment_source") or "")
+                == "new_speaker_pending"
+                or (
+                    isinstance(asr_review, dict)
+                    and bool(asr_review.get("needs_review"))
+                )
+            )
+            if requires_strong_retro_match:
+                min_similarity = max(
+                    min_similarity,
+                    strong_match_similarity,
+                    float(
+                        getattr(
+                            self.args,
+                            "new_speaker_confirmation_similarity",
+                            strong_match_similarity,
+                        )
+                    ),
+                )
+            try:
+                speech_evidence_duration = max(
+                    0.0,
+                    float(
+                        candidate.base_payload.get("spoken_word_seconds")
+                        or candidate.duration_seconds
+                    ),
+                )
+            except (TypeError, ValueError):
+                speech_evidence_duration = candidate.duration_seconds
+            if speech_evidence_duration < short_sentence_max_duration:
+                min_similarity = max(min_similarity, short_sentence_min_similarity)
             decision = self.memory.score_existing(
                 candidate.embedding,
                 candidate.duration_seconds,
-                min_similarity=self.args.retro_reassign_min_similarity,
+                min_similarity=min_similarity,
                 min_margin=self.args.retro_reassign_min_margin,
             )
             # With one profile there is no genuine runner-up, so the relaxed

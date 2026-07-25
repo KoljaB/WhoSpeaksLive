@@ -113,6 +113,18 @@ class WindowRefinementRulesMixin:
         except (TypeError, ValueError):
             return 0.0
 
+    @classmethod
+    def _record_speech_evidence_duration(cls, record: dict[str, Any]) -> float:
+        base_payload = record.get("base_payload")
+        if isinstance(base_payload, dict):
+            try:
+                spoken = float(base_payload.get("spoken_word_seconds") or 0.0)
+            except (TypeError, ValueError):
+                spoken = 0.0
+            if spoken > 0.0:
+                return spoken
+        return cls._record_duration(record)
+
     @staticmethod
     def _record_assigned_speaker(record: dict[str, Any]) -> str | None:
         value = record.get("assigned_speaker")
@@ -239,6 +251,16 @@ class WindowRefinementRulesMixin:
                     next_speaker = candidate
                     break
             if previous_speaker is None or previous_speaker != next_speaker:
+                continue
+            island_records = records[start:end]
+            if any(
+                bool(record.get("short_distinct_origin"))
+                or str(record.get("assignment_source") or "")
+                == "short_distinct_new_speaker"
+                for record in island_records
+            ):
+                # This row already passed the opt-in acoustic novelty gate.
+                # Neighbor topology alone must not immediately erase it.
                 continue
             applied += self._apply_small_island_merge(
                 indexes,
@@ -496,6 +518,53 @@ class WindowRefinementRulesMixin:
             indexes = [int(record["index"]) for record in records[start:end]]
             duration = sum(self._record_duration(record) for record in records[start:end])
             if len(indexes) > max_segments or duration > max_duration:
+                continue
+            if any(
+                str(record.get("assignment_source") or "")
+                == "new_speaker_pending"
+                or bool(
+                    (
+                        (record.get("base_payload") or {}).get("asr_review")
+                        or {}
+                    ).get("needs_review")
+                )
+                for record in records[start:end]
+            ):
+                continue
+            try:
+                short_distinct_active = any(
+                    bool(record.get("short_distinct_origin"))
+                    or str(record.get("assignment_source") or "")
+                    == "short_distinct_new_speaker"
+                    for record in records
+                )
+                short_sentence_max_duration = min(
+                    1.0 if short_distinct_active else 0.0,
+                    float(getattr(self.args, "min_new_speaker_seconds", 2.0358)),
+                )
+                short_sentence_min_similarity = max(
+                    float(getattr(self.args, "same_speaker_similarity", 0.45)),
+                    float(getattr(self.args, "known_speaker_min_similarity", -1.0)),
+                )
+            except (TypeError, ValueError):
+                short_sentence_max_duration = 2.0358
+                short_sentence_min_similarity = 0.45
+            target_supported = True
+            for record in records[start:end]:
+                if (
+                    record.get("embedding") is None
+                    or self._record_speech_evidence_duration(record)
+                    >= short_sentence_max_duration
+                ):
+                    continue
+                similarity = (record.get("similarities") or {}).get(previous_speaker)
+                try:
+                    target_supported = float(similarity) >= short_sentence_min_similarity
+                except (TypeError, ValueError):
+                    target_supported = False
+                if not target_supported:
+                    break
+            if not target_supported:
                 continue
             applied += self._apply_unknown_same_speaker_fill(
                 indexes,

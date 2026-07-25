@@ -137,6 +137,20 @@ class WindowRuntimeStateMixin:
         self._live_speaker_verify_next_at = 0.0
         self._shared_live_speaker_core = None
         self._shared_live_speaker_open_set_overlay_state = None
+        handoff_lock = getattr(self, "_sentence_handoff_evidence_lock", None)
+        handoff_evidence = getattr(self, "_sentence_handoff_evidence", None)
+        if handoff_evidence is not None:
+            if handoff_lock is None:
+                handoff_evidence.clear()
+                self._sentence_handoff_hindsight_candidates = {}
+            else:
+                with handoff_lock:
+                    handoff_evidence.clear()
+                    self._sentence_handoff_hindsight_candidates = {}
+        self._sentence_handoff_evidence_run_id = ""
+        self._sentence_handoff_evidence_provider = ""
+        self._sentence_handoff_hindsight_run_id = ""
+        self._sentence_handoff_hindsight_finalized_run_id = None
 
     def _live_memory_update_lock_obj(self) -> threading.Lock:
         lock = getattr(self, "_live_memory_update_lock", None)

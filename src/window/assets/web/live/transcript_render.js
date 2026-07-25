@@ -2,6 +2,11 @@ export function installTranscriptRender(ctx) {
   const {audio, languageConfig, realtimeSettleRemovalDelayMs, sentences, source, start, state, translationIncludeOriginalControl} = ctx;
   const applyTranslationCollection = (...args) => ctx.api.applyTranslationCollection(...args), configureSentenceRowSelection = (...args) => ctx.api.configureSentenceRowSelection(...args), correctionStatus = (...args) => ctx.api.correctionStatus(...args), createReviewReasonGroup = (...args) => ctx.api.createReviewReasonGroup(...args), downloadJsonFile = (...args) => ctx.api.downloadJsonFile(...args), effectiveTranslationDisplayMode = (...args) => ctx.api.effectiveTranslationDisplayMode(...args), finiteAudioSecond = (...args) => ctx.api.finiteAudioSecond(...args), forgetSentenceTranslations = (...args) => ctx.api.forgetSentenceTranslations(...args), itemIsBeforeClearedTranscriptBoundary = (...args) => ctx.api.itemIsBeforeClearedTranscriptBoundary(...args), log = (...args) => ctx.api.log(...args), normalizedLiveSpeakerId = (...args) => ctx.api.normalizedLiveSpeakerId(...args), probabilityColor = (...args) => ctx.api.probabilityColor(...args), probabilityDisplayLabel = (...args) => ctx.api.probabilityDisplayLabel(...args), probabilityForSpeakerId = (...args) => ctx.api.probabilityForSpeakerId(...args), probabilityLeadOverUnknown = (...args) => ctx.api.probabilityLeadOverUnknown(...args), provisionalRealtimeVisualSplit = (...args) => ctx.api.provisionalRealtimeVisualSplit(...args), queueBrowserPreferredTranslationsForSource = (...args) => ctx.api.queueBrowserPreferredTranslationsForSource(...args), realtimeRowDisplaySpeakerId = (...args) => ctx.api.realtimeRowDisplaySpeakerId(...args), refreshSpeakerPanelSentenceCounts = (...args) => ctx.api.refreshSpeakerPanelSentenceCounts(...args), refreshTranscriptGrouping = (...args) => ctx.api.refreshTranscriptGrouping(...args), refreshTranscriptVisibility = (...args) => ctx.api.refreshTranscriptVisibility(...args), reviewReasonsForItem = (...args) => ctx.api.reviewReasonsForItem(...args), revisionSpeakerId = (...args) => ctx.api.revisionSpeakerId(...args), rowIsCorrected = (...args) => ctx.api.rowIsCorrected(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), scheduleSavedSessionsRefresh = (...args) => ctx.api.scheduleSavedSessionsRefresh(...args), scrollSentencesToBottom = (...args) => ctx.api.scrollSentencesToBottom(...args), selectedTranslationCodesForDisplay = (...args) => ctx.api.selectedTranslationCodesForDisplay(...args), sentenceRevisionLabel = (...args) => ctx.api.sentenceRevisionLabel(...args), speakerColor = (...args) => ctx.api.speakerColor(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), speakerProbabilityKey = (...args) => ctx.api.speakerProbabilityKey(...args), syncBulkCorrectionToolbar = (...args) => ctx.api.syncBulkCorrectionToolbar(...args), transcriptGroupTurnsEnabled = (...args) => ctx.api.transcriptGroupTurnsEnabled(...args), translationLanguageName = (...args) => ctx.api.translationLanguageName(...args), translationStateMap = (...args) => ctx.api.translationStateMap(...args), translationStateMatchesRow = (...args) => ctx.api.translationStateMatchesRow(...args), updateCurrentLiveSpeakerFromRealtimeRows = (...args) => ctx.api.updateCurrentLiveSpeakerFromRealtimeRows(...args);
   const toInternalSpeakerId = (...args) => ctx.api.toInternalSpeakerId(...args);
+  const realtimeSentenceSplitSpawnMs = 300;
+  const realtimeSentenceSplitTransferMs = 600;
+  const queuedRealtimeSentenceSplits = [];
+  let realtimeSentenceSplitSequence = 0;
+  let realtimeSentenceSplitState = null;
   function probabilitySegments(probabilities) {
     const entries = Object.entries(probabilities || {})
       .map(([key, value]) => ({key, value: Math.max(0, Number(value) || 0)}))
@@ -310,6 +315,218 @@ export function installTranscriptRender(ctx) {
       sentences.appendChild(row);
     }
   }
+  function realtimeSentenceSplitAnimationsEnabled() {
+    return true;
+  }
+  function realtimeSentenceSplitDelay(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+  }
+  function nextRealtimeSentenceSplitTick() {
+    return realtimeSentenceSplitDelay(16);
+  }
+  function normalizedRealtimeSentenceSplitText(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
+  }
+  function realtimeSentenceSplitRemainder(previewValue, finalizedValue) {
+    const preview = normalizedRealtimeSentenceSplitText(previewValue);
+    const finalized = normalizedRealtimeSentenceSplitText(finalizedValue);
+    if (!preview || !finalized || preview.length <= finalized.length) return "";
+    if (preview.toLowerCase().startsWith(finalized.toLowerCase())) {
+      return preview.slice(finalized.length).trim();
+    }
+    const finalWords = finalized.toLowerCase().split(" ").filter(Boolean);
+    const anchor = finalWords.slice(-Math.min(4, finalWords.length)).join(" ");
+    const anchorAt = anchor ? preview.toLowerCase().indexOf(anchor) : -1;
+    if (anchorAt < 0) return "";
+    return preview.slice(anchorAt + anchor.length).trim();
+  }
+  function combineRealtimeSentenceSplitText(previousValue, liveValue) {
+    const previous = normalizedRealtimeSentenceSplitText(previousValue);
+    const live = normalizedRealtimeSentenceSplitText(liveValue);
+    if (!previous) return live;
+    if (!live || previous.toLowerCase().endsWith(live.toLowerCase())) return previous;
+    const left = previous.toLowerCase();
+    const right = live.toLowerCase();
+    const maxOverlap = Math.min(left.length, right.length);
+    for (let overlap = maxOverlap; overlap >= 3; overlap -= 1) {
+      if (left.endsWith(right.slice(0, overlap))) {
+        return `${previous}${live.slice(overlap)}`;
+      }
+    }
+    return `${previous} ${live}`.trim();
+  }
+  function clearRealtimeSentenceSplitRowState(row) {
+    if (!row) return;
+    row.classList.remove("realtime-split-target", "realtime-split-spawning");
+    row.style.removeProperty("max-height");
+    row.style.removeProperty("overflow");
+    row.style.removeProperty("opacity");
+    row.style.removeProperty("padding-top");
+    row.style.removeProperty("padding-bottom");
+    delete row.dataset.realtimeSplitActive;
+    delete row.dataset.realtimeSplitToken;
+  }
+  function queuedRealtimeSentenceSplit(item) {
+    const key = String(item && item.index);
+    const existing = queuedRealtimeSentenceSplits.findIndex(candidate => String(candidate.index) === key);
+    if (existing >= 0) {
+      queuedRealtimeSentenceSplits[existing] = {...queuedRealtimeSentenceSplits[existing], ...item};
+    } else {
+      queuedRealtimeSentenceSplits.push({...item});
+    }
+  }
+  function abortRealtimeSentenceSplit(split) {
+    if (!split || realtimeSentenceSplitState !== split) return;
+    clearTimeout(split.watchdog);
+    clearRealtimeSentenceSplitRowState(split.target);
+    realtimeSentenceSplitState = null;
+    while (queuedRealtimeSentenceSplits.length) {
+      renderSentenceImmediate(queuedRealtimeSentenceSplits.shift());
+    }
+    refreshTranscriptGrouping();
+  }
+  function updateRealtimeSentenceSplitVisual(split) {
+    if (!split || realtimeSentenceSplitState !== split) return;
+    const combinedText = combineRealtimeSentenceSplitText(split.transferText, split.target.dataset.text || "");
+    split.combinedText = combinedText;
+    const transferLower = split.transferText.toLowerCase();
+    const combinedLower = combinedText.toLowerCase();
+    const liveTail = combinedLower.startsWith(transferLower)
+      ? combinedText.slice(split.transferText.length).trim()
+      : "";
+    const transferCharacters = Array.from(split.transferText);
+    const movedCount = Math.min(transferCharacters.length, Math.max(0, split.movedCount || 0));
+    const remainingText = transferCharacters.slice(movedCount).join("");
+    const movedText = transferCharacters.slice(0, movedCount).join("");
+    const sourceText = split.source.querySelector(".text");
+    const targetText = split.target.querySelector(".text");
+    if (sourceText) {
+      sourceText.textContent = [split.finalizedText, remainingText].filter(Boolean).join(" ");
+    }
+    if (targetText) {
+      targetText.textContent = [movedText, liveTail].filter(Boolean).join(" ");
+    }
+  }
+  async function animateRealtimeSentenceSplit(split) {
+    const {source:sourceRow, target:targetRow, token} = split;
+    const current = () => (
+      realtimeSentenceSplitState === split
+      && targetRow.dataset.realtimeSplitToken === token
+      && sourceRow.isConnected
+      && targetRow.isConnected
+    );
+    const expandedHeight = Math.max(targetRow.scrollHeight, sourceRow.scrollHeight, 1);
+    targetRow.classList.add("realtime-split-spawning");
+    targetRow.style.maxHeight = "0px";
+    targetRow.style.overflow = "hidden";
+    targetRow.style.opacity = "0";
+    targetRow.style.paddingTop = "0";
+    targetRow.style.paddingBottom = "0";
+    updateRealtimeSentenceSplitVisual(split);
+    await nextRealtimeSentenceSplitTick();
+    if (!current()) return abortRealtimeSentenceSplit(split);
+    targetRow.style.maxHeight = `${expandedHeight}px`;
+    targetRow.style.opacity = "1";
+    targetRow.style.paddingTop = "7px";
+    targetRow.style.paddingBottom = "7px";
+    await realtimeSentenceSplitDelay(realtimeSentenceSplitSpawnMs);
+    if (!current()) return abortRealtimeSentenceSplit(split);
+    split.phase = "transfer";
+    const transferCharacters = Array.from(split.transferText);
+    const transferStart = performance.now();
+    await new Promise(resolve => {
+      const transfer = () => {
+        if (!current()) return resolve();
+        const progress = Math.min(1, (performance.now() - transferStart) / realtimeSentenceSplitTransferMs);
+        split.movedCount = Math.min(transferCharacters.length, Math.floor(progress * transferCharacters.length));
+        updateRealtimeSentenceSplitVisual(split);
+        progress < 1 ? setTimeout(transfer, 16) : resolve();
+      };
+      setTimeout(transfer, 16);
+    });
+    if (!current()) return abortRealtimeSentenceSplit(split);
+    split.movedCount = transferCharacters.length;
+    updateRealtimeSentenceSplitVisual(split);
+    clearTimeout(split.watchdog);
+    clearRealtimeSentenceSplitRowState(targetRow);
+    realtimeSentenceSplitState = null;
+    while (queuedRealtimeSentenceSplits.length) {
+      const nextItem = queuedRealtimeSentenceSplits.shift();
+      if (startRealtimeSentenceSplit(nextItem, targetRow, split.combinedText)) return;
+      renderSentenceImmediate(nextItem);
+    }
+    refreshTranscriptGrouping();
+    if (targetRow.dataset.realtimeSettling === "true") {
+      markRealtimeRowSettling(targetRow, targetRow.dataset.realtimeClearGeneration || "");
+    }
+  }
+  function createRealtimeSentenceSplitTarget(sourceRow, remainderText) {
+    clearSettlingRealtimeState(sourceRow);
+    const targetRow = sourceRow.cloneNode(true);
+    targetRow.classList.remove(
+      "group-leader",
+      "group-hidden",
+      "group-needs-review",
+      "group-corrected",
+      "group-merge-highlight",
+      "group-merge-collapsing",
+      "row-removing",
+      "realtime-settling",
+      "provisional-split-source",
+      "provisional-visual-split",
+    );
+    targetRow.classList.add("realtime-split-target");
+    targetRow.hidden = false;
+    targetRow.dataset.realtime = "true";
+    targetRow.dataset.text = remainderText;
+    targetRow.dataset.searchText = remainderText;
+    targetRow.dataset.fullText = remainderText;
+    targetRow.dataset.start = sourceRow.dataset.end || sourceRow.dataset.start || "0";
+    delete targetRow.dataset.groupHidden;
+    delete targetRow.dataset.groupLeader;
+    delete targetRow.dataset.groupSize;
+    delete targetRow.dataset.groupIndexes;
+    delete targetRow.dataset.groupText;
+    delete targetRow.dataset.realtimeSettling;
+    delete targetRow.dataset.realtimeClearGeneration;
+    delete targetRow.dataset.provisionalSplit;
+    delete targetRow.dataset.provisionalSplitFor;
+    const targetText = targetRow.querySelector(".text");
+    if (targetText) targetText.textContent = "";
+    sentences.insertBefore(targetRow, sourceRow.nextSibling);
+    return targetRow;
+  }
+  function startRealtimeSentenceSplit(item, sourceRow, previewOverride = "") {
+    if (!realtimeSentenceSplitAnimationsEnabled() || !sourceRow || !sourceRow.isConnected) return false;
+    const previewText = normalizedRealtimeSentenceSplitText(
+      previewOverride || sourceRow.dataset.fullText || sourceRow.dataset.text || ""
+    );
+    const finalizedText = normalizedRealtimeSentenceSplitText(item && item.text);
+    const remainderText = realtimeSentenceSplitRemainder(previewText, finalizedText);
+    if (!remainderText) return false;
+    const targetRow = createRealtimeSentenceSplitTarget(sourceRow, remainderText);
+    const token = String(++realtimeSentenceSplitSequence);
+    delete sourceRow.dataset.realtimeSplitActive;
+    delete sourceRow.dataset.realtimeSplitToken;
+    targetRow.dataset.realtimeSplitActive = "true";
+    targetRow.dataset.realtimeSplitToken = token;
+    const split = {
+      source:sourceRow,
+      target:targetRow,
+      token,
+      finalizedText,
+      transferText:remainderText,
+      combinedText:remainderText,
+      movedCount:0,
+      phase:"spawn",
+    };
+    realtimeSentenceSplitState = split;
+    split.watchdog = setTimeout(() => abortRealtimeSentenceSplit(split), 2500);
+    renderSentenceImmediate(item, sourceRow);
+    updateRealtimeSentenceSplitVisual(split);
+    void animateRealtimeSentenceSplit(split);
+    return true;
+  }
   function fadeRemoveRow(row) {
     if (!row || !row.isConnected) return;
     row.classList.add("row-removing");
@@ -330,6 +547,7 @@ export function installTranscriptRender(ctx) {
         row.isConnected
         && row.dataset.realtimeSettling === "true"
         && row.dataset.realtimeClearGeneration === generationKey
+        && row.dataset.realtimeSplitActive !== "true"
       ) {
         fadeRemoveRow(row);
       }
@@ -513,7 +731,7 @@ export function installTranscriptRender(ctx) {
     refreshSpeakerPanelSentenceCounts();
     refreshTranscriptVisibility();
   }
-  function renderSentence(item) {
+  function renderSentenceImmediate(item, rowOverride = null) {
     if (item.realtime && Number(item.realtime_generation || 0) < ctx.owners.capture.currentRealtimeGeneration) {
       return;
     }
@@ -532,9 +750,11 @@ export function installTranscriptRender(ctx) {
     if (item.realtime) {
       ctx.owners.capture.currentRealtimeGeneration = Math.max(ctx.owners.capture.currentRealtimeGeneration, Number(item.realtime_generation || 0));
     }
-    let row = item.realtime
-      ? findRealtimeSentenceRow(item.index)
-      : (findFinalSentenceRow(item.index) || findRealtimeSentenceRow(item.index));
+    let row = rowOverride || (
+      item.realtime
+        ? findRealtimeSentenceRow(item.index)
+        : (findFinalSentenceRow(item.index) || findRealtimeSentenceRow(item.index))
+    );
     if (!row && item.realtime) {
       row = findAdoptableRealtimeRow(item, {settlingOnly: true});
     }
@@ -552,6 +772,12 @@ export function installTranscriptRender(ctx) {
       sentences.appendChild(row);
     }
     row.className = item.realtime ? "row realtime" : "row";
+    if (row.dataset.realtimeSplitActive === "true") {
+      row.classList.add("realtime-split-target");
+      if (realtimeSentenceSplitState && realtimeSentenceSplitState.phase === "spawn") {
+        row.classList.add("realtime-split-spawning");
+      }
+    }
     row.dataset.index = item.index;
     row.dataset.realtime = item.realtime ? "true" : "false";
     row.dataset.selectable = (!item.realtime && !item.pending) ? "true" : "false";
@@ -586,7 +812,10 @@ export function installTranscriptRender(ctx) {
           previousDisplaySpeakerId,
           ctx.owners.transcript.lastTranscriptSpeakerId,
         )
-      : rawSpeakerId;
+      // A finalized row is first rendered as pending while its embedding is
+      // in flight.  When it adopts the just-visible realtime row, retain that
+      // visual identity until the actual embedding decision arrives.
+      : (rawSpeakerId || (item.pending ? adoptedLiveSpeakerId : ""));
     const reviewReasons = reviewReasonsForItem(item, displaySpeakerId, adoptedLiveSpeakerId);
     const corrected = rowIsCorrected(item);
     const visualSplit = provisionalRealtimeVisualSplit(item, displaySpeakerId, startSeconds, endSeconds);
@@ -609,6 +838,13 @@ export function installTranscriptRender(ctx) {
     row.dataset.speaker = displaySpeakerId || "UNKNOWN";
     row.dataset.pending = item.pending ? "true" : "false";
     row.dataset.provisionalAssignment = item.provisional_assignment ? "true" : "false";
+    row.dataset.finalSpeakerAssignment = (
+      !item.realtime
+      && !item.pending
+      && !item.provisional_assignment
+      && !item.error
+      && Boolean(rawSpeakerId)
+    ) ? "true" : "false";
     row.dataset.needsReview = (!item.realtime && !item.pending && reviewReasons.length > 0) ? "true" : "false";
     row.dataset.reviewReasons = reviewReasons.join("|");
     row.dataset.corrected = corrected ? "true" : "false";
@@ -758,6 +994,33 @@ export function installTranscriptRender(ctx) {
     if (isNewRow || item.realtime) {
       scrollSentencesToBottom();
     }
+  }
+
+  function renderSentence(item) {
+    if (
+      realtimeSentenceSplitState
+      && (
+        !realtimeSentenceSplitState.source.isConnected
+        || !realtimeSentenceSplitState.target.isConnected
+        || realtimeSentenceSplitState.target.dataset.realtimeSplitToken !== realtimeSentenceSplitState.token
+      )
+    ) {
+      abortRealtimeSentenceSplit(realtimeSentenceSplitState);
+    }
+    if (item.realtime && realtimeSentenceSplitState && realtimeSentenceSplitState.target.isConnected) {
+      renderSentenceImmediate(item, realtimeSentenceSplitState.target);
+      updateRealtimeSentenceSplitVisual(realtimeSentenceSplitState);
+      return;
+    }
+    if (!item.realtime && !findFinalSentenceRow(item.index)) {
+      if (realtimeSentenceSplitState) {
+        queuedRealtimeSentenceSplit(item);
+        return;
+      }
+      const sourceRow = findAdoptableRealtimeRow(item);
+      if (startRealtimeSentenceSplit(item, sourceRow)) return;
+    }
+    renderSentenceImmediate(item);
   }
 
   Object.assign(ctx.api, {applyProvisionalRealtimeVisualSplit, clearProvisionalRealtimeSplitsFor, clearRealtimeRows, clearSettlingRealtimeState, copyTextToClipboard, copyTranscript, displayProbabilities, downloadTranscript, downloadTranscriptJson, fadeRemoveRow, findAdoptableRealtimeRow, findFinalSentenceRow, findRealtimeSentenceRow, findSentenceRow, markRealtimeRowSettling, mergeTranscriptExportRows, optionalNumber, placeSentenceRowChronologically, probabilitySegments, probabilityTooltip, ratioLabel, removeOverlappingSettlingRealtimeRows, renderProvisionalRealtimeSplitRow, renderSentence, restoreRealtimeRowFullPreview, rowChronologyKey, rowShouldSortBefore, rowTimeAdoptionScore, secondsLabel, textAdoptionScore, transcriptAtomicExportRows, transcriptExportFilename, transcriptExportRowCanGroup, transcriptExportRows, transcriptExportText, transcriptGroupedExportRows, transcriptTextExportRows, transcriptTimeLabel, transcriptTranslationExportStates, updateRenderedRealtimeRowTextRange});

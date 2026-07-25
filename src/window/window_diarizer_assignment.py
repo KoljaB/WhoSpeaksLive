@@ -143,6 +143,7 @@ class WindowAssignmentDecisionMixin:
         self._correction_history = []
 
     def _speaker_refinement_config(self) -> SpeakerRefinementConfig:
+        short_distinct_active = self._has_short_distinct_speaker_record()
         return SpeakerRefinementConfig(
             max_per_profile=int(getattr(self.args, "speaker_refinement_max_per_profile", 32)),
             prototype_min_duration=float(getattr(self.args, "speaker_refinement_min_duration", 0.15)),
@@ -151,6 +152,14 @@ class WindowAssignmentDecisionMixin:
             centroid_blend=float(getattr(self.args, "speaker_refinement_centroid_blend", 0.555)),
             unknown_min_similarity=float(getattr(self.args, "speaker_refinement_unknown_min_similarity", 0.20)),
             unknown_min_margin=float(getattr(self.args, "speaker_refinement_unknown_min_margin", 0.0)),
+            unknown_short_max_duration=min(
+                1.0 if short_distinct_active else 0.0,
+                float(getattr(self.args, "min_new_speaker_seconds", 2.0358)),
+            ),
+            unknown_short_min_similarity=max(
+                float(getattr(self.args, "same_speaker_similarity", 0.45)),
+                float(getattr(self.args, "known_speaker_min_similarity", -1.0)),
+            ),
             known_max_duration=float(getattr(self.args, "speaker_refinement_known_max_duration", 8.0)),
             known_min_similarity=float(getattr(self.args, "speaker_refinement_known_min_similarity", -0.039)),
             known_min_delta=float(getattr(self.args, "speaker_refinement_known_min_delta", 0.04)),
@@ -182,6 +191,46 @@ class WindowAssignmentDecisionMixin:
         session_state = getattr(self, "_session_state", None)
         transaction = session_state.transaction(mutate=True) if session_state is not None else nullcontext()
         with transaction, self._sentence_refinement_lock:
+            previous_record = self._sentence_refinement_records.get(int(index)) or {}
+            try:
+                distinct_gate_enabled = (
+                    float(
+                        getattr(
+                            self.args,
+                            "short_distinct_new_speaker_min_spoken_seconds",
+                            -1.0,
+                        )
+                    )
+                    >= 0.0
+                )
+                current_start = float(base_payload.get("start"))
+                previous_end = max(
+                    (
+                        float(
+                            (existing.get("base_payload") or {}).get("end")
+                        )
+                        for existing_index, existing in
+                        self._sentence_refinement_records.items()
+                        if int(existing_index) != int(index)
+                        and (existing.get("base_payload") or {}).get("end")
+                        is not None
+                    ),
+                    default=float("-inf"),
+                )
+                previous_gap = current_start - previous_end
+                protected_new_speaker_creation = (
+                    distinct_gate_enabled
+                    and bool(payload.get("created_speaker"))
+                    and math.isfinite(previous_gap)
+                    and previous_gap >= 8.0
+                )
+            except (TypeError, ValueError):
+                protected_new_speaker_creation = False
+            record["short_distinct_origin"] = bool(
+                previous_record.get("short_distinct_origin")
+                or record["assignment_source"] == "short_distinct_new_speaker"
+                or protected_new_speaker_creation
+            )
             self._sentence_refinement_records[int(index)] = record
             assigned_speaker = str(payload.get("assigned_speaker") or "")
             if assigned_speaker:
@@ -194,6 +243,67 @@ class WindowAssignmentDecisionMixin:
                         end,
                         float(self._speaker_last_media_end.get(assigned_speaker, 0.0)),
                     )
+
+    def _has_short_distinct_speaker_record(self) -> bool:
+        with self._sentence_refinement_lock:
+            return any(
+                bool(record.get("short_distinct_origin"))
+                or str(record.get("assignment_source") or "")
+                == "short_distinct_new_speaker"
+                for record in self._sentence_refinement_records.values()
+            )
+
+    def _clear_weak_short_unknown_provisionals(self) -> int:
+        try:
+            min_similarity = max(
+                float(getattr(self.args, "same_speaker_similarity", 0.45)),
+                float(getattr(self.args, "known_speaker_min_similarity", -1.0)),
+            )
+        except (TypeError, ValueError):
+            min_similarity = 0.45
+        emitted: list[dict[str, Any]] = []
+        with self._sentence_refinement_lock:
+            for record in self._sentence_refinement_records.values():
+                provisional = str(
+                    record.get("provisional_assigned_speaker") or ""
+                )
+                if (
+                    not provisional
+                    or record.get("assigned_speaker") is not None
+                    or self._record_speech_evidence_duration(record) >= 1.0
+                ):
+                    continue
+                try:
+                    top_similarity = float(record.get("top_similarity"))
+                except (TypeError, ValueError):
+                    top_similarity = -1.0
+                if top_similarity >= min_similarity:
+                    continue
+                record["provisional_assigned_speaker"] = None
+                record["provisional_probabilities"] = {}
+                record["provisional_similarities"] = {}
+                record["provisional_assignment_source"] = ""
+                emitted.append({
+                    **dict(record["base_payload"]),
+                    "pending": False,
+                    "revision": True,
+                    "short_distinct_reconsideration": True,
+                    "revision_from": provisional,
+                    "revision_to": "UNKNOWN",
+                    "assigned_speaker": None,
+                    **self._speaker_info_for_payload(None),
+                    "created_speaker": False,
+                    "probabilities": dict(record.get("probabilities") or {"unknown": 1.0}),
+                    "similarities": dict(record.get("similarities") or {}),
+                    "unknown_probability": record.get("unknown_probability"),
+                    "top_similarity": record.get("top_similarity"),
+                    "margin": record.get("margin"),
+                    "quality": record.get("quality"),
+                    "assignment_source": "short_distinct_reconsideration",
+                })
+        for payload in emitted:
+            self._emit_transcript_sentence(payload)
+        return len(emitted)
 
     def _record_unknown_refinement_candidate(
         self,
@@ -307,6 +417,136 @@ class WindowAssignmentDecisionMixin:
             margin=round(float(margin), 4),
             quality=preview.quality,
             assignment_source="section_gap_new_speaker",
+        )
+
+    def _short_distinct_new_speaker_decision(
+        self,
+        embedding: np.ndarray,
+        duration_seconds: float,
+        base_payload: dict[str, Any],
+        *,
+        allow_new_speaker: bool,
+    ) -> SpeakerDecision | None:
+        """Create a nearly-long-enough speaker only from decisive voice evidence."""
+        profile_count = self.memory.profile_count()
+        if not allow_new_speaker or profile_count <= 0:
+            return None
+        try:
+            min_spoken_seconds = float(
+                getattr(
+                    self.args,
+                    "short_distinct_new_speaker_min_spoken_seconds",
+                    -1.0,
+                )
+            )
+            min_words = max(
+                1,
+                int(getattr(self.args, "short_distinct_new_speaker_min_words", 6)),
+            )
+            min_unknown_probability = float(
+                getattr(
+                    self.args,
+                    "short_distinct_new_speaker_min_unknown_probability",
+                    0.90,
+                )
+            )
+            max_similarity = float(
+                getattr(
+                    self.args,
+                    "short_distinct_new_speaker_max_similarity",
+                    0.20,
+                )
+            )
+            max_margin = max(
+                0.0,
+                float(
+                    getattr(
+                        self.args,
+                        "short_distinct_new_speaker_max_margin",
+                        0.05,
+                    )
+                ),
+            )
+            ordinary_min_duration = max(
+                0.0,
+                float(getattr(self.args, "min_new_speaker_seconds", 2.0358)),
+            )
+            spoken_seconds = max(
+                0.0,
+                float(base_payload.get("spoken_word_seconds") or 0.0),
+            )
+            anchor_words = max(
+                0,
+                int(base_payload.get("new_speaker_anchor_words") or 0),
+            )
+            confirmation_count = max(
+                1,
+                int(getattr(self.args, "new_speaker_confirmation_count", 1)),
+            )
+            max_speakers = max(1, int(getattr(self.args, "max_speakers", 12)))
+        except (TypeError, ValueError):
+            return None
+        if (
+            min_spoken_seconds < 0.0
+            or ordinary_min_duration <= 0.0
+            or duration_seconds >= ordinary_min_duration
+            or duration_seconds < max(1.0, ordinary_min_duration * 0.95)
+            or spoken_seconds < min_spoken_seconds
+            or anchor_words < min_words
+            or confirmation_count != 1
+            or profile_count >= max_speakers
+        ):
+            return None
+
+        preview = self.memory.score_existing(
+            embedding,
+            duration_seconds,
+            min_similarity=-1.0,
+            min_margin=-1.0,
+        )
+        try:
+            unknown_probability = float(preview.unknown_probability)
+            top_similarity = float(preview.top_similarity)
+            margin = float(preview.margin)
+        except (TypeError, ValueError):
+            return None
+        if (
+            not all(
+                math.isfinite(value)
+                for value in (unknown_probability, top_similarity, margin)
+            )
+            or unknown_probability < min_unknown_probability
+            or top_similarity > max_similarity
+            or profile_count > 1
+            and margin > max_margin
+        ):
+            return None
+
+        label = self._next_detected_speaker_label()
+        self.memory.upsert_profile(
+            label,
+            embedding,
+            duration_seconds=duration_seconds,
+            sentence_count=1,
+        )
+        speaker_key = (
+            f"speaker{int(label[1:])}"
+            if label.startswith("S") and label[1:].isdigit()
+            else label
+        )
+        return SpeakerDecision(
+            assigned_speaker=label,
+            created_speaker=True,
+            probabilities={"unknown": 0.0, speaker_key: 1.0},
+            similarities={
+                **dict(preview.similarities or {}),
+                label: 1.0,
+            },
+            unknown_probability=0.0,
+            top_similarity=round(top_similarity, 4),
+            margin=round(margin, 4),
+            quality=preview.quality,
+            assignment_source="short_distinct_new_speaker",
         )
 
     def _unknown_pair_new_speaker_decision(
@@ -503,6 +743,13 @@ class WindowAssignmentDecisionMixin:
             min_candidate_rows=int(getattr(self.args, "delayed_clustering_min_candidate_rows", 4)),
             min_candidate_duration=float(
                 getattr(self.args, "delayed_clustering_min_candidate_duration", 8.0)
+            ),
+            min_candidate_anchor_duration=float(
+                getattr(
+                    self.args,
+                    "delayed_clustering_min_candidate_anchor_duration",
+                    0.0,
+                )
             ),
             min_candidate_span=float(getattr(self.args, "delayed_clustering_min_candidate_span", 12.0)),
             min_candidate_time_groups=int(

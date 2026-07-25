@@ -137,13 +137,14 @@ from window.window_diarizer_refinement import WindowRefinementMixin
 from window.window_diarizer_models import WindowModelRuntimeMixin
 from window.window_diarizer_live_scoring import WindowLiveScoringMixin
 from window.window_diarizer_live_probe import WindowLiveProbeMixin
+from window.window_diarizer_handoff import WindowSentenceSpeakerHandoffMixin
 from window.window_diarizer_transcription import WindowTranscriptionMixin
 from window.window_fast_processing import WindowFastProcessingMixin
 from window.window_diarizer_runtime_state import WindowRuntimeStateMixin
 from window.window_diarizer_people import WindowPersonIdentityMixin
 
 
-class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSpeakerStateMixin, WindowSpeakerReviewMixin, WindowSpeakerLibraryMixin, WindowRuntimeAudioMixin, WindowRuntimeStateMixin, WindowAssignmentDecisionMixin, WindowRefinementRulesMixin, WindowRefinementMixin, WindowModelRuntimeMixin, WindowLiveScoringMixin, WindowLiveProbeMixin, WindowTranscriptionMixin, WindowFastProcessingMixin):
+class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSpeakerStateMixin, WindowSpeakerReviewMixin, WindowSpeakerLibraryMixin, WindowRuntimeAudioMixin, WindowRuntimeStateMixin, WindowAssignmentDecisionMixin, WindowRefinementRulesMixin, WindowRefinementMixin, WindowModelRuntimeMixin, WindowLiveScoringMixin, WindowLiveProbeMixin, WindowSentenceSpeakerHandoffMixin, WindowTranscriptionMixin, WindowFastProcessingMixin):
     def __init__(
         self,
         args: argparse.Namespace | DiarizationConfig,
@@ -223,12 +224,20 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
         self._preview_generation = 0
         self._preview_paused = False
         self._live_speaker_embedding_throttle_lock = threading.Lock()
+        self._live_speaker_inference_lock = threading.Lock()
         self._live_speaker_embedding_next_at = 0.0
         self._live_speaker_embedding_latency_ewma: float | None = None
         self._live_speaker_embedding_last_status_at = 0.0
         self._live_speaker_verify_lock = threading.Lock()
         self._live_speaker_verify_next_at = 0.0
         self._live_speaker_verify_last_status_at = 0.0
+        self._sentence_handoff_evidence_lock = threading.Lock()
+        self._sentence_handoff_evidence: deque[Any] = deque()
+        self._sentence_handoff_evidence_run_id = ""
+        self._sentence_handoff_evidence_provider = ""
+        self._sentence_handoff_hindsight_candidates: dict[int, dict[str, Any]] = {}
+        self._sentence_handoff_hindsight_run_id = ""
+        self._sentence_handoff_hindsight_finalized_run_id: str | None = None
         self._vad_model: Any = None
         self._vad_model_backend = ""
         self._vad_model_error: str | None = None
@@ -508,8 +517,35 @@ class WindowDiarizer(WindowSessionViewMixin, WindowPersonIdentityMixin, WindowSp
             ]
             if alive:
                 run.mark_failed(f"auxiliary workers missed shutdown deadline: {', '.join(alive)}")
-            self._stop_embedding_worker()
-            self._stop_live_memory_update_worker()
+            embedding_worker_stopped = self._stop_embedding_worker()
+            live_memory_worker_stopped = self._stop_live_memory_update_worker()
+            workers_quiesced = (
+                embedding_worker_stopped is not False
+                and live_memory_worker_stopped is not False
+            )
+            if not workers_quiesced:
+                run.mark_failed(
+                    "speaker workers did not quiesce before final handoff retry"
+                )
+            if run.state is not DiarizationRunState.FAILED and workers_quiesced:
+                finalize_handoffs = getattr(
+                    self,
+                    "_finalize_sentence_handoff_hindsight",
+                    None,
+                )
+                if callable(finalize_handoffs):
+                    try:
+                        finalize_handoffs()
+                    except Exception as exc:
+                        self.bus.emit(
+                            "status",
+                            {
+                                "message": (
+                                    "Could not finalize within-sentence speaker "
+                                    f"handoffs: {type(exc).__name__}: {exc}"
+                                )
+                            },
+                        )
             if hasattr(self, "person_library"):
                 try:
                     self.consolidate_confirmed_people()

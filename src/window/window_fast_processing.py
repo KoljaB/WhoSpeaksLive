@@ -21,6 +21,20 @@ class WindowFastProcessingMixin:
         if self._streaming_audio:
             raise RuntimeError("Fast processing is available only for fully loaded media files.")
 
+        preview_engine = str(getattr(self.args, "realtime_preview_engine", "off") or "off").lower()
+        asr_backend = str(getattr(self.args, "asr_backend", "local") or "local").lower().replace("-", "_")
+        if (
+            bool(getattr(self.args, "asr_independent_verification", True))
+            and asr_backend != "cpu"
+            and preview_engine not in {"off", "mock"}
+            and getattr(self, "_preview_transcriber", None) is None
+        ):
+            self.bus.emit(
+                "status",
+                {"message": "Loading independent ASR acoustic verifier for fast processing."},
+            )
+            self._load_realtime_preview()
+
         duration = float(self.duration)
         batch_size = max(1, int(getattr(self.args, "fast_asr_batch_size", 16)))
         started = time.monotonic()

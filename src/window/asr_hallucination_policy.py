@@ -9,6 +9,7 @@ the acoustic evidence rather than by a large blacklist.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 import unicodedata
 
 
@@ -46,12 +47,40 @@ _WATCHING_PHRASES: tuple[tuple[str, ...], ...] = (
     ("thank", "you", "for", "watching"),
 )
 
+_NON_SPEECH_STAGE_DIRECTION_RE = re.compile(
+    r"(?<![A-Za-z])(?:LAUGHTER|APPLAUSE|CHEERING)(?![A-Za-z])"
+)
+
+
+def contains_asr_non_speech_annotation(text: str) -> bool:
+    """Return whether text contains an explicit uppercase stage direction."""
+
+    return bool(_NON_SPEECH_STAGE_DIRECTION_RE.search(str(text or "")))
+
 
 def normalize_asr_hallucination_text(text: str) -> str:
     """Normalize text while preserving Unicode letters, digits, and boundaries."""
 
     value = unicodedata.normalize("NFKC", str(text or "")).casefold()
     return " ".join("".join(character if character.isalnum() else " " for character in value).split())
+
+
+def is_exact_repeated_phrase(
+    text: str,
+    *,
+    minimum_phrase_words: int = 2,
+) -> bool:
+    """Return whether the complete text is one multi-word phrase repeated verbatim."""
+
+    tokens = tuple(normalize_asr_hallucination_text(text).split())
+    minimum_phrase_words = max(2, int(minimum_phrase_words))
+    for phrase_length in range(2, (len(tokens) // 2) + 1):
+        if len(tokens) % phrase_length:
+            continue
+        phrase = tokens[:phrase_length]
+        if phrase * (len(tokens) // phrase_length) == tokens:
+            return phrase_length >= minimum_phrase_words
+    return False
 
 
 def _contains_token_sequence(tokens: tuple[str, ...], pattern: tuple[str, ...]) -> bool:

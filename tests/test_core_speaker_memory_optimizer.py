@@ -111,6 +111,70 @@ class SpeakerDecisionContractTests(unittest.TestCase):
 
         self.assert_created_speaker_probability_contract(decision)
 
+    def test_short_additional_speaker_requires_matching_confirmation(self) -> None:
+        memory = ClusterSpeakerMemory(
+            min_first_speaker_seconds=1.0,
+            first_speaker_immediate_min_seconds=4.0,
+            min_new_speaker_seconds=2.0,
+            new_speaker_confirmation_similarity=0.58,
+        )
+        memory.classify(np.array([1.0, 0.0, 0.0], dtype=np.float32), 6.0)
+
+        provisional = memory.classify(
+            np.array([0.0, 1.0, 0.0], dtype=np.float32),
+            2.2,
+            min_new_speaker_confirmations=2,
+        )
+        confirmed = memory.classify(
+            np.array([0.0, 0.99, 0.01], dtype=np.float32),
+            1.0,
+            min_new_speaker_confirmations=2,
+        )
+
+        self.assertIsNone(provisional.assigned_speaker)
+        self.assertEqual(provisional.assignment_source, "new_speaker_pending")
+        self.assertEqual(confirmed.assigned_speaker, "S2")
+        self.assertTrue(confirmed.created_speaker)
+        self.assertEqual(memory.export_profiles()[1]["sentence_count"], 2)
+
+    def test_long_additional_speaker_can_still_create_immediately(self) -> None:
+        memory = ClusterSpeakerMemory(
+            min_first_speaker_seconds=1.0,
+            first_speaker_immediate_min_seconds=4.0,
+            min_new_speaker_seconds=2.0,
+        )
+        memory.classify(np.array([1.0, 0.0, 0.0], dtype=np.float32), 6.0)
+
+        decision = memory.classify(
+            np.array([0.0, 1.0, 0.0], dtype=np.float32),
+            5.1,
+            min_new_speaker_confirmations=1,
+        )
+
+        self.assertEqual(decision.assigned_speaker, "S2")
+        self.assertTrue(decision.created_speaker)
+
+    def test_reviewed_sentence_does_not_update_existing_profile(self) -> None:
+        memory = ClusterSpeakerMemory(
+            min_first_speaker_seconds=0.1,
+            first_speaker_immediate_min_seconds=0.1,
+        )
+        anchor = np.array([1.0, 0.0, 0.0], dtype=np.float32)
+        memory.classify(anchor, 6.0)
+        before = memory.export_profiles()[0]
+
+        decision = memory.classify(
+            np.array([0.95, 0.31, 0.0], dtype=np.float32),
+            3.0,
+            allow_new_speaker=False,
+            allow_profile_update=False,
+        )
+        after = memory.export_profiles()[0]
+
+        self.assertEqual(decision.assigned_speaker, "S1")
+        self.assertEqual(after["sentence_count"], before["sentence_count"])
+        np.testing.assert_allclose(after["centroid"], before["centroid"])
+
     def test_cluster_memory_upsert_keeps_explicit_speaker_label(self) -> None:
         memory = ClusterSpeakerMemory(min_first_speaker_seconds=0.1)
 

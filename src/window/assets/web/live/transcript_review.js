@@ -4,6 +4,10 @@ export function installTranscriptReview(ctx) {
   const speakerUndoCorrection = document.getElementById("speakerUndoCorrection");
   const {bulkCorrectionSpeaker, bulkMarkCorrectButton, bulkReassignButton, clearSelectionButton, createSpeakerOptionValue, followLive, groupTranscriptTurns, liveSpeakerConfig, reviewFilterButtons, selectionCount, selectionToolbar, sentences, showTranscriptProbabilities, showTranscriptReviewHints, showTranscriptSpeechRate, showTranscriptTags, showTranscriptTime, source, speakerList, speakerTabButtons, speakerTabPanels, start, state, transcriptPanel, transcriptSettingsButton, transcriptSettingsPanel, undoCorrectionButton} = ctx;
   const applyProvisionalRealtimeVisualSplit = (...args) => ctx.api.applyProvisionalRealtimeVisualSplit(...args), clearProvisionalRealtimeSplitsFor = (...args) => ctx.api.clearProvisionalRealtimeSplitsFor(...args), createSpeakerLiveIndicator = (...args) => ctx.api.createSpeakerLiveIndicator(...args), fetchSavedSessions = (...args) => ctx.api.fetchSavedSessions(...args), isLiveProvisionalSpeaker = (...args) => ctx.api.isLiveProvisionalSpeaker(...args), log = (...args) => ctx.api.log(...args), playbackSeconds = (...args) => ctx.api.playbackSeconds(...args), pruneSpeakerFilterState = (...args) => ctx.api.pruneSpeakerFilterState(...args), refreshSpeakerRows = (...args) => ctx.api.refreshSpeakerRows(...args), refreshTranslationMenuStatus = (...args) => ctx.api.refreshTranslationMenuStatus(...args), refreshTranslationRow = (...args) => ctx.api.refreshTranslationRow(...args), renderMeetingIntelligencePanel = (...args) => ctx.api.renderMeetingIntelligencePanel(...args), renderSpeakerPanel = (...args) => ctx.api.renderSpeakerPanel(...args), restoreRealtimeRowFullPreview = (...args) => ctx.api.restoreRealtimeRowFullPreview(...args), rowShouldSortBefore = (...args) => ctx.api.rowShouldSortBefore(...args), savedSessionReviewOpen = (...args) => ctx.api.savedSessionReviewOpen(...args), secondsLabel = (...args) => ctx.api.secondsLabel(...args), sessionControlsLocked = (...args) => ctx.api.sessionControlsLocked(...args), speakerColor = (...args) => ctx.api.speakerColor(...args), speakerDisplayLabel = (...args) => ctx.api.speakerDisplayLabel(...args), speakerPanelName = (...args) => ctx.api.speakerPanelName(...args), speakerProbabilityKey = (...args) => ctx.api.speakerProbabilityKey(...args), speakerSentenceText = (...args) => ctx.api.speakerSentenceText(...args), speakerTranscriptVisible = (...args) => ctx.api.speakerTranscriptVisible(...args), syncSavedSessionsAutoRefresh = (...args) => ctx.api.syncSavedSessionsAutoRefresh(...args), syncSpeakerSessionBaselines = (...args) => ctx.api.syncSpeakerSessionBaselines(...args), updateSpeakerCount = (...args) => ctx.api.updateSpeakerCount(...args);
+  const transcriptGroupMergeHighlightMs = 100;
+  const transcriptGroupMergeTextMs = 600;
+  const transcriptGroupMergeCollapseMs = 300;
+  let transcriptGroupMergeSequence = 0;
   function transcriptSearchVisible(row) {
     const query = ctx.owners.speakers.transcriptSearchText.trim().toLowerCase();
     if (!query) return true;
@@ -62,9 +66,93 @@ export function installTranscriptReview(ctx) {
     const rangeNode = row.querySelector(".sentence-range");
     if (rangeNode) rangeNode.textContent = `(${secondsLabel(start)} - ${secondsLabel(end)})`;
   }
+  function transcriptGroupMergeCharacters(value) {
+    return Array.from(String(value || ""));
+  }
+  function transcriptGroupMergeDelay(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+  }
+  function transcriptGroupMergeAnimationsEnabled() {
+    return true;
+  }
+  function transcriptGroupMergeTimings(pipelineMerges) {
+    const pending = Math.max(1, Number(pipelineMerges) || 1);
+    if (pending > 5) return null;
+    // A single merge is 25% quicker.  Once several are already waiting,
+    // reduce the visual backlog progressively instead of making it linger.
+    const scale = pending === 1 ? 0.75 : Math.max(0.35, 0.5 - ((pending - 2) * 0.05));
+    return {
+      highlight: Math.round(transcriptGroupMergeHighlightMs * scale),
+      text: Math.round(transcriptGroupMergeTextMs * scale),
+      collapse: Math.round(transcriptGroupMergeCollapseMs * scale),
+    };
+  }
+  function nextTranscriptGroupMergeFrame() {
+    return new Promise(resolve => requestAnimationFrame(resolve));
+  }
+  async function animateTranscriptGroupMerge(leader, follower, baseText, leaderKey) {
+    const token = String(++transcriptGroupMergeSequence);
+    const timings = transcriptGroupMergeTimings(follower.dataset.groupMergePipeline);
+    if (!timings) return;
+    follower.dataset.groupMergeToken = token;
+    const characters = transcriptGroupMergeCharacters((follower.dataset.text || "").trim());
+    const current = () => (
+      follower.dataset.groupMergeToken === token
+      && leader.isConnected
+      && follower.isConnected
+    );
+    const leaderText = leader.querySelector(".text");
+    const followerText = follower.querySelector(".text");
+    if (leaderText) leaderText.textContent = baseText;
+    if (followerText) followerText.textContent = characters.join("");
+    await nextTranscriptGroupMergeFrame();
+    if (!current()) return;
+    leader.classList.add("group-merge-highlight");
+    follower.classList.add("group-merge-highlight");
+    await transcriptGroupMergeDelay(timings.highlight);
+    const transferStart = performance.now();
+    await new Promise(resolve => {
+      const transfer = now => {
+        if (!current()) return resolve();
+        const progress = Math.min(1, (now - transferStart) / timings.text);
+        const count = Math.min(characters.length, Math.floor(progress * characters.length));
+        const movedText = characters.slice(0, count).join("");
+        const sourceText = follower.querySelector(".text");
+        const targetText = leader.querySelector(".text");
+        if (targetText) targetText.textContent = movedText ? `${baseText}${baseText ? " " : ""}${movedText}` : baseText;
+        if (sourceText) sourceText.textContent = characters.slice(count).join("");
+        progress < 1 ? requestAnimationFrame(transfer) : resolve();
+      };
+      requestAnimationFrame(transfer);
+    });
+    if (!current()) return;
+    leader.classList.remove("group-merge-highlight");
+    follower.classList.remove("group-merge-highlight");
+    follower.style.maxHeight = `${follower.scrollHeight}px`;
+    follower.style.overflow = "hidden";
+    void follower.offsetHeight;
+    follower.classList.add("group-merge-collapsing");
+    await transcriptGroupMergeDelay(timings.collapse);
+    if (!current()) return;
+    follower.classList.add("group-hidden");
+    follower.dataset.groupHidden = "true";
+    follower.hidden = true;
+    leader.classList.remove("group-merge-highlight");
+    follower.classList.remove("group-merge-highlight", "group-merge-collapsing");
+    follower.style.removeProperty("max-height");
+    follower.style.removeProperty("overflow");
+    follower.dataset.groupMergeComplete = leaderKey;
+    delete follower.dataset.groupMergeToken;
+    delete follower.dataset.groupMergePipeline;
+    refreshTranscriptGrouping();
+  }
   function resetTranscriptGroupingRows() {
     Array.from(sentences.querySelectorAll(".row")).forEach(row => {
-      row.classList.remove("group-leader", "group-hidden", "group-needs-review", "group-corrected");
+      row.classList.remove("group-leader", "group-hidden", "group-needs-review", "group-corrected", "group-merge-highlight", "group-merge-collapsing");
+      row.style.removeProperty("max-height");
+      row.style.removeProperty("overflow");
+      delete row.dataset.groupMergeToken;
+      delete row.dataset.groupMergePipeline;
       delete row.dataset.groupHidden;
       delete row.dataset.groupLeader;
       delete row.dataset.groupSize;
@@ -82,9 +170,7 @@ export function installTranscriptReview(ctx) {
     });
   }
   function transcriptRowCanGroup(row) {
-    if (!row || row.dataset.realtime === "true") return false;
-    if (row.dataset.pending === "true" || row.dataset.provisionalAssignment === "true") return false;
-    if (row.dataset.provisionalSplit === "true") return false;
+    if (!row || row.dataset.finalSpeakerAssignment !== "true") return false;
     const speakerId = row.dataset.speaker || "";
     if (!speakerId || speakerId === "UNKNOWN") return false;
     return Boolean((row.dataset.text || "").trim());
@@ -127,28 +213,86 @@ export function installTranscriptReview(ctx) {
     });
   }
   function refreshTranscriptGrouping() {
-    resetTranscriptGroupingRows();
+    if (
+      sentences.querySelector(".row[data-group-merge-token]")
+      || sentences.querySelector('.row[data-realtime-split-active="true"]')
+    ) {
+      return;
+    }
+    const displayRows = transcriptRowsInDisplayOrder();
+    const groups = [];
+    let currentGroup = [];
     if (transcriptGroupTurnsEnabled()) {
-      let currentGroup = [];
-      transcriptRowsInDisplayOrder().forEach(row => {
+      displayRows.forEach(row => {
         if (!transcriptRowCanGroup(row)) {
-          applyTranscriptGroupRows(currentGroup);
+          if (currentGroup.length) groups.push(currentGroup);
           currentGroup = [];
-          return;
-        }
-        if (!currentGroup.length || currentGroup[0].dataset.speaker === row.dataset.speaker) {
+        } else if (!currentGroup.length || currentGroup[0].dataset.speaker === row.dataset.speaker) {
           currentGroup.push(row);
         } else {
-          applyTranscriptGroupRows(currentGroup);
+          groups.push(currentGroup);
           currentGroup = [row];
         }
       });
-      applyTranscriptGroupRows(currentGroup);
+      if (currentGroup.length) groups.push(currentGroup);
     }
+    const validMergeLeaders = new Map();
+    groups.forEach(rows => {
+      const leaderKey = String(rows[0].dataset.index || "");
+      rows.slice(1).forEach(row => validMergeLeaders.set(row, leaderKey));
+    });
+    displayRows.forEach(row => {
+      if (row.dataset.groupMergeComplete !== validMergeLeaders.get(row)) {
+        delete row.dataset.groupMergeComplete;
+      }
+    });
+    let pendingMergeCount = 0;
+    groups.forEach(rows => {
+      const leaderKey = String(rows[0].dataset.index || "");
+      let completedCount = 1;
+      while (
+        completedCount < rows.length
+        && rows[completedCount].dataset.groupMergeComplete === leaderKey
+      ) {
+        completedCount += 1;
+      }
+      pendingMergeCount += rows.length - completedCount;
+    });
+    resetTranscriptGroupingRows();
+    let nextMerge = null;
+    groups.forEach(rows => {
+      if (!transcriptGroupMergeAnimationsEnabled() || pendingMergeCount > 5) {
+        applyTranscriptGroupRows(rows);
+        return;
+      }
+      const leaderKey = String(rows[0].dataset.index || "");
+      let completedCount = 1;
+      while (
+        completedCount < rows.length
+        && rows[completedCount].dataset.groupMergeComplete === leaderKey
+      ) {
+        completedCount += 1;
+      }
+      const completedRows = rows.slice(0, completedCount);
+      applyTranscriptGroupRows(completedRows);
+      if (!nextMerge && completedCount < rows.length) {
+        nextMerge = {
+          leader:rows[0],
+          follower:rows[completedCount],
+          leaderKey,
+          baseText:cleanedTranscriptGroupText(completedRows),
+          pipelineMerges:pendingMergeCount,
+        };
+      }
+    });
     Array.from(sentences.querySelectorAll(".row")).forEach(refreshTranslationRow);
     refreshTranslationMenuStatus();
     refreshTranscriptVisibility();
     syncTranscriptSelectionState();
+    if (nextMerge) {
+      nextMerge.follower.dataset.groupMergePipeline = String(nextMerge.pipelineMerges);
+      animateTranscriptGroupMerge(nextMerge.leader, nextMerge.follower, nextMerge.baseText, nextMerge.leaderKey);
+    }
   }
   function refreshTranscriptVisibility() {
     Array.from(sentences.querySelectorAll(".row")).forEach(row => {
@@ -540,34 +684,20 @@ export function installTranscriptReview(ctx) {
     const retired = Boolean(payload.retired);
     if (!ctx.owners.presentation.claimMigration(finalId, publicId, retired, payload.alias_generation)) return true;
     if (retired) {
+      const speakers = ctx.owners.speakers.speakerLibraryState.speakers || [];
       ctx.owners.speakers.speakerLibraryState = {
         ...ctx.owners.speakers.speakerLibraryState,
-        speakers: (ctx.owners.speakers.speakerLibraryState.speakers || [])
-          .filter(speaker => speaker.id !== publicId),
+        speakers: speakers.map(speaker => (
+          speaker.id === publicId
+            ? {
+                ...speaker,
+                internal_speaker_id: "",
+                presentation_aliased: false,
+                source: "live_provisional",
+              }
+            : speaker
+        )),
       };
-      delete ctx.owners.speakers.speakerNames[publicId];
-      delete ctx.owners.speakers.fastSpeakerPanelStats[publicId];
-      delete ctx.owners.speakers.speakerSessionBaselineSentenceCounts[publicId];
-      delete ctx.owners.speakers.speakerSessionBaselineSpeakingSeconds[publicId];
-      delete ctx.owners.speakers.renderedSpeakerSentenceCounts[publicId];
-      delete ctx.owners.speakers.renderedSpeakerSpeakingSeconds[publicId];
-      ctx.owners.speakers.emptySpeakerFirstSeenAt.delete(publicId);
-      ctx.owners.speakers.soloSpeakerIds.delete(publicId);
-      ctx.owners.speakers.mutedSpeakerIds.delete(publicId);
-      for (const field of ["currentLiveSpeakerId", "transcriptLiveSpeakerId", "lastTranscriptSpeakerId", "fallbackLiveSpeakerId", "transcriptLiveSpeakerOverrideId"]) {
-        if (ctx.owners.transcript[field] === publicId) ctx.owners.transcript[field] = "";
-      }
-      ctx.owners.transcript.liveSpeakerTimeline = ctx.owners.transcript.liveSpeakerTimeline
-        .filter(item => item.speakerId !== publicId);
-      for (const field of ["editingSpeakerId", "pendingSpeakerNameFocusId"]) {
-        if (ctx.owners.reference[field] === publicId) ctx.owners.reference[field] = "";
-      }
-      Array.from(sentences.querySelectorAll(".row")).forEach(row => {
-        for (const key of ["speaker", "rawSpeaker", "fullRawSpeaker", "revisionSpeaker"]) {
-          if (row.dataset[key] === publicId) row.dataset[key] = "UNKNOWN";
-        }
-      });
-      recomputeRenderedSpeakerSentenceCounts();
       refreshTranscriptVisibility();
       syncBulkCorrectionToolbar();
       renderSpeakerPanel();
@@ -925,7 +1055,7 @@ export function installTranscriptReview(ctx) {
     }
     const scores = {...observed};
     const prior = normalizedLiveSpeakerId(priorSpeakerId);
-    if (prior) scores[prior] = (scores[prior] || 0) + previousSpeakerHeadStartSeconds;
+    if (prior) scores[prior] = Math.max(scores[prior] || 0, previousSpeakerHeadStartSeconds);
     return {observed, scores};
   }
   function dominantRealtimeSpeakerId(
@@ -942,7 +1072,8 @@ export function installTranscriptReview(ctx) {
     const [bestSpeakerId, bestScore] = entries[0];
     if (bestSpeakerId === incumbent) return incumbent;
     const incumbentScore = incumbent ? (scores[incumbent] || 0) : (entries[1]?.[1] || 0);
-    const minimumChallengerSeconds = 0.5;
+    const rowDurationSeconds = Math.max(0, finiteAudioSecond(end, 0) - finiteAudioSecond(start, 0));
+    const minimumChallengerSeconds = Math.min(0.5, Math.max(0.3, rowDurationSeconds * 0.5));
     const requiredLeadSeconds = 0.1;
     if (
       (observed[bestSpeakerId] || 0) >= minimumChallengerSeconds

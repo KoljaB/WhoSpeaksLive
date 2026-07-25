@@ -101,7 +101,7 @@ export function installMediaCapture(ctx) {
     source.disabled = disabled;
     preset.disabled = disabled;
     inputMode.disabled = disabled;
-    sourceModeButton.disabled = disabled;
+    sourceModeButton.disabled = disabled && !ctx.owners.capture.mediaLoadInProgress;
     audioFileInput.disabled = disabled;
     chooseAudioFileButton.disabled = disabled;
     fastProcessing.disabled = disabled;

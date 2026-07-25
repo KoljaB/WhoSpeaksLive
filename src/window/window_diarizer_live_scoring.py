@@ -873,6 +873,13 @@ class WindowLiveScoringMixin:
             self._live_speaker_embedding_throttle_lock = lock
         return lock
 
+    def _live_speaker_inference_lock_obj(self) -> threading.Lock:
+        lock = getattr(self, "_live_speaker_inference_lock", None)
+        if lock is None:
+            lock = threading.Lock()
+            self._live_speaker_inference_lock = lock
+        return lock
+
     def _live_speaker_embedding_min_interval_seconds(self) -> float:
         try:
             value = float(getattr(self.args, "live_speaker_embedding_min_interval_seconds", 0.75))
@@ -1276,42 +1283,43 @@ class WindowLiveScoringMixin:
                 },
             )
         try:
-            embed_started = time.monotonic()
-            short_started = embed_started
-            short_embedding = self._embed_live_audio_chunk(
-                chunk,
-                self.sample_rate,
-                ".live.short.wav",
-            )
-            embedding = short_embedding
-            short_finished = time.monotonic()
-            context_embedding: np.ndarray | None = None
-            context_chunk: np.ndarray | None = None
-            context_started: float | None = None
-            context_finished: float | None = None
-            applied_context_weight = 0.0
-            effective_duration = float(duration_seconds)
-            requested_context_weight = max(0.0, min(1.0, float(context_weight)))
-            if context_audio is not None and requested_context_weight > 0.0:
-                context_chunk = pad_audio(
-                    trim_silence(context_audio, self.sample_rate),
-                    self.args.min_embed_seconds,
+            with self._live_speaker_inference_lock_obj():
+                embed_started = time.monotonic()
+                short_started = embed_started
+                short_embedding = self._embed_live_audio_chunk(
+                    chunk,
                     self.sample_rate,
+                    ".live.short.wav",
                 )
-                context_started = time.monotonic()
-                context_embedding = self._embed_live_audio_chunk(
-                    context_chunk, self.sample_rate, ".live.context.wav"
-                )
-                context_finished = time.monotonic()
-                if str(getattr(self.args, "live_speaker_tracker", "classic")) != "bayes":
-                    embedding = blend_live_speaker_embeddings(
-                        embedding, context_embedding, requested_context_weight
+                embedding = short_embedding
+                short_finished = time.monotonic()
+                context_embedding: np.ndarray | None = None
+                context_chunk: np.ndarray | None = None
+                context_started: float | None = None
+                context_finished: float | None = None
+                applied_context_weight = 0.0
+                effective_duration = float(duration_seconds)
+                requested_context_weight = max(0.0, min(1.0, float(context_weight)))
+                if context_audio is not None and requested_context_weight > 0.0:
+                    context_chunk = pad_audio(
+                        trim_silence(context_audio, self.sample_rate),
+                        self.args.min_embed_seconds,
+                        self.sample_rate,
                     )
-                applied_context_weight = requested_context_weight
-                effective_duration = max(
-                    effective_duration,
-                    float(context_duration_seconds or 0.0),
-                )
+                    context_started = time.monotonic()
+                    context_embedding = self._embed_live_audio_chunk(
+                        context_chunk, self.sample_rate, ".live.context.wav"
+                    )
+                    context_finished = time.monotonic()
+                    if str(getattr(self.args, "live_speaker_tracker", "classic")) != "bayes":
+                        embedding = blend_live_speaker_embeddings(
+                            embedding, context_embedding, requested_context_weight
+                        )
+                    applied_context_weight = requested_context_weight
+                    effective_duration = max(
+                        effective_duration,
+                        float(context_duration_seconds or 0.0),
+                    )
             embedding_latency_seconds = time.monotonic() - embed_started
             decision_media_time = float(self.playback_time())
             if recording:
@@ -1417,6 +1425,34 @@ class WindowLiveScoringMixin:
                 request_id=request_id,
                 correlation_out=core_correlation,
             )
+            record_handoff_evidence = getattr(
+                self,
+                "_record_sentence_handoff_live_evidence",
+                None,
+            )
+            if callable(record_handoff_evidence):
+                record_handoff_evidence(
+                    request_source=str(request_source),
+                    run_id=run_id,
+                    probe_id=probe_id,
+                    request_id=request_id,
+                    window_start=actual_short_window_start,
+                    window_end=actual_short_window_end,
+                    source_start_sample=actual_short_start_sample,
+                    source_end_sample=actual_short_end_sample,
+                    audio=audio,
+                    sample_rate=self.sample_rate,
+                    embedding=short_embedding,
+                    visible_speaker=getattr(core_decision, "visible_speaker", None),
+                    similarities=getattr(core_decision, "similarities", None),
+                    probabilities=getattr(core_decision, "probabilities", None),
+                    profile_generations=getattr(
+                        core_decision,
+                        "profile_generations",
+                        None,
+                    ),
+                    provider=self._current_live_embedding_provider(),
+                )
             if recording:
                 emit_internal(
                     "live_speaker_embedding_request_step_bound",

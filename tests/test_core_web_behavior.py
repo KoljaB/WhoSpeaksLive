@@ -100,12 +100,13 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn("ctx.owners.transcript.liveSpeakerTimeline = [];", HTML)
         self.assertIn("const previousDisplaySpeakerId = item.realtime ? normalizedLiveSpeakerId(row.dataset.speaker) : \"\";", HTML)
         self.assertIn("previousSpeakerHeadStartSeconds = 0.25;", HTML)
-        self.assertIn("minimumChallengerSeconds = 0.5;", HTML)
+        self.assertIn("minimumChallengerSeconds = Math.min(0.5, Math.max(0.3, rowDurationSeconds * 0.5));", HTML)
         self.assertIn("requiredLeadSeconds = 0.1;", HTML)
         self.assertIn("ctx.owners.transcript.lastTranscriptSpeakerId,", HTML)
         self.assertIn("ctx.owners.transcript.lastTranscriptSpeakerId = rawSpeakerId;", HTML)
         self.assertIn('row.dataset.rawSpeaker = item.realtime ? (visualSplit ? displaySpeakerId : rawSpeakerId) : "";', HTML)
         self.assertIn('row.dataset.speaker = displaySpeakerId || "UNKNOWN";', HTML)
+        self.assertIn('item.pending ? adoptedLiveSpeakerId : ""', HTML)
         self.assertIn('row.classList.toggle("live-speaker-row", item.realtime && Boolean(displaySpeakerId));', HTML)
         self.assertIn('row.style.setProperty("--live-row-color", color || "#8F9BA8");', HTML)
         self.assertIn("function updateCurrentLiveSpeakerFromRealtimeRows()", HTML)
@@ -120,7 +121,7 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn("refreshSpeakerPanelSentenceCounts();", HTML)
         self.assertLess(
             HTML.index('row.dataset.speaker = displaySpeakerId || "UNKNOWN";'),
-            HTML.index("refreshSpeakerPanelSentenceCounts();", HTML.index("function renderSentence(item)")),
+            HTML.index("refreshSpeakerPanelSentenceCounts();", HTML.index("function renderSentenceImmediate(item")),
         )
 
     def test_realtime_sentence_uses_time_weighted_live_assignment_evidence(self) -> None:
@@ -135,7 +136,19 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn("function realtimeSpeakerTimeScores(start, end, priorSpeakerId = \"\")", HTML)
         self.assertIn("...windows.flatMap(item => [item.start, item.end])", HTML)
         self.assertIn("right[1].count - left[1].count || right[1].latestEnd - left[1].latestEnd", HTML)
-        self.assertIn("scores[prior] = (scores[prior] || 0) + previousSpeakerHeadStartSeconds;", HTML)
+        self.assertIn("scores[prior] = Math.max(scores[prior] || 0, previousSpeakerHeadStartSeconds);", HTML)
+
+    def test_retired_identity_alias_preserves_surviving_live_row_evidence(self) -> None:
+        alias_start = HTML.index("function applyLiveSpeakerIdentityAlias")
+        retired_start = HTML.index("if (retired) {", alias_start)
+        retired_end = HTML.index("const finalMetadata", retired_start)
+        retired_block = HTML[retired_start:retired_end]
+
+        self.assertIn('source: "live_provisional"', retired_block)
+        self.assertIn("presentation_aliased: false", retired_block)
+        self.assertNotIn("liveSpeakerTimeline =", retired_block)
+        self.assertNotIn('row.dataset[key] = "UNKNOWN"', retired_block)
+        self.assertNotIn("delete ctx.owners.speakers.fastSpeakerPanelStats[publicId]", retired_block)
 
     def test_realtime_visual_split_uses_tail_speaker_and_punctuation_only(self) -> None:
         self.assertIn(".row.provisional-visual-split", HTML)
@@ -153,6 +166,70 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn("row.dataset.fullRawSpeaker = item.realtime ? rawSpeakerId : \"\";", HTML)
         self.assertIn("row.dataset.fullEnd = item.realtime ? String(endSeconds) : \"\";", HTML)
         self.assertIn("row.dataset.fullText = item.realtime ? (item.text || \"\") : \"\";", HTML)
+
+    def test_turn_grouping_requires_explicit_final_speaker_assignments(self) -> None:
+        grouping_start = HTML.index("function transcriptRowCanGroup")
+        grouping_end = HTML.index("function refreshTranscriptVisibility")
+        grouping_block = HTML[grouping_start:grouping_end]
+
+        self.assertIn('row.dataset.finalSpeakerAssignment !== "true"', grouping_block)
+        self.assertIn('if (!speakerId || speakerId === "UNKNOWN") return false;', grouping_block)
+        self.assertIn("currentGroup[0].dataset.speaker === row.dataset.speaker", grouping_block)
+        self.assertIn(
+            'row.dataset.finalSpeakerAssignment = (\n'
+            '      !item.realtime\n'
+            '      && !item.pending\n'
+            '      && !item.provisional_assignment\n'
+            '      && !item.error\n'
+            '      && Boolean(rawSpeakerId)\n'
+            '    ) ? "true" : "false";',
+            HTML,
+        )
+
+    def test_turn_grouping_animates_highlight_text_transfer_and_collapse(self) -> None:
+        self.assertIn("const transcriptGroupMergeHighlightMs = 100;", HTML)
+        self.assertIn("const transcriptGroupMergeTextMs = 600;", HTML)
+        self.assertIn("const transcriptGroupMergeCollapseMs = 300;", HTML)
+        self.assertIn("async function animateTranscriptGroupMerge(leader, follower, baseText, leaderKey)", HTML)
+        self.assertIn("const count = Math.min(characters.length, Math.floor(progress * characters.length));", HTML)
+        self.assertIn("let completedCount = 1;", HTML)
+        self.assertIn("rows[completedCount].dataset.groupMergeComplete === leaderKey", HTML)
+        self.assertIn("follower:rows[completedCount]", HTML)
+        self.assertIn("follower.dataset.groupMergeComplete = leaderKey;", HTML)
+        self.assertIn('sentences.querySelector(".row[data-group-merge-token]")', HTML)
+        self.assertIn('leader.classList.add("group-merge-highlight");', HTML)
+        self.assertIn('follower.classList.add("group-merge-collapsing");', HTML)
+        self.assertIn(".row.group-merge-highlight", HTML)
+        self.assertIn("max-height .3s ease-in-out", HTML)
+        self.assertIn("function transcriptGroupMergeAnimationsEnabled() {\n    return true;", HTML)
+        self.assertIn("function transcriptGroupMergeTimings(pipelineMerges)", HTML)
+        self.assertIn("pending === 1 ? 0.75", HTML)
+        self.assertIn("pendingMergeCount > 5", HTML)
+        self.assertIn("nextMerge.follower.dataset.groupMergePipeline = String(nextMerge.pipelineMerges);", HTML)
+
+    def test_realtime_finalization_animates_sequential_splits_without_blocking_live_updates(self) -> None:
+        self.assertIn("const realtimeSentenceSplitSpawnMs = 300;", HTML)
+        self.assertIn("const realtimeSentenceSplitTransferMs = 600;", HTML)
+        self.assertIn("const queuedRealtimeSentenceSplits = [];", HTML)
+        self.assertIn("function startRealtimeSentenceSplit(item, sourceRow, previewOverride = \"\")", HTML)
+        self.assertIn("remainingText = transferCharacters.slice(movedCount)", HTML)
+        self.assertIn("movedText = transferCharacters.slice(0, movedCount)", HTML)
+        self.assertIn("while (queuedRealtimeSentenceSplits.length)", HTML)
+        self.assertIn("queuedRealtimeSentenceSplit(item);", HTML)
+        self.assertIn("function abortRealtimeSentenceSplit(split)", HTML)
+        self.assertIn("split.watchdog = setTimeout(() => abortRealtimeSentenceSplit(split), 2500);", HTML)
+        self.assertIn("renderSentenceImmediate(queuedRealtimeSentenceSplits.shift());", HTML)
+        split_start = HTML.index("async function animateRealtimeSentenceSplit(split)")
+        split_end = HTML.index("function createRealtimeSentenceSplitTarget", split_start)
+        split_block = HTML[split_start:split_end]
+        self.assertNotIn("requestAnimationFrame", split_block)
+        self.assertIn("progress < 1 ? setTimeout(transfer, 16) : resolve();", split_block)
+        self.assertIn("renderSentenceImmediate(item, realtimeSentenceSplitState.target);", HTML)
+        self.assertIn("updateRealtimeSentenceSplitVisual(realtimeSentenceSplitState);", HTML)
+        self.assertIn('row.dataset.realtimeSplitActive !== "true"', HTML)
+        self.assertIn('sentences.querySelector(\'.row[data-realtime-split-active="true"]\')', HTML)
+        self.assertIn(".row.realtime-split-spawning", HTML)
+        self.assertIn("function realtimeSentenceSplitAnimationsEnabled() {\n    return true;", HTML)
 
     def test_realtime_clear_settles_rows_for_smooth_final_adoption(self) -> None:
         self.assertIn(".row.realtime-settling", HTML)
@@ -180,7 +257,7 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn("sentences.insertBefore(row, next);", HTML)
         self.assertIn("sentences.appendChild(row);", HTML)
 
-        render_start = HTML.index("function renderSentence(item)")
+        render_start = HTML.index("function renderSentenceImmediate(item")
         render_end = HTML.index("function connect()", render_start)
         render_block = HTML[render_start:render_end]
         place_index = render_block.index("placeSentenceRowChronologically(row);")
@@ -194,15 +271,15 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn('row.dataset.index === key && row.dataset.realtime !== "true"', HTML)
         self.assertIn('row.dataset.index === key && row.dataset.realtime === "true"', HTML)
 
-        render_start = HTML.index("function renderSentence(item)")
+        render_start = HTML.index("function renderSentenceImmediate(item")
         render_end = HTML.index("function connect()", render_start)
         render_block = HTML[render_start:render_end]
         guard = 'if (item.realtime && findFinalSentenceRow(item.index)) {'
         self.assertIn(guard, render_block)
         self.assertLess(render_block.index(guard), render_block.index("clearProvisionalRealtimeSplitsFor(item.index);"))
-        self.assertIn("let row = item.realtime", render_block)
+        self.assertIn("let row = rowOverride || (", render_block)
         self.assertIn("? findRealtimeSentenceRow(item.index)", render_block)
-        self.assertIn(": (findFinalSentenceRow(item.index) || findRealtimeSentenceRow(item.index));", render_block)
+        self.assertIn(": (findFinalSentenceRow(item.index) || findRealtimeSentenceRow(item.index))", render_block)
 
     def test_speaker_solo_mute_filters_transcript_rows(self) -> None:
         self.assertIn("soloSpeakerIds: new Set(),", HTML)
@@ -219,7 +296,7 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn("refreshTranscriptVisibility();", HTML)
         self.assertLess(
             HTML.index('row.dataset.speaker = displaySpeakerId || "UNKNOWN";'),
-            HTML.index("refreshTranscriptVisibility();", HTML.index("function renderSentence(item)")),
+            HTML.index("refreshTranscriptVisibility();", HTML.index("function renderSentenceImmediate(item")),
         )
 
     def test_transcript_corrections_use_selection_toolbar(self) -> None:

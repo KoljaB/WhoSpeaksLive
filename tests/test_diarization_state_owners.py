@@ -6,6 +6,7 @@ import threading
 import time
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 
@@ -114,7 +115,12 @@ class AudioTimelineTests(unittest.TestCase):
         timeline.append(np.array([0.1, 0.2], dtype=np.float32), 16000)
         timeline.append(np.array([0.3, 0.4], dtype=np.float32), 16000)
 
-        audio, sample_rate = timeline.window(1 / 16000, 3 / 16000)
+        with mock.patch.object(
+            timeline,
+            "_combined_audio_locked",
+            side_effect=AssertionError("window must not concatenate the full stream"),
+        ):
+            audio, sample_rate = timeline.window(1 / 16000, 3 / 16000)
 
         self.assertEqual(sample_rate, 16000)
         np.testing.assert_allclose(audio, [0.2, 0.3])

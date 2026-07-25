@@ -101,6 +101,7 @@ def cached_sentence_part(sentence: dict[str, Any]) -> SentencePart:
         next_word_start=sentence.get("next_word_start"),
         gap_to_next_word_seconds=sentence.get("gap_to_next_word_seconds"),
         boundary_strategy=str(sentence.get("boundary_strategy") or "cached_replay"),
+        asr_review=dict(sentence.get("asr_review") or {}),
     )
 
 

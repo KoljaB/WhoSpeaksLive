@@ -356,13 +356,18 @@ export function installSessionTransport(ctx) {
     clearInterval(ctx.owners.lease.sessionStatusTimer);
     ctx.owners.lease.sessionStatusTimer = null;
   }
-  async function post(path, payload={}) {
+  async function post(path, payload={}, options={}) {
     const requestPayload = {...payload};
     if (path.startsWith("/api/") && !path.startsWith("/api/session/") && !path.startsWith("/api/sessions/")) {
       requestPayload.client_id = ctx.owners.lease.sessionClientId;
       if (ctx.owners.lease.sessionToken) requestPayload.session_token = ctx.owners.lease.sessionToken;
     }
-    const r = await fetch(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(requestPayload)});
+    const r = await fetch(path, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(requestPayload),
+      signal:options.signal,
+    });
     const data = await r.json();
     if (data.session) updateSessionState(data.session);
     if (!r.ok) throw new Error(data.error || r.statusText);

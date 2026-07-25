@@ -471,13 +471,22 @@ class Handler(BaseHTTPRequestHandler):
                     "stopped",
                     str(payload.get("client_id") or ""),
                 ))
+            elif path == "/api/cancel-media-load":
+                self._require_session(payload)
+                self._send_json(self.server.cancel_media_load(
+                    str(payload.get("request_id") or ""),
+                ))
             elif path == "/api/load-url":
                 self._require_session(payload)
                 url = str(payload.get("url", "")).strip()
                 if not url:
                     raise RuntimeError("Missing YouTube URL.")
                 cache_only = bool(payload.get("cache_only", False)) or bool(getattr(self.server.args, "skip_download", False))
-                media = self.server.load_media_url(url, skip_download=cache_only)
+                media = self.server.load_media_url(
+                    url,
+                    skip_download=cache_only,
+                    request_id=str(payload.get("request_id") or ""),
+                )
                 self._send_json({
                     "ok": True,
                     "url": media.url,

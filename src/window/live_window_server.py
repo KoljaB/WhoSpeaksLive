@@ -306,6 +306,8 @@ class LiveWindowApplication:
             translation_snapshot=self.translation.snapshot,
             handle_sentence_translation=self.translation.handle_sentence,
         )
+        self._media_load_lock = threading.Lock()
+        self._active_media_load_id = ""
         self._close_lock = threading.Lock()
         self._closed = False
 
@@ -1010,7 +1012,28 @@ class LiveWindowApplication:
     def media_version(self) -> int:
         return self.media_manager.snapshot().version
 
-    def load_media_url(self, url: str, skip_download: bool = False) -> MediaFiles:
+    def cancel_media_load(self, request_id: str = "") -> dict[str, Any]:
+        requested = str(request_id or "").strip()
+        with self._media_load_lock:
+            active = self._active_media_load_id
+            if active and (not requested or requested == active):
+                self._active_media_load_id = ""
+                cancelled = True
+            else:
+                cancelled = False
+        if cancelled:
+            self.bus.emit("status", {"message": "Media load cancelled; choose another source."})
+        return {"ok": True, "cancelled": cancelled}
+
+    def load_media_url(
+        self,
+        url: str,
+        skip_download: bool = False,
+        request_id: str = "",
+    ) -> MediaFiles:
+        load_id = str(request_id or "").strip() or uuid.uuid4().hex
+        with self._media_load_lock:
+            self._active_media_load_id = load_id
         self.bus.emit("status", {"message": f"Loading media for {url}"})
         if not skip_download:
             video_id, has_cached_audio, has_cached_video = media_cache_status(self.args, url)
@@ -1026,8 +1049,12 @@ class LiveWindowApplication:
             else:
                 self.bus.emit("status", {"message": f"Media cache hit for {video_id}."})
         media = resolve_media_url(self.args, url, skip_download=skip_download)
-        self.media_manager.replace(media, self.controller.set_media)
-        self._bind_world_tape_media(media)
+        with self._media_load_lock:
+            if self._active_media_load_id != load_id:
+                raise RuntimeError("Media load was cancelled.")
+            self.media_manager.replace(media, self.controller.set_media)
+            self._bind_world_tape_media(media)
+            self._active_media_load_id = ""
         return media
 
     def load_audio_upload(

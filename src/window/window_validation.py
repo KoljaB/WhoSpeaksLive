@@ -514,6 +514,11 @@ def run_window_replay_validation(args: Any) -> int:
             "asr_hallucination_verification_shift_seconds": args.asr_hallucination_verification_shift_seconds,
             "asr_hallucination_verification_context_seconds": args.asr_hallucination_verification_context_seconds,
             "asr_hallucination_verification_min_text_similarity": args.asr_hallucination_verification_min_text_similarity,
+            "asr_independent_verification": args.asr_independent_verification,
+            "asr_independent_verification_context_seconds": args.asr_independent_verification_context_seconds,
+            "asr_independent_verification_max_primary_evidence": args.asr_independent_verification_max_primary_evidence,
+            "asr_independent_verification_min_no_speech_probability": args.asr_independent_verification_min_no_speech_probability,
+            "asr_independent_verification_min_text_similarity": args.asr_independent_verification_min_text_similarity,
             "live_speaker_assignment": args.live_speaker_assignment,
             "live_speaker_embedding_provider": args.live_speaker_embedding_provider,
             "live_speaker_embedding_min_interval_seconds": args.live_speaker_embedding_min_interval_seconds,
@@ -555,6 +560,19 @@ def run_window_replay_validation(args: Any) -> int:
             "section_gap_new_speaker_min_similarity": args.section_gap_new_speaker_min_similarity,
             "section_gap_new_speaker_max_similarity": args.section_gap_new_speaker_max_similarity,
             "section_gap_new_speaker_min_margin": args.section_gap_new_speaker_min_margin,
+            "short_distinct_new_speaker_min_spoken_seconds": (
+                args.short_distinct_new_speaker_min_spoken_seconds
+            ),
+            "short_distinct_new_speaker_min_words": args.short_distinct_new_speaker_min_words,
+            "short_distinct_new_speaker_min_unknown_probability": (
+                args.short_distinct_new_speaker_min_unknown_probability
+            ),
+            "short_distinct_new_speaker_max_similarity": (
+                args.short_distinct_new_speaker_max_similarity
+            ),
+            "short_distinct_new_speaker_max_margin": (
+                args.short_distinct_new_speaker_max_margin
+            ),
             "unknown_pair_new_speaker": args.unknown_pair_new_speaker,
             "unknown_pair_new_speaker_max_gap_seconds": args.unknown_pair_new_speaker_max_gap_seconds,
             "unknown_pair_new_speaker_min_unknown_duration_seconds": (

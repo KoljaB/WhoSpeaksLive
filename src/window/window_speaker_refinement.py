@@ -18,6 +18,8 @@ class SpeakerRefinementConfig:
     centroid_blend: float = 0.555
     unknown_min_similarity: float = 0.20
     unknown_min_margin: float = 0.0
+    unknown_short_max_duration: float = 0.0
+    unknown_short_min_similarity: float = -1.0
     known_max_duration: float = 8.0
     known_min_similarity: float = -0.039
     known_min_delta: float = 0.04
@@ -50,6 +52,7 @@ class DelayedClusteringConfig:
     candidate_min_gain: float = 0.02
     min_candidate_rows: int = 4
     min_candidate_duration: float = 8.0
+    min_candidate_anchor_duration: float = 0.0
     min_candidate_span: float = 12.0
     min_candidate_time_groups: int = 2
     time_group_gap: float = 8.0
@@ -161,6 +164,19 @@ def _row_duration(row: dict[str, Any]) -> float:
         return 0.0
 
 
+def _row_speech_evidence_duration(row: dict[str, Any]) -> float:
+    base_payload = row.get("base_payload")
+    if isinstance(base_payload, dict):
+        value = base_payload.get("spoken_word_seconds")
+        try:
+            spoken = max(0.0, float(value or 0.0))
+        except (TypeError, ValueError):
+            spoken = 0.0
+        if spoken > 0.0:
+            return spoken
+    return _row_duration(row)
+
+
 def _row_embedding(row: dict[str, Any]) -> np.ndarray | None:
     value = row.get("embedding")
     if value is None:
@@ -248,6 +264,7 @@ def find_speaker_prototype_revisions(
             continue
         current = speaker_label(row)
         duration = _row_duration(row)
+        speech_evidence_duration = _row_speech_evidence_duration(row)
         if current is None and user_deleted_speaker_label(row):
             continue
         if current and user_confirmed_speaker_label(row) == current:
@@ -276,7 +293,16 @@ def find_speaker_prototype_revisions(
         if best_label == current:
             continue
         if current is None:
-            if best_score < config.unknown_min_similarity or margin < config.unknown_min_margin:
+            required_similarity = config.unknown_min_similarity
+            if (
+                config.unknown_short_min_similarity >= 0.0
+                and speech_evidence_duration < config.unknown_short_max_duration
+            ):
+                required_similarity = max(
+                    required_similarity,
+                    config.unknown_short_min_similarity,
+                )
+            if best_score < required_similarity or margin < config.unknown_min_margin:
                 continue
             source = "prototype_unknown_assign"
         else:
@@ -433,6 +459,12 @@ def find_delayed_speaker_splits(
             continue
         speech_seconds = sum(_row_duration(row) for row in candidate)
         if speech_seconds < config.min_candidate_duration:
+            continue
+        if (
+            config.min_candidate_anchor_duration > 0.0
+            and max(_row_speech_evidence_duration(row) for row in candidate)
+            < config.min_candidate_anchor_duration
+        ):
             continue
         starts = [float((row.get("base_payload") or row).get("start") or 0.0) for row in candidate]
         ends = [float((row.get("base_payload") or row).get("end") or start) for row, start in zip(candidate, starts)]

@@ -533,6 +533,36 @@ def add_asr_language_arguments(parser: argparse.ArgumentParser, *, default_vad_m
         help="Minimum token-sequence stability required between the original and shifted ASR views.",
     )
     parser.add_argument(
+        "--asr-independent-verification",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Require a configured non-Whisper preview ASR check before suppressing doubtful text.",
+    )
+    parser.add_argument(
+        "--asr-independent-verification-context-seconds",
+        type=float,
+        default=2.5,
+        help="Audio context included before and after a doubtful ASR segment for cross-model verification.",
+    )
+    parser.add_argument(
+        "--asr-independent-verification-max-primary-evidence",
+        type=float,
+        default=0.70,
+        help="Maximum combined primary ASR evidence that can still qualify for cross-model suppression.",
+    )
+    parser.add_argument(
+        "--asr-independent-verification-min-no-speech-probability",
+        type=float,
+        default=0.20,
+        help="Minimum primary no-speech probability required before cross-model suppression is allowed.",
+    )
+    parser.add_argument(
+        "--asr-independent-verification-min-text-similarity",
+        type=float,
+        default=0.35,
+        help="Minimum contextual token similarity before two ASR models are considered textually consistent.",
+    )
+    parser.add_argument(
         "--sentence-boundary-pre-padding-seconds",
         type=float,
         default=DEFAULT_SENTENCE_BOUNDARY_PRE_PADDING_SECONDS,

@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import tempfile
+from unittest.mock import patch
 import unittest
 
 from window.live_window_server import LiveWindowApplication, WindowServer
@@ -44,6 +45,37 @@ class _Controller:
 
 
 class LiveWindowApplicationTests(unittest.TestCase):
+    def test_cancelled_media_load_cannot_replace_the_current_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            config = parse_args([]).with_updates(
+                session_dir=root / "sessions",
+                work_dir=root / "work",
+                translation_provider="off",
+            )
+            current = MediaFiles("test://current", "current", root / "current.wav", root / "current.mp4")
+            candidate = MediaFiles("test://candidate", "candidate", root / "candidate.wav", root / "candidate.mp4")
+            bus = EventBus()
+            controller = _Controller()
+            application = LiveWindowApplication(config, current, bus, controller)
+            try:
+                with patch("window.live_window_server.media_cache_status", return_value=("candidate", True, True)), patch(
+                    "window.live_window_server.resolve_media_url",
+                    side_effect=lambda *_args, **_kwargs: (
+                        application.cancel_media_load("request-1"),
+                        candidate,
+                    )[1],
+                ):
+                    with self.assertRaisesRegex(RuntimeError, "cancelled"):
+                        application.load_media_url(
+                            candidate.url,
+                            request_id="request-1",
+                        )
+                self.assertEqual(application.current_media(), current)
+                self.assertIsNone(controller.media)
+            finally:
+                application.close()
+
     def test_promotion_capture_atomically_seals_browser_originated_final_dom(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

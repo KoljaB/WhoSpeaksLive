@@ -195,10 +195,26 @@ class WindowSessionViewMixin:
         return self._with_sentence_review(row)
 
     def _session_transcript_rows_and_embeddings(self) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        def chronology_key(item: tuple[int, dict[str, Any]]) -> tuple[float, float, int]:
+            index, record = item
+            base_payload = record.get("base_payload") or {}
+            try:
+                start = float(base_payload.get("start"))
+            except (TypeError, ValueError):
+                start = float("inf")
+            try:
+                end = float(base_payload.get("end"))
+            except (TypeError, ValueError):
+                end = float("inf")
+            return start, end, int(index)
+
         with self._sentence_refinement_lock:
             records = [
                 dict(record)
-                for _index, record in sorted(self._sentence_refinement_records.items())
+                for _index, record in sorted(
+                    self._sentence_refinement_records.items(),
+                    key=chronology_key,
+                )
             ]
 
         rows: list[dict[str, Any]] = []

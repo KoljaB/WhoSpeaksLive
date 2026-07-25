@@ -152,8 +152,9 @@ class AudioTimeline:
         with self._lock:
             start = max(0, min(self._stream_samples if self._streaming else len(self._audio), int(left * self._sample_rate)))
             end = max(start, min(self._stream_samples if self._streaming else len(self._audio), int(right * self._sample_rate)))
-            audio = self._combined_audio_locked()
-            return audio[start:end].copy(), self._sample_rate
+            if self._streaming:
+                return self._stream_slice_locked(start, end), self._sample_rate
+            return self._audio[start:end].copy(), self._sample_rate
 
     def write_stream_audio(self, path: Path, writer: Callable[[Path, np.ndarray, int], None]) -> None:
         snapshot = self.snapshot(copy_audio=True)
@@ -165,6 +166,31 @@ class AudioTimeline:
         if not self._stream_chunks:
             return np.zeros(0, dtype=np.float32)
         return np.concatenate(self._stream_chunks)
+
+    def _stream_slice_locked(self, start: int, end: int) -> np.ndarray:
+        """Copy only chunks intersecting a requested streaming-audio range."""
+
+        if end <= start:
+            return np.zeros(0, dtype=np.float32)
+        pieces: list[np.ndarray] = []
+        offset = 0
+        for chunk in self._stream_chunks:
+            next_offset = offset + len(chunk)
+            if next_offset <= start:
+                offset = next_offset
+                continue
+            if offset >= end:
+                break
+            left = max(0, start - offset)
+            right = min(len(chunk), end - offset)
+            if right > left:
+                pieces.append(chunk[left:right])
+            offset = next_offset
+        if not pieces:
+            return np.zeros(0, dtype=np.float32)
+        if len(pieces) == 1:
+            return np.asarray(pieces[0], dtype=np.float32).copy()
+        return np.concatenate(pieces).astype(np.float32, copy=False)
 
     def _reset_playback_locked(self) -> None:
         self._playback_time = 0.0

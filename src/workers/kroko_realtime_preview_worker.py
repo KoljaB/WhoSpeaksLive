@@ -53,7 +53,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def create_session(args: argparse.Namespace):
+def create_sessions(args: argparse.Namespace):
     if args.realtimestt_root:
         root = Path(args.realtimestt_root)
         if str(root) not in sys.path:
@@ -89,7 +89,10 @@ def create_session(args: argparse.Namespace):
         engine_options=options,
     )
     engine = create_transcription_engine(args.engine, config)
-    return engine.create_streaming_session(language=args.language, use_prompt=False)
+    return (
+        engine.create_streaming_session(language=args.language, use_prompt=False),
+        engine.create_streaming_session(language=args.language, use_prompt=False),
+    )
 
 
 def native_session_result(session: object) -> object | None:
@@ -105,7 +108,7 @@ def native_session_result(session: object) -> object | None:
 def main() -> int:
     args = parse_args()
     try:
-        session = create_session(args)
+        session, verification_session = create_sessions(args)
     except Exception as exc:
         write_message({"ready": False, "error": f"{type(exc).__name__}: {exc}"})
         return 1
@@ -121,20 +124,23 @@ def main() -> int:
                 session.reset()
                 write_message({"id": request_id, "ok": True, "text": ""})
                 continue
-            if command not in {"accept", "transcribe", "transcribe_final"}:
+            if command not in {"accept", "transcribe", "transcribe_final", "verify"}:
                 raise ValueError(f"Unknown command: {command}")
 
             audio = np.frombuffer(base64.b64decode(request["audio_b64"]), dtype=np.float32).copy()
             sample_rate = int(request.get("sample_rate") or 16000)
+            active_session = verification_session if command == "verify" else session
             if command in {"transcribe", "transcribe_final"}:
-                session.reset()
-            session.accept_audio(audio, sample_rate=sample_rate)
-            result = session.finish() if command == "transcribe_final" else None
+                active_session.reset()
+            if command == "verify":
+                active_session.reset()
+            active_session.accept_audio(audio, sample_rate=sample_rate)
+            result = active_session.finish() if command == "transcribe_final" else None
             if result is None:
-                session.decode()
-                result = session.get_result()
+                active_session.decode()
+                result = active_session.get_result()
             if command == "transcribe_final":
-                native = native_session_result(session)
+                native = native_session_result(active_session)
                 payload = structured_result_payload(native, fallback_text=str(result.text or ""))
                 write_message({"id": request_id, **payload})
             else:

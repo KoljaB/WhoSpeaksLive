@@ -183,12 +183,19 @@ def main() -> int:
                 session.reset()
                 write_message({"id": request_id, "ok": True, "text": ""})
                 continue
-            if command not in {"accept", "transcribe", "transcribe_final"}:
+            if command not in {"accept", "transcribe", "transcribe_final", "verify"}:
                 raise ValueError(f"Unknown command: {command}")
             audio, sample_rate = decode_request_audio(request)
             if command == "transcribe_final":
                 result = session.transcribe_final(audio, sample_rate)
                 write_message({"id": request_id, **structured_result_payload(result)})
+            elif command == "verify":
+                write_message(
+                    {
+                        "id": request_id,
+                        "text": result_text(session.transcribe_final(audio, sample_rate)),
+                    }
+                )
             else:
                 text = session.accept(audio, sample_rate) if command == "accept" else session.transcribe(audio, sample_rate)
                 write_message({"id": request_id, "text": text})

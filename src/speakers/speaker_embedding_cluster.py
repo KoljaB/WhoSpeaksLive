@@ -314,9 +314,15 @@ class SpeakerMemory:
         embedding: np.ndarray,
         duration_seconds: float,
         allow_new_speaker: bool = True,
+        min_new_speaker_confirmations: int | None = None,
+        allow_profile_update: bool = True,
     ) -> SpeakerDecision:
         embedding = normalize_vector(embedding)
         quality = self._duration_quality(duration_seconds)
+        required_confirmations = max(
+            self.new_speaker_confirmation_count,
+            int(min_new_speaker_confirmations or 1),
+        )
         with self._lock:
             if not self._profiles:
                 if not allow_new_speaker or duration_seconds < self.min_first_speaker_seconds:
@@ -335,7 +341,14 @@ class SpeakerMemory:
                         assignment_source="first_speaker_pending",
                     )
                 return self._created_profile_decision(profile, quality)
-            return self._score_locked(embedding, duration_seconds, quality, allow_new_speaker)
+            return self._score_locked(
+                embedding,
+                duration_seconds,
+                quality,
+                allow_new_speaker,
+                required_confirmations,
+                allow_profile_update,
+            )
 
     def score_existing(
         self,
@@ -363,6 +376,8 @@ class SpeakerMemory:
         duration_seconds: float,
         quality: float,
         allow_new_speaker: bool,
+        required_confirmations: int,
+        allow_profile_update: bool,
     ) -> SpeakerDecision:
         similarities = [cosine_similarity(embedding, profile.centroid) for profile in self._profiles]
         order = sorted(range(len(similarities)), key=lambda index: similarities[index], reverse=True)
@@ -402,6 +417,59 @@ class SpeakerMemory:
         created = False
         assigned: SpeakerProfile | None
         assignment_source = "embedding"
+        matching_candidate = (
+            self._best_new_speaker_candidate_locked(embedding)
+            if allow_new_speaker and required_confirmations > 1
+            else None
+        )
+        if (
+            matching_candidate is not None
+            and self._should_create_new_profile(
+                unknown_probability,
+                top_similarity,
+                margin,
+                max(duration_seconds, self.min_new_speaker_seconds),
+            )
+        ):
+            matching_candidate.update(embedding, duration_seconds)
+            if (
+                matching_candidate.sentence_count >= required_confirmations
+                and matching_candidate.speech_seconds >= self.min_new_speaker_seconds
+            ):
+                self._new_speaker_candidates = [
+                    item
+                    for item in self._new_speaker_candidates
+                    if item is not matching_candidate
+                ]
+                assigned = self._create_profile_locked(
+                    matching_candidate.centroid,
+                    matching_candidate.speech_seconds,
+                    sentence_count=matching_candidate.sentence_count,
+                )
+                return self._created_profile_decision(
+                    assigned,
+                    quality,
+                    similarities_by_label,
+                    top_similarity,
+                    margin,
+                )
+            return SpeakerDecision(
+                assigned_speaker=None,
+                created_speaker=False,
+                probabilities={
+                    key: round(float(value), 4)
+                    for key, value in probabilities.items()
+                },
+                similarities={
+                    key: round(float(value), 4)
+                    for key, value in similarities_by_label.items()
+                },
+                unknown_probability=round(float(unknown_probability), 4),
+                top_similarity=round(float(top_similarity), 4),
+                margin=round(float(margin), 4),
+                quality=round(float(quality), 4),
+                assignment_source="new_speaker_pending",
+            )
         if (
             allow_new_speaker
             and self._should_create_new_profile(
@@ -411,8 +479,14 @@ class SpeakerMemory:
                 duration_seconds,
             )
         ):
-            assigned = self._create_or_stage_new_profile_locked(embedding, duration_seconds)
+            assigned = self._create_or_stage_new_profile_locked(
+                embedding,
+                duration_seconds,
+                required_confirmations,
+            )
             created = assigned is not None
+            if not created:
+                assignment_source = "new_speaker_pending"
         elif self._should_defer_known_assignment(top_similarity, unknown_probability):
             assigned = None
             assignment_source = "gray_zone_unknown"
@@ -430,7 +504,8 @@ class SpeakerMemory:
         else:
             assigned = self._profiles[top_index]
             if (
-                assigned.label not in self.locked_labels
+                allow_profile_update
+                and assigned.label not in self.locked_labels
                 and unknown_probability <= self.update_unknown_max
                 and quality >= 0.35
                 and self._should_update_profile(top_similarity, margin)
@@ -615,8 +690,9 @@ class SpeakerMemory:
         self,
         embedding: np.ndarray,
         duration_seconds: float,
+        required_confirmations: int,
     ) -> SpeakerProfile | None:
-        if self.new_speaker_confirmation_count <= 1:
+        if required_confirmations <= 1:
             return self._create_profile_locked(embedding, duration_seconds)
 
         candidate = self._best_new_speaker_candidate_locked(embedding)
@@ -626,7 +702,7 @@ class SpeakerMemory:
 
         candidate.update(embedding, duration_seconds)
         if (
-            candidate.sentence_count >= self.new_speaker_confirmation_count
+            candidate.sentence_count >= required_confirmations
             and candidate.speech_seconds >= self.min_new_speaker_seconds
         ):
             self._new_speaker_candidates = [

@@ -135,24 +135,6 @@ class BrowserLiveSpeakerReducer:
             self.final_to_public.pop(final_id, None)
             self.public_to_final.pop(public_id, None)
             self.alias_generation = generation
-            self.timeline = [
-                evidence for evidence in self.timeline
-                if evidence.get("speaker") != public_id
-            ]
-            for row in self.rows:
-                if row.raw_speaker == public_id:
-                    row.raw_speaker = ""
-                if row.speaker == public_id:
-                    row.speaker = ""
-            if self.fallback_speaker == public_id:
-                self.fallback_speaker = ""
-                self.fallback_until = 0.0
-            if self.transcript_speaker == public_id:
-                self.transcript_speaker = ""
-            if self.last_transcript_speaker == public_id:
-                self.last_transcript_speaker = ""
-            if self.current_speaker == public_id:
-                self.current_speaker = ""
             self._refresh_rows()
             return
         if (
@@ -268,7 +250,10 @@ class BrowserLiveSpeakerReducer:
         scores = dict(observed)
         prior = _speaker(prior_speaker)
         if prior:
-            scores[prior] = scores.get(prior, 0.0) + PREVIOUS_SPEAKER_HEAD_START_SECONDS
+            scores[prior] = max(
+                scores.get(prior, 0.0),
+                PREVIOUS_SPEAKER_HEAD_START_SECONDS,
+            )
         return observed, scores
 
     def _dominant_speaker(
@@ -291,8 +276,12 @@ class BrowserLiveSpeakerReducer:
             if incumbent
             else (ordered[1][1] if len(ordered) > 1 else 0.0)
         )
+        minimum_challenger_seconds = min(
+            MINIMUM_CHALLENGER_SECONDS,
+            max(0.3, max(0.0, end - start) * 0.5),
+        )
         if (
-            observed.get(speaker_id, 0.0) >= MINIMUM_CHALLENGER_SECONDS
+            observed.get(speaker_id, 0.0) >= minimum_challenger_seconds
             and score >= incumbent_score + REQUIRED_CHALLENGER_LEAD_SECONDS
         ):
             return speaker_id
@@ -432,6 +421,21 @@ class BrowserLiveSpeakerReducer:
         row = next((candidate for candidate in self.rows if candidate.index == index), None)
         if row is None:
             row = self._adoptable_row(item)
+        committed_speaker = _speaker(item.get("assigned_speaker"))
+        if bool(item.get("pending")) and row is not None:
+            # The browser reuses this visible realtime row for the short
+            # embedding-pending state.  Preserve its speaker until the final
+            # decision replaces it, rather than flashing UNKNOWN in between.
+            row.index = index
+            row.start = _finite(item.get("start"), row.start)
+            row.end = _finite(item.get("end"), row.end)
+            row.text = str(item.get("text") or row.text)
+            row.raw_speaker = committed_speaker or row.raw_speaker
+            row.settling = False
+            row.clear_generation = ""
+            row.remove_at = None
+            self._refresh_rows()
+            return
         if row is not None:
             self.rows.remove(row)
         start = _finite(item.get("start"), float("nan"))
@@ -444,7 +448,6 @@ class BrowserLiveSpeakerReducer:
                 text_score = _text_adoption_score(candidate.text, item.get("text"))
                 if time_score >= 0.34 and text_score >= 0.5:
                     candidate.remove_at = self.now + ROW_FADE_REMOVAL_SECONDS
-        committed_speaker = _speaker(item.get("assigned_speaker"))
         if committed_speaker and not item.get("pending"):
             self.last_transcript_speaker = committed_speaker
         self._refresh_rows()

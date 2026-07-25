@@ -59,6 +59,10 @@ class SentencePart:
     sentence_boundary_post_padding_seconds: float = DEFAULT_SENTENCE_BOUNDARY_POST_PADDING_SECONDS
     sentence_boundary_gap_ratio: float = DEFAULT_SENTENCE_BOUNDARY_GAP_RATIO
     asr_review: dict[str, Any] = field(default_factory=dict)
+    semantic_sentence_id: str = ""
+    semantic_sentence_part: int = 0
+    semantic_sentence_part_count: int = 1
+    speaker_handoff: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
