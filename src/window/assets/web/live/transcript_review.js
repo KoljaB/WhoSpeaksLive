@@ -796,6 +796,8 @@ export function installTranscriptReview(ctx) {
   }
   function setSpeakerTab(tabName) {
     const nextTab = ["settings", "sessions", "ask", "intelligence"].includes(tabName) ? tabName : "speakers";
+    const requestedButton = speakerTabButtons.find(button => button.dataset.speakerTab === nextTab);
+    if (requestedButton && requestedButton.disabled) return;
     speakerTabButtons.forEach(button => {
       const active = button.dataset.speakerTab === nextTab;
       button.classList.toggle("active", active);
@@ -812,6 +814,18 @@ export function installTranscriptReview(ctx) {
     }
     syncSavedSessionsAutoRefresh();
     renderMeetingIntelligencePanel();
+  }
+  function setMeetingCapability(name, capability = {}) {
+    const available = Boolean(capability.available);
+    const reason = String(capability.reason || "This feature is unavailable.");
+    ctx.owners.capabilities[name] = {available, reason: available ? "" : reason};
+    const button = speakerTabButtons.find(item => item.dataset.speakerTab === name);
+    if (!button) return;
+    button.disabled = !available;
+    button.classList.toggle("unavailable", !available);
+    button.title = available ? "" : reason;
+    button.setAttribute("aria-disabled", available ? "false" : "true");
+    if (!available && button.classList.contains("active")) setSpeakerTab("speakers");
   }
   function selectedSpeaker() {
     return ctx.owners.speakers.speakerLibraryState.speakers.find(speaker => speaker.id === ctx.owners.reference.editingSpeakerId) || null;
@@ -1391,5 +1405,5 @@ export function installTranscriptReview(ctx) {
     reconcileLiveSpeakerHighlight();
   }
 
-  Object.assign(ctx.api, {activeFallbackLiveSpeakerId, applyFallbackLiveSpeaker, applyFastSpeakerPanelSignal, applyLiveSpeakerIdentityAlias, applyRealtimeRowSpeaker, applyTranscriptDisplaySettings, applyTranscriptGroupRows, cleanedTranscriptGroupText, clearFallbackLiveSpeaker, clearFallbackLiveSpeakerFromProbe, clearLiveSpeakerState, clearTranscriptLiveSpeakerExpiryTimer, clearTranscriptSelection, commonSelectedSpeakerId, configureSentenceRowSelection, correctionStatus, disableFollowLiveForTranscriptSelection, dominantRealtimeSpeakerId, ensureSpeakerPanelSpeaker, finiteAudioSecond, hasCurrentSessionSpeakerCounts, lastPunctuationTextSplit, normalizedLiveSpeakerId, probabilityForSpeakerId, probabilityLeadOverUnknown, provisionalRealtimeVisualSplit, pruneLiveSpeakerTimeline, pruneTranscriptSelection, realtimeDominanceScoredEnd, realtimeRowDisplaySpeakerId, realtimeRowHasSpeakerEvidence, realtimeRowTranscriptLiveSpeakerId, realtimeRowWithinTranscriptHighlightWindow, realtimeSpeakerTimeScores, realtimeTailSpeakerChange, recomputeRenderedSpeakerSentenceCounts, reconcileLiveSpeakerHighlight, refreshLiveSpeakerHighlight, refreshRealtimeRowsFromLiveSpeaker, refreshSpeakerPanelSentenceCounts, refreshTranscriptGrouping, refreshTranscriptVisibility, rememberLiveSpeakerEvidence, removeTranscriptGroupCount, resetLiveSpeakerPresentation, resetTranscriptGroupingRows, reviewReasonsForItem, rowIsCorrected, scheduleFallbackLiveSpeakerExpiry, scheduleTranscriptLiveSpeakerExpiry, selectableTranscriptRows, selectedRowsHaveUnconfirmed, selectedRowsNeedSpeakerChange, selectedSpeaker, selectedTranscriptIndexes, selectedTranscriptRows, setSpeakerFilter, setSpeakerTab, setTranscriptGroupCount, setTranscriptReviewFilter, setTranscriptRowSelected, setTranscriptSelectionRange, setTranscriptSettingsOpen, speakerBaselineSentenceCount, speakerBaselineSpeakingSeconds, speakerCurrentSessionSentenceCount, speakerCurrentSessionSpeakingSeconds, speakerPanelCountUnit, speakerPanelSentenceCount, speakerPanelSpeakingSeconds, syncBulkCorrectionSpeakerOptions, syncBulkCorrectionToolbar, syncCorrectionUndoState, syncTranscriptSelectionState, toInternalSpeakerId, toPublicSpeakerId, transcriptGroupTurnsEnabled, transcriptHighlightMaxLagSeconds, transcriptOverrideCandidate, transcriptReviewVisible, transcriptRowCanGroup, transcriptRowClickIsControl, transcriptRowSelectionKey, transcriptRowsInDisplayOrder, transcriptSearchVisible, updateCurrentLiveSpeakerFromRealtimeRows, updateSentenceRowVisibleTextRange, updateSpeakerState});
+  Object.assign(ctx.api, {activeFallbackLiveSpeakerId, applyFallbackLiveSpeaker, applyFastSpeakerPanelSignal, applyLiveSpeakerIdentityAlias, applyRealtimeRowSpeaker, applyTranscriptDisplaySettings, applyTranscriptGroupRows, cleanedTranscriptGroupText, clearFallbackLiveSpeaker, clearFallbackLiveSpeakerFromProbe, clearLiveSpeakerState, clearTranscriptLiveSpeakerExpiryTimer, clearTranscriptSelection, commonSelectedSpeakerId, configureSentenceRowSelection, correctionStatus, disableFollowLiveForTranscriptSelection, dominantRealtimeSpeakerId, ensureSpeakerPanelSpeaker, finiteAudioSecond, hasCurrentSessionSpeakerCounts, lastPunctuationTextSplit, normalizedLiveSpeakerId, probabilityForSpeakerId, probabilityLeadOverUnknown, provisionalRealtimeVisualSplit, pruneLiveSpeakerTimeline, pruneTranscriptSelection, realtimeDominanceScoredEnd, realtimeRowDisplaySpeakerId, realtimeRowHasSpeakerEvidence, realtimeRowTranscriptLiveSpeakerId, realtimeRowWithinTranscriptHighlightWindow, realtimeSpeakerTimeScores, realtimeTailSpeakerChange, recomputeRenderedSpeakerSentenceCounts, reconcileLiveSpeakerHighlight, refreshLiveSpeakerHighlight, refreshRealtimeRowsFromLiveSpeaker, refreshSpeakerPanelSentenceCounts, refreshTranscriptGrouping, refreshTranscriptVisibility, rememberLiveSpeakerEvidence, removeTranscriptGroupCount, resetLiveSpeakerPresentation, resetTranscriptGroupingRows, reviewReasonsForItem, rowIsCorrected, scheduleFallbackLiveSpeakerExpiry, scheduleTranscriptLiveSpeakerExpiry, selectableTranscriptRows, selectedRowsHaveUnconfirmed, selectedRowsNeedSpeakerChange, selectedSpeaker, selectedTranscriptIndexes, selectedTranscriptRows, setMeetingCapability, setSpeakerFilter, setSpeakerTab, setTranscriptGroupCount, setTranscriptReviewFilter, setTranscriptRowSelected, setTranscriptSelectionRange, setTranscriptSettingsOpen, speakerBaselineSentenceCount, speakerBaselineSpeakingSeconds, speakerCurrentSessionSentenceCount, speakerCurrentSessionSpeakingSeconds, speakerPanelCountUnit, speakerPanelSentenceCount, speakerPanelSpeakingSeconds, syncBulkCorrectionSpeakerOptions, syncBulkCorrectionToolbar, syncCorrectionUndoState, syncTranscriptSelectionState, toInternalSpeakerId, toPublicSpeakerId, transcriptGroupTurnsEnabled, transcriptHighlightMaxLagSeconds, transcriptOverrideCandidate, transcriptReviewVisible, transcriptRowCanGroup, transcriptRowClickIsControl, transcriptRowSelectionKey, transcriptRowsInDisplayOrder, transcriptSearchVisible, updateCurrentLiveSpeakerFromRealtimeRows, updateSentenceRowVisibleTextRange, updateSpeakerState});
 }

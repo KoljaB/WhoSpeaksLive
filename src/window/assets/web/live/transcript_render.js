@@ -4,7 +4,9 @@ export function installTranscriptRender(ctx) {
   const toInternalSpeakerId = (...args) => ctx.api.toInternalSpeakerId(...args);
   const realtimeSentenceSplitSpawnMs = 300;
   const realtimeSentenceSplitTransferMs = 600;
+  const realtimePunctuationSplitSettleMs = 350;
   const queuedRealtimeSentenceSplits = [];
+  const provisionalRealtimePunctuationStates = new Map();
   let realtimeSentenceSplitSequence = 0;
   let realtimeSentenceSplitState = null;
   function probabilitySegments(probabilities) {
@@ -327,6 +329,254 @@ export function installTranscriptRender(ctx) {
   function normalizedRealtimeSentenceSplitText(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
+  function realtimePunctuationTokens(value) {
+    return normalizedRealtimeSentenceSplitText(value).toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+  }
+  function realtimePunctuationTextSimilarity(leftValue, rightValue) {
+    const left = realtimePunctuationTokens(leftValue);
+    const right = realtimePunctuationTokens(rightValue);
+    if (!left.length || !right.length) return 0;
+    const remaining = new Map();
+    left.forEach(token => remaining.set(token, (remaining.get(token) || 0) + 1));
+    let shared = 0;
+    right.forEach(token => {
+      const count = remaining.get(token) || 0;
+      if (count <= 0) return;
+      shared += 1;
+      remaining.set(token, count - 1);
+    });
+    return shared / Math.max(left.length, right.length);
+  }
+  function firstStableRealtimePunctuationBoundary(value) {
+    const text = normalizedRealtimeSentenceSplitText(value);
+    if (!text) return null;
+    const pattern = /[.!?]["')\]]*(?:\s+|$)/g;
+    let match = null;
+    while ((match = pattern.exec(text)) !== null) {
+      const boundary = match.index + match[0].length;
+      const prefixText = text.slice(0, boundary).trim();
+      const suffixText = text.slice(boundary).trim();
+      if (!/[\p{L}\p{N}]/u.test(prefixText)) continue;
+      const abbreviation = prefixText.match(/(?:^|\s)([A-Za-z.]+)\.$/);
+      if (
+        abbreviation
+        && /^(?:mr|mrs|ms|dr|prof|sr|jr|st|vs|etc|e\.g|i\.e)$/i.test(abbreviation[1])
+      ) {
+        continue;
+      }
+      return {prefixText, suffixText};
+    }
+    return null;
+  }
+  function realtimeTextStartsWithPrefix(textValue, prefixValue) {
+    const text = normalizedRealtimeSentenceSplitText(textValue).toLowerCase();
+    const prefix = normalizedRealtimeSentenceSplitText(prefixValue).toLowerCase();
+    return Boolean(prefix) && (
+      text === prefix
+      || (text.startsWith(prefix) && /\s/.test(text.charAt(prefix.length)))
+    );
+  }
+  function realtimeFinalExtendsPastProvisionalBoundary(provisionalValue, finalValue) {
+    const provisional = realtimePunctuationTokens(provisionalValue);
+    const final = realtimePunctuationTokens(finalValue);
+    if (!provisional.length || final.length <= provisional.length) return false;
+    return provisional.every((token, index) => token === final[index]);
+  }
+  function pruneProvisionalRealtimePunctuationStates(currentIndex, now) {
+    provisionalRealtimePunctuationStates.forEach((candidate, key) => {
+      if (key === currentIndex) return;
+      if (!candidate.segments.length || now - candidate.lastUpdated > 60000) {
+        provisionalRealtimePunctuationStates.delete(key);
+      }
+    });
+  }
+  function provisionalRealtimePunctuationState(item, start, end) {
+    if (!item || !item.realtime) return null;
+    const index = String(item.index || "");
+    const generation = String(item.realtime_generation || "");
+    const fullText = normalizedRealtimeSentenceSplitText(item.text);
+    if (!index || !fullText) return null;
+    const now = performance.now();
+    pruneProvisionalRealtimePunctuationStates(index, now);
+    let state = provisionalRealtimePunctuationStates.get(index);
+    if (!state || state.generation !== generation) {
+      state = {
+        index,
+        generation,
+        start,
+        end,
+        fullText,
+        committedText:"",
+        segments:[],
+        candidate:null,
+        lastUpdated:now,
+      };
+      provisionalRealtimePunctuationStates.set(index, state);
+    }
+    state.lastUpdated = now;
+    state.start = Math.max(0, finiteAudioSecond(start, state.start || 0));
+    state.end = Math.max(state.start, finiteAudioSecond(end, state.end || state.start));
+    state.fullText = fullText;
+
+    if (state.committedText && !realtimeTextStartsWithPrefix(fullText, state.committedText)) {
+      rollbackUnverifiedRealtimePunctuationState(state);
+    }
+
+    const committed = normalizedRealtimeSentenceSplitText(state.committedText);
+    const remainingText = committed
+      ? normalizedRealtimeSentenceSplitText(fullText.slice(committed.length))
+      : fullText;
+    const boundary = firstStableRealtimePunctuationBoundary(remainingText);
+    if (!boundary) {
+      state.candidate = null;
+    } else if (state.candidate && state.candidate.text === boundary.prefixText) {
+      state.candidate.observations += 1;
+      state.candidate.suffixText = boundary.suffixText;
+    } else {
+      state.candidate = {
+        text:boundary.prefixText,
+        suffixText:boundary.suffixText,
+        firstSeen:now,
+        observations:1,
+      };
+    }
+
+    if (
+      state.candidate
+      && state.candidate.observations >= 2
+      && now - state.candidate.firstSeen >= realtimePunctuationSplitSettleMs
+    ) {
+      const previousEnd = state.segments.length
+        ? state.segments[state.segments.length - 1].end
+        : state.start;
+      const nextCommitted = [committed, state.candidate.text].filter(Boolean).join(" ");
+      const hasSuffix = Boolean(state.candidate.suffixText);
+      const progress = nextCommitted.length / Math.max(1, fullText.length);
+      const estimatedEnd = hasSuffix
+        ? state.start + ((state.end - state.start) * progress)
+        : state.end;
+      const segmentEnd = Math.min(state.end, Math.max(previousEnd + 0.05, estimatedEnd));
+      state.segments.push({
+        key:`${index}:punctuation:${state.segments.length + 1}`,
+        text:state.candidate.text,
+        start:previousEnd,
+        end:segmentEnd,
+        verified:false,
+        row:null,
+      });
+      state.committedText = nextCommitted;
+      state.candidate = null;
+    }
+
+    if (!state.segments.length) return null;
+    const activeText = normalizedRealtimeSentenceSplitText(fullText.slice(state.committedText.length));
+    const activeStart = state.segments[state.segments.length - 1].end;
+    return {state, activeText, activeStart, hasCommitted:true};
+  }
+  function updateProvisionalRealtimePunctuationRows(baseRow, partition) {
+    if (!baseRow || !partition || !partition.hasCommitted) return;
+    const {state} = partition;
+    state.segments.forEach(segment => {
+      if (segment.verified) return;
+      let row = segment.row && segment.row.isConnected ? segment.row : findSentenceRow(segment.key);
+      if (row && row.dataset.realtime !== "true") {
+        segment.verified = true;
+        segment.row = row;
+        return;
+      }
+      if (!row) row = baseRow.cloneNode(true);
+      row.classList.remove(
+        "realtime-split-target",
+        "realtime-split-spawning",
+        "provisional-split-source",
+        "provisional-visual-split",
+      );
+      row.classList.add("provisional-punctuation-split");
+      row.dataset.index = segment.key;
+      row.dataset.realtime = "true";
+      row.dataset.punctuationSplit = "true";
+      row.dataset.punctuationSplitFor = state.index;
+      row.dataset.start = String(segment.start);
+      row.dataset.end = String(segment.end);
+      row.dataset.fullEnd = String(segment.end);
+      row.dataset.text = segment.text;
+      row.dataset.searchText = segment.text;
+      row.dataset.fullText = segment.text;
+      delete row.dataset.realtimeSplitActive;
+      delete row.dataset.realtimeSplitToken;
+      updateRenderedRealtimeRowTextRange(row, segment.text, segment.end);
+      const duration = row.querySelector(".sentence-duration");
+      if (duration) duration.textContent = secondsLabel(Math.max(0, segment.end - segment.start));
+      const range = row.querySelector(".sentence-range");
+      if (range) range.textContent = `(${secondsLabel(segment.start)} - ${secondsLabel(segment.end)})`;
+      const stateBadge = row.querySelector(".badge.state");
+      if (stateBadge) stateBadge.textContent = "Live · provisional";
+      if (baseRow.parentNode) baseRow.parentNode.insertBefore(row, baseRow);
+      segment.row = row;
+    });
+  }
+  function rollbackUnverifiedRealtimePunctuationState(state) {
+    if (!state) return;
+    state.segments.forEach(segment => {
+      if (!segment.verified && segment.row && segment.row.isConnected) segment.row.remove();
+    });
+    state.segments = state.segments.filter(segment => segment.verified);
+    state.committedText = state.segments.map(segment => segment.text).join(" ");
+    state.candidate = null;
+    const baseRow = findRealtimeSentenceRow(state.index);
+    if (baseRow && baseRow.isConnected) {
+      const activeText = state.committedText && realtimeTextStartsWithPrefix(state.fullText, state.committedText)
+        ? normalizedRealtimeSentenceSplitText(state.fullText.slice(state.committedText.length))
+        : state.fullText;
+      const activeStart = state.segments.length
+        ? state.segments[state.segments.length - 1].end
+        : state.start;
+      baseRow.dataset.start = String(activeStart);
+      baseRow.dataset.fullText = activeText;
+      baseRow.dataset.fullEnd = String(state.end);
+      updateRenderedRealtimeRowTextRange(baseRow, activeText, state.end);
+    }
+    if (!state.segments.length) provisionalRealtimePunctuationStates.delete(state.index);
+  }
+  function reconcileProvisionalRealtimePunctuationFinal(item) {
+    const finalText = normalizedRealtimeSentenceSplitText(item && item.text);
+    const finalStart = finiteAudioSecond(item && item.start, NaN);
+    const finalEnd = finiteAudioSecond(item && item.end, NaN);
+    if (!finalText || !Number.isFinite(finalStart) || !Number.isFinite(finalEnd)) return null;
+    let best = null;
+    const touchedStates = new Set();
+    provisionalRealtimePunctuationStates.forEach(state => {
+      state.segments.forEach(segment => {
+        if (segment.verified || !segment.row || !segment.row.isConnected) return;
+        const overlap = Math.max(0, Math.min(segment.end, finalEnd) - Math.max(segment.start, finalStart));
+        const timeScore = overlap / Math.max(0.1, Math.min(segment.end - segment.start, finalEnd - finalStart));
+        const textScore = realtimePunctuationTextSimilarity(segment.text, finalText);
+        if (timeScore > 0 || textScore >= 0.3) touchedStates.add(state);
+        const leftCount = realtimePunctuationTokens(segment.text).length;
+        const rightCount = realtimePunctuationTokens(finalText).length;
+        const lengthRatio = Math.min(leftCount, rightCount) / Math.max(1, Math.max(leftCount, rightCount));
+        if (
+          timeScore < 0.2
+          || textScore < 0.62
+          || lengthRatio < 0.6
+          || realtimeFinalExtendsPastProvisionalBoundary(segment.text, finalText)
+        ) {
+          return;
+        }
+        const score = (textScore * 0.72) + (timeScore * 0.28);
+        if (!best || score > best.score) best = {state, segment, score};
+      });
+    });
+    if (best) {
+      best.segment.verified = true;
+      best.segment.row.classList.remove("provisional-punctuation-split");
+      delete best.segment.row.dataset.punctuationSplit;
+      delete best.segment.row.dataset.punctuationSplitFor;
+      return best.segment.row;
+    }
+    touchedStates.forEach(state => rollbackUnverifiedRealtimePunctuationState(state));
+    return null;
+  }
   function realtimeSentenceSplitRemainder(previewValue, finalizedValue) {
     const preview = normalizedRealtimeSentenceSplitText(previewValue);
     const finalized = normalizedRealtimeSentenceSplitText(finalizedValue);
@@ -542,6 +792,9 @@ export function installTranscriptRender(ctx) {
     row.dataset.realtimeSettling = "true";
     row.dataset.realtimeClearGeneration = generationKey;
     row.classList.add("realtime-settling");
+    const removalDelay = row.dataset.punctuationSplit === "true"
+      ? Math.max(realtimeSettleRemovalDelayMs, 8000)
+      : realtimeSettleRemovalDelayMs;
     setTimeout(() => {
       if (
         row.isConnected
@@ -551,7 +804,7 @@ export function installTranscriptRender(ctx) {
       ) {
         fadeRemoveRow(row);
       }
-    }, realtimeSettleRemovalDelayMs);
+    }, removalDelay);
   }
   function clearSettlingRealtimeState(row) {
     if (!row) return;
@@ -818,9 +1071,17 @@ export function installTranscriptRender(ctx) {
       : (rawSpeakerId || (item.pending ? adoptedLiveSpeakerId : ""));
     const reviewReasons = reviewReasonsForItem(item, displaySpeakerId, adoptedLiveSpeakerId);
     const corrected = rowIsCorrected(item);
-    const visualSplit = provisionalRealtimeVisualSplit(item, displaySpeakerId, startSeconds, endSeconds);
+    const punctuationPartition = item.realtime
+      ? provisionalRealtimePunctuationState(item, startSeconds, endSeconds)
+      : null;
+    const visualSplit = punctuationPartition
+      ? null
+      : provisionalRealtimeVisualSplit(item, displaySpeakerId, startSeconds, endSeconds);
+    const displayStartSeconds = punctuationPartition ? punctuationPartition.activeStart : startSeconds;
     const displayEndSeconds = visualSplit ? visualSplit.splitStart : endSeconds;
-    const displayText = visualSplit ? visualSplit.prefixText : (item.text || "");
+    const displayText = visualSplit
+      ? visualSplit.prefixText
+      : (punctuationPartition ? punctuationPartition.activeText : (item.text || ""));
     const nextSourceTextHash = String(item.source_text_hash || "");
     if (!item.realtime && (
       (previousCanonicalText && previousCanonicalText !== String(item.text || ""))
@@ -828,13 +1089,16 @@ export function installTranscriptRender(ctx) {
     )) {
       forgetSentenceTranslations(item.index);
     }
-    const durationSeconds = Math.max(0, displayEndSeconds - startSeconds);
+    const durationSeconds = Math.max(0, displayEndSeconds - displayStartSeconds);
     row.dataset.rawSpeaker = item.realtime ? (visualSplit ? displaySpeakerId : rawSpeakerId) : "";
     row.dataset.rawSpeakerProbability = item.realtime ? String(rawSpeakerProbability) : "";
     row.dataset.rawSpeakerUnknownMargin = item.realtime ? String(rawSpeakerUnknownMargin) : "";
     row.dataset.fullRawSpeaker = item.realtime ? rawSpeakerId : "";
     row.dataset.fullEnd = item.realtime ? String(endSeconds) : "";
     row.dataset.fullText = item.realtime ? (item.text || "") : "";
+    if (item.realtime && punctuationPartition) {
+      row.dataset.fullText = punctuationPartition.activeText;
+    }
     row.dataset.speaker = displaySpeakerId || "UNKNOWN";
     row.dataset.pending = item.pending ? "true" : "false";
     row.dataset.provisionalAssignment = item.provisional_assignment ? "true" : "false";
@@ -871,7 +1135,7 @@ export function installTranscriptRender(ctx) {
         item.error ? "Error" : sentenceRevisionLabel(row, item, displaySpeakerId, previousRevisionSpeakerId)
       )
     );
-    row.dataset.start = String(startSeconds);
+    row.dataset.start = String(displayStartSeconds);
     row.dataset.end = String(displayEndSeconds);
     row.dataset.text = displayText;
     row.dataset.searchText = displayText;
@@ -919,7 +1183,7 @@ export function installTranscriptRender(ctx) {
 
     const range = document.createElement("span");
     range.className = "sentence-range";
-    range.textContent = `(${secondsLabel(startSeconds)} - ${secondsLabel(displayEndSeconds)})`;
+    range.textContent = `(${secondsLabel(displayStartSeconds)} - ${secondsLabel(displayEndSeconds)})`;
     topLeft.appendChild(range);
 
     if (Number.isFinite(ratio)) {
@@ -945,6 +1209,7 @@ export function installTranscriptRender(ctx) {
     translationLines.className = "translation-lines";
     translationLines.hidden = true;
     row.appendChild(translationLines);
+    updateProvisionalRealtimePunctuationRows(row, punctuationPartition);
     placeSentenceRowChronologically(row);
     if (visualSplit) {
       renderProvisionalRealtimeSplitRow(row, visualSplit);
@@ -1015,6 +1280,11 @@ export function installTranscriptRender(ctx) {
     if (!item.realtime && !findFinalSentenceRow(item.index)) {
       if (realtimeSentenceSplitState) {
         queuedRealtimeSentenceSplit(item);
+        return;
+      }
+      const punctuationSource = reconcileProvisionalRealtimePunctuationFinal(item);
+      if (punctuationSource) {
+        renderSentenceImmediate(item, punctuationSource);
         return;
       }
       const sourceRow = findAdoptableRealtimeRow(item);

@@ -231,6 +231,22 @@ class WindowWebBehaviorContractTests(unittest.TestCase):
         self.assertIn(".row.realtime-split-spawning", HTML)
         self.assertIn("function realtimeSentenceSplitAnimationsEnabled() {\n    return true;", HTML)
 
+    def test_realtime_punctuation_split_settles_then_promotes_or_rolls_back(self) -> None:
+        self.assertIn("const realtimePunctuationSplitSettleMs = 350;", HTML)
+        self.assertIn("const provisionalRealtimePunctuationStates = new Map();", HTML)
+        self.assertIn("function firstStableRealtimePunctuationBoundary(value)", HTML)
+        self.assertIn("state.candidate.observations >= 2", HTML)
+        self.assertIn("now - state.candidate.firstSeen >= realtimePunctuationSplitSettleMs", HTML)
+        self.assertIn('stateBadge.textContent = "Live · provisional";', HTML)
+        self.assertIn("function reconcileProvisionalRealtimePunctuationFinal(item)", HTML)
+        self.assertIn("function realtimeFinalExtendsPastProvisionalBoundary(provisionalValue, finalValue)", HTML)
+        self.assertIn("function pruneProvisionalRealtimePunctuationStates(currentIndex, now)", HTML)
+        self.assertIn("best.segment.verified = true;", HTML)
+        self.assertIn("touchedStates.forEach(state => rollbackUnverifiedRealtimePunctuationState(state));", HTML)
+        self.assertIn("const punctuationSource = reconcileProvisionalRealtimePunctuationFinal(item);", HTML)
+        self.assertIn("renderSentenceImmediate(item, punctuationSource);", HTML)
+        self.assertIn('? Math.max(realtimeSettleRemovalDelayMs, 8000)', HTML)
+
     def test_realtime_clear_settles_rows_for_smooth_final_adoption(self) -> None:
         self.assertIn(".row.realtime-settling", HTML)
         self.assertIn(".row.row-removing", HTML)

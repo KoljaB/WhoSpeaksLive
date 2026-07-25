@@ -31,6 +31,31 @@ export function installMeetingChat(ctx) {
     return Boolean(panel && !panel.hidden);
   }
 
+  async function refreshMeetingIntelligenceAvailability() {
+    try {
+      const response = await fetch("/api/meeting-intelligence/status", {cache: "no-store"});
+      const status = await response.json();
+      if (!response.ok || (status.error && !status.ask)) {
+        throw new Error(status.error || "Meeting Intelligence status failed.");
+      }
+      const capability = status.ask || {
+        available: Boolean(status.ready),
+        reason: status.error || "Meeting Intelligence is unavailable.",
+      };
+      ctx.api.setMeetingCapability("ask", capability);
+      ctx.api.setMeetingCapability("intelligence", capability);
+      scheduleMeetingChatScopeRefresh();
+    } catch (error) {
+      const capability = {
+        available: false,
+        reason: `Meeting Intelligence is unavailable: ${error.message}`,
+      };
+      ctx.api.setMeetingCapability("ask", capability);
+      ctx.api.setMeetingCapability("intelligence", capability);
+      scheduleMeetingChatScopeRefresh();
+    }
+  }
+
   function setBusy(busy, message = "") {
     ctx.owners.chat.busy = Boolean(busy);
     meetingChatSend.disabled = Boolean(busy);
@@ -197,10 +222,12 @@ export function installMeetingChat(ctx) {
 
   function scheduleMeetingChatScopeRefresh() {
     const explicitlySelected = ctx.api.selectedSavedSessions ? ctx.api.selectedSavedSessions() : [];
-    askSelectedMeetingsButton.disabled = explicitlySelected.length < 1;
-    askSelectedMeetingsButton.dataset.disabledHelp = explicitlySelected.length < 1
-      ? "Select one or more saved sessions first."
-      : "";
+    const capability = ctx.owners.capabilities.ask || {};
+    askSelectedMeetingsButton.disabled = !capability.available || explicitlySelected.length < 1;
+    askSelectedMeetingsButton.dataset.disabledHelp = !capability.available
+      ? (capability.reason || "Meeting Intelligence is unavailable.")
+      : (explicitlySelected.length < 1 ? "Select one or more saved sessions first." : "");
+    askSelectedMeetingsButton.title = askSelectedMeetingsButton.dataset.disabledHelp;
     if (!askPanelVisible() || ctx.owners.chat.busy) return;
     if (ctx.owners.chat.scopeRefreshTimer) clearTimeout(ctx.owners.chat.scopeRefreshTimer);
     ctx.owners.chat.scopeRefreshTimer = setTimeout(() => {
@@ -280,6 +307,8 @@ export function installMeetingChat(ctx) {
 
   Object.assign(ctx.api, {refreshMeetingChatScope, scheduleMeetingChatScopeRefresh});
   ctx.activators.push(() => {
+    ctx.api.setMeetingCapability("ask", ctx.owners.capabilities.ask);
+    ctx.api.setMeetingCapability("intelligence", ctx.owners.capabilities.intelligence);
     askSelectedMeetingsButton.addEventListener("click", () => ctx.api.setSpeakerTab("ask"));
     meetingChatForm.addEventListener("submit", event => {
       event.preventDefault();
@@ -292,6 +321,7 @@ export function installMeetingChat(ctx) {
       }
     });
     meetingChatClear.addEventListener("click", clearChat);
+    refreshMeetingIntelligenceAvailability();
     scheduleMeetingChatScopeRefresh();
     appResources.own(() => {
       if (ctx.owners.chat.scopeRefreshTimer) clearTimeout(ctx.owners.chat.scopeRefreshTimer);

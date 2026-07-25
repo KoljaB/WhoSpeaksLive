@@ -264,6 +264,7 @@ export function createLiveAppContext() {
   const speakerSensitivityConfig = bootstrap.new_speaker_sensitivity || {};
   const speakerRefinementConfig = bootstrap.speaker_refinement || {};
   const liveSpeakerConfig = bootstrap.live_speaker || {};
+  const meetingIntelligenceConfig = bootstrap.meeting_intelligence || {};
   const languageConfig = bootstrap.language || {};
   const translationConfig = bootstrap.translation || {};
   const sessionLeaseEnabled = liveSpeakerConfig.session_lease_enabled !== false;
@@ -440,6 +441,20 @@ export function createLiveAppContext() {
       jobPollTimer: null,
       jobElapsedTimer: null,
       jobStartedAt: 0,
+    },
+    capabilities: {
+      ask: {
+        available: false,
+        reason: meetingIntelligenceConfig.enabled
+          ? "Checking Meeting Intelligence availability..."
+          : "Start Meeting Intelligence in the launcher to use Ask.",
+      },
+      intelligence: {
+        available: false,
+        reason: meetingIntelligenceConfig.enabled
+          ? "Checking Meeting Intelligence availability..."
+          : "Start Meeting Intelligence in the launcher to use Insights.",
+      },
     },
   };
 

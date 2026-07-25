@@ -317,12 +317,31 @@ class LiveWindowApplication:
 
     def meeting_intelligence_status(self) -> dict[str, Any]:
         if not self.meeting_intelligence_url:
-            return {"ok": True, "enabled": False, "ready": False, "error": "Meeting Intelligence is disabled."}
+            reason = "Start Meeting Intelligence in the launcher to use Ask."
+            return {"ok": True, "enabled": False, "ready": False, "error": reason, "ask": {"available": False, "reason": reason}}
         try:
             config = self._meeting_intelligence_request("GET", "/api/config")
         except Exception as exc:
-            return {"ok": True, "enabled": True, "ready": False, "error": str(exc)}
-        return {"ok": True, "enabled": True, "ready": True, "config": config.get("config") or {}}
+            reason = str(exc)
+            return {"ok": True, "enabled": True, "ready": False, "error": reason, "ask": {"available": False, "reason": reason}}
+        public_config = config.get("config") or {}
+        mock_llm = bool(public_config.get("mock_llm"))
+        model = str(public_config.get("model") or "").strip()
+        api_key_configured = bool(public_config.get("api_key_configured"))
+        if not mock_llm and not model:
+            reason = "Choose a Meeting Intelligence model in the launcher to use Ask."
+        elif not mock_llm and not api_key_configured:
+            key_name = str(public_config.get("api_key_env_var") or "the provider API key")
+            reason = f"Set {key_name} before using Ask."
+        else:
+            reason = ""
+        return {
+            "ok": True,
+            "enabled": True,
+            "ready": not bool(reason),
+            "config": public_config,
+            "ask": {"available": not bool(reason), "reason": reason},
+        }
 
     def meeting_chat_scope(self, session_ids: list[str]) -> dict[str, Any]:
         ids, provisional = self._meeting_chat_session_ids(session_ids)

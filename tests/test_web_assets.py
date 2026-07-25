@@ -61,6 +61,20 @@ class PackagedWebAssetTests(unittest.TestCase):
         saved_reports = read_web_text("live/saved_reports.js")
         self.assertIn('const legacyChat = /^ROW-(\\d+)$/.exec(value);', saved_reports)
 
+    def test_meeting_intelligence_tabs_reflect_service_availability(self) -> None:
+        page = read_web_text("live/index.html")
+        chat = read_web_text("live/meeting_chat.js")
+        review = read_web_text("live/transcript_review.js")
+        styles = read_web_text("live/styles.css")
+
+        self.assertIn('data-speaker-tab="ask"', page)
+        self.assertIn('fetch("/api/meeting-intelligence/status"', chat)
+        self.assertIn('setMeetingCapability("ask"', chat)
+        self.assertIn('setMeetingCapability("intelligence"', chat)
+        self.assertIn("function setMeetingCapability", review)
+        self.assertIn("requestedButton && requestedButton.disabled", review)
+        self.assertIn(".speaker-tab.unavailable, .speaker-tab:disabled", styles)
+
     def test_live_page_exposes_context_help(self) -> None:
         page = read_web_text("live/index.html")
         app = read_web_text("live/app.js")
