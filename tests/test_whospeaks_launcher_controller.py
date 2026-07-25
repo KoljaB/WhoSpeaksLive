@@ -10,6 +10,7 @@ from whospeaks_cli.cli_diagnostics import (
     CheckResult,
     DoctorReport,
     check_import_group,
+    check_service_port,
     check_text_embedding_provider,
 )
 from whospeaks_cli.launcher_controller import (
@@ -81,6 +82,70 @@ class LauncherControllerTests(unittest.TestCase):
 
         self.assertEqual(result.status, "skip")
         self.assertIn("Optional semantic search", result.detail)
+
+    def test_busy_port_is_ready_when_expected_whospeaks_service_answers(self) -> None:
+        with (
+            mock.patch(
+                "whospeaks_cli.cli_diagnostics.check_port",
+                return_value=CheckResult("Browser UI port", "fail", "already in use"),
+            ),
+            mock.patch(
+                "whospeaks_cli.cli_diagnostics.read_json_url",
+                return_value=(
+                    True,
+                    "ok",
+                    {"ok": True, "ready": True, "service": "live-window"},
+                ),
+            ),
+        ):
+            result = check_service_port(
+                "Browser UI port",
+                "127.0.0.1",
+                8796,
+                expected_service="live-window",
+            )
+
+        self.assertEqual(result.status, "ok")
+        self.assertIn("already running", result.detail)
+
+    def test_busy_port_remains_failure_for_unrelated_listener(self) -> None:
+        with (
+            mock.patch(
+                "whospeaks_cli.cli_diagnostics.check_port",
+                return_value=CheckResult("Browser UI port", "fail", "already in use"),
+            ),
+            mock.patch(
+                "whospeaks_cli.cli_diagnostics.read_json_url",
+                return_value=(True, "ok", {"ok": True, "service": "other"}),
+            ),
+        ):
+            result = check_service_port(
+                "Browser UI port",
+                "127.0.0.1",
+                8796,
+                expected_service="live-window",
+            )
+
+        self.assertEqual(result.status, "fail")
+
+    def test_diagnostics_adopts_an_existing_healthy_live_window(self) -> None:
+        report = DoctorReport(
+            "remote",
+            [CheckResult("Browser UI port", "ok", "WhoSpeaks is already running")],
+        )
+        controller = self.make_controller(
+            doctor_runner=lambda *_args, **_kwargs: report,
+        )
+
+        with mock.patch.object(
+            controller,
+            "_service_ready",
+            side_effect=lambda kind, _port: kind == "live",
+        ):
+            controller.run_diagnostics()
+
+        live = controller.servers.state("live")
+        self.assertEqual((live.status, live.ownership), ("running", "external"))
 
     def test_profile_update_rejects_invalid_ports_and_target_capacity(self) -> None:
         controller = self.make_controller()

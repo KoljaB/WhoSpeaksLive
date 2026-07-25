@@ -584,6 +584,10 @@ class LauncherController:
             raise
         with self._lock:
             self.report = report
+        # A readiness check may discover a healthy WhoSpeaks instance that was
+        # started by another launcher. Reflect that application state before
+        # presenting the diagnostic result.
+        self.refresh_services(force=True)
         statuses = {check.status for check in report.checks}
         if "fail" in statuses:
             status, result = "error", "Readiness check found required fixes"

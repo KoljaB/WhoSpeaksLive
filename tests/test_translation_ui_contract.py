@@ -24,7 +24,7 @@ class TranslationUiContractTests(unittest.TestCase):
         self.assertIn('id="translationTargetList" class="translation-target-list"', HTML)
 
     def test_translation_state_is_derived_without_replacing_the_original(self) -> None:
-        render_start = HTML.index("function renderSentence(item)")
+        render_start = HTML.index("function renderSentenceImmediate(item, rowOverride = null)")
         render_end = HTML.index("function connect()", render_start)
         render_block = HTML[render_start:render_end]
         self.assertIn("row.dataset.text = displayText;", render_block)

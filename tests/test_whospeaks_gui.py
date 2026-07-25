@@ -470,6 +470,66 @@ class WhoSpeaksGuiTests(unittest.TestCase):
         self.assertEqual(window.overview.operational_state, "failed")
         self.assertEqual(window.overview.primary_button.text(), "Retry launch")
 
+    def test_existing_external_live_window_is_openable_not_setup_required(self) -> None:
+        controller = LauncherController(
+            Profile.from_mapping(
+                {
+                    "mode": "remote",
+                    "reports_enabled": False,
+                    "translation_enabled": False,
+                }
+            ),
+            profile_saver=lambda _profile: Path("unused.json"),
+            remote_backend_probe=lambda _url: True,
+        )
+        controller.report = DoctorReport(
+            "remote",
+            [CheckResult("Browser UI port", "ok", "WhoSpeaks is already running")],
+        )
+        controller.servers.observe_backend("macos_asr", available=True)
+        controller.servers.observe_backend("macos_embeddings", available=True)
+        controller.servers.observe("live", listening=True, probe_due=True)
+        window = LauncherWindow(controller, auto_check=False, reduced_motion=True)
+        window.resize(1200, 760)
+        window.show()
+        self.app.processEvents()
+        self.addCleanup(window.bridge.close)
+        self.addCleanup(window.hide)
+
+        self.assertEqual(window.overview.operational_state, "running_external")
+        self.assertEqual(window.overview.header.title.text(), "WhoSpeaks is already running")
+        self.assertEqual(window.overview.primary_button.text(), "Open live window")
+        self.assertFalse(window.overview.stop_button.isVisible())
+
+    def test_unrelated_port_conflict_opens_settings_not_installation(self) -> None:
+        controller = LauncherController(
+            Profile(),
+            profile_saver=lambda _profile: Path("unused.json"),
+        )
+        controller.report = DoctorReport(
+            "local",
+            [
+                CheckResult(
+                    "Browser UI port",
+                    "fail",
+                    "127.0.0.1:8796 is used by another process",
+                    "Choose another port in Settings.",
+                )
+            ],
+        )
+        window = LauncherWindow(controller, auto_check=False, reduced_motion=True)
+        window.resize(1200, 760)
+        window.show()
+        self.app.processEvents()
+        self.addCleanup(window.bridge.close)
+        self.addCleanup(window.hide)
+
+        self.assertEqual(window.overview.operational_state, "port_conflict")
+        self.assertEqual(window.overview.header.title.text(), "Port already in use")
+        self.assertEqual(window.overview.primary_button.text(), "Open settings")
+        window.overview.primary_button.click()
+        self.assertEqual(window.pages.currentIndex(), 2)
+
     def test_settings_validation_and_persistence_run_through_controller_bridge(self) -> None:
         window = self.make_window("settings")
         host = window.settings.fields["host"]

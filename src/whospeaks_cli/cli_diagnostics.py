@@ -417,6 +417,40 @@ def check_port(host: str, port: int) -> CheckResult:
     return CheckResult("Browser UI port", "ok", f"{host}:{port} is available.")
 
 
+def check_service_port(
+    name: str,
+    host: str,
+    port: int,
+    *,
+    expected_service: str,
+) -> CheckResult:
+    """Distinguish an existing WhoSpeaks service from an unrelated listener."""
+
+    result = check_port(host, port)
+    if result.status != "fail":
+        return dataclasses.replace(result, name=name)
+
+    probe_host = str(host or "127.0.0.1").strip()
+    if probe_host in {"0.0.0.0", "::", "[::]"}:
+        probe_host = "127.0.0.1"
+    url_host = f"[{probe_host}]" if ":" in probe_host and not probe_host.startswith("[") else probe_host
+    health_url = f"http://{url_host}:{int(port)}/health"
+    ok, _detail, payload = read_json_url(health_url, timeout_seconds=0.5)
+    if (
+        ok
+        and isinstance(payload, dict)
+        and payload.get("service") == expected_service
+        and payload.get("ok", True) is not False
+        and payload.get("ready", True) is not False
+    ):
+        return CheckResult(
+            name,
+            "ok",
+            f"WhoSpeaks is already running at http://{url_host}:{int(port)}.",
+        )
+    return dataclasses.replace(result, name=name)
+
+
 def read_json_url(url: str, timeout_seconds: float = 3.0) -> tuple[bool, str, dict[str, Any] | None]:
     try:
         with urlopen(url, timeout=timeout_seconds) as response:
@@ -955,7 +989,12 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
         checks.append(check_meeting_intelligence_llm(profile, deep=deep))
         checks.append(check_text_embedding_provider(profile, deep=deep))
         checks.append(check_meeting_index_writable())
-        checks.append(check_port(profile.host, profile.reports_port))
+        checks.append(check_service_port(
+            "Meeting Intelligence port",
+            profile.host,
+            profile.reports_port,
+            expected_service="meeting-intelligence",
+        ))
     else:
         checks.append(CheckResult("Meeting Intelligence", "skip", "Reports + Ask is disabled in this profile."))
 
@@ -1077,7 +1116,12 @@ def run_doctor(profile: Profile, mode: str = "auto", deep: bool = False) -> Doct
                 "Install a kroko_onnx wheel for this Python, or run `python -m RealtimeSTT.install_kroko --build` where that build path is supported.",
             ))
 
-    checks.append(check_port(profile.host, profile.port))
+    checks.append(check_service_port(
+        "Browser UI port",
+        profile.host,
+        profile.port,
+        expected_service="live-window",
+    ))
     checks.append(CheckResult("Launch profile", "ok", f"{selected_mode} profile; command can be printed with whospeaks launch --print."))
     return DoctorReport(selected_mode, checks)
 

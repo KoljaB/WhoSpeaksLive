@@ -413,6 +413,7 @@ class OverviewPage(QWidget):
     retry_requested = Signal(str)
     cancel_requested = Signal()
     interface_requested = Signal(str)
+    settings_requested = Signal()
 
     def __init__(
         self,
@@ -1169,8 +1170,10 @@ class OverviewPage(QWidget):
             self.refresh_requested.emit()
         elif self.operational_state == "partial_failure" and self.failed_service_kind == "live":
             self.retry_requested.emit("live")
-        elif self.operational_state in {"running", "partial_failure"}:
+        elif self.operational_state in {"running", "running_external", "partial_failure"}:
             self.open_requested.emit()
+        elif self.operational_state == "port_conflict":
+            self.settings_requested.emit()
         else:
             self.launch_requested.emit()
 
@@ -1191,6 +1194,7 @@ class OverviewPage(QWidget):
             "starting",
             "stopping",
             "running",
+            "running_external",
             "partial_failure",
             "failed",
             "disconnected",
@@ -1557,6 +1561,57 @@ class OverviewPage(QWidget):
             self.refresh_button.setText("View activity")
             self.command_button.hide()
             self.stop_button.show()
+        elif state == "running_external":
+            self.header.set_text(
+                "WhoSpeaks is already running",
+                "The existing Live window is available at the configured address.",
+            )
+            self.summary.set_summary(
+                "Running",
+                f"{service_count} components available",
+                semantic="success",
+            )
+            self.primary_button.setText("Open live window")
+            self.primary_button.setIcon(line_icon("play", COLORS.canvas))
+            self.refresh_button.setText("Run checks")
+            self.command_button.hide()
+            self.stop_button.hide()
+        elif state == "port_conflict":
+            conflict = next(
+                (
+                    check
+                    for check in self.current_report.checks
+                    if check.status == "fail" and "port" in check.name.lower()
+                ),
+                None,
+            )
+            self.header.set_text(
+                "Port already in use",
+                "Another application is using a port selected in WhoSpeaks settings.",
+            )
+            self.summary.set_summary(
+                "Configuration required",
+                "Choose another port or stop the conflicting application",
+                semantic="warning",
+            )
+            self.primary_button.setText("Open settings")
+            self.primary_button.setIcon(line_icon("settings", COLORS.canvas))
+            self.refresh_button.setText("Run checks")
+            self.command_button.hide()
+            self.side_title.setText("Port conflict")
+            self.side_title.setProperty("role", "warning")
+            self.side_title.show()
+            self.profile_separator.show()
+            self.recovery_detail.setText(
+                conflict.remediation
+                if conflict is not None and conflict.remediation
+                else "Choose another port in Settings or stop the process using the configured port."
+            )
+            self.side_code.setText(
+                conflict.detail if conflict is not None else "The configured port is unavailable."
+            )
+            self.recovery_detail.show()
+            self.side_code.show()
         elif state == "backend_unavailable":
             backend_label = {
                 "macos_asr": "Final ASR backend",
@@ -1903,6 +1958,7 @@ class LauncherWindow(QMainWindow):
         self.overview.refresh_requested.connect(self.run_quick_check)
         self.overview.command_requested.connect(self.show_command)
         self.overview.install_requested.connect(self.request_install)
+        self.overview.settings_requested.connect(lambda: self.navigate(2))
         self.overview.stop_requested.connect(self.confirm_stop_services)
         self.overview.retry_requested.connect(self.retry_service)
         self.overview.cancel_requested.connect(self.cancel_operation)
@@ -2124,9 +2180,19 @@ class LauncherWindow(QMainWindow):
             else:
                 state = "partial_failure" if "running" in statuses else "failed"
         elif relevant and all(item.status == "running" for item in relevant):
-            state = "running"
+            live = next((item for item in relevant if item.kind == "live"), None)
+            state = (
+                "running_external"
+                if live is not None and live.ownership == "external"
+                else "running"
+            )
         elif any(check.status == "fail" for check in snapshot.report.checks):
-            state = "first_run"
+            failures = [check for check in snapshot.report.checks if check.status == "fail"]
+            state = (
+                "port_conflict"
+                if failures and all("port" in check.name.lower() for check in failures)
+                else "first_run"
+            )
         else:
             state = "ready"
         if profile_changed:
@@ -2151,6 +2217,14 @@ class LauncherWindow(QMainWindow):
                 progress_step=str(getattr(operation, "step", "")),
                 elapsed_seconds=elapsed_seconds,
             )
+            if state in {"running", "running_external", "partial_failure"}:
+                self.overview.stop_button.setVisible(
+                    any(
+                        item.ownership == "app"
+                        and item.status in {"starting", "running", "unavailable"}
+                        for item in relevant
+                    )
+                )
         if services_changed:
             self.overview.apply_services(snapshot.services)
         if report_changed:
