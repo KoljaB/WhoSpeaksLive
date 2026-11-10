@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Relicensed WhoSpeaksLive's own code from MIT to Apache-2.0. Versions up to and including 0.1.8 remain MIT; `NOTICE` retains the MIT notice, and vendored packages keep their own licenses.
+
 ## 0.1.6 - 2026-07-23
 
 - Prevented high ASR no-speech probabilities from silently deleting ordinary spoken text; conflicting evidence now keeps the transcript and adds a visible review warning.

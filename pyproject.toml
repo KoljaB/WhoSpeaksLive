@@ -7,9 +7,10 @@ name = "whospeaks"
 version = "0.1.8"
 description = "Local speaker diarization and realtime voice-labeling tools."
 readme = "README.md"
-license = "MIT"
+license = "Apache-2.0"
 license-files = [
     "LICENSE",
+    "NOTICE",
     "THIRD_PARTY_NOTICES.md",
     "vendor/RealtimeSTT/LICENSE",
     "vendor/RealtimeSTT_server/LICENSE",
