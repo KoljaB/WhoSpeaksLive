@@ -351,7 +351,7 @@ On first start, WhoSpeaks downloads the selected 453 MB archive from the upstrea
 
 Nemotron 3.5 exposes `en`, `de`, `es`, `fr`, `it`, `nl`, `pt`, `tr`, and `sv` for realtime preview in WhoSpeaksLive. English, German, Spanish, French, Italian, Dutch, Portuguese, and Turkish are the main supported languages; Swedish is broad-coverage. Hebrew should remain on Kroko or have preview disabled. The underlying model may produce text for more languages, but they are not treated as supported until validated in the app's realtime path.
 
-Nemotron model weights use NVIDIA Open Model Development and Weight License 1.1, not the project MIT license. It remains experimental and Kroko remains available. See [Third-Party Model Licenses](third-party-model-licenses.md).
+Nemotron model weights use NVIDIA Open Model Development and Weight License 1.1, not the project Apache-2.0 license. It remains experimental and Kroko remains available. See [Third-Party Model Licenses](third-party-model-licenses.md).
 
 The `--language` flag selects the matching community model name for supported realtime languages, for example `--language de` selects `Kroko-DE-Community-64-L-Streaming-001.data`. Missing public Community model files are downloaded automatically to `runtime/models/kroko-onnx/`; use `--no-realtime-preview-auto-download` to require preinstalled files. If doctor reports `Kroko ONNX runtime` as missing, install a `kroko_onnx` wheel matching the active Python or run the Kroko setup wrapper:
 
